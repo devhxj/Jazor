@@ -39,14 +39,14 @@ internal static class AdminStyleSheet
             ["--info"] = raw("#2f6fed"),
             ["--info-soft"] = raw("#e9f1ff"),
             ["--shadow"] = raw("0 4px 14px rgb(31 52 78 / 5%)"),
-            MinHeight = raw("100vh"),
-            Background = raw("var(--app-bg)"),
-            Color = raw("var(--text)")
+            min_height = raw("100vh"),
+            background = raw("var(--app-bg)"),
+            color = raw("var(--text)")
         });
 
         var darkTheme = new CssRule
         {
-            ColorScheme = raw("dark"),
+            color_scheme = raw("dark"),
             ["--app-bg"] = raw("#151a18"),
             ["--surface"] = raw("#1e2522"),
             ["--surface-subtle"] = raw("#242c29"),
@@ -70,271 +70,271 @@ internal static class AdminStyleSheet
         Media(".ja-application--system", "(prefers-color-scheme: dark)", darkTheme);
         global(".ja-application--grayscale", new CssRule
         {
-            Filter = raw("grayscale(1)")
+            filter = raw("grayscale(1)")
         });
 
         global(".ja-shell", new CssRule
         {
-            Display = raw("grid"),
-            GridTemplateColumns = raw("232px minmax(0, 1fr)"),
-            MinHeight = raw("100vh")
+            display = raw("grid"),
+            grid_template_columns = raw("232px minmax(0, 1fr)"),
+            min_height = raw("100vh")
         });
         global(".ja-shell--top", new CssRule
         {
-            Display = raw("block")
+            display = raw("block")
         });
         global(".ja-shell__sidebar", new CssRule
         {
-            Position = raw("sticky"),
-            Top = raw("0"),
-            ZIndex = raw("20"),
-            Height = raw("100vh"),
-            Overflow = raw("auto"),
-            Background = raw("#17241f"),
-            Color = raw("#eef7f3"),
-            BorderRight = px(1) | solid | hex("293a33")
+            position = raw("sticky"),
+            top = raw("0"),
+            z_index = raw("20"),
+            height = raw("100vh"),
+            overflow = raw("auto"),
+            background = raw("#17241f"),
+            color = raw("#eef7f3"),
+            border_right = px(1) | solid | hex("293a33")
         });
         global(".ja-shell--collapsed", new CssRule
         {
-            GridTemplateColumns = raw("0 minmax(0, 1fr)")
+            grid_template_columns = raw("0 minmax(0, 1fr)")
         });
         global(".ja-shell--collapsed .ja-shell__sidebar", new CssRule
         {
-            Display = raw("none"),
-            Width = raw("0"),
-            BorderRight = raw("0")
+            display = raw("none"),
+            width = raw("0"),
+            border_right = raw("0")
         });
         global(".ja-shell__main", new CssRule
         {
-            MinWidth = raw("0")
+            min_width = raw("0")
         });
         global(".ja-shell__header", new CssRule
         {
-            Display = raw("flex"),
-            AlignItems = raw("center"),
-            Position = raw("sticky"),
-            Top = raw("0"),
-            ZIndex = raw("15"),
-            MinHeight = raw("64px"),
-            Background = raw("color-mix(in srgb, var(--surface) 94%, transparent)"),
-            BorderBottom = px(1) | solid | var("--border"),
-            BackdropFilter = raw("blur(12px)")
+            display = raw("flex"),
+            align_items = raw("center"),
+            position = raw("sticky"),
+            top = raw("0"),
+            z_index = raw("15"),
+            min_height = raw("64px"),
+            background = raw("color-mix(in srgb, var(--surface) 94%, transparent)"),
+            border_bottom = px(1) | solid | var("--border"),
+            backdrop_filter = raw("blur(12px)")
         });
         global(".ja-shell__sidebar-toggle", new CssRule
         {
-            Position = raw("relative"),
-            Flex = raw("0 0 36px"),
-            Width = raw("36px"),
-            Height = raw("36px"),
-            Padding = raw("0"),
-            MarginLeft = raw("14px"),
-            Color = raw("var(--text)"),
-            Background = raw("transparent"),
-            Border = px(1) | solid | var("--border"),
-            BorderRadius = raw("5px")
+            position = raw("relative"),
+            flex = raw("0 0 36px"),
+            width = raw("36px"),
+            height = raw("36px"),
+            padding = raw("0"),
+            margin_left = raw("14px"),
+            color = raw("var(--text)"),
+            background = raw("transparent"),
+            border = px(1) | solid | var("--border"),
+            border_radius = raw("5px")
         });
         global(".ja-shell__sidebar-toggle::before", new CssRule
         {
-            FontSize = raw("20px"),
-            LineHeight = raw("1"),
-            Content = raw("\"\\2630\"")
+            font_size = raw("20px"),
+            line_height = raw("1"),
+            content = raw("\"\\2630\"")
         });
         global(".ja-shell__sidebar-toggle:hover", new CssRule
         {
-            Background = raw("var(--surface-strong)")
+            background = raw("var(--surface-strong)")
         });
         global(".ja-shell__content", new CssRule
         {
-            Width = raw("100%")
+            width = raw("100%")
         });
 
         global(".ja-sidebar", new CssRule
         {
-            MinHeight = raw("100%"),
-            Padding = raw("20px 14px")
+            min_height = raw("100%"),
+            padding = raw("20px 14px")
         });
         global(".ja-sidebar__logo", new CssRule
         {
-            Display = raw("flex"),
-            AlignItems = raw("center"),
-            MinHeight = raw("42px"),
-            Margin = raw("0 8px 22px"),
-            Color = raw("#ffffff"),
-            FontSize = raw("18px"),
-            FontWeight = raw("750")
+            display = raw("flex"),
+            align_items = raw("center"),
+            min_height = raw("42px"),
+            margin = raw("0 8px 22px"),
+            color = raw("#ffffff"),
+            font_size = raw("18px"),
+            font_weight = raw("750")
         });
         global(".ja-sidebar__list, .ja-sidebar__children", new CssRule
         {
-            Padding = raw("0"),
-            Margin = raw("0"),
-            ListStyle = raw("none")
+            padding = raw("0"),
+            margin = raw("0"),
+            list_style = raw("none")
         });
         global(".ja-sidebar__item", new CssRule
         {
-            Margin = raw("3px 0")
+            margin = raw("3px 0")
         });
         global(".ja-sidebar__item-content", new CssRule
         {
-            Position = raw("relative")
+            position = raw("relative")
         });
         global(".ja-sidebar__link, .ja-sidebar__button", new CssRule
         {
-            Display = raw("flex"),
-            AlignItems = raw("center"),
-            Width = raw("100%"),
-            MinHeight = raw("40px"),
-            Padding = raw("8px 12px"),
-            Color = raw("#b8c8c1"),
-            TextAlign = raw("left"),
-            TextDecoration = raw("none"),
-            Background = raw("transparent"),
-            Border = raw("0"),
-            BorderRadius = raw("6px")
+            display = raw("flex"),
+            align_items = raw("center"),
+            width = raw("100%"),
+            min_height = raw("40px"),
+            padding = raw("8px 12px"),
+            color = raw("#b8c8c1"),
+            text_align = raw("left"),
+            text_decoration = raw("none"),
+            background = raw("transparent"),
+            border = raw("0"),
+            border_radius = raw("6px")
         });
         global(".ja-sidebar__link:hover, .ja-sidebar__button:hover, .ja-sidebar__item.is-ancestor-selected > .ja-sidebar__item-content > .ja-sidebar__button", new CssRule
         {
-            Color = raw("#ffffff"),
-            Background = raw("#243a31")
+            color = raw("#ffffff"),
+            background = raw("#243a31")
         });
         global(".ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__link, .ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__button", new CssRule
         {
-            Color = raw("#ffffff"),
-            Background = raw("#087f5b")
+            color = raw("#ffffff"),
+            background = raw("#087f5b")
         });
         global(".ja-sidebar__toggle", new CssRule
         {
-            MarginLeft = raw("auto"),
-            FontSize = raw("12px")
+            margin_left = raw("auto"),
+            font_size = raw("12px")
         });
         global(".ja-sidebar__children", new CssRule
         {
-            Padding = raw("4px 0 4px 12px")
+            padding = raw("4px 0 4px 12px")
         });
 
         global(".ja-header", new CssRule
         {
-            Display = raw("flex"),
-            Flex = raw("1 1 auto"),
-            AlignItems = raw("center"),
-            JustifyContent = raw("space-between"),
-            MinWidth = raw("0"),
-            MinHeight = raw("64px"),
-            Padding = raw("8px 24px"),
-            Gap = raw("20px")
+            display = raw("flex"),
+            flex = raw("1 1 auto"),
+            align_items = raw("center"),
+            justify_content = raw("space-between"),
+            min_width = raw("0"),
+            min_height = raw("64px"),
+            padding = raw("8px 24px"),
+            gap = raw("20px")
         });
         global(".ja-header__main, .ja-header__actions, .ja-header__toolbar, .ja-header__user-region", new CssRule
         {
-            Display = raw("flex"),
-            AlignItems = raw("center")
+            display = raw("flex"),
+            align_items = raw("center")
         });
         global(".ja-header__main", new CssRule
         {
-            MinWidth = raw("0"),
-            Gap = raw("12px")
+            min_width = raw("0"),
+            gap = raw("12px")
         });
         global(".ja-header__logo", new CssRule
         {
-            Color = raw("var(--accent)"),
-            FontWeight = raw("750")
+            color = raw("var(--accent)"),
+            font_weight = raw("750")
         });
         global(".ja-header__titles", new CssRule
         {
-            MinWidth = raw("0")
+            min_width = raw("0")
         });
         global(".ja-header__title", new CssRule
         {
-            Overflow = raw("hidden"),
-            FontSize = raw("16px"),
-            FontWeight = raw("700"),
-            TextOverflow = raw("ellipsis"),
-            WhiteSpace = raw("nowrap")
+            overflow = raw("hidden"),
+            font_size = raw("16px"),
+            font_weight = raw("700"),
+            text_overflow = raw("ellipsis"),
+            white_space = raw("nowrap")
         });
         global(".ja-header__subtitle", new CssRule
         {
-            MarginTop = raw("2px"),
-            Color = raw("var(--text-muted)"),
-            FontSize = raw("12px")
+            margin_top = raw("2px"),
+            color = raw("var(--text-muted)"),
+            font_size = raw("12px")
         });
         global(".ja-header__actions", new CssRule
         {
-            JustifyContent = raw("flex-end"),
-            MinWidth = raw("0"),
-            Gap = raw("16px")
+            justify_content = raw("flex-end"),
+            min_width = raw("0"),
+            gap = raw("16px")
         });
         global(".ja-header__navigation", new CssRule
         {
-            Flex = raw("1 1 auto"),
-            MinWidth = raw("0")
+            flex = raw("1 1 auto"),
+            min_width = raw("0")
         });
 
         global(".ja-page", new CssRule
         {
-            Width = raw("min(100%, 1480px)"),
-            Margin = raw("0 auto"),
-            Padding = raw("24px")
+            width = raw("min(100%, 1480px)"),
+            margin = raw("0 auto"),
+            padding = raw("24px")
         });
         global(".ja-page__header", new CssRule
         {
-            Display = raw("flex"),
-            AlignItems = raw("flex-end"),
-            JustifyContent = raw("space-between"),
-            MarginBottom = raw("20px"),
-            Gap = raw("20px")
+            display = raw("flex"),
+            align_items = raw("flex-end"),
+            justify_content = raw("space-between"),
+            margin_bottom = raw("20px"),
+            gap = raw("20px")
         });
         global(".ja-page__titles", new CssRule
         {
-            MinWidth = raw("0")
+            min_width = raw("0")
         });
         global(".ja-page__title", new CssRule
         {
-            Margin = raw("0"),
-            FontSize = raw("26px"),
-            LineHeight = raw("1.25")
+            margin = raw("0"),
+            font_size = raw("26px"),
+            line_height = raw("1.25")
         });
         global(".ja-page__subtitle", new CssRule
         {
-            MaxWidth = raw("760px"),
-            Margin = raw("7px 0 0"),
-            Color = raw("var(--text-muted)"),
-            LineHeight = raw("1.5")
+            max_width = raw("760px"),
+            margin = raw("7px 0 0"),
+            color = raw("var(--text-muted)"),
+            line_height = raw("1.5")
         });
         global(".ja-page__actions", new CssRule
         {
-            Display = raw("flex"),
-            FlexWrap = raw("wrap"),
-            JustifyContent = raw("flex-end"),
-            Gap = raw("8px")
+            display = raw("flex"),
+            flex_wrap = raw("wrap"),
+            justify_content = raw("flex-end"),
+            gap = raw("8px")
         });
         global(".ja-page__body > * + *", new CssRule
         {
-            MarginTop = raw("20px")
+            margin_top = raw("20px")
         });
 
         Media(".ja-shell", "(max-width: 760px)", new CssRule
         {
-            Display = raw("block"),
-            MinWidth = raw("0")
+            display = raw("block"),
+            min_width = raw("0")
         });
         Media(".ja-shell__sidebar", "(max-width: 760px)", new CssRule
         {
-            Position = raw("static"),
-            Height = raw("auto"),
-            Overflow = raw("visible"),
-            BorderRight = raw("0"),
-            BorderBottom = px(1) | solid | hex("293a33")
+            position = raw("static"),
+            height = raw("auto"),
+            overflow = raw("visible"),
+            border_right = raw("0"),
+            border_bottom = px(1) | solid | hex("293a33")
         });
         Media(".ja-sidebar", "(max-width: 760px)", new CssRule
         {
-            MinHeight = raw("0"),
-            Padding = raw("10px 12px")
+            min_height = raw("0"),
+            padding = raw("10px 12px")
         });
         Media(".ja-page", "(max-width: 760px)", new CssRule
         {
-            Padding = raw("18px 14px 28px")
+            padding = raw("18px 14px 28px")
         });
         return true;
     }
 
     private static void Media(string selector, string prelude, CssRule rule)
-        => global(selector, new CssRule { Children = [new(ChildKind.Media, prelude, rule)] });
+        => global(selector, new CssRule { children = [new(ChildKind.Media, prelude, rule)] });
 }

@@ -3402,24 +3402,24 @@ public sealed class SdkIntegrationTests
 
                 public static string ButtonClass() => css.style(Context, new CssRule
                 {
-                    Color = color("white"),
-                    BackgroundColor = hex("1769aa"),
-                    Children =
+                    color = color("white"),
+                    background_color = hex("1769aa"),
+                    children =
                     [
                         new(ChildKind.Container, "toolbar (width > 30rem)", new CssRule
                         {
-                            Display = grid
+                            display = grid
                         })
                     ]
                 });
 
                 public static CssSnapshot Snapshot()
                 {
-                    css.atRule(Context, new CssAtRule(
+                    css.at_rule(Context, new CssAtRule(
                         "font-face",
                         new CssDeclarations
                         {
-                            FontFamily = str("Example Sans"),
+                            font_family = str("Example Sans"),
                             ["src"] = raw("url(example.woff2)")
                         }));
                     return css.snapshot(Context);

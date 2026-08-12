@@ -6,11 +6,6 @@
     <NoWarn>CS0626,CS0824,IDE0130,CA1822,IDE0060</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="generate\**" />
-    <EmbeddedResource Remove="generate\**" />
-    <None Remove="generate\**" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
   </ItemGroup>
 </Project>

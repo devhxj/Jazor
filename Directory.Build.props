@@ -6,9 +6,9 @@
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <NetPackVersion>0.8.0</NetPackVersion>
     <JsonNetVersion>10.0.7</JsonNetVersion>
-    <CodeAnalysisVersion>5.9.0-1.26359.118</CodeAnalysisVersion>
-    <Net110AssembliesVersion>1.8.7</Net110AssembliesVersion>
-    <CoverletVersion>8.0.1</CoverletVersion>
+    <CodeAnalysisVersion>5.10.0-1.26381.103</CodeAnalysisVersion>
+    <Net110AssembliesVersion>1.8.10</Net110AssembliesVersion>
+    <CoverletVersion>10.0.1</CoverletVersion>
     <MinVerPackageVersion>7.0.0</MinVerPackageVersion>
     <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>

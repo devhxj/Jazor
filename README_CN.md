@@ -37,6 +37,7 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 - Element Plus 绑定现已升级至 `2.14.4`，并提供 `ElTransfer.VirtualScroll` 与 `ElTransfer.ItemSize` 的强类型参数。
 - `Jazor.Analyzer` 现在会在泛型容器、ECMAScript 契约和运行时类型过滤中更早报告不受支持的具体外部类型。
 - `Jazor.Analyzer` 现在会在不安全产物生成前检测冲突的 JavaScript 名称元数据与重复的最终输出名称。
+- `ECMAScript.Style` 现将 CSS authoring DSL 统一为 `lower_snake_case`；PascalCase CLR 模型以及生成 CSS/runtime JavaScript ABI 保持稳定。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 

@@ -3013,9 +3013,9 @@ public sealed class MemberClosureTests
                     {
                         var className = css.style(new CssRule
                         {
-                            Display = inlineFlex,
-                            Color = color("white"),
-                            BackgroundColor = hex("1769aa")
+                            display = inline_flex,
+                            color = color("white"),
+                            background_color = hex("1769aa")
                         });
                         builder.OpenElement(0, "button");
                         builder.AddAttribute(1, "class", className);

@@ -278,7 +278,7 @@ static string GetBrowserHarness() => """
             const target = document.getElementById("target");
             const firstName = firstModule.style(rule);
             target.className = firstName;
-            const style = document.getElementById("jazor-css");
+            const style = document.getElementById("ecmascript-style");
             const beforeReload = style.textContent;
             const firstComputed = getComputedStyle(target);
             const backgroundColor = firstComputed.backgroundColor;
@@ -331,9 +331,9 @@ static string GetBrowserHarness() => """
               backgroundColor,
               display,
               nonce: style.nonce,
-              styleCount: document.querySelectorAll("style#jazor-css").length,
+              styleCount: document.querySelectorAll("style#ecmascript-style").length,
               unchangedAfterReload: beforeReload === style.textContent,
-              ownedStyle: style.textContent.startsWith("/*jazor-css:v1*//*jz:v1:"),
+              ownedStyle: style.textContent.startsWith("/*ecmascript-style:v1*//*ecs:v1:"),
               unicodeExtracted: secondModule.extract().includes("\u6c49\u5b57"),
               shadowColor: getComputedStyle(shadowButton).color,
               shadowStyleCount: shadowRoot.querySelectorAll("style#shadow-css").length,

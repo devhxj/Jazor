@@ -24,26 +24,33 @@ using static ECMAScript.Style.css;
 
 var actionClass = style(new CssRule
 {
-    Display = inlineFlex,
-    Gap = rem(0.5),
-    AlignItems = keyword("center")
+    display = inline_flex,
+    gap = rem(0.5),
+    align_items = keyword("center"),
+    padding = important(px(8) | px(12))
 });
 ```
 
-公开 API 使用类型化长度、颜色、时间、display、selector 与 at-rule 值域。已存在的强类型值应直接使用；`raw(...)` 只用于尚未建模且调用方明确承担语义的 CSS 语法。
+CSS authoring DSL uses `lower_snake_case`: generated declaration properties, `css` facade members, tokens, and structural members such as `additional` and `children` all follow CSS-oriented spelling. CLR data/configuration models remain PascalCase, including `CssRule`, `CssDeclarations`, `CssAtRule`, `CssShadow`, `CssChild`, and `CssOptions`. The C# spelling changes do not change the generated CSS or the `style.mjs` JavaScript export ABI.
+
+CSS authoring DSL 使用 `lower_snake_case`：生成的声明属性、`css` facade 成员、token，以及 `additional`、`children` 等结构成员都采用面向 CSS 的拼写。CLR 数据/配置模型仍保持 PascalCase，包括 `CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 与 `CssOptions`。C# 拼写变化不会改变生成的 CSS 或 `style.mjs` 的 JavaScript 导出 ABI。
+
+The public API uses typed domains for lengths, colors, time, display, selectors, and at-rules. Use an existing typed value directly; reserve `raw(...)` for CSS grammar that is not yet modeled and whose semantics the caller deliberately owns. `px(8) | px(12)` is a two-side padding shorthand, while `px(1) | solid` remains a typed border shorthand.
+
+公开 API 使用类型化长度、颜色、时间、display、selector 与 at-rule 值域。已存在的强类型值应直接使用；`raw(...)` 只用于尚未建模且调用方明确承担语义的 CSS 语法。`px(8) | px(12)` 表示双边 padding 简写，而 `px(1) | solid` 仍表示强类型 border 简写。
 
 现代尺寸与锚点定位同样使用专用值域，不需要把 `anchor-size()` 或 `calc-size()` 写回原始字符串：
 
 ```csharp
-var cardAnchor = anchorName("--card");
+var cardAnchor = anchor_name("--card");
 
 var popoverClass = style(new CssRule
 {
-    AnchorName = cardAnchor,
-    PositionAnchor = cardAnchor,
-    Width = calcSize(minContent, size + rem(1)),
-    Top = anchor(cardAnchor, anchorBottom, rem(0.5)),
-    MarginTop = anchorSize(cardAnchor, anchorBlock)
+    anchor_name = cardAnchor,
+    position_anchor = cardAnchor,
+    width = calc_size(min_content, size + rem(1)),
+    top = anchor(cardAnchor, anchor_bottom, rem(0.5)),
+    margin_top = anchor_size(cardAnchor, anchor_block)
 });
 ```
 

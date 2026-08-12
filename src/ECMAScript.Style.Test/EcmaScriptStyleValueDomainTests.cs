@@ -9,34 +9,34 @@ public sealed class EcmaScriptStyleValueDomainTests
     [TestMethod]
     public void GeneratedProperties_UseGrammarSpecificNativeUnions()
     {
-        AssertPropertyType(nameof(CssDeclarations.Width), typeof(CssSizingValue));
-        AssertPropertyType(nameof(CssDeclarations.Height), typeof(CssSizingValue));
-        AssertPropertyType(nameof(CssDeclarations.FlexBasis), typeof(CssFlexBasisValue));
-        AssertPropertyType(nameof(CssDeclarations.ColumnWidth), typeof(CssColumnWidthValue));
-        AssertPropertyType(nameof(CssDeclarations.Top), typeof(CssAnchorPositionValue));
-        AssertPropertyType(nameof(CssDeclarations.Inset), typeof(CssInsetValue));
-        AssertPropertyType(nameof(CssDeclarations.MarginTop), typeof(CssAnchorMarginValue));
-        AssertPropertyType(nameof(CssDeclarations.AnchorName), typeof(CssAnchorNameValue));
-        AssertPropertyType(nameof(CssDeclarations.AnchorScope), typeof(CssAnchorScopeValue));
-        AssertPropertyType(nameof(CssDeclarations.PositionAnchor), typeof(CssPositionAnchorValue));
-        AssertPropertyType(nameof(CssDeclarations.Color), typeof(CssColorValue));
-        AssertPropertyType(nameof(CssDeclarations.TransitionDuration), typeof(CssTimeValue));
-        AssertPropertyType(nameof(CssDeclarations.Opacity), typeof(CssNumberPercentageValue));
-        AssertPropertyType(nameof(CssDeclarations.Display), typeof(CssDisplayValue));
-        AssertPropertyType(nameof(CssDeclarations.GridTemplateColumns), typeof(CssTrackValue));
-        AssertPropertyType(nameof(CssDeclarations.BoxShadow), typeof(CssBoxShadowValue));
-        AssertPropertyType(nameof(CssDeclarations.WebkitBoxShadow), typeof(CssBoxShadowValue));
-        AssertPropertyType(nameof(CssDeclarations.Border), typeof(CssBorderValue));
-        AssertPropertyType(nameof(CssDeclarations.BackdropFilter), typeof(CssFilterValue));
-        AssertPropertyType(nameof(CssDeclarations.AlignItems), typeof(CssAlignmentValue));
-        AssertPropertyType(nameof(CssDeclarations.Padding), typeof(CssPaddingValue));
-        AssertPropertyType(nameof(CssDeclarations.Margin), typeof(CssMarginValue));
-        AssertPropertyType(nameof(CssDeclarations.Gap), typeof(CssGapValue));
-        AssertPropertyType(nameof(CssDeclarations.BorderRadius), typeof(CssRadiusValue));
-        AssertPropertyType(nameof(CssDeclarations.Flex), typeof(CssFlexValue));
-        AssertPropertyType(nameof(CssDeclarations.TextAlign), typeof(CssTextAlignValue));
+        AssertPropertyType(nameof(CssDeclarations.width), typeof(CssSizingValue));
+        AssertPropertyType(nameof(CssDeclarations.height), typeof(CssSizingValue));
+        AssertPropertyType(nameof(CssDeclarations.flex_basis), typeof(CssFlexBasisValue));
+        AssertPropertyType(nameof(CssDeclarations.column_width), typeof(CssColumnWidthValue));
+        AssertPropertyType(nameof(CssDeclarations.top), typeof(CssAnchorPositionValue));
+        AssertPropertyType(nameof(CssDeclarations.inset), typeof(CssInsetValue));
+        AssertPropertyType(nameof(CssDeclarations.margin_top), typeof(CssAnchorMarginValue));
+        AssertPropertyType(nameof(CssDeclarations.anchor_name), typeof(CssAnchorNameValue));
+        AssertPropertyType(nameof(CssDeclarations.anchor_scope), typeof(CssAnchorScopeValue));
+        AssertPropertyType(nameof(CssDeclarations.position_anchor), typeof(CssPositionAnchorValue));
+        AssertPropertyType(nameof(CssDeclarations.color), typeof(CssColorValue));
+        AssertPropertyType(nameof(CssDeclarations.transition_duration), typeof(CssTimeValue));
+        AssertPropertyType(nameof(CssDeclarations.opacity), typeof(CssNumberPercentageValue));
+        AssertPropertyType(nameof(CssDeclarations.display), typeof(CssDisplayValue));
+        AssertPropertyType(nameof(CssDeclarations.grid_template_columns), typeof(CssTrackValue));
+        AssertPropertyType(nameof(CssDeclarations.box_shadow), typeof(CssBoxShadowValue));
+        AssertPropertyType(nameof(CssDeclarations.webkit_box_shadow), typeof(CssBoxShadowValue));
+        AssertPropertyType(nameof(CssDeclarations.border), typeof(CssBorderValue));
+        AssertPropertyType(nameof(CssDeclarations.backdrop_filter), typeof(CssFilterValue));
+        AssertPropertyType(nameof(CssDeclarations.align_items), typeof(CssAlignmentValue));
+        AssertPropertyType(nameof(CssDeclarations.padding), typeof(CssPaddingValue));
+        AssertPropertyType(nameof(CssDeclarations.margin), typeof(CssMarginValue));
+        AssertPropertyType(nameof(CssDeclarations.gap), typeof(CssGapValue));
+        AssertPropertyType(nameof(CssDeclarations.border_radius), typeof(CssRadiusValue));
+        AssertPropertyType(nameof(CssDeclarations.flex), typeof(CssFlexValue));
+        AssertPropertyType(nameof(CssDeclarations.text_align), typeof(CssTextAlignValue));
 
-        Assert.AreNotEqual(typeof(string), typeof(CssDeclarations).GetProperty(nameof(CssDeclarations.Width))!.PropertyType);
+        Assert.AreNotEqual(typeof(string), typeof(CssDeclarations).GetProperty(nameof(CssDeclarations.width))!.PropertyType);
     }
 
     [TestMethod]
@@ -120,12 +120,12 @@ public sealed class EcmaScriptStyleValueDomainTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    Padding = padding(px(8), px(12)),
-                    Margin = important(margin(px(0), auto)),
-                    Gap = gap(px(8), px(12)),
-                    BorderRadius = radius(px(4), px(4), px(0), px(0)),
-                    Flex = flexBox(0, 0, px(32)),
-                    GridColumn = gridLine(1, -1)
+                    padding = important(px(8) | px(12)),
+                    margin = important(margin(px(0), auto)),
+                    gap = gap(px(8), px(12)),
+                    border_radius = radius(px(4), px(4), px(0), px(0)),
+                    flex = flex_box(0, 0, px(32)),
+                    grid_column = grid_line(1, -1)
                 };
             }
             """;
@@ -134,13 +134,20 @@ public sealed class EcmaScriptStyleValueDomainTests
             .ToArray();
         Assert.IsEmpty(validErrors, string.Join(Environment.NewLine, validErrors.Select(static error => error.ToString())));
 
+        var paddingPipe = typeof(CssLength).GetMethod(
+            "op_BitwiseOr",
+            BindingFlags.Public | BindingFlags.Static,
+            [typeof(CssLength), typeof(CssLength)]);
+        Assert.IsNotNull(paddingPipe);
+        Assert.AreEqual(typeof(CssPadding), paddingPipe.ReturnType);
+
         var invalidSource = """
             using ECMAScript.Style;
             using static ECMAScript.Style.css;
 
             public static class InvalidStyles
             {
-                public static readonly CssRule Rule = new() { Width = padding(px(8), px(12)) };
+                public static readonly CssRule Rule = new() { width = padding(px(8), px(12)) };
             }
             """;
         var invalidErrors = Compile(invalidSource).GetDiagnostics()
@@ -159,21 +166,21 @@ public sealed class EcmaScriptStyleValueDomainTests
 
             public static class ValidAnchorStyles
             {
-                private static readonly CssAnchorName Card = anchorName("--card");
+                private static readonly CssAnchorName Card = anchor_name("--card");
 
                 public static readonly CssRule Rule = new()
                 {
-                    AnchorName = anchorNames(Card, anchorName("--trigger")),
-                    AnchorScope = anchorScopeAll,
-                    PositionAnchor = Card,
-                    Width = calcSize(minContent, size + px(2)),
-                    Height = anchorSize(Card, anchorInline, px(20)),
-                    FlexBasis = flexContent,
-                    ColumnWidth = fitContent(percent(50)),
-                    Top = anchor(Card, anchorBottom, px(8)),
-                    Inset = insetSides(anchor(anchorTop), anchorSize(Card, anchorBlock)),
-                    MarginTop = anchorSize(Card, anchorInline),
-                    Margin = margin(anchorSize(Card, anchorInline), auto)
+                    anchor_name = anchor_names(Card, anchor_name("--trigger")),
+                    anchor_scope = anchor_scope_all,
+                    position_anchor = Card,
+                    width = calc_size(min_content, size + px(2)),
+                    height = anchor_size(Card, anchor_inline, px(20)),
+                    flex_basis = flex_content,
+                    column_width = fit_content(percent(50)),
+                    top = anchor(Card, anchor_bottom, px(8)),
+                    inset = inset_sides(anchor(anchor_top), anchor_size(Card, anchor_block)),
+                    margin_top = anchor_size(Card, anchor_inline),
+                    margin = margin(anchor_size(Card, anchor_inline), auto)
                 };
             }
             """;
@@ -190,11 +197,11 @@ public sealed class EcmaScriptStyleValueDomainTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    Width = anchor(anchorTop),
-                    Top = calcSize(minContent, size + px(2)),
-                    MarginTop = margin(px(8), px(12)),
-                    AnchorName = anchorSize(anchorInline),
-                    ColumnWidth = percent(100) - rem(2)
+                    width = anchor(anchor_top),
+                    top = calc_size(min_content, size + px(2)),
+                    margin_top = margin(px(8), px(12)),
+                    anchor_name = anchor_size(anchor_inline),
+                    column_width = percent(100) - rem(2)
                 };
             }
             """;
@@ -211,14 +218,34 @@ public sealed class EcmaScriptStyleValueDomainTests
     }
 
     [TestMethod]
-    public void CssFacade_PublicSurfaceUsesLowerCamelCase()
+    public void CssFacade_PublicSurfaceUsesLowerSnakeCase()
     {
         var members = typeof(css).GetMembers(BindingFlags.Public | BindingFlags.Static)
             .Where(static member => member.DeclaringType == typeof(css) && member.Name is not "Equals" and not "ReferenceEquals")
             .ToArray();
         Assert.IsNotEmpty(members);
         foreach (var member in members)
+        {
             Assert.IsTrue(char.IsLower(member.Name[0]), member.Name);
+            Assert.IsFalse(member.Name.Any(char.IsUpper), member.Name);
+        }
+    }
+
+    [TestMethod]
+    public void CssFacade_SnakeCaseMembersKeepExplicitJavaScriptAbiNames()
+    {
+        var snakeCaseMembers = typeof(css).GetMembers(BindingFlags.Public | BindingFlags.Static)
+            .Where(static member => member.DeclaringType == typeof(css) && member.Name.Contains('_'))
+            .ToArray();
+
+        Assert.IsNotEmpty(snakeCaseMembers);
+        foreach (var member in snakeCaseMembers)
+        {
+            var javaScriptName = member.GetCustomAttribute<global::ECMAScript.ECMAScriptNameAttribute>()?.Name;
+            Assert.IsFalse(string.IsNullOrWhiteSpace(javaScriptName), member.Name);
+            Assert.AreNotEqual(member.Name, javaScriptName, member.Name);
+            Assert.IsFalse(javaScriptName!.Contains('_'), javaScriptName);
+        }
     }
 
     private static void AssertPropertyType(string propertyName, Type expected)

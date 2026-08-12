@@ -25,31 +25,32 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             {
                 public static readonly string Enter = keyframes(
                 [
-                    new("from", new CssDeclarations { Opacity = 0 }),
-                    new("to", new CssDeclarations { Opacity = 1 })
+                    new("from", new CssDeclarations { opacity = 0 }),
+                    new("to", new CssDeclarations { opacity = 1 })
                 ]);
 
                 public static readonly string Button = style(new CssRule
                 {
-                    Display = inlineFlex,
-                    Width = percent(100) - rem(2),
-                    Gap = rem(0.5),
-                    Color = varOr("--button-color", color("red")),
-                    BackgroundColor = hex("1769aa"),
-                    Border = important(px(1) | solid | hex("d7ebe4")),
-                    BackdropFilter = filters(blur(px(12)), saturate(1.15)),
-                    TransitionDuration = ms(180),
-                    Opacity = 0.9,
-                    GridColumn = 2,
-                    BoxShadow = shadows(
+                    display = inline_flex,
+                    width = percent(100) - rem(2),
+                    gap = rem(0.5),
+                    color = var_or("--button-color", color("red")),
+                    background_color = hex("1769aa"),
+                    border = important(px(1) | solid | hex("d7ebe4")),
+                    padding = important(px(8) | px(12)),
+                    backdrop_filter = filters(blur(px(12)), saturate(1.15)),
+                    transition_duration = ms(180),
+                    opacity = 0.9,
+                    grid_column = 2,
+                    box_shadow = shadows(
                         new CssShadow(px(0), px(4), Blur: px(14), Color: rgba(31, 52, 78, 0.05)),
-                        new CssShadow(px(0), px(1), Color: currentColor)),
+                        new CssShadow(px(0), px(1), Color: current_color)),
                     ["--button-gap"] = rem(0.5),
-                    Children =
+                    children =
                     [
                         new(ChildKind.Selector, "&:hover", new CssRule
                         {
-                            Color = color("blue")
+                            color = color("blue")
                         })
                     ]
                 });
@@ -88,6 +89,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         StringAssert.Contains(script, "color: varOr(\"--button-color\", color(\"red\"))");
         StringAssert.Contains(script, "\"background-color\": hex(\"1769aa\")");
         StringAssert.Contains(script, "border: importantValue(px(1) + \" \" + solid + \" \" + hex(\"d7ebe4\"))");
+        StringAssert.Contains(script, "padding: importantValue(px(8) + \" \" + px(12))");
         StringAssert.Contains(script, "\"backdrop-filter\": filters([blur(px(12)), saturate(1.15)])");
         StringAssert.Contains(script, "\"transition-duration\": ms(180)");
         StringAssert.Contains(script, "opacity: 0.9");
@@ -119,23 +121,23 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
 
                 public static readonly string Card = style(Context, new CssRule
                 {
-                    ContainerType = keyword("inline-size"),
-                    Children =
+                    container_type = keyword("inline-size"),
+                    children =
                     [
                         new(ChildKind.Container, "card (width > 30rem)", new CssRule
                         {
-                            Display = grid
+                            display = grid
                         })
                     ]
                 });
 
                 public static CssSnapshot BuildSnapshot()
                 {
-                    atRule(Context, new CssAtRule(
+                    at_rule(Context, new CssAtRule(
                         "font-face",
                         new CssDeclarations
                         {
-                            FontFamily = raw("Example Sans"),
+                            font_family = raw("Example Sans"),
                             ["src"] = raw("url(example.woff2)")
                         }));
                     return snapshot(Context);
@@ -189,18 +191,18 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             [ECMAScriptModule("styles/anchor.mjs")]
             public static class AnchorStyles
             {
-                private static readonly CssAnchorName Card = anchorName("--card");
+                private static readonly CssAnchorName Card = anchor_name("--card");
 
                 public static readonly string Popover = style(new CssRule
                 {
-                    AnchorName = Card,
-                    PositionAnchor = Card,
-                    Width = calcSize(minContent, size + rem(1)),
-                    Height = anchorSize(Card, anchorInline, rem(20)),
-                    Top = anchor(Card, anchorBottom, rem(0.5)),
-                    Inset = insetSides(anchor(anchorTop), anchorSize(Card, anchorBlock)),
-                    MarginTop = anchorSize(Card, anchorInline),
-                    ColumnWidth = fitContent(percent(50))
+                    anchor_name = Card,
+                    position_anchor = Card,
+                    width = calc_size(min_content, size + rem(1)),
+                    height = anchor_size(Card, anchor_inline, rem(20)),
+                    top = anchor(Card, anchor_bottom, rem(0.5)),
+                    inset = inset_sides(anchor(anchor_top), anchor_size(Card, anchor_block)),
+                    margin_top = anchor_size(Card, anchor_inline),
+                    column_width = fit_content(percent(50))
                 });
             }
             """;
@@ -251,10 +253,10 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    Width = deg(10),
-                    Color = rem(1),
-                    Height = "10px",
-                    ColumnWidth = percent(100) - rem(2)
+                    width = deg(10),
+                    color = rem(1),
+                    height = "10px",
+                    column_width = percent(100) - rem(2)
                 };
             }
             """;
@@ -283,11 +285,11 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    Width = calcSize(minContent, size + rem(2)),
-                    Height = anchorSize(anchorName("--card"), anchorInline, rem(20)),
-                    Top = anchor(anchorName("--card"), anchorBottom, rem(1)),
-                    Inset = insetSides(anchor(anchorTop), anchorSize(anchorName("--card"), anchorBlock)),
-                    Color = raw("oklch(from var(--brand) l c h)")
+                    width = calc_size(min_content, size + rem(2)),
+                    height = anchor_size(anchor_name("--card"), anchor_inline, rem(20)),
+                    top = anchor(anchor_name("--card"), anchor_bottom, rem(1)),
+                    inset = inset_sides(anchor(anchor_top), anchor_size(anchor_name("--card"), anchor_block)),
+                    color = raw("oklch(from var(--brand) l c h)")
                 };
             }
             """;
@@ -312,8 +314,8 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    BoxShadow = shadows(new CssShadow(px(0), px(4), Blur: px(12), Color: var("--shadow-color"))),
-                    WebkitBoxShadow = var("--shadow"),
+                    box_shadow = shadows(new CssShadow(px(0), px(4), Blur: px(12), Color: var("--shadow-color"))),
+                    webkit_box_shadow = var("--shadow"),
                     ["--shadow"] = shadows(new CssShadow(px(0), px(2), Blur: px(8), Color: rgba(0, 0, 0, 0.2)))
                 };
             }
@@ -332,7 +334,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
 
             public static class InvalidStyles
             {
-                public static readonly CssRule Rule = new() { BoxShadow = px(4) };
+                public static readonly CssRule Rule = new() { box_shadow = px(4) };
             }
             """;
         var invalidErrors = CreateCompilation(invalidSource, "InvalidBoxShadowConsumer")
@@ -356,10 +358,10 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    Border = px(1) | solid | var("--border-color"),
-                    BorderTop = thin | dashed | currentColor,
-                    Display = important(flex),
-                    Padding = important(padding(px(8), px(12)))
+                    border = px(1) | solid | var("--border-color"),
+                    border_top = thin | dashed | current_color,
+                    display = important(flex),
+                    padding = important(px(8) | px(12))
                 };
             }
             """;
@@ -379,9 +381,9 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    Width = px(1) | solid,
-                    Height = important(hex("fff")),
-                    BoxShadow = shadows(new CssShadow(px(0), px(2), Blur: important(px(8))))
+                    width = px(1) | solid,
+                    height = important(hex("fff")),
+                    box_shadow = shadows(new CssShadow(px(0), px(2), Blur: important(px(8))))
                 };
             }
             """;

@@ -100,6 +100,16 @@ public sealed class CssLength : ICssBorderPart
     [ECMAScriptInline("`calc(-1 * ${__arg1})`")]
     public static extern CssLength operator -(CssLength value);
 
+    /// <summary>
+    /// Joins two lengths as a two-side CSS padding shorthand. This exact overload deliberately wins over the broader
+    /// border-part overload below, so <c>px(8) | px(12)</c> remains a padding value while <c>px(1) | solid</c>
+    /// remains a border value.
+    /// 将两个长度连接为双边 CSS padding 简写。该精确重载刻意优先于下面更宽泛的 border-part 重载，
+    /// 因而 <c>px(8) | px(12)</c> 保持为 padding 值，而 <c>px(1) | solid</c> 仍是 border 值。
+    /// </summary>
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssPadding operator |(CssLength left, CssLength right);
+
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssLength left, ICssBorderPart right);
 
@@ -218,8 +228,8 @@ public sealed class CssFitContent
 
 /// <summary>
 /// Represents a named anchor reference such as <c>--card</c>. Anchor names are authored through
-/// <c>anchorName(...)</c>, which enforces the CSS dashed-identifier shape.
-/// 表示如 <c>--card</c> 的命名锚点引用。应通过 <c>anchorName(...)</c> 创建，它会约束 CSS
+/// <c>anchor_name(...)</c>, which enforces the CSS dashed-identifier shape.
+/// 表示如 <c>--card</c> 的命名锚点引用。应通过 <c>anchor_name(...)</c> 创建，它会约束 CSS
 /// dashed-identifier 形式。
 /// </summary>
 [ECMAScript]
@@ -282,8 +292,8 @@ public sealed class CssAnchorSize
 
 /// <summary>
 /// Represents a <c>calc-size(...)</c> result. Its basis and calculation are assembled through
-/// <c>calcSize(...)</c>; this carrier cannot be mistaken for a normal <c>calc(...)</c> length.
-/// 表示 <c>calc-size(...)</c> 的结果。其基值和计算式通过 <c>calcSize(...)</c> 组合；该载体不能
+/// <c>calc_size(...)</c>; this carrier cannot be mistaken for a normal <c>calc(...)</c> length.
+/// 表示 <c>calc-size(...)</c> 的结果。其基值和计算式通过 <c>calc_size(...)</c> 组合；该载体不能
 /// 被误认为普通的 <c>calc(...)</c> 长度。
 /// </summary>
 [ECMAScript]

@@ -82,8 +82,8 @@ foreach (var file in root.GetProperty("files").EnumerateArray())
 
 var reservedMemberNames = new HashSet<string>(StringComparer.Ordinal)
 {
-    "Additional",
-    "Children"
+    "additional",
+    "children"
 };
 var duplicateMember = propertiesByCssName.Values
     .GroupBy(static property => property.MemberName, StringComparer.Ordinal)
@@ -137,7 +137,7 @@ static CssProperty CreateProperty(string idlName, IReadOnlyDictionary<string, st
         "cssFloat" or "_float" => "float",
         _ => idlName
     };
-    var memberName = char.ToUpperInvariant(normalizedName[0]) + normalizedName[1..];
+    var memberName = EscapeCSharpKeyword(ToSnakeCase(normalizedName));
     var cssName = ToKebabCase(normalizedName);
 
     if (HasVendorPrefix(normalizedName, "webkit") ||
@@ -357,6 +357,56 @@ static string ToKebabCase(string value)
     }
 
     return builder.ToString();
+}
+
+static string ToSnakeCase(string value)
+{
+    var builder = new StringBuilder(value.Length + 8);
+    for (var index = 0; index < value.Length; index++)
+    {
+        var character = value[index];
+        if (char.IsUpper(character))
+        {
+            if (index > 0 &&
+                (char.IsLower(value[index - 1]) || char.IsDigit(value[index - 1]) ||
+                 (index + 1 < value.Length && char.IsLower(value[index + 1]))))
+                builder.Append('_');
+
+            builder.Append(char.ToLowerInvariant(character));
+        }
+        else
+        {
+            builder.Append(character);
+        }
+    }
+
+    return builder.ToString();
+}
+
+static string EscapeCSharpKeyword(string value)
+{
+    // CSS keeps its native spelling in Description("@#..."); the suffix only makes a CSS token
+    // such as `float` legal and visually consistent in the C# authoring DSL.
+    // CSS 在 Description("@#...") 中保留原始拼写；后缀只负责让 `float` 一类 token 在 C# DSL 中
+    // 合法且保持一致的作者体验。
+    return value switch
+    {
+        "abstract" or "as" or "base" or "bool" or "break" or "byte" or "case" or "catch" or "char" or
+        "checked" or "class" or "const" or "continue" or "decimal" or "default" or "delegate" or "do" or
+        "double" or "else" or "enum" or "event" or "explicit" or "extern" or "false" or "finally" or "fixed" or
+        "float" or "for" or "foreach" or "goto" or "if" or "implicit" or "in" or "int" or "interface" or
+        "internal" or "is" or "lock" or "long" or "namespace" or "new" or "null" or "object" or "operator" or
+        "out" or "override" or "params" or "private" or "protected" or "public" or "readonly" or "ref" or
+        "return" or "sbyte" or "sealed" or "short" or "sizeof" or "stackalloc" or "static" or "string" or
+        "struct" or "switch" or "this" or "throw" or "true" or "try" or "typeof" or "uint" or "ulong" or
+        "unchecked" or "unsafe" or "ushort" or "using" or "virtual" or "void" or "volatile" or "while" or
+        "add" or "alias" or "and" or "ascending" or "async" or "await" or "by" or "descending" or "dynamic" or
+        "equals" or "file" or "from" or "get" or "global" or "group" or "init" or "into" or "join" or "let" or
+        "managed" or "nameof" or "nint" or "not" or "notnull" or "nuint" or "on" or "or" or "orderby" or
+        "partial" or "record" or "remove" or "required" or "scoped" or "select" or "set" or "unmanaged" or
+        "value" or "var" or "when" or "where" or "with" or "yield" => value + "_",
+        _ => value
+    };
 }
 
 static string BuildOutput(int schemaVersion, string webrefCssVersion, IEnumerable<CssProperty> properties)

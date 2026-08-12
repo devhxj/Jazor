@@ -91,9 +91,9 @@ public static partial class css
 
     /// <summary>
     /// Registers a global CSS rule in the default context.
-    /// The selector must be a selector list, not an at-rule; use <see cref="atRule(CssAtRule)"/> for top-level at-rules.
+    /// The selector must be a selector list, not an at-rule; use <see cref="at_rule(CssAtRule)"/> for top-level at-rules.
     /// 在默认 context 中注册全局 CSS 规则。selector 必须是选择器列表而非 at-rule；顶层 at-rule 请使用
-    /// <see cref="atRule(CssAtRule)"/>。
+    /// <see cref="at_rule(CssAtRule)"/>。
     /// </summary>
     public static void global(string selector, CssRule rule)
         => global(DefaultContext, selector, rule);
@@ -123,8 +123,9 @@ public static partial class css
     /// 在默认 context 中注册顶层 CSS at-rule。适用于不能自然表示为嵌套选择器子项的构造，
     /// 例如 <c>@font-face</c> 或 <c>@property</c>。
     /// </summary>
-    public static void atRule(CssAtRule rule)
-        => atRule(DefaultContext, rule);
+    [ECMAScriptName("atRule")]
+    public static void at_rule(CssAtRule rule)
+        => at_rule(DefaultContext, rule);
 
     /// <summary>
     /// Registers a top-level CSS at-rule in <paramref name="context"/>.
@@ -133,7 +134,7 @@ public static partial class css
     /// 嵌套 <see cref="CssAtRule.Children"/> 保留作者顺序。
     /// </summary>
     [ECMAScriptName("atRuleIn")]
-    public static void atRule(CssContext context, CssAtRule rule)
+    public static void at_rule(CssContext context, CssAtRule rule)
     {
         var body = SerializeAtRule(rule);
         var canonical = VersionPrefix + "at-rule\0" + body;
@@ -287,7 +288,7 @@ public static partial class css
         if (declarations.Length > 0)
             output.Push(selector + "{" + declarations + "}");
 
-        var children = rule.Children;
+        var children = rule.children;
         if (children is null)
             return output.Join("");
 
@@ -369,7 +370,7 @@ public static partial class css
             output.Push(key + ":" + StringFn(value) + ";");
         }
 
-        var additional = declarations.Additional;
+        var additional = declarations.additional;
         if (additional is null)
             return output.Join("");
 

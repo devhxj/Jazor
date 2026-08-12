@@ -4,10 +4,10 @@ namespace ECMAScript.Style;
 [Description("@#")]
 /// <summary>
 /// Represents the declaration block shared by class rules, global rules, keyframe frames, and at-rules.
-/// Generated properties provide the strongly typed CSS surface; <see cref="Additional"/> is reserved for
+/// Generated properties provide the strongly typed CSS surface; <see cref="additional"/> is reserved for
 /// intentional duplicate or currently unmodeled declarations.
 /// 表示 class 规则、全局规则、关键帧和 at-rule 共用的声明块。生成属性提供强类型 CSS 表面；
-/// <see cref="Additional"/> 仅用于有意重复或当前尚未建模的声明。
+/// <see cref="additional"/> 仅用于有意重复或当前尚未建模的声明。
 /// </summary>
 public partial record CssDeclarations
 {
@@ -17,7 +17,7 @@ public partial record CssDeclarations
     /// 获取在生成属性之后按给定顺序输出的声明，并允许重复。仅当强类型生成属性无法表达所需 CSS 声明时使用。
     /// </summary>
     [Description("@#$additional")]
-    public ICssDeclaration[]? Additional { get; init; }
+    public ICssDeclaration[]? additional { get; init; }
 
     /// <summary>
     /// Gets or sets a generated CSS property by its CSS property name.
@@ -32,9 +32,9 @@ public partial record CssDeclarations
 [Description("@#")]
 /// <summary>
 /// Represents a CSS declaration block that may contain nested selectors and supported grouping at-rules.
-/// The runtime emits the rule's own declarations first, then serializes <see cref="Children"/> in authored order.
+/// The runtime emits the rule's own declarations first, then serializes <see cref="children"/> in authored order.
 /// 表示可包含嵌套选择器和受支持分组 at-rule 的 CSS 声明块。运行时先输出规则自身声明，
-/// 再按作者提供的顺序序列化 <see cref="Children"/>。
+/// 再按作者提供的顺序序列化 <see cref="children"/>。
 /// </summary>
 public sealed record CssRule : CssDeclarations
 {
@@ -45,7 +45,7 @@ public sealed record CssRule : CssDeclarations
     /// 其他子项类型会使用 at-rule 包裹父规则。
     /// </summary>
     [Description("@#$children")]
-    public CssChild[]? Children { get; init; }
+    public CssChild[]? children { get; init; }
 }
 
 [ECMAScript]
@@ -99,8 +99,8 @@ public enum CssDeclarationPriority
 
 /// <summary>
 /// Represents one explicitly ordered CSS declaration.
-/// It is primarily intended for <see cref="CssDeclarations.Additional"/> when duplicate declarations or an unmodeled property are required.
-/// 表示一条显式排序的 CSS 声明。它主要用于 <see cref="CssDeclarations.Additional"/>，
+/// It is primarily intended for <see cref="CssDeclarations.additional"/> when duplicate declarations or an unmodeled property are required.
+/// 表示一条显式排序的 CSS 声明。它主要用于 <see cref="CssDeclarations.additional"/>，
 /// 以表达重复声明或尚未建模的属性。
 /// </summary>
 public sealed record CssDeclaration(
@@ -172,9 +172,9 @@ public enum ChildKind
 [ECMAScript]
 [Description("@#")]
 /// <summary>
-/// Represents one nested rule entry within <see cref="CssRule.Children"/>.
+/// Represents one nested rule entry within <see cref="CssRule.children"/>.
 /// For <see cref="ChildKind.Selector"/>, <see cref="Prelude"/> is a non-empty nested selector; for grouping kinds it is the at-rule prelude.
-/// 表示 <see cref="CssRule.Children"/> 中的一条嵌套规则。对于 <see cref="ChildKind.Selector"/>，
+/// 表示 <see cref="CssRule.children"/> 中的一条嵌套规则。对于 <see cref="ChildKind.Selector"/>，
 /// <see cref="Prelude"/> 是非空嵌套选择器；对于分组类型，它是 at-rule 的 prelude。
 /// </summary>
 public sealed record CssChild(
@@ -198,9 +198,9 @@ public sealed record CssFrame(
 [Description("@#")]
 /// <summary>
 /// Represents a free-form CSS at-rule with declarations and recursively nested at-rules.
-/// Unlike <see cref="CssChild"/>, this model is intended for top-level registration through <c>atRule(...)</c>.
+/// Unlike <see cref="CssChild"/>, this model is intended for top-level registration through <c>at_rule(...)</c>.
 /// 表示带声明和递归嵌套 at-rule 的自由形式 CSS at-rule。与 <see cref="CssChild"/> 不同，
-/// 该模型用于通过 <c>atRule(...)</c> 注册顶层规则。
+/// 该模型用于通过 <c>at_rule(...)</c> 注册顶层规则。
 /// </summary>
 public sealed record CssAtRule(
     [property: Description("@#name")] string Name,

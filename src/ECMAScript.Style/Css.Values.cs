@@ -6,77 +6,111 @@ public static partial class css
     public static readonly CssWideKeyword initial = CssWideKeyword.Initial;
     public static readonly CssWideKeyword unset = CssWideKeyword.Unset;
     public static readonly CssWideKeyword revert = CssWideKeyword.Revert;
-    public static readonly CssWideKeyword revertLayer = CssWideKeyword.RevertLayer;
+    [ECMAScriptName("revertLayer")]
+    public static readonly CssWideKeyword revert_layer = CssWideKeyword.RevertLayer;
     public static readonly CssAutoKeyword auto = CssAutoKeyword.Auto;
     public static readonly CssNoneKeyword none = CssNoneKeyword.None;
     public static readonly CssNormalKeyword normal = CssNormalKeyword.Normal;
-    public static readonly CssSizingKeyword minContent = CssSizingKeyword.MinContent;
-    public static readonly CssSizingKeyword maxContent = CssSizingKeyword.MaxContent;
+    [ECMAScriptName("minContent")]
+    public static readonly CssSizingKeyword min_content = CssSizingKeyword.MinContent;
+    [ECMAScriptName("maxContent")]
+    public static readonly CssSizingKeyword max_content = CssSizingKeyword.MaxContent;
     /// <summary>Intrinsic sizing keyword <c>fit-content</c> without parentheses。内在尺寸关键字 <c>fit-content</c>（无括号形式）。</summary>
-    public static readonly CssSizingFunctionKeyword fitContentKeyword = CssSizingFunctionKeyword.FitContent;
+    [ECMAScriptName("fitContentKeyword")]
+    public static readonly CssSizingFunctionKeyword fit_content_keyword = CssSizingFunctionKeyword.FitContent;
     /// <summary>Intrinsic sizing keyword <c>stretch</c>, distinct from alignment <c>stretch</c>。内在尺寸关键字 <c>stretch</c>，与 alignment 的同名值分离。</summary>
-    public static readonly CssSizingFunctionKeyword sizingStretch = CssSizingFunctionKeyword.Stretch;
+    [ECMAScriptName("sizingStretch")]
+    public static readonly CssSizingFunctionKeyword sizing_stretch = CssSizingFunctionKeyword.Stretch;
     /// <summary>Intrinsic sizing keyword <c>contain</c>, distinct from object-fit <c>contain</c>。内在尺寸关键字 <c>contain</c>，与 object-fit 的同名值分离。</summary>
-    public static readonly CssSizingFunctionKeyword sizingContain = CssSizingFunctionKeyword.Contain;
+    [ECMAScriptName("sizingContain")]
+    public static readonly CssSizingFunctionKeyword sizing_contain = CssSizingFunctionKeyword.Contain;
     /// <summary>Special <c>any</c> basis for <c>calc-size(...)</c>。<c>calc-size(...)</c> 的特殊 <c>any</c> 基值。</summary>
-    public static readonly CssCalcSizeBasisKeyword anySize = CssCalcSizeBasisKeyword.Any;
+    [ECMAScriptName("anySize")]
+    public static readonly CssCalcSizeBasisKeyword any_size = CssCalcSizeBasisKeyword.Any;
     /// <summary>Result-side <c>size</c> token for <c>calc-size(...)</c> arithmetic。用于 <c>calc-size(...)</c> 算术的结果侧 <c>size</c> token。</summary>
     public static readonly CssCalcSizeExpression size = CssCalcSizeExpression.create("size");
     /// <summary>Named-anchor side <c>inside</c>。命名锚点边 <c>inside</c>。</summary>
-    public static readonly CssAnchorSide anchorInside = CssAnchorSide.Inside;
+    [ECMAScriptName("anchorInside")]
+    public static readonly CssAnchorSide anchor_inside = CssAnchorSide.Inside;
     /// <summary>Named-anchor side <c>outside</c>。命名锚点边 <c>outside</c>。</summary>
-    public static readonly CssAnchorSide anchorOutside = CssAnchorSide.Outside;
+    [ECMAScriptName("anchorOutside")]
+    public static readonly CssAnchorSide anchor_outside = CssAnchorSide.Outside;
     /// <summary>Named-anchor side <c>top</c>。命名锚点边 <c>top</c>。</summary>
-    public static readonly CssAnchorSide anchorTop = CssAnchorSide.Top;
+    [ECMAScriptName("anchorTop")]
+    public static readonly CssAnchorSide anchor_top = CssAnchorSide.Top;
     /// <summary>Named-anchor side <c>right</c>。命名锚点边 <c>right</c>。</summary>
-    public static readonly CssAnchorSide anchorRight = CssAnchorSide.Right;
+    [ECMAScriptName("anchorRight")]
+    public static readonly CssAnchorSide anchor_right = CssAnchorSide.Right;
     /// <summary>Named-anchor side <c>bottom</c>。命名锚点边 <c>bottom</c>。</summary>
-    public static readonly CssAnchorSide anchorBottom = CssAnchorSide.Bottom;
+    [ECMAScriptName("anchorBottom")]
+    public static readonly CssAnchorSide anchor_bottom = CssAnchorSide.Bottom;
     /// <summary>Named-anchor side <c>left</c>。命名锚点边 <c>left</c>。</summary>
-    public static readonly CssAnchorSide anchorLeft = CssAnchorSide.Left;
+    [ECMAScriptName("anchorLeft")]
+    public static readonly CssAnchorSide anchor_left = CssAnchorSide.Left;
     /// <summary>Named-anchor side <c>start</c>。命名锚点边 <c>start</c>。</summary>
-    public static readonly CssAnchorSide anchorStart = CssAnchorSide.Start;
+    [ECMAScriptName("anchorStart")]
+    public static readonly CssAnchorSide anchor_start = CssAnchorSide.Start;
     /// <summary>Named-anchor side <c>end</c>。命名锚点边 <c>end</c>。</summary>
-    public static readonly CssAnchorSide anchorEnd = CssAnchorSide.End;
+    [ECMAScriptName("anchorEnd")]
+    public static readonly CssAnchorSide anchor_end = CssAnchorSide.End;
     /// <summary>Named-anchor side <c>self-start</c>。命名锚点边 <c>self-start</c>。</summary>
-    public static readonly CssAnchorSide anchorSelfStart = CssAnchorSide.SelfStart;
+    [ECMAScriptName("anchorSelfStart")]
+    public static readonly CssAnchorSide anchor_self_start = CssAnchorSide.SelfStart;
     /// <summary>Named-anchor side <c>self-end</c>。命名锚点边 <c>self-end</c>。</summary>
-    public static readonly CssAnchorSide anchorSelfEnd = CssAnchorSide.SelfEnd;
+    [ECMAScriptName("anchorSelfEnd")]
+    public static readonly CssAnchorSide anchor_self_end = CssAnchorSide.SelfEnd;
     /// <summary>Named-anchor side <c>center</c>。命名锚点边 <c>center</c>。</summary>
-    public static readonly CssAnchorSide anchorCenter = CssAnchorSide.Center;
+    [ECMAScriptName("anchorCenter")]
+    public static readonly CssAnchorSide anchor_center = CssAnchorSide.Center;
     /// <summary>Anchor-size axis <c>width</c>。anchor-size 维度 <c>width</c>。</summary>
-    public static readonly CssAnchorSizeAxis anchorWidth = CssAnchorSizeAxis.Width;
+    [ECMAScriptName("anchorWidth")]
+    public static readonly CssAnchorSizeAxis anchor_width = CssAnchorSizeAxis.Width;
     /// <summary>Anchor-size axis <c>height</c>。anchor-size 维度 <c>height</c>。</summary>
-    public static readonly CssAnchorSizeAxis anchorHeight = CssAnchorSizeAxis.Height;
+    [ECMAScriptName("anchorHeight")]
+    public static readonly CssAnchorSizeAxis anchor_height = CssAnchorSizeAxis.Height;
     /// <summary>Anchor-size axis <c>block</c>。anchor-size 维度 <c>block</c>。</summary>
-    public static readonly CssAnchorSizeAxis anchorBlock = CssAnchorSizeAxis.Block;
+    [ECMAScriptName("anchorBlock")]
+    public static readonly CssAnchorSizeAxis anchor_block = CssAnchorSizeAxis.Block;
     /// <summary>Anchor-size axis <c>inline</c>。anchor-size 维度 <c>inline</c>。</summary>
-    public static readonly CssAnchorSizeAxis anchorInline = CssAnchorSizeAxis.Inline;
+    [ECMAScriptName("anchorInline")]
+    public static readonly CssAnchorSizeAxis anchor_inline = CssAnchorSizeAxis.Inline;
     /// <summary>Anchor-size axis <c>self-block</c>。anchor-size 维度 <c>self-block</c>。</summary>
-    public static readonly CssAnchorSizeAxis anchorSelfBlock = CssAnchorSizeAxis.SelfBlock;
+    [ECMAScriptName("anchorSelfBlock")]
+    public static readonly CssAnchorSizeAxis anchor_self_block = CssAnchorSizeAxis.SelfBlock;
     /// <summary>Anchor-size axis <c>self-inline</c>。anchor-size 维度 <c>self-inline</c>。</summary>
-    public static readonly CssAnchorSizeAxis anchorSelfInline = CssAnchorSizeAxis.SelfInline;
+    [ECMAScriptName("anchorSelfInline")]
+    public static readonly CssAnchorSizeAxis anchor_self_inline = CssAnchorSizeAxis.SelfInline;
     /// <summary>Keyword <c>all</c> for <c>anchor-scope</c>。<c>anchor-scope</c> 的 <c>all</c> 关键字。</summary>
-    public static readonly CssAnchorScopeKeyword anchorScopeAll = CssAnchorScopeKeyword.All;
+    [ECMAScriptName("anchorScopeAll")]
+    public static readonly CssAnchorScopeKeyword anchor_scope_all = CssAnchorScopeKeyword.All;
     /// <summary>Keyword <c>match-parent</c> for <c>position-anchor</c>。<c>position-anchor</c> 的 <c>match-parent</c> 关键字。</summary>
-    public static readonly CssPositionAnchorKeyword anchorMatchParent = CssPositionAnchorKeyword.MatchParent;
+    [ECMAScriptName("anchorMatchParent")]
+    public static readonly CssPositionAnchorKeyword anchor_match_parent = CssPositionAnchorKeyword.MatchParent;
     /// <summary>Keyword <c>content</c> for <c>flex-basis</c>。<c>flex-basis</c> 的 <c>content</c> 关键字。</summary>
-    public static readonly CssFlexBasisKeyword flexContent = CssFlexBasisKeyword.Content;
+    [ECMAScriptName("flexContent")]
+    public static readonly CssFlexBasisKeyword flex_content = CssFlexBasisKeyword.Content;
     public static readonly CssDisplayKeyword block = CssDisplayKeyword.Block;
     public static readonly CssDisplayKeyword inline = CssDisplayKeyword.Inline;
-    public static readonly CssDisplayKeyword inlineBlock = CssDisplayKeyword.InlineBlock;
+    [ECMAScriptName("inlineBlock")]
+    public static readonly CssDisplayKeyword inline_block = CssDisplayKeyword.InlineBlock;
     public static readonly CssDisplayKeyword flex = CssDisplayKeyword.Flex;
-    public static readonly CssDisplayKeyword inlineFlex = CssDisplayKeyword.InlineFlex;
+    [ECMAScriptName("inlineFlex")]
+    public static readonly CssDisplayKeyword inline_flex = CssDisplayKeyword.InlineFlex;
     public static readonly CssDisplayKeyword grid = CssDisplayKeyword.Grid;
-    public static readonly CssDisplayKeyword inlineGrid = CssDisplayKeyword.InlineGrid;
-    public static readonly CssDisplayKeyword flowRoot = CssDisplayKeyword.FlowRoot;
+    [ECMAScriptName("inlineGrid")]
+    public static readonly CssDisplayKeyword inline_grid = CssDisplayKeyword.InlineGrid;
+    [ECMAScriptName("flowRoot")]
+    public static readonly CssDisplayKeyword flow_root = CssDisplayKeyword.FlowRoot;
     public static readonly CssDisplayKeyword contents = CssDisplayKeyword.Contents;
     public static readonly CssDisplayKeyword table = CssDisplayKeyword.Table;
-    public static readonly CssDisplayKeyword listItem = CssDisplayKeyword.ListItem;
-    public static readonly CssPositionKeyword staticPosition = CssPositionKeyword.Static;
+    [ECMAScriptName("listItem")]
+    public static readonly CssDisplayKeyword list_item = CssDisplayKeyword.ListItem;
+    [ECMAScriptName("staticPosition")]
+    public static readonly CssPositionKeyword static_position = CssPositionKeyword.Static;
     public static readonly CssPositionKeyword relative = CssPositionKeyword.Relative;
     public static readonly CssPositionKeyword absolute = CssPositionKeyword.Absolute;
-    public static readonly CssPositionKeyword fixedPosition = CssPositionKeyword.Fixed;
+    [ECMAScriptName("fixedPosition")]
+    public static readonly CssPositionKeyword fixed_position = CssPositionKeyword.Fixed;
     public static readonly CssPositionKeyword sticky = CssPositionKeyword.Sticky;
     public static readonly CssOverflowKeyword visible = CssOverflowKeyword.Visible;
     public static readonly CssOverflowKeyword hidden = CssOverflowKeyword.Hidden;
@@ -88,58 +122,81 @@ public static partial class css
     public static readonly CssBorderStyle dotted = CssBorderStyle.create("dotted");
     public static readonly CssBorderStyle dashed = CssBorderStyle.create("dashed");
     public static readonly CssBorderStyle solid = CssBorderStyle.create("solid");
-    public static readonly CssBorderStyle doubleLine = CssBorderStyle.create("double");
+    [ECMAScriptName("doubleLine")]
+    public static readonly CssBorderStyle double_line = CssBorderStyle.create("double");
     public static readonly CssBorderStyle groove = CssBorderStyle.create("groove");
     public static readonly CssBorderStyle ridge = CssBorderStyle.create("ridge");
     public static readonly CssBorderStyle inset = CssBorderStyle.create("inset");
     public static readonly CssBorderStyle outset = CssBorderStyle.create("outset");
     public static readonly CssColorKeyword transparent = CssColorKeyword.Transparent;
-    public static readonly CssColorKeyword currentColor = CssColorKeyword.CurrentColor;
+    [ECMAScriptName("currentColor")]
+    public static readonly CssColorKeyword current_color = CssColorKeyword.CurrentColor;
     public static readonly CssAlignmentKeyword start = CssAlignmentKeyword.Start;
     public static readonly CssAlignmentKeyword end = CssAlignmentKeyword.End;
     public static readonly CssAlignmentKeyword center = CssAlignmentKeyword.Center;
-    public static readonly CssAlignmentKeyword flexStart = CssAlignmentKeyword.FlexStart;
-    public static readonly CssAlignmentKeyword flexEnd = CssAlignmentKeyword.FlexEnd;
-    public static readonly CssAlignmentKeyword selfStart = CssAlignmentKeyword.SelfStart;
-    public static readonly CssAlignmentKeyword selfEnd = CssAlignmentKeyword.SelfEnd;
+    [ECMAScriptName("flexStart")]
+    public static readonly CssAlignmentKeyword flex_start = CssAlignmentKeyword.FlexStart;
+    [ECMAScriptName("flexEnd")]
+    public static readonly CssAlignmentKeyword flex_end = CssAlignmentKeyword.FlexEnd;
+    [ECMAScriptName("selfStart")]
+    public static readonly CssAlignmentKeyword self_start = CssAlignmentKeyword.SelfStart;
+    [ECMAScriptName("selfEnd")]
+    public static readonly CssAlignmentKeyword self_end = CssAlignmentKeyword.SelfEnd;
     public static readonly CssAlignmentKeyword left = CssAlignmentKeyword.Left;
     public static readonly CssAlignmentKeyword right = CssAlignmentKeyword.Right;
     public static readonly CssAlignmentKeyword stretch = CssAlignmentKeyword.Stretch;
     public static readonly CssAlignmentKeyword baseline = CssAlignmentKeyword.Baseline;
-    public static readonly CssAlignmentKeyword spaceBetween = CssAlignmentKeyword.SpaceBetween;
-    public static readonly CssAlignmentKeyword spaceAround = CssAlignmentKeyword.SpaceAround;
-    public static readonly CssAlignmentKeyword spaceEvenly = CssAlignmentKeyword.SpaceEvenly;
+    [ECMAScriptName("spaceBetween")]
+    public static readonly CssAlignmentKeyword space_between = CssAlignmentKeyword.SpaceBetween;
+    [ECMAScriptName("spaceAround")]
+    public static readonly CssAlignmentKeyword space_around = CssAlignmentKeyword.SpaceAround;
+    [ECMAScriptName("spaceEvenly")]
+    public static readonly CssAlignmentKeyword space_evenly = CssAlignmentKeyword.SpaceEvenly;
     public static readonly CssFlexDirectionKeyword row = CssFlexDirectionKeyword.Row;
-    public static readonly CssFlexDirectionKeyword rowReverse = CssFlexDirectionKeyword.RowReverse;
+    [ECMAScriptName("rowReverse")]
+    public static readonly CssFlexDirectionKeyword row_reverse = CssFlexDirectionKeyword.RowReverse;
     public static readonly CssFlexDirectionKeyword column = CssFlexDirectionKeyword.Column;
-    public static readonly CssFlexDirectionKeyword columnReverse = CssFlexDirectionKeyword.ColumnReverse;
-    public static readonly CssFlexWrapKeyword noWrap = CssFlexWrapKeyword.NoWrap;
+    [ECMAScriptName("columnReverse")]
+    public static readonly CssFlexDirectionKeyword column_reverse = CssFlexDirectionKeyword.ColumnReverse;
+    [ECMAScriptName("noWrap")]
+    public static readonly CssFlexWrapKeyword no_wrap = CssFlexWrapKeyword.NoWrap;
     public static readonly CssFlexWrapKeyword wrap = CssFlexWrapKeyword.Wrap;
-    public static readonly CssFlexWrapKeyword wrapReverse = CssFlexWrapKeyword.WrapReverse;
+    [ECMAScriptName("wrapReverse")]
+    public static readonly CssFlexWrapKeyword wrap_reverse = CssFlexWrapKeyword.WrapReverse;
     public static readonly CssBackgroundSizeKeyword cover = CssBackgroundSizeKeyword.Cover;
     public static readonly CssBackgroundSizeKeyword contain = CssBackgroundSizeKeyword.Contain;
-    public static readonly CssBoxSizingKeyword borderBox = CssBoxSizingKeyword.BorderBox;
-    public static readonly CssBoxSizingKeyword contentBox = CssBoxSizingKeyword.ContentBox;
-    public static readonly CssCursorKeyword defaultCursor = CssCursorKeyword.Default;
+    [ECMAScriptName("borderBox")]
+    public static readonly CssBoxSizingKeyword border_box = CssBoxSizingKeyword.BorderBox;
+    [ECMAScriptName("contentBox")]
+    public static readonly CssBoxSizingKeyword content_box = CssBoxSizingKeyword.ContentBox;
+    [ECMAScriptName("defaultCursor")]
+    public static readonly CssCursorKeyword default_cursor = CssCursorKeyword.Default;
     public static readonly CssCursorKeyword pointer = CssCursorKeyword.Pointer;
-    public static readonly CssCursorKeyword notAllowed = CssCursorKeyword.NotAllowed;
-    public static readonly CssCursorKeyword textCursor = CssCursorKeyword.Text;
+    [ECMAScriptName("notAllowed")]
+    public static readonly CssCursorKeyword not_allowed = CssCursorKeyword.NotAllowed;
+    [ECMAScriptName("textCursor")]
+    public static readonly CssCursorKeyword text_cursor = CssCursorKeyword.Text;
     public static readonly CssTextTransformKeyword capitalize = CssTextTransformKeyword.Capitalize;
     public static readonly CssTextTransformKeyword uppercase = CssTextTransformKeyword.Uppercase;
     public static readonly CssTextTransformKeyword lowercase = CssTextTransformKeyword.Lowercase;
     public static readonly CssWhiteSpaceKeyword nowrap = CssWhiteSpaceKeyword.NoWrap;
     public static readonly CssWhiteSpaceKeyword pre = CssWhiteSpaceKeyword.Pre;
-    public static readonly CssWhiteSpaceKeyword preWrap = CssWhiteSpaceKeyword.PreWrap;
-    public static readonly CssWhiteSpaceKeyword preLine = CssWhiteSpaceKeyword.PreLine;
+    [ECMAScriptName("preWrap")]
+    public static readonly CssWhiteSpaceKeyword pre_wrap = CssWhiteSpaceKeyword.PreWrap;
+    [ECMAScriptName("preLine")]
+    public static readonly CssWhiteSpaceKeyword pre_line = CssWhiteSpaceKeyword.PreLine;
     public static readonly CssTextOverflowKeyword ellipsis = CssTextOverflowKeyword.Ellipsis;
     public static readonly CssIsolationKeyword isolate = CssIsolationKeyword.Isolate;
     public static readonly CssColorSchemeKeyword light = CssColorSchemeKeyword.Light;
     public static readonly CssColorSchemeKeyword dark = CssColorSchemeKeyword.Dark;
     public static readonly CssTimingFunctionKeyword linear = CssTimingFunctionKeyword.Linear;
     public static readonly CssTimingFunctionKeyword ease = CssTimingFunctionKeyword.Ease;
-    public static readonly CssTimingFunctionKeyword easeIn = CssTimingFunctionKeyword.EaseIn;
-    public static readonly CssTimingFunctionKeyword easeOut = CssTimingFunctionKeyword.EaseOut;
-    public static readonly CssTimingFunctionKeyword easeInOut = CssTimingFunctionKeyword.EaseInOut;
+    [ECMAScriptName("easeIn")]
+    public static readonly CssTimingFunctionKeyword ease_in = CssTimingFunctionKeyword.EaseIn;
+    [ECMAScriptName("easeOut")]
+    public static readonly CssTimingFunctionKeyword ease_out = CssTimingFunctionKeyword.EaseOut;
+    [ECMAScriptName("easeInOut")]
+    public static readonly CssTimingFunctionKeyword ease_in_out = CssTimingFunctionKeyword.EaseInOut;
 
     /// <summary>
     /// Preserves an explicitly supplied CSS fragment as a <see cref="CssRaw"/> value.
@@ -152,9 +209,9 @@ public static partial class css
         => CssRaw.create(value);
 
     /// <summary>
-    /// Creates one explicitly ordered declaration for <see cref="CssDeclarations.Additional"/>.
+    /// Creates one explicitly ordered declaration for <see cref="CssDeclarations.additional"/>.
     /// The value must still be a closed <see cref="CssValue"/> branch; this API does not accept raw strings.
-    /// 为 <see cref="CssDeclarations.Additional"/> 创建一条显式排序的声明。值仍必须是封闭的
+    /// 为 <see cref="CssDeclarations.additional"/> 创建一条显式排序的声明。值仍必须是封闭的
     /// <see cref="CssValue"/> 分支；该 API 不接受原始字符串。
     /// </summary>
     public static CssDeclaration declaration(string name, CssValue value)
@@ -224,7 +281,8 @@ public static partial class css
     /// Fallback serialization keeps its original union branch rather than accepting an arbitrary string.
     /// 创建带类型化 CSS 后备值的自定义属性引用。后备值序列化会保持原始 union 分支，而非接受任意字符串。
     /// </summary>
-    public static CssVariable varOr(string name, CssValue fallback)
+    [ECMAScriptName("varOr")]
+    public static CssVariable var_or(string name, CssValue fallback)
     {
         var normalized = normalizeVariableName(name);
         return CssVariable.create("var(" + normalized + "," + StringFn(fallback.Value) + ")");
@@ -236,7 +294,8 @@ public static partial class css
     /// 创建一个 CSS 命名锚点标识符。名称必须符合锚点定位语法要求的 <c>--name</c> 形式；它与任意
     /// <see cref="CssIdent"/> 分离。
     /// </summary>
-    public static CssAnchorName anchorName(string value)
+    [ECMAScriptName("anchorName")]
+    public static CssAnchorName anchor_name(string value)
         => CssAnchorName.create(normalizeAnchorName(value));
 
     /// <summary>
@@ -245,7 +304,8 @@ public static partial class css
     /// 创建用于 <c>anchor-name</c> 或 <c>anchor-scope</c> 的空格分隔列表。至少需要一个已验证的
     /// <see cref="CssAnchorName"/>。
     /// </summary>
-    public static CssAnchorNameList anchorNames([PreserveParamsArray] params CssAnchorName[] values)
+    [ECMAScriptName("anchorNames")]
+    public static CssAnchorNameList anchor_names([PreserveParamsArray] params CssAnchorName[] values)
     {
         if (values.Length == 0)
             Fail("CSS anchor-name requires at least one anchor name.");
@@ -291,7 +351,8 @@ public static partial class css
     /// Creates an <c>anchor-size()</c> expression using the implicit anchor and its default axis.
     /// 使用隐式锚点及默认轴创建 <c>anchor-size()</c> 表达式。
     /// </summary>
-    public static CssAnchorSize anchorSize()
+    [ECMAScriptName("anchorSize")]
+    public static CssAnchorSize anchor_size()
         => CssAnchorSize.create("anchor-size()");
 
     /// <summary>
@@ -299,7 +360,7 @@ public static partial class css
     /// 为一个命名锚点创建 <c>anchor-size()</c> 表达式。
     /// </summary>
     [ECMAScriptName("anchorSizeNamed")]
-    public static CssAnchorSize anchorSize(CssAnchorName name)
+    public static CssAnchorSize anchor_size(CssAnchorName name)
         => CssAnchorSize.create("anchor-size(" + StringFn(name) + ")");
 
     /// <summary>
@@ -307,7 +368,7 @@ public static partial class css
     /// 为隐式锚点的一个轴创建 <c>anchor-size()</c> 表达式。
     /// </summary>
     [ECMAScriptName("anchorSizeAxis")]
-    public static CssAnchorSize anchorSize(CssAnchorSizeAxis axis)
+    public static CssAnchorSize anchor_size(CssAnchorSizeAxis axis)
         => CssAnchorSize.create("anchor-size(" + StringFn(axis) + ")");
 
     /// <summary>
@@ -315,7 +376,7 @@ public static partial class css
     /// 为命名锚点的一个轴创建 <c>anchor-size()</c> 表达式。
     /// </summary>
     [ECMAScriptName("anchorSizeNamedAxis")]
-    public static CssAnchorSize anchorSize(CssAnchorName name, CssAnchorSizeAxis axis)
+    public static CssAnchorSize anchor_size(CssAnchorName name, CssAnchorSizeAxis axis)
         => CssAnchorSize.create("anchor-size(" + StringFn(name) + " " + StringFn(axis) + ")");
 
     /// <summary>
@@ -323,7 +384,7 @@ public static partial class css
     /// 在隐式锚点尺寸无法解析时创建 <c>anchor-size(, fallback)</c>。
     /// </summary>
     [ECMAScriptName("anchorSizeFallback")]
-    public static CssAnchorSize anchorSize(CssLengthPercentageValue fallback)
+    public static CssAnchorSize anchor_size(CssLengthPercentageValue fallback)
         => CssAnchorSize.create("anchor-size(," + StringFn(fallback.Value) + ")");
 
     /// <summary>
@@ -331,7 +392,7 @@ public static partial class css
     /// 为命名锚点创建带后备值的 <c>anchor-size()</c> 表达式。
     /// </summary>
     [ECMAScriptName("anchorSizeNamedFallback")]
-    public static CssAnchorSize anchorSize(CssAnchorName name, CssLengthPercentageValue fallback)
+    public static CssAnchorSize anchor_size(CssAnchorName name, CssLengthPercentageValue fallback)
         => CssAnchorSize.create("anchor-size(" + StringFn(name) + "," + StringFn(fallback.Value) + ")");
 
     /// <summary>
@@ -339,7 +400,7 @@ public static partial class css
     /// 为隐式锚点轴创建带后备值的 <c>anchor-size()</c> 表达式。
     /// </summary>
     [ECMAScriptName("anchorSizeAxisFallback")]
-    public static CssAnchorSize anchorSize(CssAnchorSizeAxis axis, CssLengthPercentageValue fallback)
+    public static CssAnchorSize anchor_size(CssAnchorSizeAxis axis, CssLengthPercentageValue fallback)
         => CssAnchorSize.create("anchor-size(" + StringFn(axis) + "," + StringFn(fallback.Value) + ")");
 
     /// <summary>
@@ -347,7 +408,7 @@ public static partial class css
     /// 为命名锚点轴创建带后备值的 <c>anchor-size()</c> 表达式。
     /// </summary>
     [ECMAScriptName("anchorSizeNamedAxisFallback")]
-    public static CssAnchorSize anchorSize(CssAnchorName name, CssAnchorSizeAxis axis, CssLengthPercentageValue fallback)
+    public static CssAnchorSize anchor_size(CssAnchorName name, CssAnchorSizeAxis axis, CssLengthPercentageValue fallback)
         => CssAnchorSize.create("anchor-size(" + StringFn(name) + " " + StringFn(axis) + "," + StringFn(fallback.Value) + ")");
 
     /// <summary>
@@ -355,7 +416,8 @@ public static partial class css
     /// at <c>size</c>.
     /// 使用以 <c>size</c> 为根的类型化结果表达式创建 <c>calc-size(basis, calculation)</c>。
     /// </summary>
-    public static CssCalcSize calcSize(CssCalcSizeBasis basis, CssCalcSizeExpression calculation)
+    [ECMAScriptName("calcSize")]
+    public static CssCalcSize calc_size(CssCalcSizeBasis basis, CssCalcSizeExpression calculation)
         => CssCalcSize.create("calc-size(" + StringFn(basis.Value) + "," + StringFn(calculation) + ")");
 
     /// <summary>
@@ -364,7 +426,7 @@ public static partial class css
     /// 当计算式已经是类型化 length-percentage 表达式时，创建 <c>calc-size(basis, calculation)</c>。
     /// </summary>
     [ECMAScriptName("calcSizeValue")]
-    public static CssCalcSize calcSize(CssCalcSizeBasis basis, CssLengthPercentageValue calculation)
+    public static CssCalcSize calc_size(CssCalcSizeBasis basis, CssLengthPercentageValue calculation)
         => CssCalcSize.create("calc-size(" + StringFn(basis.Value) + "," + StringFn(calculation.Value) + ")");
 
     /// <summary>
@@ -522,7 +584,8 @@ public static partial class css
         => CssTrack.create(number(value) + "fr");
 
     /// <summary>Creates a typed grid <c>minmax(...)</c> track function。创建类型化 grid <c>minmax(...)</c> 轨道函数。</summary>
-    public static CssTrack minMax(CssTrackValue minimum, CssTrackValue maximum)
+    [ECMAScriptName("minMax")]
+    public static CssTrack min_max(CssTrackValue minimum, CssTrackValue maximum)
         => CssTrack.create("minmax(" + StringFn(minimum.Value) + "," + StringFn(maximum.Value) + ")");
 
     /// <summary>
@@ -531,7 +594,8 @@ public static partial class css
     /// 创建函数形式的 <c>fit-content(...)</c> 尺寸。返回的载体可用于 grid track、盒尺寸和
     /// column-width，同时不会退化为通用轨道值。
     /// </summary>
-    public static CssFitContent fitContent(CssLengthPercentageValue limit)
+    [ECMAScriptName("fitContent")]
+    public static CssFitContent fit_content(CssLengthPercentageValue limit)
         => CssFitContent.create("fit-content(" + StringFn(limit.Value) + ")");
 
     /// <summary>
@@ -606,22 +670,23 @@ public static partial class css
     /// 创建单边 <c>inset</c> 简写。赋给 <c>inset</c>、<c>inset-block</c> 或 <c>inset-inline</c>
     /// 时，可使用二至四边重载。
     /// </summary>
-    public static CssInset insetSides(CssInsetPart value)
+    [ECMAScriptName("insetSides")]
+    public static CssInset inset_sides(CssInsetPart value)
         => CssInset.create(StringFn(value.Value));
 
     /// <summary>Creates a two-side <c>inset</c> shorthand。创建双边 <c>inset</c> 简写。</summary>
     [ECMAScriptName("insetSides2")]
-    public static CssInset insetSides(CssInsetPart vertical, CssInsetPart horizontal)
+    public static CssInset inset_sides(CssInsetPart vertical, CssInsetPart horizontal)
         => CssInset.create(join(StringFn(vertical.Value), StringFn(horizontal.Value)));
 
     /// <summary>Creates a three-side <c>inset</c> shorthand。创建三值 <c>inset</c> 简写。</summary>
     [ECMAScriptName("insetSides3")]
-    public static CssInset insetSides(CssInsetPart top, CssInsetPart horizontal, CssInsetPart bottom)
+    public static CssInset inset_sides(CssInsetPart top, CssInsetPart horizontal, CssInsetPart bottom)
         => CssInset.create(join(StringFn(top.Value), StringFn(horizontal.Value), StringFn(bottom.Value)));
 
     /// <summary>Creates a four-side <c>inset</c> shorthand。创建四边 <c>inset</c> 简写。</summary>
     [ECMAScriptName("insetSides4")]
-    public static CssInset insetSides(CssInsetPart top, CssInsetPart right, CssInsetPart bottom, CssInsetPart left)
+    public static CssInset inset_sides(CssInsetPart top, CssInsetPart right, CssInsetPart bottom, CssInsetPart left)
         => CssInset.create(join(StringFn(top.Value), StringFn(right.Value), StringFn(bottom.Value), StringFn(left.Value)));
 
     /// <summary>Creates a one- or two-axis CSS gap shorthand。创建单轴或双轴 CSS gap 简写。</summary>
@@ -645,19 +710,22 @@ public static partial class css
         => CssRadius.create(join(StringFn(topLeft.Value), StringFn(topRight.Value), StringFn(bottomRight.Value), StringFn(bottomLeft.Value)));
 
     /// <summary>Creates the structured <c>flex-grow flex-shrink flex-basis</c> shorthand。创建结构化 <c>flex-grow flex-shrink flex-basis</c> 简写。</summary>
-    public static CssFlex flexBox(double grow, double shrink, CssLengthPercentageValue basis)
+    [ECMAScriptName("flexBox")]
+    public static CssFlex flex_box(double grow, double shrink, CssLengthPercentageValue basis)
         => CssFlex.create(number(grow) + " " + number(shrink) + " " + StringFn(basis.Value));
 
     /// <summary>Creates a two-dimensional background-size value。创建二维 background-size 值。</summary>
-    public static CssBackgroundSize backgroundSize(CssLengthPercentageValue width, CssLengthPercentageValue height)
+    [ECMAScriptName("backgroundSize")]
+    public static CssBackgroundSize background_size(CssLengthPercentageValue width, CssLengthPercentageValue height)
         => CssBackgroundSize.create(join(StringFn(width.Value), StringFn(height.Value)));
 
     /// <summary>Creates a grid line reference or start/end line range。创建 grid 线引用或 start/end 线区间。</summary>
-    public static CssGridLine gridLine(int line)
+    [ECMAScriptName("gridLine")]
+    public static CssGridLine grid_line(int line)
         => CssGridLine.create(StringFn(line));
 
     [ECMAScriptName("gridLine2")]
-    public static CssGridLine gridLine(int start, int end)
+    public static CssGridLine grid_line(int start, int end)
         => CssGridLine.create(StringFn(start) + " / " + StringFn(end));
 
     /// <summary>Creates a gradient stop, optionally with a point or range position。创建 gradient stop，可选单点或区间位置。</summary>
@@ -673,11 +741,13 @@ public static partial class css
         => new(color, from, to);
 
     /// <summary>Creates a linear gradient with at least two typed stops。创建至少含两个类型化 stop 的线性渐变。</summary>
-    public static CssGradient linearGradient([PreserveParamsArray] params CssGradientStop[] stops)
+    [ECMAScriptName("linearGradient")]
+    public static CssGradient linear_gradient([PreserveParamsArray] params CssGradientStop[] stops)
         => gradient("linear-gradient", stops);
 
     /// <summary>Creates a conic gradient with at least two typed stops。创建至少含两个类型化 stop 的圆锥渐变。</summary>
-    public static CssGradient conicGradient([PreserveParamsArray] params CssGradientStop[] stops)
+    [ECMAScriptName("conicGradient")]
+    public static CssGradient conic_gradient([PreserveParamsArray] params CssGradientStop[] stops)
         => gradient("conic-gradient", stops);
 
     /// <summary>Creates a compact animation shorthand from a typed name, duration, and timing keyword。根据类型化名称、duration、timing keyword 创建紧凑 animation 简写。</summary>
@@ -689,11 +759,13 @@ public static partial class css
         => CssFontFamilyName.create(quote(value));
 
     /// <summary>Creates a validated generic font-family identifier without quotes。创建不带引号、已验证的 generic font-family 标识符。</summary>
-    public static CssFontFamilyName genericFont(string value)
+    [ECMAScriptName("genericFont")]
+    public static CssFontFamilyName generic_font(string value)
         => CssFontFamilyName.create(StringFn(ident(value)));
 
     /// <summary>Creates an ordered font fallback list that contains at least one family。创建至少含一个字体族的有序后备列表。</summary>
-    public static CssFontFamily fontFamily([PreserveParamsArray] params CssFontFamilyName[] names)
+    [ECMAScriptName("fontFamily")]
+    public static CssFontFamily font_family([PreserveParamsArray] params CssFontFamilyName[] names)
     {
         if (names.Length == 0)
             Fail("CSS font-family requires at least one family.");
@@ -705,11 +777,13 @@ public static partial class css
     }
 
     /// <summary>Creates an X-axis translate transform from a length-percentage value。根据长度/百分比值创建 X 轴 translate transform。</summary>
-    public static CssTransform translateX(CssLengthPercentageValue value)
+    [ECMAScriptName("translateX")]
+    public static CssTransform translate_x(CssLengthPercentageValue value)
         => CssTransform.create("translateX(" + StringFn(value.Value) + ")");
 
     /// <summary>Creates a Y-axis translate transform from a length-percentage value。根据长度/百分比值创建 Y 轴 translate transform。</summary>
-    public static CssTransform translateY(CssLengthPercentageValue value)
+    [ECMAScriptName("translateY")]
+    public static CssTransform translate_y(CssLengthPercentageValue value)
         => CssTransform.create("translateY(" + StringFn(value.Value) + ")");
 
     /// <summary>Creates a two-axis translate transform。创建双轴 translate transform。</summary>

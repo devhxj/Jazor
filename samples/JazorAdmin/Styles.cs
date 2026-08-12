@@ -24,13 +24,13 @@ internal static class Styles
         [
             new("from", new CssDeclarations
             {
-                Opacity = 0,
-                Transform = translateY(px(8))
+                opacity = 0,
+                transform = translate_y(px(8))
             }),
             new("to", new CssDeclarations
             {
-                Opacity = 1,
-                Transform = translateY(px(0))
+                opacity = 1,
+                transform = translate_y(px(0))
             })
         ]);
 
@@ -38,7 +38,7 @@ internal static class Styles
         [
             new("to", new CssDeclarations
             {
-                Transform = rotate(deg(360))
+                transform = rotate(deg(360))
             })
         ]);
 
@@ -46,21 +46,21 @@ internal static class Styles
         [
             new("0%, 100%", new CssDeclarations
             {
-                BoxShadow = raw("0 0 0 0 rgba(47, 111, 237, 0.18)")
+                box_shadow = raw("0 0 0 0 rgba(47, 111, 237, 0.18)")
             }),
             new("50%", new CssDeclarations
             {
-                BoxShadow = raw("0 0 0 8px rgba(47, 111, 237, 0)")
+                box_shadow = raw("0 0 0 8px rgba(47, 111, 237, 0)")
             })
         ]);
 
         global(":root",
             new CssRule
             {
-                ColorScheme = raw("light"),
-                FontFamily = raw("Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"),
-                FontSynthesis = raw("none"),
-                TextRendering = raw("optimizeLegibility"),
+                color_scheme = raw("light"),
+                font_family = raw("Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"),
+                font_synthesis = raw("none"),
+                text_rendering = raw("optimizeLegibility"),
                 // Match Starter's dynamic brand token entry point. The setting drawer
                 // changes --ja-brand-color and every TDesign control follows it.
                 ["--td-brand-color"] = raw("var(--ja-brand-color, #0052D9)"),
@@ -73,41 +73,41 @@ internal static class Styles
         global("*",
             new CssRule
             {
-                BoxSizing = raw("border-box")
+                box_sizing = raw("border-box")
             });
 
         global("html, body, #app",
             new CssRule
             {
-                MinWidth = raw("320px"),
-                MinHeight = raw("100%"),
-                Margin = raw("0")
+                min_width = raw("320px"),
+                min_height = raw("100%"),
+                margin = raw("0")
             });
 
         global("body",
             new CssRule
             {
-                MinHeight = raw("100vh"),
-                Background = raw("#f3f3f3")
+                min_height = raw("100vh"),
+                background = raw("#f3f3f3")
             });
 
         global("button, input, select, textarea",
             new CssRule
             {
-                Font = raw("inherit")
+                font = raw("inherit")
             });
 
         global("button, select, input[type=\"checkbox\"]",
             new CssRule
             {
-                Cursor = raw("pointer")
+                cursor = raw("pointer")
             });
 
         global("button:disabled, input:disabled, select:disabled",
             new CssRule
             {
-                Cursor = raw("not-allowed"),
-                Opacity = raw("0.56")
+                cursor = raw("not-allowed"),
+                opacity = raw("0.56")
             });
 
         global(".ja-application",
@@ -134,15 +134,15 @@ internal static class Styles
                 ["--info-soft"] = raw("var(--td-brand-color-light)"),
                 ["--background"] = var("--td-bg-color-page"),
                 ["--shadow"] = shadows(new CssShadow(px(0), px(4), Blur: px(14), Color: rgba(31, 52, 78, 0.05))),
-                MinHeight = raw("100vh"),
-                Background = raw("var(--app-bg)"),
-                Color = raw("var(--text)")
+                min_height = raw("100vh"),
+                background = raw("var(--app-bg)"),
+                color = raw("var(--text)")
             });
 
         global(".ja-application--dark",
             new CssRule
             {
-                ColorScheme = raw("dark"),
+                color_scheme = raw("dark"),
                 ["--app-bg"] = raw("#181818"),
                 ["--surface"] = raw("#242424"),
                 ["--surface-subtle"] = raw("#2c2c2c"),
@@ -188,7 +188,7 @@ internal static class Styles
         Media(".ja-application--system", "(prefers-color-scheme: dark)",
             new CssRule
             {
-                ColorScheme = raw("dark"),
+                color_scheme = raw("dark"),
                 ["--app-bg"] = raw("#181818"),
                 ["--surface"] = raw("#242424"),
                 ["--surface-subtle"] = raw("#2c2c2c"),
@@ -233,224 +233,224 @@ internal static class Styles
         global(".ja-application--grayscale",
             new CssRule
             {
-                Filter = grayscale(1)
+                filter = grayscale(1)
             });
 
         global(".ja-shell",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("232px minmax(0, 1fr)"),
-                MinHeight = raw("100vh")
+                display = raw("grid"),
+                grid_template_columns = raw("232px minmax(0, 1fr)"),
+                min_height = raw("100vh")
             });
 
         global(".ja-shell--top",
             new CssRule
             {
-                Display = raw("block")
+                display = raw("block")
             });
 
         global(".ja-shell__sidebar",
             new CssRule
             {
-                Position = sticky,
-                Top = px(0),
-                ZIndex = raw("20"),
-                Height = vh(100),
-                Overflow = raw("auto"),
-                Background = raw("#17241f"),
-                Color = raw("#eef7f3"),
-                BorderRight = px(1) | solid | hex("293a33")
+                position = sticky,
+                top = px(0),
+                z_index = raw("20"),
+                height = vh(100),
+                overflow = raw("auto"),
+                background = raw("#17241f"),
+                color = raw("#eef7f3"),
+                border_right = px(1) | solid | hex("293a33")
             });
 
         global(".ja-shell--collapsed",
             new CssRule
             {
-                GridTemplateColumns = raw("0 minmax(0, 1fr)")
+                grid_template_columns = raw("0 minmax(0, 1fr)")
             });
 
         global(".ja-shell--collapsed .ja-shell__sidebar",
             new CssRule
             {
-                Display = raw("none"),
-                Width = raw("0"),
-                BorderRight = raw("0")
+                display = raw("none"),
+                width = raw("0"),
+                border_right = raw("0")
             });
 
         global(".ja-shell__main",
             new CssRule
             {
-                MinWidth = raw("0")
+                min_width = raw("0")
             });
 
         global(".ja-shell__header",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                Position = raw("sticky"),
-                Top = raw("0"),
-                ZIndex = raw("15"),
-                MinHeight = raw("64px"),
-                Background = raw("color-mix(in srgb, var(--surface) 94%, transparent)"),
-                BorderBottom = px(1) | solid | var("--border"),
-                BackdropFilter = raw("blur(12px)")
+                display = raw("flex"),
+                align_items = raw("center"),
+                position = raw("sticky"),
+                top = raw("0"),
+                z_index = raw("15"),
+                min_height = raw("64px"),
+                background = raw("color-mix(in srgb, var(--surface) 94%, transparent)"),
+                border_bottom = px(1) | solid | var("--border"),
+                backdrop_filter = raw("blur(12px)")
             });
 
         global(".ja-shell__sidebar-toggle",
             new CssRule
             {
-                Position = raw("relative"),
-                Flex = raw("0 0 36px"),
-                Width = raw("36px"),
-                Height = raw("36px"),
-                Padding = padding(px(0)),
-                MarginLeft = raw("14px"),
-                Color = raw("var(--text)"),
-                Background = raw("transparent"),
-                Border = px(1) | solid | var("--border"),
-                BorderRadius = raw("5px")
+                position = raw("relative"),
+                flex = raw("0 0 36px"),
+                width = raw("36px"),
+                height = raw("36px"),
+                padding = padding(px(0)),
+                margin_left = raw("14px"),
+                color = raw("var(--text)"),
+                background = raw("transparent"),
+                border = px(1) | solid | var("--border"),
+                border_radius = raw("5px")
             });
 
         global(".ja-shell__sidebar-toggle::before",
             new CssRule
             {
-                FontSize = raw("20px"),
-                LineHeight = raw("1"),
-                Content = raw("\"\\2630\"")
+                font_size = raw("20px"),
+                line_height = raw("1"),
+                content = raw("\"\\2630\"")
             });
 
         global(".ja-shell__sidebar-toggle:hover",
             new CssRule
             {
-                Background = raw("var(--surface-strong)")
+                background = raw("var(--surface-strong)")
             });
 
         global(".ja-shell__content",
             new CssRule
             {
-                Width = raw("100%")
+                width = raw("100%")
             });
 
         global(".ja-tdesign-layout",
             new CssRule
             {
-                MinWidth = raw("0"),
-                MinHeight = raw("100vh"),
-                Background = raw("var(--background)")
+                min_width = raw("0"),
+                min_height = raw("100vh"),
+                background = raw("var(--background)")
             });
 
         global(".ja-tdesign-layout > [data-shell-region=\"sidebar\"]",
             new CssRule
             {
-                Position = raw("sticky"),
-                Top = raw("0"),
-                ZIndex = raw("20"),
-                Height = raw("100vh"),
-                MinWidth = px(0),
+                position = raw("sticky"),
+                top = raw("0"),
+                z_index = raw("20"),
+                height = raw("100vh"),
+                min_width = px(0),
                 // The secondary menu owns vertical scrolling. The Aside itself must never
                 // create a second scrollbar or expose the menu's box-model overflow.
-                Overflow = hidden,
-                BorderRight = px(1) | solid | var("--border")
+                overflow = hidden,
+                border_right = px(1) | solid | var("--border")
             });
 
         global(".ja-tdesign-layout--mixed[data-shell-collapsed=\"false\"] > [data-shell-region=\"sidebar\"]",
             new CssRule
             {
-                Width = raw("296px !important"),
-                Flex = raw("0 0 296px !important")
+                width = raw("296px !important"),
+                flex = raw("0 0 296px !important")
             });
 
         global(".ja-tdesign-layout--sidebar[data-shell-collapsed=\"false\"] > [data-shell-region=\"sidebar\"]",
             new CssRule
             {
-                Width = raw("232px !important"),
-                Flex = raw("0 0 232px !important")
+                width = raw("232px !important"),
+                flex = raw("0 0 232px !important")
             });
 
         global(".ja-tdesign-layout[data-shell-collapsed=\"true\"] > [data-shell-region=\"sidebar\"]",
             new CssRule
             {
-                Width = raw("64px !important"),
-                Flex = raw("0 0 64px !important")
+                width = raw("64px !important"),
+                flex = raw("0 0 64px !important")
             });
 
         global(".ja-tdesign-layout[data-shell-sidebar-fixed=\"false\"] > [data-shell-region=\"sidebar\"]",
             new CssRule
             {
-                Position = relative,
-                Height = raw("auto"),
-                MinHeight = raw("100vh")
+                position = relative,
+                height = raw("auto"),
+                min_height = raw("100vh")
             });
 
         global(".ja-tdesign-layout > [data-shell-region=\"main\"]",
             new CssRule
             {
-                MinWidth = raw("0")
+                min_width = raw("0")
             });
 
         global(".ja-tdesign-layout [data-shell-region=\"header\"]",
             new CssRule
             {
-                Position = raw("sticky"),
-                Top = raw("0"),
-                ZIndex = raw("15"),
-                BorderBottom = px(1) | solid | var("--border")
+                position = raw("sticky"),
+                top = raw("0"),
+                z_index = raw("15"),
+                border_bottom = px(1) | solid | var("--border")
             });
 
         global(".ja-tdesign-layout__header",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                Width = raw("100%"),
-                MinWidth = raw("0"),
-                MinHeight = raw("64px"),
-                Gap = raw("14px")
+                display = raw("flex"),
+                align_items = raw("center"),
+                width = raw("100%"),
+                min_width = raw("0"),
+                min_height = raw("64px"),
+                gap = raw("14px")
             });
 
         global(".ja-tdesign-layout [data-shell-region=\"content\"]",
             new CssRule
             {
-                Width = raw("100%"),
-                MinWidth = raw("0"),
+                width = raw("100%"),
+                min_width = raw("0"),
                 // Contain intentionally wide data tables inside their own scroll region on small screens.
                 // 小屏幕下宽表格必须由表格容器滚动，不能把宿主页面整体撑出横向滚动条。
-                OverflowX = hidden
+                overflow_x = hidden
             });
 
         global(".ja-tdesign-layout__tabs",
             new CssRule
             {
-                Position = sticky,
-                Top = px(64),
-                ZIndex = 14,
-                Background = var("--td-bg-color-container"),
-                BorderBottom = px(1) | solid | var("--td-component-stroke")
+                position = sticky,
+                top = px(64),
+                z_index = 14,
+                background = var("--td-bg-color-container"),
+                border_bottom = px(1) | solid | var("--td-component-stroke")
             });
 
         global(".ja-tdesign-layout[data-shell-show-header=\"false\"] .ja-tdesign-layout__tabs",
-            new CssRule { Top = px(0) });
+            new CssRule { top = px(0) });
 
         global(".ja-route-tabs",
             new CssRule
             {
-                Width = percent(100),
-                Background = var("--td-bg-color-container")
+                width = percent(100),
+                background = var("--td-bg-color-container")
             });
 
         global(".ja-route-tabs .t-tabs__nav-container",
             new CssRule
             {
-                PaddingLeft = px(0),
-                PaddingRight = px(0)
+                padding_left = px(0),
+                padding_right = px(0)
             });
 
         global(".ja-route-tabs .t-tabs__nav--card.t-tabs__nav-item",
             new CssRule
             {
-                PaddingLeft = px(12),
-                PaddingRight = px(12)
+                padding_left = px(12),
+                padding_right = px(12)
             });
 
         // TDesign 1.20 maps t-size-m tabs to 48px. Starter keeps the same
@@ -458,35 +458,35 @@ internal static class Styles
         global(".ja-route-tabs .t-tabs__nav-item.t-size-m, .ja-route-tabs .t-tabs__btn.t-size-m, .ja-route-tabs .t-tabs__scroll-btn.t-size-m",
             new CssRule
             {
-                Height = px(40),
-                LineHeight = px(40)
+                height = px(40),
+                line_height = px(40)
             });
 
         global(".ja-route-tabs__label, .ja-route-tabs__home",
             new CssRule
             {
-                Display = inlineFlex,
-                AlignItems = center,
-                MinWidth = px(0),
-                Gap = px(6)
+                display = inline_flex,
+                align_items = center,
+                min_width = px(0),
+                gap = px(6)
             });
 
         global(".ja-route-tabs__label",
             new CssRule
             {
-                MaxWidth = px(168),
-                Overflow = hidden,
-                TextOverflow = ellipsis,
-                WhiteSpace = nowrap
+                max_width = px(168),
+                overflow = hidden,
+                text_overflow = ellipsis,
+                white_space = nowrap
             });
 
         global(".ja-tdesign-layout__content",
             new CssRule
             {
-                Width = percent(100),
-                MaxWidth = raw("none"),
-                MinWidth = px(0),
-                Margin = margin(px(8), px(12), px(16))
+                width = percent(100),
+                max_width = raw("none"),
+                min_width = px(0),
+                margin = margin(px(8), px(12), px(16))
             });
 
         global(".ja-route-breadcrumb",
@@ -494,154 +494,154 @@ internal static class Styles
             {
                 // TDesign breadcrumb items are flex children. Block layout makes every
                 // crumb full width and turns a route hierarchy into multiple lines.
-                Display = flex,
-                AlignItems = center,
-                FlexWrap = noWrap,
-                MarginBottom = px(16)
+                display = flex,
+                align_items = center,
+                flex_wrap = no_wrap,
+                margin_bottom = px(16)
             });
 
         global(".ja-tdesign-sidebar-shell",
             new CssRule
             {
-                Display = flex,
-                Width = percent(100),
-                Height = percent(100),
-                MinWidth = px(0),
-                MinHeight = px(0),
-                Overflow = hidden,
-                Background = raw("var(--surface)")
+                display = flex,
+                width = percent(100),
+                height = percent(100),
+                min_width = px(0),
+                min_height = px(0),
+                overflow = hidden,
+                background = raw("var(--surface)")
             });
 
         global(".ja-iconbar",
             new CssRule
             {
-                BorderRight = px(1) | solid | var("--border")
+                border_right = px(1) | solid | var("--border")
             });
 
         global(".ja-iconbar .t-menu__logo",
             new CssRule
             {
-                Position = relative,
-                Display = flex,
-                AlignItems = center,
-                JustifyContent = center,
-                Flex = flexBox(0, 0, px(64)),
-                Width = raw("64px !important"),
-                MinWidth = raw("64px !important"),
-                MaxWidth = raw("64px !important"),
-                Height = px(64),
-                Margin = margin(px(0)),
-                Padding = raw("0 !important"),
-                BoxSizing = borderBox
+                position = relative,
+                display = flex,
+                align_items = center,
+                justify_content = center,
+                flex = flex_box(0, 0, px(64)),
+                width = raw("64px !important"),
+                min_width = raw("64px !important"),
+                max_width = raw("64px !important"),
+                height = px(64),
+                margin = margin(px(0)),
+                padding = raw("0 !important"),
+                box_sizing = border_box
             });
 
         global(".ja-iconbar__brand",
             new CssRule
             {
-                Position = absolute,
+                position = absolute,
                 // The slot remains 64px wide in every rail state. Center against that fixed
                 // geometry instead of the logo's intrinsic SVG box.
-                Left = percent(50),
-                Top = px(13),
-                Display = inlineFlex,
-                AlignItems = center,
-                JustifyContent = center,
-                Width = px(38),
-                Height = px(38),
+                left = percent(50),
+                top = px(13),
+                display = inline_flex,
+                align_items = center,
+                justify_content = center,
+                width = px(38),
+                height = px(38),
                 // TDesign styles the logo anchor after this generated stylesheet.
                 // This must win so its visual center stays on the 64px IconBar rail.
-                MarginLeft = raw("0 !important"),
-                BorderRadius = radius(px(19)),
-                Transform = raw("translateX(-50%)")
+                margin_left = raw("0 !important"),
+                border_radius = radius(px(19)),
+                transform = raw("translateX(-50%)")
             });
 
         global(".ja-iconbar__brand img",
             new CssRule
             {
-                Display = block,
-                Width = px(30),
-                Height = px(30)
+                display = block,
+                width = px(30),
+                height = px(30)
             });
 
         global(".ja-iconbar .t-menu__operations",
             new CssRule
             {
-                Display = flex,
-                AlignItems = center,
-                JustifyContent = center,
-                BorderTop = px(1) | solid | var("--border"),
-                Padding = padding(px(12), px(0))
+                display = flex,
+                align_items = center,
+                justify_content = center,
+                border_top = px(1) | solid | var("--border"),
+                padding = padding(px(12), px(0))
             });
 
         global(".ja-iconbar__operations",
             new CssRule
             {
-                Display = flex,
-                AlignItems = center,
-                JustifyContent = center,
-                Width = percent(100)
+                display = flex,
+                align_items = center,
+                justify_content = center,
+                width = percent(100)
             });
 
         global(".ja-iconbar .ja-iconbar__quick-trigger",
             new CssRule
             {
-                Position = relative,
-                Width = px(18),
-                Height = px(18),
-                Border = px(2) | solid | var("--accent"),
-                BorderRadius = radius(px(999)),
-                Background = var("--surface"),
-                Color = var("--accent"),
-                BoxShadow = raw("0 0 0 8px rgba(47, 111, 237, 0.12), 0 0 0 18px rgba(47, 111, 237, 0.08)"),
-                Animation = raw(quickPulse + " 2.4s ease-in-out infinite"),
-                Overflow = visible
+                position = relative,
+                width = px(18),
+                height = px(18),
+                border = px(2) | solid | var("--accent"),
+                border_radius = radius(px(999)),
+                background = var("--surface"),
+                color = var("--accent"),
+                box_shadow = raw("0 0 0 8px rgba(47, 111, 237, 0.12), 0 0 0 18px rgba(47, 111, 237, 0.08)"),
+                animation = raw(quickPulse + " 2.4s ease-in-out infinite"),
+                overflow = visible
             });
 
         global(".ja-iconbar .ja-iconbar__quick-trigger .t-icon",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         global(".ja-iconbar__quick-popup .t-popup__content",
             new CssRule
             {
-                Padding = padding(px(0)),
-                Border = raw("0"),
-                BorderRadius = raw("0"),
-                Background = raw("transparent"),
-                BoxShadow = raw("none"),
+                padding = padding(px(0)),
+                border = raw("0"),
+                border_radius = raw("0"),
+                background = raw("transparent"),
+                box_shadow = raw("none"),
                 // RightBottom places the content after the trigger. Move its local polar
                 // origin back onto the small breathing circle (18px, 114px).
-                Transform = raw("translate(-36px, -11px)")
+                transform = raw("translate(-36px, -11px)")
             });
 
         global(".ja-iconbar__quick-actions",
             new CssRule
             {
-                Position = relative,
-                Width = px(128),
-                Height = px(112),
-                Padding = padding(px(0)),
-                Isolation = isolate
+                position = relative,
+                width = px(128),
+                height = px(112),
+                padding = padding(px(0)),
+                isolation = isolate
             });
 
         global(".ja-iconbar__quick-actions .ja-iconbar__quick-action",
             new CssRule
             {
-                Position = absolute,
-                Display = flex,
-                AlignItems = center,
-                JustifyContent = center,
-                Width = px(36),
-                Height = px(36)
+                position = absolute,
+                display = flex,
+                align_items = center,
+                justify_content = center,
+                width = px(36),
+                height = px(36)
             });
 
         global(".ja-iconbar__quick-actions .ja-iconbar__quick-action:nth-child(1)",
             new CssRule
             {
-                Left = px(0),
-                Top = px(0)
+                left = px(0),
+                top = px(0)
             });
 
         global(".ja-iconbar__quick-actions .ja-iconbar__quick-action:nth-child(2)",
@@ -649,43 +649,43 @@ internal static class Styles
             {
                 // 96px * sin/cos(22.5deg), measured from the trigger's center.
                 // Keep these as the polar values rather than hand-tuned stair steps.
-                Left = raw("36.738px"),
-                Top = raw("7.307px")
+                left = raw("36.738px"),
+                top = raw("7.307px")
             });
 
         global(".ja-iconbar__quick-actions .ja-iconbar__quick-action:nth-child(3)",
             new CssRule
             {
                 // 96px * sin/cos(45deg).
-                Left = raw("67.882px"),
-                Top = raw("28.118px")
+                left = raw("67.882px"),
+                top = raw("28.118px")
             });
 
         global(".ja-iconbar__quick-actions .ja-iconbar__quick-action:nth-child(4)",
             new CssRule
             {
                 // 96px * sin/cos(67.5deg): four equal 22.5deg intervals on a 90deg arc.
-                Left = raw("88.693px"),
-                Top = raw("59.261px")
+                left = raw("88.693px"),
+                top = raw("59.261px")
             });
 
         global(".ja-iconbar__quick-actions .ja-iconbar__quick-action",
             new CssRule
             {
-                Width = px(36),
-                Height = px(36),
-                BorderRadius = radius(px(4)),
-                Background = var("--surface"),
-                Color = var("--text"),
-                Border = px(1) | solid | var("--border"),
-                BoxShadow = shadows(new CssShadow(px(0), px(8), Blur: px(18), Color: rgba(31, 52, 78, 0.1)))
+                width = px(36),
+                height = px(36),
+                border_radius = radius(px(4)),
+                background = var("--surface"),
+                color = var("--text"),
+                border = px(1) | solid | var("--border"),
+                box_shadow = shadows(new CssShadow(px(0), px(8), Blur: px(18), Color: rgba(31, 52, 78, 0.1)))
             });
 
         global(".ja-iconbar__quick-actions .ja-iconbar__quick-action--danger",
             new CssRule
             {
-                Background = var("--danger-soft"),
-                Color = var("--danger")
+                background = var("--danger-soft"),
+                color = var("--danger")
             });
 
         // IconBar is intentionally a TDesign menu instance, not a parallel navigation widget.
@@ -693,353 +693,353 @@ internal static class Styles
         global(".ja-iconbar--rail",
             new CssRule
             {
-                Display = flex,
-                Flex = flexBox(0, 0, px(64)),
-                FlexDirection = column,
-                Width = px(64),
-                MinHeight = percent(100)
+                display = flex,
+                flex = flex_box(0, 0, px(64)),
+                flex_direction = column,
+                width = px(64),
+                min_height = percent(100)
             });
 
         global(".ja-iconbar--head",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         global(".ja-tdesign-sidebar-shell__menu",
             new CssRule
             {
-                Display = flex,
-                Flex = flexBox(0, 0, px(232)),
-                FlexDirection = column,
-                Width = px(232),
-                MinWidth = px(0),
-                MaxWidth = percent(100),
-                Height = percent(100),
-                MinHeight = px(0),
-                Padding = padding(px(0)),
-                BoxSizing = borderBox,
+                display = flex,
+                flex = flex_box(0, 0, px(232)),
+                flex_direction = column,
+                width = px(232),
+                min_width = px(0),
+                max_width = percent(100),
+                height = percent(100),
+                min_height = px(0),
+                padding = padding(px(0)),
+                box_sizing = border_box,
                 // TDesign's .t-menu--scroll owns the menu's overflow. Keeping this wrapper
                 // non-scrollable prevents a duplicate scrollbar beside the native one.
-                Overflow = hidden,
-                BorderLeft = px(1) | solid | var("--border")
+                overflow = hidden,
+                border_left = px(1) | solid | var("--border")
             });
 
         global(".ja-tdesign-sidebar-shell__menu-title",
             new CssRule
             {
-                Display = flex,
-                AlignItems = center,
-                Flex = flexBox(0, 0, px(64)),
-                Height = px(64),
-                MinWidth = px(0),
-                Padding = padding(px(0), px(20)),
-                Overflow = hidden,
-                Color = var("--td-text-color-primary"),
-                FontSize = px(16),
-                FontWeight = raw("600"),
-                TextOverflow = ellipsis,
-                WhiteSpace = nowrap,
-                BorderBottom = px(1) | solid | var("--border")
+                display = flex,
+                align_items = center,
+                flex = flex_box(0, 0, px(64)),
+                height = px(64),
+                min_width = px(0),
+                padding = padding(px(0), px(20)),
+                overflow = hidden,
+                color = var("--td-text-color-primary"),
+                font_size = px(16),
+                font_weight = raw("600"),
+                text_overflow = ellipsis,
+                white_space = nowrap,
+                border_bottom = px(1) | solid | var("--border")
             });
 
         global(".ja-tdesign-sidebar-shell__menu-body",
             new CssRule
             {
-                Flex = flexBox(1, 1, px(0)),
-                MinHeight = px(0),
-                Overflow = hidden
+                flex = flex_box(1, 1, px(0)),
+                min_height = px(0),
+                overflow = hidden
             });
 
         global(".ja-tdesign-sidebar-shell__mobile-menu",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         global(".ja-tdesign-sidebar-shell__mobile-brand",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         global(".ja-tdesign-sidebar-shell__menu [data-navigation-orientation=\"vertical\"]",
             new CssRule
             {
-                Width = percent(100),
-                Height = percent(100),
-                MinWidth = px(0),
-                MaxWidth = percent(100),
-                OverflowX = hidden
+                width = percent(100),
+                height = percent(100),
+                min_width = px(0),
+                max_width = percent(100),
+                overflow_x = hidden
             });
 
         global(".ja-sidebar",
             new CssRule
             {
-                MinHeight = raw("100%"),
-                Padding = padding(px(20), px(14))
+                min_height = raw("100%"),
+                padding = padding(px(20), px(14))
             });
 
         global(".ja-sidebar__logo",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                MinHeight = raw("42px"),
-                Margin = raw("0 8px 22px"),
-                Color = raw("#ffffff"),
-                FontSize = raw("18px"),
-                FontWeight = raw("750")
+                display = raw("flex"),
+                align_items = raw("center"),
+                min_height = raw("42px"),
+                margin = raw("0 8px 22px"),
+                color = raw("#ffffff"),
+                font_size = raw("18px"),
+                font_weight = raw("750")
             });
 
         global(".ja-sidebar__list, .ja-sidebar__children",
             new CssRule
             {
-                Padding = padding(px(0)),
-                Margin = raw("0"),
-                ListStyle = raw("none")
+                padding = padding(px(0)),
+                margin = raw("0"),
+                list_style = raw("none")
             });
 
         global(".ja-sidebar__item",
             new CssRule
             {
-                Margin = raw("3px 0")
+                margin = raw("3px 0")
             });
 
         global(".ja-sidebar__item-content",
             new CssRule
             {
-                Position = raw("relative")
+                position = raw("relative")
             });
 
         global(".ja-sidebar__link, .ja-sidebar__button",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                Width = raw("100%"),
-                MinHeight = raw("40px"),
-                Padding = padding(px(8), px(12)),
-                Color = raw("#b8c8c1"),
-                TextAlign = raw("left"),
-                TextDecoration = raw("none"),
-                Background = raw("transparent"),
-                Border = raw("0"),
-                BorderRadius = raw("6px")
+                display = raw("flex"),
+                align_items = raw("center"),
+                width = raw("100%"),
+                min_height = raw("40px"),
+                padding = padding(px(8), px(12)),
+                color = raw("#b8c8c1"),
+                text_align = raw("left"),
+                text_decoration = raw("none"),
+                background = raw("transparent"),
+                border = raw("0"),
+                border_radius = raw("6px")
             });
 
         global(".ja-sidebar__link:hover, .ja-sidebar__button:hover, .ja-sidebar__item.is-ancestor-selected > .ja-sidebar__item-content > .ja-sidebar__button",
             new CssRule
             {
-                Color = raw("#ffffff"),
-                Background = raw("#243a31")
+                color = raw("#ffffff"),
+                background = raw("#243a31")
             });
 
         global(".ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__link, .ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__button",
             new CssRule
             {
-                Color = raw("#ffffff"),
-                Background = raw("#087f5b")
+                color = raw("#ffffff"),
+                background = raw("#087f5b")
             });
 
         global(".ja-sidebar__toggle",
             new CssRule
             {
-                MarginLeft = raw("auto"),
-                FontSize = raw("12px")
+                margin_left = raw("auto"),
+                font_size = raw("12px")
             });
 
         global(".ja-sidebar__children",
             new CssRule
             {
-                Padding = padding(px(4), px(0), px(4), px(12))
+                padding = padding(px(4), px(0), px(4), px(12))
             });
 
         global(".ja-sidebar__children .ja-sidebar__link, .ja-sidebar__children .ja-sidebar__button",
             new CssRule
             {
-                MinHeight = raw("36px"),
-                PaddingLeft = raw("16px"),
-                FontSize = raw("14px")
+                min_height = raw("36px"),
+                padding_left = raw("16px"),
+                font_size = raw("14px")
             });
 
         global(".ja-header",
             new CssRule
             {
-                Flex = raw("1 1 auto"),
-                MinWidth = raw("0"),
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                JustifyContent = raw("space-between"),
-                MinHeight = raw("64px"),
-                Padding = padding(px(8), px(24)),
-                Gap = raw("20px")
+                flex = raw("1 1 auto"),
+                min_width = raw("0"),
+                display = raw("flex"),
+                align_items = raw("center"),
+                justify_content = raw("space-between"),
+                min_height = raw("64px"),
+                padding = padding(px(8), px(24)),
+                gap = raw("20px")
             });
 
         global(".ja-header__main, .ja-header__actions, .ja-header__toolbar, .ja-header__user-region, .ja-preferences, .ja-user-region",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center")
+                display = raw("flex"),
+                align_items = raw("center")
             });
 
         global(".ja-header__main",
             new CssRule
             {
-                MinWidth = raw("0"),
-                Gap = raw("12px")
+                min_width = raw("0"),
+                gap = raw("12px")
             });
 
         global(".ja-header__logo",
             new CssRule
             {
-                Color = raw("var(--accent)"),
-                FontWeight = raw("750")
+                color = raw("var(--accent)"),
+                font_weight = raw("750")
             });
 
         global(".ja-header__titles",
             new CssRule
             {
-                MinWidth = raw("0")
+                min_width = raw("0")
             });
 
         global(".ja-header__title",
             new CssRule
             {
-                Overflow = raw("hidden"),
-                FontSize = raw("16px"),
-                FontWeight = raw("700"),
-                TextOverflow = raw("ellipsis"),
-                WhiteSpace = raw("nowrap")
+                overflow = raw("hidden"),
+                font_size = raw("16px"),
+                font_weight = raw("700"),
+                text_overflow = raw("ellipsis"),
+                white_space = raw("nowrap")
             });
 
         global(".ja-header__subtitle",
             new CssRule
             {
-                MarginTop = raw("2px"),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px")
+                margin_top = raw("2px"),
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px")
             });
 
         global(".ja-header__actions",
             new CssRule
             {
-                JustifyContent = raw("flex-end"),
-                MinWidth = raw("0"),
-                Gap = raw("16px")
+                justify_content = raw("flex-end"),
+                min_width = raw("0"),
+                gap = raw("16px")
             });
 
         global(".ja-header__navigation",
             new CssRule
             {
-                Flex = raw("1 1 auto"),
-                MinWidth = raw("0")
+                flex = raw("1 1 auto"),
+                min_width = raw("0")
             });
 
         global(".ja-tdesign-header",
             new CssRule
             {
-                Width = percent(100),
-                Height = px(64),
-                MinWidth = px(0),
-                MinHeight = px(64),
-                Padding = padding(px(0)),
-                Overflow = hidden
+                width = percent(100),
+                height = px(64),
+                min_width = px(0),
+                min_height = px(64),
+                padding = padding(px(0)),
+                overflow = hidden
             });
 
         global(".ja-tdesign-header .t-head-menu__inner",
             new CssRule
             {
-                Display = flex,
-                AlignItems = center,
-                Height = px(64),
-                MinHeight = px(64),
-                MinWidth = px(0),
-                PaddingLeft = raw("0 !important"),
-                BorderBottom = px(1) | solid | var("--border"),
-                Overflow = hidden
+                display = flex,
+                align_items = center,
+                height = px(64),
+                min_height = px(64),
+                min_width = px(0),
+                padding_left = raw("0 !important"),
+                border_bottom = px(1) | solid | var("--border"),
+                overflow = hidden
             });
 
         global(".ja-tdesign-header__main, .ja-tdesign-header__actions",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center")
+                display = raw("flex"),
+                align_items = raw("center")
             });
 
         global(".ja-tdesign-header__main",
             new CssRule
             {
-                MinWidth = raw("0"),
-                Gap = raw("12px")
+                min_width = raw("0"),
+                gap = raw("12px")
             });
 
         global(".ja-tdesign-header__titles",
             new CssRule
             {
-                MinWidth = raw("0")
+                min_width = raw("0")
             });
 
         global(".ja-tdesign-header__title",
             new CssRule
             {
-                Overflow = raw("hidden"),
-                FontSize = raw("16px"),
-                FontWeight = raw("700"),
-                TextOverflow = raw("ellipsis"),
-                WhiteSpace = raw("nowrap")
+                overflow = raw("hidden"),
+                font_size = raw("16px"),
+                font_weight = raw("700"),
+                text_overflow = raw("ellipsis"),
+                white_space = raw("nowrap")
             });
 
         global(".ja-tdesign-header__subtitle",
             new CssRule
             {
-                MarginTop = raw("2px"),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px")
+                margin_top = raw("2px"),
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px")
             });
 
         global(".ja-tdesign-header__navigation",
             new CssRule
             {
-                Flex = raw("1 1 auto"),
-                MinWidth = raw("0"),
-                Overflow = hidden
+                flex = raw("1 1 auto"),
+                min_width = raw("0"),
+                overflow = hidden
             });
 
         global(".ja-tdesign-header__navigation .t-menu__item",
-            new CssRule { MinWidth = raw("unset") });
+            new CssRule { min_width = raw("unset") });
 
         global(".ja-tdesign-header__actions",
             new CssRule
             {
-                JustifyContent = raw("flex-end"),
-                MinWidth = raw("0"),
-                Gap = raw("16px")
+                justify_content = raw("flex-end"),
+                min_width = raw("0"),
+                gap = raw("16px")
             });
 
         global(".ja-tdesign-header__logo, .ja-tdesign-header__operations",
             new CssRule
             {
-                Display = flex,
-                AlignItems = center,
-                MinWidth = px(0),
-                Gap = px(10)
+                display = flex,
+                align_items = center,
+                min_width = px(0),
+                gap = px(10)
             });
 
         global(".ja-tdesign-header__logo",
             new CssRule
             {
-                Flex = raw("0 0 64px"),
-                Width = px(64),
-                MarginLeft = px(0),
-                JustifyContent = center,
-                Gap = px(0)
+                flex = raw("0 0 64px"),
+                width = px(64),
+                margin_left = px(0),
+                justify_content = center,
+                gap = px(0)
             });
 
         global(".ja-tdesign-header__operations",
             new CssRule
             {
-                MarginLeft = auto
+                margin_left = auto
             });
 
         global(".ja-tdesign-header .t-menu__logo",
@@ -1047,1144 +1047,1144 @@ internal static class Styles
             {
                 // The header starts at the main-content edge. TDesign's default logo slot is
                 // too wide for a navigation toggle, so reserve one 64px geometry rail.
-                Flex = raw("0 0 64px !important"),
-                Width = raw("64px !important"),
-                MarginLeft = raw("0 !important"),
-                Padding = raw("0 !important")
+                flex = raw("0 0 64px !important"),
+                width = raw("64px !important"),
+                margin_left = raw("0 !important"),
+                padding = raw("0 !important")
             });
 
         global(".ja-tdesign-layout--top .ja-tdesign-header__logo",
             new CssRule
             {
-                Flex = raw("0 0 208px"),
-                Width = px(208),
-                JustifyContent = raw("flex-start")
+                flex = raw("0 0 208px"),
+                width = px(208),
+                justify_content = raw("flex-start")
             });
 
         global(".ja-tdesign-layout--top .ja-tdesign-header .t-menu__logo",
             new CssRule
             {
-                Flex = raw("0 0 208px !important"),
-                Width = raw("208px !important"),
-                PaddingLeft = raw("24px !important")
+                flex = raw("0 0 208px !important"),
+                width = raw("208px !important"),
+                padding_left = raw("24px !important")
             });
 
         global(".ja-tdesign-header [data-shell-command=\"toggle-sidebar\"]",
             new CssRule
             {
-                Display = grid,
-                Width = px(32),
-                Height = px(32),
-                MinWidth = px(32),
-                Padding = raw("0 !important"),
-                PlaceItems = center
+                display = grid,
+                width = px(32),
+                height = px(32),
+                min_width = px(32),
+                padding = raw("0 !important"),
+                place_items = center
             });
 
         global(".ja-tdesign-header .t-menu__operations",
             new CssRule
             {
-                MarginRight = px(16)
+                margin_right = px(16)
             });
 
         global(".ja-sidebar--horizontal",
             new CssRule
             {
-                MinHeight = raw("0"),
-                Padding = padding(px(0)),
-                Color = raw("var(--text)")
+                min_height = raw("0"),
+                padding = padding(px(0)),
+                color = raw("var(--text)")
             });
 
         global(".ja-sidebar--horizontal > .ja-sidebar__list, .ja-sidebar--horizontal .ja-sidebar__children",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                Gap = raw("4px")
+                display = raw("flex"),
+                align_items = raw("center"),
+                gap = raw("4px")
             });
 
         global(".ja-sidebar--horizontal > .ja-sidebar__list",
             new CssRule
             {
-                OverflowX = raw("auto"),
-                OverscrollBehaviorInline = raw("contain")
+                overflow_x = raw("auto"),
+                overscroll_behavior_inline = raw("contain")
             });
 
         global(".ja-sidebar--horizontal .ja-sidebar__item",
             new CssRule
             {
-                Display = raw("flex"),
-                Flex = raw("0 0 auto"),
-                AlignItems = raw("center"),
-                Margin = raw("0")
+                display = raw("flex"),
+                flex = raw("0 0 auto"),
+                align_items = raw("center"),
+                margin = raw("0")
             });
 
         global(".ja-sidebar--horizontal .ja-sidebar__link, .ja-sidebar--horizontal .ja-sidebar__button",
             new CssRule
             {
-                Width = raw("auto"),
-                MinHeight = raw("34px"),
-                Padding = padding(px(6), px(10)),
-                Color = raw("var(--text-muted)"),
-                WhiteSpace = raw("nowrap")
+                width = raw("auto"),
+                min_height = raw("34px"),
+                padding = padding(px(6), px(10)),
+                color = raw("var(--text-muted)"),
+                white_space = raw("nowrap")
             });
 
         global(".ja-sidebar--horizontal .ja-sidebar__link:hover, .ja-sidebar--horizontal .ja-sidebar__button:hover, .ja-sidebar--horizontal .ja-sidebar__item.is-ancestor-selected > .ja-sidebar__item-content > .ja-sidebar__button",
             new CssRule
             {
-                Color = raw("var(--text)"),
-                Background = raw("var(--surface-strong)")
+                color = raw("var(--text)"),
+                background = raw("var(--surface-strong)")
             });
 
         global(".ja-sidebar--horizontal .ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__link, .ja-sidebar--horizontal .ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__button",
             new CssRule
             {
-                Color = raw("var(--accent-strong)"),
-                Background = raw("var(--accent-soft)")
+                color = raw("var(--accent-strong)"),
+                background = raw("var(--accent-soft)")
             });
 
         global(".ja-sidebar--horizontal .ja-sidebar__children",
             new CssRule
             {
-                Padding = padding(px(0), px(0), px(0), px(4))
+                padding = padding(px(0), px(0), px(0), px(4))
             });
 
         global(".ja-header__toolbar, .ja-preferences, .ja-user-region",
             new CssRule
             {
-                Gap = raw("8px")
+                gap = raw("8px")
             });
 
         global(".ja-preference, .ja-preference-toggle",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                Gap = raw("6px"),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px"),
-                WhiteSpace = raw("nowrap")
+                display = raw("flex"),
+                align_items = raw("center"),
+                gap = raw("6px"),
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px"),
+                white_space = raw("nowrap")
             });
 
         global(".ja-preference select, .ja-access input",
             new CssRule
             {
-                MinHeight = raw("36px"),
-                Padding = padding(px(7), px(10)),
-                Color = raw("var(--text)"),
-                Background = raw("var(--surface)"),
-                Border = px(1) | solid | var("--border-strong"),
-                BorderRadius = raw("5px")
+                min_height = raw("36px"),
+                padding = padding(px(7), px(10)),
+                color = raw("var(--text)"),
+                background = raw("var(--surface)"),
+                border = px(1) | solid | var("--border-strong"),
+                border_radius = raw("5px")
             });
 
         global(".ja-preference select",
             new CssRule
             {
-                MinHeight = raw("32px"),
-                Padding = padding(px(4), px(24), px(4), px(8))
+                min_height = raw("32px"),
+                padding = padding(px(4), px(24), px(4), px(8))
             });
 
         global(".ja-user",
             new CssRule
             {
-                MaxWidth = raw("180px"),
-                Overflow = raw("hidden"),
-                FontSize = raw("13px"),
-                FontWeight = raw("650"),
-                TextOverflow = raw("ellipsis"),
-                WhiteSpace = raw("nowrap")
+                max_width = raw("180px"),
+                overflow = raw("hidden"),
+                font_size = raw("13px"),
+                font_weight = raw("650"),
+                text_overflow = raw("ellipsis"),
+                white_space = raw("nowrap")
             });
 
         global(".ja-access-command, .ja-error__action, .ja-access button",
             new CssRule
             {
-                MinHeight = raw("34px"),
-                Padding = padding(px(7), px(12)),
-                Color = raw("var(--text)"),
-                FontWeight = raw("650"),
-                Background = raw("var(--surface)"),
-                Border = px(1) | solid | var("--border-strong"),
-                BorderRadius = raw("5px")
+                min_height = raw("34px"),
+                padding = padding(px(7), px(12)),
+                color = raw("var(--text)"),
+                font_weight = raw("650"),
+                background = raw("var(--surface)"),
+                border = px(1) | solid | var("--border-strong"),
+                border_radius = raw("5px")
             });
 
         global(".ja-access-command:hover",
             new CssRule
             {
-                Background = raw("var(--surface-strong)")
+                background = raw("var(--surface-strong)")
             });
 
         global(".ja-page",
             new CssRule
             {
-                Width = raw("min(100%, 1480px)"),
-                Margin = raw("0 auto"),
-                Padding = padding(px(16))
+                width = raw("min(100%, 1480px)"),
+                margin = raw("0 auto"),
+                padding = padding(px(16))
             });
 
         global(".ja-page__header",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("flex-end"),
-                JustifyContent = raw("space-between"),
-                MarginBottom = raw("16px"),
-                Gap = raw("16px")
+                display = raw("flex"),
+                align_items = raw("flex-end"),
+                justify_content = raw("space-between"),
+                margin_bottom = raw("16px"),
+                gap = raw("16px")
             });
 
         global(".ja-page__titles",
             new CssRule
             {
-                MinWidth = raw("0")
+                min_width = raw("0")
             });
 
         global(".ja-page__breadcrumb",
             new CssRule
             {
-                Display = raw("flex"),
-                FlexWrap = raw("wrap"),
-                Gap = raw("6px"),
-                MarginBottom = raw("7px"),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("13px")
+                display = raw("flex"),
+                flex_wrap = raw("wrap"),
+                gap = raw("6px"),
+                margin_bottom = raw("7px"),
+                color = raw("var(--text-muted)"),
+                font_size = raw("13px")
             });
 
         global(".ja-page__breadcrumb-item + .ja-page__breadcrumb-item::before",
             new CssRule
             {
-                MarginRight = raw("6px"),
-                Color = raw("var(--border-strong)"),
-                Content = raw("\"/\"")
+                margin_right = raw("6px"),
+                color = raw("var(--border-strong)"),
+                content = raw("\"/\"")
             });
 
         global(".ja-page__title",
             new CssRule
             {
-                Margin = raw("0"),
-                FontSize = raw("26px"),
-                LineHeight = raw("1.25")
+                margin = raw("0"),
+                font_size = raw("26px"),
+                line_height = raw("1.25")
             });
 
         global(".ja-page__subtitle",
             new CssRule
             {
-                MaxWidth = raw("760px"),
-                Margin = raw("7px 0 0"),
-                Color = raw("var(--text-muted)"),
-                LineHeight = raw("1.5")
+                max_width = raw("760px"),
+                margin = raw("7px 0 0"),
+                color = raw("var(--text-muted)"),
+                line_height = raw("1.5")
             });
 
         global(".ja-page__actions",
             new CssRule
             {
-                Display = raw("flex"),
-                FlexWrap = raw("wrap"),
-                JustifyContent = raw("flex-end"),
-                Gap = raw("8px")
+                display = raw("flex"),
+                flex_wrap = raw("wrap"),
+                justify_content = raw("flex-end"),
+                gap = raw("8px")
             });
 
         global(".ja-error__action, .ja-access button",
             new CssRule
             {
-                Color = raw("#ffffff"),
-                Background = raw("var(--accent)"),
-                BorderColor = raw("var(--accent)")
+                color = raw("#ffffff"),
+                background = raw("var(--accent)"),
+                border_color = raw("var(--accent)")
             });
 
         global(".ja-error__action:hover, .ja-access button:hover",
             new CssRule
             {
-                Background = raw("var(--accent-strong)"),
-                BorderColor = raw("var(--accent-strong)")
+                background = raw("var(--accent-strong)"),
+                border_color = raw("var(--accent-strong)")
             });
 
         global(".ja-page__action--danger",
             new CssRule
             {
-                Color = raw("var(--danger)"),
-                BorderColor = raw("var(--danger)")
+                color = raw("var(--danger)"),
+                border_color = raw("var(--danger)")
             });
 
         global(".ja-page__body > * + *",
             new CssRule
             {
-                MarginTop = raw("16px")
+                margin_top = raw("16px")
             });
 
         global(".ja-tdesign-page-container",
             new CssRule
             {
-                Width = percent(100),
-                MinWidth = px(0),
-                Margin = margin(px(0))
+                width = percent(100),
+                min_width = px(0),
+                margin = margin(px(0))
             });
 
         global(".ja-tdesign-page-container__header",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("flex-end"),
-                JustifyContent = raw("space-between"),
-                MarginBottom = raw("16px"),
-                Gap = raw("16px")
+                display = raw("flex"),
+                align_items = raw("flex-end"),
+                justify_content = raw("space-between"),
+                margin_bottom = raw("16px"),
+                gap = raw("16px")
             });
 
         global(".ja-tdesign-page-container__titles",
             new CssRule
             {
-                MinWidth = raw("0")
+                min_width = raw("0")
             });
 
         global(".ja-tdesign-page-container__title",
             new CssRule
             {
-                MarginTop = raw("7px"),
-                FontSize = raw("26px"),
-                FontWeight = raw("700"),
-                LineHeight = raw("1.25")
+                margin_top = raw("7px"),
+                font_size = raw("26px"),
+                font_weight = raw("700"),
+                line_height = raw("1.25")
             });
 
         global(".ja-tdesign-page-container__subtitle",
             new CssRule
             {
-                MaxWidth = raw("760px"),
-                MarginTop = raw("7px"),
-                Color = raw("var(--text-muted)"),
-                LineHeight = raw("1.5")
+                max_width = raw("760px"),
+                margin_top = raw("7px"),
+                color = raw("var(--text-muted)"),
+                line_height = raw("1.5")
             });
 
         global(".ja-tdesign-page-container__body > * + *",
             new CssRule
             {
-                MarginTop = raw("16px")
+                margin_top = raw("16px")
             });
 
         global(".ja-error",
             new CssRule
             {
-                Display = raw("grid"),
-                MinHeight = raw("100vh"),
-                Padding = padding(px(32)),
-                PlaceItems = raw("center")
+                display = raw("grid"),
+                min_height = raw("100vh"),
+                padding = padding(px(32)),
+                place_items = raw("center")
             });
 
         global(".ja-access",
             new CssRule
             {
-                Display = raw("grid"),
-                Position = raw("relative"),
-                Isolation = isolate,
-                MinHeight = raw("100vh"),
-                GridTemplateColumns = raw("minmax(0, 1fr) minmax(0, 1fr)"),
-                AlignItems = stretch,
-                JustifyItems = stretch,
-                Padding = padding(px(0)),
-                Overflow = hidden,
-                Background = hex("edf3ed")
+                display = raw("grid"),
+                position = raw("relative"),
+                isolation = isolate,
+                min_height = raw("100vh"),
+                grid_template_columns = raw("minmax(0, 1fr) minmax(0, 1fr)"),
+                align_items = stretch,
+                justify_items = stretch,
+                padding = padding(px(0)),
+                overflow = hidden,
+                background = hex("edf3ed")
             });
 
         global(".ja-error",
             new CssRule
             {
-                Background = raw("var(--app-bg)")
+                background = raw("var(--app-bg)")
             });
 
         global(".ja-access__panel, .ja-error__content",
             new CssRule
             {
-                Width = raw("min(100%, 448px)")
+                width = raw("min(100%, 448px)")
             });
 
         global(".ja-access__visual",
             new CssRule
             {
-                Position = relative,
-                Display = flex,
-                FlexDirection = column,
-                JustifyContent = spaceBetween,
-                MinWidth = px(0),
-                MinHeight = vh(100),
-                Padding = padding(px(40), px(56), px(48)),
-                Overflow = hidden,
-                Color = hex("ffffff"),
-                BackgroundColor = hex("0b3f42"),
-                BackgroundImage = raw("linear-gradient(90deg, rgba(7, 47, 49, 0.76), rgba(7, 47, 49, 0.22) 54%, rgba(237, 243, 237, 0.62) 100%), url('/brand/login-art.webp')"),
-                BackgroundPosition = raw("center right"),
-                BackgroundSize = cover
+                position = relative,
+                display = flex,
+                flex_direction = column,
+                justify_content = space_between,
+                min_width = px(0),
+                min_height = vh(100),
+                padding = padding(px(40), px(56), px(48)),
+                overflow = hidden,
+                color = hex("ffffff"),
+                background_color = hex("0b3f42"),
+                background_image = raw("linear-gradient(90deg, rgba(7, 47, 49, 0.76), rgba(7, 47, 49, 0.22) 54%, rgba(237, 243, 237, 0.62) 100%), url('/brand/login-art.webp')"),
+                background_position = raw("center right"),
+                background_size = cover
             });
 
         global(".ja-access__visual::after",
             new CssRule
             {
-                Position = absolute,
-                Inset = raw("0"),
-                Content = raw("\"\""),
-                Background = raw("linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.14))"),
-                PointerEvents = none
+                position = absolute,
+                inset = raw("0"),
+                content = raw("\"\""),
+                background = raw("linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.14))"),
+                pointer_events = none
             });
 
         global(".ja-access__visual > *",
             new CssRule
             {
-                Position = relative,
-                ZIndex = raw("1")
+                position = relative,
+                z_index = raw("1")
             });
 
         global(".ja-access__visual-copy",
             new CssRule
             {
-                MaxWidth = px(520)
+                max_width = px(520)
             });
 
         global(".ja-access__visual-copy h2",
             new CssRule
             {
-                Margin = margin(px(0), px(0), px(16)),
-                Color = hex("ffffff"),
-                FontSize = raw("40px"),
-                FontWeight = raw("700"),
-                LineHeight = raw("1.18")
+                margin = margin(px(0), px(0), px(16)),
+                color = hex("ffffff"),
+                font_size = raw("40px"),
+                font_weight = raw("700"),
+                line_height = raw("1.18")
             });
 
         global(".ja-access__visual-copy p",
             new CssRule
             {
-                MaxWidth = px(440),
-                Color = raw("rgba(255, 255, 255, 0.76)"),
-                FontSize = px(16),
-                LineHeight = raw("1.7")
+                max_width = px(440),
+                color = raw("rgba(255, 255, 255, 0.76)"),
+                font_size = px(16),
+                line_height = raw("1.7")
             });
 
         global(".ja-access__panel",
             new CssRule
             {
-                Position = relative,
-                ZIndex = raw("1"),
-                GridColumn = 2,
-                AlignSelf = center,
-                JustifySelf = center,
-                Padding = padding(px(56), px(56)),
-                Overflow = hidden,
-                Color = hex("1d2129"),
-                Background = raw("transparent"),
-                Border = raw("0"),
-                BorderRadius = px(0),
-                BoxShadow = raw("none")
+                position = relative,
+                z_index = raw("1"),
+                grid_column = 2,
+                align_self = center,
+                justify_self = center,
+                padding = padding(px(56), px(56)),
+                overflow = hidden,
+                color = hex("1d2129"),
+                background = raw("transparent"),
+                border = raw("0"),
+                border_radius = px(0),
+                box_shadow = raw("none")
             });
 
         global(".ja-access__panel > .ja-access__brand",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         global(".ja-access__brand",
             new CssRule
             {
-                Display = raw("inline-flex"),
-                AlignItems = raw("center"),
-                Gap = raw("12px"),
-                Color = raw("currentColor"),
-                FontSize = raw("18px"),
-                LineHeight = raw("1")
+                display = raw("inline-flex"),
+                align_items = raw("center"),
+                gap = raw("12px"),
+                color = raw("currentColor"),
+                font_size = raw("18px"),
+                line_height = raw("1")
             });
 
         global(".ja-access__brand-mark",
             new CssRule
             {
-                Display = raw("block"),
-                Flex = raw("0 0 auto"),
-                Width = raw("44px"),
-                Height = raw("44px"),
-                Filter = raw("drop-shadow(0 8px 18px rgba(4, 24, 33, 0.28))")
+                display = raw("block"),
+                flex = raw("0 0 auto"),
+                width = raw("44px"),
+                height = raw("44px"),
+                filter = raw("drop-shadow(0 8px 18px rgba(4, 24, 33, 0.28))")
             });
 
         global(".ja-access__brand-copy",
             new CssRule
             {
-                Display = raw("grid"),
-                Gap = raw("5px")
+                display = raw("grid"),
+                gap = raw("5px")
             });
 
         global(".ja-access__brand-copy small",
             new CssRule
             {
-                Color = raw("rgba(255, 255, 255, 0.68)"),
-                FontSize = raw("11px"),
-                FontWeight = raw("600"),
-                TextTransform = raw("uppercase")
+                color = raw("rgba(255, 255, 255, 0.68)"),
+                font_size = raw("11px"),
+                font_weight = raw("600"),
+                text_transform = raw("uppercase")
             });
 
         global(".ja-brand-logo",
             new CssRule
             {
-                Display = raw("inline-flex"),
-                AlignItems = raw("center"),
-                Gap = raw("8px"),
-                Color = raw("var(--text)"),
-                FontSize = raw("16px"),
-                FontWeight = raw("700"),
-                LineHeight = raw("1")
+                display = raw("inline-flex"),
+                align_items = raw("center"),
+                gap = raw("8px"),
+                color = raw("var(--text)"),
+                font_size = raw("16px"),
+                font_weight = raw("700"),
+                line_height = raw("1")
             });
 
         global(".ja-brand-mark",
             new CssRule
             {
-                Display = raw("block"),
-                Flex = raw("0 0 auto"),
-                Width = raw("24px"),
-                Height = raw("24px")
+                display = raw("block"),
+                flex = raw("0 0 auto"),
+                width = raw("24px"),
+                height = raw("24px")
             });
 
         global(".ja-access__intro",
             new CssRule
             {
-                MarginTop = raw("0")
+                margin_top = raw("0")
             });
 
         global(".ja-access h1",
             new CssRule
             {
-                Margin = raw("0 0 10px"),
-                Color = raw("#1d2129"),
-                FontSize = raw("28px"),
-                FontWeight = raw("700"),
-                TextShadow = raw("none")
+                margin = raw("0 0 10px"),
+                color = raw("#1d2129"),
+                font_size = raw("28px"),
+                font_weight = raw("700"),
+                text_shadow = raw("none")
             });
 
         global(".ja-access p",
             new CssRule
             {
-                Margin = raw("0"),
-                Color = raw("#86909c"),
-                LineHeight = raw("1.5")
+                margin = raw("0"),
+                color = raw("#86909c"),
+                line_height = raw("1.5")
             });
 
         global(".ja-access form",
             new CssRule
             {
-                Display = raw("grid"),
-                MarginTop = raw("32px"),
-                Gap = raw("18px")
+                display = raw("grid"),
+                margin_top = raw("32px"),
+                gap = raw("18px")
             });
 
         global(".ja-access label",
             new CssRule
             {
-                Display = raw("grid"),
-                Gap = raw("8px"),
-                Color = raw("#4e5969"),
-                FontSize = raw("12px"),
-                FontWeight = raw("650"),
-                TextShadow = raw("none")
+                display = raw("grid"),
+                gap = raw("8px"),
+                color = raw("#4e5969"),
+                font_size = raw("12px"),
+                font_weight = raw("650"),
+                text_shadow = raw("none")
             });
 
         global(".ja-access input",
             new CssRule
             {
-                Width = raw("100%"),
-                MinHeight = raw("40px"),
-                Padding = padding(px(8), px(12)),
-                Color = raw("#1d2129"),
-                Background = raw("#ffffff"),
-                Border = px(1) | solid | raw("#dcdcdc"),
-                BorderRadius = raw("3px"),
-                BoxShadow = raw("none")
+                width = raw("100%"),
+                min_height = raw("40px"),
+                padding = padding(px(8), px(12)),
+                color = raw("#1d2129"),
+                background = raw("#ffffff"),
+                border = px(1) | solid | raw("#dcdcdc"),
+                border_radius = raw("3px"),
+                box_shadow = raw("none")
             });
 
         global(".ja-access input:focus",
             new CssRule
             {
-                Background = raw("#ffffff"),
-                BorderColor = raw("#0052d9"),
-                BoxShadow = raw("0 0 0 2px rgba(0, 82, 217, 0.12)")
+                background = raw("#ffffff"),
+                border_color = raw("#0052d9"),
+                box_shadow = raw("0 0 0 2px rgba(0, 82, 217, 0.12)")
             });
 
         global(".ja-access button",
             new CssRule
             {
-                MinHeight = raw("40px"),
-                Color = raw("#ffffff"),
-                Background = raw("#0052d9"),
-                Border = px(1) | solid | raw("#0052d9"),
-                BorderRadius = raw("3px"),
-                BoxShadow = raw("none")
+                min_height = raw("40px"),
+                color = raw("#ffffff"),
+                background = raw("#0052d9"),
+                border = px(1) | solid | raw("#0052d9"),
+                border_radius = raw("3px"),
+                box_shadow = raw("none")
             });
 
         global(".ja-access button:hover",
             new CssRule
             {
-                Background = raw("#266fe8"),
-                BorderColor = raw("#266fe8")
+                background = raw("#266fe8"),
+                border_color = raw("#266fe8")
             });
 
         global(".ja-access__captcha-control",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("minmax(0, 1fr) 112px 40px"),
-                AlignItems = raw("center"),
-                Gap = raw("8px")
+                display = raw("grid"),
+                grid_template_columns = raw("minmax(0, 1fr) 112px 40px"),
+                align_items = raw("center"),
+                gap = raw("8px")
             });
 
         global(".ja-access__captcha-control input",
             new CssRule
             {
-                MinWidth = raw("0"),
-                TextTransform = raw("uppercase"),
-                LetterSpacing = raw("0.08em")
+                min_width = raw("0"),
+                text_transform = raw("uppercase"),
+                letter_spacing = raw("0.08em")
             });
 
         global(".ja-access__captcha-image",
             new CssRule
             {
-                Display = raw("block"),
-                Width = raw("112px"),
-                Height = raw("40px"),
-                Background = raw("#f3f3f3"),
-                Border = px(1) | solid | raw("#dcdcdc"),
-                BorderRadius = raw("3px")
+                display = raw("block"),
+                width = raw("112px"),
+                height = raw("40px"),
+                background = raw("#f3f3f3"),
+                border = px(1) | solid | raw("#dcdcdc"),
+                border_radius = raw("3px")
             });
 
         global(".ja-access__captcha-refresh",
             new CssRule
             {
-                Display = raw("grid"),
-                Width = raw("40px"),
-                Height = raw("40px"),
-                MinHeight = raw("40px"),
-                Padding = padding(px(0)),
-                PlaceItems = raw("center"),
-                Color = raw("#0052d9 !important"),
-                FontSize = raw("18px"),
-                LineHeight = raw("1"),
-                Background = raw("#ffffff !important"),
-                BorderColor = raw("#dcdcdc !important"),
-                BorderRadius = raw("3px"),
-                BoxShadow = raw("none")
+                display = raw("grid"),
+                width = raw("40px"),
+                height = raw("40px"),
+                min_height = raw("40px"),
+                padding = padding(px(0)),
+                place_items = raw("center"),
+                color = raw("#0052d9 !important"),
+                font_size = raw("18px"),
+                line_height = raw("1"),
+                background = raw("#ffffff !important"),
+                border_color = raw("#dcdcdc !important"),
+                border_radius = raw("3px"),
+                box_shadow = raw("none")
             });
 
         global(".ja-access__captcha-refresh:hover",
             new CssRule
             {
-                Background = raw("#f2f3ff !important"),
-                BorderColor = raw("#0052d9 !important")
+                background = raw("#f2f3ff !important"),
+                border_color = raw("#0052d9 !important")
             });
 
         global(".ja-access__captcha-refresh:focus-visible",
             new CssRule
             {
-                Outline = px(2) | solid | rgba(0, 82, 217, 0.28),
-                OutlineOffset = raw("2px")
+                outline = px(2) | solid | rgba(0, 82, 217, 0.28),
+                outline_offset = raw("2px")
             });
 
         global(".ja-access__error",
             new CssRule
             {
-                Padding = padding(px(10), px(12)),
-                Color = raw("#d54941 !important"),
-                FontSize = raw("13px"),
-                Background = raw("#fff0ed"),
-                Border = px(1) | solid | raw("#f9d7d2"),
-                BorderRadius = raw("3px")
+                padding = padding(px(10), px(12)),
+                color = raw("#d54941 !important"),
+                font_size = raw("13px"),
+                background = raw("#fff0ed"),
+                border = px(1) | solid | raw("#f9d7d2"),
+                border_radius = raw("3px")
             });
 
         global(".ja-error__content",
             new CssRule
             {
-                TextAlign = raw("center")
+                text_align = raw("center")
             });
 
         global(".ja-error__code",
             new CssRule
             {
-                Display = raw("block"),
-                Color = raw("var(--accent)"),
-                FontSize = raw("72px"),
-                FontWeight = raw("800"),
-                LineHeight = raw("1")
+                display = raw("block"),
+                color = raw("var(--accent)"),
+                font_size = raw("72px"),
+                font_weight = raw("800"),
+                line_height = raw("1")
             });
 
         global(".ja-error--internal-server-error .ja-error__code",
             new CssRule
             {
-                Color = raw("var(--danger)")
+                color = raw("var(--danger)")
             });
 
         global(".ja-error h1",
             new CssRule
             {
-                Margin = raw("18px 0 8px"),
-                FontSize = raw("28px")
+                margin = raw("18px 0 8px"),
+                font_size = raw("28px")
             });
 
         global(".ja-error p",
             new CssRule
             {
-                Margin = raw("0"),
-                Color = raw("var(--text-muted)"),
-                LineHeight = raw("1.6")
+                margin = raw("0"),
+                color = raw("var(--text-muted)"),
+                line_height = raw("1.6")
             });
 
         global(".ja-error__action",
             new CssRule
             {
-                MarginTop = raw("24px")
+                margin_top = raw("24px")
             });
 
         global(":where(a, button, input, select):focus-visible",
             new CssRule
             {
-                Outline = px(3) | solid | raw("color-mix(in srgb, var(--accent) 35%, transparent)"),
-                OutlineOffset = raw("2px")
+                outline = px(3) | solid | raw("color-mix(in srgb, var(--accent) 35%, transparent)"),
+                outline_offset = raw("2px")
             });
 
         Media(".ja-header", "(max-width: 1080px)",
             new CssRule
             {
-                AlignItems = raw("flex-start")
+                align_items = raw("flex-start")
             });
 
         Media(".ja-header__actions", "(max-width: 1080px)",
             new CssRule
             {
-                AlignItems = raw("flex-end"),
-                FlexDirection = raw("column-reverse"),
-                Gap = raw("6px")
+                align_items = raw("flex-end"),
+                flex_direction = raw("column-reverse"),
+                gap = raw("6px")
             });
 
         Media(".ja-header__navigation", "(max-width: 1080px)",
             new CssRule
             {
-                Width = raw("100%")
+                width = raw("100%")
             });
 
         Media(".ja-preferences", "(max-width: 1080px)",
             new CssRule
             {
-                FlexWrap = raw("wrap"),
-                JustifyContent = raw("flex-end")
+                flex_wrap = raw("wrap"),
+                justify_content = raw("flex-end")
             });
 
         Media(".ja-tdesign-header", "(max-width: 1080px)",
             new CssRule
             {
-                AlignItems = center
+                align_items = center
             });
 
         Media(".ja-tdesign-header__actions", "(max-width: 1080px)",
             new CssRule
             {
-                AlignItems = raw("flex-end"),
-                FlexDirection = raw("column-reverse"),
-                Gap = raw("6px")
+                align_items = raw("flex-end"),
+                flex_direction = raw("column-reverse"),
+                gap = raw("6px")
             });
 
         Media(".ja-tdesign-header__navigation", "(max-width: 1080px)",
             new CssRule
             {
-                Width = raw("100%")
+                width = raw("100%")
             });
 
         Media(".ja-shell", "(max-width: 760px)",
             new CssRule
             {
-                Display = raw("block"),
-                MinWidth = raw("0")
+                display = raw("block"),
+                min_width = raw("0")
             });
 
         Media(".ja-shell__sidebar", "(max-width: 760px)",
             new CssRule
             {
-                Position = raw("static"),
-                Height = raw("auto"),
-                Overflow = raw("visible"),
-                BorderRight = raw("0"),
-                BorderBottom = px(1) | solid | hex("293a33")
+                position = raw("static"),
+                height = raw("auto"),
+                overflow = raw("visible"),
+                border_right = raw("0"),
+                border_bottom = px(1) | solid | hex("293a33")
             });
 
         Media(".ja-tdesign-layout", "(max-width: 760px)",
             new CssRule
             {
-                FlexDirection = raw("column !important"),
-                MinWidth = raw("0")
+                flex_direction = raw("column !important"),
+                min_width = raw("0")
             });
 
         Media(".ja-tdesign-layout[data-shell-collapsed] > [data-shell-region=\"sidebar\"]", "(max-width: 760px)",
             new CssRule
             {
-                Position = raw("static"),
-                Width = raw("100% !important"),
-                MaxWidth = raw("100%"),
-                Height = raw("auto"),
-                Overflow = raw("visible"),
-                BorderRight = raw("0"),
-                BorderBottom = px(1) | solid | var("--border"),
-                Flex = raw("0 0 auto !important")
+                position = raw("static"),
+                width = raw("100% !important"),
+                max_width = raw("100%"),
+                height = raw("auto"),
+                overflow = raw("visible"),
+                border_right = raw("0"),
+                border_bottom = px(1) | solid | var("--border"),
+                flex = raw("0 0 auto !important")
             });
 
         Media(".ja-tdesign-layout > [data-shell-region=\"main\"]", "(max-width: 760px)",
             new CssRule
             {
-                Width = raw("100%")
+                width = raw("100%")
             });
 
         Media(".ja-tdesign-layout [data-shell-region=\"header\"]", "(max-width: 760px)",
             new CssRule
             {
-                Position = staticPosition,
-                Height = important(px(64)),
-                MinHeight = px(64)
+                position = static_position,
+                height = important(px(64)),
+                min_height = px(64)
             });
 
         Media(".ja-tdesign-layout__header", "(max-width: 760px)",
             new CssRule
             {
-                AlignItems = center,
-                FlexWrap = noWrap,
-                Height = px(64)
+                align_items = center,
+                flex_wrap = no_wrap,
+                height = px(64)
             });
 
         Media(".ja-tdesign-sidebar-shell", "(max-width: 760px)",
             new CssRule
             {
-                FlexDirection = column,
-                Width = percent(100),
-                Height = auto,
-                MinHeight = px(0),
-                Overflow = visible
+                flex_direction = column,
+                width = percent(100),
+                height = auto,
+                min_height = px(0),
+                overflow = visible
             });
 
         Media(".ja-iconbar--rail", "(max-width: 760px)",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         Media(".ja-iconbar--head", "(max-width: 760px)",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         Media(".ja-tdesign-sidebar-shell__menu", "(max-width: 760px)",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         Media(".ja-tdesign-sidebar-shell__mobile-menu", "(max-width: 760px)",
             new CssRule
             {
-                Display = flex,
-                AlignItems = center,
-                Width = percent(100),
-                Height = px(64),
-                MinWidth = px(0),
-                BorderBottom = px(1) | solid | var("--border")
+                display = flex,
+                align_items = center,
+                width = percent(100),
+                height = px(64),
+                min_width = px(0),
+                border_bottom = px(1) | solid | var("--border")
             });
 
         Media(".ja-tdesign-sidebar-shell__mobile-brand", "(max-width: 760px)",
             new CssRule
             {
-                Display = inlineFlex,
-                AlignItems = center,
-                JustifyContent = center,
-                Flex = flexBox(0, 0, px(64)),
-                Width = px(64),
-                Height = px(64)
+                display = inline_flex,
+                align_items = center,
+                justify_content = center,
+                flex = flex_box(0, 0, px(64)),
+                width = px(64),
+                height = px(64)
             });
 
         Media(".ja-tdesign-sidebar-shell__mobile-brand img", "(max-width: 760px)",
             new CssRule
             {
-                Display = block,
-                Width = px(30),
-                Height = px(30)
+                display = block,
+                width = px(30),
+                height = px(30)
             });
 
         Media(".ja-tdesign-sidebar-shell__mobile-navigation", "(max-width: 760px)",
             new CssRule
             {
-                Flex = flexBox(1, 1, px(0)),
-                MinWidth = px(0),
-                OverflowX = auto
+                flex = flex_box(1, 1, px(0)),
+                min_width = px(0),
+                overflow_x = auto
             });
 
         Media(".ja-tdesign-header [data-shell-command=\"toggle-sidebar\"]", "(max-width: 760px)",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         Media("[data-navigation-orientation=\"vertical\"]", "(max-width: 760px)",
             new CssRule
             {
-                Display = important(flex),
-                AlignItems = flexStart,
-                Width = percent(100),
-                OverflowX = hidden,
-                OverscrollBehaviorInline = keyword("contain")
+                display = important(flex),
+                align_items = flex_start,
+                width = percent(100),
+                overflow_x = hidden,
+                overscroll_behavior_inline = keyword("contain")
             });
 
         Media(".ja-sidebar", "(max-width: 760px)",
             new CssRule
             {
-                MinHeight = raw("0"),
-                Padding = padding(px(10), px(12))
+                min_height = raw("0"),
+                padding = padding(px(10), px(12))
             });
 
         Media(".ja-sidebar__logo", "(max-width: 760px)",
             new CssRule
             {
-                MinHeight = raw("34px"),
-                Margin = raw("0 6px 8px"),
-                FontSize = raw("16px")
+                min_height = raw("34px"),
+                margin = raw("0 6px 8px"),
+                font_size = raw("16px")
             });
 
         Media(".ja-sidebar__list", "(max-width: 760px)",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("flex-start"),
-                Width = raw("100%"),
-                PaddingBottom = raw("3px"),
-                Gap = raw("4px"),
-                OverflowX = raw("auto"),
-                OverscrollBehaviorInline = raw("contain")
+                display = raw("flex"),
+                align_items = raw("flex-start"),
+                width = raw("100%"),
+                padding_bottom = raw("3px"),
+                gap = raw("4px"),
+                overflow_x = raw("auto"),
+                overscroll_behavior_inline = raw("contain")
             });
 
         Media(".ja-sidebar__item", "(max-width: 760px)",
             new CssRule
             {
-                Flex = raw("0 0 auto"),
-                Margin = raw("0")
+                flex = raw("0 0 auto"),
+                margin = raw("0")
             });
 
         Media(".ja-sidebar__link,   .ja-sidebar__button", "(max-width: 760px)",
             new CssRule
             {
-                MinHeight = raw("36px"),
-                Width = raw("auto"),
-                WhiteSpace = raw("nowrap")
+                min_height = raw("36px"),
+                width = raw("auto"),
+                white_space = raw("nowrap")
             });
 
         Media(".ja-sidebar__children", "(max-width: 760px)",
             new CssRule
             {
-                Display = raw("flex"),
-                Padding = padding(px(4), px(0), px(0), px(8)),
-                Gap = raw("4px")
+                display = raw("flex"),
+                padding = padding(px(4), px(0), px(0), px(8)),
+                gap = raw("4px")
             });
 
         Media(".ja-sidebar__children .ja-sidebar__item", "(max-width: 760px)",
             new CssRule
             {
-                Flex = raw("0 0 auto")
+                flex = raw("0 0 auto")
             });
 
         Media(".ja-sidebar__children .ja-sidebar__link,   .ja-sidebar__children .ja-sidebar__button", "(max-width: 760px)",
             new CssRule
             {
-                MinHeight = raw("32px"),
-                Padding = padding(px(6), px(10))
+                min_height = raw("32px"),
+                padding = padding(px(6), px(10))
             });
 
         Media(".ja-shell__header", "(max-width: 760px)",
             new CssRule
             {
-                Position = raw("static")
+                position = raw("static")
             });
 
         Media(".ja-header", "(max-width: 760px)",
             new CssRule
             {
-                Display = raw("block"),
-                MinHeight = raw("0"),
-                Padding = padding(px(12), px(16))
+                display = raw("block"),
+                min_height = raw("0"),
+                padding = padding(px(12), px(16))
             });
 
         Media(".ja-shell__sidebar-toggle", "(max-width: 760px)",
             new CssRule
             {
-                AlignSelf = raw("flex-start"),
-                Margin = raw("12px 0 0 12px")
+                align_self = raw("flex-start"),
+                margin = raw("12px 0 0 12px")
             });
 
         Media(".ja-header__subtitle", "(max-width: 760px)",
             new CssRule
             {
-                Display = raw("none")
+                display = raw("none")
             });
 
         Media(".ja-header__actions", "(max-width: 760px)",
             new CssRule
             {
-                AlignItems = raw("stretch"),
-                MarginTop = raw("10px")
+                align_items = raw("stretch"),
+                margin_top = raw("10px")
             });
 
         Media(".ja-tdesign-header", "(max-width: 760px)",
             new CssRule
             {
-                Width = percent(100),
-                Height = px(64),
-                MinHeight = px(64),
-                Padding = padding(px(0))
+                width = percent(100),
+                height = px(64),
+                min_height = px(64),
+                padding = padding(px(0))
             });
 
         Media(".ja-tdesign-header__subtitle", "(max-width: 760px)",
             new CssRule
             {
-                Display = raw("none")
+                display = raw("none")
             });
 
         Media(".ja-tdesign-header__actions", "(max-width: 760px)",
             new CssRule
             {
-                AlignItems = raw("stretch"),
-                MarginTop = raw("10px")
+                align_items = raw("stretch"),
+                margin_top = raw("10px")
             });
 
         Media(".ja-tdesign-header__navigation", "(max-width: 760px)",
             new CssRule
             {
-                MarginTop = raw("10px")
+                margin_top = raw("10px")
             });
 
         Media(".ja-header__navigation", "(max-width: 760px)",
             new CssRule
             {
-                MarginTop = raw("10px")
+                margin_top = raw("10px")
             });
 
         Media(".ja-preferences,   .ja-user-region", "(max-width: 760px)",
             new CssRule
             {
-                JustifyContent = raw("flex-start"),
-                OverflowX = raw("auto")
+                justify_content = raw("flex-start"),
+                overflow_x = raw("auto")
             });
 
         Media(".ja-page", "(max-width: 760px)",
             new CssRule
             {
-                Padding = padding(px(18), px(14), px(28))
+                padding = padding(px(18), px(14), px(28))
             });
 
         Media(".ja-page__header", "(max-width: 760px)",
             new CssRule
             {
-                Display = raw("block"),
-                MarginBottom = raw("16px")
+                display = raw("block"),
+                margin_bottom = raw("16px")
             });
 
         Media(".ja-page__title", "(max-width: 760px)",
             new CssRule
             {
-                FontSize = raw("23px")
+                font_size = raw("23px")
             });
 
         Media(".ja-page__actions", "(max-width: 760px)",
             new CssRule
             {
-                JustifyContent = raw("flex-start"),
-                MarginTop = raw("14px")
+                justify_content = raw("flex-start"),
+                margin_top = raw("14px")
             });
 
         Media(".ja-tdesign-layout__content", "(max-width: 760px)",
             new CssRule
             {
-                Margin = margin(px(8), px(8), px(12))
+                margin = margin(px(8), px(8), px(12))
             });
 
         Media(".ja-route-breadcrumb", "(max-width: 760px)",
             new CssRule
             {
-                MarginBottom = px(16)
+                margin_bottom = px(16)
             });
 
         Media(".ja-tdesign-page-container__header", "(max-width: 760px)",
             new CssRule
             {
-                Display = raw("block"),
-                MarginBottom = raw("16px")
+                display = raw("block"),
+                margin_bottom = raw("16px")
             });
 
         Media(".ja-tdesign-page-container__title", "(max-width: 760px)",
             new CssRule
             {
-                FontSize = raw("23px")
+                font_size = raw("23px")
             });
 
         Media(".ja-access,   .ja-error", "(max-width: 760px)",
             new CssRule
             {
-                Padding = padding(px(0))
+                padding = padding(px(0))
             });
 
         Media(".ja-access", "(max-width: 760px)",
             new CssRule
             {
-                GridTemplateColumns = raw("minmax(0, 1fr)"),
-                MinHeight = raw("100svh")
+                grid_template_columns = raw("minmax(0, 1fr)"),
+                min_height = raw("100svh")
             });
 
         Media(".ja-access__visual", "(max-width: 760px)",
             new CssRule
             {
-                Display = none
+                display = none
             });
 
         Media(".ja-access__panel", "(max-width: 760px)",
             new CssRule
             {
-                GridColumn = raw("1"),
-                Width = raw("min(100%, 448px)"),
-                Padding = padding(px(32), px(24)),
-                BorderRadius = px(0)
+                grid_column = raw("1"),
+                width = raw("min(100%, 448px)"),
+                padding = padding(px(32), px(24)),
+                border_radius = px(0)
             });
 
         Media(".ja-access__panel > .ja-access__brand", "(max-width: 760px)",
             new CssRule
             {
-                Display = inlineFlex,
-                MarginBottom = px(40),
-                Color = raw("#1d2129")
+                display = inline_flex,
+                margin_bottom = px(40),
+                color = raw("#1d2129")
             });
 
         Media(".ja-access__panel > .ja-access__brand .ja-access__brand-copy small", "(max-width: 760px)",
             new CssRule
             {
-                Color = raw("#86909c")
+                color = raw("#86909c")
             });
 
         Media(".ja-access__captcha-control", "(max-width: 430px)",
             new CssRule
             {
-                GridTemplateColumns = raw("minmax(0, 1fr) 48px")
+                grid_template_columns = raw("minmax(0, 1fr) 48px")
             });
 
         Media(".ja-access__captcha-image", "(max-width: 430px)",
             new CssRule
             {
-                GridColumn = raw("1 / -1"),
-                GridRow = raw("2")
+                grid_column = raw("1 / -1"),
+                grid_row = raw("2")
             });
 
         Media(".ja-error__code", "(max-width: 760px)",
             new CssRule
             {
-                FontSize = raw("58px")
+                font_size = raw("58px")
             });
 
         Media(".ja-preference-toggle", "(max-width: 430px)",
             new CssRule
             {
-                Display = raw("none")
+                display = raw("none")
             });
 
         Media(".ja-user", "(max-width: 430px)",
             new CssRule
             {
-                MaxWidth = raw("120px")
+                max_width = raw("120px")
             });
 
         // The production administration pages share a compact TDesign Starter-like work surface.
@@ -2192,850 +2192,850 @@ internal static class Styles
         global(".ja-session-state",
             new CssRule
             {
-                Display = raw("grid"),
-                MinHeight = raw("100vh"),
-                PlaceItems = raw("center"),
-                Gap = raw("10px"),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("14px"),
-                Background = raw("var(--app-bg)")
+                display = raw("grid"),
+                min_height = raw("100vh"),
+                place_items = raw("center"),
+                gap = raw("10px"),
+                color = raw("var(--text-muted)"),
+                font_size = raw("14px"),
+                background = raw("var(--app-bg)")
             });
 
         global(".ja-session-state__spinner",
             new CssRule
             {
-                Width = raw("24px"),
-                Height = raw("24px"),
-                Border = px(2) | solid | var("--border-strong"),
-                BorderTopColor = raw("var(--accent)"),
-                BorderRadius = raw("50%"),
-                Animation = raw(sessionSpin + " 720ms linear infinite")
+                width = raw("24px"),
+                height = raw("24px"),
+                border = px(2) | solid | var("--border-strong"),
+                border_top_color = raw("var(--accent)"),
+                border_radius = raw("50%"),
+                animation = raw(sessionSpin + " 720ms linear infinite")
             });
 
         global(".ja-header-context",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                MinWidth = raw("0"),
-                Gap = raw("8px")
+                display = raw("flex"),
+                align_items = raw("center"),
+                min_width = raw("0"),
+                gap = raw("8px")
             });
 
         global(".ja-organization-picker",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("auto minmax(112px, 180px)"),
-                AlignItems = raw("center"),
-                MinWidth = raw("0"),
-                PaddingRight = raw("8px"),
-                Gap = raw("7px"),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px"),
-                BorderRight = px(1) | solid | var("--border")
+                display = raw("grid"),
+                grid_template_columns = raw("auto minmax(112px, 180px)"),
+                align_items = raw("center"),
+                min_width = raw("0"),
+                padding_right = raw("8px"),
+                gap = raw("7px"),
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px"),
+                border_right = px(1) | solid | var("--border")
             });
 
         global(".ja-organization-picker select",
             new CssRule
             {
-                MinWidth = raw("0"),
-                MinHeight = raw("32px"),
-                Padding = padding(px(4), px(26), px(4), px(8)),
-                Overflow = raw("hidden"),
-                Color = raw("var(--text)"),
-                FontSize = raw("12px"),
-                FontWeight = raw("600"),
-                TextOverflow = raw("ellipsis"),
-                WhiteSpace = raw("nowrap"),
-                Background = raw("var(--surface-subtle)"),
-                Border = px(1) | solid | var("--border"),
-                BorderRadius = raw("4px")
+                min_width = raw("0"),
+                min_height = raw("32px"),
+                padding = padding(px(4), px(26), px(4), px(8)),
+                overflow = raw("hidden"),
+                color = raw("var(--text)"),
+                font_size = raw("12px"),
+                font_weight = raw("600"),
+                text_overflow = raw("ellipsis"),
+                white_space = raw("nowrap"),
+                background = raw("var(--surface-subtle)"),
+                border = px(1) | solid | var("--border"),
+                border_radius = raw("4px")
             });
 
         global(".ja-user-region",
             new CssRule
             {
-                MinWidth = raw("0"),
-                PaddingLeft = raw("8px"),
-                BorderLeft = px(1) | solid | var("--border")
+                min_width = raw("0"),
+                padding_left = raw("8px"),
+                border_left = px(1) | solid | var("--border")
             });
 
         global(".ja-access-command",
             new CssRule
             {
-                MinHeight = raw("30px"),
-                Padding = padding(px(4), px(8)),
-                FontSize = raw("12px"),
-                Background = raw("transparent"),
-                Border = raw("0")
+                min_height = raw("30px"),
+                padding = padding(px(4), px(8)),
+                font_size = raw("12px"),
+                background = raw("transparent"),
+                border = raw("0")
             });
 
         global(".ja-access-command[data-access-command=\"sign-out\"]",
             new CssRule
             {
-                Color = raw("var(--danger)")
+                color = raw("var(--danger)")
             });
 
         global(".ja-overview",
             new CssRule
             {
-                Display = raw("grid"),
-                MinWidth = raw("0"),
-                Gap = raw("16px")
+                display = raw("grid"),
+                min_width = raw("0"),
+                gap = raw("16px")
             });
 
         global(".ja-overview__metrics",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("repeat(4, minmax(0, 1fr))"),
-                Gap = raw("16px")
+                display = raw("grid"),
+                grid_template_columns = raw("repeat(4, minmax(0, 1fr))"),
+                gap = raw("16px")
             });
 
         global(".ja-overview__metric",
             new CssRule
             {
-                MinWidth = raw("0"),
-                MinHeight = raw("116px"),
-                Padding = padding(px(14), px(16)),
-                Background = raw("var(--surface)"),
-                Border = px(1) | solid | var("--border"),
-                BorderTop = px(3) | solid | var("--accent"),
-                BorderRadius = raw("6px"),
-                BoxShadow = var("--shadow"),
-                Animation = raw(dashboardEnter + " 260ms ease both")
+                min_width = raw("0"),
+                min_height = raw("116px"),
+                padding = padding(px(14), px(16)),
+                background = raw("var(--surface)"),
+                border = px(1) | solid | var("--border"),
+                border_top = px(3) | solid | var("--accent"),
+                border_radius = raw("6px"),
+                box_shadow = var("--shadow"),
+                animation = raw(dashboardEnter + " 260ms ease both")
             });
 
         global(".ja-overview__metric:nth-child(2)",
             new CssRule
             {
-                AnimationDelay = raw("35ms")
+                animation_delay = raw("35ms")
             });
 
         global(".ja-overview__metric:nth-child(3)",
             new CssRule
             {
-                AnimationDelay = raw("70ms")
+                animation_delay = raw("70ms")
             });
 
         global(".ja-overview__metric:nth-child(4)",
             new CssRule
             {
-                AnimationDelay = raw("105ms")
+                animation_delay = raw("105ms")
             });
 
         global(".ja-overview__metric span, .ja-overview__metric small",
             new CssRule
             {
-                Display = raw("block"),
-                Overflow = raw("hidden"),
-                Color = raw("var(--text-muted)"),
-                TextOverflow = raw("ellipsis"),
-                WhiteSpace = raw("nowrap")
+                display = raw("block"),
+                overflow = raw("hidden"),
+                color = raw("var(--text-muted)"),
+                text_overflow = raw("ellipsis"),
+                white_space = raw("nowrap")
             });
 
         global(".ja-overview__metric span",
             new CssRule
             {
-                FontSize = raw("13px"),
-                FontWeight = raw("600")
+                font_size = raw("13px"),
+                font_weight = raw("600")
             });
 
         global(".ja-overview__metric strong",
             new CssRule
             {
-                Display = raw("block"),
-                Margin = raw("12px 0 6px"),
-                Overflow = raw("hidden"),
-                FontSize = raw("24px"),
-                LineHeight = raw("1"),
-                TextOverflow = raw("ellipsis"),
-                WhiteSpace = raw("nowrap")
+                display = raw("block"),
+                margin = raw("12px 0 6px"),
+                overflow = raw("hidden"),
+                font_size = raw("24px"),
+                line_height = raw("1"),
+                text_overflow = raw("ellipsis"),
+                white_space = raw("nowrap")
             });
 
         global(".ja-overview__metric small",
             new CssRule
             {
-                FontSize = raw("12px")
+                font_size = raw("12px")
             });
 
         global(".ja-overview__grid",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("repeat(2, minmax(0, 1fr))"),
-                MinWidth = raw("0"),
-                Gap = raw("16px")
+                display = raw("grid"),
+                grid_template_columns = raw("repeat(2, minmax(0, 1fr))"),
+                min_width = raw("0"),
+                gap = raw("16px")
             });
 
         global(".ja-overview__panel, .ja-management__panel",
             new CssRule
             {
-                MinWidth = raw("0"),
-                Background = raw("var(--surface)"),
-                Border = px(1) | solid | var("--border"),
-                BorderRadius = raw("6px"),
-                BoxShadow = var("--shadow")
+                min_width = raw("0"),
+                background = raw("var(--surface)"),
+                border = px(1) | solid | var("--border"),
+                border_radius = raw("6px"),
+                box_shadow = var("--shadow")
             });
 
         global(".ja-overview__panel-header, .ja-management__panel-header",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                JustifyContent = raw("space-between"),
-                MinHeight = raw("56px"),
-                Padding = padding(px(12), px(16)),
-                Gap = raw("12px"),
-                BorderBottom = px(1) | solid | var("--border")
+                display = raw("flex"),
+                align_items = raw("center"),
+                justify_content = raw("space-between"),
+                min_height = raw("56px"),
+                padding = padding(px(12), px(16)),
+                gap = raw("12px"),
+                border_bottom = px(1) | solid | var("--border")
             });
 
         global(".ja-overview__panel-header h2, .ja-overview__panel-header p, .ja-management__panel-header h2, .ja-management__panel-header p",
             new CssRule
             {
-                Margin = raw("0")
+                margin = raw("0")
             });
 
         global(".ja-overview__panel-header h2, .ja-management__panel-header h2",
             new CssRule
             {
-                FontSize = raw("15px"),
-                FontWeight = raw("650")
+                font_size = raw("15px"),
+                font_weight = raw("650")
             });
 
         global(".ja-overview__panel-header p, .ja-management__panel-header p",
             new CssRule
             {
-                MarginTop = raw("5px"),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px"),
-                LineHeight = raw("1.4")
+                margin_top = raw("5px"),
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px"),
+                line_height = raw("1.4")
             });
 
         global(".ja-overview__organization-list, .ja-overview__role-list, .ja-management__item-list, .ja-management__role-list",
             new CssRule
             {
-                Padding = padding(px(0)),
-                Margin = raw("0"),
-                ListStyle = raw("none")
+                padding = padding(px(0)),
+                margin = raw("0"),
+                list_style = raw("none")
             });
 
         global(".ja-overview__organization-list li, .ja-overview__role-list li, .ja-management__item-list li",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                MinHeight = raw("48px"),
-                Padding = padding(px(10), px(20)),
-                Gap = raw("10px"),
-                BorderBottom = px(1) | solid | var("--border")
+                display = raw("flex"),
+                align_items = raw("center"),
+                min_height = raw("48px"),
+                padding = padding(px(10), px(20)),
+                gap = raw("10px"),
+                border_bottom = px(1) | solid | var("--border")
             });
 
         global(".ja-overview__organization-list li.is-current",
             new CssRule
             {
-                Color = raw("var(--accent-strong)"),
-                Background = raw("var(--accent-soft)")
+                color = raw("var(--accent-strong)"),
+                background = raw("var(--accent-soft)")
             });
 
         global(".ja-overview__organization-code, .ja-management__code",
             new CssRule
             {
-                Flex = raw("0 0 auto"),
-                Padding = padding(px(3), px(6)),
-                Color = raw("var(--accent-strong)"),
-                FontSize = raw("11px"),
-                FontWeight = raw("650"),
-                Background = raw("var(--accent-soft)"),
-                BorderRadius = raw("3px")
+                flex = raw("0 0 auto"),
+                padding = padding(px(3), px(6)),
+                color = raw("var(--accent-strong)"),
+                font_size = raw("11px"),
+                font_weight = raw("650"),
+                background = raw("var(--accent-soft)"),
+                border_radius = raw("3px")
             });
 
         global(".ja-overview__role-list li",
             new CssRule
             {
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("13px")
+                color = raw("var(--text-muted)"),
+                font_size = raw("13px")
             });
 
         global(".ja-overview__empty, .ja-management__empty, .ja-management__loading, .ja-management__error",
             new CssRule
             {
-                Margin = raw("0"),
-                Padding = padding(px(20)),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("13px"),
-                LineHeight = raw("1.5")
+                margin = raw("0"),
+                padding = padding(px(20)),
+                color = raw("var(--text-muted)"),
+                font_size = raw("13px"),
+                line_height = raw("1.5")
             });
 
         global(".ja-management__error",
             new CssRule
             {
-                Color = raw("var(--danger)"),
-                Background = raw("var(--danger-soft)"),
-                Border = px(1) | solid | raw("color-mix(in srgb, var(--danger) 30%, var(--border))"),
-                BorderRadius = raw("6px")
+                color = raw("var(--danger)"),
+                background = raw("var(--danger-soft)"),
+                border = px(1) | solid | raw("color-mix(in srgb, var(--danger) 30%, var(--border))"),
+                border_radius = raw("6px")
             });
 
         global(".ja-management",
             new CssRule
             {
-                Display = raw("grid"),
-                MinWidth = raw("0"),
-                Gap = raw("16px")
+                display = raw("grid"),
+                min_width = raw("0"),
+                gap = raw("16px")
             });
 
         global(".ja-management__split",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("minmax(0, 7fr) minmax(300px, 4fr)"),
-                AlignItems = raw("start"),
-                MinWidth = raw("0"),
-                Gap = raw("16px")
+                display = raw("grid"),
+                grid_template_columns = raw("minmax(0, 7fr) minmax(300px, 4fr)"),
+                align_items = raw("start"),
+                min_width = raw("0"),
+                gap = raw("16px")
             });
 
         global(".ja-management__split--authorization",
             new CssRule
             {
-                GridTemplateColumns = raw("minmax(260px, 4fr) minmax(0, 7fr)")
+                grid_template_columns = raw("minmax(260px, 4fr) minmax(0, 7fr)")
             });
 
         global(".ja-management__split--members",
             new CssRule
             {
-                GridTemplateColumns = raw("minmax(0, 7fr) minmax(320px, 4fr)")
+                grid_template_columns = raw("minmax(0, 7fr) minmax(320px, 4fr)")
             });
 
         global(".ja-management__panel > h3, .ja-management__role-editor h3",
             new CssRule
             {
-                Margin = raw("20px 20px 10px"),
-                FontSize = raw("14px")
+                margin = raw("20px 20px 10px"),
+                font_size = raw("14px")
             });
 
         global(".ja-management__details",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("repeat(3, minmax(0, 1fr))"),
-                Padding = padding(px(20)),
-                Margin = raw("0"),
-                Gap = raw("12px")
+                display = raw("grid"),
+                grid_template_columns = raw("repeat(3, minmax(0, 1fr))"),
+                padding = padding(px(20)),
+                margin = raw("0"),
+                gap = raw("12px")
             });
 
         global(".ja-management__details div",
             new CssRule
             {
-                MinWidth = raw("0"),
-                Padding = padding(px(12)),
-                Background = raw("var(--surface-subtle)"),
-                Border = px(1) | solid | var("--border"),
-                BorderRadius = raw("4px")
+                min_width = raw("0"),
+                padding = padding(px(12)),
+                background = raw("var(--surface-subtle)"),
+                border = px(1) | solid | var("--border"),
+                border_radius = raw("4px")
             });
 
         global(".ja-management__details dt, .ja-management__details dd",
             new CssRule
             {
-                Margin = raw("0")
+                margin = raw("0")
             });
 
         global(".ja-management__details dt",
             new CssRule
             {
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px")
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px")
             });
 
         global(".ja-management__details dd",
             new CssRule
             {
-                MarginTop = raw("6px"),
-                Overflow = raw("hidden"),
-                FontSize = raw("13px"),
-                FontWeight = raw("600"),
-                TextOverflow = raw("ellipsis"),
-                WhiteSpace = raw("nowrap")
+                margin_top = raw("6px"),
+                overflow = raw("hidden"),
+                font_size = raw("13px"),
+                font_weight = raw("600"),
+                text_overflow = raw("ellipsis"),
+                white_space = raw("nowrap")
             });
 
         global(".ja-management__form",
             new CssRule
             {
-                Display = raw("grid"),
-                Padding = padding(px(20)),
-                Gap = raw("14px")
+                display = raw("grid"),
+                padding = padding(px(20)),
+                gap = raw("14px")
             });
 
         global(".ja-management__form--inline",
             new CssRule
             {
-                GridTemplateColumns = raw("minmax(0, 1fr) minmax(0, 1fr) auto"),
-                AlignItems = raw("end")
+                grid_template_columns = raw("minmax(0, 1fr) minmax(0, 1fr) auto"),
+                align_items = raw("end")
             });
 
         global(".ja-management__form label",
             new CssRule
             {
-                Display = raw("grid"),
-                Gap = raw("6px"),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px"),
-                FontWeight = raw("600")
+                display = raw("grid"),
+                gap = raw("6px"),
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px"),
+                font_weight = raw("600")
             });
 
         global(".ja-management input, .ja-management select, .ja-management textarea",
             new CssRule
             {
-                Width = raw("100%"),
-                MinHeight = raw("34px"),
-                Padding = padding(px(6), px(9)),
-                Color = raw("var(--text)"),
-                Background = raw("var(--surface)"),
-                Border = px(1) | solid | var("--border-strong"),
-                BorderRadius = raw("4px")
+                width = raw("100%"),
+                min_height = raw("34px"),
+                padding = padding(px(6), px(9)),
+                color = raw("var(--text)"),
+                background = raw("var(--surface)"),
+                border = px(1) | solid | var("--border-strong"),
+                border_radius = raw("4px")
             });
 
         global(".ja-management textarea",
             new CssRule
             {
-                MinHeight = raw("76px"),
-                Resize = raw("vertical"),
-                LineHeight = raw("1.5")
+                min_height = raw("76px"),
+                resize = raw("vertical"),
+                line_height = raw("1.5")
             });
 
         global(".ja-management__field-grid",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("repeat(2, minmax(0, 1fr))"),
-                Gap = raw("14px")
+                display = raw("grid"),
+                grid_template_columns = raw("repeat(2, minmax(0, 1fr))"),
+                gap = raw("14px")
             });
 
         global(".ja-management__options",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("repeat(2, minmax(0, 1fr))"),
-                Padding = padding(px(12)),
-                Margin = raw("0"),
-                Gap = raw("10px 14px"),
-                Border = px(1) | solid | var("--border"),
-                BorderRadius = raw("4px")
+                display = raw("grid"),
+                grid_template_columns = raw("repeat(2, minmax(0, 1fr))"),
+                padding = padding(px(12)),
+                margin = raw("0"),
+                gap = raw("10px 14px"),
+                border = px(1) | solid | var("--border"),
+                border_radius = raw("4px")
             });
 
         global(".ja-management__options legend",
             new CssRule
             {
-                Padding = padding(px(0), px(5)),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px"),
-                FontWeight = raw("650")
+                padding = padding(px(0), px(5)),
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px"),
+                font_weight = raw("650")
             });
 
         global(".ja-management__options label",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                MinWidth = raw("0"),
-                Gap = raw("8px"),
-                Color = raw("var(--text)"),
-                FontSize = raw("13px"),
-                FontWeight = raw("500")
+                display = raw("flex"),
+                align_items = raw("center"),
+                min_width = raw("0"),
+                gap = raw("8px"),
+                color = raw("var(--text)"),
+                font_size = raw("13px"),
+                font_weight = raw("500")
             });
 
         global(".ja-management__options input",
             new CssRule
             {
-                Flex = raw("0 0 16px"),
-                Width = raw("16px"),
-                MinHeight = raw("16px"),
-                Padding = padding(px(0))
+                flex = raw("0 0 16px"),
+                width = raw("16px"),
+                min_height = raw("16px"),
+                padding = padding(px(0))
             });
 
         global(".ja-management__profiles",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("repeat(3, minmax(0, 1fr))"),
-                Margin = raw("20px 20px 0"),
-                Border = px(1) | solid | var("--border-strong"),
-                BorderRadius = raw("4px"),
-                Overflow = raw("hidden")
+                display = raw("grid"),
+                grid_template_columns = raw("repeat(3, minmax(0, 1fr))"),
+                margin = raw("20px 20px 0"),
+                border = px(1) | solid | var("--border-strong"),
+                border_radius = raw("4px"),
+                overflow = raw("hidden")
             });
 
         global(".ja-management__profiles button",
             new CssRule
             {
-                Color = raw("var(--text-muted)"),
-                Background = raw("var(--surface)"),
-                Border = raw("0"),
-                BorderRight = px(1) | solid | var("--border-strong"),
-                BorderRadius = raw("0")
+                color = raw("var(--text-muted)"),
+                background = raw("var(--surface)"),
+                border = raw("0"),
+                border_right = px(1) | solid | var("--border-strong"),
+                border_radius = raw("0")
             });
 
         global(".ja-management__profiles button:last-child",
             new CssRule
             {
-                BorderRight = raw("0")
+                border_right = raw("0")
             });
 
         global(".ja-management__profiles button:hover, .ja-management__profiles button.is-selected",
             new CssRule
             {
-                Color = raw("var(--accent-strong)"),
-                Background = raw("var(--accent-soft)")
+                color = raw("var(--accent-strong)"),
+                background = raw("var(--accent-soft)")
             });
 
         global(".ja-management__commands",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                FlexWrap = raw("wrap"),
-                Gap = raw("8px")
+                display = raw("flex"),
+                align_items = raw("center"),
+                flex_wrap = raw("wrap"),
+                gap = raw("8px")
             });
 
         global(".ja-management__secondary-button",
             new CssRule
             {
-                Color = raw("var(--text) !important"),
-                Background = raw("var(--surface) !important"),
-                BorderColor = raw("var(--border-strong) !important")
+                color = raw("var(--text) !important"),
+                background = raw("var(--surface) !important"),
+                border_color = raw("var(--border-strong) !important")
             });
 
         global(".ja-management__danger-button",
             new CssRule
             {
-                Color = raw("var(--danger) !important"),
-                Background = raw("var(--danger-soft) !important"),
-                BorderColor = raw("color-mix(in srgb, var(--danger) 45%, var(--border)) !important")
+                color = raw("var(--danger) !important"),
+                background = raw("var(--danger-soft) !important"),
+                border_color = raw("color-mix(in srgb, var(--danger) 45%, var(--border)) !important")
             });
 
         global(".ja-management__secret",
             new CssRule
             {
-                Display = raw("grid"),
-                Padding = padding(px(14)),
-                Margin = raw("20px 20px 0"),
-                Gap = raw("6px"),
-                Color = raw("var(--text)"),
-                Background = raw("var(--warning-soft)"),
-                Border = px(1) | solid | raw("color-mix(in srgb, var(--warning) 38%, var(--border))"),
-                BorderRadius = raw("4px")
+                display = raw("grid"),
+                padding = padding(px(14)),
+                margin = raw("20px 20px 0"),
+                gap = raw("6px"),
+                color = raw("var(--text)"),
+                background = raw("var(--warning-soft)"),
+                border = px(1) | solid | raw("color-mix(in srgb, var(--warning) 38%, var(--border))"),
+                border_radius = raw("4px")
             });
 
         global(".ja-management__secret code",
             new CssRule
             {
-                OverflowWrap = raw("anywhere"),
-                FontSize = raw("13px")
+                overflow_wrap = raw("anywhere"),
+                font_size = raw("13px")
             });
 
         global(".ja-management__secret span",
             new CssRule
             {
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px")
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px")
             });
 
         global(".ja-management button",
             new CssRule
             {
-                MinHeight = raw("34px"),
-                Padding = padding(px(6), px(12)),
-                Color = raw("#ffffff"),
-                FontSize = raw("13px"),
-                FontWeight = raw("600"),
-                Background = raw("var(--accent)"),
-                Border = px(1) | solid | var("--accent"),
-                BorderRadius = raw("4px")
+                min_height = raw("34px"),
+                padding = padding(px(6), px(12)),
+                color = raw("#ffffff"),
+                font_size = raw("13px"),
+                font_weight = raw("600"),
+                background = raw("var(--accent)"),
+                border = px(1) | solid | var("--accent"),
+                border_radius = raw("4px")
             });
 
         global(".ja-management button:hover",
             new CssRule
             {
-                Background = raw("var(--accent-strong)")
+                background = raw("var(--accent-strong)")
             });
 
         global(".ja-management__table-wrap",
             new CssRule
             {
-                Width = raw("100%"),
-                OverflowX = raw("auto")
+                width = raw("100%"),
+                overflow_x = raw("auto")
             });
 
         global(".ja-management__table",
             new CssRule
             {
-                Width = raw("100%"),
-                MinWidth = raw("560px"),
-                BorderCollapse = raw("collapse")
+                width = raw("100%"),
+                min_width = raw("560px"),
+                border_collapse = raw("collapse")
             });
 
         global(".ja-management__table th, .ja-management__table td",
             new CssRule
             {
-                Padding = padding(px(13), px(20)),
-                TextAlign = raw("left"),
-                VerticalAlign = raw("middle"),
-                BorderBottom = px(1) | solid | var("--border")
+                padding = padding(px(13), px(20)),
+                text_align = raw("left"),
+                vertical_align = raw("middle"),
+                border_bottom = px(1) | solid | var("--border")
             });
 
         global(".ja-management__table th",
             new CssRule
             {
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px"),
-                FontWeight = raw("600"),
-                Background = raw("var(--surface-subtle)")
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px"),
+                font_weight = raw("600"),
+                background = raw("var(--surface-subtle)")
             });
 
         global(".ja-management__table td",
             new CssRule
             {
-                FontSize = raw("13px")
+                font_size = raw("13px")
             });
 
         global(".ja-management__table td strong, .ja-management__table td span",
             new CssRule
             {
-                Display = raw("block")
+                display = raw("block")
             });
 
         global(".ja-management__table td span",
             new CssRule
             {
-                MarginTop = raw("3px"),
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("12px")
+                margin_top = raw("3px"),
+                color = raw("var(--text-muted)"),
+                font_size = raw("12px")
             });
 
         global(".ja-management__table tr.is-selected td, .ja-management__table tbody tr:hover td",
             new CssRule
             {
-                Background = raw("var(--accent-soft)")
+                background = raw("var(--accent-soft)")
             });
 
         global(".ja-management__text-button",
             new CssRule
             {
-                Padding = important(padding(px(4), px(0))),
-                Color = raw("var(--accent) !important"),
-                Background = raw("transparent !important"),
-                Border = raw("0 !important")
+                padding = important(padding(px(4), px(0))),
+                color = raw("var(--accent) !important"),
+                background = raw("transparent !important"),
+                border = raw("0 !important")
             });
 
         global(".ja-management__role-list",
             new CssRule
             {
-                Padding = padding(px(8), px(0))
+                padding = padding(px(8), px(0))
             });
 
         global(".ja-management__role-list button",
             new CssRule
             {
-                Display = raw("flex"),
-                AlignItems = raw("center"),
-                JustifyContent = raw("space-between"),
-                Width = raw("100%"),
-                Padding = padding(px(11), px(20)),
-                Color = raw("var(--text)"),
-                TextAlign = raw("left"),
-                Background = raw("transparent"),
-                Border = raw("0"),
-                BorderLeft = px(3) | solid | transparent,
-                BorderRadius = raw("0")
+                display = raw("flex"),
+                align_items = raw("center"),
+                justify_content = raw("space-between"),
+                width = raw("100%"),
+                padding = padding(px(11), px(20)),
+                color = raw("var(--text)"),
+                text_align = raw("left"),
+                background = raw("transparent"),
+                border = raw("0"),
+                border_left = px(3) | solid | transparent,
+                border_radius = raw("0")
             });
 
         global(".ja-management__role-list button:hover, .ja-management__role-list li.is-selected button",
             new CssRule
             {
-                Color = raw("var(--accent-strong)"),
-                Background = raw("var(--accent-soft)"),
-                BorderLeftColor = raw("var(--accent)")
+                color = raw("var(--accent-strong)"),
+                background = raw("var(--accent-soft)"),
+                border_left_color = raw("var(--accent)")
             });
 
         global(".ja-management__role-list small, .ja-management__check small",
             new CssRule
             {
-                Color = raw("var(--text-muted)"),
-                FontSize = raw("11px")
+                color = raw("var(--text-muted)"),
+                font_size = raw("11px")
             });
 
         global(".ja-management__grant-list, .ja-management__role-editor",
             new CssRule
             {
-                Display = raw("grid"),
-                Padding = padding(px(12), px(20), px(20)),
-                Gap = raw("8px")
+                display = raw("grid"),
+                padding = padding(px(12), px(20), px(20)),
+                gap = raw("8px")
             });
 
         global(".ja-management__check",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("16px minmax(0, 1fr) auto"),
-                AlignItems = raw("center"),
-                MinHeight = raw("40px"),
-                Padding = padding(px(7), px(9)),
-                Gap = raw("8px"),
-                FontSize = raw("13px"),
-                Background = raw("var(--surface-subtle)"),
-                Border = px(1) | solid | var("--border"),
-                BorderRadius = raw("4px")
+                display = raw("grid"),
+                grid_template_columns = raw("16px minmax(0, 1fr) auto"),
+                align_items = raw("center"),
+                min_height = raw("40px"),
+                padding = padding(px(7), px(9)),
+                gap = raw("8px"),
+                font_size = raw("13px"),
+                background = raw("var(--surface-subtle)"),
+                border = px(1) | solid | var("--border"),
+                border_radius = raw("4px")
             });
 
         global(".ja-management__check input",
             new CssRule
             {
-                Width = raw("16px"),
-                MinHeight = raw("16px"),
-                Padding = padding(px(0))
+                width = raw("16px"),
+                min_height = raw("16px"),
+                padding = padding(px(0))
             });
 
         global(".ja-management__grant-list + button, .ja-management__role-editor > button",
             new CssRule
             {
-                Margin = raw("0 20px 20px")
+                margin = raw("0 20px 20px")
             });
 
         Media(".ja-overview__metrics", "(max-width: 1100px)",
             new CssRule
             {
-                GridTemplateColumns = raw("repeat(2, minmax(0, 1fr))")
+                grid_template_columns = raw("repeat(2, minmax(0, 1fr))")
             });
 
         Media(".ja-management__split, .ja-management__split--authorization, .ja-management__split--members", "(max-width: 980px)",
             new CssRule
             {
-                GridTemplateColumns = raw("1fr")
+                grid_template_columns = raw("1fr")
             });
 
         Media(".ja-header-context", "(max-width: 1080px)",
             new CssRule
             {
-                FlexWrap = raw("wrap"),
-                JustifyContent = raw("flex-end")
+                flex_wrap = raw("wrap"),
+                justify_content = raw("flex-end")
             });
 
         Media(".ja-overview__grid", "(max-width: 760px)",
             new CssRule
             {
-                GridTemplateColumns = raw("1fr")
+                grid_template_columns = raw("1fr")
             });
 
         Media(".ja-management__details", "(max-width: 620px)",
             new CssRule
             {
-                GridTemplateColumns = raw("1fr")
+                grid_template_columns = raw("1fr")
             });
 
         Media(".ja-overview__metrics", "(max-width: 620px)",
             new CssRule
             {
-                GridTemplateColumns = raw("1fr")
+                grid_template_columns = raw("1fr")
             });
 
         Media(".ja-management__form--inline", "(max-width: 620px)",
             new CssRule
             {
-                GridTemplateColumns = raw("1fr")
+                grid_template_columns = raw("1fr")
             });
 
         Media(".ja-management__field-grid, .ja-management__options", "(max-width: 620px)",
             new CssRule
             {
-                GridTemplateColumns = raw("1fr")
+                grid_template_columns = raw("1fr")
             });
 
         Media(".ja-management__commands button", "(max-width: 620px)",
             new CssRule
             {
-                Flex = raw("1 1 100%"),
-                Width = raw("100%")
+                flex = raw("1 1 100%"),
+                width = raw("100%")
             });
 
         Media(".ja-organization-picker", "(max-width: 620px)",
             new CssRule
             {
-                GridTemplateColumns = raw("1fr"),
-                PaddingRight = raw("0"),
-                BorderRight = raw("0")
+                grid_template_columns = raw("1fr"),
+                padding_right = raw("0"),
+                border_right = raw("0")
             });
 
         global(".ja-schedules__status",
             new CssRule
             {
-                Display = raw("inline-block !important"),
-                Padding = padding(px(3), px(7)),
-                MarginTop = raw("0 !important"),
-                FontSize = raw("11px !important"),
-                FontWeight = raw("650"),
-                BorderRadius = raw("3px")
+                display = raw("inline-block !important"),
+                padding = padding(px(3), px(7)),
+                margin_top = raw("0 !important"),
+                font_size = raw("11px !important"),
+                font_weight = raw("650"),
+                border_radius = raw("3px")
             });
 
         global(".ja-schedules__status.is-enabled",
             new CssRule
             {
-                Color = raw("var(--success) !important"),
-                Background = raw("var(--success-soft)")
+                color = raw("var(--success) !important"),
+                background = raw("var(--success-soft)")
             });
 
         global(".ja-schedules__status.is-disabled",
             new CssRule
             {
-                Color = raw("var(--text-muted) !important"),
-                Background = raw("var(--surface-strong)")
+                color = raw("var(--text-muted) !important"),
+                background = raw("var(--surface-strong)")
             });
 
         global(".ja-schedules__summary",
             new CssRule
             {
-                Display = raw("grid"),
-                Padding = padding(px(12)),
-                Margin = raw("0"),
-                Gap = raw("10px"),
-                Background = raw("var(--surface-subtle)"),
-                Border = px(1) | solid | var("--border"),
-                BorderRadius = raw("4px")
+                display = raw("grid"),
+                padding = padding(px(12)),
+                margin = raw("0"),
+                gap = raw("10px"),
+                background = raw("var(--surface-subtle)"),
+                border = px(1) | solid | var("--border"),
+                border_radius = raw("4px")
             });
 
         global(".ja-schedules__summary div",
             new CssRule
             {
-                Display = raw("grid"),
-                GridTemplateColumns = raw("110px minmax(0, 1fr)"),
-                Gap = raw("10px")
+                display = raw("grid"),
+                grid_template_columns = raw("110px minmax(0, 1fr)"),
+                gap = raw("10px")
             });
 
         global(".ja-schedules__summary dt, .ja-schedules__summary dd",
             new CssRule
             {
-                MinWidth = raw("0"),
-                Margin = raw("0"),
-                FontSize = raw("12px")
+                min_width = raw("0"),
+                margin = raw("0"),
+                font_size = raw("12px")
             });
 
         global(".ja-schedules__summary dt",
             new CssRule
             {
-                Color = raw("var(--text-muted)"),
-                FontWeight = raw("650")
+                color = raw("var(--text-muted)"),
+                font_weight = raw("650")
             });
 
         global(".ja-schedules__summary dd",
             new CssRule
             {
-                OverflowWrap = raw("anywhere"),
-                Color = raw("var(--text)")
+                overflow_wrap = raw("anywhere"),
+                color = raw("var(--text)")
             });
 
         Media("*,   *::before,   *::after", "(prefers-reduced-motion: reduce)",
             new CssRule
             {
-                AnimationDuration = raw("0.01ms !important"),
-                ScrollBehavior = raw("auto !important"),
-                TransitionDuration = raw("0.01ms !important")
+                animation_duration = raw("0.01ms !important"),
+                scroll_behavior = raw("auto !important"),
+                transition_duration = raw("0.01ms !important")
             });
 
         return true;
@@ -3044,6 +3044,6 @@ internal static class Styles
     private static void Media(string selector, string prelude, CssRule rule)
         => global(selector, new CssRule
         {
-            Children = [new(ChildKind.Media, prelude, rule)]
+            children = [new(ChildKind.Media, prelude, rule)]
         });
 }

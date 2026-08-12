@@ -11,5718 +11,5718 @@ public partial record CssDeclarations
     /// 获取或初始化 CSS <c>-webkit-align-content</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-align-content")]
-    public CssValue? WebkitAlignContent { get; init; }
+    public CssValue? webkit_align_content { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-align-items</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-align-items</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-align-items")]
-    public CssValue? WebkitAlignItems { get; init; }
+    public CssValue? webkit_align_items { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-align-self</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-align-self</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-align-self")]
-    public CssValue? WebkitAlignSelf { get; init; }
+    public CssValue? webkit_align_self { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-animation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-animation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-animation")]
-    public CssValue? WebkitAnimation { get; init; }
+    public CssValue? webkit_animation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-animation-delay</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-animation-delay</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-animation-delay")]
-    public CssTimeValue? WebkitAnimationDelay { get; init; }
+    public CssTimeValue? webkit_animation_delay { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-animation-direction</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-animation-direction</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-animation-direction")]
-    public CssValue? WebkitAnimationDirection { get; init; }
+    public CssValue? webkit_animation_direction { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-animation-duration</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-animation-duration</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-animation-duration")]
-    public CssTimeValue? WebkitAnimationDuration { get; init; }
+    public CssTimeValue? webkit_animation_duration { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-animation-fill-mode</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-animation-fill-mode</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-animation-fill-mode")]
-    public CssValue? WebkitAnimationFillMode { get; init; }
+    public CssValue? webkit_animation_fill_mode { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-animation-iteration-count</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-animation-iteration-count</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-animation-iteration-count")]
-    public CssValue? WebkitAnimationIterationCount { get; init; }
+    public CssValue? webkit_animation_iteration_count { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-animation-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-animation-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-animation-name")]
-    public CssValue? WebkitAnimationName { get; init; }
+    public CssValue? webkit_animation_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-animation-play-state</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-animation-play-state</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-animation-play-state")]
-    public CssValue? WebkitAnimationPlayState { get; init; }
+    public CssValue? webkit_animation_play_state { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-animation-timing-function</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-animation-timing-function</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-animation-timing-function")]
-    public CssValue? WebkitAnimationTimingFunction { get; init; }
+    public CssValue? webkit_animation_timing_function { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-appearance</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-appearance</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-appearance")]
-    public CssValue? WebkitAppearance { get; init; }
+    public CssValue? webkit_appearance { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-backface-visibility</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-backface-visibility</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-backface-visibility")]
-    public CssKeywordValue? WebkitBackfaceVisibility { get; init; }
+    public CssKeywordValue? webkit_backface_visibility { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-background-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-background-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-background-clip")]
-    public CssValue? WebkitBackgroundClip { get; init; }
+    public CssValue? webkit_background_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-background-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-background-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-background-origin")]
-    public CssValue? WebkitBackgroundOrigin { get; init; }
+    public CssValue? webkit_background_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-background-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-background-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-background-size")]
-    public CssValue? WebkitBackgroundSize { get; init; }
+    public CssValue? webkit_background_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-border-bottom-left-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-border-bottom-left-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-border-bottom-left-radius")]
-    public CssValue? WebkitBorderBottomLeftRadius { get; init; }
+    public CssValue? webkit_border_bottom_left_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-border-bottom-right-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-border-bottom-right-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-border-bottom-right-radius")]
-    public CssValue? WebkitBorderBottomRightRadius { get; init; }
+    public CssValue? webkit_border_bottom_right_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-border-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-border-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-border-radius")]
-    public CssRadiusValue? WebkitBorderRadius { get; init; }
+    public CssRadiusValue? webkit_border_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-border-top-left-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-border-top-left-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-border-top-left-radius")]
-    public CssValue? WebkitBorderTopLeftRadius { get; init; }
+    public CssValue? webkit_border_top_left_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-border-top-right-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-border-top-right-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-border-top-right-radius")]
-    public CssValue? WebkitBorderTopRightRadius { get; init; }
+    public CssValue? webkit_border_top_right_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-box-align</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-box-align</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-box-align")]
-    public CssValue? WebkitBoxAlign { get; init; }
+    public CssValue? webkit_box_align { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-box-flex</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-box-flex</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-box-flex")]
-    public CssValue? WebkitBoxFlex { get; init; }
+    public CssValue? webkit_box_flex { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-box-ordinal-group</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-box-ordinal-group</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-box-ordinal-group")]
-    public CssValue? WebkitBoxOrdinalGroup { get; init; }
+    public CssValue? webkit_box_ordinal_group { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-box-orient</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-box-orient</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-box-orient")]
-    public CssValue? WebkitBoxOrient { get; init; }
+    public CssValue? webkit_box_orient { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-box-pack</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-box-pack</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-box-pack")]
-    public CssValue? WebkitBoxPack { get; init; }
+    public CssValue? webkit_box_pack { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-box-shadow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-box-shadow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-box-shadow")]
-    public CssBoxShadowValue? WebkitBoxShadow { get; init; }
+    public CssBoxShadowValue? webkit_box_shadow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-box-sizing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-box-sizing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-box-sizing")]
-    public CssKeywordValue? WebkitBoxSizing { get; init; }
+    public CssKeywordValue? webkit_box_sizing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-filter</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-filter</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-filter")]
-    public CssFilterValue? WebkitFilter { get; init; }
+    public CssFilterValue? webkit_filter { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-flex</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-flex</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-flex")]
-    public CssValue? WebkitFlex { get; init; }
+    public CssValue? webkit_flex { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-flex-basis</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-flex-basis</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-flex-basis")]
-    public CssValue? WebkitFlexBasis { get; init; }
+    public CssValue? webkit_flex_basis { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-flex-direction</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-flex-direction</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-flex-direction")]
-    public CssKeywordValue? WebkitFlexDirection { get; init; }
+    public CssKeywordValue? webkit_flex_direction { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-flex-flow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-flex-flow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-flex-flow")]
-    public CssKeywordValue? WebkitFlexFlow { get; init; }
+    public CssKeywordValue? webkit_flex_flow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-flex-grow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-flex-grow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-flex-grow")]
-    public CssNumberValue? WebkitFlexGrow { get; init; }
+    public CssNumberValue? webkit_flex_grow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-flex-shrink</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-flex-shrink</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-flex-shrink")]
-    public CssNumberValue? WebkitFlexShrink { get; init; }
+    public CssNumberValue? webkit_flex_shrink { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-flex-wrap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-flex-wrap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-flex-wrap")]
-    public CssKeywordValue? WebkitFlexWrap { get; init; }
+    public CssKeywordValue? webkit_flex_wrap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-justify-content</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-justify-content</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-justify-content")]
-    public CssValue? WebkitJustifyContent { get; init; }
+    public CssValue? webkit_justify_content { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-line-clamp</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-line-clamp</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-line-clamp")]
-    public CssIntegerValue? WebkitLineClamp { get; init; }
+    public CssIntegerValue? webkit_line_clamp { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask")]
-    public CssValue? WebkitMask { get; init; }
+    public CssValue? webkit_mask { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-box-image</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-box-image</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image")]
-    public CssValue? WebkitMaskBoxImage { get; init; }
+    public CssValue? webkit_mask_box_image { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-box-image-outset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-box-image-outset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-outset")]
-    public CssLengthPercentageNumberValue? WebkitMaskBoxImageOutset { get; init; }
+    public CssLengthPercentageNumberValue? webkit_mask_box_image_outset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-box-image-repeat</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-box-image-repeat</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-repeat")]
-    public CssKeywordValue? WebkitMaskBoxImageRepeat { get; init; }
+    public CssKeywordValue? webkit_mask_box_image_repeat { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-box-image-slice</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-box-image-slice</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-slice")]
-    public CssNumberPercentageValue? WebkitMaskBoxImageSlice { get; init; }
+    public CssNumberPercentageValue? webkit_mask_box_image_slice { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-box-image-source</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-box-image-source</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-source")]
-    public CssImageValue? WebkitMaskBoxImageSource { get; init; }
+    public CssImageValue? webkit_mask_box_image_source { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-box-image-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-box-image-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-box-image-width")]
-    public CssLengthPercentageNumberValue? WebkitMaskBoxImageWidth { get; init; }
+    public CssLengthPercentageNumberValue? webkit_mask_box_image_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-clip")]
-    public CssValue? WebkitMaskClip { get; init; }
+    public CssValue? webkit_mask_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-composite</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-composite</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-composite")]
-    public CssValue? WebkitMaskComposite { get; init; }
+    public CssValue? webkit_mask_composite { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-image</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-image</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-image")]
-    public CssValue? WebkitMaskImage { get; init; }
+    public CssValue? webkit_mask_image { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-origin")]
-    public CssValue? WebkitMaskOrigin { get; init; }
+    public CssValue? webkit_mask_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-position")]
-    public CssValue? WebkitMaskPosition { get; init; }
+    public CssValue? webkit_mask_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-repeat</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-repeat</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-repeat")]
-    public CssValue? WebkitMaskRepeat { get; init; }
+    public CssValue? webkit_mask_repeat { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-mask-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-mask-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-mask-size")]
-    public CssValue? WebkitMaskSize { get; init; }
+    public CssValue? webkit_mask_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-order</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-order</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-order")]
-    public CssIntegerValue? WebkitOrder { get; init; }
+    public CssIntegerValue? webkit_order { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-perspective</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-perspective</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-perspective")]
-    public CssLengthValue? WebkitPerspective { get; init; }
+    public CssLengthValue? webkit_perspective { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-perspective-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-perspective-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-perspective-origin")]
-    public CssValue? WebkitPerspectiveOrigin { get; init; }
+    public CssValue? webkit_perspective_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-text-fill-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-text-fill-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-text-fill-color")]
-    public CssColorValue? WebkitTextFillColor { get; init; }
+    public CssColorValue? webkit_text_fill_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-text-size-adjust</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-text-size-adjust</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-text-size-adjust")]
-    public CssPercentageValue? WebkitTextSizeAdjust { get; init; }
+    public CssPercentageValue? webkit_text_size_adjust { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-text-stroke</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-text-stroke</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-text-stroke")]
-    public CssValue? WebkitTextStroke { get; init; }
+    public CssValue? webkit_text_stroke { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-text-stroke-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-text-stroke-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-text-stroke-color")]
-    public CssColorValue? WebkitTextStrokeColor { get; init; }
+    public CssColorValue? webkit_text_stroke_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-text-stroke-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-text-stroke-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-text-stroke-width")]
-    public CssLineWidthValue? WebkitTextStrokeWidth { get; init; }
+    public CssLineWidthValue? webkit_text_stroke_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-transform</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-transform</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-transform")]
-    public CssTransformValue? WebkitTransform { get; init; }
+    public CssTransformValue? webkit_transform { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-transform-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-transform-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-transform-origin")]
-    public CssLengthPercentageValue? WebkitTransformOrigin { get; init; }
+    public CssLengthPercentageValue? webkit_transform_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-transform-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-transform-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-transform-style")]
-    public CssKeywordValue? WebkitTransformStyle { get; init; }
+    public CssKeywordValue? webkit_transform_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-transition</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-transition</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-transition")]
-    public CssValue? WebkitTransition { get; init; }
+    public CssValue? webkit_transition { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-transition-delay</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-transition-delay</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-transition-delay")]
-    public CssTimeValue? WebkitTransitionDelay { get; init; }
+    public CssTimeValue? webkit_transition_delay { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-transition-duration</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-transition-duration</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-transition-duration")]
-    public CssTimeValue? WebkitTransitionDuration { get; init; }
+    public CssTimeValue? webkit_transition_duration { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-transition-property</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-transition-property</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-transition-property")]
-    public CssValue? WebkitTransitionProperty { get; init; }
+    public CssValue? webkit_transition_property { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-transition-timing-function</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-transition-timing-function</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-transition-timing-function")]
-    public CssValue? WebkitTransitionTimingFunction { get; init; }
+    public CssValue? webkit_transition_timing_function { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>-webkit-user-select</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>-webkit-user-select</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#-webkit-user-select")]
-    public CssKeywordValue? WebkitUserSelect { get; init; }
+    public CssKeywordValue? webkit_user_select { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>accent-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>accent-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#accent-color")]
-    public CssColorValue? AccentColor { get; init; }
+    public CssColorValue? accent_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>align-content</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>align-content</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#align-content")]
-    public CssAlignmentValue? AlignContent { get; init; }
+    public CssAlignmentValue? align_content { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>align-items</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>align-items</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#align-items")]
-    public CssAlignmentValue? AlignItems { get; init; }
+    public CssAlignmentValue? align_items { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>align-self</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>align-self</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#align-self")]
-    public CssAlignmentValue? AlignSelf { get; init; }
+    public CssAlignmentValue? align_self { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>alignment-baseline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>alignment-baseline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#alignment-baseline")]
-    public CssValue? AlignmentBaseline { get; init; }
+    public CssValue? alignment_baseline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>all</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>all</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#all")]
-    public CssKeywordValue? All { get; init; }
+    public CssKeywordValue? all { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>anchor-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>anchor-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#anchor-name")]
-    public CssAnchorNameValue? AnchorName { get; init; }
+    public CssAnchorNameValue? anchor_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>anchor-scope</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>anchor-scope</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#anchor-scope")]
-    public CssAnchorScopeValue? AnchorScope { get; init; }
+    public CssAnchorScopeValue? anchor_scope { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation")]
-    public CssValue? Animation { get; init; }
+    public CssValue? animation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-composition</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-composition</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-composition")]
-    public CssValue? AnimationComposition { get; init; }
+    public CssValue? animation_composition { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-delay</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-delay</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-delay")]
-    public CssTimeValue? AnimationDelay { get; init; }
+    public CssTimeValue? animation_delay { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-delay-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-delay-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-delay-end")]
-    public CssTimeValue? AnimationDelayEnd { get; init; }
+    public CssTimeValue? animation_delay_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-delay-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-delay-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-delay-start")]
-    public CssTimeValue? AnimationDelayStart { get; init; }
+    public CssTimeValue? animation_delay_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-direction</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-direction</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-direction")]
-    public CssValue? AnimationDirection { get; init; }
+    public CssValue? animation_direction { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-duration</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-duration</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-duration")]
-    public CssTimeValue? AnimationDuration { get; init; }
+    public CssTimeValue? animation_duration { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-fill-mode</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-fill-mode</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-fill-mode")]
-    public CssValue? AnimationFillMode { get; init; }
+    public CssValue? animation_fill_mode { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-iteration-count</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-iteration-count</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-iteration-count")]
-    public CssValue? AnimationIterationCount { get; init; }
+    public CssValue? animation_iteration_count { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-name")]
-    public CssValue? AnimationName { get; init; }
+    public CssValue? animation_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-play-state</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-play-state</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-play-state")]
-    public CssValue? AnimationPlayState { get; init; }
+    public CssValue? animation_play_state { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-range</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-range</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-range")]
-    public CssValue? AnimationRange { get; init; }
+    public CssValue? animation_range { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-range-center</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-range-center</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-range-center")]
-    public CssValue? AnimationRangeCenter { get; init; }
+    public CssValue? animation_range_center { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-range-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-range-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-range-end")]
-    public CssValue? AnimationRangeEnd { get; init; }
+    public CssValue? animation_range_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-range-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-range-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-range-start")]
-    public CssValue? AnimationRangeStart { get; init; }
+    public CssValue? animation_range_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-timeline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-timeline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-timeline")]
-    public CssValue? AnimationTimeline { get; init; }
+    public CssValue? animation_timeline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-timing-function</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-timing-function</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-timing-function")]
-    public CssValue? AnimationTimingFunction { get; init; }
+    public CssValue? animation_timing_function { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>animation-trigger</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>animation-trigger</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#animation-trigger")]
-    public CssValue? AnimationTrigger { get; init; }
+    public CssValue? animation_trigger { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>appearance</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>appearance</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#appearance")]
-    public CssValue? Appearance { get; init; }
+    public CssValue? appearance { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>aspect-ratio</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>aspect-ratio</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#aspect-ratio")]
-    public CssRatioValue? AspectRatio { get; init; }
+    public CssRatioValue? aspect_ratio { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>backdrop-filter</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>backdrop-filter</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#backdrop-filter")]
-    public CssFilterValue? BackdropFilter { get; init; }
+    public CssFilterValue? backdrop_filter { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>backface-visibility</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>backface-visibility</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#backface-visibility")]
-    public CssKeywordValue? BackfaceVisibility { get; init; }
+    public CssKeywordValue? backface_visibility { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background")]
-    public CssValue? Background { get; init; }
+    public CssValue? background { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-attachment</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-attachment</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-attachment")]
-    public CssValue? BackgroundAttachment { get; init; }
+    public CssValue? background_attachment { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-blend-mode</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-blend-mode</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-blend-mode")]
-    public CssValue? BackgroundBlendMode { get; init; }
+    public CssValue? background_blend_mode { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-clip")]
-    public CssValue? BackgroundClip { get; init; }
+    public CssValue? background_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-color")]
-    public CssColorValue? BackgroundColor { get; init; }
+    public CssColorValue? background_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-image</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-image</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-image")]
-    public CssImageValue? BackgroundImage { get; init; }
+    public CssImageValue? background_image { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-origin")]
-    public CssValue? BackgroundOrigin { get; init; }
+    public CssValue? background_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-position")]
-    public CssValue? BackgroundPosition { get; init; }
+    public CssValue? background_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-position-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-position-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-position-block")]
-    public CssLengthPercentageValue? BackgroundPositionBlock { get; init; }
+    public CssLengthPercentageValue? background_position_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-position-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-position-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-position-inline")]
-    public CssLengthPercentageValue? BackgroundPositionInline { get; init; }
+    public CssLengthPercentageValue? background_position_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-position-x</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-position-x</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-position-x")]
-    public CssLengthPercentageValue? BackgroundPositionX { get; init; }
+    public CssLengthPercentageValue? background_position_x { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-position-y</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-position-y</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-position-y")]
-    public CssLengthPercentageValue? BackgroundPositionY { get; init; }
+    public CssLengthPercentageValue? background_position_y { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-repeat</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-repeat</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-repeat")]
-    public CssValue? BackgroundRepeat { get; init; }
+    public CssValue? background_repeat { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-repeat-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-repeat-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-repeat-block")]
-    public CssValue? BackgroundRepeatBlock { get; init; }
+    public CssValue? background_repeat_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-repeat-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-repeat-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-repeat-inline")]
-    public CssValue? BackgroundRepeatInline { get; init; }
+    public CssValue? background_repeat_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-repeat-x</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-repeat-x</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-repeat-x")]
-    public CssValue? BackgroundRepeatX { get; init; }
+    public CssValue? background_repeat_x { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-repeat-y</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-repeat-y</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-repeat-y")]
-    public CssValue? BackgroundRepeatY { get; init; }
+    public CssValue? background_repeat_y { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-size")]
-    public CssBackgroundSizeValue? BackgroundSize { get; init; }
+    public CssBackgroundSizeValue? background_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>background-tbd</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>background-tbd</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#background-tbd")]
-    public CssValue? BackgroundTbd { get; init; }
+    public CssValue? background_tbd { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>baseline-shift</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>baseline-shift</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#baseline-shift")]
-    public CssLengthPercentageValue? BaselineShift { get; init; }
+    public CssLengthPercentageValue? baseline_shift { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>baseline-source</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>baseline-source</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#baseline-source")]
-    public CssKeywordValue? BaselineSource { get; init; }
+    public CssKeywordValue? baseline_source { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>block-ellipsis</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>block-ellipsis</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#block-ellipsis")]
-    public CssStringValue? BlockEllipsis { get; init; }
+    public CssStringValue? block_ellipsis { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>block-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>block-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#block-size")]
-    public CssSizingValue? BlockSize { get; init; }
+    public CssSizingValue? block_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>block-step</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>block-step</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#block-step")]
-    public CssLengthValue? BlockStep { get; init; }
+    public CssLengthValue? block_step { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>block-step-align</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>block-step-align</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#block-step-align")]
-    public CssKeywordValue? BlockStepAlign { get; init; }
+    public CssKeywordValue? block_step_align { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>block-step-insert</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>block-step-insert</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#block-step-insert")]
-    public CssKeywordValue? BlockStepInsert { get; init; }
+    public CssKeywordValue? block_step_insert { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>block-step-round</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>block-step-round</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#block-step-round")]
-    public CssKeywordValue? BlockStepRound { get; init; }
+    public CssKeywordValue? block_step_round { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>block-step-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>block-step-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#block-step-size")]
-    public CssLengthValue? BlockStepSize { get; init; }
+    public CssLengthValue? block_step_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>bookmark-label</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>bookmark-label</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#bookmark-label")]
-    public CssValue? BookmarkLabel { get; init; }
+    public CssValue? bookmark_label { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>bookmark-level</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>bookmark-level</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#bookmark-level")]
-    public CssIntegerValue? BookmarkLevel { get; init; }
+    public CssIntegerValue? bookmark_level { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>bookmark-state</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>bookmark-state</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#bookmark-state")]
-    public CssKeywordValue? BookmarkState { get; init; }
+    public CssKeywordValue? bookmark_state { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border")]
-    public CssBorderValue? Border { get; init; }
+    public CssBorderValue? border { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block")]
-    public CssBorderValue? BorderBlock { get; init; }
+    public CssBorderValue? border_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-clip")]
-    public CssValue? BorderBlockClip { get; init; }
+    public CssValue? border_block_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-color")]
-    public CssValue? BorderBlockColor { get; init; }
+    public CssValue? border_block_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-end")]
-    public CssBorderValue? BorderBlockEnd { get; init; }
+    public CssBorderValue? border_block_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-end-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-end-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-end-clip")]
-    public CssValue? BorderBlockEndClip { get; init; }
+    public CssValue? border_block_end_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-end-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-end-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-end-color")]
-    public CssValue? BorderBlockEndColor { get; init; }
+    public CssValue? border_block_end_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-end-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-end-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-end-radius")]
-    public CssRadiusValue? BorderBlockEndRadius { get; init; }
+    public CssRadiusValue? border_block_end_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-end-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-end-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-end-style")]
-    public CssLineStyleValue? BorderBlockEndStyle { get; init; }
+    public CssLineStyleValue? border_block_end_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-end-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-end-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-end-width")]
-    public CssLineWidthValue? BorderBlockEndWidth { get; init; }
+    public CssLineWidthValue? border_block_end_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-start")]
-    public CssBorderValue? BorderBlockStart { get; init; }
+    public CssBorderValue? border_block_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-start-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-start-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-start-clip")]
-    public CssValue? BorderBlockStartClip { get; init; }
+    public CssValue? border_block_start_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-start-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-start-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-start-color")]
-    public CssValue? BorderBlockStartColor { get; init; }
+    public CssValue? border_block_start_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-start-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-start-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-start-radius")]
-    public CssRadiusValue? BorderBlockStartRadius { get; init; }
+    public CssRadiusValue? border_block_start_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-start-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-start-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-start-style")]
-    public CssLineStyleValue? BorderBlockStartStyle { get; init; }
+    public CssLineStyleValue? border_block_start_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-start-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-start-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-start-width")]
-    public CssLineWidthValue? BorderBlockStartWidth { get; init; }
+    public CssLineWidthValue? border_block_start_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-style")]
-    public CssLineStyleValue? BorderBlockStyle { get; init; }
+    public CssLineStyleValue? border_block_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-block-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-block-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-block-width")]
-    public CssLineWidthValue? BorderBlockWidth { get; init; }
+    public CssLineWidthValue? border_block_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-bottom</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-bottom</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-bottom")]
-    public CssBorderValue? BorderBottom { get; init; }
+    public CssBorderValue? border_bottom { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-bottom-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-bottom-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-bottom-clip")]
-    public CssValue? BorderBottomClip { get; init; }
+    public CssValue? border_bottom_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-bottom-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-bottom-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-bottom-color")]
-    public CssValue? BorderBottomColor { get; init; }
+    public CssValue? border_bottom_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-bottom-left-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-bottom-left-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-bottom-left-radius")]
-    public CssValue? BorderBottomLeftRadius { get; init; }
+    public CssValue? border_bottom_left_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-bottom-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-bottom-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-bottom-radius")]
-    public CssRadiusValue? BorderBottomRadius { get; init; }
+    public CssRadiusValue? border_bottom_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-bottom-right-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-bottom-right-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-bottom-right-radius")]
-    public CssValue? BorderBottomRightRadius { get; init; }
+    public CssValue? border_bottom_right_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-bottom-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-bottom-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-bottom-style")]
-    public CssLineStyleValue? BorderBottomStyle { get; init; }
+    public CssLineStyleValue? border_bottom_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-bottom-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-bottom-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-bottom-width")]
-    public CssLineWidthValue? BorderBottomWidth { get; init; }
+    public CssLineWidthValue? border_bottom_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-boundary</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-boundary</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-boundary")]
-    public CssKeywordValue? BorderBoundary { get; init; }
+    public CssKeywordValue? border_boundary { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-clip")]
-    public CssValue? BorderClip { get; init; }
+    public CssValue? border_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-collapse</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-collapse</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-collapse")]
-    public CssKeywordValue? BorderCollapse { get; init; }
+    public CssKeywordValue? border_collapse { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-color")]
-    public CssValue? BorderColor { get; init; }
+    public CssValue? border_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-end-end-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-end-end-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-end-end-radius")]
-    public CssValue? BorderEndEndRadius { get; init; }
+    public CssValue? border_end_end_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-end-start-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-end-start-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-end-start-radius")]
-    public CssValue? BorderEndStartRadius { get; init; }
+    public CssValue? border_end_start_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-image</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-image</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-image")]
-    public CssValue? BorderImage { get; init; }
+    public CssValue? border_image { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-image-outset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-image-outset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-image-outset")]
-    public CssLengthPercentageNumberValue? BorderImageOutset { get; init; }
+    public CssLengthPercentageNumberValue? border_image_outset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-image-repeat</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-image-repeat</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-image-repeat")]
-    public CssKeywordValue? BorderImageRepeat { get; init; }
+    public CssKeywordValue? border_image_repeat { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-image-slice</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-image-slice</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-image-slice")]
-    public CssNumberPercentageValue? BorderImageSlice { get; init; }
+    public CssNumberPercentageValue? border_image_slice { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-image-source</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-image-source</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-image-source")]
-    public CssImageValue? BorderImageSource { get; init; }
+    public CssImageValue? border_image_source { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-image-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-image-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-image-width")]
-    public CssLengthPercentageNumberValue? BorderImageWidth { get; init; }
+    public CssLengthPercentageNumberValue? border_image_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline")]
-    public CssBorderValue? BorderInline { get; init; }
+    public CssBorderValue? border_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-clip")]
-    public CssValue? BorderInlineClip { get; init; }
+    public CssValue? border_inline_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-color")]
-    public CssValue? BorderInlineColor { get; init; }
+    public CssValue? border_inline_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-end")]
-    public CssBorderValue? BorderInlineEnd { get; init; }
+    public CssBorderValue? border_inline_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-end-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-end-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-end-clip")]
-    public CssValue? BorderInlineEndClip { get; init; }
+    public CssValue? border_inline_end_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-end-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-end-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-end-color")]
-    public CssValue? BorderInlineEndColor { get; init; }
+    public CssValue? border_inline_end_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-end-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-end-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-end-radius")]
-    public CssRadiusValue? BorderInlineEndRadius { get; init; }
+    public CssRadiusValue? border_inline_end_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-end-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-end-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-end-style")]
-    public CssLineStyleValue? BorderInlineEndStyle { get; init; }
+    public CssLineStyleValue? border_inline_end_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-end-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-end-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-end-width")]
-    public CssLineWidthValue? BorderInlineEndWidth { get; init; }
+    public CssLineWidthValue? border_inline_end_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-start")]
-    public CssBorderValue? BorderInlineStart { get; init; }
+    public CssBorderValue? border_inline_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-start-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-start-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-start-clip")]
-    public CssValue? BorderInlineStartClip { get; init; }
+    public CssValue? border_inline_start_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-start-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-start-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-start-color")]
-    public CssValue? BorderInlineStartColor { get; init; }
+    public CssValue? border_inline_start_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-start-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-start-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-start-radius")]
-    public CssRadiusValue? BorderInlineStartRadius { get; init; }
+    public CssRadiusValue? border_inline_start_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-start-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-start-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-start-style")]
-    public CssLineStyleValue? BorderInlineStartStyle { get; init; }
+    public CssLineStyleValue? border_inline_start_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-start-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-start-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-start-width")]
-    public CssLineWidthValue? BorderInlineStartWidth { get; init; }
+    public CssLineWidthValue? border_inline_start_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-style")]
-    public CssLineStyleValue? BorderInlineStyle { get; init; }
+    public CssLineStyleValue? border_inline_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-inline-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-inline-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-inline-width")]
-    public CssLineWidthValue? BorderInlineWidth { get; init; }
+    public CssLineWidthValue? border_inline_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-left")]
-    public CssBorderValue? BorderLeft { get; init; }
+    public CssBorderValue? border_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-left-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-left-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-left-clip")]
-    public CssValue? BorderLeftClip { get; init; }
+    public CssValue? border_left_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-left-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-left-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-left-color")]
-    public CssValue? BorderLeftColor { get; init; }
+    public CssValue? border_left_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-left-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-left-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-left-radius")]
-    public CssRadiusValue? BorderLeftRadius { get; init; }
+    public CssRadiusValue? border_left_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-left-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-left-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-left-style")]
-    public CssLineStyleValue? BorderLeftStyle { get; init; }
+    public CssLineStyleValue? border_left_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-left-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-left-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-left-width")]
-    public CssLineWidthValue? BorderLeftWidth { get; init; }
+    public CssLineWidthValue? border_left_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-limit</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-limit</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-limit")]
-    public CssLengthPercentageValue? BorderLimit { get; init; }
+    public CssLengthPercentageValue? border_limit { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-radius")]
-    public CssRadiusValue? BorderRadius { get; init; }
+    public CssRadiusValue? border_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-right")]
-    public CssBorderValue? BorderRight { get; init; }
+    public CssBorderValue? border_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-right-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-right-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-right-clip")]
-    public CssValue? BorderRightClip { get; init; }
+    public CssValue? border_right_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-right-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-right-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-right-color")]
-    public CssValue? BorderRightColor { get; init; }
+    public CssValue? border_right_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-right-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-right-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-right-radius")]
-    public CssRadiusValue? BorderRightRadius { get; init; }
+    public CssRadiusValue? border_right_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-right-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-right-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-right-style")]
-    public CssLineStyleValue? BorderRightStyle { get; init; }
+    public CssLineStyleValue? border_right_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-right-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-right-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-right-width")]
-    public CssLineWidthValue? BorderRightWidth { get; init; }
+    public CssLineWidthValue? border_right_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-shape")]
-    public CssValue? BorderShape { get; init; }
+    public CssValue? border_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-spacing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-spacing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-spacing")]
-    public CssLengthValue? BorderSpacing { get; init; }
+    public CssLengthValue? border_spacing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-start-end-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-start-end-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-start-end-radius")]
-    public CssValue? BorderStartEndRadius { get; init; }
+    public CssValue? border_start_end_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-start-start-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-start-start-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-start-start-radius")]
-    public CssValue? BorderStartStartRadius { get; init; }
+    public CssValue? border_start_start_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-style")]
-    public CssLineStyleValue? BorderStyle { get; init; }
+    public CssLineStyleValue? border_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-top</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-top</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-top")]
-    public CssBorderValue? BorderTop { get; init; }
+    public CssBorderValue? border_top { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-top-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-top-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-top-clip")]
-    public CssValue? BorderTopClip { get; init; }
+    public CssValue? border_top_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-top-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-top-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-top-color")]
-    public CssValue? BorderTopColor { get; init; }
+    public CssValue? border_top_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-top-left-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-top-left-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-top-left-radius")]
-    public CssValue? BorderTopLeftRadius { get; init; }
+    public CssValue? border_top_left_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-top-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-top-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-top-radius")]
-    public CssRadiusValue? BorderTopRadius { get; init; }
+    public CssRadiusValue? border_top_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-top-right-radius</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-top-right-radius</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-top-right-radius")]
-    public CssValue? BorderTopRightRadius { get; init; }
+    public CssValue? border_top_right_radius { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-top-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-top-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-top-style")]
-    public CssLineStyleValue? BorderTopStyle { get; init; }
+    public CssLineStyleValue? border_top_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-top-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-top-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-top-width")]
-    public CssLineWidthValue? BorderTopWidth { get; init; }
+    public CssLineWidthValue? border_top_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>border-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>border-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#border-width")]
-    public CssLineWidthValue? BorderWidth { get; init; }
+    public CssLineWidthValue? border_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>bottom</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>bottom</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#bottom")]
-    public CssAnchorPositionValue? Bottom { get; init; }
+    public CssAnchorPositionValue? bottom { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>box-decoration-break</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>box-decoration-break</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#box-decoration-break")]
-    public CssKeywordValue? BoxDecorationBreak { get; init; }
+    public CssKeywordValue? box_decoration_break { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>box-shadow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>box-shadow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#box-shadow")]
-    public CssBoxShadowValue? BoxShadow { get; init; }
+    public CssBoxShadowValue? box_shadow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>box-shadow-blur</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>box-shadow-blur</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#box-shadow-blur")]
-    public CssLengthValue? BoxShadowBlur { get; init; }
+    public CssLengthValue? box_shadow_blur { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>box-shadow-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>box-shadow-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#box-shadow-color")]
-    public CssColorValue? BoxShadowColor { get; init; }
+    public CssColorValue? box_shadow_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>box-shadow-offset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>box-shadow-offset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#box-shadow-offset")]
-    public CssLengthValue? BoxShadowOffset { get; init; }
+    public CssLengthValue? box_shadow_offset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>box-shadow-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>box-shadow-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#box-shadow-position")]
-    public CssKeywordValue? BoxShadowPosition { get; init; }
+    public CssKeywordValue? box_shadow_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>box-shadow-spread</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>box-shadow-spread</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#box-shadow-spread")]
-    public CssLengthValue? BoxShadowSpread { get; init; }
+    public CssLengthValue? box_shadow_spread { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>box-sizing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>box-sizing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#box-sizing")]
-    public CssBoxSizingValue? BoxSizing { get; init; }
+    public CssBoxSizingValue? box_sizing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>box-snap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>box-snap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#box-snap")]
-    public CssKeywordValue? BoxSnap { get; init; }
+    public CssKeywordValue? box_snap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>break-after</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>break-after</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#break-after")]
-    public CssKeywordValue? BreakAfter { get; init; }
+    public CssKeywordValue? break_after { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>break-before</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>break-before</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#break-before")]
-    public CssKeywordValue? BreakBefore { get; init; }
+    public CssKeywordValue? break_before { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>break-inside</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>break-inside</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#break-inside")]
-    public CssKeywordValue? BreakInside { get; init; }
+    public CssKeywordValue? break_inside { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>caption-side</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>caption-side</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#caption-side")]
-    public CssKeywordValue? CaptionSide { get; init; }
+    public CssKeywordValue? caption_side { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>caret</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>caret</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#caret")]
-    public CssColorValue? Caret { get; init; }
+    public CssColorValue? caret { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>caret-animation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>caret-animation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#caret-animation")]
-    public CssKeywordValue? CaretAnimation { get; init; }
+    public CssKeywordValue? caret_animation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>caret-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>caret-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#caret-color")]
-    public CssColorValue? CaretColor { get; init; }
+    public CssColorValue? caret_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>caret-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>caret-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#caret-shape")]
-    public CssKeywordValue? CaretShape { get; init; }
+    public CssKeywordValue? caret_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>clear</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>clear</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#clear")]
-    public CssKeywordValue? Clear { get; init; }
+    public CssKeywordValue? clear { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#clip")]
-    public CssValue? Clip { get; init; }
+    public CssValue? clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>clip-path</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>clip-path</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#clip-path")]
-    public CssValue? ClipPath { get; init; }
+    public CssValue? clip_path { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>clip-rule</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>clip-rule</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#clip-rule")]
-    public CssKeywordValue? ClipRule { get; init; }
+    public CssKeywordValue? clip_rule { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#color")]
-    public CssColorValue? Color { get; init; }
+    public CssColorValue? color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>color-adjust</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>color-adjust</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#color-adjust")]
-    public CssKeywordValue? ColorAdjust { get; init; }
+    public CssKeywordValue? color_adjust { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>color-interpolation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>color-interpolation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#color-interpolation")]
-    public CssKeywordValue? ColorInterpolation { get; init; }
+    public CssKeywordValue? color_interpolation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>color-interpolation-filters</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>color-interpolation-filters</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#color-interpolation-filters")]
-    public CssKeywordValue? ColorInterpolationFilters { get; init; }
+    public CssKeywordValue? color_interpolation_filters { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>color-scheme</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>color-scheme</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#color-scheme")]
-    public CssColorSchemeValue? ColorScheme { get; init; }
+    public CssColorSchemeValue? color_scheme { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-count</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-count</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-count")]
-    public CssIntegerValue? ColumnCount { get; init; }
+    public CssIntegerValue? column_count { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-fill</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-fill</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-fill")]
-    public CssKeywordValue? ColumnFill { get; init; }
+    public CssKeywordValue? column_fill { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-gap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-gap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-gap")]
-    public CssValue? ColumnGap { get; init; }
+    public CssValue? column_gap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-height</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-height</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-height")]
-    public CssLengthValue? ColumnHeight { get; init; }
+    public CssLengthValue? column_height { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule")]
-    public CssValue? ColumnRule { get; init; }
+    public CssValue? column_rule { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-break</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-break</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-break")]
-    public CssKeywordValue? ColumnRuleBreak { get; init; }
+    public CssKeywordValue? column_rule_break { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-color")]
-    public CssValue? ColumnRuleColor { get; init; }
+    public CssValue? column_rule_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-inset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-inset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-inset")]
-    public CssValue? ColumnRuleInset { get; init; }
+    public CssValue? column_rule_inset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-inset-cap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-inset-cap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-inset-cap")]
-    public CssValue? ColumnRuleInsetCap { get; init; }
+    public CssValue? column_rule_inset_cap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-inset-cap-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-inset-cap-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-inset-cap-end")]
-    public CssValue? ColumnRuleInsetCapEnd { get; init; }
+    public CssValue? column_rule_inset_cap_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-inset-cap-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-inset-cap-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-inset-cap-start")]
-    public CssValue? ColumnRuleInsetCapStart { get; init; }
+    public CssValue? column_rule_inset_cap_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-inset-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-inset-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-inset-end")]
-    public CssValue? ColumnRuleInsetEnd { get; init; }
+    public CssValue? column_rule_inset_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-inset-junction</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-inset-junction</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-inset-junction")]
-    public CssValue? ColumnRuleInsetJunction { get; init; }
+    public CssValue? column_rule_inset_junction { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-inset-junction-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-inset-junction-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-inset-junction-end")]
-    public CssValue? ColumnRuleInsetJunctionEnd { get; init; }
+    public CssValue? column_rule_inset_junction_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-inset-junction-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-inset-junction-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-inset-junction-start")]
-    public CssValue? ColumnRuleInsetJunctionStart { get; init; }
+    public CssValue? column_rule_inset_junction_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-inset-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-inset-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-inset-start")]
-    public CssValue? ColumnRuleInsetStart { get; init; }
+    public CssValue? column_rule_inset_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-style")]
-    public CssValue? ColumnRuleStyle { get; init; }
+    public CssValue? column_rule_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-visibility-items</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-visibility-items</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-visibility-items")]
-    public CssKeywordValue? ColumnRuleVisibilityItems { get; init; }
+    public CssKeywordValue? column_rule_visibility_items { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-rule-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-rule-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-rule-width")]
-    public CssValue? ColumnRuleWidth { get; init; }
+    public CssValue? column_rule_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-span</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-span</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-span")]
-    public CssIntegerValue? ColumnSpan { get; init; }
+    public CssIntegerValue? column_span { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-width")]
-    public CssColumnWidthValue? ColumnWidth { get; init; }
+    public CssColumnWidthValue? column_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>column-wrap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>column-wrap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#column-wrap")]
-    public CssKeywordValue? ColumnWrap { get; init; }
+    public CssKeywordValue? column_wrap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>columns</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>columns</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#columns")]
-    public CssValue? Columns { get; init; }
+    public CssValue? columns { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>contain</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>contain</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#contain")]
-    public CssKeywordValue? Contain { get; init; }
+    public CssKeywordValue? contain { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>contain-intrinsic-block-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>contain-intrinsic-block-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#contain-intrinsic-block-size")]
-    public CssLengthValue? ContainIntrinsicBlockSize { get; init; }
+    public CssLengthValue? contain_intrinsic_block_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>contain-intrinsic-height</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>contain-intrinsic-height</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#contain-intrinsic-height")]
-    public CssLengthValue? ContainIntrinsicHeight { get; init; }
+    public CssLengthValue? contain_intrinsic_height { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>contain-intrinsic-inline-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>contain-intrinsic-inline-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#contain-intrinsic-inline-size")]
-    public CssLengthValue? ContainIntrinsicInlineSize { get; init; }
+    public CssLengthValue? contain_intrinsic_inline_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>contain-intrinsic-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>contain-intrinsic-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#contain-intrinsic-size")]
-    public CssLengthValue? ContainIntrinsicSize { get; init; }
+    public CssLengthValue? contain_intrinsic_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>contain-intrinsic-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>contain-intrinsic-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#contain-intrinsic-width")]
-    public CssLengthValue? ContainIntrinsicWidth { get; init; }
+    public CssLengthValue? contain_intrinsic_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>container</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>container</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#container")]
-    public CssKeywordValue? Container { get; init; }
+    public CssKeywordValue? container { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>container-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>container-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#container-name")]
-    public CssKeywordValue? ContainerName { get; init; }
+    public CssKeywordValue? container_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>container-type</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>container-type</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#container-type")]
-    public CssKeywordValue? ContainerType { get; init; }
+    public CssKeywordValue? container_type { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>content</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>content</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#content")]
-    public CssValue? Content { get; init; }
+    public CssValue? content { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>content-visibility</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>content-visibility</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#content-visibility")]
-    public CssKeywordValue? ContentVisibility { get; init; }
+    public CssKeywordValue? content_visibility { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>continue</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>continue</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#continue")]
-    public CssKeywordValue? Continue { get; init; }
+    public CssKeywordValue? continue_ { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>copy-into</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>copy-into</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#copy-into")]
-    public CssValue? CopyInto { get; init; }
+    public CssValue? copy_into { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner")]
-    public CssValue? Corner { get; init; }
+    public CssValue? corner { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-block-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-block-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-block-end")]
-    public CssValue? CornerBlockEnd { get; init; }
+    public CssValue? corner_block_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-block-end-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-block-end-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-block-end-shape")]
-    public CssValue? CornerBlockEndShape { get; init; }
+    public CssValue? corner_block_end_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-block-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-block-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-block-start")]
-    public CssValue? CornerBlockStart { get; init; }
+    public CssValue? corner_block_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-block-start-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-block-start-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-block-start-shape")]
-    public CssValue? CornerBlockStartShape { get; init; }
+    public CssValue? corner_block_start_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-bottom</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-bottom</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-bottom")]
-    public CssValue? CornerBottom { get; init; }
+    public CssValue? corner_bottom { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-bottom-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-bottom-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-bottom-left")]
-    public CssValue? CornerBottomLeft { get; init; }
+    public CssValue? corner_bottom_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-bottom-left-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-bottom-left-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-bottom-left-shape")]
-    public CssValue? CornerBottomLeftShape { get; init; }
+    public CssValue? corner_bottom_left_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-bottom-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-bottom-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-bottom-right")]
-    public CssValue? CornerBottomRight { get; init; }
+    public CssValue? corner_bottom_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-bottom-right-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-bottom-right-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-bottom-right-shape")]
-    public CssValue? CornerBottomRightShape { get; init; }
+    public CssValue? corner_bottom_right_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-bottom-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-bottom-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-bottom-shape")]
-    public CssValue? CornerBottomShape { get; init; }
+    public CssValue? corner_bottom_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-end-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-end-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-end-end")]
-    public CssValue? CornerEndEnd { get; init; }
+    public CssValue? corner_end_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-end-end-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-end-end-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-end-end-shape")]
-    public CssValue? CornerEndEndShape { get; init; }
+    public CssValue? corner_end_end_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-end-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-end-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-end-start")]
-    public CssValue? CornerEndStart { get; init; }
+    public CssValue? corner_end_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-end-start-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-end-start-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-end-start-shape")]
-    public CssValue? CornerEndStartShape { get; init; }
+    public CssValue? corner_end_start_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-inline-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-inline-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-inline-end")]
-    public CssValue? CornerInlineEnd { get; init; }
+    public CssValue? corner_inline_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-inline-end-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-inline-end-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-inline-end-shape")]
-    public CssValue? CornerInlineEndShape { get; init; }
+    public CssValue? corner_inline_end_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-inline-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-inline-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-inline-start")]
-    public CssValue? CornerInlineStart { get; init; }
+    public CssValue? corner_inline_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-inline-start-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-inline-start-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-inline-start-shape")]
-    public CssValue? CornerInlineStartShape { get; init; }
+    public CssValue? corner_inline_start_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-left")]
-    public CssValue? CornerLeft { get; init; }
+    public CssValue? corner_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-left-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-left-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-left-shape")]
-    public CssValue? CornerLeftShape { get; init; }
+    public CssValue? corner_left_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-right")]
-    public CssValue? CornerRight { get; init; }
+    public CssValue? corner_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-right-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-right-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-right-shape")]
-    public CssValue? CornerRightShape { get; init; }
+    public CssValue? corner_right_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-shape")]
-    public CssValue? CornerShape { get; init; }
+    public CssValue? corner_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-start-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-start-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-start-end")]
-    public CssValue? CornerStartEnd { get; init; }
+    public CssValue? corner_start_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-start-end-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-start-end-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-start-end-shape")]
-    public CssValue? CornerStartEndShape { get; init; }
+    public CssValue? corner_start_end_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-start-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-start-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-start-start")]
-    public CssValue? CornerStartStart { get; init; }
+    public CssValue? corner_start_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-start-start-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-start-start-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-start-start-shape")]
-    public CssValue? CornerStartStartShape { get; init; }
+    public CssValue? corner_start_start_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-top</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-top</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-top")]
-    public CssValue? CornerTop { get; init; }
+    public CssValue? corner_top { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-top-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-top-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-top-left")]
-    public CssValue? CornerTopLeft { get; init; }
+    public CssValue? corner_top_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-top-left-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-top-left-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-top-left-shape")]
-    public CssValue? CornerTopLeftShape { get; init; }
+    public CssValue? corner_top_left_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-top-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-top-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-top-right")]
-    public CssValue? CornerTopRight { get; init; }
+    public CssValue? corner_top_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-top-right-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-top-right-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-top-right-shape")]
-    public CssValue? CornerTopRightShape { get; init; }
+    public CssValue? corner_top_right_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>corner-top-shape</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>corner-top-shape</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#corner-top-shape")]
-    public CssValue? CornerTopShape { get; init; }
+    public CssValue? corner_top_shape { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>counter-increment</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>counter-increment</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#counter-increment")]
-    public CssValue? CounterIncrement { get; init; }
+    public CssValue? counter_increment { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>counter-reset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>counter-reset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#counter-reset")]
-    public CssValue? CounterReset { get; init; }
+    public CssValue? counter_reset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>counter-set</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>counter-set</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#counter-set")]
-    public CssValue? CounterSet { get; init; }
+    public CssValue? counter_set { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>cue</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>cue</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#cue")]
-    public CssValue? Cue { get; init; }
+    public CssValue? cue { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>cue-after</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>cue-after</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#cue-after")]
-    public CssValue? CueAfter { get; init; }
+    public CssValue? cue_after { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>cue-before</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>cue-before</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#cue-before")]
-    public CssValue? CueBefore { get; init; }
+    public CssValue? cue_before { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>cursor</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>cursor</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#cursor")]
-    public CssCursorValue? Cursor { get; init; }
+    public CssCursorValue? cursor { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>cx</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>cx</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#cx")]
-    public CssLengthPercentageValue? Cx { get; init; }
+    public CssLengthPercentageValue? cx { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>cy</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>cy</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#cy")]
-    public CssLengthPercentageValue? Cy { get; init; }
+    public CssLengthPercentageValue? cy { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>d</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>d</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#d")]
-    public CssStringValue? D { get; init; }
+    public CssStringValue? d { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>direction</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>direction</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#direction")]
-    public CssKeywordValue? Direction { get; init; }
+    public CssKeywordValue? direction { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>display</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>display</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#display")]
-    public CssDisplayValue? Display { get; init; }
+    public CssDisplayValue? display { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>dominant-baseline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>dominant-baseline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#dominant-baseline")]
-    public CssValue? DominantBaseline { get; init; }
+    public CssValue? dominant_baseline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>dynamic-range-limit</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>dynamic-range-limit</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#dynamic-range-limit")]
-    public CssValue? DynamicRangeLimit { get; init; }
+    public CssValue? dynamic_range_limit { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>empty-cells</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>empty-cells</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#empty-cells")]
-    public CssKeywordValue? EmptyCells { get; init; }
+    public CssKeywordValue? empty_cells { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>event-trigger</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>event-trigger</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#event-trigger")]
-    public CssValue? EventTrigger { get; init; }
+    public CssValue? event_trigger { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>event-trigger-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>event-trigger-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#event-trigger-name")]
-    public CssKeywordValue? EventTriggerName { get; init; }
+    public CssKeywordValue? event_trigger_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>event-trigger-source</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>event-trigger-source</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#event-trigger-source")]
-    public CssValue? EventTriggerSource { get; init; }
+    public CssValue? event_trigger_source { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>field-sizing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>field-sizing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#field-sizing")]
-    public CssKeywordValue? FieldSizing { get; init; }
+    public CssKeywordValue? field_sizing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill")]
-    public CssValue? Fill { get; init; }
+    public CssValue? fill { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill-break</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill-break</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill-break")]
-    public CssKeywordValue? FillBreak { get; init; }
+    public CssKeywordValue? fill_break { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill-color")]
-    public CssColorValue? FillColor { get; init; }
+    public CssColorValue? fill_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill-image</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill-image</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill-image")]
-    public CssValue? FillImage { get; init; }
+    public CssValue? fill_image { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill-opacity</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill-opacity</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill-opacity")]
-    public CssNumberPercentageValue? FillOpacity { get; init; }
+    public CssNumberPercentageValue? fill_opacity { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill-origin")]
-    public CssKeywordValue? FillOrigin { get; init; }
+    public CssKeywordValue? fill_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill-position")]
-    public CssValue? FillPosition { get; init; }
+    public CssValue? fill_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill-repeat</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill-repeat</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill-repeat")]
-    public CssValue? FillRepeat { get; init; }
+    public CssValue? fill_repeat { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill-rule</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill-rule</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill-rule")]
-    public CssKeywordValue? FillRule { get; init; }
+    public CssKeywordValue? fill_rule { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>fill-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>fill-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#fill-size")]
-    public CssValue? FillSize { get; init; }
+    public CssValue? fill_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>filter</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>filter</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#filter")]
-    public CssFilterValue? Filter { get; init; }
+    public CssFilterValue? filter { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flex</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flex</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flex")]
-    public CssFlexValue? Flex { get; init; }
+    public CssFlexValue? flex { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flex-basis</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flex-basis</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flex-basis")]
-    public CssFlexBasisValue? FlexBasis { get; init; }
+    public CssFlexBasisValue? flex_basis { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flex-direction</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flex-direction</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flex-direction")]
-    public CssFlexDirectionValue? FlexDirection { get; init; }
+    public CssFlexDirectionValue? flex_direction { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flex-flow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flex-flow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flex-flow")]
-    public CssKeywordValue? FlexFlow { get; init; }
+    public CssKeywordValue? flex_flow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flex-grow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flex-grow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flex-grow")]
-    public CssNumberValue? FlexGrow { get; init; }
+    public CssNumberValue? flex_grow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flex-line-count</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flex-line-count</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flex-line-count")]
-    public CssIntegerValue? FlexLineCount { get; init; }
+    public CssIntegerValue? flex_line_count { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flex-shrink</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flex-shrink</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flex-shrink")]
-    public CssNumberValue? FlexShrink { get; init; }
+    public CssNumberValue? flex_shrink { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flex-wrap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flex-wrap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flex-wrap")]
-    public CssFlexWrapValue? FlexWrap { get; init; }
+    public CssFlexWrapValue? flex_wrap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>float</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>float</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#float")]
-    public CssValue? Float { get; init; }
+    public CssValue? float_ { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>float-defer</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>float-defer</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#float-defer")]
-    public CssIntegerValue? FloatDefer { get; init; }
+    public CssIntegerValue? float_defer { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>float-offset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>float-offset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#float-offset")]
-    public CssLengthPercentageValue? FloatOffset { get; init; }
+    public CssLengthPercentageValue? float_offset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>float-reference</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>float-reference</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#float-reference")]
-    public CssKeywordValue? FloatReference { get; init; }
+    public CssKeywordValue? float_reference { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flood-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flood-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flood-color")]
-    public CssColorValue? FloodColor { get; init; }
+    public CssColorValue? flood_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flood-opacity</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flood-opacity</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flood-opacity")]
-    public CssNumberPercentageValue? FloodOpacity { get; init; }
+    public CssNumberPercentageValue? flood_opacity { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flow-from</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flow-from</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flow-from")]
-    public CssKeywordValue? FlowFrom { get; init; }
+    public CssKeywordValue? flow_from { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flow-into</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flow-into</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flow-into")]
-    public CssKeywordValue? FlowInto { get; init; }
+    public CssKeywordValue? flow_into { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>flow-tolerance</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>flow-tolerance</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#flow-tolerance")]
-    public CssLengthPercentageValue? FlowTolerance { get; init; }
+    public CssLengthPercentageValue? flow_tolerance { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font")]
-    public CssValue? Font { get; init; }
+    public CssValue? font { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-family</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-family</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-family")]
-    public CssValue? FontFamily { get; init; }
+    public CssValue? font_family { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-feature-settings</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-feature-settings</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-feature-settings")]
-    public CssValue? FontFeatureSettings { get; init; }
+    public CssValue? font_feature_settings { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-kerning</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-kerning</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-kerning")]
-    public CssKeywordValue? FontKerning { get; init; }
+    public CssKeywordValue? font_kerning { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-language-override</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-language-override</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-language-override")]
-    public CssStringValue? FontLanguageOverride { get; init; }
+    public CssStringValue? font_language_override { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-optical-sizing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-optical-sizing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-optical-sizing")]
-    public CssKeywordValue? FontOpticalSizing { get; init; }
+    public CssKeywordValue? font_optical_sizing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-palette</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-palette</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-palette")]
-    public CssValue? FontPalette { get; init; }
+    public CssValue? font_palette { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-size")]
-    public CssValue? FontSize { get; init; }
+    public CssValue? font_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-size-adjust</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-size-adjust</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-size-adjust")]
-    public CssNumberValue? FontSizeAdjust { get; init; }
+    public CssNumberValue? font_size_adjust { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-stretch</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-stretch</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-stretch")]
-    public CssPercentageValue? FontStretch { get; init; }
+    public CssPercentageValue? font_stretch { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-style")]
-    public CssAngleValue? FontStyle { get; init; }
+    public CssAngleValue? font_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-synthesis</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-synthesis</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-synthesis")]
-    public CssKeywordValue? FontSynthesis { get; init; }
+    public CssKeywordValue? font_synthesis { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-synthesis-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-synthesis-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-synthesis-position")]
-    public CssKeywordValue? FontSynthesisPosition { get; init; }
+    public CssKeywordValue? font_synthesis_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-synthesis-small-caps</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-synthesis-small-caps</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-synthesis-small-caps")]
-    public CssKeywordValue? FontSynthesisSmallCaps { get; init; }
+    public CssKeywordValue? font_synthesis_small_caps { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-synthesis-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-synthesis-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-synthesis-style")]
-    public CssKeywordValue? FontSynthesisStyle { get; init; }
+    public CssKeywordValue? font_synthesis_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-synthesis-weight</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-synthesis-weight</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-synthesis-weight")]
-    public CssKeywordValue? FontSynthesisWeight { get; init; }
+    public CssKeywordValue? font_synthesis_weight { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-variant</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-variant</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-variant")]
-    public CssValue? FontVariant { get; init; }
+    public CssValue? font_variant { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-variant-alternates</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-variant-alternates</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-variant-alternates")]
-    public CssValue? FontVariantAlternates { get; init; }
+    public CssValue? font_variant_alternates { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-variant-caps</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-variant-caps</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-variant-caps")]
-    public CssKeywordValue? FontVariantCaps { get; init; }
+    public CssKeywordValue? font_variant_caps { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-variant-east-asian</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-variant-east-asian</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-variant-east-asian")]
-    public CssValue? FontVariantEastAsian { get; init; }
+    public CssValue? font_variant_east_asian { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-variant-emoji</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-variant-emoji</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-variant-emoji")]
-    public CssKeywordValue? FontVariantEmoji { get; init; }
+    public CssKeywordValue? font_variant_emoji { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-variant-ligatures</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-variant-ligatures</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-variant-ligatures")]
-    public CssValue? FontVariantLigatures { get; init; }
+    public CssValue? font_variant_ligatures { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-variant-numeric</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-variant-numeric</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-variant-numeric")]
-    public CssValue? FontVariantNumeric { get; init; }
+    public CssValue? font_variant_numeric { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-variant-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-variant-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-variant-position")]
-    public CssKeywordValue? FontVariantPosition { get; init; }
+    public CssKeywordValue? font_variant_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-variation-settings</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-variation-settings</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-variation-settings")]
-    public CssValue? FontVariationSettings { get; init; }
+    public CssValue? font_variation_settings { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-weight</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-weight</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-weight")]
-    public CssValue? FontWeight { get; init; }
+    public CssValue? font_weight { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>font-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>font-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#font-width")]
-    public CssPercentageValue? FontWidth { get; init; }
+    public CssPercentageValue? font_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>footnote-display</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>footnote-display</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#footnote-display")]
-    public CssKeywordValue? FootnoteDisplay { get; init; }
+    public CssKeywordValue? footnote_display { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>footnote-policy</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>footnote-policy</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#footnote-policy")]
-    public CssKeywordValue? FootnotePolicy { get; init; }
+    public CssKeywordValue? footnote_policy { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>forced-color-adjust</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>forced-color-adjust</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#forced-color-adjust")]
-    public CssKeywordValue? ForcedColorAdjust { get; init; }
+    public CssKeywordValue? forced_color_adjust { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>frame-sizing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>frame-sizing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#frame-sizing")]
-    public CssKeywordValue? FrameSizing { get; init; }
+    public CssKeywordValue? frame_sizing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>gap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>gap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#gap")]
-    public CssGapValue? Gap { get; init; }
+    public CssGapValue? gap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>glyph-orientation-vertical</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>glyph-orientation-vertical</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#glyph-orientation-vertical")]
-    public CssKeywordValue? GlyphOrientationVertical { get; init; }
+    public CssKeywordValue? glyph_orientation_vertical { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid")]
-    public CssValue? Grid { get; init; }
+    public CssValue? grid { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-area</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-area</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-area")]
-    public CssGridLineValue? GridArea { get; init; }
+    public CssGridLineValue? grid_area { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-auto-columns</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-auto-columns</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-auto-columns")]
-    public CssTrackValue? GridAutoColumns { get; init; }
+    public CssTrackValue? grid_auto_columns { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-auto-flow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-auto-flow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-auto-flow")]
-    public CssKeywordValue? GridAutoFlow { get; init; }
+    public CssKeywordValue? grid_auto_flow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-auto-rows</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-auto-rows</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-auto-rows")]
-    public CssTrackValue? GridAutoRows { get; init; }
+    public CssTrackValue? grid_auto_rows { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-column</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-column</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-column")]
-    public CssGridLineValue? GridColumn { get; init; }
+    public CssGridLineValue? grid_column { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-column-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-column-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-column-end")]
-    public CssGridLineValue? GridColumnEnd { get; init; }
+    public CssGridLineValue? grid_column_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-column-gap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-column-gap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-column-gap")]
-    public CssValue? GridColumnGap { get; init; }
+    public CssValue? grid_column_gap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-column-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-column-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-column-start")]
-    public CssGridLineValue? GridColumnStart { get; init; }
+    public CssGridLineValue? grid_column_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-gap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-gap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-gap")]
-    public CssGapValue? GridGap { get; init; }
+    public CssGapValue? grid_gap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-row</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-row</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-row")]
-    public CssGridLineValue? GridRow { get; init; }
+    public CssGridLineValue? grid_row { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-row-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-row-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-row-end")]
-    public CssGridLineValue? GridRowEnd { get; init; }
+    public CssGridLineValue? grid_row_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-row-gap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-row-gap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-row-gap")]
-    public CssValue? GridRowGap { get; init; }
+    public CssValue? grid_row_gap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-row-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-row-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-row-start")]
-    public CssGridLineValue? GridRowStart { get; init; }
+    public CssGridLineValue? grid_row_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-template</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-template</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-template")]
-    public CssValue? GridTemplate { get; init; }
+    public CssValue? grid_template { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-template-areas</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-template-areas</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-template-areas")]
-    public CssStringValue? GridTemplateAreas { get; init; }
+    public CssStringValue? grid_template_areas { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-template-columns</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-template-columns</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-template-columns")]
-    public CssTrackValue? GridTemplateColumns { get; init; }
+    public CssTrackValue? grid_template_columns { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>grid-template-rows</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>grid-template-rows</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#grid-template-rows")]
-    public CssTrackValue? GridTemplateRows { get; init; }
+    public CssTrackValue? grid_template_rows { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>hanging-punctuation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>hanging-punctuation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#hanging-punctuation")]
-    public CssKeywordValue? HangingPunctuation { get; init; }
+    public CssKeywordValue? hanging_punctuation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>height</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>height</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#height")]
-    public CssSizingValue? Height { get; init; }
+    public CssSizingValue? height { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>hyphenate-character</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>hyphenate-character</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#hyphenate-character")]
-    public CssStringValue? HyphenateCharacter { get; init; }
+    public CssStringValue? hyphenate_character { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>hyphenate-limit-chars</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>hyphenate-limit-chars</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#hyphenate-limit-chars")]
-    public CssIntegerValue? HyphenateLimitChars { get; init; }
+    public CssIntegerValue? hyphenate_limit_chars { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>hyphenate-limit-last</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>hyphenate-limit-last</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#hyphenate-limit-last")]
-    public CssKeywordValue? HyphenateLimitLast { get; init; }
+    public CssKeywordValue? hyphenate_limit_last { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>hyphenate-limit-lines</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>hyphenate-limit-lines</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#hyphenate-limit-lines")]
-    public CssIntegerValue? HyphenateLimitLines { get; init; }
+    public CssIntegerValue? hyphenate_limit_lines { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>hyphenate-limit-zone</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>hyphenate-limit-zone</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#hyphenate-limit-zone")]
-    public CssLengthPercentageValue? HyphenateLimitZone { get; init; }
+    public CssLengthPercentageValue? hyphenate_limit_zone { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>hyphens</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>hyphens</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#hyphens")]
-    public CssKeywordValue? Hyphens { get; init; }
+    public CssKeywordValue? hyphens { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>image-animation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>image-animation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#image-animation")]
-    public CssKeywordValue? ImageAnimation { get; init; }
+    public CssKeywordValue? image_animation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>image-orientation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>image-orientation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#image-orientation")]
-    public CssAngleValue? ImageOrientation { get; init; }
+    public CssAngleValue? image_orientation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>image-rendering</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>image-rendering</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#image-rendering")]
-    public CssKeywordValue? ImageRendering { get; init; }
+    public CssKeywordValue? image_rendering { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>image-resolution</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>image-resolution</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#image-resolution")]
-    public CssResolutionValue? ImageResolution { get; init; }
+    public CssResolutionValue? image_resolution { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>initial-letter</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>initial-letter</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#initial-letter")]
-    public CssValue? InitialLetter { get; init; }
+    public CssValue? initial_letter { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>initial-letter-align</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>initial-letter-align</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#initial-letter-align")]
-    public CssKeywordValue? InitialLetterAlign { get; init; }
+    public CssKeywordValue? initial_letter_align { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>initial-letter-wrap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>initial-letter-wrap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#initial-letter-wrap")]
-    public CssLengthPercentageValue? InitialLetterWrap { get; init; }
+    public CssLengthPercentageValue? initial_letter_wrap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>inline-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>inline-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#inline-size")]
-    public CssSizingValue? InlineSize { get; init; }
+    public CssSizingValue? inline_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>inline-sizing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>inline-sizing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#inline-sizing")]
-    public CssKeywordValue? InlineSizing { get; init; }
+    public CssKeywordValue? inline_sizing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>input-security</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>input-security</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#input-security")]
-    public CssKeywordValue? InputSecurity { get; init; }
+    public CssKeywordValue? input_security { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>inset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>inset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#inset")]
-    public CssInsetValue? Inset { get; init; }
+    public CssInsetValue? inset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>inset-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>inset-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#inset-block")]
-    public CssInsetValue? InsetBlock { get; init; }
+    public CssInsetValue? inset_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>inset-block-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>inset-block-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#inset-block-end")]
-    public CssLengthPercentageValue? InsetBlockEnd { get; init; }
+    public CssLengthPercentageValue? inset_block_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>inset-block-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>inset-block-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#inset-block-start")]
-    public CssLengthPercentageValue? InsetBlockStart { get; init; }
+    public CssLengthPercentageValue? inset_block_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>inset-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>inset-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#inset-inline")]
-    public CssInsetValue? InsetInline { get; init; }
+    public CssInsetValue? inset_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>inset-inline-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>inset-inline-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#inset-inline-end")]
-    public CssLengthPercentageValue? InsetInlineEnd { get; init; }
+    public CssLengthPercentageValue? inset_inline_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>inset-inline-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>inset-inline-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#inset-inline-start")]
-    public CssLengthPercentageValue? InsetInlineStart { get; init; }
+    public CssLengthPercentageValue? inset_inline_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>interactivity</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>interactivity</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#interactivity")]
-    public CssKeywordValue? Interactivity { get; init; }
+    public CssKeywordValue? interactivity { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>interest-delay</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>interest-delay</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#interest-delay")]
-    public CssTimeValue? InterestDelay { get; init; }
+    public CssTimeValue? interest_delay { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>interest-delay-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>interest-delay-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#interest-delay-end")]
-    public CssTimeValue? InterestDelayEnd { get; init; }
+    public CssTimeValue? interest_delay_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>interest-delay-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>interest-delay-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#interest-delay-start")]
-    public CssTimeValue? InterestDelayStart { get; init; }
+    public CssTimeValue? interest_delay_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>interpolate-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>interpolate-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#interpolate-size")]
-    public CssKeywordValue? InterpolateSize { get; init; }
+    public CssKeywordValue? interpolate_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>isolation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>isolation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#isolation")]
-    public CssIsolationValue? Isolation { get; init; }
+    public CssIsolationValue? isolation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>justify-content</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>justify-content</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#justify-content")]
-    public CssAlignmentValue? JustifyContent { get; init; }
+    public CssAlignmentValue? justify_content { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>justify-items</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>justify-items</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#justify-items")]
-    public CssAlignmentValue? JustifyItems { get; init; }
+    public CssAlignmentValue? justify_items { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>justify-self</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>justify-self</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#justify-self")]
-    public CssAlignmentValue? JustifySelf { get; init; }
+    public CssAlignmentValue? justify_self { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#left")]
-    public CssAnchorPositionValue? Left { get; init; }
+    public CssAnchorPositionValue? left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>letter-spacing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>letter-spacing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#letter-spacing")]
-    public CssLengthPercentageValue? LetterSpacing { get; init; }
+    public CssLengthPercentageValue? letter_spacing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>lighting-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>lighting-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#lighting-color")]
-    public CssColorValue? LightingColor { get; init; }
+    public CssColorValue? lighting_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>line-break</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>line-break</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#line-break")]
-    public CssKeywordValue? LineBreak { get; init; }
+    public CssKeywordValue? line_break { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>line-clamp</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>line-clamp</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#line-clamp")]
-    public CssValue? LineClamp { get; init; }
+    public CssValue? line_clamp { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>line-fit-edge</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>line-fit-edge</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#line-fit-edge")]
-    public CssValue? LineFitEdge { get; init; }
+    public CssValue? line_fit_edge { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>line-grid</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>line-grid</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#line-grid")]
-    public CssKeywordValue? LineGrid { get; init; }
+    public CssKeywordValue? line_grid { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>line-height</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>line-height</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#line-height")]
-    public CssLengthPercentageNumberValue? LineHeight { get; init; }
+    public CssLengthPercentageNumberValue? line_height { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>line-height-step</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>line-height-step</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#line-height-step")]
-    public CssLengthValue? LineHeightStep { get; init; }
+    public CssLengthValue? line_height_step { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>line-padding</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>line-padding</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#line-padding")]
-    public CssLengthValue? LinePadding { get; init; }
+    public CssLengthValue? line_padding { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>line-snap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>line-snap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#line-snap")]
-    public CssKeywordValue? LineSnap { get; init; }
+    public CssKeywordValue? line_snap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>link-parameters</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>link-parameters</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#link-parameters")]
-    public CssValue? LinkParameters { get; init; }
+    public CssValue? link_parameters { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>list-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>list-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#list-style")]
-    public CssValue? ListStyle { get; init; }
+    public CssValue? list_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>list-style-image</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>list-style-image</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#list-style-image")]
-    public CssImageValue? ListStyleImage { get; init; }
+    public CssImageValue? list_style_image { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>list-style-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>list-style-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#list-style-position")]
-    public CssKeywordValue? ListStylePosition { get; init; }
+    public CssKeywordValue? list_style_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>list-style-type</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>list-style-type</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#list-style-type")]
-    public CssValue? ListStyleType { get; init; }
+    public CssValue? list_style_type { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin")]
-    public CssMarginValue? Margin { get; init; }
+    public CssMarginValue? margin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-block")]
-    public CssMarginValue? MarginBlock { get; init; }
+    public CssMarginValue? margin_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-block-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-block-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-block-end")]
-    public CssAnchorMarginValue? MarginBlockEnd { get; init; }
+    public CssAnchorMarginValue? margin_block_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-block-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-block-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-block-start")]
-    public CssAnchorMarginValue? MarginBlockStart { get; init; }
+    public CssAnchorMarginValue? margin_block_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-bottom</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-bottom</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-bottom")]
-    public CssAnchorMarginValue? MarginBottom { get; init; }
+    public CssAnchorMarginValue? margin_bottom { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-break</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-break</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-break")]
-    public CssKeywordValue? MarginBreak { get; init; }
+    public CssKeywordValue? margin_break { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-inline")]
-    public CssMarginValue? MarginInline { get; init; }
+    public CssMarginValue? margin_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-inline-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-inline-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-inline-end")]
-    public CssAnchorMarginValue? MarginInlineEnd { get; init; }
+    public CssAnchorMarginValue? margin_inline_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-inline-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-inline-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-inline-start")]
-    public CssAnchorMarginValue? MarginInlineStart { get; init; }
+    public CssAnchorMarginValue? margin_inline_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-left")]
-    public CssAnchorMarginValue? MarginLeft { get; init; }
+    public CssAnchorMarginValue? margin_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-right")]
-    public CssAnchorMarginValue? MarginRight { get; init; }
+    public CssAnchorMarginValue? margin_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-top</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-top</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-top")]
-    public CssAnchorMarginValue? MarginTop { get; init; }
+    public CssAnchorMarginValue? margin_top { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>margin-trim</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>margin-trim</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#margin-trim")]
-    public CssKeywordValue? MarginTrim { get; init; }
+    public CssKeywordValue? margin_trim { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>marker</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>marker</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#marker")]
-    public CssValue? Marker { get; init; }
+    public CssValue? marker { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>marker-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>marker-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#marker-end")]
-    public CssValue? MarkerEnd { get; init; }
+    public CssValue? marker_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>marker-mid</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>marker-mid</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#marker-mid")]
-    public CssValue? MarkerMid { get; init; }
+    public CssValue? marker_mid { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>marker-side</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>marker-side</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#marker-side")]
-    public CssKeywordValue? MarkerSide { get; init; }
+    public CssKeywordValue? marker_side { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>marker-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>marker-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#marker-start")]
-    public CssValue? MarkerStart { get; init; }
+    public CssValue? marker_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask")]
-    public CssValue? Mask { get; init; }
+    public CssValue? mask { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-border</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-border</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-border")]
-    public CssValue? MaskBorder { get; init; }
+    public CssValue? mask_border { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-border-mode</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-border-mode</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-border-mode")]
-    public CssKeywordValue? MaskBorderMode { get; init; }
+    public CssKeywordValue? mask_border_mode { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-border-outset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-border-outset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-border-outset")]
-    public CssLengthPercentageNumberValue? MaskBorderOutset { get; init; }
+    public CssLengthPercentageNumberValue? mask_border_outset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-border-repeat</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-border-repeat</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-border-repeat")]
-    public CssKeywordValue? MaskBorderRepeat { get; init; }
+    public CssKeywordValue? mask_border_repeat { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-border-slice</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-border-slice</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-border-slice")]
-    public CssNumberPercentageValue? MaskBorderSlice { get; init; }
+    public CssNumberPercentageValue? mask_border_slice { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-border-source</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-border-source</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-border-source")]
-    public CssImageValue? MaskBorderSource { get; init; }
+    public CssImageValue? mask_border_source { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-border-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-border-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-border-width")]
-    public CssLengthPercentageNumberValue? MaskBorderWidth { get; init; }
+    public CssLengthPercentageNumberValue? mask_border_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-clip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-clip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-clip")]
-    public CssValue? MaskClip { get; init; }
+    public CssValue? mask_clip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-composite</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-composite</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-composite")]
-    public CssValue? MaskComposite { get; init; }
+    public CssValue? mask_composite { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-image</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-image</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-image")]
-    public CssValue? MaskImage { get; init; }
+    public CssValue? mask_image { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-mode</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-mode</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-mode")]
-    public CssValue? MaskMode { get; init; }
+    public CssValue? mask_mode { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-origin")]
-    public CssValue? MaskOrigin { get; init; }
+    public CssValue? mask_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-position")]
-    public CssValue? MaskPosition { get; init; }
+    public CssValue? mask_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-repeat</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-repeat</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-repeat")]
-    public CssValue? MaskRepeat { get; init; }
+    public CssValue? mask_repeat { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-size")]
-    public CssValue? MaskSize { get; init; }
+    public CssValue? mask_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mask-type</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mask-type</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mask-type")]
-    public CssKeywordValue? MaskType { get; init; }
+    public CssKeywordValue? mask_type { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>math-depth</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>math-depth</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#math-depth")]
-    public CssIntegerValue? MathDepth { get; init; }
+    public CssIntegerValue? math_depth { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>math-shift</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>math-shift</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#math-shift")]
-    public CssKeywordValue? MathShift { get; init; }
+    public CssKeywordValue? math_shift { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>math-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>math-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#math-style")]
-    public CssKeywordValue? MathStyle { get; init; }
+    public CssKeywordValue? math_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>max-block-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>max-block-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#max-block-size")]
-    public CssSizingValue? MaxBlockSize { get; init; }
+    public CssSizingValue? max_block_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>max-height</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>max-height</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#max-height")]
-    public CssSizingValue? MaxHeight { get; init; }
+    public CssSizingValue? max_height { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>max-inline-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>max-inline-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#max-inline-size")]
-    public CssSizingValue? MaxInlineSize { get; init; }
+    public CssSizingValue? max_inline_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>max-lines</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>max-lines</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#max-lines")]
-    public CssIntegerValue? MaxLines { get; init; }
+    public CssIntegerValue? max_lines { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>max-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>max-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#max-width")]
-    public CssSizingValue? MaxWidth { get; init; }
+    public CssSizingValue? max_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>min-block-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>min-block-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#min-block-size")]
-    public CssSizingValue? MinBlockSize { get; init; }
+    public CssSizingValue? min_block_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>min-height</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>min-height</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#min-height")]
-    public CssSizingValue? MinHeight { get; init; }
+    public CssSizingValue? min_height { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>min-inline-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>min-inline-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#min-inline-size")]
-    public CssSizingValue? MinInlineSize { get; init; }
+    public CssSizingValue? min_inline_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>min-intrinsic-sizing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>min-intrinsic-sizing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#min-intrinsic-sizing")]
-    public CssKeywordValue? MinIntrinsicSizing { get; init; }
+    public CssKeywordValue? min_intrinsic_sizing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>min-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>min-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#min-width")]
-    public CssSizingValue? MinWidth { get; init; }
+    public CssSizingValue? min_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>mix-blend-mode</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>mix-blend-mode</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#mix-blend-mode")]
-    public CssValue? MixBlendMode { get; init; }
+    public CssValue? mix_blend_mode { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>nav-down</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>nav-down</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#nav-down")]
-    public CssValue? NavDown { get; init; }
+    public CssValue? nav_down { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>nav-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>nav-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#nav-left")]
-    public CssValue? NavLeft { get; init; }
+    public CssValue? nav_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>nav-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>nav-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#nav-right")]
-    public CssValue? NavRight { get; init; }
+    public CssValue? nav_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>nav-up</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>nav-up</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#nav-up")]
-    public CssValue? NavUp { get; init; }
+    public CssValue? nav_up { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>object-fit</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>object-fit</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#object-fit")]
-    public CssKeywordValue? ObjectFit { get; init; }
+    public CssKeywordValue? object_fit { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>object-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>object-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#object-position")]
-    public CssValue? ObjectPosition { get; init; }
+    public CssValue? object_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>object-view-box</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>object-view-box</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#object-view-box")]
-    public CssValue? ObjectViewBox { get; init; }
+    public CssValue? object_view_box { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>offset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>offset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#offset")]
-    public CssValue? Offset { get; init; }
+    public CssValue? offset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>offset-anchor</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>offset-anchor</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#offset-anchor")]
-    public CssValue? OffsetAnchor { get; init; }
+    public CssValue? offset_anchor { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>offset-distance</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>offset-distance</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#offset-distance")]
-    public CssLengthPercentageValue? OffsetDistance { get; init; }
+    public CssLengthPercentageValue? offset_distance { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>offset-path</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>offset-path</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#offset-path")]
-    public CssValue? OffsetPath { get; init; }
+    public CssValue? offset_path { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>offset-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>offset-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#offset-position")]
-    public CssValue? OffsetPosition { get; init; }
+    public CssValue? offset_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>offset-rotate</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>offset-rotate</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#offset-rotate")]
-    public CssAngleValue? OffsetRotate { get; init; }
+    public CssAngleValue? offset_rotate { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>opacity</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>opacity</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#opacity")]
-    public CssNumberPercentageValue? Opacity { get; init; }
+    public CssNumberPercentageValue? opacity { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>order</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>order</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#order")]
-    public CssIntegerValue? Order { get; init; }
+    public CssIntegerValue? order { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>orphans</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>orphans</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#orphans")]
-    public CssIntegerValue? Orphans { get; init; }
+    public CssIntegerValue? orphans { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>outline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>outline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#outline")]
-    public CssValue? Outline { get; init; }
+    public CssValue? outline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>outline-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>outline-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#outline-color")]
-    public CssValue? OutlineColor { get; init; }
+    public CssValue? outline_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>outline-offset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>outline-offset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#outline-offset")]
-    public CssLengthValue? OutlineOffset { get; init; }
+    public CssLengthValue? outline_offset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>outline-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>outline-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#outline-style")]
-    public CssLineStyleValue? OutlineStyle { get; init; }
+    public CssLineStyleValue? outline_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>outline-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>outline-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#outline-width")]
-    public CssLineWidthValue? OutlineWidth { get; init; }
+    public CssLineWidthValue? outline_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow")]
-    public CssOverflowValue? Overflow { get; init; }
+    public CssOverflowValue? overflow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-anchor</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-anchor</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-anchor")]
-    public CssKeywordValue? OverflowAnchor { get; init; }
+    public CssKeywordValue? overflow_anchor { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-block")]
-    public CssOverflowValue? OverflowBlock { get; init; }
+    public CssOverflowValue? overflow_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin")]
-    public CssValue? OverflowClipMargin { get; init; }
+    public CssValue? overflow_clip_margin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-block")]
-    public CssValue? OverflowClipMarginBlock { get; init; }
+    public CssValue? overflow_clip_margin_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-block-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-block-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-block-end")]
-    public CssValue? OverflowClipMarginBlockEnd { get; init; }
+    public CssValue? overflow_clip_margin_block_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-block-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-block-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-block-start")]
-    public CssValue? OverflowClipMarginBlockStart { get; init; }
+    public CssValue? overflow_clip_margin_block_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-bottom</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-bottom</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-bottom")]
-    public CssValue? OverflowClipMarginBottom { get; init; }
+    public CssValue? overflow_clip_margin_bottom { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-inline")]
-    public CssValue? OverflowClipMarginInline { get; init; }
+    public CssValue? overflow_clip_margin_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-inline-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-inline-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-inline-end")]
-    public CssValue? OverflowClipMarginInlineEnd { get; init; }
+    public CssValue? overflow_clip_margin_inline_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-inline-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-inline-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-inline-start")]
-    public CssValue? OverflowClipMarginInlineStart { get; init; }
+    public CssValue? overflow_clip_margin_inline_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-left")]
-    public CssValue? OverflowClipMarginLeft { get; init; }
+    public CssValue? overflow_clip_margin_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-right")]
-    public CssValue? OverflowClipMarginRight { get; init; }
+    public CssValue? overflow_clip_margin_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-clip-margin-top</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-clip-margin-top</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-clip-margin-top")]
-    public CssValue? OverflowClipMarginTop { get; init; }
+    public CssValue? overflow_clip_margin_top { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-inline")]
-    public CssOverflowValue? OverflowInline { get; init; }
+    public CssOverflowValue? overflow_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-wrap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-wrap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-wrap")]
-    public CssKeywordValue? OverflowWrap { get; init; }
+    public CssKeywordValue? overflow_wrap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-x</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-x</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-x")]
-    public CssOverflowValue? OverflowX { get; init; }
+    public CssOverflowValue? overflow_x { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overflow-y</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overflow-y</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overflow-y")]
-    public CssOverflowValue? OverflowY { get; init; }
+    public CssOverflowValue? overflow_y { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overlay</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overlay</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overlay")]
-    public CssKeywordValue? Overlay { get; init; }
+    public CssKeywordValue? overlay { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overscroll-behavior</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overscroll-behavior</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overscroll-behavior")]
-    public CssKeywordValue? OverscrollBehavior { get; init; }
+    public CssKeywordValue? overscroll_behavior { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overscroll-behavior-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overscroll-behavior-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overscroll-behavior-block")]
-    public CssKeywordValue? OverscrollBehaviorBlock { get; init; }
+    public CssKeywordValue? overscroll_behavior_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overscroll-behavior-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overscroll-behavior-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overscroll-behavior-inline")]
-    public CssKeywordValue? OverscrollBehaviorInline { get; init; }
+    public CssKeywordValue? overscroll_behavior_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overscroll-behavior-x</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overscroll-behavior-x</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overscroll-behavior-x")]
-    public CssKeywordValue? OverscrollBehaviorX { get; init; }
+    public CssKeywordValue? overscroll_behavior_x { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>overscroll-behavior-y</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>overscroll-behavior-y</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#overscroll-behavior-y")]
-    public CssKeywordValue? OverscrollBehaviorY { get; init; }
+    public CssKeywordValue? overscroll_behavior_y { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding")]
-    public CssPaddingValue? Padding { get; init; }
+    public CssPaddingValue? padding { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-block")]
-    public CssPaddingValue? PaddingBlock { get; init; }
+    public CssPaddingValue? padding_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-block-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-block-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-block-end")]
-    public CssLengthPercentageValue? PaddingBlockEnd { get; init; }
+    public CssLengthPercentageValue? padding_block_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-block-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-block-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-block-start")]
-    public CssLengthPercentageValue? PaddingBlockStart { get; init; }
+    public CssLengthPercentageValue? padding_block_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-bottom</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-bottom</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-bottom")]
-    public CssLengthPercentageValue? PaddingBottom { get; init; }
+    public CssLengthPercentageValue? padding_bottom { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-inline")]
-    public CssPaddingValue? PaddingInline { get; init; }
+    public CssPaddingValue? padding_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-inline-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-inline-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-inline-end")]
-    public CssLengthPercentageValue? PaddingInlineEnd { get; init; }
+    public CssLengthPercentageValue? padding_inline_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-inline-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-inline-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-inline-start")]
-    public CssLengthPercentageValue? PaddingInlineStart { get; init; }
+    public CssLengthPercentageValue? padding_inline_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-left")]
-    public CssLengthPercentageValue? PaddingLeft { get; init; }
+    public CssLengthPercentageValue? padding_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-right")]
-    public CssLengthPercentageValue? PaddingRight { get; init; }
+    public CssLengthPercentageValue? padding_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>padding-top</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>padding-top</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#padding-top")]
-    public CssLengthPercentageValue? PaddingTop { get; init; }
+    public CssLengthPercentageValue? padding_top { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>page</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>page</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#page")]
-    public CssKeywordValue? Page { get; init; }
+    public CssKeywordValue? page { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>page-break-after</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>page-break-after</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#page-break-after")]
-    public CssKeywordValue? PageBreakAfter { get; init; }
+    public CssKeywordValue? page_break_after { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>page-break-before</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>page-break-before</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#page-break-before")]
-    public CssKeywordValue? PageBreakBefore { get; init; }
+    public CssKeywordValue? page_break_before { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>page-break-inside</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>page-break-inside</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#page-break-inside")]
-    public CssKeywordValue? PageBreakInside { get; init; }
+    public CssKeywordValue? page_break_inside { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>paint-order</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>paint-order</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#paint-order")]
-    public CssKeywordValue? PaintOrder { get; init; }
+    public CssKeywordValue? paint_order { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>path-length</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>path-length</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#path-length")]
-    public CssLengthValue? PathLength { get; init; }
+    public CssLengthValue? path_length { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>pause</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>pause</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#pause")]
-    public CssTimeValue? Pause { get; init; }
+    public CssTimeValue? pause { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>pause-after</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>pause-after</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#pause-after")]
-    public CssTimeValue? PauseAfter { get; init; }
+    public CssTimeValue? pause_after { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>pause-before</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>pause-before</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#pause-before")]
-    public CssTimeValue? PauseBefore { get; init; }
+    public CssTimeValue? pause_before { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>perspective</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>perspective</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#perspective")]
-    public CssLengthValue? Perspective { get; init; }
+    public CssLengthValue? perspective { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>perspective-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>perspective-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#perspective-origin")]
-    public CssValue? PerspectiveOrigin { get; init; }
+    public CssValue? perspective_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>place-content</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>place-content</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#place-content")]
-    public CssAlignmentValue? PlaceContent { get; init; }
+    public CssAlignmentValue? place_content { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>place-items</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>place-items</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#place-items")]
-    public CssAlignmentValue? PlaceItems { get; init; }
+    public CssAlignmentValue? place_items { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>place-self</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>place-self</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#place-self")]
-    public CssAlignmentValue? PlaceSelf { get; init; }
+    public CssAlignmentValue? place_self { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>pointer-events</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>pointer-events</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#pointer-events")]
-    public CssKeywordValue? PointerEvents { get; init; }
+    public CssKeywordValue? pointer_events { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>pointer-timeline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>pointer-timeline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#pointer-timeline")]
-    public CssKeywordValue? PointerTimeline { get; init; }
+    public CssKeywordValue? pointer_timeline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>pointer-timeline-axis</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>pointer-timeline-axis</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#pointer-timeline-axis")]
-    public CssKeywordValue? PointerTimelineAxis { get; init; }
+    public CssKeywordValue? pointer_timeline_axis { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>pointer-timeline-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>pointer-timeline-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#pointer-timeline-name")]
-    public CssKeywordValue? PointerTimelineName { get; init; }
+    public CssKeywordValue? pointer_timeline_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#position")]
-    public CssPositionValue? Position { get; init; }
+    public CssPositionValue? position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>position-anchor</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>position-anchor</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#position-anchor")]
-    public CssPositionAnchorValue? PositionAnchor { get; init; }
+    public CssPositionAnchorValue? position_anchor { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>position-area</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>position-area</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#position-area")]
-    public CssValue? PositionArea { get; init; }
+    public CssValue? position_area { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>position-try</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>position-try</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#position-try")]
-    public CssValue? PositionTry { get; init; }
+    public CssValue? position_try { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>position-try-fallbacks</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>position-try-fallbacks</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#position-try-fallbacks")]
-    public CssValue? PositionTryFallbacks { get; init; }
+    public CssValue? position_try_fallbacks { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>position-try-order</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>position-try-order</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#position-try-order")]
-    public CssValue? PositionTryOrder { get; init; }
+    public CssValue? position_try_order { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>position-visibility</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>position-visibility</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#position-visibility")]
-    public CssKeywordValue? PositionVisibility { get; init; }
+    public CssKeywordValue? position_visibility { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>print-color-adjust</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>print-color-adjust</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#print-color-adjust")]
-    public CssKeywordValue? PrintColorAdjust { get; init; }
+    public CssKeywordValue? print_color_adjust { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>quotes</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>quotes</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#quotes")]
-    public CssStringValue? Quotes { get; init; }
+    public CssStringValue? quotes { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>r</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>r</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#r")]
-    public CssLengthPercentageValue? R { get; init; }
+    public CssLengthPercentageValue? r { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>reading-flow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>reading-flow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#reading-flow")]
-    public CssKeywordValue? ReadingFlow { get; init; }
+    public CssKeywordValue? reading_flow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>reading-order</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>reading-order</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#reading-order")]
-    public CssIntegerValue? ReadingOrder { get; init; }
+    public CssIntegerValue? reading_order { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>region-fragment</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>region-fragment</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#region-fragment")]
-    public CssKeywordValue? RegionFragment { get; init; }
+    public CssKeywordValue? region_fragment { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>resize</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>resize</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#resize")]
-    public CssKeywordValue? Resize { get; init; }
+    public CssKeywordValue? resize { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rest</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rest</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rest")]
-    public CssTimeValue? Rest { get; init; }
+    public CssTimeValue? rest { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rest-after</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rest-after</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rest-after")]
-    public CssTimeValue? RestAfter { get; init; }
+    public CssTimeValue? rest_after { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rest-before</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rest-before</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rest-before")]
-    public CssTimeValue? RestBefore { get; init; }
+    public CssTimeValue? rest_before { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#right")]
-    public CssAnchorPositionValue? Right { get; init; }
+    public CssAnchorPositionValue? right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rotate</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rotate</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rotate")]
-    public CssValue? Rotate { get; init; }
+    public CssValue? rotate { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-gap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-gap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-gap")]
-    public CssValue? RowGap { get; init; }
+    public CssValue? row_gap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule")]
-    public CssValue? RowRule { get; init; }
+    public CssValue? row_rule { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-break</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-break</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-break")]
-    public CssKeywordValue? RowRuleBreak { get; init; }
+    public CssKeywordValue? row_rule_break { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-color")]
-    public CssValue? RowRuleColor { get; init; }
+    public CssValue? row_rule_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-inset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-inset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-inset")]
-    public CssValue? RowRuleInset { get; init; }
+    public CssValue? row_rule_inset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-inset-cap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-inset-cap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-inset-cap")]
-    public CssValue? RowRuleInsetCap { get; init; }
+    public CssValue? row_rule_inset_cap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-inset-cap-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-inset-cap-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-inset-cap-end")]
-    public CssValue? RowRuleInsetCapEnd { get; init; }
+    public CssValue? row_rule_inset_cap_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-inset-cap-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-inset-cap-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-inset-cap-start")]
-    public CssValue? RowRuleInsetCapStart { get; init; }
+    public CssValue? row_rule_inset_cap_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-inset-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-inset-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-inset-end")]
-    public CssValue? RowRuleInsetEnd { get; init; }
+    public CssValue? row_rule_inset_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-inset-junction</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-inset-junction</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-inset-junction")]
-    public CssValue? RowRuleInsetJunction { get; init; }
+    public CssValue? row_rule_inset_junction { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-inset-junction-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-inset-junction-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-inset-junction-end")]
-    public CssValue? RowRuleInsetJunctionEnd { get; init; }
+    public CssValue? row_rule_inset_junction_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-inset-junction-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-inset-junction-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-inset-junction-start")]
-    public CssValue? RowRuleInsetJunctionStart { get; init; }
+    public CssValue? row_rule_inset_junction_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-inset-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-inset-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-inset-start")]
-    public CssValue? RowRuleInsetStart { get; init; }
+    public CssValue? row_rule_inset_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-style")]
-    public CssValue? RowRuleStyle { get; init; }
+    public CssValue? row_rule_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-visibility-items</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-visibility-items</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-visibility-items")]
-    public CssKeywordValue? RowRuleVisibilityItems { get; init; }
+    public CssKeywordValue? row_rule_visibility_items { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>row-rule-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>row-rule-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#row-rule-width")]
-    public CssValue? RowRuleWidth { get; init; }
+    public CssValue? row_rule_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>ruby-align</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>ruby-align</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#ruby-align")]
-    public CssKeywordValue? RubyAlign { get; init; }
+    public CssKeywordValue? ruby_align { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>ruby-merge</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>ruby-merge</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#ruby-merge")]
-    public CssKeywordValue? RubyMerge { get; init; }
+    public CssKeywordValue? ruby_merge { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>ruby-overhang</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>ruby-overhang</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#ruby-overhang")]
-    public CssKeywordValue? RubyOverhang { get; init; }
+    public CssKeywordValue? ruby_overhang { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>ruby-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>ruby-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#ruby-position")]
-    public CssKeywordValue? RubyPosition { get; init; }
+    public CssKeywordValue? ruby_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule")]
-    public CssValue? Rule { get; init; }
+    public CssValue? rule { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-break</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-break</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-break")]
-    public CssKeywordValue? RuleBreak { get; init; }
+    public CssKeywordValue? rule_break { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-color")]
-    public CssValue? RuleColor { get; init; }
+    public CssValue? rule_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-inset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-inset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-inset")]
-    public CssValue? RuleInset { get; init; }
+    public CssValue? rule_inset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-inset-cap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-inset-cap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-inset-cap")]
-    public CssValue? RuleInsetCap { get; init; }
+    public CssValue? rule_inset_cap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-inset-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-inset-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-inset-end")]
-    public CssValue? RuleInsetEnd { get; init; }
+    public CssValue? rule_inset_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-inset-junction</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-inset-junction</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-inset-junction")]
-    public CssValue? RuleInsetJunction { get; init; }
+    public CssValue? rule_inset_junction { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-inset-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-inset-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-inset-start")]
-    public CssValue? RuleInsetStart { get; init; }
+    public CssValue? rule_inset_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-overlap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-overlap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-overlap")]
-    public CssKeywordValue? RuleOverlap { get; init; }
+    public CssKeywordValue? rule_overlap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-style")]
-    public CssValue? RuleStyle { get; init; }
+    public CssValue? rule_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-visibility-items</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-visibility-items</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-visibility-items")]
-    public CssKeywordValue? RuleVisibilityItems { get; init; }
+    public CssKeywordValue? rule_visibility_items { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rule-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rule-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rule-width")]
-    public CssValue? RuleWidth { get; init; }
+    public CssValue? rule_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>rx</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>rx</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#rx")]
-    public CssLengthPercentageValue? Rx { get; init; }
+    public CssLengthPercentageValue? rx { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>ry</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>ry</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#ry")]
-    public CssLengthPercentageValue? Ry { get; init; }
+    public CssLengthPercentageValue? ry { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scale</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scale</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scale")]
-    public CssNumberPercentageValue? Scale { get; init; }
+    public CssNumberPercentageValue? scale { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-behavior</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-behavior</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-behavior")]
-    public CssKeywordValue? ScrollBehavior { get; init; }
+    public CssKeywordValue? scroll_behavior { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-initial-target</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-initial-target</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-initial-target")]
-    public CssKeywordValue? ScrollInitialTarget { get; init; }
+    public CssKeywordValue? scroll_initial_target { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin")]
-    public CssLengthValue? ScrollMargin { get; init; }
+    public CssLengthValue? scroll_margin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-block")]
-    public CssLengthValue? ScrollMarginBlock { get; init; }
+    public CssLengthValue? scroll_margin_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-block-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-block-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-block-end")]
-    public CssLengthValue? ScrollMarginBlockEnd { get; init; }
+    public CssLengthValue? scroll_margin_block_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-block-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-block-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-block-start")]
-    public CssLengthValue? ScrollMarginBlockStart { get; init; }
+    public CssLengthValue? scroll_margin_block_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-bottom</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-bottom</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-bottom")]
-    public CssLengthValue? ScrollMarginBottom { get; init; }
+    public CssLengthValue? scroll_margin_bottom { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-inline")]
-    public CssLengthValue? ScrollMarginInline { get; init; }
+    public CssLengthValue? scroll_margin_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-inline-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-inline-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-inline-end")]
-    public CssLengthValue? ScrollMarginInlineEnd { get; init; }
+    public CssLengthValue? scroll_margin_inline_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-inline-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-inline-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-inline-start")]
-    public CssLengthValue? ScrollMarginInlineStart { get; init; }
+    public CssLengthValue? scroll_margin_inline_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-left")]
-    public CssLengthValue? ScrollMarginLeft { get; init; }
+    public CssLengthValue? scroll_margin_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-right")]
-    public CssLengthValue? ScrollMarginRight { get; init; }
+    public CssLengthValue? scroll_margin_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-margin-top</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-margin-top</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-margin-top")]
-    public CssLengthValue? ScrollMarginTop { get; init; }
+    public CssLengthValue? scroll_margin_top { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-marker-group</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-marker-group</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-marker-group")]
-    public CssKeywordValue? ScrollMarkerGroup { get; init; }
+    public CssKeywordValue? scroll_marker_group { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding")]
-    public CssLengthPercentageValue? ScrollPadding { get; init; }
+    public CssLengthPercentageValue? scroll_padding { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-block</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-block</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-block")]
-    public CssLengthPercentageValue? ScrollPaddingBlock { get; init; }
+    public CssLengthPercentageValue? scroll_padding_block { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-block-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-block-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-block-end")]
-    public CssLengthPercentageValue? ScrollPaddingBlockEnd { get; init; }
+    public CssLengthPercentageValue? scroll_padding_block_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-block-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-block-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-block-start")]
-    public CssLengthPercentageValue? ScrollPaddingBlockStart { get; init; }
+    public CssLengthPercentageValue? scroll_padding_block_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-bottom</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-bottom</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-bottom")]
-    public CssLengthPercentageValue? ScrollPaddingBottom { get; init; }
+    public CssLengthPercentageValue? scroll_padding_bottom { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-inline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-inline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-inline")]
-    public CssLengthPercentageValue? ScrollPaddingInline { get; init; }
+    public CssLengthPercentageValue? scroll_padding_inline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-inline-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-inline-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-inline-end")]
-    public CssLengthPercentageValue? ScrollPaddingInlineEnd { get; init; }
+    public CssLengthPercentageValue? scroll_padding_inline_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-inline-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-inline-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-inline-start")]
-    public CssLengthPercentageValue? ScrollPaddingInlineStart { get; init; }
+    public CssLengthPercentageValue? scroll_padding_inline_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-left</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-left</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-left")]
-    public CssLengthPercentageValue? ScrollPaddingLeft { get; init; }
+    public CssLengthPercentageValue? scroll_padding_left { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-right</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-right</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-right")]
-    public CssLengthPercentageValue? ScrollPaddingRight { get; init; }
+    public CssLengthPercentageValue? scroll_padding_right { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-padding-top</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-padding-top</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-padding-top")]
-    public CssLengthPercentageValue? ScrollPaddingTop { get; init; }
+    public CssLengthPercentageValue? scroll_padding_top { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-snap-align</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-snap-align</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-snap-align")]
-    public CssKeywordValue? ScrollSnapAlign { get; init; }
+    public CssKeywordValue? scroll_snap_align { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-snap-stop</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-snap-stop</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-snap-stop")]
-    public CssKeywordValue? ScrollSnapStop { get; init; }
+    public CssKeywordValue? scroll_snap_stop { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-snap-type</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-snap-type</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-snap-type")]
-    public CssKeywordValue? ScrollSnapType { get; init; }
+    public CssKeywordValue? scroll_snap_type { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-target-group</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-target-group</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-target-group")]
-    public CssKeywordValue? ScrollTargetGroup { get; init; }
+    public CssKeywordValue? scroll_target_group { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-timeline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-timeline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-timeline")]
-    public CssKeywordValue? ScrollTimeline { get; init; }
+    public CssKeywordValue? scroll_timeline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-timeline-axis</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-timeline-axis</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-timeline-axis")]
-    public CssKeywordValue? ScrollTimelineAxis { get; init; }
+    public CssKeywordValue? scroll_timeline_axis { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scroll-timeline-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scroll-timeline-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scroll-timeline-name")]
-    public CssKeywordValue? ScrollTimelineName { get; init; }
+    public CssKeywordValue? scroll_timeline_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scrollbar-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scrollbar-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scrollbar-color")]
-    public CssColorValue? ScrollbarColor { get; init; }
+    public CssColorValue? scrollbar_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scrollbar-gutter</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scrollbar-gutter</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scrollbar-gutter")]
-    public CssKeywordValue? ScrollbarGutter { get; init; }
+    public CssKeywordValue? scrollbar_gutter { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>scrollbar-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>scrollbar-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#scrollbar-width")]
-    public CssKeywordValue? ScrollbarWidth { get; init; }
+    public CssKeywordValue? scrollbar_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>shape-image-threshold</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>shape-image-threshold</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#shape-image-threshold")]
-    public CssNumberPercentageValue? ShapeImageThreshold { get; init; }
+    public CssNumberPercentageValue? shape_image_threshold { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>shape-inside</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>shape-inside</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#shape-inside")]
-    public CssValue? ShapeInside { get; init; }
+    public CssValue? shape_inside { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>shape-margin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>shape-margin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#shape-margin")]
-    public CssLengthPercentageValue? ShapeMargin { get; init; }
+    public CssLengthPercentageValue? shape_margin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>shape-outside</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>shape-outside</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#shape-outside")]
-    public CssValue? ShapeOutside { get; init; }
+    public CssValue? shape_outside { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>shape-padding</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>shape-padding</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#shape-padding")]
-    public CssLengthPercentageValue? ShapePadding { get; init; }
+    public CssLengthPercentageValue? shape_padding { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>shape-rendering</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>shape-rendering</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#shape-rendering")]
-    public CssKeywordValue? ShapeRendering { get; init; }
+    public CssKeywordValue? shape_rendering { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>slider-orientation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>slider-orientation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#slider-orientation")]
-    public CssKeywordValue? SliderOrientation { get; init; }
+    public CssKeywordValue? slider_orientation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>spatial-navigation-action</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>spatial-navigation-action</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#spatial-navigation-action")]
-    public CssKeywordValue? SpatialNavigationAction { get; init; }
+    public CssKeywordValue? spatial_navigation_action { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>spatial-navigation-contain</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>spatial-navigation-contain</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#spatial-navigation-contain")]
-    public CssKeywordValue? SpatialNavigationContain { get; init; }
+    public CssKeywordValue? spatial_navigation_contain { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>spatial-navigation-function</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>spatial-navigation-function</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#spatial-navigation-function")]
-    public CssKeywordValue? SpatialNavigationFunction { get; init; }
+    public CssKeywordValue? spatial_navigation_function { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>speak</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>speak</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#speak")]
-    public CssKeywordValue? Speak { get; init; }
+    public CssKeywordValue? speak { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>speak-as</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>speak-as</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#speak-as")]
-    public CssKeywordValue? SpeakAs { get; init; }
+    public CssKeywordValue? speak_as { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stop-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stop-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stop-color")]
-    public CssColorValue? StopColor { get; init; }
+    public CssColorValue? stop_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stop-opacity</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stop-opacity</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stop-opacity")]
-    public CssNumberPercentageValue? StopOpacity { get; init; }
+    public CssNumberPercentageValue? stop_opacity { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>string-set</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>string-set</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#string-set")]
-    public CssValue? StringSet { get; init; }
+    public CssValue? string_set { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke")]
-    public CssValue? Stroke { get; init; }
+    public CssValue? stroke { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-align</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-align</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-align")]
-    public CssKeywordValue? StrokeAlign { get; init; }
+    public CssKeywordValue? stroke_align { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-alignment</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-alignment</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-alignment")]
-    public CssKeywordValue? StrokeAlignment { get; init; }
+    public CssKeywordValue? stroke_alignment { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-break</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-break</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-break")]
-    public CssKeywordValue? StrokeBreak { get; init; }
+    public CssKeywordValue? stroke_break { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-color")]
-    public CssColorValue? StrokeColor { get; init; }
+    public CssColorValue? stroke_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-dash-corner</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-dash-corner</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-dash-corner")]
-    public CssLengthValue? StrokeDashCorner { get; init; }
+    public CssLengthValue? stroke_dash_corner { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-dash-justify</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-dash-justify</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-dash-justify")]
-    public CssKeywordValue? StrokeDashJustify { get; init; }
+    public CssKeywordValue? stroke_dash_justify { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-dashadjust</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-dashadjust</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-dashadjust")]
-    public CssKeywordValue? StrokeDashadjust { get; init; }
+    public CssKeywordValue? stroke_dashadjust { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-dasharray</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-dasharray</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-dasharray")]
-    public CssLengthPercentageNumberValue? StrokeDasharray { get; init; }
+    public CssLengthPercentageNumberValue? stroke_dasharray { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-dashcorner</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-dashcorner</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-dashcorner")]
-    public CssLengthValue? StrokeDashcorner { get; init; }
+    public CssLengthValue? stroke_dashcorner { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-dashoffset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-dashoffset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-dashoffset")]
-    public CssLengthPercentageNumberValue? StrokeDashoffset { get; init; }
+    public CssLengthPercentageNumberValue? stroke_dashoffset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-image</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-image</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-image")]
-    public CssValue? StrokeImage { get; init; }
+    public CssValue? stroke_image { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-linecap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-linecap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-linecap")]
-    public CssKeywordValue? StrokeLinecap { get; init; }
+    public CssKeywordValue? stroke_linecap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-linejoin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-linejoin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-linejoin")]
-    public CssKeywordValue? StrokeLinejoin { get; init; }
+    public CssKeywordValue? stroke_linejoin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-miterlimit</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-miterlimit</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-miterlimit")]
-    public CssNumberValue? StrokeMiterlimit { get; init; }
+    public CssNumberValue? stroke_miterlimit { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-opacity</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-opacity</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-opacity")]
-    public CssNumberPercentageValue? StrokeOpacity { get; init; }
+    public CssNumberPercentageValue? stroke_opacity { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-origin")]
-    public CssKeywordValue? StrokeOrigin { get; init; }
+    public CssKeywordValue? stroke_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-position")]
-    public CssValue? StrokePosition { get; init; }
+    public CssValue? stroke_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-repeat</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-repeat</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-repeat")]
-    public CssValue? StrokeRepeat { get; init; }
+    public CssValue? stroke_repeat { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-size")]
-    public CssValue? StrokeSize { get; init; }
+    public CssValue? stroke_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>stroke-width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>stroke-width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#stroke-width")]
-    public CssValue? StrokeWidth { get; init; }
+    public CssValue? stroke_width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>tab-size</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>tab-size</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#tab-size")]
-    public CssLengthPercentageNumberValue? TabSize { get; init; }
+    public CssLengthPercentageNumberValue? tab_size { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>table-layout</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>table-layout</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#table-layout")]
-    public CssKeywordValue? TableLayout { get; init; }
+    public CssKeywordValue? table_layout { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-align</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-align</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-align")]
-    public CssTextAlignValue? TextAlign { get; init; }
+    public CssTextAlignValue? text_align { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-align-all</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-align-all</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-align-all")]
-    public CssStringValue? TextAlignAll { get; init; }
+    public CssStringValue? text_align_all { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-align-last</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-align-last</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-align-last")]
-    public CssKeywordValue? TextAlignLast { get; init; }
+    public CssKeywordValue? text_align_last { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-anchor</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-anchor</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-anchor")]
-    public CssKeywordValue? TextAnchor { get; init; }
+    public CssKeywordValue? text_anchor { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-autospace</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-autospace</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-autospace")]
-    public CssValue? TextAutospace { get; init; }
+    public CssValue? text_autospace { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-box</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-box</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-box")]
-    public CssValue? TextBox { get; init; }
+    public CssValue? text_box { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-box-edge</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-box-edge</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-box-edge")]
-    public CssValue? TextBoxEdge { get; init; }
+    public CssValue? text_box_edge { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-box-trim</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-box-trim</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-box-trim")]
-    public CssKeywordValue? TextBoxTrim { get; init; }
+    public CssKeywordValue? text_box_trim { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-combine-upright</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-combine-upright</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-combine-upright")]
-    public CssIntegerValue? TextCombineUpright { get; init; }
+    public CssIntegerValue? text_combine_upright { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration")]
-    public CssValue? TextDecoration { get; init; }
+    public CssValue? text_decoration { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-color")]
-    public CssColorValue? TextDecorationColor { get; init; }
+    public CssColorValue? text_decoration_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-inset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-inset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-inset")]
-    public CssLengthValue? TextDecorationInset { get; init; }
+    public CssLengthValue? text_decoration_inset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-line</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-line</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-line")]
-    public CssKeywordValue? TextDecorationLine { get; init; }
+    public CssKeywordValue? text_decoration_line { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-skip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-skip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-skip")]
-    public CssKeywordValue? TextDecorationSkip { get; init; }
+    public CssKeywordValue? text_decoration_skip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-skip-box</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-skip-box</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-skip-box")]
-    public CssKeywordValue? TextDecorationSkipBox { get; init; }
+    public CssKeywordValue? text_decoration_skip_box { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-skip-ink</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-skip-ink</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-skip-ink")]
-    public CssKeywordValue? TextDecorationSkipInk { get; init; }
+    public CssKeywordValue? text_decoration_skip_ink { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-skip-self</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-skip-self</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-skip-self")]
-    public CssKeywordValue? TextDecorationSkipSelf { get; init; }
+    public CssKeywordValue? text_decoration_skip_self { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-skip-spaces</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-skip-spaces</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-skip-spaces")]
-    public CssKeywordValue? TextDecorationSkipSpaces { get; init; }
+    public CssKeywordValue? text_decoration_skip_spaces { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-style")]
-    public CssKeywordValue? TextDecorationStyle { get; init; }
+    public CssKeywordValue? text_decoration_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-decoration-thickness</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-decoration-thickness</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-decoration-thickness")]
-    public CssValue? TextDecorationThickness { get; init; }
+    public CssValue? text_decoration_thickness { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-emphasis</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-emphasis</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-emphasis")]
-    public CssValue? TextEmphasis { get; init; }
+    public CssValue? text_emphasis { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-emphasis-color</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-emphasis-color</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-emphasis-color")]
-    public CssColorValue? TextEmphasisColor { get; init; }
+    public CssColorValue? text_emphasis_color { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-emphasis-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-emphasis-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-emphasis-position")]
-    public CssKeywordValue? TextEmphasisPosition { get; init; }
+    public CssKeywordValue? text_emphasis_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-emphasis-skip</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-emphasis-skip</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-emphasis-skip")]
-    public CssKeywordValue? TextEmphasisSkip { get; init; }
+    public CssKeywordValue? text_emphasis_skip { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-emphasis-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-emphasis-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-emphasis-style")]
-    public CssStringValue? TextEmphasisStyle { get; init; }
+    public CssStringValue? text_emphasis_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-fit</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-fit</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-fit")]
-    public CssPercentageValue? TextFit { get; init; }
+    public CssPercentageValue? text_fit { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-group-align</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-group-align</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-group-align")]
-    public CssKeywordValue? TextGroupAlign { get; init; }
+    public CssKeywordValue? text_group_align { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-indent</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-indent</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-indent")]
-    public CssLengthPercentageValue? TextIndent { get; init; }
+    public CssLengthPercentageValue? text_indent { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-justify</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-justify</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-justify")]
-    public CssKeywordValue? TextJustify { get; init; }
+    public CssKeywordValue? text_justify { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-orientation</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-orientation</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-orientation")]
-    public CssKeywordValue? TextOrientation { get; init; }
+    public CssKeywordValue? text_orientation { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-overflow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-overflow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-overflow")]
-    public CssTextOverflowValue? TextOverflow { get; init; }
+    public CssTextOverflowValue? text_overflow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-rendering</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-rendering</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-rendering")]
-    public CssKeywordValue? TextRendering { get; init; }
+    public CssKeywordValue? text_rendering { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-shadow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-shadow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-shadow")]
-    public CssValue? TextShadow { get; init; }
+    public CssValue? text_shadow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-size-adjust</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-size-adjust</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-size-adjust")]
-    public CssPercentageValue? TextSizeAdjust { get; init; }
+    public CssPercentageValue? text_size_adjust { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-spacing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-spacing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-spacing")]
-    public CssValue? TextSpacing { get; init; }
+    public CssValue? text_spacing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-spacing-trim</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-spacing-trim</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-spacing-trim")]
-    public CssValue? TextSpacingTrim { get; init; }
+    public CssValue? text_spacing_trim { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-transform</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-transform</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-transform")]
-    public CssTextTransformValue? TextTransform { get; init; }
+    public CssTextTransformValue? text_transform { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-underline-offset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-underline-offset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-underline-offset")]
-    public CssLengthPercentageValue? TextUnderlineOffset { get; init; }
+    public CssLengthPercentageValue? text_underline_offset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-underline-position</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-underline-position</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-underline-position")]
-    public CssKeywordValue? TextUnderlinePosition { get; init; }
+    public CssKeywordValue? text_underline_position { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-wrap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-wrap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-wrap")]
-    public CssKeywordValue? TextWrap { get; init; }
+    public CssKeywordValue? text_wrap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-wrap-mode</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-wrap-mode</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-wrap-mode")]
-    public CssKeywordValue? TextWrapMode { get; init; }
+    public CssKeywordValue? text_wrap_mode { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>text-wrap-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>text-wrap-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#text-wrap-style")]
-    public CssKeywordValue? TextWrapStyle { get; init; }
+    public CssKeywordValue? text_wrap_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-scope</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-scope</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-scope")]
-    public CssKeywordValue? TimelineScope { get; init; }
+    public CssKeywordValue? timeline_scope { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-trigger</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-trigger</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-trigger")]
-    public CssValue? TimelineTrigger { get; init; }
+    public CssValue? timeline_trigger { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-trigger-activation-range</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-trigger-activation-range</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-trigger-activation-range")]
-    public CssValue? TimelineTriggerActivationRange { get; init; }
+    public CssValue? timeline_trigger_activation_range { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-trigger-activation-range-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-trigger-activation-range-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-trigger-activation-range-end")]
-    public CssValue? TimelineTriggerActivationRangeEnd { get; init; }
+    public CssValue? timeline_trigger_activation_range_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-trigger-activation-range-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-trigger-activation-range-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-trigger-activation-range-start")]
-    public CssValue? TimelineTriggerActivationRangeStart { get; init; }
+    public CssValue? timeline_trigger_activation_range_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-trigger-active-range</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-trigger-active-range</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-trigger-active-range")]
-    public CssValue? TimelineTriggerActiveRange { get; init; }
+    public CssValue? timeline_trigger_active_range { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-trigger-active-range-end</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-trigger-active-range-end</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-trigger-active-range-end")]
-    public CssValue? TimelineTriggerActiveRangeEnd { get; init; }
+    public CssValue? timeline_trigger_active_range_end { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-trigger-active-range-start</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-trigger-active-range-start</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-trigger-active-range-start")]
-    public CssValue? TimelineTriggerActiveRangeStart { get; init; }
+    public CssValue? timeline_trigger_active_range_start { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-trigger-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-trigger-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-trigger-name")]
-    public CssKeywordValue? TimelineTriggerName { get; init; }
+    public CssKeywordValue? timeline_trigger_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>timeline-trigger-source</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>timeline-trigger-source</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#timeline-trigger-source")]
-    public CssValue? TimelineTriggerSource { get; init; }
+    public CssValue? timeline_trigger_source { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>top</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>top</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#top")]
-    public CssAnchorPositionValue? Top { get; init; }
+    public CssAnchorPositionValue? top { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>touch-action</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>touch-action</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#touch-action")]
-    public CssKeywordValue? TouchAction { get; init; }
+    public CssKeywordValue? touch_action { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transform</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transform</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transform")]
-    public CssTransformValue? Transform { get; init; }
+    public CssTransformValue? transform { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transform-box</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transform-box</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transform-box")]
-    public CssKeywordValue? TransformBox { get; init; }
+    public CssKeywordValue? transform_box { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transform-origin</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transform-origin</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transform-origin")]
-    public CssLengthPercentageValue? TransformOrigin { get; init; }
+    public CssLengthPercentageValue? transform_origin { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transform-style</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transform-style</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transform-style")]
-    public CssKeywordValue? TransformStyle { get; init; }
+    public CssKeywordValue? transform_style { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transition</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transition</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transition")]
-    public CssValue? Transition { get; init; }
+    public CssValue? transition { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transition-behavior</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transition-behavior</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transition-behavior")]
-    public CssValue? TransitionBehavior { get; init; }
+    public CssValue? transition_behavior { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transition-delay</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transition-delay</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transition-delay")]
-    public CssTimeValue? TransitionDelay { get; init; }
+    public CssTimeValue? transition_delay { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transition-duration</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transition-duration</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transition-duration")]
-    public CssTimeValue? TransitionDuration { get; init; }
+    public CssTimeValue? transition_duration { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transition-property</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transition-property</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transition-property")]
-    public CssValue? TransitionProperty { get; init; }
+    public CssValue? transition_property { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>transition-timing-function</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>transition-timing-function</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#transition-timing-function")]
-    public CssValue? TransitionTimingFunction { get; init; }
+    public CssValue? transition_timing_function { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>translate</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>translate</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#translate")]
-    public CssLengthPercentageValue? Translate { get; init; }
+    public CssLengthPercentageValue? translate { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>trigger-scope</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>trigger-scope</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#trigger-scope")]
-    public CssKeywordValue? TriggerScope { get; init; }
+    public CssKeywordValue? trigger_scope { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>unicode-bidi</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>unicode-bidi</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#unicode-bidi")]
-    public CssKeywordValue? UnicodeBidi { get; init; }
+    public CssKeywordValue? unicode_bidi { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>user-select</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>user-select</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#user-select")]
-    public CssKeywordValue? UserSelect { get; init; }
+    public CssKeywordValue? user_select { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>vector-effect</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>vector-effect</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#vector-effect")]
-    public CssKeywordValue? VectorEffect { get; init; }
+    public CssKeywordValue? vector_effect { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>vertical-align</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>vertical-align</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#vertical-align")]
-    public CssValue? VerticalAlign { get; init; }
+    public CssValue? vertical_align { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>view-timeline</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>view-timeline</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#view-timeline")]
-    public CssValue? ViewTimeline { get; init; }
+    public CssValue? view_timeline { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>view-timeline-axis</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>view-timeline-axis</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#view-timeline-axis")]
-    public CssKeywordValue? ViewTimelineAxis { get; init; }
+    public CssKeywordValue? view_timeline_axis { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>view-timeline-inset</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>view-timeline-inset</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#view-timeline-inset")]
-    public CssLengthPercentageValue? ViewTimelineInset { get; init; }
+    public CssLengthPercentageValue? view_timeline_inset { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>view-timeline-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>view-timeline-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#view-timeline-name")]
-    public CssKeywordValue? ViewTimelineName { get; init; }
+    public CssKeywordValue? view_timeline_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>view-transition-class</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>view-transition-class</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#view-transition-class")]
-    public CssKeywordValue? ViewTransitionClass { get; init; }
+    public CssKeywordValue? view_transition_class { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>view-transition-group</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>view-transition-group</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#view-transition-group")]
-    public CssKeywordValue? ViewTransitionGroup { get; init; }
+    public CssKeywordValue? view_transition_group { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>view-transition-name</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>view-transition-name</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#view-transition-name")]
-    public CssKeywordValue? ViewTransitionName { get; init; }
+    public CssKeywordValue? view_transition_name { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>view-transition-scope</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>view-transition-scope</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#view-transition-scope")]
-    public CssKeywordValue? ViewTransitionScope { get; init; }
+    public CssKeywordValue? view_transition_scope { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>visibility</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>visibility</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#visibility")]
-    public CssKeywordValue? Visibility { get; init; }
+    public CssKeywordValue? visibility { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>voice-balance</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>voice-balance</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#voice-balance")]
-    public CssNumberValue? VoiceBalance { get; init; }
+    public CssNumberValue? voice_balance { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>voice-duration</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>voice-duration</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#voice-duration")]
-    public CssTimeValue? VoiceDuration { get; init; }
+    public CssTimeValue? voice_duration { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>voice-family</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>voice-family</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#voice-family")]
-    public CssValue? VoiceFamily { get; init; }
+    public CssValue? voice_family { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>voice-pitch</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>voice-pitch</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#voice-pitch")]
-    public CssValue? VoicePitch { get; init; }
+    public CssValue? voice_pitch { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>voice-range</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>voice-range</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#voice-range")]
-    public CssValue? VoiceRange { get; init; }
+    public CssValue? voice_range { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>voice-rate</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>voice-rate</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#voice-rate")]
-    public CssPercentageValue? VoiceRate { get; init; }
+    public CssPercentageValue? voice_rate { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>voice-stress</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>voice-stress</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#voice-stress")]
-    public CssKeywordValue? VoiceStress { get; init; }
+    public CssKeywordValue? voice_stress { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>voice-volume</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>voice-volume</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#voice-volume")]
-    public CssValue? VoiceVolume { get; init; }
+    public CssValue? voice_volume { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>white-space</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>white-space</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#white-space")]
-    public CssWhiteSpaceValue? WhiteSpace { get; init; }
+    public CssWhiteSpaceValue? white_space { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>white-space-collapse</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>white-space-collapse</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#white-space-collapse")]
-    public CssKeywordValue? WhiteSpaceCollapse { get; init; }
+    public CssKeywordValue? white_space_collapse { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>white-space-trim</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>white-space-trim</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#white-space-trim")]
-    public CssKeywordValue? WhiteSpaceTrim { get; init; }
+    public CssKeywordValue? white_space_trim { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>widows</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>widows</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#widows")]
-    public CssIntegerValue? Widows { get; init; }
+    public CssIntegerValue? widows { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>width</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>width</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#width")]
-    public CssSizingValue? Width { get; init; }
+    public CssSizingValue? width { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>will-change</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>will-change</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#will-change")]
-    public CssValue? WillChange { get; init; }
+    public CssValue? will_change { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>window-drag</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>window-drag</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#window-drag")]
-    public CssKeywordValue? WindowDrag { get; init; }
+    public CssKeywordValue? window_drag { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>word-break</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>word-break</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#word-break")]
-    public CssKeywordValue? WordBreak { get; init; }
+    public CssKeywordValue? word_break { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>word-space-transform</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>word-space-transform</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#word-space-transform")]
-    public CssKeywordValue? WordSpaceTransform { get; init; }
+    public CssKeywordValue? word_space_transform { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>word-spacing</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>word-spacing</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#word-spacing")]
-    public CssLengthPercentageValue? WordSpacing { get; init; }
+    public CssLengthPercentageValue? word_spacing { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>word-wrap</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>word-wrap</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#word-wrap")]
-    public CssKeywordValue? WordWrap { get; init; }
+    public CssKeywordValue? word_wrap { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>wrap-after</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>wrap-after</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#wrap-after")]
-    public CssKeywordValue? WrapAfter { get; init; }
+    public CssKeywordValue? wrap_after { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>wrap-before</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>wrap-before</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#wrap-before")]
-    public CssKeywordValue? WrapBefore { get; init; }
+    public CssKeywordValue? wrap_before { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>wrap-flow</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>wrap-flow</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#wrap-flow")]
-    public CssKeywordValue? WrapFlow { get; init; }
+    public CssKeywordValue? wrap_flow { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>wrap-inside</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>wrap-inside</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#wrap-inside")]
-    public CssKeywordValue? WrapInside { get; init; }
+    public CssKeywordValue? wrap_inside { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>wrap-through</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>wrap-through</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#wrap-through")]
-    public CssKeywordValue? WrapThrough { get; init; }
+    public CssKeywordValue? wrap_through { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>writing-mode</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>writing-mode</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#writing-mode")]
-    public CssKeywordValue? WritingMode { get; init; }
+    public CssKeywordValue? writing_mode { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>x</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>x</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#x")]
-    public CssLengthPercentageValue? X { get; init; }
+    public CssLengthPercentageValue? x { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>y</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>y</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#y")]
-    public CssLengthPercentageValue? Y { get; init; }
+    public CssLengthPercentageValue? y { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>z-index</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>z-index</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#z-index")]
-    public CssIntegerValue? ZIndex { get; init; }
+    public CssIntegerValue? z_index { get; init; }
 
     /// <summary>
     /// Gets or initializes the typed value for the CSS <c>zoom</c> property; null leaves the declaration unset.
     /// 获取或初始化 CSS <c>zoom</c> 属性的强类型值；null 表示不输出该声明。
     /// </summary>
     [global::System.ComponentModel.Description("@#zoom")]
-    public CssNumberPercentageValue? Zoom { get; init; }
+    public CssNumberPercentageValue? zoom { get; init; }
 
 }
