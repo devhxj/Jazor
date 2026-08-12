@@ -26,6 +26,7 @@ public sealed class EcmaScriptPiniaImportTests
 			[
 				MetadataReference.CreateFromFile(typeof(ECMAScriptModuleAttribute).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.LibraryComponentAttribute).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(Vue).Assembly.Location),

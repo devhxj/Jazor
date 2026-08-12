@@ -226,6 +226,39 @@ public sealed class RazorVueAnalyzerScopeTests
     }
 
     [TestMethod]
+    public async Task FrameworkNeutralLibraryComponentTypes_AreAcceptedWithoutVueContractReference()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using System;
+            using ECMAScript;
+            using ECMAScript.Contract;
+
+            [ECMAScriptModule("./components/host")]
+            public sealed class Host
+            {
+                public LibraryWidget Use(LibraryWidget widget) => widget;
+
+                public ReactWidget Use(ReactWidget widget) => widget;
+            }
+
+            [LibraryComponent("react-library", "Widget")]
+            public sealed class LibraryWidget;
+
+            [ReactLibraryComponent("react-library", "ReactWidget")]
+            public sealed class ReactWidget;
+
+            [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+            public sealed class ReactLibraryComponentAttribute(string importSpecifier, string exportName)
+                : LibraryComponentAttribute(importSpecifier, exportName);
+            """,
+            includeVueContractReference: false);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
     public async Task ConflictingNameMetadata_ReportsJazor005()
     {
         var diagnostics = await AnalyzeAsync(
@@ -598,8 +631,22 @@ public sealed class RazorVueAnalyzerScopeTests
         }
     }
 
-    private static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(string source)
+    private static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(
+        string source,
+        bool includeVueContractReference = true)
     {
+        var references = RazorSgTestHost.CreateMetadataReferences();
+        if (!includeVueContractReference)
+        {
+            var vueContractAssemblyPath = typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location;
+            references = references
+                .Where(reference => !string.Equals(
+                    reference.Display,
+                    vueContractAssemblyPath,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+        }
+
         var compilation = CSharpCompilation.Create(
             assemblyName: "RazorVue.AnalyzerScope.Tests",
             syntaxTrees:
@@ -609,8 +656,11 @@ public sealed class RazorVueAnalyzerScopeTests
                     new CSharpParseOptions(LanguageVersion.Preview),
                     path: "Component.razor.cs")
             ],
-            references: RazorSgTestHost.CreateMetadataReferences(),
+            references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
 
         return await compilation
             .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new Jazor.Analyzer.Analyzer()))

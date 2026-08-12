@@ -1,15 +1,12 @@
-// Registers and orders the shared host services for the RazorVue SPA, Web API, Identity, and OpenIddict server.
-// 注册并排序 RazorVue SPA、Web API、Identity 和 OpenIddict Server 共用的宿主服务。
 using JazorAdmin.Authentication;
 using JazorAdmin.Authorization;
 using JazorAdmin.Data;
 using JazorAdmin.Features.Accounts;
-using JazorAdmin.Features.Sso;
 using JazorAdmin.Features.Identity;
 using JazorAdmin.Features.Organizations;
 using JazorAdmin.Features.Scheduling;
 using JazorAdmin.Features.Settings;
-using Microsoft.AspNetCore.Authentication;
+using JazorAdmin.Features.Sso;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +15,10 @@ using Quartz;
 
 namespace JazorAdmin;
 
+/// <summary>
+/// Registers and orders the shared host services for the RazorVue SPA, Web API, Identity, and OpenIddict server.
+/// 注册并排序 RazorVue SPA、Web API、Identity 和 OpenIddict Server 共用的宿主服务。
+/// </summary>
 public static class HostExtensions
 {
     public static IServiceCollection AddAdminHost(

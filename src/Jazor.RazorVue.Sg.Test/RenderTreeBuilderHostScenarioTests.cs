@@ -173,6 +173,7 @@ public sealed class RenderTreeBuilderHostScenarioTests
             """;
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.LibraryComponentAttribute).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(MouseEventArgs).Assembly.Location))

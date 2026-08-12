@@ -823,7 +823,7 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(IVNode), typeof(VueDirectiveArguments[]) }));
         Assert.IsNotNull(withDirectivesMethod);
         Assert.IsTrue(withDirectivesMethod!.GetParameters()[1].IsDefined(typeof(ParamArrayAttribute), inherit: false));
-        Assert.IsTrue(withDirectivesMethod.GetParameters()[1].IsDefined(typeof(PreserveParamsArrayAttribute), inherit: false));
+        Assert.IsTrue(withDirectivesMethod.GetParameters()[1].IsDefined(typeof(PreserveAttribute), inherit: false));
         var withModifiersMethod = staticMethods.FirstOrDefault(static method =>
             method.Name == nameof(Vue.WithModifiers) &&
             !method.IsGenericMethodDefinition &&
@@ -840,9 +840,9 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(withModifiersMethod);
         Assert.IsNotNull(withModifiersTypedMethod);
         Assert.IsTrue(withModifiersMethod!.GetParameters()[1].IsDefined(typeof(ParamArrayAttribute), inherit: false));
-        Assert.IsTrue(withModifiersMethod.GetParameters()[1].IsDefined(typeof(PreserveParamsArrayAttribute), inherit: false));
+        Assert.IsTrue(withModifiersMethod.GetParameters()[1].IsDefined(typeof(PreserveAttribute), inherit: false));
         Assert.IsTrue(withModifiersTypedMethod!.GetParameters()[1].IsDefined(typeof(ParamArrayAttribute), inherit: false));
-        Assert.IsTrue(withModifiersTypedMethod.GetParameters()[1].IsDefined(typeof(PreserveParamsArrayAttribute), inherit: false));
+        Assert.IsTrue(withModifiersTypedMethod.GetParameters()[1].IsDefined(typeof(PreserveAttribute), inherit: false));
         Assert.IsTrue(directiveArgumentsType
             .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
             .Any(static constructor => constructor.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueDirectiveValue), typeof(VueValue), typeof(string), typeof(VueDirectiveModifierBag) })));

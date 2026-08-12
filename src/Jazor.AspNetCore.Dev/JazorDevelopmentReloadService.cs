@@ -1,11 +1,8 @@
-using System.Net.WebSockets;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net.WebSockets;
 
 namespace Jazor.AspNetCore.Dev;
 
@@ -20,7 +17,7 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
     private readonly JazorDevelopmentReloadHub _reloadHub = new();
     private readonly JazorDevelopmentCoalescingPathChangeQueue _fileChangeQueue = new();
     private readonly Dictionary<string, JazorDevelopmentObservedFileSnapshot?> _lastBroadcastSnapshots = new(StringComparer.OrdinalIgnoreCase);
-    private readonly object _lastBroadcastSnapshotsLock = new();
+    private readonly Lock _lastBroadcastSnapshotsLock = new();
     private readonly string _serverInstanceId = Guid.NewGuid().ToString("N")[..8];
     private readonly List<FileSystemWatcher> _fileWatchers = [];
     private readonly List<JazorDevelopmentFileSnapshotPoller> _fileSnapshotPollers = [];
@@ -216,7 +213,7 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
 
             if (suppressExternalBrowserRefreshRoots && IsHandledByExternalBrowserRefresh(rootPath))
             {
-                _logger.LogDebug(
+				_logger.LogDebug(
                     "Jazor development reload skipped watch root '{WatchRoot}' because an external browser refresh pipeline already owns that static root.",
                     rootPath);
                 continue;
@@ -225,7 +222,7 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
             var watcherPath = ResolveWatcherPath(rootPath);
             if (watcherPath is null)
             {
-                _logger.LogDebug(
+				_logger.LogDebug(
                     "Jazor development reload skipped watch root '{WatchRoot}' because no existing ancestor directory could be resolved.",
                     rootPath);
                 continue;

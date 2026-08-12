@@ -1,10 +1,6 @@
-using ECMAScript;
-using Jazor.Admin;
-using static ECMAScript.Vue;
-using Microsoft.AspNetCore.Components;
-using static JazorAdmin.Routes;
-using static ECMAScript.VueRoute;
 using JazorAdmin.Features.Identity;
+using static ECMAScript.VueRoute;
+using static JazorAdmin.Routes;
 
 namespace JazorAdmin;
 

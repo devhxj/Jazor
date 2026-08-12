@@ -1,10 +1,9 @@
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace Jazor.AspNetCore;
 
@@ -102,19 +101,19 @@ internal static class JazorSSRDocumentWriter
     {
         var mountElementId = NormalizeMountElementId(options.MountElementId);
         var mountElementIdJson = JsonSerializer.Serialize(mountElementId, JsonOptions);
-        var componentUrl = artifacts.CreateBrowserArtifactUrl(
+        var componentUrl = JazorSSRArtifactLocator.CreateBrowserArtifactUrl(
             artifactRoot,
             context.Request.PathBase,
             result.ModulePath);
         var componentUrlJson = JsonSerializer.Serialize(componentUrl, JsonOptions);
-        var importMap = artifacts.ReadBrowserImportMap(artifactRoot, context.Request.PathBase);
-        var styles = artifacts.ReadStylePaths(artifactRoot);
+        var importMap = JazorSSRArtifactLocator.ReadBrowserImportMap(artifactRoot, context.Request.PathBase);
+        var styles = JazorSSRArtifactLocator.ReadStylePaths(artifactRoot);
         var response = context.Response;
 
         await response.WriteAsync("<!doctype html>\n<html><head><meta charset=\"utf-8\">\n", cancellationToken);
         foreach (var stylePath in styles)
         {
-            var styleUrl = artifacts.CreateBrowserArtifactUrl(artifactRoot, context.Request.PathBase, stylePath);
+            var styleUrl = JazorSSRArtifactLocator.CreateBrowserArtifactUrl(artifactRoot, context.Request.PathBase, stylePath);
             await response.WriteAsync(
                 "<link rel=\"stylesheet\" href=\"" + HtmlEncoder.Default.Encode(styleUrl) + "\">\n",
                 cancellationToken);

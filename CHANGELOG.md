@@ -7,6 +7,7 @@
 - Element Plus bindings now ship the local `2.14.4` runtime, stylesheet, license, manifest, and regenerated authoring contracts. The update includes typed `ElTransfer.VirtualScroll` and `ElTransfer.ItemSize` parameters.
 - `Jazor.Analyzer` now reports unsupported concrete external types earlier when they appear in generic containers, ECMAScript interface or delegate signatures, and runtime type filters such as `is`, pattern matching, `switch`, and `catch`.
 - `Jazor.Analyzer` now reports contradictory `Description("@#...")` and `ECMAScriptName` metadata, plus duplicate final JavaScript names in module exports, generated runtime classes, and structural-record object keys.
+- External component wrappers now share the framework-neutral `LibraryComponentAttribute` contract. `Jazor.Analyzer` no longer special-cases Vue metadata, while `VueLibraryComponentAttribute` remains a compatible Vue-specific derived attribute.
 - `ECMAScript.Style` now uses `lower_snake_case` for generated CSS declaration properties, `css` facade functions/tokens, and rule structural members such as `additional` and `children`. CLR data/configuration models remain PascalCase, while generated CSS and the `style.mjs` JavaScript export ABI remain stable. `px(8) | px(12)` now creates a typed two-side padding shorthand and `px(1) | solid` remains a typed border shorthand.
 - Local package builds now use NuGet's standard `$version$` nuspec token, keeping custom-nuspec package output discovery compatible with the current .NET 11 preview SDK.
 

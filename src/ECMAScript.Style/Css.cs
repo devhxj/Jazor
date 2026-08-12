@@ -61,7 +61,7 @@ public static partial class css
     /// 在默认 context 中注册关键帧并返回确定性动画名。至少需要一个帧；等价帧序列共享同一个输出的
     /// <c>@keyframes</c> 块。
     /// </summary>
-    public static string keyframes([PreserveParamsArray] params CssFrame[] frames)
+    public static string keyframes([Preserve] params CssFrame[] frames)
         => keyframes(DefaultContext, frames);
 
     /// <summary>

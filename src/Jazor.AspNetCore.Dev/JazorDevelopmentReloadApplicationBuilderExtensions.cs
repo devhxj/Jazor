@@ -63,7 +63,7 @@ public static class JazorDevelopmentReloadApplicationBuilderExtensions
         context.Response.Headers.CacheControl = "no-store";
         context.Response.Headers.Pragma = "no-cache";
         context.Response.Headers.Expires = "0";
-        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        context.Response.Headers.XContentTypeOptions = "nosniff";
 
         if (HttpMethods.IsHead(context.Request.Method))
             return Task.CompletedTask;

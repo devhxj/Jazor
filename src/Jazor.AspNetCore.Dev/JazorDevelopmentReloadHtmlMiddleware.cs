@@ -1,22 +1,15 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 
 namespace Jazor.AspNetCore.Dev;
 
-internal sealed class JazorDevelopmentReloadHtmlMiddleware
+internal sealed class JazorDevelopmentReloadHtmlMiddleware(
+	RequestDelegate next,
+	JazorDevelopmentReloadService service)
 {
-    private readonly RequestDelegate _next;
-    private readonly JazorDevelopmentReloadService _service;
+    private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
+    private readonly JazorDevelopmentReloadService _service = service ?? throw new ArgumentNullException(nameof(service));
 
-    public JazorDevelopmentReloadHtmlMiddleware(
-        RequestDelegate next,
-        JazorDevelopmentReloadService service)
-    {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-        _service = service ?? throw new ArgumentNullException(nameof(service));
-    }
-
-    public async Task InvokeAsync(HttpContext context)
+	public async Task InvokeAsync(HttpContext context)
     {
         if (!ShouldInspectRequest(context))
         {

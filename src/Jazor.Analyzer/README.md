@@ -15,6 +15,7 @@
 
 - Analyzer 可以比 `Jazor.Compiler` 更严格，但 compiler 仍是 runtime-sensitive lowering 的最终验证层。
 - `ECMAScript.Contract` 提供最小声明契约，`Jazor.Common` 提供 `Format` 与 `SourceMaps` 等共享实现。
+- 外部组件包装类型通过中性 `LibraryComponentAttribute` 进入分析域；Analyzer 不依赖 Vue、React 或其他框架的专属 attribute。具体 import 与渲染协议仍由对应适配层处理。
 - `Jazor.RazorVue` 持有 Razor SDK final-document 绑定边界；本程序集只提供 hook 所需的 analyzer 入口。
 
 ## 代码结构

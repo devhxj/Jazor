@@ -8,6 +8,7 @@
 
 - 提供统一符号格式化与稳定 hash 命名能力 `Format`。
 - 承载共享 SourceMap 模型与写出辅助。
+- 提供 `LibraryComponentMetadata`，供 shared analyzer 识别中性组件导入特性及其框架专属派生特性。
 
 ## 命名空间
 
@@ -23,6 +24,7 @@
 ## 关键区域
 
 - `Format.cs`：统一 `SymbolDisplayFormat` 与稳定 hash 命名。
+- `LibraryComponentMetadata.cs`：中性组件导入特性的 Roslyn 识别规则。
 - `SourceMaps/`：SourceMap 模型与 writer。
 
 ## 相关文档

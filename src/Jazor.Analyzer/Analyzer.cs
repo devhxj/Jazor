@@ -39,7 +39,6 @@ public partial class Analyzer : DiagnosticAnalyzer
 	private const string ConflictingSpreadPropertyNameDiagnosticId = "JAZOR004";
 	private const string ConflictingJavaScriptNameMetadataDiagnosticId = "JAZOR005";
 	private const string ConflictingJavaScriptNameDiagnosticId = "JAZOR006";
-	private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
 	private const string Title = "Jazor";
 	private const string MessageFormat = "[{0}] is not support in ECMAScript";
 	private const string AmbiguousRuntimeTypeFilterMessageFormat = "[{0}] cannot be used for {1} because runtime alias '{2}' is shared with incompatible supported types: {3}";
@@ -511,7 +510,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 		if (StructuralRecordSupport.IsStructuralRecordType(typeSymbol))
 			return;
 
-		if (IsVueLibraryComponent(typeSymbol))
+		if (IsLibraryComponent(typeSymbol))
 			return;
 
 		if (!InECMAScriptAttribute(typeSymbol.OriginalDefinition))
@@ -965,12 +964,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 		}
 	}
 
-	private static bool IsVueLibraryComponent(ITypeSymbol typeSymbol)
+	private static bool IsLibraryComponent(ITypeSymbol typeSymbol)
 		=> typeSymbol.OriginalDefinition.GetAttributes().Any(static attribute =>
-			string.Equals(
-				attribute.AttributeClass?.ToDisplayString(),
-				VueLibraryComponentAttributeMetadataName,
-				StringComparison.Ordinal));
+			LibraryComponentMetadata.IsLibraryComponentAttribute(attribute.AttributeClass));
 
 	private static void AnalysisSymbolEndAction(SymbolAnalysisContext ctx)
 	{

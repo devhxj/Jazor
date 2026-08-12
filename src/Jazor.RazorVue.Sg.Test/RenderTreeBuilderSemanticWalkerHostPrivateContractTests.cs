@@ -113,6 +113,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
         var host = new RenderTreeBuilderSemanticWalkerHost();
         var moduleChild = GetNamedType(fixture, "ModuleChild");
         var libraryChild = GetNamedType(fixture, "LibraryChild");
+        var reactLibraryChild = GetNamedType(fixture, "ReactLibraryChild");
         var invalidLibraryChild = GetNamedType(fixture, "InvalidLibraryChild");
         var plainChild = GetNamedType(fixture, "PlainChild");
         var directType = GetInvocation(fixture, "DirectTypeComponent", static invocation => invocation.TargetMethod.Name == "OpenComponent");
@@ -152,6 +153,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
         Assert.AreEqual("./components/module-child.mjs", InvokeStatic<string>("NormalizeModuleImportPath", "./components/module-child"));
         AssertComponentImport(moduleChild, "./components/module-child.mjs", "default");
         AssertComponentImport(libraryChild, "tdesign-vue-next", "TButton");
+        AssertNoComponentImport(reactLibraryChild);
         AssertNoComponentImport(invalidLibraryChild);
         AssertNoComponentImport(plainChild);
         Assert.IsNotNull(InvokeStatic<ObjectExpression?>("BuildComponentParameterNameMapExpression", moduleChild));
@@ -568,6 +570,7 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
             """
             using System;
             using ECMAScript;
+            using ECMAScript.Contract;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -597,11 +600,18 @@ public sealed class RenderTreeBuilderSemanticWalkerHostPrivateContractTests
             [VueLibraryComponent("tdesign-vue-next", "TButton")]
             public sealed class LibraryChild : ComponentBase;
 
+            [ReactLibraryComponent("react-library", "ReactButton")]
+            public sealed class ReactLibraryChild : ComponentBase;
+
             [VueLibraryComponent("", "TBad")]
             public sealed class InvalidLibraryChild : ComponentBase;
 
             [VueLibraryComponent("tdesign-vue-next", " ")]
             public sealed class InvalidLibraryExportChild : ComponentBase;
+
+            [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+            public sealed class ReactLibraryComponentAttribute(string importSpecifier, string exportName)
+                : LibraryComponentAttribute(importSpecifier, exportName);
 
             public sealed class PlainChild : ComponentBase;
 

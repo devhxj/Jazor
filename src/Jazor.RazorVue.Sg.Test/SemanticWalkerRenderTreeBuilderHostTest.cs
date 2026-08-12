@@ -1364,6 +1364,7 @@ public sealed class SemanticWalkerRenderTreeBuilderHostTest
 
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.LibraryComponentAttribute).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(RenderTreeBuilder).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.Web.MouseEventArgs).Assembly.Location));

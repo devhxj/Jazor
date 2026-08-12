@@ -8,11 +8,11 @@ public sealed class JazorDevelopmentReloadOptions
 
     public PathString WebSocketPath { get; set; } = new("/@jazor/reload");
 
-    public IList<string> WatchRootPaths { get; } = new List<string>
-    {
-        "jazor",
+    public IList<string> WatchRootPaths { get; } =
+	[
+		"jazor",
         "wwwroot"
-    };
+    ];
 
     /// <summary>
     /// Maps compiler-emitted artifact roots to browser URLs for conservative RazorVue HMR.

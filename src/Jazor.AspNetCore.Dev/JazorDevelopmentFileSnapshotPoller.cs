@@ -14,10 +14,9 @@ internal sealed class JazorDevelopmentFileSnapshotPoller : IAsyncDisposable
         Action<IReadOnlyList<string>> onChangedPaths)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
-        if (pollInterval <= TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(pollInterval));
+		ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(pollInterval, TimeSpan.Zero);
 
-        _rootDirectory = Path.GetFullPath(rootDirectory);
+		_rootDirectory = Path.GetFullPath(rootDirectory);
         _pollInterval = pollInterval;
         _onChangedPaths = onChangedPaths ?? throw new ArgumentNullException(nameof(onChangedPaths));
     }
@@ -122,9 +121,7 @@ internal sealed class JazorDevelopmentFileSnapshotPoller : IAsyncDisposable
                 changedPaths.Add(path);
         }
 
-        return changedPaths
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        return [.. changedPaths.Order(StringComparer.OrdinalIgnoreCase)];
     }
 
     private static IEnumerable<string> EnumerateObservedFiles(string rootDirectory)

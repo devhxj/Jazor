@@ -305,7 +305,7 @@ public static partial class css
     /// <see cref="CssAnchorName"/>。
     /// </summary>
     [ECMAScriptName("anchorNames")]
-    public static CssAnchorNameList anchor_names([PreserveParamsArray] params CssAnchorName[] values)
+    public static CssAnchorNameList anchor_names([Preserve] params CssAnchorName[] values)
     {
         if (values.Length == 0)
             Fail("CSS anchor-name requires at least one anchor name.");
@@ -615,7 +615,7 @@ public static partial class css
     /// 按作者顺序连接一个或多个类型化 grid track。结果仍为 <see cref="CssTrack"/> 而不是通用字符串，
     /// 因而不能离开 grid-track 属性。
     /// </summary>
-    public static CssTrack tracks([PreserveParamsArray] params CssTrackValue[] values)
+    public static CssTrack tracks([Preserve] params CssTrackValue[] values)
     {
         if (values.Length == 0)
             Fail("CSS grid track list requires at least one track.");
@@ -742,12 +742,12 @@ public static partial class css
 
     /// <summary>Creates a linear gradient with at least two typed stops。创建至少含两个类型化 stop 的线性渐变。</summary>
     [ECMAScriptName("linearGradient")]
-    public static CssGradient linear_gradient([PreserveParamsArray] params CssGradientStop[] stops)
+    public static CssGradient linear_gradient([Preserve] params CssGradientStop[] stops)
         => gradient("linear-gradient", stops);
 
     /// <summary>Creates a conic gradient with at least two typed stops。创建至少含两个类型化 stop 的圆锥渐变。</summary>
     [ECMAScriptName("conicGradient")]
-    public static CssGradient conic_gradient([PreserveParamsArray] params CssGradientStop[] stops)
+    public static CssGradient conic_gradient([Preserve] params CssGradientStop[] stops)
         => gradient("conic-gradient", stops);
 
     /// <summary>Creates a compact animation shorthand from a typed name, duration, and timing keyword。根据类型化名称、duration、timing keyword 创建紧凑 animation 简写。</summary>
@@ -765,7 +765,7 @@ public static partial class css
 
     /// <summary>Creates an ordered font fallback list that contains at least one family。创建至少含一个字体族的有序后备列表。</summary>
     [ECMAScriptName("fontFamily")]
-    public static CssFontFamily font_family([PreserveParamsArray] params CssFontFamilyName[] names)
+    public static CssFontFamily font_family([Preserve] params CssFontFamilyName[] names)
     {
         if (names.Length == 0)
             Fail("CSS font-family requires at least one family.");
@@ -806,7 +806,7 @@ public static partial class css
     /// Joins one or more transform functions in authored order. The result remains a transform-only carrier.
     /// 按作者顺序连接一个或多个 transform 函数。结果仍保持 transform 专用载体。
     /// </summary>
-    public static CssTransform transform([PreserveParamsArray] params CssTransform[] functions)
+    public static CssTransform transform([Preserve] params CssTransform[] functions)
     {
         if (functions.Length == 0)
             Fail("CSS transform requires at least one function.");
@@ -823,7 +823,7 @@ public static partial class css
     /// 创建确定性的逗号分隔 box-shadow 列表。可选字段会按固定顺序输出，使语义相等的 record 获得相同 CSS
     /// 与生成 class hash。
     /// </summary>
-    public static CssShadowList shadows([PreserveParamsArray] params CssShadow[] values)
+    public static CssShadowList shadows([Preserve] params CssShadow[] values)
     {
         if (values.Length == 0)
             Fail("CSS box-shadow requires at least one shadow.");
@@ -910,7 +910,7 @@ public static partial class css
     }
 
     /// <summary>Joins one or more typed filter functions in authored order。按作者顺序连接一个或多个类型化 filter 函数。</summary>
-    public static CssFilter filters([PreserveParamsArray] params CssFilter[] values)
+    public static CssFilter filters([Preserve] params CssFilter[] values)
     {
         if (values.Length == 0)
             Fail("CSS filter requires at least one function.");
@@ -940,7 +940,7 @@ public static partial class css
         return CssGradient.create(name + "(" + output.Join(",") + ")");
     }
 
-    private static string join([PreserveParamsArray] params string[] values)
+    private static string join([Preserve] params string[] values)
     {
         var output = new Array<string>();
         foreach (var value in values)

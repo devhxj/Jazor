@@ -389,7 +389,7 @@ public static partial class Vue
 	/// <param name="directives">匹配 Vue 运行时契约的指令参数元组。Directive argument tuples matching Vue's runtime contract.</param>
 	/// <returns>附加了指令元数据的同一 VNode。The same VNode with directive metadata attached.</returns>
 	[Description("@#withDirectives")]
-	public extern static IVNode WithDirectives(IVNode vnode, [PreserveParamsArray] params VueDirectiveArguments[] directives);
+	public extern static IVNode WithDirectives(IVNode vnode, [Preserve] params VueDirectiveArguments[] directives);
 
 	/// <summary>
 	/// 用 Vue 事件修饰符（如 <c>stop</c>、<c>prevent</c> 或 <c>self</c>）包装无参数事件处理器。
@@ -400,7 +400,7 @@ public static partial class Vue
 	/// <param name="modifiers">Vue 运行时形式的修饰符名称。Modifier names in Vue runtime form.</param>
 	/// <returns>包装后的事件处理器。A wrapped event handler.</returns>
 	[Description("@#withModifiers")]
-	public extern static Action WithModifiers(Action handler, [PreserveParamsArray] params string[] modifiers);
+	public extern static Action WithModifiers(Action handler, [Preserve] params string[] modifiers);
 
 	/// <summary>
 	/// 用 Vue 事件修饰符包装类型化事件处理器。
@@ -411,6 +411,6 @@ public static partial class Vue
 	/// <param name="modifiers">Vue 运行时形式的修饰符名称。Modifier names in Vue runtime form.</param>
 	/// <returns>包装后的类型化事件处理器。A wrapped typed event handler.</returns>
 	[Description("@#withModifiers")]
-	public extern static VueEventHandler<TEvent> WithModifiers<TEvent>(VueEventHandler<TEvent> handler, [PreserveParamsArray] params string[] modifiers);
+	public extern static VueEventHandler<TEvent> WithModifiers<TEvent>(VueEventHandler<TEvent> handler, [Preserve] params string[] modifiers);
 
 }

@@ -12,10 +12,8 @@ internal sealed class JazorDevelopmentFileChangeDebouncer : IDisposable
 
     public JazorDevelopmentFileChangeDebouncer(TimeSpan debounceInterval)
     {
-        if (debounceInterval <= TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(debounceInterval));
-
-        _debounceInterval = debounceInterval;
+		ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(debounceInterval, TimeSpan.Zero);
+		_debounceInterval = debounceInterval;
     }
 
     public void Record(string path)

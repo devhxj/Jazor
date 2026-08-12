@@ -139,11 +139,15 @@ public sealed class RenderEmitterPrivateContractTests
 
         Assert.AreEqual(" ./components/module ", Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "ModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "LibraryComponent")));
+        Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "ReactLibraryComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoArgumentModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NullModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoImportComponent")));
         AssertComponentImport(GetNamedType(fixture, "ModuleComponent"), "./components/module.mjs", "default");
         AssertComponentImport(GetNamedType(fixture, "LibraryComponent"), "tdesign-vue-next", "Button");
+        var reactLibraryImport = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "ReactLibraryComponent")));
+        StringAssert.Contains(reactLibraryImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var noArgumentImport = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "NoArgumentModuleComponent")));
         StringAssert.Contains(noArgumentImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
@@ -1590,6 +1594,7 @@ public sealed class RenderEmitterPrivateContractTests
             using System.Collections.Generic;
             using System.Runtime.InteropServices;
             using ECMAScript;
+            using ECMAScript.Contract;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -1604,6 +1609,9 @@ public sealed class RenderEmitterPrivateContractTests
             [VueLibraryComponent(" tdesign-vue-next ", " Button ")]
             public sealed class LibraryComponent;
 
+            [ReactLibraryComponent("react-library", "ReactButton")]
+            public sealed class ReactLibraryComponent;
+
             [ECMAScriptModule]
             public sealed class NoArgumentModuleComponent;
 
@@ -1615,6 +1623,10 @@ public sealed class RenderEmitterPrivateContractTests
 
             [VueLibraryComponent(" ", "Button")]
             public sealed class InvalidLibraryComponent;
+
+            [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+            public sealed class ReactLibraryComponentAttribute(string importSpecifier, string exportName)
+                : LibraryComponentAttribute(importSpecifier, exportName);
 
             public class BaseDescriptor
             {

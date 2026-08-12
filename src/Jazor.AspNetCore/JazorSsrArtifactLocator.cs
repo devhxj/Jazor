@@ -59,7 +59,7 @@ internal sealed class JazorSSRArtifactLocator
             "'. Build with Jazor debug output, or enable the SSR release artifact target.");
     }
 
-    public string ReadBrowserImportMap(JazorSSRArtifacts artifacts, PathString pathBase)
+    public static string ReadBrowserImportMap(JazorSSRArtifacts artifacts, PathString pathBase)
     {
         using var document = JsonDocument.Parse(File.ReadAllText(artifacts.BrowserImportMapPath));
         if (!document.RootElement.TryGetProperty("imports", out var importsElement) ||
@@ -86,7 +86,7 @@ internal sealed class JazorSSRArtifactLocator
         return JsonSerializer.Serialize(new { imports }, JsonOptions);
     }
 
-    public IReadOnlyList<string> ReadStylePaths(JazorSSRArtifacts artifacts)
+    public static IReadOnlyList<string> ReadStylePaths(JazorSSRArtifacts artifacts)
     {
         using var document = JsonDocument.Parse(File.ReadAllText(artifacts.AssetManifestPath));
         if (!document.RootElement.TryGetProperty("styles", out var stylesElement) ||
@@ -110,7 +110,7 @@ internal sealed class JazorSSRArtifactLocator
         return styles;
     }
 
-    public string CreateBrowserArtifactUrl(
+    public static string CreateBrowserArtifactUrl(
         JazorSSRArtifacts artifacts,
         PathString pathBase,
         string relativePath)

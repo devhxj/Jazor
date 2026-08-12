@@ -8,6 +8,7 @@
 
 - 定义白名单声明原语 `JazorAttribute` 与操作词汇 `Op`。
 - 提供最小 UI/Razor 标记契约 `IUIComponent`。
+- 提供框架中性的外部组件 named-import 元数据 `LibraryComponentAttribute`。
 - 提供 record-like host contract 的推导原语 `PropsAttribute` 与 `EmitsAttribute`。
 - 保持零外部依赖，供编译器、生成器和宿主绑定共同引用。
 
@@ -15,6 +16,7 @@
 
 - `JazorAttribute` 与 `Op` 是仓库内部契约，通过 `InternalsVisibleTo` 共享，不扩展为宽泛公共 API。
 - `Op.Compile` 是编译器持有语义的保留入口；consumer 不应以它替代 `Alias`、`Inline` 或 `Import` 建模。
+- `LibraryComponentAttribute` 仅声明外部组件的模块 specifier 与 named export。共享分析器据此识别组件包装类型；Vue、React 等适配层应各自拥有实际组件协议与 lowering，不能让核心从该特性推断框架行为。
 - SourceMap、宿主协议 DTO 与其他共享实现位于 `Jazor.Common`，Razor-to-Vue 行为位于其专属项目。
 
 ## 关键文件
@@ -22,6 +24,7 @@
 - `JazorAttribute.cs`：白名单 producer 声明特性。
 - `Op.cs`：共享操作枚举。
 - `IUIComponent.cs`：最小 UI 组件标记契约。
+- `LibraryComponentAttribute.cs`：框架中性的外部组件 named-import 元数据。
 - `PropsAttribute.cs`、`EmitsAttribute.cs`：authoring 推导元数据。
 
 ## 相关文档

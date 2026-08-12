@@ -1,8 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
 namespace ECMAScript.ElementPlus;
 
 // Defines Element Plus value domains, callback payloads, and erased union authoring contracts.
