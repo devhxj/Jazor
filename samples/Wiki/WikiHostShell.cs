@@ -28,6 +28,8 @@ internal static class WikiHostShell
     private const string FaviconUrlToken = "__WIKI_FAVICON_URL__";
     private const string SiteCssUrlToken = "__WIKI_SITE_CSS_URL__";
     private const string MainModuleUrlToken = "__WIKI_MAIN_MODULE_URL__";
+    private const string StyleImportUrlToken = "__WIKI_STYLE_IMPORT_URL__";
+    private const string ComponentsImportBaseToken = "__WIKI_COMPONENTS_IMPORT_BASE__";
     private const string SystemImportBaseToken = "__WIKI_SYSTEM_IMPORT_BASE__";
     private const string VendorVueUrlToken = "__WIKI_VENDOR_VUE_URL__";
     // 缓存策略常量 / Cache policy constants
@@ -62,6 +64,7 @@ internal static class WikiHostShell
         var documentTitle = pageTitle + " | jazor.wiki";
         var scriptNonce = GenerateScriptNonce();
         var pathBase = NormalizePathBase(context.Request.PathBase.Value);
+        var browserModulePath = ResolveBrowserModulePath(context);
         var template = await LoadIndexTemplateAsync(context, cancellationToken);
         var renderedHtml = RenderIndexTemplate(
             template,
@@ -70,7 +73,8 @@ internal static class WikiHostShell
             absoluteUrl,
             robotsDirective,
             scriptNonce,
-            pathBase);
+            pathBase,
+            browserModulePath);
 
         context.Response.ContentType = "text/html; charset=utf-8";
         context.Response.StatusCode = isRegisteredPath
@@ -118,7 +122,8 @@ internal static class WikiHostShell
         string absoluteUrl,
         string robotsDirective,
         string scriptNonce,
-        string pathBase)
+        string pathBase,
+        string browserModulePath)
     {
         if (template.Contains(MetadataTokenPrefix, StringComparison.Ordinal) == false)
             throw new InvalidOperationException("Wiki index template does not contain metadata tokens.");
@@ -127,7 +132,13 @@ internal static class WikiHostShell
         var rendered = template;
         var faviconUrl = BuildAssetUrl(pathBase, "/favicon.svg");
         var siteCssUrl = BuildAssetUrl(pathBase, "/site.css");
-        var mainModuleUrl = BuildAssetUrl(pathBase, "/jazor/main.mjs");
+        var browserModuleUrl = BuildAssetUrl(pathBase, browserModulePath);
+        // These are the non-package Jazor module namespaces written by Emit. Keep them
+        // path-base aware so a Debug module graph works below /docs as well as at root.
+        // 这些是 Emit 写入的非 package Jazor 模块命名空间；必须随 PathBase 重写，
+        // 才能同时支持根路径和 /docs 下的 Debug 模块图。
+        var styleImportUrl = BuildAssetUrl(pathBase, "/jazor/style.mjs");
+        var componentsImportBase = BuildAssetUrl(pathBase, "/jazor/components/");
         var systemImportBase = BuildAssetUrl(pathBase, "/jazor/System/");
         var vendorVueUrl = BuildAssetUrl(pathBase, "/vendor/vue@3.5.16.mjs");
         rendered = ReplaceRequiredToken(rendered, TitleToken, htmlEncoder.Encode(documentTitle));
@@ -143,7 +154,9 @@ internal static class WikiHostShell
         rendered = ReplaceRequiredToken(rendered, PathBaseToken, htmlEncoder.Encode(pathBase));
         rendered = ReplaceRequiredToken(rendered, FaviconUrlToken, htmlEncoder.Encode(faviconUrl));
         rendered = ReplaceRequiredToken(rendered, SiteCssUrlToken, htmlEncoder.Encode(siteCssUrl));
-        rendered = ReplaceRequiredToken(rendered, MainModuleUrlToken, htmlEncoder.Encode(mainModuleUrl));
+        rendered = ReplaceRequiredToken(rendered, MainModuleUrlToken, htmlEncoder.Encode(browserModuleUrl));
+        rendered = ReplaceRequiredToken(rendered, StyleImportUrlToken, htmlEncoder.Encode(styleImportUrl));
+        rendered = ReplaceRequiredToken(rendered, ComponentsImportBaseToken, htmlEncoder.Encode(componentsImportBase));
         rendered = ReplaceRequiredToken(rendered, SystemImportBaseToken, htmlEncoder.Encode(systemImportBase));
         rendered = ReplaceRequiredToken(rendered, VendorVueUrlToken, htmlEncoder.Encode(vendorVueUrl));
 
@@ -185,6 +198,33 @@ internal static class WikiHostShell
         return pathBase.Length == 0
             ? path
             : pathBase + path;
+    }
+
+    private static string ResolveBrowserModulePath(HttpContext context)
+    {
+        var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
+        var manifest = environment.ContentRootFileProvider.GetFileInfo("jazor/jazor-manifest.json");
+        var mainModule = environment.ContentRootFileProvider.GetFileInfo("jazor/main.mjs");
+        var bundle = environment.ContentRootFileProvider.GetFileInfo("jazor/bundle.js");
+
+        // Debug materialization writes both main.mjs and its manifest. Prefer that pair so a
+        // prior release bundle left beside a watch build cannot serve stale browser code.
+        // Debug 会同时写入 main.mjs 与 manifest；优先这对文件，避免 watch 构建旁残留的旧 release bundle 被误加载。
+        if (manifest.Exists && mainModule.Exists)
+            return "/jazor/main.mjs";
+
+        // Release owns only the browser bundle at this root unless SSR adds jazor/ssr/.
+        // Release 根目录只保留浏览器 bundle；SSR 原始模块图位于独立的 jazor/ssr/。
+        if (bundle.Exists)
+            return "/jazor/bundle.js";
+
+        // This fallback keeps a manually materialized debug graph usable even before a
+        // manifest is available, without ever preferring a potentially stale bundle.
+        // 该回退允许手工物化的 Debug 模块图在尚未写入 manifest 时使用，同时绝不优先陈旧 bundle。
+        if (mainModule.Exists)
+            return "/jazor/main.mjs";
+
+        throw new InvalidOperationException("Wiki host could not locate jazor/bundle.js or jazor/main.mjs.");
     }
 
     private static string BuildContentSecurityPolicy(string scriptNonce)

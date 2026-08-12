@@ -32,13 +32,13 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-12
+### 2026-08-13
 
-- Jazor `0.12.0` 将生成产物从 `wwwroot/jazor/` 迁移到项目根 `jazor/`，发布时复制同一份图到 `<publish>/jazor/`；通过 `UseJazorHost()` 后浏览器地址仍为 `/jazor/*`。
-- ASP.NET Core 作者 API 统一使用简洁的 `Ssr`、`Reload`、`Artifact` 和 `Asset` 命名。请将 `AddJazorSSR` / `UseJazorSSR` 更新为 `AddJazorSsr` / `UseJazorSsr`，将 `AddJazorDevelopmentReload` / `UseJazorDevelopmentReload` 更新为 `AddJazorReload` / `UseJazorReload`。
-- `dotnet watch run` 是受支持的构建与刷新流程。Reload 默认观察 `jazor/` 和 `wwwroot/`，不会将生成产物反向加入 MSBuild watch 输入。
-- `ECMAScript.Style` 现将 CSS DSL 成员统一为 `lower_snake_case`；PascalCase CLR 模型、生成 CSS、`style.mjs` 和浏览器 HMR 协议均保持稳定。
-- 生成的 WebIDL 成员仍使用浏览器原生拼写，例如 `backgroundColor`；CSS 声明使用 CSS 拼写，例如 `background_color`，两套 API 之间不隐式转换。
+- Jazor `0.13.0` 增加 Windows Release publish 门禁：从本地打出的 `Jazor`、`Jazor.Vue` 与 `ECMAScript.Style` 包恢复隔离 Wiki，发布真实 `bundle.js` 形态，并在 NuGet 发布前由 Microsoft Edge 以 `/docs` 路径验证。
+- Wiki 现已成为真实的 `H()` 与 `ECMAScript.Style` 应用表面：生成的 `ecs-*` class、受管理 CSS 注入、source map、SPA 导航和 Release HMR 边界都会在 Debug 与 Release 浏览器验证中检查。
+- Release Wiki host 显式提供 `bundle.js`；即使存在空的复制 `bin/.../jazor/` 目录，Debug host 仍会选择项目根的 ready `jazor/` 图。PathBase 感知的 import map 会稳定解析生成的 `style.mjs`、`components/` 与 `System/` 模块。
+- 标记 `PreserveAttribute` 的 CSS shorthand params 现在会保留数组形态，因此 `padding(px(4), px(8))` 会生成合法的 `padding:4px 8px;`，不改变 `style.mjs` ABI。
+- `double`、`float` 与 `Math.Round` 的小数位舍入现直接比较原始 IEEE-754 位表示，避免 JavaScript 乘法把 `2.675` 一类值错误推到 .NET 舍入中点的另一侧。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -94,15 +94,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.12.0
+dotnet add package Jazor --version 0.13.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.12.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.12.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.13.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.13.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

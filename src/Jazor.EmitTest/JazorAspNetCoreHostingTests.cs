@@ -45,13 +45,34 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
+    public void JazorWebApplication_ResolveContentRootPath_PrefersSourceArtifactsOverCopiedDebugWebRoot()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var appBaseDirectory = Path.Combine(workspace.RootPath, "bin", "Debug", "net11.0");
+        var sourceDirectory = Path.Combine(workspace.RootPath, "src", "Playground");
+        var sourceFilePath = Path.Combine(sourceDirectory, "Program.cs");
+        Directory.CreateDirectory(Path.Combine(appBaseDirectory, "wwwroot"));
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "jazor"));
+        Directory.CreateDirectory(Path.Combine(appBaseDirectory, "jazor"));
+        File.WriteAllText(Path.Combine(sourceDirectory, "jazor", "jazor-manifest.json"), "{}");
+        File.WriteAllText(sourceFilePath, "var builder = JazorWebApplication.CreateBuilder(args);");
+
+        var resolved = JazorWebApplication.ResolveContentRootPath(appBaseDirectory, sourceFilePath);
+
+        Assert.AreEqual(Path.GetFullPath(sourceDirectory), resolved);
+    }
+
+    [TestMethod]
     public void JazorWebApplication_ResolveContentRootPath_PrefersPublishDirectoryWhenJazorArtifactsExist()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var appBaseDirectory = Path.Combine(workspace.RootPath, "publish");
-        var sourceFilePath = Path.Combine(workspace.RootPath, "src", "Playground", "Program.cs");
+        var sourceDirectory = Path.Combine(workspace.RootPath, "src", "Playground");
+        var sourceFilePath = Path.Combine(sourceDirectory, "Program.cs");
         Directory.CreateDirectory(Path.Combine(appBaseDirectory, "jazor"));
-        Directory.CreateDirectory(Path.GetDirectoryName(sourceFilePath)!);
+        Directory.CreateDirectory(Path.Combine(sourceDirectory, "jazor"));
+        File.WriteAllText(Path.Combine(appBaseDirectory, "jazor", "bundle.js"), "export {};\n");
+        File.WriteAllText(Path.Combine(sourceDirectory, "jazor", "jazor-manifest.json"), "{}");
         File.WriteAllText(sourceFilePath, "var builder = JazorWebApplication.CreateBuilder(args);");
 
         var resolved = JazorWebApplication.ResolveContentRootPath(appBaseDirectory, sourceFilePath);

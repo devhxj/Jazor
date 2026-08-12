@@ -600,7 +600,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
     }
 
     [TestMethod]
-    public void Visit_EcmascriptPreservedParamsArray_DoesNotExpandTheBoundArrayArgument()
+    public void Visit_EcmascriptPreserveAttribute_DoesNotExpandTheBoundArrayArgument()
     {
         var script = VisitBlock(
             """
@@ -609,7 +609,7 @@ public sealed class SemanticWalkerBoundaryProtocolScenarioTests
             [ECMAScript]
             static class BrowserTelemetry
             {
-                public static void Report([PreserveParamsArray] params string[] messages) { }
+                public static void Report([Preserve] params string[] messages) { }
             }
 
             static class TestClass

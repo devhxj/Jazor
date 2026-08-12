@@ -30,5 +30,6 @@ Vue 3、Vue Router、Pinia、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` �
 | Razor-to-Vue | 至少 4,000 个通过场景、90% 行覆盖率、96% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 绑定 | 每个目标至少 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
 | 全仓库主线 | 当前 compiler、CLR、Pinia、VueRoute、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
+| Windows SPA 发布消费者 | 本地 NuGet 包、Release bundle、`/docs` PathBase 与 Edge 真实浏览器交互 | `dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs` |
 
 门槛描述的是可复现的验收规则。需要引用某一时点的实际结果时，应运行对应命令或查看 [CHANGELOG.md](../../CHANGELOG.md) 的发布记录，而不是依赖已删除的历史报告。

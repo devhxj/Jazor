@@ -110,15 +110,9 @@ public static class SingleModule
 		if (mode < 0 || mode > 4)
 			throw new Error("ArgumentException: Invalid MidpointRounding value.");
 
-		// Keep every arithmetic boundary binary32. Delegating to the binary64 core would
-		// change results around midpoint and large-significand values.
-		if (Math.AbsFn(value) >= 100000000d)
-			return value;
-
-		var power = Math.FroundFn(Math.PowFn(10, digits));
-		var scaled = Math.FroundFn(value * power);
-		var rounded = DoubleModule.RoundIntegralCore(scaled, mode);
-		return Math.FroundFn(rounded / power);
+		// The shared core reads the binary32 payload before comparing decimal midpoints;
+		// multiplying through binary64 would otherwise change a float's rounding side.
+		return DoubleModule.RoundSingleCore(value, digits, mode);
 	}
 
 	private static Number Ieee754RemainderCore(Number left, Number right)

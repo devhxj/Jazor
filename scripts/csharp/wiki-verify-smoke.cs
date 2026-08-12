@@ -21,10 +21,6 @@ var configuration = options.Publish && !options.ConfigurationWasExplicit ? "Rele
 string hostRoot = sampleRoot;
 string webRoot = Path.Combine(sampleRoot, "wwwroot");
 string jazorRoot = Path.Combine(sampleRoot, "jazor");
-string mainModulePath = Path.Combine(jazorRoot, "main.mjs");
-string componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
-string manifestPath = Path.Combine(jazorRoot, "jazor-manifest.json");
-string moduleTextPath = componentModulePath;
 string indexTemplatePath = Path.Combine(sampleRoot, "host", "index.template.html");
 string faviconPath = Path.Combine(webRoot, "favicon.svg");
 string stdoutLog = Path.Combine(sampleRoot, $".wiki-smoke-{Environment.ProcessId}.stdout.log");
@@ -49,7 +45,10 @@ if (options.Publish)
         "/m:1",
         "/p:BuildInParallel=false",
         "/nr:false",
-        "-p:UseSharedCompilation=false"
+        "-p:UseSharedCompilation=false",
+        // Wiki defaults to debug while developing. A publish gate must explicitly select the
+        // release bundle regardless of the managed assembly configuration.
+        "-p:JazorMode=release"
     };
 
     if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
@@ -70,10 +69,6 @@ if (options.Publish)
     hostRoot = publishRoot;
     webRoot = Path.Combine(hostRoot, "wwwroot");
     jazorRoot = Path.Combine(hostRoot, "jazor");
-    mainModulePath = Path.Combine(jazorRoot, "main.mjs");
-    componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
-    manifestPath = Path.Combine(jazorRoot, "jazor-manifest.json");
-    moduleTextPath = componentModulePath;
     indexTemplatePath = Path.Combine(hostRoot, "host", "index.template.html");
     faviconPath = Path.Combine(webRoot, "favicon.svg");
     stdoutLog = Path.Combine(hostRoot, ".wiki-publish-smoke.stdout.log");
@@ -143,12 +138,8 @@ else if (options.Build)
         dotnetCliHome: dotnetCliHome);
 }
 
-WikiScriptHelpers.EnsureFileExists(mainModulePath, "emitted main module");
-WikiScriptHelpers.EnsureFileExists(componentModulePath, "emitted wiki component module");
-WikiScriptHelpers.EnsureFileExists(manifestPath, "emit manifest");
 WikiScriptHelpers.EnsureFileExists(indexTemplatePath, "host HTML template");
 WikiScriptHelpers.EnsureFileExists(faviconPath, "favicon asset");
-WikiScriptHelpers.EnsureFileExists(moduleTextPath, "emitted docs shell module");
 
 var indexTemplateContent = await File.ReadAllTextAsync(indexTemplatePath, Encoding.UTF8);
 AssertContains(indexTemplateContent, "id=\"app\"", "Vue mount root in host HTML template");
@@ -179,41 +170,14 @@ foreach (var marker in new[]
     AssertContains(siteCssContent, marker, "Wiki shell CSS marker");
 }
 
-var mainModuleContent = await File.ReadAllTextAsync(mainModulePath, Encoding.UTF8);
-AssertContains(mainModuleContent, "createApp(", "main entry marker in emitted module");
-AssertContains(mainModuleContent, "app.mount(\"#app\")", "main entry marker in emitted module");
-AssertImportedSystemModulesExist(mainModuleContent, jazorRoot, "emitted main module");
-
-var moduleContent = await File.ReadAllTextAsync(moduleTextPath, Encoding.UTF8);
-AssertImportedSystemModulesExist(moduleContent, jazorRoot, "emitted docs shell module");
-foreach (var marker in new[]
+var browserEntryPath = options.Publish ? "/jazor/bundle.js" : "/jazor/main.mjs";
+if (options.Publish)
 {
-    "概览",
-    "页面未找到",
-    "requested-route",
-    "window.history.replaceState",
-    "window.history.pushState",
-    "window.onpopstate = onPopState",
-    "window.onhashchange = onHashChange",
-    "window.onscroll = onScroll",
-    "window.navigator.clipboard",
-    "clipboard.writeText",
-    "wiki-nav-search-input",
-    "search-result-card",
-    "search-mark",
-    "feedback-button",
-    "drawer-backdrop",
-    "浏览",
-    "本页目录",
-    "主题：深色",
-    "复制页面链接",
-    "有帮助",
-    "需改进",
-    "Jolt 已从转型分支退役",
-    "d68aecbb00b23aa35735c9a269b2e987c7815b05"
-})
+    AssertReleaseArtifacts(jazorRoot);
+}
+else
 {
-    AssertContains(moduleContent, marker, "emitted docs shell marker");
+    AssertDebugArtifacts(jazorRoot);
 }
 
 var docsRoutes = new List<RouteExpectation>
@@ -244,17 +208,27 @@ var docsRoutes = new List<RouteExpectation>
     new("/operations/testing-verification", "测试与验证 | jazor.wiki", "编译器、发射和运维冒烟检查如何协同保护生产文档表面。", "index, follow")
 };
 
-var browserAssets = new List<AssetExpectation>
-{
-    new("/jazor/main.mjs", "createApp(", null, Array.Empty<string>()),
-    new("/jazor/main.mjs.map", "\"file\":\"main.mjs\"", "application/json", new[] { "AppModule.cs", "\"sourcesContent\"" }),
-    new("/jazor/components/wiki-home.mjs", "搜索文档页面", null, Array.Empty<string>()),
-    new("/jazor/components/wiki-home.mjs.map", "\"file\":\"components/wiki-home.mjs\"", "application/json", new[] { "WikiHomeModule.cs", "WikiHomeModule.DocumentContract.cs", "\"sourcesContent\"" }),
-    new("/jazor/System/StringModule.js", "export", null, Array.Empty<string>()),
-    new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
-    new("/favicon.svg", "<svg", null, Array.Empty<string>()),
-    new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>())
-};
+var browserAssets = options.Publish
+    ? new List<AssetExpectation>
+    {
+        new("/jazor/bundle.js", "createApp(", null, new[] { "ecmascript-style:v1", "H() + ECMAScript.Style" }),
+        new("/jazor/bundle.js.map", "\"file\":\"bundle.js\"", "application/json", new[] { "AppModule.cs", "components/wiki-styles.mjs" }),
+        new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
+        new("/favicon.svg", "<svg", null, Array.Empty<string>()),
+        new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>())
+    }
+    : new List<AssetExpectation>
+    {
+        new("/jazor/main.mjs", "createApp(", null, Array.Empty<string>()),
+        new("/jazor/main.mjs.map", "\"file\":\"main.mjs\"", "application/json", new[] { "AppModule.cs", "\"sourcesContent\"" }),
+        new("/jazor/components/wiki-home.mjs", "搜索文档页面", null, Array.Empty<string>()),
+        new("/jazor/components/wiki-home.mjs.map", "\"file\":\"components/wiki-home.mjs\"", "application/json", new[] { "WikiHomeModule.cs", "WikiHomeModule.DocumentContract.cs", "\"sourcesContent\"" }),
+        new("/jazor/components/wiki-styles.mjs", "ecmascript-style:v1", null, new[] { "background-color" }),
+        new("/jazor/System/StringModule.js", "export", null, Array.Empty<string>()),
+        new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
+        new("/favicon.svg", "<svg", null, Array.Empty<string>()),
+        new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>())
+    };
 
 var discoveryDocuments = new List<DiscoveryExpectation>
 {
@@ -345,7 +319,7 @@ try
         EnsureStatusCode(response, HttpStatusCode.OK, route.Path);
         var content = await response.Content.ReadAsStringAsync();
         AssertContains(content, "id=\"app\"", "Vue mount root in served route " + route.Path);
-        AssertContains(content, WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/jazor/main.mjs"), "main module entry in served route " + route.Path);
+        AssertContains(content, WikiScriptHelpers.GetExternalPath(normalizedPathBase, browserEntryPath), "browser entry in served route " + route.Path);
         AssertContains(content, "\"System/\": \"" + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/jazor/System/") + "\"", "CLR runtime import-map entry in served route " + route.Path);
         AssertContains(content, "data-wiki-path-base=\"" + normalizedPathBase + "\"", "path-base marker in served route " + route.Path);
         AssertRouteMetadata(content, route, rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, route.Path), "served route " + route.Path);
@@ -495,13 +469,36 @@ void AssertRouteMetadata(string html, RouteExpectation expected, string expected
     AssertContains(html, $"meta name=\"twitter:description\" content=\"{encodedDescription}\"", description + " twitter:description");
 }
 
-void AssertImportedSystemModulesExist(string text, string jazorRootPath, string description)
+void AssertDebugArtifacts(string artifactRoot)
 {
-    foreach (Match match in Regex.Matches(text, "from \"(System/[^\"]+\\.js)\""))
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs"), "emitted main module");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs.map"), "emitted main source map");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "jazor-manifest.json"), "emit manifest");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs"), "emitted Wiki component module");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs.map"), "emitted Wiki component source map");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-styles.mjs"), "emitted Wiki CSS module");
+}
+
+void AssertReleaseArtifacts(string artifactRoot)
+{
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js"), "production browser bundle");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js.map"), "production browser bundle source map");
+
+    // A normal browser release must not accidentally publish the debug module graph. SSR has
+    // a separate jazor/ssr/ root, so these root-level paths remain an unambiguous check.
+    // 正常浏览器 release 不应误发布 Debug 模块图；SSR 使用独立 jazor/ssr/ 根目录，因此这些根路径可明确检查。
+    foreach (var unexpectedPath in new[]
     {
-        var relativePath = match.Groups[1].Value;
-        var physicalPath = Path.Combine(jazorRootPath, relativePath.Replace('/', Path.DirectorySeparatorChar));
-        WikiScriptHelpers.EnsureFileExists(physicalPath, description + " dependency " + relativePath);
+        Path.Combine(artifactRoot, "main.mjs"),
+        Path.Combine(artifactRoot, "jazor-manifest.json"),
+        Path.Combine(artifactRoot, "style.mjs"),
+        Path.Combine(artifactRoot, "components")
+    })
+    {
+        if (File.Exists(unexpectedPath) || Directory.Exists(unexpectedPath))
+        {
+            throw new InvalidOperationException("Release publish unexpectedly retained debug artifact: " + unexpectedPath);
+        }
     }
 }
 

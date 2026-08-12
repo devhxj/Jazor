@@ -3,7 +3,7 @@
 ## Publish Command
 
 ```powershell
-dotnet publish samples/Wiki/Wiki.csproj -c Release -o <deploy-dir>
+dotnet publish samples/Wiki/Wiki.csproj -c Release -p:JazorMode=release -o <deploy-dir>
 ```
 
 Optional subpath deployment:
@@ -24,14 +24,11 @@ Published output must follow this layout:
   Wiki.dll
   Wiki.exe
   jazor/
-    main.mjs
-    main.mjs.map
-    jazor-manifest.json
-    components/
-      wiki-home.mjs
-      wiki-home.mjs.map
-    System/
-      <CLR runtime modules>
+    bundle.js
+    bundle.js.map
+    __jazor_netpack_entry__.js
+    vendor/
+      <Netpack runtime dependencies>
   wwwroot/
     site.css
     favicon.svg
@@ -44,8 +41,8 @@ Published output must follow this layout:
 The following invariants are enforced by `wiki-verify-smoke.cs --publish`:
 
 1. `/jazor/*` must resolve from `<deploy-dir>/jazor/` through the explicit Jazor artifact mount
-2. `jazor-manifest.json` must exist under `<deploy-dir>/jazor/`
-3. `main.mjs` and `components/wiki-home.mjs` must exist under `<deploy-dir>/jazor/`
+2. `bundle.js` and `bundle.js.map` must exist under `<deploy-dir>/jazor/`
+3. Debug module graph files (`main.mjs`, `jazor-manifest.json`, `components/`, `style.mjs`) must not leak into a non-SSR release publish
 4. `wwwroot/jazor/` must not be used as a fallback or shadow the generated artifact graph
 5. `/vendor/vue@3.5.16.mjs` must exist and be servable
 6. Registered docs routes must return HTTP 200 with route-correct first-response metadata and the SPA shell
@@ -66,7 +63,7 @@ dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish --path-base
 dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --publish --path-base /docs
 ```
 
-This checks structural invariants, discovery docs, route metadata and headers, all registered docs routes, the search/404 indexing contract, browser asset resolution, emitted module markers, and real browser runtime behavior.
+This checks structural invariants, discovery docs, route metadata and headers, all registered docs routes, the search/404 indexing contract, release bundle/source-map content, generated `ECMAScript.Style` registration, and real browser runtime behavior.
 
 ## Rollback Procedure
 

@@ -11,8 +11,7 @@ var publishRoot = Path.Combine(repoRoot, ".tmp", "wiki-publish-preview", options
 var hostRoot = sampleRoot;
 var webRoot = Path.Combine(sampleRoot, "wwwroot");
 var jazorRoot = Path.Combine(sampleRoot, "jazor");
-var mainModulePath = Path.Combine(jazorRoot, "main.mjs");
-var componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
+var browserEntryPath = Path.Combine(jazorRoot, "main.mjs");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 var configuration = options.Publish && !options.ConfigurationWasExplicit ? "Release" : options.Configuration;
 var normalizedPathBase = WikiScriptHelpers.NormalizePathBase(options.PathBase);
@@ -39,7 +38,9 @@ if (options.Publish)
         "/m:1",
         "/p:BuildInParallel=false",
         "/nr:false",
-        "-p:UseSharedCompilation=false"
+        "-p:UseSharedCompilation=false",
+        // Wiki's development default is debug. Publish preview must exercise the release bundle.
+        "-p:JazorMode=release"
     };
 
     if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
@@ -60,8 +61,7 @@ if (options.Publish)
     hostRoot = publishRoot;
     webRoot = Path.Combine(hostRoot, "wwwroot");
     jazorRoot = Path.Combine(hostRoot, "jazor");
-    mainModulePath = Path.Combine(jazorRoot, "main.mjs");
-    componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
+    browserEntryPath = Path.Combine(jazorRoot, "bundle.js");
 
     if (!Directory.Exists(jazorRoot))
     {
@@ -127,8 +127,7 @@ else if (options.Build)
         dotnetCliHome: dotnetCliHome);
 }
 
-WikiScriptHelpers.EnsureFileExists(mainModulePath, "emitted main module");
-WikiScriptHelpers.EnsureFileExists(componentModulePath, "emitted wiki component module");
+WikiScriptHelpers.EnsureFileExists(browserEntryPath, options.Publish ? "release browser bundle" : "emitted main module");
 
 var routeUrls = new[]
 {

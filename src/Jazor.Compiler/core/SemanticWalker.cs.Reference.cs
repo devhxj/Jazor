@@ -1133,12 +1133,12 @@ private static IOperation UnwrapImplicitConversions(IOperation operation)
 	return operation;
 }
 
-private const string PreserveParamsArrayAttributeFullName = "ECMAScript.PreserveParamsArrayAttribute";
+private const string PreserveAttributeFullName = "ECMAScript.PreserveAttribute";
 private const string ECMAScriptInlineAttributeFullName = "ECMAScript.ECMAScriptInlineAttribute";
 
-private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
+private static bool HasPreserveAttribute(IParameterSymbol parameter)
 	=> parameter.GetAttributes().Any(static attribute =>
-		attribute.AttributeClass!.ToDisplayString() == PreserveParamsArrayAttributeFullName);
+		attribute.AttributeClass!.ToDisplayString() == PreserveAttributeFullName);
 
 	private static bool TryGetEcmascriptInlineTemplate(IMethodSymbol method, out string template)
 	{
@@ -1172,7 +1172,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 		arg.Parameter.Type is not IArrayTypeSymbol arrayType)
 		return false;
 
-	if (HasPreserveParamsArrayAttribute(arg.Parameter))
+	if (HasPreserveAttribute(arg.Parameter))
 		return false;
 
 	var value = UnwrapImplicitConversions(arg.Value);
@@ -1202,7 +1202,7 @@ private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
 	{
 		if (!Util.IsECMAScriptRuntimeSymbol(method) ||
 			parameter?.IsParams != true ||
-			HasPreserveParamsArrayAttribute(parameter))
+			HasPreserveAttribute(parameter))
 			return false;
 
 		// Bound-argument canonicalization has already evaluated the source params value into a

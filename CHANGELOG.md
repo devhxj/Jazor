@@ -2,6 +2,17 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-13
+
+### Jazor 0.13.0
+
+- Windows SPA release publishing now has a real package-consumer gate. It packages `Jazor`, `Jazor.Vue`, and `ECMAScript.Style` locally, restores an isolated copy of Wiki without source-project references, publishes it with `JazorMode=release`, verifies the `<publish>/jazor/` release layout, and drives Microsoft Edge through a `/docs` PathBase. The tag publishing workflow runs this gate before any NuGet upload.
+- Wiki is now a live `ECMAScript.Vue` `H()` and `ECMAScript.Style` consumer. Its H-function authoring page renders a generated `ecs-*` class and the CSS runtime's managed `#ecmascript-style` element; debug and release browser gates assert the generated selector, shorthand CSS, source maps, routing, and production HMR boundary in a real browser.
+- Wiki publish and preview commands now explicitly select release output and serve `bundle.js` in production. Its custom HTML shell supplies the generated `style.mjs`, `components/`, and `System/` import-map namespaces under a PathBase, so emitted modules resolve consistently and absent generated assets remain HTTP 404s instead of silently becoming SPA HTML.
+- `JazorWebApplication.CreateBuilder()` now ignores empty copied `bin/.../jazor/` directories and selects a ready artifact graph. Debug and `dotnet watch` hosts therefore keep serving the project-root `jazor/` output instead of an empty copied directory.
+- Params-array preservation now recognizes `PreserveAttribute`. CSS shorthand calls such as `padding(px(4), px(8))` retain both values and emit `padding:4px 8px;`; generated CSS naming and the public `style.mjs` export ABI remain unchanged.
+- Double and single decimal rounding now compares the original IEEE-754 payload instead of a lossy JavaScript decimal multiplication. `Round(2.675, 2)` and equivalent `Math.Round` calls preserve .NET's rounding side, while exact values and midpoint modes retain their original results.
+
 ## 2026-08-12
 
 ### Jazor 0.12.0

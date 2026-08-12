@@ -38,6 +38,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
                     background_color = hex("1769aa"),
                     border = important(px(1) | solid | hex("d7ebe4")),
                     padding = important(px(8) | px(12)),
+                    margin = margin(px(4), px(8)),
                     backdrop_filter = filters(blur(px(12)), saturate(1.15)),
                     transition_duration = ms(180),
                     opacity = 0.9,
@@ -90,6 +91,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         StringAssert.Contains(script, "\"background-color\": hex(\"1769aa\")");
         StringAssert.Contains(script, "border: importantValue(px(1) + \" \" + solid + \" \" + hex(\"d7ebe4\"))");
         StringAssert.Contains(script, "padding: importantValue(px(8) + \" \" + px(12))");
+        StringAssert.Contains(script, "margin: margin2(px(4), px(8))");
         StringAssert.Contains(script, "\"backdrop-filter\": filters([blur(px(12)), saturate(1.15)])");
         StringAssert.Contains(script, "\"transition-duration\": ms(180)");
         StringAssert.Contains(script, "opacity: 0.9");

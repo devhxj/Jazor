@@ -24,6 +24,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `verify-vue-binding-coverage.cs` | 审核 Vue 生态 binding 的公开契约覆盖 |
 | `verify-development-hmr.cs` | 验证开发模式的 HMR artifact 和浏览器路径 |
 | `wiki-build-local.cs`、`wiki-serve.cs`、`wiki-verify-*.cs` | 构建、预览与验证 Wiki 示例 |
+| `verify-windows-spa-release.cs` | 打包本地 NuGet 后，以隔离 Wiki 消费者完成 Windows Release publish 和 Edge 浏览器验证 |
 | `generate-jazoradmin-brand-assets.cs` | 再生成或检查 JazorAdmin 本地品牌图标 |
 
 具体参数和验证范围以脚本开头的说明及相应项目 README 为准。

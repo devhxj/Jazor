@@ -1,13 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <JazorMode>debug</JazorMode>
+    <!-- Source references stay the default for repository development. Set WikiUsePackages=true
+         to verify the same Wiki as an isolated NuGet consumer. -->
+    <WikiUsePackages Condition="'$(WikiUsePackages)' == ''">false</WikiUsePackages>
     <TargetFramework>net11.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <Import Project="..\..\src\Jazor\buildTransitive\Jazor.props" />
+  <Import Project="..\..\src\Jazor\buildTransitive\Jazor.props"
+          Condition="'$(WikiUsePackages)' != 'true'" />
 
   <ItemGroup>
     <Compile Remove="jazor\**" />
@@ -23,11 +27,12 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(WikiUsePackages)' != 'true'">
     <!-- Source builds do not import ECMAScript.Vue's packaged buildTransitive target. -->
     <JazorLibraryManifest Include="..\..\src\ECMAScript.Vue\manifest.json" />
     <ProjectReference Include="..\..\src\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\..\src\ECMAScript.Vue\ECMAScript.Vue.csproj" />
+    <ProjectReference Include="..\..\src\ECMAScript.Style\ECMAScript.Style.csproj" />
     <ProjectReference Include="..\..\src\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
     <ProjectReference Include="..\..\src\Jazor.CLR\Jazor.CLR.csproj" />
@@ -36,7 +41,15 @@
     <ProjectReference Include="..\..\src\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <Target Name="AddLocalJazorAnalyzerDependencies" BeforeTargets="CoreCompile">
+  <ItemGroup Condition="'$(WikiUsePackages)' == 'true'">
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+
+  <Target Name="AddLocalJazorAnalyzerDependencies"
+          BeforeTargets="CoreCompile"
+          Condition="'$(WikiUsePackages)' != 'true'">
     <ItemGroup>
       <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
@@ -46,5 +59,6 @@
       <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
     </ItemGroup>
   </Target>
-  <Import Project="..\..\src\Jazor\buildTransitive\Jazor.targets" />
+  <Import Project="..\..\src\Jazor\buildTransitive\Jazor.targets"
+          Condition="'$(WikiUsePackages)' != 'true'" />
 </Project>

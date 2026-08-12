@@ -10223,7 +10223,7 @@ public sealed class SemanticWalkerReferenceTest
 
 	/// <summary>
 	/// C# params must map to JavaScript rest arguments for runtime APIs that do not
-	/// opt into PreserveParamsArray. Literal params expand; an authored array stays
+	/// opt into <see cref="PreserveAttribute"/>. Literal params expand; an authored array stays
 	/// one evaluated value and becomes a JavaScript spread argument.
 	/// </summary>
 	[TestMethod]
@@ -10292,7 +10292,7 @@ public sealed class SemanticWalkerReferenceTest
 
 	/// <summary>
 	/// Vue event modifiers are a runtime array contract rather than JavaScript rest arguments.
-	/// The authored params syntax remains ergonomic, while PreserveParamsArray keeps the
+	/// The authored params syntax remains ergonomic, while <see cref="PreserveAttribute"/> keeps the
 	/// runtime call shape expected by Vue's withModifiers helper.
 	/// </summary>
 	[TestMethod]

@@ -32,13 +32,13 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### 2026-08-12
+### 2026-08-13
 
-- Jazor `0.12.0` moves generated artifacts from `wwwroot/jazor/` to project-root `jazor/`, then copies the same graph to `<publish>/jazor/`; browser URLs remain `/jazor/*` through `UseJazorHost()`.
-- ASP.NET Core authoring APIs now use concise `Ssr`, `Reload`, `Artifact`, and `Asset` names. Update `AddJazorSSR` / `UseJazorSSR` to `AddJazorSsr` / `UseJazorSsr`, and `AddJazorDevelopmentReload` / `UseJazorDevelopmentReload` to `AddJazorReload` / `UseJazorReload`.
-- `dotnet watch run` is the supported build-and-refresh workflow. Reload observes `jazor/` and `wwwroot/` by default without turning generated artifacts into new MSBuild watch inputs.
-- `ECMAScript.Style` now uses `lower_snake_case` for CSS DSL members, while its PascalCase CLR models, generated CSS, `style.mjs`, and the browser HMR protocol remain stable.
-- Generated WebIDL members retain their native DOM spelling such as `backgroundColor`; CSS declaration members use CSS spelling such as `background_color`, with no implicit conversion between the two surfaces.
+- Jazor `0.13.0` adds a Windows release-publish gate that restores an isolated Wiki from locally packed `Jazor`, `Jazor.Vue`, and `ECMAScript.Style` packages, publishes the real `bundle.js` layout, and verifies it in Microsoft Edge below `/docs` before NuGet publication.
+- Wiki is now a real `H()` plus `ECMAScript.Style` application surface: generated `ecs-*` classes, managed CSS injection, source maps, SPA navigation, and the release HMR boundary are checked in both Debug and Release browser runs.
+- Release Wiki hosts explicitly serve `bundle.js`; Debug hosts select the ready project-root `jazor/` graph even when an empty copied `bin/.../jazor/` directory exists. Its PathBase-aware import map now resolves generated `style.mjs`, `components/`, and `System/` modules consistently.
+- CSS shorthand params marked with `PreserveAttribute` now preserve their array shape, so calls such as `padding(px(4), px(8))` emit valid `padding:4px 8px;` CSS without changing the `style.mjs` ABI.
+- Decimal-digit rounding for `double`, `float`, and `Math.Round` now evaluates the original IEEE-754 payload, preventing JavaScript multiplication from moving values such as `2.675` across a .NET rounding midpoint.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -94,15 +94,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.12.0
+dotnet add package Jazor --version 0.13.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.12.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.12.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.13.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.13.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

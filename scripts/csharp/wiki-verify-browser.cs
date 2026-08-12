@@ -6,9 +6,11 @@ using System.Text;
 var options = ScriptArguments.Parse(args);
 
 var repoRoot = WikiScriptHelpers.RequireRepoRoot();
-var sampleRoot = Path.Combine(repoRoot, "samples", "Wiki");
+var sampleRoot = WikiScriptHelpers.ResolvePath(repoRoot, options.WikiRoot ?? Path.Combine("samples", "Wiki"));
 var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
-var publishRoot = Path.Combine(repoRoot, ".tmp", "wiki-publish-browser-" + Environment.ProcessId);
+var publishRoot = options.PublishedRoot is null
+    ? Path.Combine(repoRoot, ".tmp", "wiki-publish-browser-" + Environment.ProcessId)
+    : WikiScriptHelpers.ResolvePath(repoRoot, options.PublishedRoot);
 var browserScriptPath = Path.Combine(sampleRoot, "verify-browser.mjs");
 var runnerLog = Path.Combine(sampleRoot, $".wiki-browser-runner-{Environment.ProcessId}.log");
 var stdoutLog = Path.Combine(sampleRoot, $".wiki-browser-{Environment.ProcessId}.stdout.log");
@@ -23,9 +25,14 @@ var edgeExecutable = WikiScriptHelpers.ResolveEdgeExecutable();
 var nodeExecutable = WikiScriptHelpers.FindNodeOnPath()
     ?? throw new FileNotFoundException("Node.js executable 'node' was not found on PATH.");
 
-if (options.Publish && (options.Build || options.BuildLocal))
+if (options.Publish && (options.Build || options.BuildLocal || options.PublishedRoot is not null))
 {
-    throw new InvalidOperationException("-Publish already performs its own publish build. Do not combine it with -Build or -BuildLocal.");
+    throw new InvalidOperationException("--publish already performs its own publish build. Do not combine it with --build, --build-local, or --published-root.");
+}
+
+if (options.PublishedRoot is not null && (options.Build || options.BuildLocal))
+{
+    throw new InvalidOperationException("--published-root uses an existing release publish. Do not combine it with --build or --build-local.");
 }
 
 var normalizedPathBase = WikiScriptHelpers.NormalizePathBase(options.PathBase);
@@ -34,6 +41,7 @@ var healthUrl = rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, 
 var effectiveConfiguration = options.Publish && !options.ConfigurationWasExplicit
     ? "Release"
     : options.Configuration;
+var isPublished = options.Publish || options.PublishedRoot is not null;
 
 string hostRoot = sampleRoot;
 string jazorRoot = Path.Combine(sampleRoot, "jazor");
@@ -42,7 +50,13 @@ Trace("Starting wiki browser verification.");
 
 try
 {
-    if (options.Publish)
+    if (options.PublishedRoot is not null)
+    {
+        Trace("Using an existing Wiki release publish.");
+        hostRoot = publishRoot;
+        jazorRoot = Path.Combine(hostRoot, "jazor");
+    }
+    else if (options.Publish)
     {
         Trace("Publishing Wiki host.");
         WikiScriptHelpers.EnsureDirectoryDeletedWithinRepo(repoRoot, publishRoot);
@@ -58,7 +72,10 @@ try
             "/m:1",
             "/p:BuildInParallel=false",
             "/nr:false",
-            "-p:UseSharedCompilation=false"
+            "-p:UseSharedCompilation=false",
+            // Wiki defaults to debug for local development; publishing must exercise Netpack's
+            // release artifact contract even when the configuration is Release already.
+            "-p:JazorMode=release"
         };
 
         if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
@@ -143,15 +160,20 @@ try
         Trace("Wiki build completed.");
     }
 
-    if (options.Publish && !Directory.Exists(jazorRoot))
+    if (isPublished && !Directory.Exists(jazorRoot))
     {
         throw new InvalidOperationException("Published Jazor artifacts were not copied to: " + jazorRoot);
     }
 
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(jazorRoot, "main.mjs"), "emitted main module");
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(jazorRoot, "main.mjs.map"), "emitted main source map");
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(jazorRoot, "components", "wiki-home.mjs"), "emitted wiki component module");
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(jazorRoot, "components", "wiki-home.mjs.map"), "emitted wiki component source map");
+    if (isPublished)
+    {
+        AssertReleaseArtifacts(jazorRoot);
+    }
+    else
+    {
+        AssertDebugArtifacts(jazorRoot);
+    }
+
     WikiScriptHelpers.EnsureFileExists(browserScriptPath, "browser verification script");
 
     Process? hostProcess = null;
@@ -160,20 +182,20 @@ try
     try
     {
         Trace("Starting Wiki host process.");
-        var hostArguments = options.Publish
+        var hostArguments = isPublished
             ? new[] { "Wiki.dll", "--urls", rootUrl }
             : new[] { "run", "--project", hostProject, "--no-launch-profile", "-c", effectiveConfiguration, "--no-build", "--no-restore", "--urls", rootUrl };
 
         hostProcess = WikiScriptHelpers.StartProcess(
             fileName: "dotnet",
             arguments: hostArguments,
-            workdir: options.Publish ? hostRoot : sampleRoot,
+            workdir: isPublished ? hostRoot : sampleRoot,
             environment:
             [
                 new KeyValuePair<string, string?>("DOTNET_CLI_HOME", dotnetCliHome),
                 new KeyValuePair<string, string?>("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1"),
-                new KeyValuePair<string, string?>("ASPNETCORE_ENVIRONMENT", options.Publish ? "Production" : "Development"),
-                new KeyValuePair<string, string?>("DOTNET_ENVIRONMENT", options.Publish ? "Production" : "Development"),
+                new KeyValuePair<string, string?>("ASPNETCORE_ENVIRONMENT", isPublished ? "Production" : "Development"),
+                new KeyValuePair<string, string?>("DOTNET_ENVIRONMENT", isPublished ? "Production" : "Development"),
                 new KeyValuePair<string, string?>("Wiki__PathBase", normalizedPathBase)
             ],
             stdoutLogPath: stdoutLog,
@@ -190,6 +212,26 @@ try
         if (healthBody != "ok")
         {
             throw new InvalidOperationException("Unexpected /health response body: '" + healthBody + "'");
+        }
+
+        if (isPublished)
+        {
+            // A missing generated module must stay an asset 404. Returning the SPA shell here
+            // hides broken release imports and turns an observable deployment failure into HTML.
+            // 缺失生成模块必须保持 asset 404；若回退为 SPA HTML，会掩盖 release import 的部署故障。
+            using var missingModuleResponse = await WikiScriptHelpers.GetAsync(
+                rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/jazor/missing-release-module.mjs"));
+            if (missingModuleResponse.StatusCode != HttpStatusCode.NotFound)
+            {
+                throw new InvalidOperationException(
+                    "Missing release module returned HTTP " + (int)missingModuleResponse.StatusCode + " instead of 404.");
+            }
+
+            var missingModuleContentType = missingModuleResponse.Content.Headers.ContentType?.MediaType ?? string.Empty;
+            if (missingModuleContentType.Equals("text/html", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Missing release module incorrectly returned an HTML response.");
+            }
         }
 
         if (Directory.Exists(edgeUserDataRoot))
@@ -223,7 +265,7 @@ try
             failureContext: $"See logs: {edgeStdoutLog} ; {edgeStderrLog}");
         Trace("Edge CDP endpoint is ready.");
 
-        var verificationMode = options.Publish ? "production" : "development";
+        var verificationMode = isPublished ? "production" : "development";
         Trace("Starting browser verification script.");
         await WikiScriptHelpers.RunProcessAsync(
             fileName: nodeExecutable,
@@ -240,7 +282,7 @@ try
             stderrLogPath: nodeStderrLog);
         Trace("Browser verification script completed.");
 
-        Console.WriteLine(options.Publish
+        Console.WriteLine(isPublished
             ? "Wiki publish browser verification passed."
             : "Wiki browser verification passed.");
         Trace("Wiki browser verification passed.");
@@ -302,6 +344,39 @@ void Trace(string message)
     File.AppendAllText(runnerLog, line + Environment.NewLine);
 }
 
+void AssertDebugArtifacts(string artifactRoot)
+{
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs"), "emitted main module");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs.map"), "emitted main source map");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "jazor-manifest.json"), "emit manifest");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs"), "emitted wiki component module");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs.map"), "emitted wiki component source map");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-styles.mjs"), "emitted Wiki CSS module");
+}
+
+void AssertReleaseArtifacts(string artifactRoot)
+{
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js"), "production browser bundle");
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js.map"), "production browser bundle source map");
+
+    // Netpack may retain its entry helper, but the inspectable debug graph must not leak into
+    // a non-SSR release publish. That catches a configuration-only release build by mistake.
+    // Netpack 可以保留入口辅助文件，但非 SSR 的 release publish 不能泄漏可调试模块图。
+    foreach (var unexpectedPath in new[]
+    {
+        Path.Combine(artifactRoot, "main.mjs"),
+        Path.Combine(artifactRoot, "jazor-manifest.json"),
+        Path.Combine(artifactRoot, "style.mjs"),
+        Path.Combine(artifactRoot, "components")
+    })
+    {
+        if (File.Exists(unexpectedPath) || Directory.Exists(unexpectedPath))
+        {
+            throw new InvalidOperationException("Release publish unexpectedly retained debug artifact: " + unexpectedPath);
+        }
+    }
+}
+
 internal sealed record ScriptArguments
 {
     public int Port { get; init; } = 4196;
@@ -317,6 +392,10 @@ internal sealed record ScriptArguments
     public string? BaseIntermediateOutputPath { get; init; }
 
     public string? PathBase { get; init; }
+
+    public string? WikiRoot { get; init; }
+
+    public string? PublishedRoot { get; init; }
 
     public bool Build { get; init; }
 
@@ -357,6 +436,12 @@ internal sealed record ScriptArguments
                     break;
                 case "--path-base":
                     result = result with { PathBase = GetValue(args, ref index, argument) };
+                    break;
+                case "--wiki-root":
+                    result = result with { WikiRoot = GetValue(args, ref index, argument) };
+                    break;
+                case "--published-root":
+                    result = result with { PublishedRoot = GetValue(args, ref index, argument) };
                     break;
                 case "--build":
                     result = result with { Build = true };
@@ -407,6 +492,8 @@ internal sealed record ScriptArguments
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --path-base </docs>");
+        Console.WriteLine("  --wiki-root <path>");
+        Console.WriteLine("  --published-root <path>");
         Console.WriteLine("  --build");
         Console.WriteLine("  --build-local");
         Console.WriteLine("  --publish");
@@ -435,6 +522,9 @@ internal static class WikiScriptHelpers
 
         throw new InvalidOperationException("Repository root containing Jazor.slnx was not found from the current directory upward.");
     }
+
+    public static string ResolvePath(string repoRoot, string path)
+        => Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(repoRoot, path));
 
     public static string NormalizePathBase(string? pathBase)
     {
@@ -633,6 +723,16 @@ internal static class WikiScriptHelpers
         }
 
         throw new TimeoutException("Timed out waiting for " + url + "." + FormatFailureContext(failureContext));
+    }
+
+    public static async Task<HttpResponseMessage> GetAsync(string url, CancellationToken cancellationToken = default)
+    {
+        using var client = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(5)
+        };
+
+        return await client.GetAsync(url, cancellationToken);
     }
 
     public static async Task WaitForCdpReadyAsync(

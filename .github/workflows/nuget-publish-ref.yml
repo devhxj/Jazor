@@ -74,6 +74,11 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Pack packages
         shell: pwsh
         run: |
@@ -92,6 +97,16 @@ jobs:
             --package elementplus `
             --package tdesign `
             --skip-push
+
+      - name: Verify packaged Windows SPA release consumer
+        shell: pwsh
+        run: |
+          dotnet run --file ./scripts/csharp/verify-windows-spa-release.cs -- `
+            --package-source 'artifacts/packages' `
+            --skip-pack `
+            --path-base /docs `
+            --startup-timeout-seconds 60 `
+            --browser-startup-timeout-seconds 20
 
       - name: Discover package version
         id: package

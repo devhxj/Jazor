@@ -2532,7 +2532,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
         var runtimeModulePath = Path.Combine(outputRoot, "@jazor", "vue-runtime", "render-context.mjs");

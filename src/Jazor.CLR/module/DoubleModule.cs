@@ -153,12 +153,130 @@ public static class DoubleModule
 		if (mode < 0 || mode > 4)
 			throw new Error("ArgumentException: Invalid MidpointRounding value.");
 
-		// .NET skips decimal scaling once every binary64 value in the range is integral.
-		if (Math.AbsFn(value) >= 10000000000000000d)
+		return RoundBinaryCore(
+			value,
+			GetDoubleBitsCore(value),
+			52,
+			11,
+			1023,
+			-1074,
+			4503599627370496d,
+			digits,
+			mode);
+	}
+
+	internal static Number RoundSingleCore(Number value, Number digits, Number mode)
+	{
+		var singleValue = Math.FroundFn(value);
+		return Math.FroundFn(RoundBinaryCore(
+			singleValue,
+			GetSingleBitsCore(singleValue),
+			23,
+			8,
+			127,
+			-149,
+			8388608d,
+			digits,
+			mode));
+	}
+
+	private static Number RoundBinaryCore(
+		Number value,
+		BigInt bits,
+		Number fractionBitCount,
+		Number exponentBitCount,
+		Number exponentBias,
+		Number subnormalExponent,
+		Number integerBoundary,
+		Number digits,
+		Number mode)
+	{
+		if (!IsFiniteCore(value) || value == 0 || Math.AbsFn(value) >= integerBoundary)
 			return value;
 
-		var power = Math.PowFn(10, digits);
-		return RoundIntegralCore(value * power, mode) / power;
+		var exponentMask = (BigInt.One << BigIntFn(exponentBitCount)) - BigInt.One;
+		var fractionMask = (BigInt.One << BigIntFn(fractionBitCount)) - BigInt.One;
+		var exponentField = (bits >> BigIntFn(fractionBitCount)) & exponentMask;
+		var significand = bits & fractionMask;
+		var exponent = subnormalExponent;
+		if (exponentField != BigInt.Zero)
+		{
+			significand |= BigInt.One << BigIntFn(fractionBitCount);
+			exponent = NumberFn(exponentField) - exponentBias - fractionBitCount;
+		}
+
+		// Do not scale a binary float through Number arithmetic: a value below a decimal
+		// midpoint can round to the midpoint during multiplication (for example 2.675 * 100).
+		// Preserve its exact IEEE-754 fraction and compare the discarded part as integers instead.
+		// 不能用 Number 乘 10^digits：接近中点但略小的二进制值会在乘法时变成假中点。
+		// 这里保留 IEEE-754 精确尾数，以整数方式比较被丢弃的部分。
+		if (exponent + digits >= 0)
+			return value;
+
+		var numerator = significand * PowerOfTenCore(digits);
+		var denominator = BigInt.One << BigIntFn(-exponent);
+		var floor = numerator / denominator;
+		var remainder = numerator % denominator;
+		var hasRemainder = remainder != BigInt.Zero;
+		var doubledRemainder = remainder << BigInt.One;
+		var midpointComparison = doubledRemainder < denominator
+			? -1
+			: (doubledRemainder > denominator ? 1 : 0);
+		var isFloorOdd = (floor & BigInt.One) != BigInt.Zero;
+		var isNegative = value < 0;
+		if (ShouldRoundUpCore(mode, midpointComparison, isFloorOdd, hasRemainder, isNegative))
+			floor += BigInt.One;
+
+		// Decimal text lets JavaScript perform the final correctly-rounded decimal-to-binary
+		// conversion, matching the result materialization performed by .NET.
+		var rounded = NumberFn(floor.ToString() + "e-" + digits);
+		return isNegative ? -rounded : rounded;
+	}
+
+	private static BigInt GetDoubleBitsCore(Number value)
+	{
+		var buffer = new ArrayBuffer(8);
+		var view = new DataView(buffer);
+		view.SetFloat64(0, value, false);
+		return view.GetBigUint64(0, false);
+	}
+
+	private static BigInt GetSingleBitsCore(Number value)
+	{
+		var buffer = new ArrayBuffer(4);
+		var view = new DataView(buffer);
+		view.SetFloat32(0, (float)value, false);
+		return BigIntFn(view.GetUint32(0, false));
+	}
+
+	private static BigInt PowerOfTenCore(Number digits)
+	{
+		var power = BigInt.One;
+		for (var index = 0; index < digits; index++)
+			power *= BigIntFn(10);
+
+		return power;
+	}
+
+	private static bool ShouldRoundUpCore(
+		Number mode,
+		Number midpointComparison,
+		bool isFloorOdd,
+		bool hasRemainder,
+		bool isNegative)
+	{
+		if (mode == 0)
+			return midpointComparison > 0 ||
+				(hasRemainder && midpointComparison == 0 && isFloorOdd);
+		if (mode == 1)
+			return midpointComparison > 0 ||
+				(hasRemainder && midpointComparison == 0);
+		if (mode == 2)
+			return false;
+		if (mode == 3)
+			return isNegative && hasRemainder;
+
+		return !isNegative && hasRemainder;
 	}
 
 	internal static Number Ieee754RemainderCore(Number left, Number right)

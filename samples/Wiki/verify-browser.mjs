@@ -368,42 +368,63 @@ async function main() {
     }
   }
 
+  const debuggerChecks = isDevelopmentVerification
+    ? [
+      {
+        label: "main",
+        scriptPath: externalPath("/jazor/main.mjs"),
+        sourceMapPath: externalPath("/jazor/main.mjs.map"),
+        moduleFile: "main.mjs",
+        expectedSources: [
+          "AppModule.cs"
+        ],
+        expectedSourceContentMarkers: [
+          "[ECMAScriptModule(\"main.mjs\")]",
+          "public static class AppModule",
+          "app.Mount(\"#app\")"
+        ]
+      },
+      {
+        label: "wiki-home",
+        scriptPath: externalPath("/jazor/components/wiki-home.mjs"),
+        sourceMapPath: externalPath("/jazor/components/wiki-home.mjs.map"),
+        moduleFile: "components/wiki-home.mjs",
+        expectedSources: [
+          "WikiHomeModule.cs",
+          "WikiHomeModule.GettingStarted.cs",
+          "WikiHomeModule.Overview.cs"
+        ],
+        expectedSourceContentMarkers: [
+          "public static partial class WikiHomeModule",
+          "private const string GettingStartedPath = \"/guides/getting-started\";",
+          "private static IVNode OverviewBody()",
+          "private static IVNode GettingStartedBody()"
+        ]
+      }
+    ]
+    : [
+      {
+        label: "bundle",
+        scriptPath: externalPath("/jazor/bundle.js"),
+        sourceMapPath: externalPath("/jazor/bundle.js.map"),
+        moduleFile: "bundle.js",
+        expectedSources: [
+          "main.mjs",
+          "components/wiki-home.mjs",
+          "components/wiki-styles.mjs",
+          "style.mjs"
+        ],
+        expectedSourceContentMarkers: [
+          "ecmascript-style:v1",
+          "createApp("
+        ]
+      }
+    ];
+
   report.debugger = {
     sourceMaps: []
   };
-  for (const check of [
-    {
-      label: "main",
-      scriptPath: externalPath("/jazor/main.mjs"),
-      sourceMapPath: externalPath("/jazor/main.mjs.map"),
-      moduleFile: "main.mjs",
-      expectedSources: [
-        "AppModule.cs"
-      ],
-      expectedSourceContentMarkers: [
-        "[ECMAScriptModule(\"main.mjs\")]",
-        "public static class AppModule",
-        "app.Mount(\"#app\")"
-      ]
-    },
-    {
-      label: "wiki-home",
-      scriptPath: externalPath("/jazor/components/wiki-home.mjs"),
-      sourceMapPath: externalPath("/jazor/components/wiki-home.mjs.map"),
-      moduleFile: "components/wiki-home.mjs",
-      expectedSources: [
-        "WikiHomeModule.cs",
-        "WikiHomeModule.GettingStarted.cs",
-        "WikiHomeModule.Overview.cs"
-      ],
-      expectedSourceContentMarkers: [
-        "public static partial class WikiHomeModule",
-        "private const string GettingStartedPath = \"/guides/getting-started\";",
-        "private static IVNode OverviewBody()",
-        "private static IVNode GettingStartedBody()"
-      ]
-    }
-  ]) {
+  for (const check of debuggerChecks) {
     const inspectedSourceMap = await inspectSourceMap(check);
     report.debugger.sourceMaps.push(inspectedSourceMap);
 
@@ -483,6 +504,47 @@ async function main() {
   }
   if (!report.home.canonical.endsWith(externalPath("/"))) {
     failures.push(`Home page canonical URL was unexpected before SPA navigation: ${report.home.canonical}`);
+  }
+
+  await navigate(baseUrl + externalPath("/engineering/h-function-authoring"));
+  report.style = {
+    route: await evaluate("location.pathname || ''"),
+    badgeClass: await evaluate(`(function(){
+      const badge = document.querySelector('.h-function-style-badge');
+      return badge ? (badge.getAttribute('class') || '') : '';
+    })()`),
+    badgeText: await evaluate(`(function(){
+      const badge = document.querySelector('.h-function-style-badge');
+      return badge ? (badge.textContent || '').trim() : '';
+    })()`),
+    styleIdPresent: await evaluate("!!document.querySelector('style#ecmascript-style')"),
+    styleText: await evaluate(`(function(){
+      const style = document.querySelector('style#ecmascript-style');
+      return style ? (style.textContent || '') : '';
+    })()`)
+  };
+  report.style.generatedClass = (report.style.badgeClass.split(/\s+/).find(name => name.startsWith("ecs-")) || "");
+
+  if (report.style.route !== externalPath("/engineering/h-function-authoring")) {
+    failures.push(`H-function authoring route was unexpected: ${report.style.route}`);
+  }
+  if (report.style.badgeText !== "H() + ECMAScript.Style") {
+    failures.push(`H-function style badge text was unexpected: ${report.style.badgeText}`);
+  }
+  if (!report.style.generatedClass) {
+    failures.push(`H-function style badge did not receive an ecs-* class: ${report.style.badgeClass}`);
+  }
+  if (!report.style.styleIdPresent) {
+    failures.push("ECMAScript.Style did not create the managed #ecmascript-style element.");
+  }
+  if (!report.style.styleText.includes("ecmascript-style:v1")) {
+    failures.push("ECMAScript.Style managed element did not contain its version marker.");
+  }
+  if (report.style.generatedClass && !report.style.styleText.includes(`.${report.style.generatedClass}`)) {
+    failures.push(`ECMAScript.Style managed element did not contain the generated .${report.style.generatedClass} selector.`);
+  }
+  if (!/padding:4px 8px;/.test(report.style.styleText)) {
+    failures.push(`ECMAScript.Style did not emit the expected padding shorthand: ${report.style.styleText}`);
   }
 
   report.home.clickedGettingStarted = await evaluate(`(function(){

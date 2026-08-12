@@ -13,6 +13,10 @@ public static partial class WikiHomeModule
             PageSection("layout-composition", "布局组合",
             [
                 H("p", "H 函数是此处的生产表面，因为它们保持渲染结构显式，同时保持在与其余项目相同的类型化生态系统中。"),
+                H("span", new VueObject
+                {
+                    Class = "h-function-style-badge " + WikiStyleSheet.HFunctionBadge
+                }, "H() + ECMAScript.Style"),
                 CodeBlock("章节组合", """
 private static IVNode PageSection(string id, string title, IVNode[] content)
     => H("section", new VueObject { Id = id, Class = "doc-section" },

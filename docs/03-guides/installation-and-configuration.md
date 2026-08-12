@@ -23,7 +23,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.12.0" />
+  <PackageReference Include="Jazor" Version="0.13.0" />
 </ItemGroup>
 ```
 
@@ -36,8 +36,8 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.12.0" />
-    <PackageReference Include="Jazor.Vue" Version="0.12.0" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="0.13.0" />
+    <PackageReference Include="Jazor.Vue" Version="0.13.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -46,10 +46,10 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="0.12.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.12.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.12.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.12.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.13.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.13.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.13.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.13.0" />
 </ItemGroup>
 ```
 
