@@ -1,26 +1,30 @@
 namespace Jazor.AspNetCore.Dev;
 
-internal sealed class JazorDevelopmentFileSnapshotPoller : IAsyncDisposable
+/// <summary>Detects file changes when FileSystemWatcher misses editor or network-share writes.</summary>
+internal sealed class FileSnapshotPoller : IAsyncDisposable
 {
+    // Polling complements FileSystemWatcher because editor atomic writes and network shares can
+    // drop watcher events. Both paths feed the same debounce/queue pipeline.
     private readonly string _rootDirectory;
     private readonly TimeSpan _pollInterval;
     private readonly Action<IReadOnlyList<string>> _onChangedPaths;
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _pollTask;
 
-    public JazorDevelopmentFileSnapshotPoller(
+    public FileSnapshotPoller(
         string rootDirectory,
         TimeSpan pollInterval,
         Action<IReadOnlyList<string>> onChangedPaths)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
-		ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(pollInterval, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(pollInterval, TimeSpan.Zero);
 
-		_rootDirectory = Path.GetFullPath(rootDirectory);
+        _rootDirectory = Path.GetFullPath(rootDirectory);
         _pollInterval = pollInterval;
         _onChangedPaths = onChangedPaths ?? throw new ArgumentNullException(nameof(onChangedPaths));
     }
 
+    /// <summary>Starts the polling loop; later calls retain the existing loop.</summary>
     public void Start()
     {
         if (_pollTask is not null)
@@ -146,7 +150,7 @@ internal sealed class JazorDevelopmentFileSnapshotPoller : IAsyncDisposable
 
             foreach (var filePath in SafeEnumerate(() => Directory.EnumerateFiles(currentDirectory)))
             {
-                if (JazorDevelopmentFileWatchFilter.ShouldObserve(rootDirectory, filePath))
+                if (FileWatchFilter.ShouldObserve(rootDirectory, filePath))
                     yield return filePath;
             }
         }
@@ -204,7 +208,7 @@ internal sealed class JazorDevelopmentFileSnapshotPoller : IAsyncDisposable
 
     private static bool ShouldDescendIntoDirectory(string rootDirectory, string directoryPath)
     {
-        if (JazorDevelopmentFileWatchFilter.IsIgnoredDirectoryName(Path.GetFileName(directoryPath)))
+        if (FileWatchFilter.IsIgnoredDirectoryName(Path.GetFileName(directoryPath)))
             return false;
 
         try

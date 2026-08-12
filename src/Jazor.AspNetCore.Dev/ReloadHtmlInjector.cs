@@ -5,7 +5,8 @@ using Microsoft.Net.Http.Headers;
 
 namespace Jazor.AspNetCore.Dev;
 
-internal static class JazorDevelopmentHtmlInjector
+/// <summary>Injects the reload module into HTML while preserving document encoding and CSP semantics.</summary>
+internal static class ReloadHtmlInjector
 {
     private static readonly Regex ScriptNoncePattern = new(
         @"'nonce-(?<value>[^']+)'",

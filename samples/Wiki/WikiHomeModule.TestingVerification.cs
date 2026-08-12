@@ -60,14 +60,14 @@ dotnet run --file ./scripts/csharp/wiki-verify-browser.cs -- --build-local
                 H("p", "对于 `jazor.wiki`，发布就绪是操作性的。面向浏览器的外壳必须按照声明精确地构建、挂载、路由和提供预期资源。"),
                 H("ul",
                 [
-                    H("li", "构建输出必须包含 `samples/Wiki/wwwroot/jazor/main.mjs`、`components/wiki-home.mjs` 和 `jazor-manifest.json`。"),
+                    H("li", "构建输出必须包含 `samples/Wiki/jazor/main.mjs`、`components/wiki-home.mjs` 和 `jazor-manifest.json`。"),
                     H("li", "已注册文档路由必须返回 HTTP 200 并携带外壳、`#app`、`/jazor/main.mjs` 和 `System/` import-map 前缀。"),
                     H("li", "浏览器资源如 `/jazor/System/StringModule.js`、`/site.css` 和 `/favicon.svg` 必须成功解析。"),
                     H("li", "每个路由的首次 HTML 响应在 SPA 水合之前必须已携带预期的标题、描述、robots 指令、规范 URL、社交元数据和基线安全头。"),
                     H("li", "发现文档必须保持一致：`robots.txt` 必须公告 sitemap，`sitemap.xml` 必须排除工具路由如 `/search`。"),
                     H("li", "无头浏览器验证必须证明真实挂载、SPA 路由转换、搜索/未找到恢复、持久化外壳状态、复制功能、Hash 路由和移动端抽屉行为无控制台或运行时错误。"),
                     H("li", "搜索路由和未知文档路由必须发射 `noindex, nofollow`，而非静默伪装为规范页面。"),
-                    H("li", "发布验证必须证明 `wwwroot/jazor` 提供生产资源，且没有根目录阴影 `jazor/` 目录存活以覆盖该契约。")
+                    H("li", "发布验证必须证明发布根 `jazor/` 提供生产资源，且 `wwwroot/jazor` 不会作为回退或覆盖该契约。")
                 ]),
                 Callout("实用规则", "如果单元测试通过但 Wiki 冒烟契约或无头浏览器契约回归，编译器或 Emit 变更尚未准备好用于生产。")
             ])

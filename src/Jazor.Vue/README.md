@@ -23,7 +23,7 @@
 | `debug` | 模块、source map 与 manifest |
 | `release` | 生产浏览器 bundle 与 source map |
 
-`JazorDir` 默认是 `$(MSBuildProjectDirectory)\wwwroot\jazor\`。该集成不需要 `EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument` 或二次解析生成 C#；`release` 使用 Netpack 进行浏览器打包。
+`JazorDir` 默认是 `$(MSBuildProjectDirectory)\jazor\`。Web 宿主通过 `UseJazorHost()` 将它挂载为浏览器 `/jazor/*`，发布时复制到 `<publish>/jazor/`。该集成不需要 `EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument` 或二次解析生成 C#；`release` 使用 Netpack 进行浏览器打包。
 
 ## 相关文档
 

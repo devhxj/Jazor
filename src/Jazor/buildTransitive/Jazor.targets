@@ -1,4 +1,15 @@
 <Project>
+  <!--
+    JazorDir is build output, not authored content. Keep it out of the SDK default
+    items so a generated module cannot become a new dotnet watch input on the next build.
+  -->
+  <ItemGroup Condition="'$(JazorDir)' != ''">
+    <Compile Remove="$(JazorDir)**" />
+    <Content Remove="$(JazorDir)**" />
+    <EmbeddedResource Remove="$(JazorDir)**" />
+    <None Remove="$(JazorDir)**" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- The umbrella package carries Vue's runtime assets as well as its binding DLL. -->
     <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json"
@@ -109,6 +120,41 @@
           DestinationFiles="@(_JazorReleaseSsrArtifact->'$(_JazorReleaseSsrOutputDir)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
     <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; manifest materialize --manifest &quot;$(_JazorReleaseSsrOutputDir)\jazor-manifest.json&quot; --out-root &quot;$(_JazorReleaseSsrOutputDir)&quot; --mode Production @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" />
+  </Target>
+
+  <!--
+    Generated artifacts deliberately live beside the project rather than under wwwroot.
+    Publish copies that graph explicitly so Web and non-Web SDK hosts get one identical
+    /jazor layout without making the build output an authored static-file item.
+  -->
+  <Target Name="AddJazorArtifactsToPublish"
+          AfterTargets="ComputeFilesToPublish"
+          BeforeTargets="_HandleFileConflictsForPublish"
+          Condition="'$(JazorMode)' != 'none' and Exists('$(JazorDir)')">
+    <PropertyGroup>
+      <_JazorPublishRoot>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorPublishRoot>
+    </PropertyGroup>
+
+    <FindUnderPath Path="$(_JazorPublishRoot)"
+                   Files="@(ResolvedFileToPublish)"
+                   UpdateToAbsolutePaths="true">
+      <Output TaskParameter="InPath" ItemName="_JazorSdkPublishArtifact" />
+    </FindUnderPath>
+
+    <ItemGroup>
+      <!--
+        The SDK can discover JazorDir after JazorDebug/JazorRelease creates it during
+        the same publish invocation. Run before its duplicate-output check so both SDK
+        families publish exactly one copy at the intended jazor/ relative path.
+      -->
+      <!-- Remove the SDK's exact item identities; a glob remove does not reliably match its metadata-backed items. -->
+      <ResolvedFileToPublish Remove="@(_JazorSdkPublishArtifact)" />
+      <_JazorArtifactFile Include="$(_JazorPublishRoot)\**\*" />
+      <ResolvedFileToPublish Include="@(_JazorArtifactFile)">
+        <RelativePath>jazor/%(_JazorArtifactFile.RecursiveDir)%(_JazorArtifactFile.Filename)%(_JazorArtifactFile.Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
   </Target>
 
 </Project>

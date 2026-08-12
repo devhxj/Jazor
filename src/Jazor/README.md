@@ -19,7 +19,7 @@
 ```xml
 <PropertyGroup>
   <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
+  <JazorDir>$(MSBuildProjectDirectory)\jazor\</JazorDir>
 </PropertyGroup>
 ```
 
@@ -59,11 +59,11 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 ```
 
 ```csharp
-builder.Services.AddJazorSSR();
+builder.Services.AddJazorSsr();
 
 var app = builder.Build();
-app.UseStaticFiles();
-app.UseJazorSSR("components/app.mjs", new { Title = "Jazor" });
+app.UseJazorHost();
+app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 ```
 
 ASP.NET Core 持有请求管线、静态资源与响应文档，DenoHost 执行本地 Vue 服务器模块，Netpack 只负责浏览器构建。应用不需要全局 Deno、`node_modules`、CDN 或远程 import。

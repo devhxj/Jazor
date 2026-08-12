@@ -1,4 +1,3 @@
-using ECMAScript;
 using ECMAScript.Style;
 using static ECMAScript.Style.css;
 

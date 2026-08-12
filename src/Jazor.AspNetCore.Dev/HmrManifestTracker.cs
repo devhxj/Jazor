@@ -3,17 +3,18 @@ using System.Text.Json;
 namespace Jazor.AspNetCore.Dev;
 
 /// <summary>
-/// Reads provider-owned metadata from the emitted manifest and compares snapshots.
-/// Unknown providers remain valid manifest entries and conservatively fall back to a full reload.
+/// Compares provider-owned manifest snapshots and returns module updates only for verified
+/// Vue template-only changes. Missing or unknown metadata remains a conservative full reload.
 /// </summary>
-internal sealed class JazorDevelopmentHmrManifestTracker(
-    IReadOnlyList<JazorDevelopmentHmrArtifactRegistration> registrations)
+internal sealed class HmrManifestTracker(
+    IReadOnlyList<HmrArtifactRegistration> registrations)
 {
     private const string VueHmrProviderId = "jazor.vue";
 
-    private readonly IReadOnlyList<JazorDevelopmentHmrArtifactRegistration> _registrations = registrations;
-    private JazorDevelopmentHmrManifestSnapshot _previous = JazorDevelopmentHmrManifestSnapshot.Empty;
+    private readonly IReadOnlyList<HmrArtifactRegistration> _registrations = registrations;
+    private HmrManifestSnapshot _previous = HmrManifestSnapshot.Empty;
 
+    /// <summary>Captures the initial manifest baseline before file notifications are processed.</summary>
     public void Initialize()
     {
         var snapshot = ReadSnapshot();
@@ -21,14 +22,15 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
             _previous = snapshot;
     }
 
-    public JazorDevelopmentHmrDecision Evaluate(IReadOnlyList<string> changedPaths)
+    /// <summary>Classifies one observed batch as no-op, template-only update, or full reload.</summary>
+    public HmrDecision Evaluate(IReadOnlyList<string> changedPaths)
     {
         ArgumentNullException.ThrowIfNull(changedPaths);
 
         var current = ReadSnapshot();
         if (!current.IsValid)
         {
-            return JazorDevelopmentHmrDecision.FullReload(
+            return HmrDecision.FullReload(
                 "hmr-manifest-invalid:" + (current.Error ?? "unknown"));
         }
 
@@ -37,15 +39,18 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
         return decision;
     }
 
-    private JazorDevelopmentHmrManifestSnapshot ReadSnapshot()
+    private HmrManifestSnapshot ReadSnapshot()
     {
-        var entries = new Dictionary<string, JazorDevelopmentHmrManifestEntry>(StringComparer.OrdinalIgnoreCase);
+        var entries = new Dictionary<string, HmrManifestEntry>(StringComparer.OrdinalIgnoreCase);
+        var loadedManifestPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         try
         {
             foreach (var registration in _registrations)
             {
                 if (!File.Exists(registration.ManifestPath))
                     continue;
+
+                loadedManifestPaths.Add(registration.ManifestPath);
 
                 using var document = JsonDocument.Parse(File.ReadAllText(registration.ManifestPath));
                 if (document.RootElement.ValueKind != JsonValueKind.Object ||
@@ -64,7 +69,7 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
                     var contentHash = ReadRequiredString(module, "contentHash");
                     var hmr = ReadHmrMetadata(module);
                     var artifactPath = GetArtifactPath(registration.ArtifactRootPath, relativePath);
-                    var entry = new JazorDevelopmentHmrManifestEntry(
+                    var entry = new HmrManifestEntry(
                         artifactPath,
                         relativePath,
                         CombineRequestPath(registration.RequestPath, relativePath),
@@ -77,15 +82,15 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
         {
-            return JazorDevelopmentHmrManifestSnapshot.Invalid(exception.Message);
+            return HmrManifestSnapshot.Invalid(exception.Message);
         }
 
-        return JazorDevelopmentHmrManifestSnapshot.Valid(entries);
+        return HmrManifestSnapshot.Valid(entries, loadedManifestPaths);
     }
 
-    private JazorDevelopmentHmrDecision Classify(
-        JazorDevelopmentHmrManifestSnapshot previous,
-        JazorDevelopmentHmrManifestSnapshot current,
+    private HmrDecision Classify(
+        HmrManifestSnapshot previous,
+        HmrManifestSnapshot current,
         IReadOnlyList<string> changedPaths)
     {
         var changedModulePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -97,7 +102,7 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
         {
             var registration = FindRegistration(changedPath);
             if (registration is null)
-                return JazorDevelopmentHmrDecision.FullReload("hmr-unmapped-change");
+                return HmrDecision.FullReload("hmr-unmapped-change");
 
             if (string.Equals(changedPath, registration.ManifestPath, StringComparison.OrdinalIgnoreCase))
             {
@@ -109,7 +114,7 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
                 continue;
 
             if (!changedPath.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
-                return JazorDevelopmentHmrDecision.FullReload("hmr-non-module-change");
+                return HmrDecision.FullReload("hmr-non-module-change");
 
             changedModulePaths.Add(changedPath);
         }
@@ -121,33 +126,45 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
         }
 
         if (changedModulePaths.Count == 0)
-            return JazorDevelopmentHmrDecision.None();
+            return HmrDecision.None();
 
-        var updates = new List<JazorDevelopmentHmrModuleUpdate>(changedModulePaths.Count);
+        var updates = new List<HmrModuleUpdate>(changedModulePaths.Count);
         foreach (var changedModulePath in changedModulePaths.OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
         {
+            var registration = FindRegistration(changedModulePath);
+            if (registration is null)
+                return HmrDecision.FullReload("hmr-unmapped-change");
+
+            // A project can use ordinary reload before Emit has written a manifest. Do not turn
+            // that normal startup state into an opaque HMR identity failure.
+            if (!previous.HasLoadedManifest(registration.ManifestPath) &&
+                !current.HasLoadedManifest(registration.ManifestPath))
+            {
+                return HmrDecision.FullReload("hmr-manifest-unavailable");
+            }
+
             if (!previous.Entries.TryGetValue(changedModulePath, out var previousEntry) ||
                 !current.Entries.TryGetValue(changedModulePath, out var currentEntry))
             {
-                return JazorDevelopmentHmrDecision.FullReload("hmr-module-identity-unavailable");
+                return HmrDecision.FullReload("hmr-module-identity-unavailable");
             }
 
             var moduleDecision = ClassifyModule(previousEntry, currentEntry);
             if (moduleDecision.FullReloadReason is not null)
-                return JazorDevelopmentHmrDecision.FullReload(moduleDecision.FullReloadReason);
+                return HmrDecision.FullReload(moduleDecision.FullReloadReason);
 
             if (moduleDecision.Update is not null)
                 updates.Add(moduleDecision.Update);
         }
 
         return updates.Count == 0
-            ? JazorDevelopmentHmrDecision.None()
-            : JazorDevelopmentHmrDecision.ModuleUpdate(updates);
+            ? HmrDecision.None()
+            : HmrDecision.ModuleUpdate(updates);
     }
 
     private IEnumerable<string> GetManifestChangedModulePaths(
-        JazorDevelopmentHmrManifestSnapshot previous,
-        JazorDevelopmentHmrManifestSnapshot current)
+        HmrManifestSnapshot previous,
+        HmrManifestSnapshot current)
     {
         var allPaths = previous.Entries.Keys
             .Concat(current.Entries.Keys)
@@ -170,47 +187,47 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
         }
     }
 
-    private static JazorDevelopmentHmrModuleClassification ClassifyModule(
-        JazorDevelopmentHmrManifestEntry previous,
-        JazorDevelopmentHmrManifestEntry current)
+    private static HmrModuleClassification ClassifyModule(
+        HmrManifestEntry previous,
+        HmrManifestEntry current)
     {
         if (string.Equals(previous.ContentHash, current.ContentHash, StringComparison.Ordinal))
         {
             return Equals(previous.Hmr, current.Hmr)
-                ? JazorDevelopmentHmrModuleClassification.NoUpdate()
-                : JazorDevelopmentHmrModuleClassification.FullReload("hmr-content-hash-unchanged");
+                ? HmrModuleClassification.NoUpdate()
+                : HmrModuleClassification.FullReload("hmr-content-hash-unchanged");
         }
 
         if (previous.Hmr is null || current.Hmr is null)
-            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-metadata-missing");
+            return HmrModuleClassification.FullReload("hmr-metadata-missing");
 
         if (!string.Equals(previous.Hmr.ProviderId, current.Hmr.ProviderId, StringComparison.Ordinal) ||
             !string.Equals(previous.Hmr.ModuleId, current.Hmr.ModuleId, StringComparison.Ordinal))
         {
-            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-module-identity-changed");
+            return HmrModuleClassification.FullReload("hmr-module-identity-changed");
         }
 
         if (!string.Equals(current.Hmr.ProviderId, VueHmrProviderId, StringComparison.Ordinal))
-            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-provider-unsupported");
+            return HmrModuleClassification.FullReload("hmr-provider-unsupported");
 
         var previousVue = ReadVueHmrMetadata(previous.Hmr.Payload);
         var currentVue = ReadVueHmrMetadata(current.Hmr.Payload);
         if (!string.Equals(previousVue.ComponentId, currentVue.ComponentId, StringComparison.Ordinal))
-            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-module-identity-changed");
+            return HmrModuleClassification.FullReload("hmr-module-identity-changed");
 
         if (!string.Equals(previousVue.DescriptorHash, currentVue.DescriptorHash, StringComparison.Ordinal))
-            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-descriptor-changed");
+            return HmrModuleClassification.FullReload("hmr-descriptor-changed");
 
         if (!string.Equals(previousVue.LogicHash, currentVue.LogicHash, StringComparison.Ordinal))
-            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-logic-changed");
+            return HmrModuleClassification.FullReload("hmr-logic-changed");
 
         if (string.Equals(previousVue.TemplateHash, currentVue.TemplateHash, StringComparison.Ordinal))
-            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-unclassified-content-change");
+            return HmrModuleClassification.FullReload("hmr-unclassified-content-change");
 
         if (!string.Equals(currentVue.BoundaryKind, "template-only", StringComparison.Ordinal))
-            return JazorDevelopmentHmrModuleClassification.FullReload("hmr-boundary-requires-reload");
+            return HmrModuleClassification.FullReload("hmr-boundary-requires-reload");
 
-        return JazorDevelopmentHmrModuleClassification.ModuleUpdate(new JazorDevelopmentHmrModuleUpdate(
+        return HmrModuleClassification.ModuleUpdate(new HmrModuleUpdate(
             current.RelativePath,
             current.RequestUrl,
             currentVue.ComponentId,
@@ -221,13 +238,13 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
             currentVue.BoundaryKind));
     }
 
-    private JazorDevelopmentHmrArtifactRegistration? FindRegistration(string path)
+    private HmrArtifactRegistration? FindRegistration(string path)
         => _registrations
             .Where(registration => IsSamePathOrDescendant(path, registration.ArtifactRootPath))
             .OrderByDescending(static registration => registration.ArtifactRootPath.Length)
             .FirstOrDefault();
 
-    private static JazorDevelopmentHmrMetadata? ReadHmrMetadata(JsonElement module)
+    private static HmrMetadata? ReadHmrMetadata(JsonElement module)
     {
         if (!TryGetProperty(module, "hmr", out var hmr) || hmr.ValueKind == JsonValueKind.Null)
             return null;
@@ -242,25 +259,25 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
         if (string.Equals(providerId, VueHmrProviderId, StringComparison.Ordinal))
             _ = ReadVueHmrMetadata(payload);
 
-        return new JazorDevelopmentHmrMetadata(
+        return new HmrMetadata(
             providerId,
             moduleId,
             payload.GetRawText());
     }
 
-    private static JazorDevelopmentVueHmrMetadata ReadVueHmrMetadata(string payload)
+    private static VueHmrMetadata ReadVueHmrMetadata(string payload)
     {
         using var document = JsonDocument.Parse(payload);
         return ReadVueHmrMetadata(document.RootElement);
     }
 
-    private static JazorDevelopmentVueHmrMetadata ReadVueHmrMetadata(JsonElement payload)
+    private static VueHmrMetadata ReadVueHmrMetadata(JsonElement payload)
     {
         var boundaryKind = ReadRequiredString(payload, "boundaryKind");
         if (boundaryKind is not ("unknown" or "template-only" or "logic-safe" or "full-reload-required"))
             throw new InvalidOperationException("unsupported hmr boundary kind '" + boundaryKind + "'");
 
-        return new JazorDevelopmentVueHmrMetadata(
+        return new VueHmrMetadata(
             ReadRequiredString(payload, "componentId"),
             ReadRequiredString(payload, "descriptorHash"),
             ReadRequiredString(payload, "templateHash"),
@@ -334,70 +351,91 @@ internal sealed class JazorDevelopmentHmrManifestTracker(
     }
 }
 
-internal sealed record JazorDevelopmentHmrArtifactRegistration(
+/// <summary>Connects one physical artifact root, its manifest, and the corresponding browser URL root.</summary>
+internal sealed record HmrArtifactRegistration(
     string ArtifactRootPath,
     string ManifestPath,
     string RequestPath);
 
-internal sealed record JazorDevelopmentHmrManifestSnapshot(
+/// <summary>
+/// Immutable HMR baseline. Loaded manifest paths distinguish a normal pre-Emit state from an
+/// invalid manifest, which determines whether the caller can issue an ordinary full reload.
+/// </summary>
+internal sealed record HmrManifestSnapshot(
     bool IsValid,
-    IReadOnlyDictionary<string, JazorDevelopmentHmrManifestEntry> Entries,
+    IReadOnlyDictionary<string, HmrManifestEntry> Entries,
+    IReadOnlySet<string> LoadedManifestPaths,
     string? Error = null)
 {
-    public static JazorDevelopmentHmrManifestSnapshot Empty { get; } = Valid(
-        new Dictionary<string, JazorDevelopmentHmrManifestEntry>(StringComparer.OrdinalIgnoreCase));
+    public static HmrManifestSnapshot Empty { get; } = Valid(
+        new Dictionary<string, HmrManifestEntry>(StringComparer.OrdinalIgnoreCase),
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase));
 
-    public static JazorDevelopmentHmrManifestSnapshot Valid(
-        IReadOnlyDictionary<string, JazorDevelopmentHmrManifestEntry> entries)
-        => new(true, entries);
+    public static HmrManifestSnapshot Valid(
+        IReadOnlyDictionary<string, HmrManifestEntry> entries,
+        IReadOnlySet<string> loadedManifestPaths)
+        => new(true, entries, loadedManifestPaths);
 
-    public static JazorDevelopmentHmrManifestSnapshot Invalid(string error)
-        => new(false, new Dictionary<string, JazorDevelopmentHmrManifestEntry>(StringComparer.OrdinalIgnoreCase), error);
+    public static HmrManifestSnapshot Invalid(string error)
+        => new(
+            false,
+            new Dictionary<string, HmrManifestEntry>(StringComparer.OrdinalIgnoreCase),
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            error);
+
+    public bool HasLoadedManifest(string manifestPath)
+        => LoadedManifestPaths.Contains(manifestPath);
 }
 
-internal sealed record JazorDevelopmentHmrManifestEntry(
+/// <summary>Canonical manifest entry keyed by its physical artifact path for change comparison.</summary>
+internal sealed record HmrManifestEntry(
     string ArtifactPath,
     string RelativePath,
     string RequestUrl,
     string ContentHash,
-    JazorDevelopmentHmrMetadata? Hmr);
+    HmrMetadata? Hmr);
 
-internal sealed record JazorDevelopmentHmrMetadata(
+/// <summary>Keeps provider identity separate from the provider-owned JSON payload.</summary>
+internal sealed record HmrMetadata(
     string ProviderId,
     string ModuleId,
     string Payload);
 
-internal sealed record JazorDevelopmentVueHmrMetadata(
+/// <summary>Vue-specific hashes used to prove that only a template boundary changed.</summary>
+internal sealed record VueHmrMetadata(
     string ComponentId,
     string DescriptorHash,
     string TemplateHash,
     string LogicHash,
     string BoundaryKind);
 
-internal enum JazorDevelopmentHmrDecisionKind
+/// <summary>Outcome selected from a manifest comparison before any browser message is created.</summary>
+internal enum HmrDecisionKind
 {
     None,
     ModuleUpdate,
     FullReload
 }
 
-internal sealed record JazorDevelopmentHmrDecision(
-    JazorDevelopmentHmrDecisionKind Kind,
+/// <summary>Transport-neutral reload decision; the hub translates it to the stable browser protocol.</summary>
+internal sealed record HmrDecision(
+    HmrDecisionKind Kind,
     string Reason,
-    IReadOnlyList<JazorDevelopmentHmrModuleUpdate> Updates)
+    IReadOnlyList<HmrModuleUpdate> Updates)
 {
-    public static JazorDevelopmentHmrDecision None()
-        => new(JazorDevelopmentHmrDecisionKind.None, "hmr-no-effective-change", []);
+    public static HmrDecision None()
+        => new(HmrDecisionKind.None, "hmr-no-effective-change", []);
 
-    public static JazorDevelopmentHmrDecision ModuleUpdate(
-        IReadOnlyList<JazorDevelopmentHmrModuleUpdate> updates)
-        => new(JazorDevelopmentHmrDecisionKind.ModuleUpdate, "hmr-template-only", updates);
+    public static HmrDecision ModuleUpdate(
+        IReadOnlyList<HmrModuleUpdate> updates)
+        => new(HmrDecisionKind.ModuleUpdate, "hmr-template-only", updates);
 
-    public static JazorDevelopmentHmrDecision FullReload(string reason)
-        => new(JazorDevelopmentHmrDecisionKind.FullReload, reason, []);
+    public static HmrDecision FullReload(string reason)
+        => new(HmrDecisionKind.FullReload, reason, []);
 }
 
-internal sealed record JazorDevelopmentHmrModuleUpdate(
+/// <summary>Verified module replacement payload before it is projected into the browser JSON envelope.</summary>
+internal sealed record HmrModuleUpdate(
     string Path,
     string Url,
     string ComponentId,
@@ -407,16 +445,17 @@ internal sealed record JazorDevelopmentHmrModuleUpdate(
     string LogicHash,
     string BoundaryKind);
 
-internal sealed record JazorDevelopmentHmrModuleClassification(
-    JazorDevelopmentHmrModuleUpdate? Update,
+/// <summary>Per-module comparison result used while building one batch-level <see cref="HmrDecision"/>.</summary>
+internal sealed record HmrModuleClassification(
+    HmrModuleUpdate? Update,
     string? FullReloadReason)
 {
-    public static JazorDevelopmentHmrModuleClassification NoUpdate()
+    public static HmrModuleClassification NoUpdate()
         => new(null, null);
 
-    public static JazorDevelopmentHmrModuleClassification ModuleUpdate(JazorDevelopmentHmrModuleUpdate update)
+    public static HmrModuleClassification ModuleUpdate(HmrModuleUpdate update)
         => new(update, null);
 
-    public static JazorDevelopmentHmrModuleClassification FullReload(string reason)
+    public static HmrModuleClassification FullReload(string reason)
         => new(null, reason);
 }

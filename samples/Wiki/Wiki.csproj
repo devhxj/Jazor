@@ -10,10 +10,10 @@
   <Import Project="..\..\src\Jazor\buildTransitive\Jazor.props" />
 
   <ItemGroup>
-    <Compile Remove="wwwroot\jazor\**" />
-    <Content Remove="wwwroot\jazor\**" />
-    <EmbeddedResource Remove="wwwroot\jazor\**" />
-    <None Remove="wwwroot\jazor\**" />
+    <Compile Remove="jazor\**" />
+    <Content Remove="jazor\**" />
+    <EmbeddedResource Remove="jazor\**" />
+    <None Remove="jazor\**" />
   </ItemGroup>
 
   <ItemGroup>

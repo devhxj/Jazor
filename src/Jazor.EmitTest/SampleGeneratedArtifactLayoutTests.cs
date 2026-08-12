@@ -7,9 +7,9 @@ public sealed class SampleGeneratedArtifactLayoutTests
 {
     private static readonly string[] SampleManifestRelativePaths =
     [
-        Path.Combine("samples", "ECMAScript.Pinia.Counter", "Pinia.Counter.Host", "wwwroot", "jazor", "jazor-manifest.json"),
-        Path.Combine("samples", "ECMAScript.VueRoute.MemorySmoke", "VueRoute.MemorySmoke.Host", "wwwroot", "jazor", "jazor-manifest.json"),
-        Path.Combine("samples", "Jazor.MultiProject", "Sample.Host", "wwwroot", "jazor", "jazor-manifest.json")
+        Path.Combine("samples", "ECMAScript.Pinia.Counter", "Pinia.Counter.Host", "jazor", "jazor-manifest.json"),
+        Path.Combine("samples", "ECMAScript.VueRoute.MemorySmoke", "VueRoute.MemorySmoke.Host", "jazor", "jazor-manifest.json"),
+        Path.Combine("samples", "Jazor.MultiProject", "Sample.Host", "jazor", "jazor-manifest.json")
     ];
 
     [TestMethod]

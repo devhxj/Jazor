@@ -8,7 +8,8 @@ using Microsoft.Net.Http.Headers;
 
 namespace Jazor.AspNetCore;
 
-public static class JazorApplicationBuilderExtensions
+/// <summary>Provides Jazor host middleware for artifacts, static assets, security headers, and SPA fallbacks.</summary>
+public static class JazorExtensions
 {
     private const string SourceMapContentType = "application/json";
     private const string MutableAssetCacheControl = "no-cache, must-revalidate";
@@ -21,12 +22,14 @@ public static class JazorApplicationBuilderExtensions
     private const string PermissionsPolicyHeaderName = "Permissions-Policy";
     private const string XPermittedCrossDomainPoliciesHeaderName = "X-Permitted-Cross-Domain-Policies";
 
+    /// <summary>Registers Jazor security headers and generated/browser asset hosting.</summary>
     public static IApplicationBuilder UseJazorHost(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
         return app.UseJazorHost(configure: null);
     }
 
+    /// <summary>Registers Jazor security headers and generated/browser asset hosting.</summary>
     public static IApplicationBuilder UseJazorHost(
         this IApplicationBuilder app,
         Action<JazorHostOptions>? configure)
@@ -37,16 +40,18 @@ public static class JazorApplicationBuilderExtensions
         configure?.Invoke(options);
 
         app.UseJazorSecurityHeaders(options.SecurityHeaders);
-        app.UseJazorWebAssets(options.WebAssets);
+        app.UseJazorAssets(options.Assets);
         return app;
     }
 
+    /// <summary>Applies Jazor's default response security headers.</summary>
     public static IApplicationBuilder UseJazorSecurityHeaders(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
         return app.UseJazorSecurityHeaders(configure: null);
     }
 
+    /// <summary>Applies configured Jazor response security headers.</summary>
     public static IApplicationBuilder UseJazorSecurityHeaders(
         this IApplicationBuilder app,
         Action<JazorSecurityHeaderOptions>? configure)
@@ -58,6 +63,7 @@ public static class JazorApplicationBuilderExtensions
         return app.UseJazorSecurityHeaders(options);
     }
 
+    /// <summary>Applies the supplied Jazor response security headers.</summary>
     public static IApplicationBuilder UseJazorSecurityHeaders(
         this IApplicationBuilder app,
         JazorSecurityHeaderOptions options)
@@ -80,12 +86,14 @@ public static class JazorApplicationBuilderExtensions
         return app;
     }
 
+    /// <summary>Serves static files with Jazor's content-type and cache defaults.</summary>
     public static IApplicationBuilder UseJazorStaticFiles(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
         return app.UseJazorStaticFiles(new StaticFileOptions());
     }
 
+    /// <summary>Serves configured static files with Jazor's content-type and cache defaults.</summary>
     public static IApplicationBuilder UseJazorStaticFiles(
         this IApplicationBuilder app,
         Action<StaticFileOptions> configure)
@@ -98,6 +106,7 @@ public static class JazorApplicationBuilderExtensions
         return app.UseJazorStaticFiles(options);
     }
 
+    /// <summary>Serves static files using the supplied options and Jazor response defaults.</summary>
     public static IApplicationBuilder UseJazorStaticFiles(
         this IApplicationBuilder app,
         StaticFileOptions options)
@@ -111,36 +120,39 @@ public static class JazorApplicationBuilderExtensions
         return app;
     }
 
-    public static IApplicationBuilder UseJazorDevelopmentAssets(this IApplicationBuilder app)
+    /// <summary>Mounts the generated content-root artifact graph at <c>/jazor</c>.</summary>
+    public static IApplicationBuilder UseJazorArtifacts(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
-        return app.UseJazorDevelopmentAssets(configure: (Action<JazorDevelopmentAssetOptions>?)null);
+        return app.UseJazorArtifacts(configure: (Action<JazorArtifactOptions>?)null);
     }
 
-    public static IApplicationBuilder UseJazorDevelopmentAssets(
+    /// <summary>Mounts the generated content-root artifact graph with configurable discovery.</summary>
+    public static IApplicationBuilder UseJazorArtifacts(
         this IApplicationBuilder app,
-        Action<JazorDevelopmentAssetOptions>? configure)
+        Action<JazorArtifactOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var options = new JazorDevelopmentAssetOptions();
+        var options = new JazorArtifactOptions();
         configure?.Invoke(options);
-        return app.UseJazorDevelopmentAssets(options);
+        return app.UseJazorArtifacts(options);
     }
 
-    public static IApplicationBuilder UseJazorDevelopmentAssets(
+    /// <summary>Mounts the generated content-root artifact graph using the supplied options.</summary>
+    public static IApplicationBuilder UseJazorArtifacts(
         this IApplicationBuilder app,
-        JazorDevelopmentAssetOptions options)
+        JazorArtifactOptions options)
     {
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(options);
 
-        if (!TryCreateMountContext(app, options, out var mountContext))
+        if (!TryCreateArtifactMount(app, options, out var mountContext))
             return app;
 
         var staticFileOptions = new StaticFileOptions
         {
-            FileProvider = new PhysicalFileProvider(mountContext.OutputRootPath),
+            FileProvider = new PhysicalFileProvider(mountContext.RootPath),
             RequestPath = mountContext.RequestPath,
             ContentTypeProvider = CreateContentTypeProvider(),
             OnPrepareResponse = CreateStaticAssetResponseHandler(mountContext.OnPrepareResponse, mountContext.ImmutableCachePathPrefixes)
@@ -148,8 +160,10 @@ public static class JazorApplicationBuilderExtensions
 
         app.UseJazorStaticFiles(staticFileOptions);
 
-        if (mountContext.ReturnNotFoundWhenMountedPathMisses)
+        if (mountContext.ReturnNotFoundOnMiss)
         {
+            // A missing generated module is an asset failure, not an SPA navigation.
+            // End the branch here so a later fallback cannot turn it into HTML 200.
             app.Use(async (context, next) =>
             {
                 if (context.Request.Path.StartsWithSegments(mountContext.RequestPath))
@@ -165,34 +179,59 @@ public static class JazorApplicationBuilderExtensions
         return app;
     }
 
-    public static IApplicationBuilder UseJazorWebAssets(this IApplicationBuilder app)
+    /// <summary>Serves generated Jazor artifacts followed by ordinary web-root assets.</summary>
+    public static IApplicationBuilder UseJazorAssets(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
-        return app.UseJazorWebAssets(configure: null);
+        return app.UseJazorAssets(configure: null);
     }
 
-    public static IApplicationBuilder UseJazorWebAssets(
+    /// <summary>Serves generated Jazor artifacts and web-root assets with configuration.</summary>
+    public static IApplicationBuilder UseJazorAssets(
         this IApplicationBuilder app,
-        Action<JazorWebAssetOptions>? configure)
+        Action<JazorAssetOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var options = new JazorWebAssetOptions();
+        var options = new JazorAssetOptions();
         configure?.Invoke(options);
-        return app.UseJazorWebAssets(options);
+        return app.UseJazorAssets(options);
     }
 
-    public static IApplicationBuilder UseJazorWebAssets(
+    /// <summary>Serves generated Jazor artifacts and web-root assets using the supplied options.</summary>
+    public static IApplicationBuilder UseJazorAssets(
         this IApplicationBuilder app,
-        JazorWebAssetOptions options)
+        JazorAssetOptions options)
     {
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(options);
 
+        // /jazor is a dedicated generated-artifact mount. It must run before the
+        // generic web-root provider so a stale wwwroot/jazor directory cannot shadow
+        // the graph emitted to the project or publish root.
+        if (options.ServeArtifacts)
+        {
+            app.UseJazorArtifacts(artifactOptions =>
+            {
+                artifactOptions.ProbeRelativePaths.Clear();
+                foreach (var probeRelativePath in options.ArtifactProbeRelativePaths)
+                    artifactOptions.ProbeRelativePaths.Add(probeRelativePath);
+
+                if (options.OnPrepareResponse is not null)
+                    artifactOptions.OnPrepareResponse = options.OnPrepareResponse;
+
+                artifactOptions.ImmutableCachePathPrefixes.Clear();
+                foreach (var prefix in options.ImmutableCachePathPrefixes)
+                    artifactOptions.ImmutableCachePathPrefixes.Add(prefix);
+
+                options.ConfigureArtifacts?.Invoke(artifactOptions);
+            });
+        }
+
         if (options.ServeDefaultFiles)
             app.UseDefaultFiles();
 
-        if (options.ServeWebRootFiles)
+        if (options.ServeWebRoot)
         {
             var staticFileOptions = new StaticFileOptions();
             staticFileOptions.OnPrepareResponse = CreateStaticAssetResponseHandler(options.OnPrepareResponse, options.ImmutableCachePathPrefixes);
@@ -200,28 +239,10 @@ public static class JazorApplicationBuilderExtensions
             app.UseJazorStaticFiles(staticFileOptions);
         }
 
-        if (options.ServeDevelopmentAssets)
-        {
-            app.UseJazorDevelopmentAssets(developmentOptions =>
-            {
-                developmentOptions.DevelopmentOutputProbeRelativePaths.Clear();
-                foreach (var probeRelativePath in options.DevelopmentOutputProbeRelativePaths)
-                    developmentOptions.DevelopmentOutputProbeRelativePaths.Add(probeRelativePath);
-
-                if (options.OnPrepareResponse is not null)
-                    developmentOptions.OnPrepareResponse = options.OnPrepareResponse;
-
-                developmentOptions.ImmutableCachePathPrefixes.Clear();
-                foreach (var prefix in options.ImmutableCachePathPrefixes)
-                    developmentOptions.ImmutableCachePathPrefixes.Add(prefix);
-
-                options.ConfigureDevelopmentAssets?.Invoke(developmentOptions);
-            });
-        }
-
         return app;
     }
 
+    /// <summary>Writes custom SPA HTML for eligible, otherwise-unhandled navigation requests.</summary>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         Func<HttpContext, CancellationToken, Task> writeHtml)
@@ -232,6 +253,7 @@ public static class JazorApplicationBuilderExtensions
         return app.UseJazorSpaFallback(writeHtml, configure: null);
     }
 
+    /// <summary>Uses a web-root HTML file as the SPA fallback document.</summary>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         string webRootPagePath)
@@ -240,6 +262,7 @@ public static class JazorApplicationBuilderExtensions
         return app.UseJazorSpaFallback(webRootPagePath, configure: null);
     }
 
+    /// <summary>Uses a configured web-root HTML file as the SPA fallback document.</summary>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         string webRootPagePath,
@@ -250,6 +273,7 @@ public static class JazorApplicationBuilderExtensions
         return app.UseJazorSpaFallback(writeHtml, configure);
     }
 
+    /// <summary>Uses a web-root HTML file and the supplied SPA fallback options.</summary>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         string webRootPagePath,
@@ -260,6 +284,7 @@ public static class JazorApplicationBuilderExtensions
         return app.UseJazorSpaFallback(writeHtml, options);
     }
 
+    /// <summary>Writes custom SPA HTML with configurable eligibility rules.</summary>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         Func<HttpContext, CancellationToken, Task> writeHtml,
@@ -273,6 +298,7 @@ public static class JazorApplicationBuilderExtensions
         return app.UseJazorSpaFallback(writeHtml, options);
     }
 
+    /// <summary>Writes custom SPA HTML using the supplied eligibility rules.</summary>
     public static IApplicationBuilder UseJazorSpaFallback(
         this IApplicationBuilder app,
         Func<HttpContext, CancellationToken, Task> writeHtml,
@@ -307,41 +333,41 @@ public static class JazorApplicationBuilderExtensions
         return app;
     }
 
-    private static bool TryCreateMountContext(
+    private static bool TryCreateArtifactMount(
         IApplicationBuilder app,
-        JazorDevelopmentAssetOptions options,
-        out JazorDevelopmentAssetMountContext mountContext)
+        JazorArtifactOptions options,
+        out ArtifactMount mountContext)
     {
         var environment = app.ApplicationServices.GetService<IWebHostEnvironment>()
-            ?? throw new InvalidOperationException("Jazor development assets require IWebHostEnvironment from the ASP.NET Core host.");
+            ?? throw new InvalidOperationException("Jazor artifacts require IWebHostEnvironment from the ASP.NET Core host.");
 
         var requestPath = NormalizeRequestPath(options.RequestPath);
-        var outputRootPath = ResolveDevelopmentOutputRootPath(environment.ContentRootPath, options);
-        if (!HasDevelopmentOutputProbe(outputRootPath, options.DevelopmentOutputProbeRelativePaths))
+        var rootPath = ResolveArtifactRootPath(environment.ContentRootPath, options);
+        if (!HasArtifactProbe(rootPath, options.ProbeRelativePaths))
         {
             mountContext = null!;
             return false;
         }
 
-        mountContext = new JazorDevelopmentAssetMountContext(
+        mountContext = new ArtifactMount(
             requestPath,
-            outputRootPath,
+            rootPath,
             options.OnPrepareResponse,
             options.ImmutableCachePathPrefixes.ToArray(),
-            options.ReturnNotFoundWhenMountedPathMisses);
+            options.ReturnNotFoundOnMiss);
         return true;
     }
 
     private static PathString NormalizeRequestPath(PathString requestPath)
     {
         if (!requestPath.HasValue || string.IsNullOrWhiteSpace(requestPath.Value))
-            throw new ArgumentException("Jazor development asset request path is required.", nameof(requestPath));
+            throw new ArgumentException("Jazor artifact request path is required.", nameof(requestPath));
 
         if (!requestPath.Value.StartsWith('/'))
-            throw new ArgumentException("Jazor development asset request path must start with '/'.", nameof(requestPath));
+            throw new ArgumentException("Jazor artifact request path must start with '/'.", nameof(requestPath));
 
         if (string.Equals(requestPath.Value, "/", StringComparison.Ordinal))
-            throw new ArgumentException("Jazor development asset request path cannot be the application root.", nameof(requestPath));
+            throw new ArgumentException("Jazor artifact request path cannot be the application root.", nameof(requestPath));
 
         return requestPath;
     }
@@ -532,47 +558,47 @@ public static class JazorApplicationBuilderExtensions
         return new SourceMapAwareContentTypeProvider(innerProvider);
     }
 
-    private static string ResolveDevelopmentOutputRootPath(string contentRootPath, JazorDevelopmentAssetOptions options)
+    private static string ResolveArtifactRootPath(string contentRootPath, JazorArtifactOptions options)
     {
-        var configuredPath = options.DevelopmentOutputRootPath;
+        var configuredPath = options.RootPath;
         if (!string.IsNullOrWhiteSpace(configuredPath))
             return GetFullPath(contentRootPath, configuredPath);
 
-        if (string.IsNullOrWhiteSpace(options.DevelopmentOutputDirectoryName))
-            throw new ArgumentException("Jazor development output directory name is required when no explicit root path is configured.", nameof(options));
+        if (string.IsNullOrWhiteSpace(options.DirectoryName))
+            throw new ArgumentException("Jazor artifact directory name is required when no explicit root path is configured.", nameof(options));
 
-        return Path.GetFullPath(Path.Combine(contentRootPath, options.DevelopmentOutputDirectoryName));
+        return Path.GetFullPath(Path.Combine(contentRootPath, options.DirectoryName));
     }
 
-    private static bool HasDevelopmentOutputProbe(string outputRootPath, IEnumerable<string> probeRelativePaths)
+    private static bool HasArtifactProbe(string rootPath, IEnumerable<string> probeRelativePaths)
     {
         var sawProbe = false;
 
         foreach (var probeRelativePath in probeRelativePaths)
         {
             sawProbe = true;
-            var probePath = ResolveProbePath(outputRootPath, probeRelativePath);
+            var probePath = ResolveProbePath(rootPath, probeRelativePath);
             if (File.Exists(probePath))
                 return true;
         }
 
         if (!sawProbe)
-            throw new ArgumentException("At least one Jazor development output probe path is required.", nameof(probeRelativePaths));
+            throw new ArgumentException("At least one Jazor artifact probe path is required.", nameof(probeRelativePaths));
 
         return false;
     }
 
-    private static string ResolveProbePath(string outputRootPath, string probeRelativePath)
+    private static string ResolveProbePath(string rootPath, string probeRelativePath)
     {
         if (string.IsNullOrWhiteSpace(probeRelativePath))
-            throw new ArgumentException("Jazor development output probe path cannot be empty.", nameof(probeRelativePath));
+            throw new ArgumentException("Jazor artifact probe path cannot be empty.", nameof(probeRelativePath));
 
         if (Path.IsPathRooted(probeRelativePath))
-            throw new ArgumentException("Jazor development output probe path must be relative.", nameof(probeRelativePath));
+            throw new ArgumentException("Jazor artifact probe path must be relative.", nameof(probeRelativePath));
 
-        var candidatePath = Path.GetFullPath(Path.Combine(outputRootPath, probeRelativePath));
-        if (!IsPathWithinRoot(outputRootPath, candidatePath))
-            throw new ArgumentException("Jazor development output probe path must stay within the configured output root.", nameof(probeRelativePath));
+        var candidatePath = Path.GetFullPath(Path.Combine(rootPath, probeRelativePath));
+        if (!IsPathWithinRoot(rootPath, candidatePath))
+            throw new ArgumentException("Jazor artifact probe path must stay within the configured root.", nameof(probeRelativePath));
 
         return candidatePath;
     }
@@ -610,12 +636,12 @@ public static class JazorApplicationBuilderExtensions
         }
     }
 
-    private sealed record JazorDevelopmentAssetMountContext(
+    private sealed record ArtifactMount(
         PathString RequestPath,
-        string OutputRootPath,
+        string RootPath,
         Action<StaticFileResponseContext>? OnPrepareResponse,
         IReadOnlyList<string> ImmutableCachePathPrefixes,
-        bool ReturnNotFoundWhenMountedPathMisses);
+        bool ReturnNotFoundOnMiss);
 
     private sealed record JazorSpaFallbackContext(
         IReadOnlyList<PathString> ExcludedPathPrefixes,

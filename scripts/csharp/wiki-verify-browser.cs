@@ -36,8 +36,8 @@ var effectiveConfiguration = options.Publish && !options.ConfigurationWasExplici
     : options.Configuration;
 
 string hostRoot = sampleRoot;
-string jazorRoot = Path.Combine(sampleRoot, "wwwroot", "jazor");
-string? publishShadowJazorRoot = null;
+string jazorRoot = Path.Combine(sampleRoot, "jazor");
+
 Trace("Starting wiki browser verification.");
 
 try
@@ -78,8 +78,7 @@ try
         Trace("Publish completed.");
 
         hostRoot = publishRoot;
-        jazorRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
-        publishShadowJazorRoot = Path.Combine(hostRoot, "jazor");
+        jazorRoot = Path.Combine(hostRoot, "jazor");
     }
     else if (options.BuildLocal)
     {
@@ -144,9 +143,9 @@ try
         Trace("Wiki build completed.");
     }
 
-    if (publishShadowJazorRoot is not null && Directory.Exists(publishShadowJazorRoot))
+    if (options.Publish && !Directory.Exists(jazorRoot))
     {
-        throw new InvalidOperationException("Unexpected publish shadow directory: " + publishShadowJazorRoot + ". Publish output must serve /jazor only from wwwroot/jazor.");
+        throw new InvalidOperationException("Published Jazor artifacts were not copied to: " + jazorRoot);
     }
 
     WikiScriptHelpers.EnsureFileExists(Path.Combine(jazorRoot, "main.mjs"), "emitted main module");

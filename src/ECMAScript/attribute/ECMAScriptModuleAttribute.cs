@@ -3,14 +3,16 @@ using System.Runtime.Versioning;
 namespace ECMAScript;
 
 /// <summary>
-/// 用于标记类使用 ECMAScript 语法校验
+/// Marks a type whose declaration is emitted as an ECMAScript module artifact.
+/// 标记其声明会作为 ECMAScript 模块产物发出的类型。
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 [SupportedOSPlatform("browser")]
 public sealed class ECMAScriptModuleAttribute : Attribute
 {
     /// <summary>
-    /// 目标类映射的 ECMAScript module 文件路径（就是最终生成到什么路径）
+    /// Gets the output module specifier represented by the marked type.
+    /// 获取被标记类型所表示的输出模块 specifier。
     /// </summary>
     public string? Export { get; }
 
@@ -20,9 +22,10 @@ public sealed class ECMAScriptModuleAttribute : Attribute
     }
 
     /// <summary>
-    /// 指示该类是否为原生 ECMAScript 语法
+    /// Marks a type that is emitted into the supplied ECMAScript module specifier.
+    /// 标记类型会被发射到指定的 ECMAScript 模块 specifier。
     /// </summary>
-    /// <param name="export">该类映射的 ECMAScript module 文件路径</param>
+    /// <param name="export">Output module specifier. 输出模块 specifier。</param>
     public ECMAScriptModuleAttribute(string export)
     {
         Export = export;

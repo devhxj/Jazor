@@ -18,7 +18,7 @@
 dotnet build samples/Jazor.MultiProject/Sample.Host/Sample.Host.csproj
 ```
 
-生成模块位于 `Sample.Host/wwwroot/jazor/`。
+生成模块位于 `Sample.Host/jazor/`；Web 宿主可将其挂载到浏览器 `/jazor/*`，发布时复制到 `<publish>/jazor/`。
 
 使用当前仓库的本地包进行验证：
 
@@ -34,7 +34,7 @@ dotnet run --file samples/Jazor.MultiProject/build-local.cs
 dotnet run --file samples/Jazor.MultiProject/build-local.cs -- --bundle
 ```
 
-本示例的 bundle 位于 `Sample.Host/wwwroot/jazor/bundle.js`，并导出 host 的 `boot` 入口。
+本示例的 bundle 位于 `Sample.Host/jazor/bundle.js`，并导出 host 的 `boot` 入口。
 
 ## 相关文档
 

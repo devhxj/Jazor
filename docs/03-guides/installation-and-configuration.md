@@ -23,7 +23,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.11.0" />
+  <PackageReference Include="Jazor" Version="0.12.0" />
 </ItemGroup>
 ```
 
@@ -36,8 +36,8 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.11.0" />
-    <PackageReference Include="Jazor.Vue" Version="0.11.0" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="0.12.0" />
+    <PackageReference Include="Jazor.Vue" Version="0.12.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -46,10 +46,10 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="0.11.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.11.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.11.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.11.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.12.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.12.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.12.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.12.0" />
 </ItemGroup>
 ```
 
@@ -60,17 +60,34 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 ```xml
 <PropertyGroup>
   <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
+  <JazorDir>$(MSBuildProjectDirectory)\jazor\</JazorDir>
 </PropertyGroup>
 ```
 
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
 | `JazorMode` | `none` | `none` 不输出；`debug` 输出模块、source map 和 manifest；`release` 输出生产浏览器包 |
-| `JazorDir` | `$(MSBuildProjectDirectory)\wwwroot\jazor\` | debug 模块或 release bundle 的输出目录 |
+| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | debug 模块或 release bundle 的输出目录；发布时复制到 `<publish>/jazor/` |
 | `JazorSSR` | `false` | 启用受支持 SSR 时保留服务器渲染需要的原始模块图 |
 
 `debug` 与 `release` 是互斥输出模式。`release` 通过内置 Netpack 路径完成浏览器打包；不要求应用自行维护 `node_modules` 或 CDN import。
+
+## 从 0.11 升级
+
+`0.12.0` 将默认输出从 `wwwroot/jazor/` 移到项目根 `jazor/`。将已有生成物、手工检查脚本和自定义部署复制规则一并更新；不要保留 `wwwroot/jazor/` 作为回退目录。`UseJazorHost()` 会优先从项目根或发布根的 `jazor/` 提供 `/jazor/*`，发布时目标会显式复制到 `<publish>/jazor/`。
+
+| 旧 API | 新 API |
+| --- | --- |
+| `AddJazorSSR()` / `UseJazorSSR()` | `AddJazorSsr()` / `UseJazorSsr()` |
+| `AddJazorDevelopmentReload()` / `UseJazorDevelopmentReload()` | `AddJazorReload()` / `UseJazorReload()` |
+| `UseJazorDevelopmentAssets()` | `UseJazorArtifacts()` |
+| `UseJazorWebAssets()` | `UseJazorAssets()` |
+| `JazorDevelopmentAssetOptions` / `JazorWebAssetOptions` | `JazorArtifactOptions` / `JazorAssetOptions` |
+| `JazorDevelopmentReloadOptions` / `JazorDevelopmentHmrModuleMapping` | `JazorReloadOptions` / `JazorHmrMapping` |
+
+开发时使用 `dotnet watch run` 让宿主重新构建；`AddJazorReload()` 与 `UseJazorReload()` 默认观察项目根 `jazor/` 和 `wwwroot/`。生成输出被排除在 MSBuild 的输入项外，避免生成模块自身触发下一次编译；Jazor reload 服务在构建完成后观察这些输出并选择模板热更新或整页刷新。
+
+`ECMAScript.Style` 的 DSL 应使用 `lower_snake_case`，例如 CSS 声明使用 `background_color`。它会生成 CSS `background-color`；WebIDL 生成的 DOM 对象则继续按规范使用 `backgroundColor`。这是两个独立的 C# 表面，不会发生自动大小写转换；`CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 和 `CssOptions` 等 CLR 模型保持 PascalCase，生成 CSS、`style.mjs` 以及浏览器 HMR 协议不变。
 
 ## 启用 SSR
 
@@ -86,11 +103,11 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 随后在应用启动代码中注册并使用 SSR 服务：
 
 ```csharp
-builder.Services.AddJazorSSR();
+builder.Services.AddJazorSsr();
 
 var app = builder.Build();
-app.UseStaticFiles();
-app.UseJazorSSR("components/app.mjs", new { Title = "Jazor" });
+app.UseJazorHost();
+app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 ```
 
 ASP.NET Core 负责路由、静态文件与响应；DenoHost 执行本地 Vue 服务器模块；Netpack 负责浏览器 bundle。SSR 不自动传递 Vue server-prefetch 状态，应用应把需要共享的状态显式放入 props 或自己的 payload。

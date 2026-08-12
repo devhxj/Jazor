@@ -26,7 +26,7 @@ public static partial class WikiHomeModule
                 H("ul",
                 [
                     H("li", "在 `WikiHomeModule.*.cs`、`Program.cs`、`AppModule.cs`、`host/index.template.html` 和 `site.css` 中编写内容。"),
-                    H("li", "不要将 `samples/Wiki/wwwroot/jazor/main.mjs`、`components/wiki-home.mjs` 或发射的 manifest 文件手工维护为行为的主要来源。"),
+                    H("li", "不要将 `samples/Wiki/jazor/main.mjs`、`components/wiki-home.mjs` 或发射的 manifest 文件手工维护为行为的主要来源。"),
                     H("li", "如果发射输出因源码变更而改变，审查生成的差异并保持与导致变更的源码变更同步。")
                 ])
             ]),
@@ -42,9 +42,9 @@ Author here:
   samples/Wiki/wwwroot/site.css
 
 Review output here:
-samples/Wiki/wwwroot/jazor/main.mjs
-samples/Wiki/wwwroot/jazor/components/wiki-home.mjs
-samples/Wiki/wwwroot/jazor/jazor-manifest.json
+samples/Wiki/jazor/main.mjs
+samples/Wiki/jazor/components/wiki-home.mjs
+samples/Wiki/jazor/jazor-manifest.json
 """),
                 H("p", "这种拆分使维护者基于源码工作，同时仍强制审查浏览器将实际执行的内容。")
             ]),

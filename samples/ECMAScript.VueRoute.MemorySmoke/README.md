@@ -20,7 +20,7 @@ dotnet run --file samples/ECMAScript.VueRoute.MemorySmoke/build-local.cs
 dotnet run --file samples/ECMAScript.VueRoute.MemorySmoke/verify-smoke.cs -- -Configuration Release
 ```
 
-smoke 默认输出到仓库 `.tmp/sample-smoke/`，不依赖固定的 `wwwroot/jazor` 路径。
+smoke 默认输出到仓库 `.tmp/sample-smoke/`，不依赖固定的项目根 `jazor/` 路径。
 
 如需单独检查 consumer：
 

@@ -23,30 +23,30 @@ Published output must follow this layout:
 <deploy-dir>/
   Wiki.dll
   Wiki.exe
+  jazor/
+    main.mjs
+    main.mjs.map
+    jazor-manifest.json
+    components/
+      wiki-home.mjs
+      wiki-home.mjs.map
+    System/
+      <CLR runtime modules>
   wwwroot/
     site.css
     favicon.svg
     vendor/
       vue@3.5.16.mjs
-    jazor/
-      main.mjs
-      main.mjs.map
-      jazor-manifest.json
-      components/
-        wiki-home.mjs
-        wiki-home.mjs.map
-      System/
-        <CLR runtime modules>
 ```
 
 ## Key Invariants
 
 The following invariants are enforced by `wiki-verify-smoke.cs --publish`:
 
-1. `/jazor/*` must only be served from `wwwroot/jazor/`, never from a shadow `<deploy-dir>/jazor/` at the publish root
-2. `jazor-manifest.json` must exist under `wwwroot/jazor/`
-3. `main.mjs` and `components/wiki-home.mjs` must exist under `wwwroot/jazor/`
-4. `<deploy-dir>/jazor/` (shadow root) must not exist after publish
+1. `/jazor/*` must resolve from `<deploy-dir>/jazor/` through the explicit Jazor artifact mount
+2. `jazor-manifest.json` must exist under `<deploy-dir>/jazor/`
+3. `main.mjs` and `components/wiki-home.mjs` must exist under `<deploy-dir>/jazor/`
+4. `wwwroot/jazor/` must not be used as a fallback or shadow the generated artifact graph
 5. `/vendor/vue@3.5.16.mjs` must exist and be servable
 6. Registered docs routes must return HTTP 200 with route-correct first-response metadata and the SPA shell
 7. Search routes are utility surfaces, so they must emit `noindex, nofollow` and must not appear in `sitemap.xml`

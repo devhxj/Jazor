@@ -12,11 +12,11 @@ public static partial class WikiHomeModule
         [
             PageSection("build-output", "构建输出",
             [
-                H("p", "Wiki 现在先将静态 ESM 模块发射到项目本地 `jazor/` 目录，然后在发布时将相同输出物化到 `wwwroot/jazor` 用于生产托管。"),
+                H("p", "Wiki 先将静态 ESM 模块发射到项目本地 `jazor/` 目录，再在发布时复制到发布根同名目录，由显式 Jazor 挂载提供。"),
                 CodeBlock("关键制品", """
-samples/Wiki/wwwroot/jazor/main.mjs
-samples/Wiki/wwwroot/jazor/components/wiki-home.mjs
-samples/Wiki/wwwroot/jazor/jazor-manifest.json
+samples/Wiki/jazor/main.mjs
+samples/Wiki/jazor/components/wiki-home.mjs
+samples/Wiki/jazor/jazor-manifest.json
 """)
             ]),
             PageSection("route-fallback", "路由回退",
@@ -25,7 +25,7 @@ samples/Wiki/wwwroot/jazor/jazor-manifest.json
                 H("ul",
                 [
                     H("li", "在开发环境中，`/jazor/*` 在查询 web 根目录之前从显式的项目本地发射挂载点解析。"),
-                    H("li", "在发布输出中，`/jazor/*` 通过正常静态托管从 `wwwroot/jazor` 解析。"),
+                    H("li", "在发布输出中，`/jazor/*` 由显式挂载从发布根 `jazor/` 解析。"),
                     H("li", "未知文档路径仍然回退到前端入口页面，以便外壳可以建议恢复路由。"),
                     H("li", "首个 HTML 响应在客户端水合之前即携带路由正确的 `<title>`、描述、规范 URL、Open Graph 标签和 Twitter 标签。"),
                     H("li", "工具路由如 `/search` 刻意发射为 `noindex, nofollow`，而 `sitemap.xml` 仅列出规范内容页面。"),
@@ -45,7 +45,7 @@ dotnet run --file .\scripts\csharp\wiki-serve.cs -- --publish
                 H("ul",
                 [
                     H("li", "本地冒烟证明开发挂载从项目本地发射目录提供 `/jazor/*`。"),
-                    H("li", "发布冒烟证明生产从 `wwwroot/jazor` 提供 `/jazor/*`，没有根目录阴影 `jazor/` 目录覆盖它，且首次响应元数据、robots 指令、sitemap 内容和安全头保持正确。"),
+                    H("li", "发布冒烟证明生产从发布根 `jazor/` 提供 `/jazor/*`，`wwwroot/jazor` 不会覆盖它，且首次响应元数据、robots 指令、sitemap 内容和安全头保持正确。"),
                     H("li", "浏览器验证证明挂载的外壳在 SPA 导航和有状态交互后仍匹配首次响应契约。"),
                     H("li", "发布预览启动实际的发布宿主，使手动浏览器检查可以使用与生产部署相同的目录形状。")
                 ]),

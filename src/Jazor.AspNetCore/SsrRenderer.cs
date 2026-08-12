@@ -1,5 +1,4 @@
 using DenoHost.Core;
-using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -7,10 +6,8 @@ using System.Text.Json.Serialization;
 
 namespace Jazor.AspNetCore;
 
-/// <summary>
-/// Runs one generated Vue root inside a fresh DenoHost-managed Deno process.
-/// </summary>
-internal sealed class JazorSSRRenderer : IJazorSSRRenderer
+/// <summary>Runs one generated Vue root inside a fresh DenoHost-managed Deno process.</summary>
+internal sealed class SsrRenderer : IJazorSsrRenderer
 {
     private const string RunnerResourceName = "Jazor.AspNetCore.Runtime.ssr-runner.mjs";
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
@@ -19,34 +16,32 @@ internal sealed class JazorSSRRenderer : IJazorSSRRenderer
         Encoder = JavaScriptEncoder.Default
     };
 
-    private readonly JazorSSRArtifactLocator _artifacts;
-    private readonly JazorSSROptions _options;
+    private readonly SsrArtifactLocator _artifactLocator;
     private readonly object _runnerGate = new();
     private string? _preparedRunnerRoot;
     private string? _preparedRunnerPath;
 
-    public JazorSSRRenderer(
-        JazorSSRArtifactLocator artifacts,
-        IOptions<JazorSSROptions> options)
+    public SsrRenderer(SsrArtifactLocator artifactLocator)
     {
-        _artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _artifactLocator = artifactLocator ?? throw new ArgumentNullException(nameof(artifactLocator));
     }
 
-    public async Task<JazorSSRRenderResult> RenderAsync(
-        JazorSSRRequest request,
+    /// <inheritdoc />
+    public async Task<JazorSsrRenderResult> RenderAsync(
+        JazorSsrRequest request,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var artifacts = _artifacts.Resolve();
-        var modulePath = JazorSSRArtifactLocator.NormalizeRelativePath(request.ModulePath, "module path");
+        var artifactGraph = _artifactLocator.Resolve();
+        var modulePath = SsrArtifactLocator.NormalizeRelativePath(request.ModulePath, "module path");
         var serializedProps = JsonSerializer.Serialize(request.Props, JsonOptions);
         using var propsDocument = JsonDocument.Parse(serializedProps);
         var executionPayload = JsonSerializer.Serialize(
             new SsrExecutionRequest(modulePath, propsDocument.RootElement),
             JsonOptions);
-        var runnerPath = EnsureRunner(artifacts.RootPath);
+        var runnerPath = EnsureRunner(artifactGraph.RootPath);
+        // The request payload is process-local so concurrent SSR calls cannot overwrite props.
         var requestPath = Path.Combine(
             Path.GetDirectoryName(runnerPath)!,
             "ssr-request-" + Guid.NewGuid().ToString("N") + ".json");
@@ -56,7 +51,7 @@ internal sealed class JazorSSRRenderer : IJazorSSRRenderer
         {
             await File.WriteAllTextAsync(requestPath, executionPayload, Utf8WithoutBom, cancellationToken)
                 .ConfigureAwait(false);
-            output = await ExecuteAsync(artifacts, runnerPath, requestPath, cancellationToken)
+            output = await ExecuteAsync(artifactGraph, runnerPath, requestPath, cancellationToken)
                 .ConfigureAwait(false);
         }
         finally
@@ -73,11 +68,11 @@ internal sealed class JazorSSRRenderer : IJazorSSRRenderer
             throw new InvalidOperationException("Jazor SSR runner returned an invalid response payload.");
         }
 
-        return new JazorSSRRenderResult(modulePath, html, serializedProps);
+        return new JazorSsrRenderResult(modulePath, html, serializedProps);
     }
 
     private async Task<string> ExecuteAsync(
-        JazorSSRArtifacts artifacts,
+        SsrArtifacts artifactGraph,
         string runnerPath,
         string requestPath,
         CancellationToken cancellationToken)
@@ -87,7 +82,7 @@ internal sealed class JazorSSRRenderer : IJazorSSRRenderer
         using var process = new DenoProcess(
             new DenoExecuteBaseOptions
             {
-                WorkingDirectory = artifacts.RootPath
+                WorkingDirectory = artifactGraph.RootPath
             },
             [
                 "run",
@@ -95,9 +90,9 @@ internal sealed class JazorSSRRenderer : IJazorSSRRenderer
                 "--no-npm",
                 "--no-remote",
                 "--no-prompt",
-                "--allow-read=" + artifacts.RootPath,
+                "--allow-read=" + artifactGraph.RootPath,
                 "--import-map",
-                artifacts.SsrImportMapPath,
+                artifactGraph.SsrImportMapPath,
                 runnerPath,
                 requestPath
             ]);
@@ -137,6 +132,7 @@ internal sealed class JazorSSRRenderer : IJazorSSRRenderer
             var runnerPath = Path.Combine(artifactRoot, "@jazor", "ssr-runner.mjs");
             var runnerSource = ReadRunnerSource();
             Directory.CreateDirectory(Path.GetDirectoryName(runnerPath)!);
+            // The runner is packaged with this assembly; rewrite only when an upgraded host changed it.
             if (!File.Exists(runnerPath) || !string.Equals(File.ReadAllText(runnerPath), runnerSource, StringComparison.Ordinal))
                 File.WriteAllText(runnerPath, runnerSource, Utf8WithoutBom);
 
@@ -148,7 +144,7 @@ internal sealed class JazorSSRRenderer : IJazorSSRRenderer
 
     private static string ReadRunnerSource()
     {
-        var assembly = typeof(JazorSSRRenderer).Assembly;
+        var assembly = typeof(SsrRenderer).Assembly;
         using var stream = assembly.GetManifestResourceStream(RunnerResourceName)
             ?? throw new InvalidOperationException("Jazor SSR runner resource was not embedded in Jazor.AspNetCore.");
         using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);

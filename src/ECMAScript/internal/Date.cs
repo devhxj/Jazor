@@ -3,32 +3,41 @@
 /// <summary>
 /// JavaScript <c>Date</c> runtime host.
 /// Deliberately omits CLR comparison and formatting interfaces so the public surface stays close to JavaScript.
+/// JavaScript <c>Date</c> 运行时宿主。刻意省略 CLR 比较与格式化接口，使公开表面保持接近 JavaScript。
 /// </summary>
 [ECMAScript]
 [Description("@#Date")]
 /// <remarks>
 /// Date 使用 JavaScript 的时间戳、时区和非法日期规则；它不是 System.DateTime 的透明替代品。
 /// 需要 tick、DateOnly 或 DateTimeOffset 语义时，应使用相应 CLR runtime module 的 carrier。
+/// Date uses JavaScript timestamp, time-zone, and invalid-date rules; it is not a transparent <c>System.DateTime</c> replacement.
+/// For ticks, DateOnly, or DateTimeOffset semantics, use the appropriate CLR runtime-module carrier.
 /// </remarks>
 public sealed class Date
 {
 	/// <summary>
 	/// JavaScript <c>Date.prototype</c> object.
 	/// Exposing this on the constructor host keeps the public surface aligned with the runtime host shape.
+	/// JavaScript <c>Date.prototype</c> 对象；暴露在构造器宿主上以对齐运行时形状。
 	/// </summary>
 	[Description("@#prototype")]
 	public extern static Date Prototype { get; }
 
+	/// <summary>Creates a date for the current JavaScript runtime time. 创建表示 JavaScript 运行时当前时间的 Date。</summary>
 	public extern Date();
 
+	/// <summary>Creates a date from milliseconds since the Unix epoch. 从 Unix epoch 起的毫秒数创建 Date。</summary>
 	public extern Date(Number value);
 
+	/// <summary>Parses a date string using JavaScript <c>Date</c> parsing rules. 按 JavaScript <c>Date</c> 解析规则从字符串创建 Date。</summary>
 	public extern Date(string dateString);
 
+	/// <summary>Creates a local-time date from calendar fields; month is zero-based and overflow is normalized by JavaScript. 从本地时间日历字段创建 Date；month 从 0 开始，溢出由 JavaScript 归一化。</summary>
 	public extern Date(Number year, Number month, Number? day = default, Number? hours = default, Number? minutes = default, Number? seconds = default, Number? milliseconds = default);
 
 	/// <summary>
 	/// Returns a string representation of a date. The format of the string depends on the locale.
+	/// 返回日期的 JavaScript 默认字符串表示，格式由运行时与时区决定。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#toString")]
@@ -36,6 +45,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Returns a date as a string value.
+	/// 返回本地日期部分的 JavaScript 文本表示。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#toDateString")]
@@ -43,6 +53,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Returns a time as a string value.
+	/// 返回本地时间部分的 JavaScript 文本表示。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#toTimeString")]
@@ -50,6 +61,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Returns a value as a string value appropriate to the host environment's current locale.
+	/// 使用宿主环境当前 locale 返回本地日期时间文本。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#toLocaleString")]
@@ -57,6 +69,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Returns a date as a string value appropriate to the host environment's current locale.
+	/// 使用宿主环境当前 locale 返回本地日期文本。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#toLocaleDateString")]
@@ -64,6 +77,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Returns a time as a string value appropriate to the host environment's current locale.
+	/// 使用宿主环境当前 locale 返回本地时间文本。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#toLocaleTimeString")]
@@ -71,6 +85,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC.
+	/// 返回自 1970-01-01 UTC 午夜起的毫秒时间戳；非法 Date 返回 JavaScript <c>NaN</c>。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#valueOf")]
@@ -78,6 +93,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC.
+	/// 返回自 1970-01-01 UTC 午夜起的毫秒时间戳；与 <see cref="ValueOf"/> 相同。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getTime")]
@@ -85,6 +101,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the year, using local time.
+	/// 使用本地时区获取完整年份。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getFullYear")]
@@ -93,12 +110,14 @@ public sealed class Date
 	/// <summary>
 	/// Legacy JavaScript year getter.
 	/// This remains exposed because many runtimes still provide <c>Date.prototype.getYear</c> for web compatibility.
+	/// 遗留 JavaScript 年份 getter；为 Web 兼容保留 <c>Date.prototype.getYear</c>，不应视为完整年份 API。
 	/// </summary>
 	[Description("@#getYear")]
 	public extern Number GetYear();
 
 	/// <summary>
 	/// Gets the year using Universal Coordinated Time (UTC).
+	/// 使用 UTC 获取完整年份。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getUTCFullYear")]
@@ -106,6 +125,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the month, using local time.
+	/// 使用本地时区获取月份，返回值从 0 开始（0 为一月）。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getMonth")]
@@ -113,6 +133,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the month of a Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 获取月份，返回值从 0 开始（0 为一月）。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getUTCMonth")]
@@ -120,6 +141,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the day-of-the-month, using local time.
+	/// 使用本地时区获取一个月中的日期，范围通常为 1 至 31。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getDate")]
@@ -127,6 +149,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the day of the month using Universal Coordinated Time (UTC).
+	/// 使用 UTC 获取一个月中的日期，范围通常为 1 至 31。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getUTCDate")]
@@ -134,6 +157,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the day of the week, using local time.
+	/// 使用本地时区获取星期，返回值从 0 开始（0 为星期日）。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getDay")]
@@ -141,6 +165,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the day of the week using Universal Coordinated Time (UTC).
+	/// 使用 UTC 获取星期，返回值从 0 开始（0 为星期日）。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getUTCDay")]
@@ -148,6 +173,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the hours in a date, using local time.
+	/// 使用本地时区获取小时，通常范围为 0 至 23。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getHours")]
@@ -155,6 +181,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the hours value in a Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 获取小时，通常范围为 0 至 23。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getUTCHours")]
@@ -162,6 +189,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the minutes of a Date object, using local time.
+	/// 使用本地时区获取分钟，通常范围为 0 至 59。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getMinutes")]
@@ -169,6 +197,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the minutes of a Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 获取分钟，通常范围为 0 至 59。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getUTCMinutes")]
@@ -176,6 +205,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the seconds of a Date object, using local time.
+	/// 使用本地时区获取秒，通常范围为 0 至 59。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getSeconds")]
@@ -183,6 +213,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the seconds of a Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 获取秒，通常范围为 0 至 59。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getUTCSeconds")]
@@ -190,6 +221,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the milliseconds of a Date, using local time.
+	/// 使用本地时区获取毫秒，通常范围为 0 至 999。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getMilliseconds")]
@@ -197,6 +229,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the milliseconds of a Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 获取毫秒，通常范围为 0 至 999。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getUTCMilliseconds")]
@@ -204,6 +237,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Gets the difference in minutes between Universal Coordinated Time (UTC) and the time on the local computer.
+	/// 返回 UTC 与本地时间的分钟偏移，符号遵循 JavaScript <c>getTimezoneOffset</c>（UTC 减本地时间）。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#getTimezoneOffset")]
@@ -211,6 +245,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the date and time value in the Date object.
+	/// 设置自 Unix epoch 起的毫秒时间戳并返回更新后的时间值；非法值会使 Date 变为 invalid date。
 	/// </summary>
 	/// <param name="time">A numeric value representing the number of elapsed milliseconds since midnight, January 1, 1970 GMT.</param>
 	/// <returns></returns>
@@ -219,6 +254,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the milliseconds value in the Date object using local time.
+	/// 使用本地时间设置毫秒部分；越界值按 JavaScript 日期归一化规则进位或借位。
 	/// </summary>
 	/// <param name="ms">A numeric value equal to the millisecond value.</param>
 	/// <returns></returns>
@@ -227,6 +263,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the milliseconds value in the Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 设置毫秒部分；越界值按 JavaScript 日期归一化规则进位或借位。
 	/// </summary>
 	/// <param name="ms">A numeric value equal to the millisecond value.</param>
 	/// <returns></returns>
@@ -235,6 +272,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the seconds value in the Date object using local time.
+	/// 使用本地时间设置秒及可选毫秒；越界值按 JavaScript 日期归一化规则处理。
 	/// </summary>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
@@ -244,6 +282,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the seconds value in the Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 设置秒及可选毫秒；越界值按 JavaScript 日期归一化规则处理。
 	/// </summary>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
 	/// <param name="ms">A numeric value equal to the milliseconds value.</param>
@@ -253,6 +292,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the minutes value in the Date object using local time.
+	/// 使用本地时间设置分钟及可选秒/毫秒；越界值按 JavaScript 日期归一化规则处理。
 	/// </summary>
 	/// <param name="min">A numeric value equal to the minutes value.</param>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
@@ -263,6 +303,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the minutes value in the Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 设置分钟及可选秒/毫秒；越界值按 JavaScript 日期归一化规则处理。
 	/// </summary>
 	/// <param name="min">A numeric value equal to the minutes value.</param>
 	/// <param name="sec">A numeric value equal to the seconds value.</param>
@@ -273,6 +314,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the hour value in the Date object using local time.
+	/// 使用本地时间设置小时及可选分钟/秒/毫秒；越界值按 JavaScript 日期归一化规则处理。
 	/// </summary>
 	/// <param name="hours">A numeric value equal to the hours value.</param>
 	/// <param name="min">A numeric value equal to the minutes value.</param>
@@ -284,6 +326,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the hours value in the Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 设置小时及可选分钟/秒/毫秒；越界值按 JavaScript 日期归一化规则处理。
 	/// </summary>
 	/// <param name="hours">A numeric value equal to the hours value.</param>
 	/// <param name="min">A numeric value equal to the minutes value.</param>
@@ -295,6 +338,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the numeric day-of-the-month value of the Date object using local time.
+	/// 使用本地时间设置一个月中的日期；越界日期会跨月归一化。
 	/// </summary>
 	/// <param name="date">A numeric value equal to the day of the month.</param>
 	/// <returns></returns>
@@ -303,6 +347,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the numeric day of the month in the Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 设置一个月中的日期；越界日期会跨月归一化。
 	/// </summary>
 	/// <param name="date">A numeric value equal to the day of the month.</param>
 	/// <returns></returns>
@@ -311,6 +356,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the month value in the Date object using local time.
+	/// 使用本地时间设置月份及可选日期；月份从 0 开始，越界月份会跨年归一化。
 	/// </summary>
 	/// <param name="month">A numeric value equal to the month. The value for January is 0, and other month values follow consecutively.</param>
 	/// <param name="date">A numeric value representing the day of the month. If this value is not supplied, the value from a call to the getDate method is used.</param>
@@ -320,6 +366,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the month value in the Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 设置月份及可选日期；月份从 0 开始，越界月份会跨年归一化。
 	/// </summary>
 	/// <param name="month">A numeric value equal to the month. The value for January is 0, and other month values follow consecutively.</param>
 	/// <param name="date">A numeric value representing the day of the month. If it is not supplied, the value from a call to the getUTCDate method is used.</param>
@@ -329,6 +376,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Sets the year of the Date object using local time.
+	/// 使用本地时间设置完整年份及可选月份/日期；输入字段按 JavaScript 规则归一化。
 	/// </summary>
 	/// <param name="year">A numeric value for the year.</param>
 	/// <param name="month">A zero-based numeric value for the month (0 for January, 11 for December). Must be specified if numDate is specified.</param>
@@ -340,12 +388,14 @@ public sealed class Date
 	/// <summary>
 	/// Legacy JavaScript year setter.
 	/// This remains exposed because many runtimes still provide <c>Date.prototype.setYear</c> for web compatibility.
+	/// 遗留 JavaScript 年份 setter；为 Web 兼容保留，不应替代 <see cref="SetFullYear"/>。
 	/// </summary>
 	[Description("@#setYear")]
 	public extern Number SetYear(Number year);
 
 	/// <summary>
 	/// Sets the year value in the Date object using Universal Coordinated Time (UTC).
+	/// 使用 UTC 设置完整年份及可选月份/日期；输入字段按 JavaScript 规则归一化。
 	/// </summary>
 	/// <param name="year">A numeric value equal to the year.</param>
 	/// <param name="month">A numeric value equal to the month. The value for January is 0, and other month values follow consecutively. Must be supplied if numDate is supplied.</param>
@@ -356,6 +406,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Returns a date converted to a string using Universal Coordinated Time (UTC).
+	/// 返回 RFC 风格的 UTC 日期文本，直接映射 JavaScript <c>Date.prototype.toUTCString</c>。
 	/// </summary>
 	/// <returns></returns>
 	[Description("@#toUTCString")]
@@ -364,12 +415,14 @@ public sealed class Date
 	/// <summary>
 	/// Legacy JavaScript alias for <see cref="ToUTCString"/>.
 	/// This stays exposed because browsers and JavaScript runtimes still provide <c>Date.prototype.toGMTString</c>.
+	/// <see cref="ToUTCString"/> 的遗留 JavaScript 别名，为浏览器兼容保留 <c>Date.prototype.toGMTString</c>。
 	/// </summary>
 	[Description("@#toGMTString")]
 	public extern string ToGMTString();
 
 	/// <summary>
 	/// Returns a date as a string value in ISO format.
+	/// 返回 ISO 8601 UTC 文本；invalid date 时 JavaScript 抛出 RangeError，本投影以 <see cref="InvalidOperationException"/> 表达。
 	/// </summary>
 	/// <returns></returns>
 	/// <exception cref="InvalidOperationException"></exception>
@@ -379,6 +432,7 @@ public sealed class Date
 	/// <summary>
 	/// Hidden protocol bridge for JavaScript <c>Date.prototype[@@toPrimitive]</c>.
 	/// The runtime may produce either a string or a number depending on the supplied hint, so the bridge stays union-shaped.
+	/// 面向 JavaScript <c>Date.prototype[@@toPrimitive]</c> 的隐藏协议桥接；结果会依 hint 为字符串或 Number，故保持 union 形状。
 	/// </summary>
 	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 	[Description("@#@@toPrimitive")]
@@ -387,6 +441,7 @@ public sealed class Date
 	/// <summary>
 	/// Used by <c>JSON.stringify</c> to transform the date for JSON serialization.
 	/// Nullable is used because JavaScript returns <c>null</c> when the date is invalid.
+	/// 供 <c>JSON.stringify</c> 序列化日期；invalid date 时 JavaScript 返回 <c>null</c>，因此结果可空。
 	/// </summary>
 	/// <param name="key"></param>
 	/// <returns></returns>
@@ -395,6 +450,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Parses a string containing a date, and returns the number of milliseconds between that date and midnight, January 1, 1970.
+	/// 按 JavaScript <c>Date.parse</c> 规则解析日期字符串，返回自 Unix epoch 起的毫秒数；失败时返回 <c>NaN</c>。
 	/// </summary>
 	/// <param name="s">A date string</param>
 	/// <returns></returns>
@@ -403,6 +459,7 @@ public sealed class Date
 
 	/// <summary>
 	/// Returns the number of milliseconds between midnight, January 1, 1970 Universal Coordinated Time (UTC) (or GMT) and the specified date.
+	/// 根据 UTC 日历字段返回自 Unix epoch 起的毫秒数；monthIndex 从 0 开始，溢出字段按 JavaScript 归一化。
 	/// </summary>
 	/// <param name="year">The full year designation is required for cross-century date accuracy. If year is between 0 and 99 is used, then year is assumed to be 1900 + year.</param>
 	/// <param name="monthIndex">The month as a number between 0 and 11 (January to December).</param>
@@ -418,16 +475,21 @@ public sealed class Date
 	/// <summary>
 	/// Returns the number of milliseconds elapsed since midnight, January 1, 1970 UTC.
 	/// This is the C# host projection of JavaScript <c>Date.now()</c>.
+	/// 返回当前 JavaScript 运行时自 Unix epoch 起的毫秒数，是 <c>Date.now()</c> 的 C# 宿主投影。
 	/// </summary>
 	[Description("@#now")]
 	public extern static Number Now();
 
+	/// <summary>Projects a Date to its JavaScript millisecond time value. 将 Date 投影为 JavaScript 毫秒时间值。</summary>
 	public extern static implicit operator Number(Date date);
 
+	/// <summary>Projects a Date through its JavaScript default string conversion. 通过 JavaScript 默认字符串转换投影 Date。</summary>
 	public extern static implicit operator string(Date value);
 
+	/// <summary>Creates a Date from JavaScript epoch milliseconds. 从 JavaScript epoch 毫秒数创建 Date。</summary>
 	public extern static implicit operator Date(Number value);
 
+	/// <summary>Creates a Date using JavaScript date-string parsing. 使用 JavaScript 日期字符串解析创建 Date。</summary>
 	public extern static implicit operator Date(string value);
 
 	public extern static bool operator ==(Date left, Date right);

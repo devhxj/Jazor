@@ -74,7 +74,7 @@ public sealed class LegacyRazorVueContractRetirementTests
         var props = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.props"));
 
         StringAssert.Contains(props, "<JazorMode Condition=\"'$(JazorMode)' == ''\">none</JazorMode>", StringComparison.Ordinal);
-        StringAssert.Contains(props, "<JazorDir Condition=\"'$(JazorDir)' == ''\">$(MSBuildProjectDirectory)\\wwwroot\\jazor\\</JazorDir>", StringComparison.Ordinal);
+        StringAssert.Contains(props, "<JazorDir Condition=\"'$(JazorDir)' == ''\">$(MSBuildProjectDirectory)\\jazor\\</JazorDir>", StringComparison.Ordinal);
         Assert.IsFalse(props.Contains("JazorTool", StringComparison.Ordinal), props);
         StringAssert.Contains(targets, "toolchain build --manifest", StringComparison.Ordinal);
         Assert.IsFalse(targets.Contains("--toolchain", StringComparison.Ordinal), targets);

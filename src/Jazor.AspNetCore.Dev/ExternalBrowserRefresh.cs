@@ -1,11 +1,13 @@
 namespace Jazor.AspNetCore.Dev;
 
-internal static class JazorDevelopmentExternalBrowserRefreshDetector
+/// <summary>Detects the environment markers emitted by ASP.NET Core browser refresh tooling.</summary>
+internal static class ExternalBrowserRefresh
 {
     private const string BrowserToolsVariableName = "__ASPNETCORE_BROWSER_TOOLS";
     private const string AutoReloadEndpointVariableName = "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT";
     private const string AutoReloadKeyVariableName = "ASPNETCORE_AUTO_RELOAD_WS_KEY";
 
+    /// <summary>Returns whether the supplied environment lookup indicates an active external refresh transport.</summary>
     public static bool IsActive(Func<string, string?> getEnvironmentVariable)
     {
         ArgumentNullException.ThrowIfNull(getEnvironmentVariable);

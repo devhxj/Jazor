@@ -4,12 +4,22 @@
 
 ## 2026-08-12
 
-- Element Plus bindings now ship the local `2.14.4` runtime, stylesheet, license, manifest, and regenerated authoring contracts. The update includes typed `ElTransfer.VirtualScroll` and `ElTransfer.ItemSize` parameters.
-- `Jazor.Analyzer` now reports unsupported concrete external types earlier when they appear in generic containers, ECMAScript interface or delegate signatures, and runtime type filters such as `is`, pattern matching, `switch`, and `catch`.
+### Jazor 0.12.0
+
+- Generated Jazor artifacts now default to the project-root `jazor/` directory instead of `wwwroot/jazor/`. `debug` continues to emit modules, source maps, and `jazor-manifest.json`; `release` continues to emit the browser bundle, and SSR release builds retain the raw module graph they require.
+- `dotnet publish` now copies the generated graph explicitly to `<publish>/jazor/` for both Web SDK and non-Web SDK hosts. `UseJazorHost()` mounts the project or publish `jazor/` directory at the existing browser URL `/jazor/*` before ordinary web-root files, so a stale `wwwroot/jazor/` directory cannot shadow generated assets. There is intentionally no `wwwroot/jazor/` fallback: move checked-in or custom artifacts to the new root, or configure an explicit artifact root.
+- Development reload is now configured through `AddJazorReload()` and `UseJazorReload()`. Its defaults observe both `jazor/` and `wwwroot/`, map `jazor/` to `/jazor`, and keep generated artifacts out of MSBuild's normal watch inputs to avoid rebuild loops. Use `dotnet watch run` as the development entry point when Jazor artifacts should rebuild and refresh; the reload service observes the emitted graph after the build completes.
+- ASP.NET Core authoring APIs now use concise, consistent names: `AddJazorSSR` / `UseJazorSSR` become `AddJazorSsr` / `UseJazorSsr`; `AddJazorDevelopmentReload` / `UseJazorDevelopmentReload` become `AddJazorReload` / `UseJazorReload`; `UseJazorDevelopmentAssets` and `UseJazorWebAssets` become `UseJazorArtifacts` and `UseJazorAssets`. Their option models are likewise shortened to `JazorArtifactOptions`, `JazorAssetOptions`, `JazorSsrOptions`, `JazorReloadOptions`, and `JazorHmrMapping`. Host, SSR, and reload extension implementation types are now `JazorExtensions`, `JazorSsrExtensions`, and `JazorReloadExtensions` rather than receiver-type-heavy names.
+- The browser-facing HMR ABI is unchanged: `/@jazor/client`, `/@jazor/reload`, `JazorHmr`, module-update messages, and the generated `/jazor/*` URLs remain stable. Existing browser bootstraps do not need a casing or protocol migration.
+- `ECMAScript.Style` uses CSS-facing `lower_snake_case` for generated declaration properties, `css` facade members and tokens, and rule members such as `additional` and `children`. CSS models and configuration records such as `CssRule`, `CssDeclarations`, `CssAtRule`, `CssShadow`, `CssChild`, and `CssOptions` remain PascalCase. A CSS declaration such as `background_color` serializes as `background-color`, while generated WebIDL members retain their native DOM spelling such as `backgroundColor`; no implicit casing bridge is introduced at that API boundary. Generated CSS and the `style.mjs` export ABI remain unchanged.
 - `Jazor.Analyzer` now reports contradictory `Description("@#...")` and `ECMAScriptName` metadata, plus duplicate final JavaScript names in module exports, generated runtime classes, and structural-record object keys.
 - External component wrappers now share the framework-neutral `LibraryComponentAttribute` contract. `Jazor.Analyzer` no longer special-cases Vue metadata, while `VueLibraryComponentAttribute` remains a compatible Vue-specific derived attribute.
-- `ECMAScript.Style` now uses `lower_snake_case` for generated CSS declaration properties, `css` facade functions/tokens, and rule structural members such as `additional` and `children`. CLR data/configuration models remain PascalCase, while generated CSS and the `style.mjs` JavaScript export ABI remain stable. `px(8) | px(12)` now creates a typed two-side padding shorthand and `px(1) | solid` remains a typed border shorthand.
 - Local package builds now use NuGet's standard `$version$` nuspec token, keeping custom-nuspec package output discovery compatible with the current .NET 11 preview SDK.
+
+### Jazor 0.11.0
+
+- Element Plus bindings now ship the local `2.14.4` runtime, stylesheet, license, manifest, and regenerated authoring contracts. The update includes typed `ElTransfer.VirtualScroll` and `ElTransfer.ItemSize` parameters.
+- `Jazor.Analyzer` now reports unsupported concrete external types earlier when they appear in generic containers, ECMAScript interface or delegate signatures, and runtime type filters such as `is`, pattern matching, `switch`, and `catch`.
 
 ## 2026-08-11
 

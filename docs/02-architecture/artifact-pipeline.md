@@ -23,7 +23,7 @@
 | `debug` | 写入可检查的模块、外部 source map 与 `jazor-manifest.json` |
 | `release` | 先在中间目录物化，再通过固定 Netpack 路径生成浏览器 bundle |
 
-`JazorDir` 默认指向 `$(MSBuildProjectDirectory)\wwwroot\jazor\`。应用启用 `JazorSSR=true` 时，release 产物还会保留用于服务器渲染的原始模块图；该图与优化后的浏览器 bundle 分开维护。
+`JazorDir` 默认指向 `$(MSBuildProjectDirectory)\jazor\`。Web 宿主通过 `UseJazorHost()` 将该目录挂载到浏览器 `/jazor/*`；发布目标显式复制它到 `<publish>/jazor/`，因此 Web 与非 Web SDK 宿主得到相同的发布布局。应用启用 `JazorSSR=true` 时，release 产物还会保留用于服务器渲染的原始模块图；该图与优化后的浏览器 bundle 分开维护。
 
 ## 确定性与清理
 

@@ -330,7 +330,7 @@ public sealed class SdkIntegrationTests
             ["build", projectPath, .. commonArguments, "-p:JazorMode=debug"]);
         Assert.AreEqual(0, debugBuild.ExitCode, debugBuild.ToString());
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(projectRoot, "jazor");
         var runtimePath = Path.Combine(outputRoot, "style.mjs");
         var runtimeMapPath = runtimePath + ".map";
         var appPath = Path.Combine(outputRoot, "app.mjs");
@@ -405,8 +405,8 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
         var hostRoot = Path.Combine(workspace.SampleRoot, "Sample.Host");
-        var debugManifestPath = Path.Combine(hostRoot, "wwwroot", "jazor", "jazor-manifest.json");
-        var bundlePath = Path.Combine(hostRoot, "wwwroot", "jazor", "bundle.js");
+        var debugManifestPath = Path.Combine(hostRoot, "jazor", "jazor-manifest.json");
+        var bundlePath = Path.Combine(hostRoot, "jazor", "bundle.js");
 
         Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
         Assert.IsFalse(
@@ -448,7 +448,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var browserRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var browserRoot = Path.Combine(projectRoot, "jazor");
         var ssrRoot = Path.Combine(browserRoot, "ssr");
         Assert.IsTrue(File.Exists(Path.Combine(browserRoot, "bundle.js")), "Release browser bundle was not generated.");
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "jazor-manifest.json")), "SSR application manifest was not generated.");
@@ -498,7 +498,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, publish.ExitCode, publish.ToString());
 
-        var publishedSsrRoot = Path.Combine(publishOutputRoot, "wwwroot", "jazor", "ssr");
+        var publishedSsrRoot = Path.Combine(publishOutputRoot, "jazor", "ssr");
         Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "host", "app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "importmap.json")));
@@ -571,7 +571,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var outputRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(hostRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         if (!File.Exists(manifestPath))
         {
@@ -761,7 +761,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var outputRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(hostRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
 
@@ -1064,7 +1064,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var outputRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(hostRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
@@ -1258,7 +1258,7 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
-    public async Task Build_LocalJazorPackage_StaticHost_UsesWwwrootJazorByDefault()
+    public async Task Build_LocalJazorPackage_StaticHost_UsesProjectJazorByDefault()
     {
         var package = await LocalPackage.Value;
 
@@ -1283,18 +1283,18 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var projectRootJazor = Path.Combine(projectRoot, "jazor");
-        var wwwrootJazor = Path.Combine(projectRoot, "wwwroot", "jazor");
-        Assert.IsTrue(File.Exists(Path.Combine(wwwrootJazor, "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(wwwrootJazor, "host", "app.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(wwwrootJazor, "host", "app.mjs.map")));
-        var module = await File.ReadAllTextAsync(Path.Combine(wwwrootJazor, "host", "app.mjs"));
+        var projectJazorRoot = Path.Combine(projectRoot, "jazor");
+        var webRootJazor = Path.Combine(projectRoot, "wwwroot", "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(projectJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(projectJazorRoot, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(projectJazorRoot, "host", "app.mjs.map")));
+        var module = await File.ReadAllTextAsync(Path.Combine(projectJazorRoot, "host", "app.mjs"));
         StringAssert.Contains(module, "sourceMappingURL=app.mjs.map");
-        Assert.IsFalse(Directory.Exists(projectRootJazor), $"Build must not materialize assets under '{projectRootJazor}'.");
+        Assert.IsFalse(Directory.Exists(webRootJazor), $"Build must not materialize artifacts under '{webRootJazor}'.");
     }
 
     [TestMethod]
-    public async Task Publish_LocalJazorPackage_StaticHost_UsesWwwrootJazorByDefault()
+    public async Task Publish_LocalJazorPackage_StaticHost_UsesProjectAndPublishJazorByDefault()
     {
         var package = await LocalPackage.Value;
 
@@ -1320,14 +1320,19 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, publish.ExitCode, publish.ToString());
 
-        var devJazorRoot = Path.Combine(projectRoot, "jazor");
-        var publishJazorRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var projectJazorRoot = Path.Combine(projectRoot, "jazor");
+        var projectWebRootJazor = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var publishOutputRoot = Path.Combine(projectRoot, "bin", "Debug", "net11.0", "publish");
+        var publishJazorRoot = Path.Combine(publishOutputRoot, "jazor");
+        var publishWebRootJazor = Path.Combine(publishOutputRoot, "wwwroot", "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(projectJazorRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "host", "app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "host", "app.mjs.map")));
         var publishedStaticHostModule = await File.ReadAllTextAsync(Path.Combine(publishJazorRoot, "host", "app.mjs"));
         StringAssert.Contains(publishedStaticHostModule, "sourceMappingURL=app.mjs.map");
-        Assert.IsFalse(Directory.Exists(devJazorRoot), $"Publish should not fall back to the development output root '{devJazorRoot}'.");
+        Assert.IsFalse(Directory.Exists(projectWebRootJazor), $"Build must not materialize artifacts under '{projectWebRootJazor}'.");
+        Assert.IsFalse(Directory.Exists(publishWebRootJazor), $"Publish must not materialize artifacts under '{publishWebRootJazor}'.");
     }
 
     [TestMethod]
@@ -1360,21 +1365,25 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, publish.ExitCode, publish.ToString());
 
-        var sourcePublishJazorRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
-        var publishedJazorRoot = Path.Combine(publishOutputRoot, "wwwroot", "jazor");
-        var publishedShadowJazorRoot = Path.Combine(publishOutputRoot, "jazor");
+        var sourceJazorRoot = Path.Combine(projectRoot, "jazor");
+        var sourceWebRootJazor = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var publishedJazorRoot = Path.Combine(publishOutputRoot, "jazor");
+        var publishedWebRootJazor = Path.Combine(publishOutputRoot, "wwwroot", "jazor");
 
-        Assert.IsTrue(File.Exists(Path.Combine(sourcePublishJazorRoot, "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(sourcePublishJazorRoot, "host", "app.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(sourcePublishJazorRoot, "host", "app.mjs.map")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceJazorRoot, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourceJazorRoot, "host", "app.mjs.map")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "host", "app.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "host", "app.mjs.map")));
         var publishedWebHostModule = await File.ReadAllTextAsync(Path.Combine(publishedJazorRoot, "host", "app.mjs"));
         StringAssert.Contains(publishedWebHostModule, "sourceMappingURL=app.mjs.map");
         Assert.IsFalse(
-            Directory.Exists(publishedShadowJazorRoot),
-            $"Publish output must not leak a shadow root jazor directory at '{publishedShadowJazorRoot}'.");
+            Directory.Exists(sourceWebRootJazor),
+            $"Build must not materialize artifacts under '{sourceWebRootJazor}'.");
+        Assert.IsFalse(
+            Directory.Exists(publishedWebRootJazor),
+            $"Publish output must not materialize artifacts under '{publishedWebRootJazor}'.");
     }
 
     [TestMethod]
@@ -1465,7 +1474,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
 
@@ -1596,7 +1605,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
 
@@ -1773,7 +1782,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var moduleRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var moduleRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(moduleRoot, "jazor-manifest.json");
         var modulePath = Path.Combine(moduleRoot, "host", "app.mjs");
         var bundlePath = Path.Combine(moduleRoot, "bundle.js");
@@ -1837,7 +1846,7 @@ public sealed class SdkIntegrationTests
 
         var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
         var firstCounterSource = ReadCounterRazorSgGeneratedSource(generatedRoot);
-        var counterModulePath = Path.Combine(projectRoot, "wwwroot", "jazor", "components", "counter.mjs");
+        var counterModulePath = Path.Combine(projectRoot, "jazor", "components", "counter.mjs");
         var firstCounterModule = await File.ReadAllTextAsync(counterModulePath);
         Assert.IsFalse(
             firstCounterModule.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
@@ -1902,7 +1911,7 @@ public sealed class SdkIntegrationTests
         var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
         _ = ReadCounterRazorSgGeneratedSource(generatedRoot);
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
         var componentMapPath = Path.Combine(outputRoot, "components", "counter.mjs.map");
@@ -2134,7 +2143,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(projectRoot, "jazor");
         var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
         var releaseEditorModulePath = Path.Combine(outputRoot, "components", "release-editor.mjs");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue Counter module was not materialized: {componentModulePath}");
@@ -2328,7 +2337,7 @@ public sealed class SdkIntegrationTests
 
         Assert.AreEqual(0, build.ExitCode, build.ToString());
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var counterModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
         var bundlePath = Path.Combine(bundleRoot, "bundle.js");
@@ -2375,7 +2384,7 @@ public sealed class SdkIntegrationTests
             ["build", projectPath, "-t:Rebuild", .. commonArguments]);
         Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(projectRoot, "jazor");
         var firstArtifacts = ReadArtifactHashes(outputRoot);
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
@@ -2452,7 +2461,7 @@ public sealed class SdkIntegrationTests
             ["build", projectPath, "-t:Rebuild", .. commonArguments]);
         Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
 
-        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var outputRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
         var componentMapPath = Path.Combine(outputRoot, "components", "counter.mjs.map");

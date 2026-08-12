@@ -14,14 +14,14 @@ using Microsoft.Extensions.Hosting;
 namespace Jazor.EmitTest;
 
 [TestClass]
-public sealed class JazorAspNetCoreDevelopmentReloadTests
+public sealed class JazorAspNetCoreReloadTests
 {
     private static readonly TimeSpan NoDuplicateMessageTimeout = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan TestDebounceInterval = TimeSpan.FromMilliseconds(25);
     private static readonly TimeSpan TestPollingInterval = TimeSpan.FromMilliseconds(100);
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_InjectsClientScriptIntoHtmlAndServesClientScriptEndpoint()
+    public async Task UseJazorReload_InjectsClientScriptIntoHtmlAndServesClientScriptEndpoint()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
@@ -33,10 +33,10 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         await using var host = await CreateHostAsync(
             workspace.RootPath,
             Environments.Development,
-            services => services.AddJazorDevelopmentReload(),
+            services => services.AddJazorReload(),
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.UseStaticFiles(new StaticFileOptions
                 {
                     OnPrepareResponse = static context =>
@@ -79,7 +79,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_WhenApplicationUsesPathBase_InjectsPathBaseAwareClientScriptAndServesPathBaseEndpoints()
+    public async Task UseJazorReload_WhenApplicationUsesPathBase_InjectsPathBaseAwareClientScriptAndServesPathBaseEndpoints()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
@@ -91,11 +91,11 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         await using var host = await CreateHostAsync(
             workspace.RootPath,
             Environments.Development,
-            services => services.AddJazorDevelopmentReload(),
+            services => services.AddJazorReload(),
             app =>
             {
                 app.UsePathBase("/docs");
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.UseStaticFiles();
             });
 
@@ -122,7 +122,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_WhenWatchedModuleChanges_BroadcastsSingleFullReloadToClientWithoutModuleUpdateCapability()
+    public async Task UseJazorReload_WhenWatchedModuleChanges_BroadcastsSingleFullReloadToClientWithoutModuleUpdateCapability()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var watchRoot = Path.Combine(workspace.RootPath, "jazor");
@@ -135,22 +135,22 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         await using var host = await CreateHostAsync(
             workspace.RootPath,
             Environments.Development,
-            services => services.AddJazorDevelopmentReload(options =>
+            services => services.AddJazorReload(options =>
             {
-                options.WatchRootPaths.Clear();
-                options.WatchRootPaths.Add("jazor");
-                options.HmrModuleMappings.Clear();
-                options.HmrModuleMappings.Add(new JazorDevelopmentHmrModuleMapping
+                options.WatchPaths.Clear();
+                options.WatchPaths.Add("jazor");
+                options.HmrMappings.Clear();
+                options.HmrMappings.Add(new JazorHmrMapping
                 {
                     ArtifactRootPath = "jazor",
                     RequestPath = new PathString("/jazor")
                 });
-                options.FileChangeDebounceInterval = TestDebounceInterval;
-                options.FileChangePollingInterval = TestPollingInterval;
+                options.DebounceInterval = TestDebounceInterval;
+                options.PollingInterval = TestPollingInterval;
             }),
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.MapGet("/", static () => Results.Content("<html><head></head><body>ready</body></html>", "text/html"));
             });
 
@@ -173,7 +173,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_WhenMappedModuleChanges_OffersCancellableModuleUpdateToCapabilityAwareClient()
+    public async Task UseJazorReload_WhenMappedModuleChanges_OffersCancellableModuleUpdateToCapabilityAwareClient()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var watchRoot = Path.Combine(workspace.RootPath, "jazor");
@@ -186,21 +186,21 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         await using var host = await CreateHostAsync(
             workspace.RootPath,
             Environments.Development,
-            services => services.AddJazorDevelopmentReload(options =>
+            services => services.AddJazorReload(options =>
             {
-                options.WatchRootPaths.Clear();
-                options.HmrModuleMappings.Clear();
-                options.HmrModuleMappings.Add(new JazorDevelopmentHmrModuleMapping
+                options.WatchPaths.Clear();
+                options.HmrMappings.Clear();
+                options.HmrMappings.Add(new JazorHmrMapping
                 {
                     ArtifactRootPath = "jazor",
                     RequestPath = new PathString("/jazor")
                 });
-                options.FileChangeDebounceInterval = TestDebounceInterval;
-                options.FileChangePollingInterval = TestPollingInterval;
+                options.DebounceInterval = TestDebounceInterval;
+                options.PollingInterval = TestPollingInterval;
             }),
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.MapGet("/", static () => Results.Content("<html><head></head><body>ready</body></html>", "text/html"));
             });
 
@@ -236,7 +236,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_WhenHmrDescriptorChanges_FallsBackToFullReload()
+    public async Task UseJazorReload_WhenHmrDescriptorChanges_FallsBackToFullReload()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var watchRoot = Path.Combine(workspace.RootPath, "jazor");
@@ -249,22 +249,22 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         await using var host = await CreateHostAsync(
             workspace.RootPath,
             Environments.Development,
-            services => services.AddJazorDevelopmentReload(options =>
+            services => services.AddJazorReload(options =>
             {
-                options.WatchRootPaths.Clear();
-                options.WatchRootPaths.Add("jazor");
-                options.HmrModuleMappings.Clear();
-                options.HmrModuleMappings.Add(new JazorDevelopmentHmrModuleMapping
+                options.WatchPaths.Clear();
+                options.WatchPaths.Add("jazor");
+                options.HmrMappings.Clear();
+                options.HmrMappings.Add(new JazorHmrMapping
                 {
                     ArtifactRootPath = "jazor",
                     RequestPath = new PathString("/jazor")
                 });
-                options.FileChangeDebounceInterval = TestDebounceInterval;
-                options.FileChangePollingInterval = TestPollingInterval;
+                options.DebounceInterval = TestDebounceInterval;
+                options.PollingInterval = TestPollingInterval;
             }),
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.MapGet("/", static () => Results.Content("<html><head></head><body>ready</body></html>", "text/html"));
             });
 
@@ -286,17 +286,17 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_WhenResponseHasContentSecurityPolicy_InjectsNonceAndAllowsReloadSocket()
+    public async Task UseJazorReload_WhenResponseHasContentSecurityPolicy_InjectsNonceAndAllowsReloadSocket()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
 
         await using var host = await CreateHostAsync(
             workspace.RootPath,
             Environments.Development,
-            services => services.AddJazorDevelopmentReload(),
+            services => services.AddJazorReload(),
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.MapGet(
                     "/",
                     static (HttpContext context) =>
@@ -319,7 +319,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_BypassesJsonEndpointsAndStaticAssetsThatCannotBeHtmlDocuments()
+    public async Task UseJazorReload_BypassesJsonEndpointsAndStaticAssetsThatCannotBeHtmlDocuments()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
@@ -331,10 +331,10 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         await using var host = await CreateHostAsync(
             workspace.RootPath,
             Environments.Development,
-            services => services.AddJazorDevelopmentReload(),
+            services => services.AddJazorReload(),
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.MapGet(
                     "/api/status",
                     static (HttpContext context) =>
@@ -374,7 +374,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_WhenExternalBrowserRefreshIsActive_SuppressesReconnectReloadBehaviorInClientScript()
+    public async Task UseJazorReload_WhenExternalBrowserRefreshIsActive_SuppressesReconnectReloadBehaviorInClientScript()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
 
@@ -383,12 +383,12 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
             Environments.Development,
             services =>
             {
-                services.AddJazorDevelopmentReload();
-                services.AddSingleton<IJazorDevelopmentRuntimeSignals>(new TestRuntimeSignals(isExternalBrowserRefreshActive: true));
+                services.AddJazorReload();
+                services.AddSingleton<IReloadRuntimeSignals>(new TestRuntimeSignals(isExternalBrowserRefreshActive: true));
             },
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.MapGet("/", static () => Results.Content("<html><head></head><body>ready</body></html>", "text/html"));
             });
 
@@ -401,7 +401,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_WhenExternalBrowserRefreshSuppressionIsDisabled_KeepsReconnectReloadBehavior()
+    public async Task UseJazorReload_WhenExternalBrowserRefreshSuppressionIsDisabled_KeepsReconnectReloadBehavior()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
 
@@ -410,15 +410,15 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
             Environments.Development,
             services =>
             {
-                services.AddJazorDevelopmentReload(options =>
+                services.AddJazorReload(options =>
                 {
-                    options.SuppressReloadOnReconnectWhenExternalBrowserRefreshIsActive = false;
+                    options.SuppressReconnectReloadForExternalRefresh = false;
                 });
-                services.AddSingleton<IJazorDevelopmentRuntimeSignals>(new TestRuntimeSignals(isExternalBrowserRefreshActive: true));
+                services.AddSingleton<IReloadRuntimeSignals>(new TestRuntimeSignals(isExternalBrowserRefreshActive: true));
             },
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.MapGet("/", static () => Results.Content("<html><head></head><body>ready</body></html>", "text/html"));
             });
 
@@ -431,7 +431,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_WhenExternalBrowserRefreshIsActive_IgnoresWebRootChangesButStillReloadsForJazorArtifacts()
+    public async Task UseJazorReload_WhenExternalBrowserRefreshIsActive_IgnoresWebRootChangesButStillReloadsForJazorArtifacts()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
@@ -449,19 +449,19 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
             Environments.Development,
             services =>
             {
-                services.AddJazorDevelopmentReload(options =>
+                services.AddJazorReload(options =>
                 {
-                    options.WatchRootPaths.Clear();
-                    options.WatchRootPaths.Add("wwwroot");
-                    options.WatchRootPaths.Add("jazor");
-                    options.FileChangeDebounceInterval = TestDebounceInterval;
-                    options.FileChangePollingInterval = TestPollingInterval;
+                    options.WatchPaths.Clear();
+                    options.WatchPaths.Add("wwwroot");
+                    options.WatchPaths.Add("jazor");
+                    options.DebounceInterval = TestDebounceInterval;
+                    options.PollingInterval = TestPollingInterval;
                 });
-                services.AddSingleton<IJazorDevelopmentRuntimeSignals>(new TestRuntimeSignals(isExternalBrowserRefreshActive: true));
+                services.AddSingleton<IReloadRuntimeSignals>(new TestRuntimeSignals(isExternalBrowserRefreshActive: true));
             },
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.UseStaticFiles();
                 app.MapGet("/", static () => Results.Content("<html><head></head><body>ready</body></html>", "text/html"));
             });
@@ -483,13 +483,13 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public void JazorDevelopmentExternalBrowserRefreshDetector_RequiresBrowserToolsAndAutoReloadSignal()
+    public void ExternalBrowserRefresh_RequiresBrowserToolsAndAutoReloadSignal()
     {
         static string? GetEnvironmentVariable(IReadOnlyDictionary<string, string?> variables, string name)
             => variables.TryGetValue(name, out var value) ? value : null;
 
         Assert.IsFalse(
-            JazorDevelopmentExternalBrowserRefreshDetector.IsActive(
+            ExternalBrowserRefresh.IsActive(
                 name => GetEnvironmentVariable(
                     new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
@@ -498,7 +498,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
                     name)));
 
         Assert.IsFalse(
-            JazorDevelopmentExternalBrowserRefreshDetector.IsActive(
+            ExternalBrowserRefresh.IsActive(
                 name => GetEnvironmentVariable(
                     new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
@@ -507,7 +507,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
                     name)));
 
         Assert.IsTrue(
-            JazorDevelopmentExternalBrowserRefreshDetector.IsActive(
+            ExternalBrowserRefresh.IsActive(
                 name => GetEnvironmentVariable(
                     new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
@@ -518,7 +518,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
     }
 
     [TestMethod]
-    public async Task UseJazorDevelopmentReload_DoesNothingOutsideDevelopmentEnvironment()
+    public async Task UseJazorReload_DoesNothingOutsideDevelopmentEnvironment()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
@@ -530,10 +530,10 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         await using var host = await CreateHostAsync(
             workspace.RootPath,
             Environments.Production,
-            services => services.AddJazorDevelopmentReload(),
+            services => services.AddJazorReload(),
             app =>
             {
-                app.UseJazorDevelopmentReload();
+                app.UseJazorReload();
                 app.UseStaticFiles();
             });
 
@@ -677,7 +677,7 @@ public sealed class JazorAspNetCoreDevelopmentReloadTests
         }
     }
 
-    private sealed class TestRuntimeSignals(bool isExternalBrowserRefreshActive) : IJazorDevelopmentRuntimeSignals
+    private sealed class TestRuntimeSignals(bool isExternalBrowserRefreshActive) : IReloadRuntimeSignals
     {
         public bool IsExternalBrowserRefreshActive { get; } = isExternalBrowserRefreshActive;
     }

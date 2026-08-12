@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Http;
 
 namespace Jazor.AspNetCore.Dev;
 
-internal static class JazorDevelopmentBrowserDocumentRequestClassifier
+/// <summary>Identifies navigation requests whose HTML response can safely receive the reload script.</summary>
+internal static class BrowserDocumentRequest
 {
     private static readonly HashSet<string> HtmlExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -18,6 +19,7 @@ internal static class JazorDevelopmentBrowserDocumentRequestClassifier
         "iframe"
     };
 
+    /// <summary>Returns whether the request can produce an HTML document suitable for injection.</summary>
     public static bool ShouldInspect(
         HttpContext context,
         PathString clientScriptPath,
@@ -34,6 +36,7 @@ internal static class JazorDevelopmentBrowserDocumentRequestClassifier
             return false;
 
         var requestPath = request.Path;
+        // Do not buffer Jazor's own transport endpoints as HTML documents.
         if (requestPath.StartsWithSegments(clientScriptPath)
             || requestPath.StartsWithSegments(webSocketPath))
         {

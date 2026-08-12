@@ -6,14 +6,14 @@ using Microsoft.Extensions.Options;
 
 namespace Jazor.AspNetCore;
 
-/// <summary>Resolves the generated artifact graph and rewrites its browser URLs for the request path base.</summary>
-internal sealed class JazorSSRArtifactLocator
+/// <summary>Resolves the generated artifact graph and rewrites browser URLs for a request path base.</summary>
+internal sealed class SsrArtifactLocator
 {
     private const string ArtifactManifestFileName = "jazor-manifest.json";
     private const string BrowserImportMapFileName = "importmap.json";
     private const string SsrImportMapFileName = "ssr-importmap.json";
     private const string AssetManifestFileName = "manifest.json";
-    private const string DefaultAssetPath = "/jazor";
+    private const string DefaultRequestPath = "/jazor";
     private const string MaterializedAssetPrefix = "/jazor/";
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -21,17 +21,18 @@ internal sealed class JazorSSRArtifactLocator
     };
 
     private readonly IWebHostEnvironment _environment;
-    private readonly JazorSSROptions _options;
+    private readonly JazorSsrOptions _options;
 
-    public JazorSSRArtifactLocator(
+    public SsrArtifactLocator(
         IWebHostEnvironment environment,
-        IOptions<JazorSSROptions> options)
+        IOptions<JazorSsrOptions> options)
     {
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public JazorSSRArtifacts Resolve()
+    /// <summary>Finds the complete SSR artifact graph for the current content-root layout.</summary>
+    public SsrArtifacts Resolve()
     {
         foreach (var candidate in GetArtifactRootCandidates())
         {
@@ -43,13 +44,12 @@ internal sealed class JazorSSRArtifactLocator
                 continue;
             }
 
-            return new JazorSSRArtifacts(
+            return new SsrArtifacts(
                 candidate,
-                Path.Combine(candidate, ArtifactManifestFileName),
                 Path.Combine(candidate, BrowserImportMapFileName),
                 Path.Combine(candidate, SsrImportMapFileName),
                 Path.Combine(candidate, AssetManifestFileName),
-                ResolveAssetPath(candidate));
+                ResolveRequestPath(candidate));
         }
 
         throw new InvalidOperationException(
@@ -59,7 +59,7 @@ internal sealed class JazorSSRArtifactLocator
             "'. Build with Jazor debug output, or enable the SSR release artifact target.");
     }
 
-    public static string ReadBrowserImportMap(JazorSSRArtifacts artifacts, PathString pathBase)
+    public static string ReadBrowserImportMap(SsrArtifacts artifacts, PathString pathBase)
     {
         using var document = JsonDocument.Parse(File.ReadAllText(artifacts.BrowserImportMapPath));
         if (!document.RootElement.TryGetProperty("imports", out var importsElement) ||
@@ -80,13 +80,13 @@ internal sealed class JazorSSRArtifactLocator
                     artifacts.BrowserImportMapPath + "'.");
             }
 
-            imports.Add(import.Name, RewriteArtifactUrl(target, artifacts.AssetPath, pathBase));
+            imports.Add(import.Name, RewriteArtifactUrl(target, artifacts.RequestPath, pathBase));
         }
 
         return JsonSerializer.Serialize(new { imports }, JsonOptions);
     }
 
-    public static IReadOnlyList<string> ReadStylePaths(JazorSSRArtifacts artifacts)
+    public static IReadOnlyList<string> ReadStylePaths(SsrArtifacts artifacts)
     {
         using var document = JsonDocument.Parse(File.ReadAllText(artifacts.AssetManifestPath));
         if (!document.RootElement.TryGetProperty("styles", out var stylesElement) ||
@@ -111,13 +111,13 @@ internal sealed class JazorSSRArtifactLocator
     }
 
     public static string CreateBrowserArtifactUrl(
-        JazorSSRArtifacts artifacts,
+        SsrArtifacts artifacts,
         PathString pathBase,
         string relativePath)
     {
         var normalizedRelativePath = NormalizeRelativePath(relativePath, "module path");
         var normalizedPathBase = pathBase.Value?.TrimEnd('/') ?? string.Empty;
-        return normalizedPathBase + artifacts.AssetPath + "/" + normalizedRelativePath;
+        return normalizedPathBase + artifacts.RequestPath + "/" + normalizedRelativePath;
     }
 
     public static string NormalizeRelativePath(string relativePath, string valueName)
@@ -149,7 +149,7 @@ internal sealed class JazorSSRArtifactLocator
     private static string NormalizeStylePath(string stylePath)
     {
         // manifest.json is the browser asset contract, so its generated style URLs are rooted
-        // at /jazor. SSR rebuilds those URLs for the host's actual asset path and PathBase.
+        // at /jazor. SSR rebuilds those URLs for the host's actual request path and PathBase.
         if (stylePath.StartsWith(MaterializedAssetPrefix, StringComparison.Ordinal))
             return NormalizeRelativePath(stylePath[MaterializedAssetPrefix.Length..], "style path");
 
@@ -164,12 +164,8 @@ internal sealed class JazorSSRArtifactLocator
             yield break;
         }
 
-        if (!string.IsNullOrWhiteSpace(_environment.WebRootPath))
-        {
-            yield return Path.GetFullPath(Path.Combine(_environment.WebRootPath, "jazor", "ssr"));
-            yield return Path.GetFullPath(Path.Combine(_environment.WebRootPath, "jazor"));
-        }
-
+        // JazorDir is a content-root artifact graph. SSR must use the same graph that
+        // UseJazorHost exposes at /jazor instead of depending on an authored wwwroot.
         yield return Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "jazor", "ssr"));
         yield return Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "jazor"));
     }
@@ -182,27 +178,24 @@ internal sealed class JazorSSRArtifactLocator
         return Path.GetFullPath(candidate);
     }
 
-    private string ResolveAssetPath(string artifactRoot)
+    private string ResolveRequestPath(string artifactRoot)
     {
-        if (!string.IsNullOrWhiteSpace(_options.AssetPath))
-            return NormalizeAssetPath(_options.AssetPath);
+        if (!string.IsNullOrWhiteSpace(_options.RequestPath))
+            return NormalizeRequestPath(_options.RequestPath);
 
-        if (!string.IsNullOrWhiteSpace(_environment.WebRootPath))
-        {
-            var webRoot = Path.GetFullPath(_environment.WebRootPath);
-            var ssrRoot = Path.Combine(webRoot, "jazor", "ssr");
-            if (PathsEqual(artifactRoot, ssrRoot))
-                return "/jazor/ssr";
+        var contentRoot = Path.GetFullPath(_environment.ContentRootPath);
+        var ssrRoot = Path.Combine(contentRoot, "jazor", "ssr");
+        if (PathsEqual(artifactRoot, ssrRoot))
+            return "/jazor/ssr";
 
-            var root = Path.Combine(webRoot, "jazor");
-            if (PathsEqual(artifactRoot, root))
-                return DefaultAssetPath;
-        }
+        var root = Path.Combine(contentRoot, "jazor");
+        if (PathsEqual(artifactRoot, root))
+            return DefaultRequestPath;
 
-        return DefaultAssetPath;
+        return DefaultRequestPath;
     }
 
-    private static string RewriteArtifactUrl(string target, string assetPath, PathString pathBase)
+    private static string RewriteArtifactUrl(string target, string requestPath, PathString pathBase)
     {
         const string materializedPrefix = "/jazor";
         if (!target.StartsWith(materializedPrefix, StringComparison.Ordinal) ||
@@ -212,21 +205,21 @@ internal sealed class JazorSSRArtifactLocator
         }
 
         var normalizedPathBase = pathBase.Value?.TrimEnd('/') ?? string.Empty;
-        return normalizedPathBase + assetPath + target[materializedPrefix.Length..];
+        return normalizedPathBase + requestPath + target[materializedPrefix.Length..];
     }
 
-    private static string NormalizeAssetPath(string assetPath)
+    private static string NormalizeRequestPath(string requestPath)
     {
-        var normalized = assetPath.Trim().Replace('\\', '/');
+        var normalized = requestPath.Trim().Replace('\\', '/');
         if (normalized.Length == 0 || !normalized.StartsWith('/', StringComparison.Ordinal))
-            throw new ArgumentException("Jazor SSR asset path must start with '/'.", nameof(assetPath));
+            throw new ArgumentException("Jazor SSR request path must start with '/'.", nameof(requestPath));
 
         var segments = normalized
             .Split('/', StringSplitOptions.RemoveEmptyEntries)
             .Where(static segment => segment != ".")
             .ToArray();
         if (segments.Any(static segment => segment == ".."))
-            throw new ArgumentException("Jazor SSR asset path cannot contain '..'.", nameof(assetPath));
+            throw new ArgumentException("Jazor SSR request path cannot contain '..'.", nameof(requestPath));
 
         return "/" + string.Join("/", segments);
     }
@@ -238,10 +231,10 @@ internal sealed class JazorSSRArtifactLocator
             OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 }
 
-internal sealed record JazorSSRArtifacts(
+/// <summary>Resolved paths for one self-contained SSR artifact graph.</summary>
+internal sealed record SsrArtifacts(
     string RootPath,
-    string ApplicationManifestPath,
     string BrowserImportMapPath,
     string SsrImportMapPath,
     string AssetManifestPath,
-    string AssetPath);
+    string RequestPath);

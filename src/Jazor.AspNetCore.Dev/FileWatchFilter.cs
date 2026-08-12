@@ -1,6 +1,7 @@
 namespace Jazor.AspNetCore.Dev;
 
-internal static class JazorDevelopmentFileWatchFilter
+/// <summary>Rejects generated, dependency, and editor directories from reload observation.</summary>
+internal static class FileWatchFilter
 {
     private static readonly HashSet<string> IgnoredDirectories = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -18,6 +19,7 @@ internal static class JazorDevelopmentFileWatchFilter
         "TestResults"
     };
 
+    /// <summary>Returns whether a path is inside the root and outside ignored tooling directories.</summary>
     public static bool ShouldObserve(string rootDirectory, string path)
     {
         if (string.IsNullOrWhiteSpace(rootDirectory) || string.IsNullOrWhiteSpace(path))
@@ -38,6 +40,7 @@ internal static class JazorDevelopmentFileWatchFilter
         return true;
     }
 
+    /// <summary>Returns whether a directory name is excluded from recursive observation.</summary>
     public static bool IsIgnoredDirectoryName(string? directoryName)
         => !string.IsNullOrWhiteSpace(directoryName)
             && IgnoredDirectories.Contains(directoryName);

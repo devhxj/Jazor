@@ -1,6 +1,7 @@
 namespace Jazor.AspNetCore.Dev;
 
-internal sealed class JazorDevelopmentFileChangeDebouncer : IDisposable
+/// <summary>Coalesces bursty watcher notifications into one deterministic path batch.</summary>
+internal sealed class FileChangeDebouncer : IDisposable
 {
     private readonly TimeSpan _debounceInterval;
     private readonly Lock _gate = new();
@@ -8,12 +9,13 @@ internal sealed class JazorDevelopmentFileChangeDebouncer : IDisposable
     private CancellationTokenSource? _flushCancellationSource;
     private bool _disposed;
 
+    /// <summary>Raised once after the quiet interval with the ordered, deduplicated changed paths.</summary>
     public event Action<IReadOnlyList<string>>? DebouncedChange;
 
-    public JazorDevelopmentFileChangeDebouncer(TimeSpan debounceInterval)
+    public FileChangeDebouncer(TimeSpan debounceInterval)
     {
-		ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(debounceInterval, TimeSpan.Zero);
-		_debounceInterval = debounceInterval;
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(debounceInterval, TimeSpan.Zero);
+        _debounceInterval = debounceInterval;
     }
 
     public void Record(string path)
@@ -26,6 +28,7 @@ internal sealed class JazorDevelopmentFileChangeDebouncer : IDisposable
             if (_disposed)
                 return;
 
+            // A rebuild commonly writes several generated files; retain only one ordered batch.
             _pendingPaths.Add(Path.GetFullPath(path));
             _flushCancellationSource?.Cancel();
             _flushCancellationSource?.Dispose();

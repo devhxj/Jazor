@@ -2,11 +2,16 @@
 
 public static partial class Global
 {
+	/// <summary>
+	/// Projection of the JavaScript <c>console</c> host object.
+	/// JavaScript <c>console</c> 宿主对象的投影；输出格式和可用功能由浏览器、Node 或其他运行时实现决定。
+	/// </summary>
 	extension(Console)
 	{
 		/// <summary>
 		/// 如果断言为 false，则将一个错误消息写入控制台。如果断言是 true，没有任何反应。
 		/// 参数列表保持可空并接受任意值，因为 JavaScript 控制台格式化本来就按运行时值处理参数。
+		/// Writes an assertion failure when <paramref name="assertion"/> is false; when true it has no effect. Arguments remain nullable and runtime-shaped because console formatting is implementation-defined.
 		/// </summary>
 		/// <param name="assertion">一个布尔表达式。如果 assertion 为假，消息将会被输出到控制台之中。</param>
 		/// <param name="obj">被用来输出的 Javascript 对象列表，最后输出的字符串是各个对象依次拼接的结果。</param>
@@ -15,6 +20,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 如果断言为 false，则将一个错误消息写入控制台。如果断言是 true，没有任何反应。
+		/// Writes a formatted assertion failure when <paramref name="assertion"/> is false; when true it has no effect.
 		/// </summary>
 		/// <param name="assertion">一个布尔表达式。如果 assertion 为假，消息将会被输出到控制台之中。</param>
 		/// <param name="msg">一个包含零个或多个子串的 Javascript 字符串。</param>
@@ -24,12 +30,14 @@ public static partial class Global
 
 		/// <summary>
 		/// 清空控制台，但前提是该控制台允许清空。像浏览器运行的图形控制台就允许清空，而像 Node 运行的终端上显示的控制台则不支持它，调用该方法将不会产生任何效果（也不会报错）。
+		/// Clears the console when the host supports it. Browser developer tools commonly clear; terminal-backed consoles may ignore this call without error.
 		/// </summary>
 		[Description("@#clear")]
 		public extern static void Clear();
 
 		/// <summary>
 		/// 记录调用 count() 的次数。
+		/// Increments and prints the counter identified by <paramref name="label"/>; omitted labels use the JavaScript default counter.
 		/// </summary>
 		/// <param name="label">一个字符串。如果给定，count() 会输出带有该标签的调用次数。如果未提供，调用 count() 的行为就像是带有“default”标签一样。</param>
 		[Description("@#count")]
@@ -37,6 +45,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 重置计数器。
+		/// Resets the counter identified by <paramref name="label"/>; omitted labels reset the JavaScript default counter.
 		/// </summary>
 		/// <param name="label">一个字符串，若传入此参数 countReset() 重置此 label 的 count 为 0。 若忽略此参数 countReset() 重置 count() 默认的 default 字段的 count 为 0</param>
 		/// <returns></returns>
@@ -45,6 +54,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 将一条消息输出到 web 控制台，消息的日志级别为“debug”。只有在控制台配置为显示调试输出时，才会向用户显示该消息。在大多数情况下，日志级别在控制台 UI 中进行配置。该日志级别可能对应于 Debug 或 Verbose 日志级别。
+		/// Writes a debug-level console message. Visibility and formatting are controlled by the JavaScript host console implementation.
 		/// </summary>
 		/// <param name="obj">要输出的 JavaScript 对象列表。按传参的顺序把对象输出到控制台。</param>
 		[Description("@#debug")]
@@ -52,6 +62,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 将一条消息输出到 web 控制台，消息的日志级别为“debug”。只有在控制台配置为显示调试输出时，才会向用户显示该消息。在大多数情况下，日志级别在控制台 UI 中进行配置。该日志级别可能对应于 Debug 或 Verbose 日志级别。
+		/// Writes a formatted debug-level console message; substitution processing follows the host console implementation.
 		/// </summary>
 		/// <param name="msg">包含零个或多个替换字符串的 JavaScript 字符串，这些替换字符串会按照连续的顺序用 subst1 到 substN 进行替换。</param>
 		/// <param name="subst">包含零个或多个替换字符串的 JavaScript 字符串，这些替换字符串会按照连续的顺序用 subst1 到 substN 进行替换。</param>
@@ -61,6 +72,7 @@ public static partial class Global
 		/// <summary>
 		/// 可以显示指定 JavaScript 对象的属性列表，并以交互式的形式展现。输出结果呈现为分层列表，包含展开/折叠的三角形图标，可用于查看子对象的内容。
 		/// 换句话说，dir() 是一种在控制台中查看指定 JavaScript 对象的所有属性的方法，开发人员可以通过这种方式轻松获取对象的属性。
+		/// Displays an interactive property listing for the supplied runtime object when the host console supports inspection.
 		/// </summary>
 		/// <param name="obj">应输出其属性的 JavaScript 对象。</param>
 		[Description("@#dir")]
@@ -68,6 +80,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 向 Web 控制台输出一条错误消息。
+		/// Writes an error-level console message; formatting is owned by the JavaScript host console.
 		/// </summary>
 		/// <param name="obj">要输出的 JavaScript 对象列表。这些对象的字符串形式按顺序加起来然后输出。</param>
 		[Description("@#error")]
@@ -75,6 +88,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 向 Web 控制台输出一条错误消息。
+		/// Writes a formatted error-level console message.
 		/// </summary>
 		/// <param name="msg">一个字符串，它包含零个或多个替代字符串。</param>
 		/// <param name="subst">要输出的 JavaScript 对象列表。这些对象的字符串形式按顺序加起来然后输出。</param>
@@ -84,6 +98,7 @@ public static partial class Global
 		/// <summary>
 		/// 在 Web 控制台上创建一个新的分组。随后输出到控制台上的内容都会被添加一个缩进，表示该内容属于当前分组，直到调用 console.groupEnd() 之后，当前分组结束。
 		/// 参数列表保持可空并接受任意值，以匹配 JavaScript 控制台的分组标题和附加输出参数。
+		/// Starts a console output group. Arguments form the group label and are formatted by the JavaScript host console.
 		/// </summary>
 		/// <param name="label">分组标题或附加输出参数。</param>
 		[Description("@#group")]
@@ -92,6 +107,7 @@ public static partial class Global
 		/// <summary>
 		/// 在 Web 控制台上创建一个新的分组。与 console.group() 方法的不同点是，新建的分组默认是折叠的。用户必须点击一个按钮才能将折叠的内容打开。
 		/// 参数列表保持可空并接受任意值，以匹配 JavaScript 控制台的分组标题和附加输出参数。
+		/// Starts a collapsed console output group when the host console supports collapsed groups.
 		/// </summary>
 		/// <param name="label">分组标题或附加输出参数。</param>
 		[Description("@#groupCollapsed")]
@@ -99,12 +115,14 @@ public static partial class Global
 
 		/// <summary>
 		/// 在 Web 控制台中退出一格缩进 (结束分组). 请参阅 console 中的Using groups in the console 来获取它的用法和示例。
+		/// Ends the current console output group.
 		/// </summary>
 		[Description("@#groupEnd")]
 		public extern static void GroupEnd();
 
 		/// <summary>
 		/// 向 web 控制台输出一个通知信息。仅在 Firefox，web 控制台的日志中的项目旁边会显示一个小的‘I‘图标
+		/// Writes an informational console message. Presentation and severity labeling are host-console dependent.
 		/// </summary>
 		/// <param name="obj">要输出的 JavaScript 对象列表。对象 obj1,obj2,...列出顺序和输出顺序一致。</param>
 		[Description("@#info")]
@@ -112,6 +130,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 向 web 控制台输出一个通知信息。仅在 Firefox，web 控制台的日志中的项目旁边会显示一个小的‘I‘图标
+		/// Writes a formatted informational console message.
 		/// </summary>
 		/// <param name="msg">JavaScript 字符串。可包含零个或多个替换字符串。</param>
 		/// <param name="subst">用于替换 msg 内的替换字符串的 JavaScript 对象。可以对输出的格式进行额外的控制。</param>
@@ -120,6 +139,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 向 Web 控制台输出一条信息。这条信息可能是单个字符串（包括可选的替代字符串），也可能是一个或多个对象。
+		/// Writes a general console log message. Object rendering may be live/interactive rather than a serialized snapshot.
 		/// </summary>
 		/// <param name="obj">一个用于输出的 JavaScript 对象列表。其中每个对象会以字符串的形式按照顺序依次输出到控制台。请注意，如果你在最新版本的 Chrome 和 Firefox 中输出对象，你在控制台中得到的是对该对象的引用，这不一定是你调用 console.log() 时该对象的“值”，但它一定是该对象在你打开控制台时的值。</param>
 		[Description("@#log")]
@@ -127,6 +147,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 向 Web 控制台输出一条信息。这条信息可能是单个字符串（包括可选的替代字符串），也可能是一个或多个对象。
+		/// Writes a formatted general console log message; substitution tokens follow the host console implementation.
 		/// </summary>
 		/// <param name="msg">一个 JavaScript 字符串，其中包含零个或多个替代字符串。</param>
 		/// <param name="subst">JavaScript 对象，用来依次替换 msg 中的替代字符串。你可以在替代字符串中指定对象的输出格式。</param>
@@ -138,6 +159,7 @@ public static partial class Global
 		/// 这个方法需要一个必须参数 data，data 必须是一个数组或者是一个对象；还可以使用一个可选参数 columns。
 		/// 它会把数据 data 以表格的形式打印出来。数组中的每一个元素（或对象中可枚举的属性）将会以行的形式显示在表格中。
 		/// 表格的第一列是 index。如果数据 data 是一个数组，那么这一列的单元格的值就是数组的索引。如果数据是一个对象，那么它们的值就是各对象的属性名称。注意（在 FireFox 中）console.table 被限制为只显示 1000 行（第一行是被标记的索引（原文：labeled index））。
+		/// Displays iterable or object data as a console table. Available formatting, row limits, and inspection behavior are implementation-dependent.
 		/// </summary>
 		/// <param name="data">要显示的数据。必须是数组或对象。</param>
 		/// <param name="columns">列名列表。<see cref="IEnumerable{T}"/> 用作 JavaScript 列名数组的通用 C# 输入面。</param>
@@ -146,6 +168,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 你可以启动一个计时器来跟踪某一个操作的占用时长。每一个计时器必须拥有唯一的名字，页面中最多能同时运行 10,000 个计时器。当以此计时器名字为参数调用 console.timeEnd() 时，浏览器将以毫秒为单位，输出对应计时器所经过的时间。
+		/// Starts a named console timer. Timer limits, resolution, and display output are controlled by the JavaScript host console.
 		/// </summary>
 		/// <param name="label">新计时器的名字。用来标记这个计时器，作为参数调用 console.timeEnd() 可以停止计时并将经过的时间在终端中打印出来。</param>
 		[Description("@#time")]
@@ -153,6 +176,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 停止指定的计时器，并将该计时器经过的时间输出到控制台。
+		/// Stops the named timer and writes its elapsed duration through the host console.
 		/// </summary>
 		/// <param name="label">计时器名称。未提供时使用默认计时器。</param>
 		[Description("@#timeEnd")]
@@ -160,12 +184,14 @@ public static partial class Global
 
 		/// <summary>
 		/// 在控制台输出计时器的值，该计时器必须已经通过 console.time() 启动。
+		/// Logs the elapsed duration for the default timer without stopping it.
 		/// </summary>
 		[Description("@#timeLog")]
 		public extern static void TimeLog();
 
 		/// <summary>
 		/// 在控制台输出计时器的值，该计时器必须已经通过 console.time() 启动。
+		/// Logs the elapsed duration for a named timer without stopping it, with optional additional runtime values.
 		/// </summary>
 		/// <param name="label">计时器索引。</param>
 		/// <param name="val"></param>
@@ -174,6 +200,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 将堆栈追踪信息输出到控制台。
+		/// Writes a stack trace and optional runtime values through the host console.
 		/// </summary>
 		/// <param name="obj">零个或多个要与追踪信息一起输出到控制台的对象。这些对象的组装与格式化方式与传递给 console.log() 方法时相同。</param>
 		[Description("@#trace")]
@@ -181,6 +208,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 向 Web 控制台输出一条警告信息。
+		/// Writes a warning-level console message.
 		/// </summary>
 		/// <param name="obj">要输出的 Javascript 对象列表。其中每个对象会以字符串的形式按照顺序依次输出到控制台。</param>
 		[Description("@#warn")]
@@ -188,6 +216,7 @@ public static partial class Global
 
 		/// <summary>
 		/// 向 Web 控制台输出一条警告信息。
+		/// Writes a formatted warning-level console message.
 		/// </summary>
 		/// <param name="msg">一个 JavaScript 字符串，其中包含零个或多个替代字符串。</param>
 		/// <param name="subst">零个或多个 Javascript 对象 依次替换 msg 中的替代字符串，你可以在替代字符串中指定对象的输出格式。</param>

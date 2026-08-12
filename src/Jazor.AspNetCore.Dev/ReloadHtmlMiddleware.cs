@@ -2,14 +2,15 @@ using Microsoft.AspNetCore.Http;
 
 namespace Jazor.AspNetCore.Dev;
 
-internal sealed class JazorDevelopmentReloadHtmlMiddleware(
-	RequestDelegate next,
-	JazorDevelopmentReloadService service)
+/// <summary>Buffers eligible HTML responses so the development client can be injected once.</summary>
+internal sealed class ReloadHtmlMiddleware(
+    RequestDelegate next,
+    ReloadService service)
 {
     private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
-    private readonly JazorDevelopmentReloadService _service = service ?? throw new ArgumentNullException(nameof(service));
+    private readonly ReloadService _service = service ?? throw new ArgumentNullException(nameof(service));
 
-	public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context)
     {
         if (!ShouldInspectRequest(context))
         {
@@ -32,14 +33,16 @@ internal sealed class JazorDevelopmentReloadHtmlMiddleware(
             }
 
             buffer.Position = 0;
-            using var reader = new StreamReader(buffer, JazorDevelopmentHtmlInjector.ResolveEncoding(context.Response.ContentType), detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+            using var reader = new StreamReader(buffer, ReloadHtmlInjector.ResolveEncoding(context.Response.ContentType), detectEncodingFromByteOrderMarks: true, leaveOpen: true);
             var html = await reader.ReadToEndAsync(context.RequestAborted);
 
-            var nonce = JazorDevelopmentHtmlInjector.TryExtractScriptNonce(context.Response.Headers.ContentSecurityPolicy);
-            var transformedHtml = JazorDevelopmentHtmlInjector.InjectClientScript(
+            // Injecting a module script changes the response body. Keep an existing nonce and
+            // extend connect-src so CSP-protected applications retain their policy semantics.
+            var nonce = ReloadHtmlInjector.TryExtractScriptNonce(context.Response.Headers.ContentSecurityPolicy);
+            var transformedHtml = ReloadHtmlInjector.InjectClientScript(
                 html,
                 _service.Options.ClientScriptPath.Value!,
-                JazorDevelopmentReloadService.PathBaseAttributeName,
+                ReloadService.PathBaseAttributeName,
                 context.Request.PathBase.Value ?? string.Empty,
                 nonce);
 
@@ -47,11 +50,11 @@ internal sealed class JazorDevelopmentReloadHtmlMiddleware(
             if (context.Response.Headers.TryGetValue("Content-Security-Policy", out var policyValues))
             {
                 context.Response.Headers["Content-Security-Policy"] =
-                    JazorDevelopmentHtmlInjector.AugmentContentSecurityPolicy(policyValues);
+                    ReloadHtmlInjector.AugmentContentSecurityPolicy(policyValues);
             }
 
             context.Response.Body = originalBody;
-            var encoding = JazorDevelopmentHtmlInjector.ResolveEncoding(context.Response.ContentType);
+            var encoding = ReloadHtmlInjector.ResolveEncoding(context.Response.ContentType);
             var payload = encoding.GetBytes(transformedHtml);
             context.Response.ContentLength = payload.Length;
 
@@ -67,7 +70,7 @@ internal sealed class JazorDevelopmentReloadHtmlMiddleware(
     }
 
     private bool ShouldInspectRequest(HttpContext context)
-        => JazorDevelopmentBrowserDocumentRequestClassifier.ShouldInspect(
+        => BrowserDocumentRequest.ShouldInspect(
             context,
             _service.Options.ClientScriptPath,
             _service.Options.WebSocketPath,

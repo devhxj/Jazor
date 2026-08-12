@@ -9,7 +9,7 @@ Wiki 使用 `ECMAScript.Vue` 的 C# `H()` authoring、Jazor module 输出和 ASP
 - `Wiki.csproj` 与 `Program.cs`：ASP.NET Core host、静态资源与路由 fallback。
 - `WikiHomeModule*.cs`：页面目录、站点壳、导航、TOC 与文章内容的 C# module authoring。
 - `AppModule.cs`：浏览器 bootstrap。
-- `wwwroot/`：站点资源、vendored Vue runtime 和 Jazor 生成产物。
+- `wwwroot/`：站点资源和 vendored Vue runtime；`jazor/`：Jazor 生成产物。
 - `scripts/csharp/wiki-*.cs`：本地构建、预览、smoke 和浏览器验证入口。
 
 ## 构建与预览
@@ -27,7 +27,7 @@ dotnet run --file scripts/csharp/wiki-serve.cs -- --build
 dotnet run --file scripts/csharp/wiki-serve.cs -- --publish
 ```
 
-生成模块位于 `samples/Wiki/wwwroot/jazor/`。
+生成模块位于 `samples/Wiki/jazor/`；发布时复制到 `<publish>/jazor/`，浏览器地址保持 `/jazor/*`。
 
 ## 验证
 

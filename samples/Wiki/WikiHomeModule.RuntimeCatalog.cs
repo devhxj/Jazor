@@ -16,7 +16,7 @@ public static partial class WikiHomeModule
                 H("ul",
                 [
                     H("li", "浏览器入口点可以只导入它们实际使用的运行时辅助函数。"),
-                    H("li", "生成的 `System/*` 模块在本地发射目录 `samples/Wiki/wwwroot/jazor/System/` 下保持可检查。"),
+                    H("li", "生成的 `System/*` 模块在本地发射目录 `samples/Wiki/jazor/System/` 下保持可检查。"),
                     H("li", "文档站点通过真实的浏览器提供资源证明这条路径，而非仅通过编译器单元测试。")
                 ])
             ]),
@@ -29,7 +29,7 @@ src/Jazor.Compiler.Generator/ClrRuntimeCatalogEmitter.cs
 src/Jazor.Compiler.Generator/ClrRuntimeSelection.cs
 src/Jazor.Compiler/WhiteList.cs.Generate.cs
 src/ECMAScript/Catalog.g.cs
-samples/Wiki/wwwroot/jazor/System/
+samples/Wiki/jazor/System/
 """),
                 H("p", "单次运行刷新很重要。新的 CLR 映射应该在同一次生成器调用中对运行时目录发射可见，而非仅在第二次通过之后。")
             ]),
@@ -40,7 +40,7 @@ samples/Wiki/wwwroot/jazor/System/
                 [
                     CheckCard("Import map", "浏览器通过宿主 HTML 模板中的 `/jazor/System/` 解析 `System/*`。"),
                     CheckCard("命名导出", "生成的运行时模块暴露可调用的辅助函数导出和模块命名空间对象以保持导入稳定性。"),
-                    CheckCard("本地资源", "Wiki 在开发时从项目本地发射目录提供运行时辅助函数，发布后从 `wwwroot/jazor/System/` 提供。")
+                    CheckCard("本地资源", "Wiki 在开发时从项目本地发射目录提供运行时辅助函数，发布后从发布根 `jazor/System/` 提供。")
                 ])
             ]),
             PageSection("operational-guardrails", "操作护栏",

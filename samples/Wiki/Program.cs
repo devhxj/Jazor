@@ -8,12 +8,9 @@ using Wiki;
 
 // 构建应用 / Build the application
 var builder = JazorWebApplication.CreateBuilder(args);
-// 配置 Jazor 开发时热重载监听目录 / Configure Jazor dev-time hot reload watch paths
-builder.Services.AddJazorDevelopmentReload(options =>
-{
-    options.WatchRootPaths.Clear();
-    options.WatchRootPaths.Add("wwwroot");
-});
+// 默认监听项目根 jazor/ 和 wwwroot/；前者由 Jazor 构建写入，后者仍承载站点资源。
+// Observe the default jazor/ and wwwroot/ paths for generated modules and authored assets.
+builder.Services.AddJazorReload();
 
 // 启动前验证路由目录完整性 / Validate route catalog integrity before startup
 Wiki.WikiCatalogGuard.ValidateOrThrow();
@@ -39,10 +36,10 @@ app.UseJazorHost(options =>
     options.SecurityHeaders.PermissionsPolicy =
         "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), " +
         "hid=(), microphone=(), payment=(), usb=(), clipboard-read=(self), clipboard-write=(self)";
-    options.WebAssets.ImmutableCachePathPrefixes.Add("/vendor/");
+    options.Assets.ImmutableCachePathPrefixes.Add("/vendor/");
 });
 
-app.UseJazorDevelopmentReload();
+app.UseJazorReload();
 
 // HTML 外壳回退 / HTML shell fallback
 app.UseJazorSpaFallback(

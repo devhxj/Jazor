@@ -34,11 +34,11 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ### 2026-08-12
 
-- Element Plus 绑定现已升级至 `2.14.4`，并提供 `ElTransfer.VirtualScroll` 与 `ElTransfer.ItemSize` 的强类型参数。
-- `Jazor.Analyzer` 现在会在泛型容器、ECMAScript 契约和运行时类型过滤中更早报告不受支持的具体外部类型。
-- `Jazor.Analyzer` 现在会在不安全产物生成前检测冲突的 JavaScript 名称元数据与重复的最终输出名称。
-- 外部组件包装类型现使用框架中性的 import 契约，未来扩展框架适配层时不再需要 Vue 专属的分析器例外。
-- `ECMAScript.Style` 现将 CSS authoring DSL 统一为 `lower_snake_case`；PascalCase CLR 模型以及生成 CSS/runtime JavaScript ABI 保持稳定。
+- Jazor `0.12.0` 将生成产物从 `wwwroot/jazor/` 迁移到项目根 `jazor/`，发布时复制同一份图到 `<publish>/jazor/`；通过 `UseJazorHost()` 后浏览器地址仍为 `/jazor/*`。
+- ASP.NET Core 作者 API 统一使用简洁的 `Ssr`、`Reload`、`Artifact` 和 `Asset` 命名。请将 `AddJazorSSR` / `UseJazorSSR` 更新为 `AddJazorSsr` / `UseJazorSsr`，将 `AddJazorDevelopmentReload` / `UseJazorDevelopmentReload` 更新为 `AddJazorReload` / `UseJazorReload`。
+- `dotnet watch run` 是受支持的构建与刷新流程。Reload 默认观察 `jazor/` 和 `wwwroot/`，不会将生成产物反向加入 MSBuild watch 输入。
+- `ECMAScript.Style` 现将 CSS DSL 成员统一为 `lower_snake_case`；PascalCase CLR 模型、生成 CSS、`style.mjs` 和浏览器 HMR 协议均保持稳定。
+- 生成的 WebIDL 成员仍使用浏览器原生拼写，例如 `backgroundColor`；CSS 声明使用 CSS 拼写，例如 `background_color`，两套 API 之间不隐式转换。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -94,15 +94,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.11.0
+dotnet add package Jazor --version 0.12.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.11.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.11.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.12.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.12.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -135,7 +135,7 @@ public static class GreetingModule
 ```xml
 <PropertyGroup>
   <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
+  <JazorDir>$(MSBuildProjectDirectory)\jazor\</JazorDir>
 </PropertyGroup>
 ```
 

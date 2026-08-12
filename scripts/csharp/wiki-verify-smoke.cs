@@ -20,7 +20,7 @@ var configuration = options.Publish && !options.ConfigurationWasExplicit ? "Rele
 
 string hostRoot = sampleRoot;
 string webRoot = Path.Combine(sampleRoot, "wwwroot");
-string jazorRoot = Path.Combine(sampleRoot, "wwwroot", "jazor");
+string jazorRoot = Path.Combine(sampleRoot, "jazor");
 string mainModulePath = Path.Combine(jazorRoot, "main.mjs");
 string componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
 string manifestPath = Path.Combine(jazorRoot, "jazor-manifest.json");
@@ -69,7 +69,7 @@ if (options.Publish)
 
     hostRoot = publishRoot;
     webRoot = Path.Combine(hostRoot, "wwwroot");
-    jazorRoot = Path.Combine(webRoot, "jazor");
+    jazorRoot = Path.Combine(hostRoot, "jazor");
     mainModulePath = Path.Combine(jazorRoot, "main.mjs");
     componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
     manifestPath = Path.Combine(jazorRoot, "jazor-manifest.json");
@@ -79,10 +79,9 @@ if (options.Publish)
     stdoutLog = Path.Combine(hostRoot, ".wiki-publish-smoke.stdout.log");
     stderrLog = Path.Combine(hostRoot, ".wiki-publish-smoke.stderr.log");
 
-    var publishShadowJazorRoot = Path.Combine(hostRoot, "jazor");
-    if (Directory.Exists(publishShadowJazorRoot))
+    if (!Directory.Exists(jazorRoot))
     {
-        throw new InvalidOperationException("Unexpected publish shadow directory: " + publishShadowJazorRoot + ". Publish output must serve /jazor only from wwwroot/jazor.");
+        throw new InvalidOperationException("Published Jazor artifacts were not copied to: " + jazorRoot);
     }
 }
 else if (options.BuildLocal)

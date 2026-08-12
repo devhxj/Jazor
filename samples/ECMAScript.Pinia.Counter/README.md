@@ -20,7 +20,7 @@ dotnet run --file samples/ECMAScript.Pinia.Counter/build-local.cs
 dotnet run --file samples/ECMAScript.Pinia.Counter/verify-smoke.cs -- -Configuration Release
 ```
 
-常规构建产物位于 `Pinia.Counter.Host/wwwroot/jazor/`；smoke 会使用隔离的 `.tmp/` 输出，避免改动跟踪的示例文件。
+常规构建产物位于 `Pinia.Counter.Host/jazor/`；smoke 会使用隔离的 `.tmp/` 输出，避免改动跟踪的示例文件。
 
 如需单独检查前端 consumer：
 

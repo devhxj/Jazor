@@ -34,11 +34,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ### 2026-08-12
 
-- Element Plus bindings now target `2.14.4`, including typed `ElTransfer.VirtualScroll` and `ElTransfer.ItemSize` parameters.
-- `Jazor.Analyzer` now reports unsupported concrete external types earlier in generic containers, ECMAScript contracts, and runtime type filters.
-- `Jazor.Analyzer` now detects conflicting JavaScript-name metadata and duplicate emitted JavaScript names before unsafe artifacts are generated.
-- External component wrappers now use a framework-neutral import contract, allowing future framework adapters without a Vue-specific analyzer exception.
-- `ECMAScript.Style` now uses `lower_snake_case` for its CSS authoring DSL, while its PascalCase CLR models and generated CSS/runtime JavaScript ABI remain stable.
+- Jazor `0.12.0` moves generated artifacts from `wwwroot/jazor/` to project-root `jazor/`, then copies the same graph to `<publish>/jazor/`; browser URLs remain `/jazor/*` through `UseJazorHost()`.
+- ASP.NET Core authoring APIs now use concise `Ssr`, `Reload`, `Artifact`, and `Asset` names. Update `AddJazorSSR` / `UseJazorSSR` to `AddJazorSsr` / `UseJazorSsr`, and `AddJazorDevelopmentReload` / `UseJazorDevelopmentReload` to `AddJazorReload` / `UseJazorReload`.
+- `dotnet watch run` is the supported build-and-refresh workflow. Reload observes `jazor/` and `wwwroot/` by default without turning generated artifacts into new MSBuild watch inputs.
+- `ECMAScript.Style` now uses `lower_snake_case` for CSS DSL members, while its PascalCase CLR models, generated CSS, `style.mjs`, and the browser HMR protocol remain stable.
+- Generated WebIDL members retain their native DOM spelling such as `backgroundColor`; CSS declaration members use CSS spelling such as `background_color`, with no implicit conversion between the two surfaces.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -94,15 +94,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.11.0
+dotnet add package Jazor --version 0.12.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.11.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.11.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.12.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.12.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -135,7 +135,7 @@ The executable or web host selects its artifact mode through MSBuild:
 ```xml
 <PropertyGroup>
   <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorDir>
+  <JazorDir>$(MSBuildProjectDirectory)\jazor\</JazorDir>
 </PropertyGroup>
 ```
 

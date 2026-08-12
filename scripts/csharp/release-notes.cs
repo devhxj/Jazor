@@ -4,6 +4,13 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 var options = ReleaseNotesOptions.Parse(args);
+var curatedNotes = TryReadCuratedReleaseNotes(options.Tag);
+if (!string.IsNullOrWhiteSpace(curatedNotes))
+{
+    Console.WriteLine(curatedNotes);
+    return;
+}
+
 var previousTag = string.IsNullOrWhiteSpace(options.PreviousTag)
     ? await ResolvePreviousTagAsync(options.Tag)
     : options.PreviousTag;
@@ -85,6 +92,56 @@ if (!string.IsNullOrWhiteSpace(options.Repository) && !string.IsNullOrWhiteSpace
 }
 
 Console.WriteLine(string.Join(Environment.NewLine, lines));
+
+static string? TryReadCuratedReleaseNotes(string tag)
+{
+    var version = tag.StartsWith('v', StringComparison.OrdinalIgnoreCase)
+        ? tag[1..]
+        : tag;
+    var changelogPath = Path.Combine(Directory.GetCurrentDirectory(), "CHANGELOG.md");
+    if (!File.Exists(changelogPath))
+    {
+        return null;
+    }
+
+    var lines = File.ReadAllLines(changelogPath);
+    var heading = "### Jazor " + version;
+    var start = Array.FindIndex(
+        lines,
+        line => string.Equals(line.Trim(), heading, StringComparison.OrdinalIgnoreCase));
+    if (start < 0)
+    {
+        return null;
+    }
+
+    var selected = new List<string> { "## Jazor " + version };
+    for (var index = start + 1; index < lines.Length; index++)
+    {
+        var line = lines[index];
+        if (line.StartsWith("### ", StringComparison.Ordinal) || line.StartsWith("## ", StringComparison.Ordinal))
+        {
+            break;
+        }
+
+        selected.Add(line);
+    }
+
+    while (selected.Count > 1 && string.IsNullOrWhiteSpace(selected[1]))
+    {
+        selected.RemoveAt(1);
+    }
+
+    selected.Insert(1, string.Empty);
+
+    while (selected.Count > 2 && string.IsNullOrWhiteSpace(selected[^1]))
+    {
+        selected.RemoveAt(selected.Count - 1);
+    }
+
+    return selected.Count <= 2
+        ? null
+        : string.Join(Environment.NewLine, selected);
+}
 
 static async Task<string?> ResolvePreviousTagAsync(string currentTag)
 {

@@ -431,6 +431,7 @@ src/Wiki/jazor/
 src/Wiki/wwwroot/jazor/
 src/Playground/Playground/jazor/
 src/Playground/Playground/wwwroot/jazor/
+samples/Wiki/jazor/
 src/Playground/playground-consumer/dist/
 src/Wiki/.devtools-*
 .github/
@@ -449,6 +450,13 @@ cnblog/
 .wiki-browser-edge-profile*/
 .tools/
 jazor/
+# Checked-in sample graphs are layout baselines; ordinary project output remains ignored.
+!samples/ECMAScript.Pinia.Counter/Pinia.Counter.Host/jazor/
+!samples/ECMAScript.Pinia.Counter/Pinia.Counter.Host/jazor/**
+!samples/ECMAScript.VueRoute.MemorySmoke/VueRoute.MemorySmoke.Host/jazor/
+!samples/ECMAScript.VueRoute.MemorySmoke/VueRoute.MemorySmoke.Host/jazor/**
+!samples/Jazor.MultiProject/Sample.Host/jazor/
+!samples/Jazor.MultiProject/Sample.Host/jazor/**
 src/vben/
 .golutra
 dist-prod-optimized/

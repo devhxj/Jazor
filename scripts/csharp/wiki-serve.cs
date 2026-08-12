@@ -10,7 +10,7 @@ var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
 var publishRoot = Path.Combine(repoRoot, ".tmp", "wiki-publish-preview", options.Configuration);
 var hostRoot = sampleRoot;
 var webRoot = Path.Combine(sampleRoot, "wwwroot");
-var jazorRoot = Path.Combine(sampleRoot, "wwwroot", "jazor");
+var jazorRoot = Path.Combine(sampleRoot, "jazor");
 var mainModulePath = Path.Combine(jazorRoot, "main.mjs");
 var componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
@@ -59,14 +59,13 @@ if (options.Publish)
 
     hostRoot = publishRoot;
     webRoot = Path.Combine(hostRoot, "wwwroot");
-    jazorRoot = Path.Combine(webRoot, "jazor");
+    jazorRoot = Path.Combine(hostRoot, "jazor");
     mainModulePath = Path.Combine(jazorRoot, "main.mjs");
     componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
 
-    var publishShadowJazorRoot = Path.Combine(hostRoot, "jazor");
-    if (Directory.Exists(publishShadowJazorRoot))
+    if (!Directory.Exists(jazorRoot))
     {
-        throw new InvalidOperationException("Unexpected publish shadow directory: " + publishShadowJazorRoot + ". Published preview must serve /jazor only from wwwroot/jazor.");
+        throw new InvalidOperationException("Published Jazor artifacts were not copied to: " + jazorRoot);
     }
 }
 else if (options.BuildLocal)

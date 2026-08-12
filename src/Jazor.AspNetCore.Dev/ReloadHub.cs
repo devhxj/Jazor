@@ -6,14 +6,18 @@ using System.Text.Json.Serialization;
 
 namespace Jazor.AspNetCore.Dev;
 
-internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
+/// <summary>
+/// Owns the reload WebSocket transport. CLR names may evolve, but the JSON field names
+/// and message types below are the browser protocol and must remain stable.
+/// </summary>
+internal sealed class ReloadHub : IAsyncDisposable
 {
     private static readonly TimeSpan DefaultSendTimeout = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan DefaultHeartbeatTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan DefaultHeartbeatSweepInterval = TimeSpan.FromSeconds(10);
     private const int DefaultMaxIncomingMessageBytes = 64 * 1024;
     internal const string ModuleUpdateCapability = "module-update";
-    private readonly ConcurrentDictionary<WebSocket, ClientState> _sockets = new();
+    private readonly ConcurrentDictionary<WebSocket, ReloadClient> _sockets = new();
     private readonly TimeSpan _sendTimeout;
     private readonly TimeSpan _heartbeatTimeout;
     private readonly int _maxIncomingMessageBytes;
@@ -21,7 +25,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
     private readonly Task _heartbeatSweepTask;
     private int _disposeState;
 
-    public JazorDevelopmentReloadHub(
+    public ReloadHub(
         TimeSpan? sendTimeout = null,
         TimeSpan? heartbeatTimeout = null,
         TimeSpan? heartbeatSweepInterval = null,
@@ -53,21 +57,21 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(socket);
         ArgumentException.ThrowIfNullOrWhiteSpace(serverInstanceId);
 
-        var state = new ClientState(Guid.NewGuid().ToString("N")[..8]);
-        _sockets.TryAdd(socket, state);
+        var client = new ReloadClient(Guid.NewGuid().ToString("N")[..8]);
+        _sockets.TryAdd(socket, client);
         var buffer = new byte[256];
         var closeStatus = WebSocketCloseStatus.NormalClosure;
-        var closeDescription = "Jazor development reload shutdown";
+        var closeDescription = "Jazor reload shutdown";
 
         try
         {
-            await SendWithClientStateAsync(
+            await SendWithGateAsync(
                 socket,
-                state,
-                new DevelopmentReloadNotificationEnvelope
+                client,
+                new ReloadMessage
                 {
                     Type = "connected",
-                    ClientId = state.ClientId,
+                    ClientId = client.ClientId,
                     ConnectedClientCount = ConnectedClientCount,
                     ServerInstanceId = serverInstanceId,
                     ReloadSequence = reloadSequence
@@ -85,13 +89,13 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
                     break;
 
                 if (result.Text is not null)
-                    ProcessClientMessage(state, result.Text);
+                    ProcessClientMessage(client, result.Text);
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
         }
-        catch (ReceivedMessageTooLargeException exception)
+        catch (SocketMessageTooLargeException exception)
         {
             closeStatus = WebSocketCloseStatus.MessageTooBig;
             closeDescription = exception.Message;
@@ -109,7 +113,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         string? reason,
         CancellationToken cancellationToken)
         => BroadcastAsync(
-            new DevelopmentReloadNotificationEnvelope
+            new ReloadMessage
             {
                 Type = "full-reload",
                 ServerInstanceId = serverInstanceId,
@@ -122,7 +126,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         string serverInstanceId,
         long reloadSequence,
         string? reason,
-        IReadOnlyList<JazorDevelopmentHmrModuleUpdate> moduleUpdates,
+        IReadOnlyList<HmrModuleUpdate> moduleUpdates,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(serverInstanceId);
@@ -131,7 +135,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
             throw new ArgumentException("At least one module update is required.", nameof(moduleUpdates));
 
         var updates = moduleUpdates
-            .Select(static update => new DevelopmentReloadModuleUpdate
+            .Select(static update => new ReloadModuleUpdate
             {
                 Path = update.Path,
                 Url = update.Url,
@@ -144,7 +148,9 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
             })
             .ToArray();
 
-        var moduleUpdate = new DevelopmentReloadNotificationEnvelope
+        // Older clients only understand full reload. The server selects their payload
+        // individually so a newer client can keep component state during the same change.
+        var moduleUpdate = new ReloadMessage
         {
             Type = "module-update",
             ServerInstanceId = serverInstanceId,
@@ -153,7 +159,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
             ChangedPaths = updates.Select(static update => update.Path).ToArray(),
             ModuleUpdates = updates
         };
-        var fullReloadFallback = new DevelopmentReloadNotificationEnvelope
+        var fullReloadFallback = new ReloadMessage
         {
             Type = "full-reload",
             ServerInstanceId = serverInstanceId,
@@ -162,17 +168,17 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         };
 
         return BroadcastAsync(
-            state => state.SupportsCapability(ModuleUpdateCapability) ? moduleUpdate : fullReloadFallback,
+            client => client.SupportsCapability(ModuleUpdateCapability) ? moduleUpdate : fullReloadFallback,
             cancellationToken);
     }
 
     private async Task BroadcastAsync(
-        DevelopmentReloadNotificationEnvelope payload,
+        ReloadMessage payload,
         CancellationToken cancellationToken)
         => await BroadcastAsync(_ => payload, cancellationToken);
 
     private async Task BroadcastAsync(
-        Func<ClientState, DevelopmentReloadNotificationEnvelope> payloadFactory,
+        Func<ReloadClient, ReloadMessage> payloadFactory,
         CancellationToken cancellationToken)
     {
         await PruneExpiredClientsAsync(DateTimeOffset.UtcNow);
@@ -180,14 +186,14 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         foreach (var entry in _sockets.ToArray())
         {
             var socket = entry.Key;
-            var state = entry.Value;
+            var client = entry.Value;
             if (socket.State != WebSocketState.Open)
             {
                 RemoveSocket(socket);
                 continue;
             }
 
-            broadcastTasks.Add(SendToClientAsync(socket, state, payloadFactory(state), cancellationToken));
+            broadcastTasks.Add(SendToClientAsync(socket, client, payloadFactory(client), cancellationToken));
         }
 
         if (broadcastTasks.Count == 0)
@@ -233,13 +239,13 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
 
     private async Task SendToClientAsync(
         WebSocket socket,
-        ClientState state,
-        DevelopmentReloadNotificationEnvelope payload,
+        ReloadClient client,
+        ReloadMessage payload,
         CancellationToken cancellationToken)
     {
         try
         {
-            await SendWithClientStateAsync(socket, state, payload, cancellationToken);
+            await SendWithGateAsync(socket, client, payload, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -277,33 +283,33 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         }
     }
 
-    private async Task SendWithClientStateAsync(
+    private async Task SendWithGateAsync(
         WebSocket socket,
-        ClientState state,
-        DevelopmentReloadNotificationEnvelope payload,
+        ReloadClient client,
+        ReloadMessage payload,
         CancellationToken cancellationToken)
     {
         using var sendTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         sendTokenSource.CancelAfter(_sendTimeout);
-        await state.SendGate.WaitAsync(sendTokenSource.Token);
+        await client.SendGate.WaitAsync(sendTokenSource.Token);
         try
         {
             await SendAsync(socket, payload, sendTokenSource.Token);
         }
         finally
         {
-            state.SendGate.Release();
+            client.SendGate.Release();
         }
     }
 
     private static async Task SendAsync(
         WebSocket socket,
-        DevelopmentReloadNotificationEnvelope payload,
+        ReloadMessage payload,
         CancellationToken cancellationToken)
     {
         var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(
             payload,
-            JazorDevelopmentReloadJsonSerializerContext.Default.DevelopmentReloadNotificationEnvelope));
+            ReloadJsonSerializerContext.Default.ReloadMessage));
         await socket.SendAsync(
             message,
             WebSocketMessageType.Text,
@@ -311,7 +317,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
             cancellationToken);
     }
 
-    private static async Task<ReceivedMessage> ReceiveMessageAsync(
+    private static async Task<SocketMessage> ReceiveMessageAsync(
         WebSocket socket,
         byte[] buffer,
         int maxIncomingMessageBytes,
@@ -323,13 +329,13 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         {
             var result = await socket.ReceiveAsync(buffer, cancellationToken);
             if (result.MessageType == WebSocketMessageType.Close)
-                return new ReceivedMessage(result.MessageType, null);
+                return new SocketMessage(result.MessageType, null);
 
             totalMessageBytes += result.Count;
             if (totalMessageBytes > maxIncomingMessageBytes)
             {
-                throw new ReceivedMessageTooLargeException(
-                    $"Jazor development reload client message exceeds the {maxIncomingMessageBytes} byte limit.");
+                throw new SocketMessageTooLargeException(
+                    $"Jazor reload client message exceeds the {maxIncomingMessageBytes} byte limit.");
             }
 
             if (result.MessageType == WebSocketMessageType.Text)
@@ -337,7 +343,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
 
             if (result.EndOfMessage)
             {
-                return new ReceivedMessage(
+                return new SocketMessage(
                     result.MessageType,
                     result.MessageType == WebSocketMessageType.Text
                         ? Encoding.UTF8.GetString(stream.ToArray())
@@ -346,14 +352,14 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         }
     }
 
-    private static void ProcessClientMessage(ClientState state, string text)
+    private static void ProcessClientMessage(ReloadClient client, string text)
     {
-        DevelopmentReloadClientMessage? message;
+        ReloadClientMessage? message;
         try
         {
             message = JsonSerializer.Deserialize(
                 text,
-                JazorDevelopmentReloadJsonSerializerContext.Default.DevelopmentReloadClientMessage);
+                ReloadJsonSerializerContext.Default.ReloadClientMessage);
         }
         catch (JsonException)
         {
@@ -365,14 +371,14 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
 
         if (string.Equals(message.Type, "ready", StringComparison.OrdinalIgnoreCase))
         {
-            state.MarkReady(message.Capabilities);
-            state.LastSeenUtc = DateTimeOffset.UtcNow;
+            client.MarkReady(message.Capabilities);
+            client.LastSeenUtc = DateTimeOffset.UtcNow;
             return;
         }
 
         if (string.Equals(message.Type, "heartbeat", StringComparison.OrdinalIgnoreCase))
         {
-            state.LastSeenUtc = DateTimeOffset.UtcNow;
+            client.LastSeenUtc = DateTimeOffset.UtcNow;
         }
     }
 
@@ -419,7 +425,7 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
     private static async Task CloseAndDisposeAsync(
         WebSocket socket,
         WebSocketCloseStatus closeStatus = WebSocketCloseStatus.NormalClosure,
-        string closeDescription = "Jazor development reload shutdown",
+        string closeDescription = "Jazor reload shutdown",
         CancellationToken cancellationToken = default)
     {
         try
@@ -463,11 +469,12 @@ internal sealed class JazorDevelopmentReloadHub : IAsyncDisposable
         => CloseAndDisposeAsync(
             socket,
             WebSocketCloseStatus.NormalClosure,
-            "Jazor development reload shutdown",
+            "Jazor reload shutdown",
             cancellationToken);
 }
 
-internal sealed class DevelopmentReloadNotificationEnvelope
+/// <summary>Outbound JSON envelope for the stable browser reload protocol.</summary>
+internal sealed class ReloadMessage
 {
     [JsonPropertyName("type")]
     public required string Type { get; init; }
@@ -491,10 +498,11 @@ internal sealed class DevelopmentReloadNotificationEnvelope
     public IReadOnlyList<string>? ChangedPaths { get; init; }
 
     [JsonPropertyName("moduleUpdates")]
-    public IReadOnlyList<DevelopmentReloadModuleUpdate>? ModuleUpdates { get; init; }
+    public IReadOnlyList<ReloadModuleUpdate>? ModuleUpdates { get; init; }
 }
 
-internal sealed class DevelopmentReloadModuleUpdate
+/// <summary>One capability-gated Vue module update carried by <see cref="ReloadMessage"/>.</summary>
+internal sealed class ReloadModuleUpdate
 {
     [JsonPropertyName("path")]
     public required string Path { get; init; }
@@ -521,7 +529,8 @@ internal sealed class DevelopmentReloadModuleUpdate
     public required string BoundaryKind { get; init; }
 }
 
-internal sealed class DevelopmentReloadClientMessage
+/// <summary>Inbound JSON envelope sent by the browser reload client.</summary>
+internal sealed class ReloadClientMessage
 {
     [JsonPropertyName("type")]
     public string? Type { get; init; }
@@ -530,7 +539,8 @@ internal sealed class DevelopmentReloadClientMessage
     public string[]? Capabilities { get; init; }
 }
 
-internal sealed class ClientState(string clientId) : IDisposable
+/// <summary>Tracks one connected browser and the protocol capabilities it has acknowledged.</summary>
+internal sealed class ReloadClient(string clientId) : IDisposable
 {
     private string[] _capabilities = [];
     private int _isReady;
@@ -561,8 +571,10 @@ internal sealed class ClientState(string clientId) : IDisposable
         => SendGate.Dispose();
 }
 
-internal readonly record struct ReceivedMessage(
+/// <summary>Represents one fully assembled WebSocket message before JSON protocol processing.</summary>
+internal readonly record struct SocketMessage(
     WebSocketMessageType MessageType,
     string? Text);
 
-internal sealed class ReceivedMessageTooLargeException(string message) : InvalidOperationException(message);
+/// <summary>Signals that a client exceeded the fixed inbound WebSocket message limit.</summary>
+internal sealed class SocketMessageTooLargeException(string message) : InvalidOperationException(message);

@@ -2,7 +2,8 @@ using System.Text.Json;
 
 namespace Jazor.AspNetCore.Dev;
 
-internal static class JazorDevelopmentClientScriptFactory
+/// <summary>Builds the browser reload client while preserving its stable JavaScript ABI.</summary>
+internal static class ReloadClientScript
 {
     public static string Build(string webSocketPath, string pathBaseExpression, bool suppressReloadOnReconnect)
     {
@@ -12,6 +13,8 @@ internal static class JazorDevelopmentClientScriptFactory
         var serializedWebSocketPath = SerializeJavaScriptString(webSocketPath);
         var serializedPathBaseExpression = SerializeJavaScriptString(pathBaseExpression);
         var reloadOnReconnect = suppressReloadOnReconnect ? "false" : "true";
+        // The generated script is consumed directly by browsers. Keep exported names, JSON fields,
+        // and protocol message strings stable even when the CLR-side implementation is renamed.
         return $$"""
         const socketProtocol = location.protocol === "https:" ? "wss" : "ws";
         const pathBaseExpression = {{serializedPathBaseExpression}};

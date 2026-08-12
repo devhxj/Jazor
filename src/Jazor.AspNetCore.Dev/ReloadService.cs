@@ -6,48 +6,51 @@ using System.Net.WebSockets;
 
 namespace Jazor.AspNetCore.Dev;
 
-internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisposable
+/// <summary>Coordinates file observation, HMR classification, and browser reload delivery.</summary>
+internal sealed class ReloadService : IHostedService, IAsyncDisposable
 {
     internal const string PathBaseAttributeName = "data-jazor-path-base";
 
-    private readonly JazorDevelopmentReloadOptions _options;
+    private readonly JazorReloadOptions _options;
     private readonly IWebHostEnvironment _environment;
-    private readonly IJazorDevelopmentRuntimeSignals _runtimeSignals;
-    private readonly ILogger<JazorDevelopmentReloadService> _logger;
-    private readonly JazorDevelopmentReloadHub _reloadHub = new();
-    private readonly JazorDevelopmentCoalescingPathChangeQueue _fileChangeQueue = new();
-    private readonly Dictionary<string, JazorDevelopmentObservedFileSnapshot?> _lastBroadcastSnapshots = new(StringComparer.OrdinalIgnoreCase);
+    private readonly IReloadRuntimeSignals _runtimeSignals;
+    private readonly ILogger<ReloadService> _logger;
+    private readonly ReloadHub _reloadHub = new();
+    // Watcher callbacks and polling callbacks can arrive concurrently. The queue collapses
+    // bursts before manifest classification, preserving one ordered reload decision per batch.
+    private readonly PathChangeQueue _fileChangeQueue = new();
+    private readonly Dictionary<string, ObservedFileSnapshot?> _lastBroadcastSnapshots = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _lastBroadcastSnapshotsLock = new();
     private readonly string _serverInstanceId = Guid.NewGuid().ToString("N")[..8];
     private readonly List<FileSystemWatcher> _fileWatchers = [];
-    private readonly List<JazorDevelopmentFileSnapshotPoller> _fileSnapshotPollers = [];
+    private readonly List<FileSnapshotPoller> _fileSnapshotPollers = [];
     private readonly List<WatchRootRegistration> _watchRegistrations = [];
-    private readonly List<JazorDevelopmentHmrArtifactRegistration> _hmrArtifactRegistrations = [];
-    private JazorDevelopmentFileChangeDebouncer? _fileChangeDebouncer;
-    private JazorDevelopmentHmrManifestTracker? _hmrManifestTracker;
+    private readonly List<HmrArtifactRegistration> _hmrArtifactRegistrations = [];
+    private FileChangeDebouncer? _fileChangeDebouncer;
+    private HmrManifestTracker? _hmrManifestTracker;
     private Task? _fileChangePump;
     private CancellationTokenSource? _fileChangeCancellationSource;
     private long _reloadSequence;
     private int _disposeState;
 
-    public JazorDevelopmentReloadService(
-        IOptions<JazorDevelopmentReloadOptions> options,
+    public ReloadService(
+        IOptions<JazorReloadOptions> options,
         IWebHostEnvironment environment,
-        IJazorDevelopmentRuntimeSignals runtimeSignals,
-        ILogger<JazorDevelopmentReloadService> logger)
+        IReloadRuntimeSignals runtimeSignals,
+        ILogger<ReloadService> logger)
     {
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _runtimeSignals = runtimeSignals ?? throw new ArgumentNullException(nameof(runtimeSignals));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        ClientScriptContent = JazorDevelopmentClientScriptFactory.Build(
+        ClientScriptContent = ReloadClientScript.Build(
             _options.WebSocketPath.Value!,
             PathBaseAttributeName,
-            _options.SuppressReloadOnReconnectWhenExternalBrowserRefreshIsActive
+            _options.SuppressReconnectReloadForExternalRefresh
                 && _runtimeSignals.IsExternalBrowserRefreshActive);
     }
 
-    public JazorDevelopmentReloadOptions Options => _options;
+    public JazorReloadOptions Options => _options;
 
     public bool IsEnabled => _environment.IsDevelopment();
 
@@ -61,21 +64,24 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
         if (_fileChangePump is not null)
             return;
 
+        // Resolve paths once at startup so all watcher and manifest comparisons use absolute paths.
         ResolveHmrArtifactRegistrations();
-        _hmrManifestTracker = new JazorDevelopmentHmrManifestTracker(_hmrArtifactRegistrations);
+        // HMR eligibility is derived from two manifest snapshots, never from file names alone.
+        // That keeps logic changes on the full-reload path even when a .mjs file was updated.
+        _hmrManifestTracker = new HmrManifestTracker(_hmrArtifactRegistrations);
         _hmrManifestTracker.Initialize();
         ResolveWatchRegistrations();
         _fileChangeCancellationSource = new CancellationTokenSource();
         _fileChangePump = PumpFileChangesAsync(_fileChangeCancellationSource.Token);
-        _fileChangeDebouncer = new JazorDevelopmentFileChangeDebouncer(_options.FileChangeDebounceInterval);
+        _fileChangeDebouncer = new FileChangeDebouncer(_options.DebounceInterval);
         _fileChangeDebouncer.DebouncedChange += OnDebouncedFileChanges;
 
         foreach (var registration in _watchRegistrations)
         {
             TryStartFileWatcher(registration);
-            var snapshotPoller = new JazorDevelopmentFileSnapshotPoller(
+            var snapshotPoller = new FileSnapshotPoller(
                 registration.RootPath,
-                _options.FileChangePollingInterval,
+                _options.PollingInterval,
                 OnDebouncedFileChanges);
             snapshotPoller.Start();
             _fileSnapshotPollers.Add(snapshotPoller);
@@ -83,12 +89,12 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
 
         if (_watchRegistrations.Count == 0)
         {
-            _logger.LogDebug("Jazor development reload started without file watchers because no watch roots were configured.");
+            _logger.LogDebug("Jazor reload started without file watchers because no watch roots were configured.");
             return;
         }
 
         _logger.LogDebug(
-            "Jazor development reload watching {WatchRootCount} roots for browser full reload.",
+            "Jazor reload watching {WatchRootCount} roots for browser reload.",
             _watchRegistrations.Count);
     }
 
@@ -174,14 +180,14 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
     private void ResolveHmrArtifactRegistrations()
     {
         _hmrArtifactRegistrations.Clear();
-        foreach (var mapping in _options.HmrModuleMappings.Where(static mapping => mapping is not null))
+        foreach (var mapping in _options.HmrMappings.Where(static mapping => mapping is not null))
         {
             var artifactRootPath = ResolveContentRootPath(mapping.ArtifactRootPath);
             var requestPath = mapping.RequestPath.Value?.TrimEnd('/');
             if (string.IsNullOrWhiteSpace(requestPath))
                 continue;
 
-            _hmrArtifactRegistrations.Add(new JazorDevelopmentHmrArtifactRegistration(
+            _hmrArtifactRegistrations.Add(new HmrArtifactRegistration(
                 artifactRootPath,
                 Path.Combine(artifactRootPath, "jazor-manifest.json"),
                 requestPath));
@@ -192,12 +198,12 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
     {
         _watchRegistrations.Clear();
         var suppressExternalBrowserRefreshRoots =
-            _options.SuppressWatchRootsHandledByExternalBrowserRefresh
+            _options.SuppressExternalRefreshPaths
             && _runtimeSignals.IsExternalBrowserRefreshActive;
 
         // An HMR mapping is not useful unless its artifacts are observed. Include it
         // automatically so custom output roots do not require duplicated configuration.
-        var configuredRoots = _options.WatchRootPaths
+        var configuredRoots = _options.WatchPaths
             .Where(static path => !string.IsNullOrWhiteSpace(path))
             .Select(static path => path.Trim())
             .Concat(_hmrArtifactRegistrations.Select(static registration => registration.ArtifactRootPath))
@@ -213,8 +219,8 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
 
             if (suppressExternalBrowserRefreshRoots && IsHandledByExternalBrowserRefresh(rootPath))
             {
-				_logger.LogDebug(
-                    "Jazor development reload skipped watch root '{WatchRoot}' because an external browser refresh pipeline already owns that static root.",
+                _logger.LogDebug(
+                    "Jazor reload skipped watch root '{WatchRoot}' because an external browser refresh pipeline already owns that static root.",
                     rootPath);
                 continue;
             }
@@ -222,8 +228,8 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
             var watcherPath = ResolveWatcherPath(rootPath);
             if (watcherPath is null)
             {
-				_logger.LogDebug(
-                    "Jazor development reload skipped watch root '{WatchRoot}' because no existing ancestor directory could be resolved.",
+                _logger.LogDebug(
+                    "Jazor reload skipped watch root '{WatchRoot}' because no existing ancestor directory could be resolved.",
                     rootPath);
                 continue;
             }
@@ -271,7 +277,7 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
         {
             _logger.LogWarning(
                 exception,
-                "Jazor development reload could not start a file watcher for '{WatchRoot}'. Snapshot polling will remain active.",
+                "Jazor reload could not start a file watcher for '{WatchRoot}'. Snapshot polling will remain active.",
                 registration.RootPath);
         }
     }
@@ -329,7 +335,7 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
     {
         foreach (var registration in _watchRegistrations)
         {
-            if (JazorDevelopmentFileWatchFilter.ShouldObserve(registration.RootPath, path))
+            if (FileWatchFilter.ShouldObserve(registration.RootPath, path))
                 return true;
         }
 
@@ -359,7 +365,7 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
             {
                 _logger.LogDebug(
                     exception,
-                    "Jazor development reload ignored a file-change processing failure for full-reload broadcast.");
+                    "Jazor reload ignored a file-change processing failure for browser broadcast.");
             }
         }
     }
@@ -374,21 +380,21 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
 
         RecordBroadcastSnapshots(changedPathsToProcess);
         var hmrDecision = _hmrManifestTracker?.Evaluate(changedPathsToProcess)
-            ?? JazorDevelopmentHmrDecision.FullReload("hmr-metadata-unavailable");
+            ?? HmrDecision.FullReload("hmr-metadata-unavailable");
         _logger.LogDebug(
-            "Jazor development reload selected {ReloadKind} ({ReloadReason}) for {ChangedPathCount} observed changes.",
+            "Jazor reload selected {ReloadKind} ({ReloadReason}) for {ChangedPathCount} observed changes.",
             hmrDecision.Kind,
             hmrDecision.Reason,
             changedPathsToProcess.Count);
-        if (hmrDecision.Kind == JazorDevelopmentHmrDecisionKind.None)
+        if (hmrDecision.Kind == HmrDecisionKind.None)
             return;
 
         var reloadSequence = Interlocked.Increment(ref _reloadSequence);
-        var reason = hmrDecision.Kind == JazorDevelopmentHmrDecisionKind.FullReload &&
+        var reason = hmrDecision.Kind == HmrDecisionKind.FullReload &&
                      IsGenericFileChangeFallback(hmrDecision.Reason)
             ? BuildReloadReason(changedPathsToProcess)
             : hmrDecision.Reason;
-        if (hmrDecision.Kind == JazorDevelopmentHmrDecisionKind.ModuleUpdate)
+        if (hmrDecision.Kind == HmrDecisionKind.ModuleUpdate)
         {
             await _reloadHub.BroadcastModuleUpdateAsync(
                 _serverInstanceId,
@@ -407,7 +413,7 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
     }
 
     private static bool IsGenericFileChangeFallback(string reason)
-        => reason is "hmr-unmapped-change" or "hmr-non-module-change";
+        => reason is "hmr-unmapped-change" or "hmr-non-module-change" or "hmr-manifest-unavailable";
 
     private string BuildReloadReason(IReadOnlyList<string> changedPaths)
     {
@@ -417,7 +423,7 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
         var changedPath = changedPaths[0];
         foreach (var registration in _watchRegistrations)
         {
-            if (!JazorDevelopmentFileWatchFilter.ShouldObserve(registration.RootPath, changedPath))
+            if (!FileWatchFilter.ShouldObserve(registration.RootPath, changedPath))
                 continue;
 
             var relativePath = Path.GetRelativePath(registration.RootPath, changedPath)
@@ -474,13 +480,13 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
         }
     }
 
-    private static JazorDevelopmentObservedFileSnapshot? CaptureObservedFileSnapshot(string path)
+    private static ObservedFileSnapshot? CaptureObservedFileSnapshot(string path)
     {
         try
         {
             var fileInfo = new FileInfo(path);
             return fileInfo.Exists
-                ? new JazorDevelopmentObservedFileSnapshot(fileInfo.Length, fileInfo.LastWriteTimeUtc.Ticks)
+                ? new ObservedFileSnapshot(fileInfo.Length, fileInfo.LastWriteTimeUtc.Ticks)
                 : null;
         }
         catch (IOException)
@@ -493,9 +499,14 @@ internal sealed class JazorDevelopmentReloadService : IHostedService, IAsyncDisp
         }
     }
 
+    /// <summary>
+    /// Keeps the configured root separate from the existing ancestor supplied to FileSystemWatcher.
+    /// The latter lets reload begin before a generated <c>jazor</c> directory exists.
+    /// </summary>
     private sealed record WatchRootRegistration(string RootPath, string WatcherPath);
 }
 
-internal readonly record struct JazorDevelopmentObservedFileSnapshot(
+/// <summary>Minimal file state used to suppress duplicate watcher and polling notifications.</summary>
+internal readonly record struct ObservedFileSnapshot(
     long Length,
     long LastWriteTimeUtcTicks);

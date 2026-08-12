@@ -1,5 +1,6 @@
 #!/usr/bin/env dotnet run
 #:sdk Microsoft.NET.Sdk.Web
+#:project ../../src/Jazor.AspNetCore/Jazor.AspNetCore.csproj
 #:project ../../src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj
 
 using System.Diagnostics;
@@ -8,6 +9,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,7 +19,7 @@ using Microsoft.Extensions.Logging;
 var repoRoot = RequireRepoRoot();
 var workspace = Path.Combine(repoRoot, ".tmp", "development-hmr-browser", Guid.NewGuid().ToString("N"));
 var webRoot = Path.Combine(workspace, "wwwroot");
-var artifactRoot = Path.Combine(webRoot, "jazor");
+var artifactRoot = Path.Combine(workspace, "jazor");
 var componentPath = Path.Combine(artifactRoot, "component.mjs");
 var componentSourceMapPath = componentPath + ".map";
 var manifestPath = Path.Combine(artifactRoot, "jazor-manifest.json");
@@ -29,6 +31,7 @@ WebApplication? app = null;
 
 try
 {
+    Directory.CreateDirectory(webRoot);
     Directory.CreateDirectory(artifactRoot);
     if (!File.Exists(vueRuntimeSourcePath))
         throw new InvalidOperationException("Vue browser runtime was not found at '" + vueRuntimeSourcePath + "'.");
@@ -49,22 +52,23 @@ try
     builder.WebHost.UseUrls(baseAddress.ToString());
     builder.Logging.SetMinimumLevel(LogLevel.Warning);
     builder.Logging.AddFilter("Jazor.AspNetCore.Dev", LogLevel.Debug);
-    builder.Services.AddJazorDevelopmentReload(options =>
+    builder.Services.AddJazorReload(options =>
     {
         // The mapping itself must be enough to observe a custom artifact root.
-        options.WatchRootPaths.Clear();
-        options.HmrModuleMappings.Clear();
-        options.HmrModuleMappings.Add(new JazorDevelopmentHmrModuleMapping
+        options.WatchPaths.Clear();
+        options.HmrMappings.Clear();
+        options.HmrMappings.Add(new JazorHmrMapping
         {
-            ArtifactRootPath = "wwwroot/jazor",
+            ArtifactRootPath = "jazor",
             RequestPath = "/jazor"
         });
-        options.FileChangeDebounceInterval = TimeSpan.FromMilliseconds(35);
-        options.FileChangePollingInterval = TimeSpan.FromMilliseconds(75);
+        options.DebounceInterval = TimeSpan.FromMilliseconds(35);
+        options.PollingInterval = TimeSpan.FromMilliseconds(75);
     });
 
     app = builder.Build();
-    app.UseJazorDevelopmentReload();
+    app.UseJazorReload();
+    app.UseJazorArtifacts();
     app.UseStaticFiles();
     app.MapGet("/", () => Results.File(indexPath, "text/html; charset=utf-8"));
     app.MapPost("/__jazor-hmr-fixture/update", async () =>
