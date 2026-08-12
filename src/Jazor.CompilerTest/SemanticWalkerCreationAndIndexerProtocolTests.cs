@@ -140,6 +140,18 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     }
 
     [TestMethod]
+    public void Visit_StructuralRecordDuplicateJavaScriptKeys_RejectsTheObjectLiteralShape()
+    {
+        var block = GetBlockOperation("var value = new Collision(1, 2);");
+
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "duplicate JavaScript key");
+        StringAssert.Contains(exception.Message, "shared");
+    }
+
+    [TestMethod]
     public void Visit_MultiParameterIndexerAssignment_RejectsUnrepresentableJavaScriptTarget()
     {
         var block = GetBlockOperation(
@@ -634,6 +646,10 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
                 {
                     public string? Label;
                 }
+
+                public sealed record Collision(
+                    [property: ECMAScript.ECMAScriptName("shared")] int First,
+                    [property: ECMAScript.ECMAScriptName("shared")] int Second);
 
                 public sealed class Buffer
                 {

@@ -62,6 +62,38 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public void ConvertRuntimeClass_DuplicateJavaScriptMemberName_RejectsTheUnsafeShape()
+    {
+        const string scenarioId = "ast-converter-runtime-class.duplicate-javascript-member-name";
+        var fixture = CompileModule(
+            """
+            using ECMAScript;
+
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public int Value;
+
+                    [ECMAScriptName("Value")]
+                    public int Read() => Value;
+                }
+            }
+            """,
+            scenarioId,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location));
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var exception = Assert.ThrowsExactly<NotSupportedException>(
+            () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+
+        StringAssert.Contains(exception.Message, "duplicate JavaScript member name", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, "Value", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, "Read", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
     public async Task ConvertModule_IteratorMethods_DeclareSyncAndAsyncGeneratorArtifacts()
     {
         const string scenarioId = "ast-converter.iterator-method-generator-artifact";

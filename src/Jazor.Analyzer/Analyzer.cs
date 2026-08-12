@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using ECMAScript.Contract;
@@ -36,12 +37,16 @@ public partial class Analyzer : DiagnosticAnalyzer
 	private const string AmbiguousRuntimeTypeFilterDiagnosticId = "JAZOR002";
 	private const string InvalidSpreadUsageDiagnosticId = "JAZOR003";
 	private const string ConflictingSpreadPropertyNameDiagnosticId = "JAZOR004";
+	private const string ConflictingJavaScriptNameMetadataDiagnosticId = "JAZOR005";
+	private const string ConflictingJavaScriptNameDiagnosticId = "JAZOR006";
 	private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
 	private const string Title = "Jazor";
 	private const string MessageFormat = "[{0}] is not support in ECMAScript";
 	private const string AmbiguousRuntimeTypeFilterMessageFormat = "[{0}] cannot be used for {1} because runtime alias '{2}' is shared with incompatible supported types: {3}";
 	private const string InvalidSpreadUsageMessageFormat = "[Spread] is only valid on instance record properties that participate in structural object lowering";
 	private const string ConflictingSpreadPropertyNameMessageFormat = "[Spread] cannot be combined with explicit JavaScript property-name attributes on '{0}'";
+	private const string ConflictingJavaScriptNameMetadataMessageFormat = "'{0}' declares Description name '{1}' and ECMAScriptName '{2}', which resolve to different JavaScript names";
+	private const string ConflictingJavaScriptNameMessageFormat = "JavaScript name '{0}' is declared by both '{1}' and '{2}' in the same emitted scope";
 	private const string Category = "Security";
 
 	/// <summary>
@@ -82,10 +87,28 @@ public partial class Analyzer : DiagnosticAnalyzer
 		DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
 
+	private static readonly DiagnosticDescriptor ConflictingJavaScriptNameMetadataRule = new(
+		ConflictingJavaScriptNameMetadataDiagnosticId,
+		Title,
+		ConflictingJavaScriptNameMetadataMessageFormat,
+		Category,
+		DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
+
+	private static readonly DiagnosticDescriptor ConflictingJavaScriptNameRule = new(
+		ConflictingJavaScriptNameDiagnosticId,
+		Title,
+		ConflictingJavaScriptNameMessageFormat,
+		Category,
+		DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
+
 	/// <summary>
 	/// <inheritdoc/>
 	/// </summary>
-	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule, AmbiguousRuntimeTypeFilterRule, InvalidSpreadUsageRule, ConflictingSpreadPropertyNameRule];
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+		[Rule, AmbiguousRuntimeTypeFilterRule, InvalidSpreadUsageRule, ConflictingSpreadPropertyNameRule,
+			ConflictingJavaScriptNameMetadataRule, ConflictingJavaScriptNameRule];
 
 	internal static readonly ImmutableArray<OperationKind> AnalysisOperationKinds =
 	[
@@ -187,6 +210,8 @@ public partial class Analyzer : DiagnosticAnalyzer
 			AnalysisSymbolEndAction(ctx);
 			return;
 		}
+
+		CheckJavaScriptNameMetadataConflict(ctx.ReportDiagnostic, symbol);
 
 		// Delegate 的 synthesized members（BeginInvoke/EndInvoke 等）不是作者声明的契约；
 		// only inspect Invoke so diagnostics stay tied to the authored callback signature.
@@ -951,6 +976,10 @@ public partial class Analyzer : DiagnosticAnalyzer
 	{
 		var symbol = (INamedTypeSymbol)ctx.Symbol;
 
+		// The effective name resolver is shared with the compiler. This separate metadata check
+		// exposes contradictory authored values before a later lowering phase hides one by precedence.
+		CheckJavaScriptNameMetadataConflict(ctx.ReportDiagnostic, symbol);
+
 		// 检查基类
 		if (symbol.BaseType is not null && symbol.BaseType.SpecialType != SpecialType.System_Object)
 			CheckType(ctx.ReportDiagnostic, symbol.BaseType, GetLocation(symbol.Locations));
@@ -964,6 +993,8 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 		foreach (var member in symbol.GetMembers())
 		{
+			CheckJavaScriptNameMetadataConflict(ctx.ReportDiagnostic, member);
+
 			if (member is IFieldSymbol field)
 				CheckType(ctx.ReportDiagnostic, field.Type, GetLocation(field.Locations));
 
@@ -988,6 +1019,203 @@ public partial class Analyzer : DiagnosticAnalyzer
 			//	ctx.ReportDiagnostic(Diagnostic.Create(Rule, GetLocation(nestedType.Locations), $"Nested '{nestedType.TypeKind}'"));
 			//}
 		}
+
+		if (HasECMAScriptModuleAttribute(symbol))
+			CheckModuleJavaScriptNameScope(ctx.ReportDiagnostic, symbol);
+		else if (IsRuntimeMemberClassForNameAnalysis(symbol))
+			CheckRuntimeClassJavaScriptNameScope(ctx.ReportDiagnostic, symbol);
+		else if (StructuralRecordSupport.IsStructuralRecordType(symbol) &&
+			InECMAScriptAttribute(symbol))
+			CheckStructuralRecordJavaScriptNameScope(ctx.ReportDiagnostic, symbol);
+	}
+
+	private static void CheckJavaScriptNameMetadataConflict(
+		Action<Diagnostic> report,
+		ISymbol symbol)
+	{
+		var metadata = Util.GetJavaScriptNameMetadata(symbol);
+		if (!metadata.HasConflictingExplicitNames)
+			return;
+
+		report(Diagnostic.Create(
+			ConflictingJavaScriptNameMetadataRule,
+			GetLocation(symbol.Locations),
+			symbol.ToDisplayString(Format.NameFormat),
+			metadata.DescriptionName!,
+			metadata.ECMAScriptName!));
+	}
+
+	private static bool HasECMAScriptModuleAttribute(ITypeSymbol typeSymbol)
+		=> typeSymbol.GetAttributes().Any(attribute =>
+			string.Equals(
+				attribute.AttributeClass?.ToDisplayString(),
+				Util.ECMAScriptModuleAttributeMetadataName,
+				StringComparison.Ordinal));
+
+	private static bool IsRuntimeMemberClassForNameAnalysis(INamedTypeSymbol symbol)
+	{
+		if (symbol.TypeKind != TypeKind.Class ||
+			symbol.IsRecord ||
+			symbol.ContainingType is null)
+		{
+			return false;
+		}
+
+		for (var current = symbol.ContainingType; current is not null; current = current.ContainingType)
+		{
+			if (HasECMAScriptModuleAttribute(current))
+				return true;
+		}
+
+		return false;
+	}
+
+	private static void CheckModuleJavaScriptNameScope(
+		Action<Diagnostic> report,
+		INamedTypeSymbol moduleType)
+	{
+		var names = new Dictionary<string, ISymbol>(StringComparer.Ordinal);
+		foreach (var member in moduleType.GetMembers())
+		{
+			if (!IsExportedModuleNameCandidate(member))
+				continue;
+
+			if (member is IPropertySymbol property)
+			{
+				// Getter and setter are one logical export. Treating accessors separately would
+				// report a legal pair as a collision and would disagree with the public API shape.
+				if (!property.IsIndexer)
+					CheckJavaScriptNameCollision(report, names, property, Util.GetConfigOrSymbolName(property));
+				continue;
+			}
+
+			if (member is IFieldSymbol field)
+			{
+				// Auto-property backing storage is compiler plumbing and is never a public export.
+				if (!field.IsImplicitlyDeclared || field.AssociatedSymbol is not IPropertySymbol)
+					CheckJavaScriptNameCollision(report, names, field, Util.GetConfigOrSymbolName(field));
+				continue;
+			}
+
+			if (member is IMethodSymbol method && method.MethodKind == MethodKind.Ordinary)
+				CheckJavaScriptNameCollision(report, names, method, Util.GetConfigOrSymbolName(method));
+			else if (member is INamedTypeSymbol type)
+				CheckJavaScriptNameCollision(report, names, type, Util.GetConfigOrSymbolName(type));
+		}
+	}
+
+	private static bool IsExportedModuleNameCandidate(ISymbol symbol)
+	{
+		if (symbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
+			return false;
+
+		return symbol switch
+		{
+			IFieldSymbol => true,
+			IPropertySymbol property => !property.IsIndexer,
+			IMethodSymbol method => method.MethodKind == MethodKind.Ordinary &&
+				method.AssociatedSymbol is not IEventSymbol,
+			INamedTypeSymbol type => type.TypeKind == TypeKind.Class && !type.IsRecord,
+			_ => false
+		};
+	}
+
+	private static void CheckRuntimeClassJavaScriptNameScope(
+		Action<Diagnostic> report,
+		INamedTypeSymbol runtimeType)
+	{
+		var instanceNames = new Dictionary<string, ISymbol>(StringComparer.Ordinal);
+		var staticNames = new Dictionary<string, ISymbol>(StringComparer.Ordinal);
+
+		foreach (var member in runtimeType.GetMembers())
+		{
+			if (member is IFieldSymbol field)
+			{
+				if (field.IsImplicitlyDeclared || field.AssociatedSymbol is IEventSymbol)
+					continue;
+
+				var name = Util.GetConfigOrSymbolName(field);
+				// Private fields emit as #private names; an ordinary method with the same text
+				// is a different JavaScript property and does not collide with that storage slot.
+				if (field.DeclaredAccessibility is Accessibility.Private or Accessibility.Protected or Accessibility.ProtectedAndInternal or Accessibility.ProtectedOrInternal)
+					name = "#" + name;
+
+				CheckJavaScriptNameCollision(
+					report,
+					field.IsStatic ? staticNames : instanceNames,
+					field,
+					name);
+				continue;
+			}
+
+			if (member is IPropertySymbol property)
+			{
+				if (!property.IsIndexer)
+					CheckJavaScriptNameCollision(
+						report,
+						property.IsStatic ? staticNames : instanceNames,
+						property,
+						Util.GetConfigOrSymbolName(property));
+				continue;
+			}
+
+			if (member is IMethodSymbol method &&
+				method.MethodKind == MethodKind.Ordinary &&
+				method.AssociatedSymbol is not IEventSymbol)
+			{
+				CheckJavaScriptNameCollision(
+					report,
+					method.IsStatic ? staticNames : instanceNames,
+					method,
+					Util.GetConfigOrSymbolName(method));
+			}
+		}
+	}
+
+	private static void CheckStructuralRecordJavaScriptNameScope(
+		Action<Diagnostic> report,
+		INamedTypeSymbol recordType)
+	{
+		var names = new Dictionary<string, ISymbol>(StringComparer.Ordinal);
+		foreach (var property in recordType.GetMembers().OfType<IPropertySymbol>())
+		{
+			if (property.IsImplicitlyDeclared ||
+				property.IsStatic ||
+				property.IsIndexer ||
+				!StructuralRecordSupport.IsStructuralRecordMember(property))
+			{
+				continue;
+			}
+
+			CheckJavaScriptNameCollision(
+				report,
+				names,
+				property,
+				Util.GetConfigOrSymbolName(property));
+		}
+	}
+
+	private static void CheckJavaScriptNameCollision(
+		Action<Diagnostic> report,
+		Dictionary<string, ISymbol> names,
+		ISymbol symbol,
+		string name)
+	{
+		if (names.TryGetValue(name, out var existingSymbol))
+		{
+			if (SymbolEqualityComparer.Default.Equals(existingSymbol, symbol))
+				return;
+
+			report(Diagnostic.Create(
+				ConflictingJavaScriptNameRule,
+				GetLocation(symbol.Locations),
+				name,
+				existingSymbol.ToDisplayString(Format.NameFormat),
+				symbol.ToDisplayString(Format.NameFormat)));
+			return;
+		}
+
+		names.Add(name, symbol);
 	}
 
 	private static bool IsSupportedRuntimeMemberEvent(IEventSymbol eventSymbol)

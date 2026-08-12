@@ -226,6 +226,209 @@ public sealed class RazorVueAnalyzerScopeTests
     }
 
     [TestMethod]
+    public async Task ConflictingNameMetadata_ReportsJazor005()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [ECMAScriptModule("./names")]
+            public static class Names
+            {
+                [Description("@#descriptionName")]
+                [ECMAScriptName("ecmascriptName")]
+                public static int Value = 1;
+            }
+            """);
+
+        var conflicts = diagnostics.Where(static diagnostic => diagnostic.Id == "JAZOR005").ToArray();
+        Assert.HasCount(1, conflicts, string.Join(Environment.NewLine, diagnostics));
+        StringAssert.Contains(conflicts[0].GetMessage(), "descriptionName", StringComparison.Ordinal);
+        StringAssert.Contains(conflicts[0].GetMessage(), "ecmascriptName", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task MatchingOrSuppressedNameMetadata_DoesNotReportJazor005()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [ECMAScriptModule("./names")]
+            public static class Names
+            {
+                [Description("@#sameName")]
+                [ECMAScriptName("sameName")]
+                public static int Same = 1;
+
+                [Description("@#ignoredName")]
+                [ECMAScriptName(" ")]
+                public static int Suppressed = 2;
+
+                [Description("@#ignoredNull")]
+                [ECMAScriptName(null)]
+                public static int SuppressedNull = 3;
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR005"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task ModuleMemberNameCollision_ReportsJazor006ForRawAndExplicitNames()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("./names")]
+            public static class Names
+            {
+                public static int Raw = 1;
+
+                [ECMAScriptName("Raw")]
+                public static int Explicit = 2;
+            }
+            """);
+
+        var conflicts = diagnostics.Where(static diagnostic => diagnostic.Id == "JAZOR006").ToArray();
+        Assert.HasCount(1, conflicts, string.Join(Environment.NewLine, diagnostics));
+        StringAssert.Contains(conflicts[0].GetMessage(), "Raw", StringComparison.Ordinal);
+        StringAssert.Contains(conflicts[0].GetMessage(), "Explicit", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task ModuleMemberNameCollision_ReportsJazor006ForDescriptionAliasAndRawName()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [ECMAScriptModule("./names")]
+            public static class Names
+            {
+                public static int Raw = 1;
+
+                [Description("@#Raw")]
+                public static int DescriptionAlias = 2;
+            }
+            """);
+
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR006"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task ModuleOverloadsWithoutExplicitNames_DoNotReportJazor006()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("./names")]
+            public static class Names
+            {
+                public static int Read(int value) => value;
+                public static int Read(string value) => value.Length;
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR006"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task PrivateModuleNameCollision_IsAllowedBecauseCompilerAliasesPrivateBindings()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("./names")]
+            public static class Names
+            {
+                [ECMAScriptName("shared")]
+                private static int Hidden = 1;
+
+                [ECMAScriptName("shared")]
+                public static int Visible = 2;
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR006"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task RuntimeMemberClassNameCollision_ReportsJazor006()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("./names")]
+            public static class Names
+            {
+                public sealed class Widget
+                {
+                    public int Value;
+
+                    [ECMAScriptName("Value")]
+                    public int Read() => Value;
+                }
+            }
+            """);
+
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR006"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task RuntimeMemberPropertyAccessors_ShareOneLegalName()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("./names")]
+            public static class Names
+            {
+                public sealed class Widget
+                {
+                    public int Value { get; set; }
+                }
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR006"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task StructuralRecordNameCollision_ReportsJazor006ForObjectKeys()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("./names")]
+            public static class Names
+            {
+                public sealed record Props(
+                    [property: ECMAScriptName("shared")] int First,
+                    [property: ECMAScriptName("shared")] int Second);
+            }
+            """);
+
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR006"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
     public async Task SupportedRuntimeEvent_RejectsUnsupportedDelegatePayload()
     {
         var diagnostics = await AnalyzeAsync(

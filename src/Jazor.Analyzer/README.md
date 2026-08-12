@@ -27,6 +27,10 @@
 
 - `JAZOR001`：不支持的类型或成员进入 ECMAScript 编译域。
 - `JAZOR002`：共享 runtime alias 造成的类型过滤歧义。
+- `JAZOR003`：`SpreadAttribute` 用法不符合 structural record 约束。
+- `JAZOR004`：`SpreadAttribute` 与显式 JavaScript 属性名同时使用。
+- `JAZOR005`：同一符号上的 `Description("@#...")` 与 `ECMAScriptName` 提供了不同的具体 JavaScript 名称。
+- `JAZOR006`：同一实际发射作用域内的成员解析到重复 JavaScript 名称。模块检查只覆盖 public/internal 导出；runtime member class 分开检查 static/instance，属性 getter/setter 视为一个逻辑成员，record 只检查直接结构化属性。
 
 ## 构建与验证
 

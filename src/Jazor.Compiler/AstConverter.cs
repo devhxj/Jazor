@@ -1154,6 +1154,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        ValidateRuntimeClassJavaScriptNameScope(symbol);
+
         var nodes = new List<Node>();
         var constructorLowerings = GetMemberConstructorLowerings(symbol, baseType, cancellationToken);
         var hasExplicitConstructor = constructorLowerings.Count > 0;
@@ -1249,6 +1251,81 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         );
 
         return declaration;
+    }
+
+    private void ValidateRuntimeClassJavaScriptNameScope(INamedTypeSymbol runtimeType)
+    {
+        var instanceNames = new Dictionary<string, ISymbol>(System.StringComparer.Ordinal);
+        var staticNames = new Dictionary<string, ISymbol>(System.StringComparer.Ordinal);
+
+        foreach (var member in runtimeType.GetMembers())
+        {
+            if (!ShouldIncludeMemberClassMember(member))
+                continue;
+
+            if (member is IFieldSymbol field)
+            {
+                if (field.IsImplicitlyDeclared || field.AssociatedSymbol is IEventSymbol)
+                    continue;
+
+                var name = Util.GetConfigOrSymbolName(field);
+                // Class fields use #name for private storage. Keep that namespace distinct from
+                // ordinary methods/properties, while still rejecting duplicate private slots.
+                if (field.DeclaredAccessibility is Accessibility.Private or Accessibility.Protected or Accessibility.ProtectedAndInternal or Accessibility.ProtectedOrInternal)
+                    name = "#" + name;
+
+                AddRuntimeClassJavaScriptName(
+                    field.IsStatic ? staticNames : instanceNames,
+                    field,
+                    name,
+                    runtimeType);
+                continue;
+            }
+
+            if (member is IPropertySymbol property)
+            {
+                if (!property.IsIndexer)
+                {
+                    AddRuntimeClassJavaScriptName(
+                        property.IsStatic ? staticNames : instanceNames,
+                        property,
+                        Util.GetConfigOrSymbolName(property),
+                        runtimeType);
+                }
+
+                continue;
+            }
+
+            if (member is IMethodSymbol method &&
+                method.MethodKind == MethodKind.Ordinary &&
+                method.AssociatedSymbol is not IEventSymbol)
+            {
+                AddRuntimeClassJavaScriptName(
+                    method.IsStatic ? staticNames : instanceNames,
+                    method,
+                    Util.GetConfigOrSymbolName(method),
+                    runtimeType);
+            }
+        }
+    }
+
+    private static void AddRuntimeClassJavaScriptName(
+        Dictionary<string, ISymbol> names,
+        ISymbol symbol,
+        string name,
+        INamedTypeSymbol runtimeType)
+    {
+        if (!names.TryGetValue(name, out var existingSymbol) ||
+            SymbolEqualityComparer.Default.Equals(existingSymbol, symbol))
+        {
+            names[name] = symbol;
+            return;
+        }
+
+        throw new NotSupportedException(
+            $"Jazor runtime class '{runtimeType.ToDisplayString(Format.NameFormat)}' has duplicate JavaScript member name '{name}' for '" +
+            $"{existingSymbol.ToDisplayString(Format.NameFormat)}' and '{symbol.ToDisplayString(Format.NameFormat)}'. " +
+            "Use unique member names or explicit ECMAScriptName mappings.");
     }
 
     private List<MemberConstructorLowering> GetMemberConstructorLowerings(

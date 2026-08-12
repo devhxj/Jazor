@@ -62,6 +62,26 @@ public static class Util
     }
 
     /// <summary>
+    /// Raw JavaScript-name metadata found on one Roslyn symbol.
+    ///
+    /// This is deliberately separate from the effective name: <c>ECMAScriptName</c> has
+    /// precedence over <c>Description("@#...")</c>, while the analyzer still needs to see
+    /// both authored values in order to diagnose contradictory metadata.
+    /// </summary>
+    internal readonly record struct JavaScriptNameMetadata(
+        bool HasECMAScriptNameAttribute,
+        string? ECMAScriptName,
+        string? DescriptionName,
+        bool HasDescriptionBoundary)
+    {
+        public bool HasConflictingExplicitNames
+            => HasECMAScriptNameAttribute &&
+               !string.IsNullOrEmpty(ECMAScriptName) &&
+               !string.IsNullOrEmpty(DescriptionName) &&
+               !string.Equals(ECMAScriptName, DescriptionName, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// 以仓库测试使用的 KnR 风格输出 ECMAScript 文本。
     /// </summary>
     public static string ToKnRECMAScript(this Node node)
@@ -246,45 +266,83 @@ public static class Util
         return false;
     }
 
-    private static JsNameConfig GetSymbolNameConfig(ISymbol symbol)
+    /// <summary>
+    /// Reads both supported authored-name attributes without applying precedence.
+    ///
+    /// The effective resolver below intentionally keeps the historical rule that a blank/null
+    /// <c>ECMAScriptName</c> suppresses <c>Description</c>, and that <c>Description("@#")</c>
+    /// is a boundary rather than a concrete name. Keeping the raw read here gives compiler and
+    /// analyzer one source of truth while still allowing diagnostics to explain the conflict.
+    /// </summary>
+    internal static JavaScriptNameMetadata GetJavaScriptNameMetadata(ISymbol symbol)
     {
-        // todo:属性的别名如何处理（因为存在get、set）
-        var useDescription = true;
-        string? configName = null;
-        JsNameConfig description = JsNameConfig.None;
-        foreach (var attr in symbol.GetAttributes())
+        var hasECMAScriptName = false;
+        string? ecmaScriptName = null;
+        string? descriptionName = null;
+        var hasDescriptionBoundary = false;
+
+        foreach (var attribute in symbol.GetAttributes())
         {
-            if (attr.ConstructorArguments.Length == 0)
+            if (attribute.ConstructorArguments.Length == 0)
                 continue;
 
-            //ECMAScriptNameAttribute 优先级最高，找到后直接返回
-            // This path runs only after a successful C# compilation. Roslyn therefore binds
-            // every AttributeData entry to its attribute class and its declared string argument.
-            if (attr.AttributeClass!.Name == "ECMAScriptNameAttribute")
+            var attributeName = attribute.AttributeClass?.Name;
+            if (attributeName == "ECMAScriptNameAttribute")
             {
-                useDescription = false;
-                configName = ((string?)attr.ConstructorArguments[0].Value)?.Trim();
-                break;
-            }
-            else if (attr.AttributeClass.Name == "DescriptionAttribute")
-            {
-                var desc = ((string?)attr.ConstructorArguments[0].Value)?.Trim();
-                if (desc?.StartsWith("@#") == true)
+                // AttributeUsage disallows duplicates, but keeping the first value preserves the
+                // old resolver's source-order behavior for invalid/recovered Roslyn symbols.
+                if (!hasECMAScriptName)
                 {
-                    var name = desc.Substring(2);
-                    description = string.IsNullOrEmpty(name)
-                        ? JsNameConfig.Stop
-                        : JsNameConfig.Explicit(name);
+                    hasECMAScriptName = true;
+                    ecmaScriptName = ((string?)attribute.ConstructorArguments[0].Value)?.Trim();
                 }
+
+                continue;
+            }
+
+            if (attributeName != "DescriptionAttribute")
+                continue;
+
+            var description = ((string?)attribute.ConstructorArguments[0].Value)?.Trim();
+            if (description?.StartsWith("@#", StringComparison.Ordinal) != true)
+                continue;
+
+            var name = description.Substring(2);
+            if (name.Length == 0)
+            {
+                descriptionName = null;
+                hasDescriptionBoundary = true;
+            }
+            else
+            {
+                descriptionName = name;
+                hasDescriptionBoundary = false;
             }
         }
 
-        if (!useDescription)
-            return string.IsNullOrEmpty(configName)
-                ? JsNameConfig.None
-                : JsNameConfig.Explicit(configName!);
+        return new JavaScriptNameMetadata(
+            hasECMAScriptName,
+            ecmaScriptName,
+            descriptionName,
+            hasDescriptionBoundary);
+    }
 
-        return description;
+    private static JsNameConfig GetSymbolNameConfig(ISymbol symbol)
+    {
+        var metadata = GetJavaScriptNameMetadata(symbol);
+        if (metadata.HasECMAScriptNameAttribute)
+        {
+            return string.IsNullOrEmpty(metadata.ECMAScriptName)
+                ? JsNameConfig.None
+                : JsNameConfig.Explicit(metadata.ECMAScriptName!);
+        }
+
+        if (metadata.HasDescriptionBoundary)
+            return JsNameConfig.Stop;
+
+        return string.IsNullOrEmpty(metadata.DescriptionName)
+            ? JsNameConfig.None
+            : JsNameConfig.Explicit(metadata.DescriptionName!);
     }
 
     /// <summary>
@@ -348,10 +406,21 @@ public static class Util
             if (ShouldSkipMethodOverloadSuffix(methodSymbol))
                 return name;
 
-            // 需要判断是否存在方法重载
-            if (methodSymbol.ContainingType is not null &&
-                methodSymbol.ContainingType.GetMembers(methodSymbol.Name)
-                .Count(m => m.Kind == SymbolKind.Method) > 1)
+            // A module may intentionally expose one raw overload beside explicitly named
+            // overloads (for example style(...) + [ECMAScriptName("styleIn")]). Only the
+            // unconfigured overloads compete for the raw C# name; adding a hash merely because
+            // an explicitly renamed sibling exists would change a stable public entry point.
+            var overloads = methodSymbol.ContainingType?.GetMembers(methodSymbol.Name)
+                .OfType<IMethodSymbol>()
+                .ToArray();
+            var hasOverloadCollision = overloads is { Length: > 1 };
+            if (hasOverloadCollision &&
+                IsECMAScriptModuleType(methodSymbol.ContainingType))
+            {
+                hasOverloadCollision = overloads!.Count(static method => GetSymbolConfigName(method) is null) > 1;
+            }
+
+            if (hasOverloadCollision)
             {
                 var displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
                 return $"{name}{Format.HashName(displayString)}";
@@ -545,7 +614,8 @@ public static class Util
     }
 
     private static bool IsRuntimeMarkerType(ISymbol? symbol)
-        => symbol?.GetAttributes().Any(attr => IsECMAScriptSupportMarkerAttribute(attr.AttributeClass)) == true;
+        => symbol?.GetAttributes().Any(attr =>
+            attr.AttributeClass?.ToDisplayString() == ECMAScriptAttributeMetadataName) == true;
 
     /// <summary>
     /// 判断一个类型是否属于 ECMAScript 运行时映射类型。
@@ -582,4 +652,8 @@ public static class Util
     /// </summary>
     private static bool ShouldSkipMethodOverloadSuffix(IMethodSymbol methodSymbol)
         => IsRuntimeMarkerType(methodSymbol.ContainingType);
+
+    private static bool IsECMAScriptModuleType(ITypeSymbol? symbol)
+        => symbol?.GetAttributes().Any(attribute =>
+            attribute.AttributeClass?.ToDisplayString() == ECMAScriptModuleAttributeMetadataName) == true;
 }

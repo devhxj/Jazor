@@ -36,6 +36,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 - Element Plus bindings now target `2.14.4`, including typed `ElTransfer.VirtualScroll` and `ElTransfer.ItemSize` parameters.
 - `Jazor.Analyzer` now reports unsupported concrete external types earlier in generic containers, ECMAScript contracts, and runtime type filters.
+- `Jazor.Analyzer` now detects conflicting JavaScript-name metadata and duplicate emitted JavaScript names before unsafe artifacts are generated.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

@@ -2,6 +2,7 @@ using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
 using Jazor.ComplierTest;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -124,6 +125,66 @@ public sealed class AstConverterExportPolicyScenarioTests
         Assert.IsInstanceOfType<Identifier>(identifier, scenarioId);
         Assert.AreEqual("shared", ((Identifier)identifier).Name, scenarioId);
         Assert.HasCount(0, export.Specifiers, scenarioId);
+    }
+
+    [TestMethod]
+    public async Task Convert_UnannotatedModuleOverloads_UseDistinctStableExportNames()
+    {
+        const string scenarioId = "ast-converter-export-policy.unannotated-overloads-use-distinct-names";
+        const string source = """
+            using ECMAScript;
+
+            [ECMAScriptModule("./module")]
+            public static class TestModule
+            {
+                public static int Read(int value) => value;
+                public static int Read(string value) => value.Length;
+            }
+            """;
+        var fixture = CompileModule(source, scenarioId);
+        var overloads = fixture.Module.GetMembers("Read")
+            .OfType<IMethodSymbol>()
+            .OrderBy(static method => method.Parameters[0].Type.ToDisplayString(Format.NameFormat), StringComparer.Ordinal)
+            .ToArray();
+        var expectedNames = overloads.Select(Util.GetConfigOrSymbolName).ToArray();
+        Assert.HasCount(2, expectedNames.Distinct(StringComparer.Ordinal), scenarioId);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        foreach (var expectedName in expectedNames)
+            StringAssert.Contains(script, $"function {expectedName}(", StringComparison.Ordinal, scenarioId);
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_DescriptionAndECMAScriptNameCollision_RejectsDuplicateExport()
+    {
+        const string scenarioId = "ast-converter-export-policy.description-and-ecmascript-name-collision";
+        const string source = """
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [ECMAScriptModule("./module")]
+            public static class TestModule
+            {
+                [Description("@#shared")]
+                public static int First = 1;
+
+                [ECMAScriptName("shared")]
+                public static int Second = 2;
+            }
+            """;
+        var fixture = CompileModule(source, scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var exception = await Assert.ThrowsExactlyAsync<NotSupportedException>(() => converter.Convert());
+
+        StringAssert.Contains(exception.Message, "duplicate named export", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, "shared", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, "First", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, "Second", StringComparison.Ordinal, scenarioId);
     }
 
     [TestMethod]

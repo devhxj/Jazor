@@ -268,6 +268,31 @@ public partial class SemanticWalker
 	private Expression BuildStructuralLiteral(IObjectCreationOperation operation, SenseArgument argument)
 	{
 		var namedType = (INamedTypeSymbol)operation.Type!;
+		var suppliedNames = new HashSet<string>(StringComparer.Ordinal);
+		foreach (var suppliedArgument in operation.Arguments)
+		{
+			if (suppliedArgument.ArgumentKind == ArgumentKind.DefaultValue ||
+				IsStaticallyKnownNull(suppliedArgument.Value))
+			{
+				continue;
+			}
+
+			ResolveStructuralRuntimeMember(
+				namedType,
+				suppliedArgument.Parameter!,
+				out var structuralMember,
+				out var suppliedName,
+				out _);
+			if (structuralMember is IPropertySymbol property && TryGetSpreadAttribute(property, out _))
+				continue;
+
+			if (!suppliedNames.Add(suppliedName))
+			{
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"Structural record '{namedType.ToDisplayString(Format.NameFormat)}' emits duplicate JavaScript key '{suppliedName}' from direct constructor arguments.");
+			}
+		}
 
 		var memberOrder = BuildStructuralMemberOrderMap(namedType);
 		var members = new List<(Node Node, string Name, int Order)>();

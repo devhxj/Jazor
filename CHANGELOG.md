@@ -6,6 +6,7 @@
 
 - Element Plus bindings now ship the local `2.14.4` runtime, stylesheet, license, manifest, and regenerated authoring contracts. The update includes typed `ElTransfer.VirtualScroll` and `ElTransfer.ItemSize` parameters.
 - `Jazor.Analyzer` now reports unsupported concrete external types earlier when they appear in generic containers, ECMAScript interface or delegate signatures, and runtime type filters such as `is`, pattern matching, `switch`, and `catch`.
+- `Jazor.Analyzer` now reports contradictory `Description("@#...")` and `ECMAScriptName` metadata, plus duplicate final JavaScript names in module exports, generated runtime classes, and structural-record object keys.
 
 ## 2026-08-11
 
