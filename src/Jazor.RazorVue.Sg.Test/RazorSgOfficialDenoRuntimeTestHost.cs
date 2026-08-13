@@ -129,6 +129,26 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     return { name, props, children, patchFlag, dynamicProps, block: "component" };
                 }
 
+                // Preserve the slot function identity for assertions while matching Vue's
+                // createSlots merge contract. Dynamic entries can be absent on a render pass.
+                // 测试 stub 不模拟实例上下文，只保留 slot descriptor 的合并语义。
+                export function withCtx(slot) {
+                    return slot;
+                }
+
+                export function createSlots(slots, dynamicSlots) {
+                    for (const slot of dynamicSlots) {
+                        if (Array.isArray(slot)) {
+                            for (const entry of slot) {
+                                if (entry) slots[entry.name] = entry.fn;
+                            }
+                        } else if (slot) {
+                            slots[slot.name] = slot.fn;
+                        }
+                    }
+                    return slots;
+                }
+
                 // Match the Vue helper shape closely enough for generated artifact assertions.
                 // block collection only relies on the returned VNode identity and patch flag.
                 // 测试 stub 保留 text vnode 的 patchFlag，验证 E1 不会遗漏动态文本协议。

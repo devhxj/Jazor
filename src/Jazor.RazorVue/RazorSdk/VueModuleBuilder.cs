@@ -37,6 +37,8 @@ internal static class VueModuleBuilder
         "createBlock",
         "createTextVNode",
         "renderList",
+        "withCtx",
+        "createSlots",
         "onMounted",
         "onUnmounted",
         "onUpdated",
@@ -498,7 +500,9 @@ internal static class VueModuleBuilder
             directRender.UsesRawMarkupRuntime,
             directRender.UsesBlockTree,
             directRender.UsesTextVNode,
-            directRender.UsesRenderList));
+            directRender.UsesRenderList,
+            directRender.UsesWithCtx,
+            directRender.UsesCreateSlots));
 
         if (directRender.UsesRawMarkupRuntime)
         {
@@ -1316,6 +1320,8 @@ internal static class VueModuleBuilder
             operationResult.UsesBlockTree,
             operationResult.UsesTextVNode,
             operationResult.UsesRenderList,
+            operationResult.UsesWithCtx,
+            operationResult.UsesCreateSlots,
             operationResult.UsesHandlerCache,
             operationResult.UsesProps,
             operationResult.UsesSlots,
@@ -1779,7 +1785,9 @@ internal static class VueModuleBuilder
         bool usesRawMarkupRuntime,
         bool usesBlockTree,
         bool usesTextVNode,
-        bool usesRenderList)
+        bool usesRenderList,
+        bool usesWithCtx,
+        bool usesCreateSlots)
     {
         var imports = new List<string>
         {
@@ -1801,6 +1809,10 @@ internal static class VueModuleBuilder
             imports.Add("createTextVNode");
         if (usesRenderList)
             imports.Add("renderList");
+        if (usesWithCtx)
+            imports.Add("withCtx");
+        if (usesCreateSlots)
+            imports.Add("createSlots");
 
         if (usesMounted)
             imports.Add("onMounted");
@@ -2955,6 +2967,8 @@ internal static class VueModuleBuilder
         bool UsesBlockTree,
         bool UsesTextVNode,
         bool UsesRenderList,
+        bool UsesWithCtx,
+        bool UsesCreateSlots,
         bool UsesHandlerCache,
         bool UsesProps,
         bool UsesSlots,

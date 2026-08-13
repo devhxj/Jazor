@@ -54,13 +54,20 @@ patch metadata 根据最终 Vue props surface 构造：
 | 已知动态 props | `8` (`PROPS`) 与稳定 dynamic-prop name array |
 | spread、conditional attributes 或 dynamic `key` | `16` (`FULL_PROPS`) |
 | `ref` / reference capture | `512` (`NEED_PATCH`) |
-| slots | `1024` (`DYNAMIC_SLOTS`) |
+| 固定 authored / named / scoped slots | `withCtx(...)` + `_: 1`，component 使用 block，不设置 `1024` |
+| conditional / forwarded / non-stable-scope slots | `createSlots({ _: 2 }, descriptors)` + `1024` (`DYNAMIC_SLOTS`) |
 
-`RenderEmitter` 以 RazorVue-only `RenderPlan` / `VNodePlan` 保留已经由 `SemanticWalker` 生成的 ESTree expression 与 VNode update facts；它不保存、分析或重译 `IOperation`。element 在没有 children、单一动态 string text，或所有 direct children 都是 static/dynamic-text/nested-block 时才发射 `openBlock(), createElementBlock(...)`。混合文本中的动态部分显式发射 `createTextVNode(...)`，使 Vue 可以把它收集进父 block。component 仍只在没有普通即时 children 且有明确动态更新面时发射 `createBlock(...)`；slot object 可以获得 dynamic-slots flag。
+`RenderEmitter` 以 RazorVue-only `RenderPlan` / `VNodePlan` 保留已经由 `SemanticWalker` 生成的 ESTree expression 与 VNode update facts；它不保存、分析或重译 `IOperation`。element 在没有 children、单一动态 string text，或所有 direct children 都是 static/dynamic-text/nested-block 时才发射 `openBlock(), createElementBlock(...)`。混合文本中的动态部分显式发射 `createTextVNode(...)`，使 Vue 可以把它收集进父 block。带 slot 的 component 始终发射 `createBlock(...)`；固定 slot object 使用 Vue stable marker，只有 slot presence/name/scope 可能变化时才设置 dynamic-slots flag。
 
 `CLASS` / `STYLE` 是 Vue DOM element 的专用 patch 快路径，不能直接用于 component VNode。组件把参数映射到 runtime `class` 或 `style` 时，必须使用 `PROPS` 和精确的 `dynamicProps` 名称，否则 Vue 的 component-update gate 可能跳过子组件更新。
 
-conditional、slot、sequence、dynamic/nullable raw markup 和普通 component children 仍不带完整 direct-child block contract，继续使用 `h(...)` 的完整 children diff。这里 `TEXT` 只接受 Roslyn 已证明为 `string` 的 authored expression；object/数值/自定义 formatting 可能有 CLR conversion 语义，不能为了 patch flag 跳过正常 child lowering。production Vue gate 已实际 mount/patch 单文本、混合文本和 nested block，而不是只验证生成字符串。
+conditional direct children、sequence、dynamic/nullable raw markup 和普通 component children 仍不带完整 direct-child block contract，继续使用 `h(...)` 的完整 children diff。这里 `TEXT` 只接受 Roslyn 已证明为 `string` 的 authored expression；object/数值/自定义 formatting 可能有 CLR conversion 语义，不能为了 patch flag 跳过正常 child lowering。production Vue gate 已实际 mount/patch 单文本、混合文本、nested block 与 stable/dynamic slot，而不是只验证生成字符串。
+
+### Slot 稳定性
+
+稳定 slot 的“稳定”只描述 slot object 的名字与存在性，不代表其函数体或捕获值是常量。函数继续在当前 render/setup scope 中创建，并由 `withCtx` 恢复正确 rendering instance；`_: 1` 允许 Vue 使用 stable-slot fast path。RenderFragment conditional selection、nullable/forwarded slot，或在 loop/render-fragment scope 中创建的 component 不能获得该标记，它们使用 `createSlots` descriptor 和 `_: 2`，由 `1024` 强制 child component 重新检查 slot。
+
+dynamic descriptor 的缺席分支是 `null`，与 Vue runtime 的 `createSlots` 协议一致。条件两侧分别持有自己的 `fn` 与稳定 branch key，不能复用一个预先构造的函数，否则分支切换会保留错误内容。slot function、props、handler 或 loop alias 均不会跨 component instance 或 iteration hoist。
 
 ### Foreach 与 fragment fast path
 
@@ -104,13 +111,13 @@ dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --verify-vue-runtim
 
 1. 官方 Razor SG -> direct `.mjs` 是唯一生产路径，仓库不保留 retired runtime bridge/import token。
 2. 静态 props 与 static VNode 在 module scope 只创建一次；slot/loop/render-local 不可提升。
-3. 仅已证明安全的叶节点、完整 child plan 和 component shape 使用 block/patch flag；conditional、slot、sequence、raw markup 与未分类 child 继续保留 `h`。
+3. 仅已证明安全的叶节点、完整 child plan 和 component shape 使用 block/patch flag；slot component 使用精确 stable/dynamic slot contract，其他 conditional、sequence、raw markup 与未分类 child 继续保留 `h`。
 4. handler 在同一 setup instance 内保持 identity，跨 setup instance 不共享。
 5. `VueRawMarkupTests`、`RazorSgVueCompilerOptimizationTests` 与 Emit provider tests 覆盖 HTML cardinality、无 wrapper raw markup、按需 materialization 与 scope 约束；RazorVue、Emit、Compiler suites 保持通过。
 6. benchmark protocol 和 production Vue runtime gate 可独立执行，并明确记录各自测量/正确性边界。
 
 ## 后续演进
 
-下一步是为 slot object 建立独立的稳定性合同，而不是机械清除 `DYNAMIC_SLOTS`。slot 需要区分 stable、conditional、loop-generated 和动态名字，且 closure 必须继续属于正确的 setup/render/iteration scope；没有完整 metadata 与真实 Vue regression 前，保留动态 slot 是正确行为。
+下一步是优化已证明为 direct assignment 的 DOM `@bind`，并定义 parameter lifecycle 的浅层 identity/change 契约。复杂 binder 和同一引用内的 nested mutation 在契约明确前继续走当前安全路径。
 
 每一项都应先证明：evaluation order、side-effect count、最终 VNode、slot/loop closure identity 与 source-map anchoring 不退化；否则继续使用 `h(...)` 是正确的保守行为。

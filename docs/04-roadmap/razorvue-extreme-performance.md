@@ -110,6 +110,8 @@ slot object 需要区分稳定、conditional、loop-generated 和动态名字：
 
 **完成门槛：** parent update、child update、conditional slot enable/disable、nested slot 和 loop slot 全部经 Vue DOM regression；稳定 slot 路径不再无条件设置 `1024`。
 
+**状态：已完成。** 固定 authored、named 与 scoped slot 现在发射 `withCtx(slotFn)` 和稳定 slot marker `_: 1`，不再无条件设置 `DYNAMIC_SLOTS`。RenderFragment 值的 conditional selection、forwarded/nullable slot，以及 loop/render-fragment 等非稳定 scope 采用 `createSlots({ _: 2 }, descriptors)` 与 `DYNAMIC_SLOTS (1024)`；descriptor 的 `fn` 和 branch key 按实际 true/false 分支构造，缺席分支使用 Vue 可接受的 `null` entry。所有带 slot 的 component 都通过 `openBlock() + createBlock(...)` 保留 Vue component/slot 更新边界，但 slot closure 不提升到 module 或跨 setup/iteration 共享。Razor SG artifact、Deno runtime 与 production Vue browser gate 已验证 stable slot parent update、conditional branch switch、forwarded/nested/scoped/loop scope，以及 helper import/name collision 契约。
+
 ### E4: 高频更新与 lifecycle contract
 
 先收紧语义，再做 leaf optimization：

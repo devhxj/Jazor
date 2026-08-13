@@ -74,8 +74,9 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "function renderRenderRelease(", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "function renderRenderRelease$1(value$1)", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "footer:", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "header: withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "footer: withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "_: 1", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-overload-template-runtime.mjs",
@@ -187,7 +188,8 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "UseCompactHeader ? CompactHeader : DetailedHeader", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "props.UseCompactHeader", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 }", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "name: \"header\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-header-variant-runtime.mjs",

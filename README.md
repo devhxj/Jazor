@@ -37,6 +37,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 - RazorVue direct render modules now use Vue child block trees and `TEXT` patching for proven dynamic string text, mixed static/dynamic text, and nested stable elements. Conditional content, slots, raw markup, and unproven children retain the normal Vue diff path.
 - The production Vue browser/SSR gate now verifies mount and reactive DOM patching for those child block shapes alongside static markup and hydration.
 - Proven simple Razor `foreach` loops now lower through Vue `renderList`: explicit `@key` uses keyed fragments, unkeyed loops use conservative unkeyed fragments, and the production Vue gate verifies DOM identity across keyed reorders.
+- Fixed authored, named, and scoped slots now use Vue `withCtx` with the stable `_: 1` marker. Conditional, forwarded, and non-stable-scope slots use `createSlots` with `DYNAMIC_SLOTS`; the production gate verifies both parent updates and branch replacement.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

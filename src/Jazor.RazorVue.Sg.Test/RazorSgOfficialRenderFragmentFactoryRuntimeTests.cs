@@ -256,7 +256,8 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "Header", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "props.Detailed", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 }", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "name: \"header\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/conditional-template-property-runtime.mjs",
@@ -358,7 +359,8 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "CreateCompactHeader()", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "props.Detailed", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 }", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "name: \"header\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/conditional-template-parameter-runtime.mjs",
@@ -449,8 +451,9 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "RenderHeader", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "RenderFooter", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "header:", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "footer:", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "header: withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "footer: withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "_: 1", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/template-method-group-runtime.mjs",

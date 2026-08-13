@@ -37,6 +37,7 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 - RazorVue direct render 模块现可为已证明的动态 string 文本、静态/动态混合文本和嵌套稳定元素生成 Vue child block tree 与 `TEXT` patch。条件内容、slot、raw markup 和未证明 child 继续使用普通 Vue diff。
 - production Vue browser/SSR 门禁现在会验证这些 child block 的 mount 与响应式 DOM patch，并继续覆盖 static markup 与 hydration。
 - 已证明安全的简单 Razor `foreach` 现在通过 Vue `renderList` 降低：显式 `@key` 使用 keyed fragment，无 key 使用保守的 unkeyed fragment；production Vue 门禁验证 keyed reorder 的 DOM identity。
+- 固定 authored、named 与 scoped slot 现在使用 Vue `withCtx` 和稳定 `_: 1` marker；conditional、forwarded 与非稳定 scope slot 使用 `createSlots + DYNAMIC_SLOTS`，production 门禁验证父级更新与条件分支替换。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 

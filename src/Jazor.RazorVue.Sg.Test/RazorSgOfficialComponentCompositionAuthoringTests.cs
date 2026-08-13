@@ -83,9 +83,10 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
             script,
             "\"onUpdate:modelValue\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.Selected = __value)",
             StringComparison.Ordinal);
-        StringAssert.Contains(script, "header: () =>", StringComparison.Ordinal);
-        StringAssert.Contains(script, "default: () =>", StringComparison.Ordinal);
-        StringAssert.Contains(script, "item: item =>", StringComparison.Ordinal);
+        StringAssert.Contains(script, "header: withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(script, "default: withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(script, "item: withCtx(item =>", StringComparison.Ordinal);
+        StringAssert.Contains(script, "_: 1", StringComparison.Ordinal);
         StringAssert.Contains(script, "createElementBlock(\"strong\", null, state.Title, 1)", StringComparison.Ordinal);
         StringAssert.Contains(script, "createElementBlock(\"span\", null, state.Selected, 1)", StringComparison.Ordinal);
         StringAssert.Contains(script, "createElementBlock(\"em\", null, item, 1)", StringComparison.Ordinal);

@@ -278,7 +278,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
     }
 
     [TestMethod]
-    public async Task BuildComponent_SlotsAndForeachBodies_DoNotHoistOrCacheCapturedValues()
+    public async Task BuildComponent_StableSlotsUseWithCtxAndKeepForeachBodiesOutOfHoistsAndCaches()
     {
         var slotObservation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\SlotScope.razor",
@@ -316,11 +316,43 @@ public sealed class RazorSgVueCompilerOptimizationTests
             });
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(slotObservation.ModuleText);
-        StringAssert.Contains(slotObservation.ModuleText, "createBlock(", StringComparison.Ordinal);
-        StringAssert.Contains(slotObservation.ModuleText, "}, 1024)", StringComparison.Ordinal);
+        StringAssert.Contains(slotObservation.ModuleText, "withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(slotObservation.ModuleText, "_: 1", StringComparison.Ordinal);
+        StringAssert.Contains(slotObservation.ModuleText, "openBlock(), createBlock(", StringComparison.Ordinal);
+        Assert.IsFalse(slotObservation.ModuleText.Contains("createSlots(", StringComparison.Ordinal), slotObservation.ModuleText);
+        Assert.IsFalse(slotObservation.ModuleText.Contains(", 1024", StringComparison.Ordinal), slotObservation.ModuleText);
         Assert.IsFalse(
             slotObservation.ModuleText.Contains("const __jazor$hoistedProps", StringComparison.Ordinal),
             slotObservation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/slot-scope.mjs",
+            slotObservation.ModuleText,
+            "slot-scope-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/slot-scope.mjs";
+            import slotHost from "./components/slot-host.mjs";
+
+            test("stable slots retain the Vue stable-object marker and render body", () => {
+                const vnode = component.setup({}, { slots: {} })();
+                assert.equal(vnode.name, slotHost);
+                assert.equal(vnode.block, "component");
+                assert.equal(vnode.patchFlag, undefined);
+                assert.equal(vnode.children._, 1);
+                assert.equal(typeof vnode.children.ChildContent, "function");
+                const nodes = vnode.children.ChildContent();
+                assert.equal(nodes.length, 1);
+                assert.equal(nodes[0].name, "__static");
+                assert.equal(nodes[0].props.html, "<span class=\"slot\">slot body</span>");
+            });
+            """,
+            new Dictionary<string, string>
+            {
+                ["components/slot-host.mjs"] = "export default { name: \"slot-host\" };"
+            });
 
         var loopObservation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: @"D:\repo\Demo\Pages\LoopScope.razor",
@@ -357,6 +389,100 @@ public sealed class RazorSgVueCompilerOptimizationTests
         Assert.IsFalse(
             loopObservation.ModuleText.Contains("const __jazor$hoistedProps", StringComparison.Ordinal),
             loopObservation.ModuleText);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_ConditionalSlotsUseCreateSlotsAndRefreshTheSelectedBody()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\ConditionalSlotScope.razor",
+            documentText:
+            """
+            @using Demo.Components
+
+            <SlotHost Header="@(ShowPrimary ? PrimaryHeader : FallbackHeader)" />
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/conditional-slot-scope")]
+            public partial class ConditionalSlotScope : ComponentBase, IVueComponent
+            {
+                [Parameter] public bool ShowPrimary { get; set; }
+                [Parameter] public string Label { get; set; } = string.Empty;
+
+                private RenderFragment PrimaryHeader => builder =>
+                {
+                    builder.OpenElement(0, "strong");
+                    builder.AddAttribute(1, "data-slot", "primary");
+                    builder.AddContent(2, Label);
+                    builder.CloseElement();
+                };
+
+                private RenderFragment FallbackHeader => builder =>
+                {
+                    builder.OpenElement(3, "em");
+                    builder.AddAttribute(4, "data-slot", "fallback");
+                    builder.AddContent(5, Label);
+                    builder.CloseElement();
+                };
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ConditionalSlotScope",
+            supportingSources: new Dictionary<string, string>
+            {
+                ["Components/SlotHost.cs"] =
+                """
+                namespace Demo.Components;
+
+                [ECMAScriptModule("./components/conditional-slot-host")]
+                public sealed class SlotHost : ComponentBase, IVueComponent
+                {
+                    [Parameter, System.ComponentModel.Description("@#header")] public RenderFragment? Header { get; set; }
+                }
+                """
+            });
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 },", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, ", 1024)", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/conditional-slot-scope.mjs",
+            observation.ModuleText,
+            "conditional-slot-scope-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/conditional-slot-scope.mjs";
+            import slotHost from "./components/conditional-slot-host.mjs";
+
+            test("conditional slots replace their descriptor body for each parent render", () => {
+                const props = { ShowPrimary: true, Label: "first" };
+                const render = component.setup(props, { slots: {} });
+                const primary = render();
+                assert.equal(primary.name, slotHost);
+                assert.equal(primary.block, "component");
+                assert.equal(primary.patchFlag, 1024);
+                assert.equal(primary.children._, 2);
+                assert.equal(primary.children.header()[0].name, "strong");
+                assert.equal(primary.children.header()[0].children, "first");
+
+                props.ShowPrimary = false;
+                props.Label = "second";
+                const fallback = render();
+                assert.equal(fallback.children.header()[0].name, "em");
+                assert.equal(fallback.children.header()[0].children, "second");
+            });
+            """,
+            new Dictionary<string, string>
+            {
+                ["components/conditional-slot-host.mjs"] = "export default { name: \"conditional-slot-host\" };"
+            });
     }
 
     [TestMethod]

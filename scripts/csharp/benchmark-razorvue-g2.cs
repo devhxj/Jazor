@@ -416,7 +416,7 @@ static string CreateProductionVueBrowserHtml()
         <meta charset="utf-8">
         <div id="app"></div>
         <script type="module">
-        import { Fragment, createApp, createSSRApp, createElementBlock, createStaticVNode, createTextVNode, h, nextTick, openBlock, ref, render, renderList } from "./vue.mjs";
+        import { Fragment, createApp, createBlock, createElementBlock, createSlots, createSSRApp, createStaticVNode, createTextVNode, h, nextTick, openBlock, ref, render, renderList, withCtx } from "./vue.mjs";
         import { createRawMarkup } from "./raw-markup.mjs";
 
         const cases = [
@@ -533,13 +533,64 @@ static string CreateProductionVueBrowserHtml()
         createApp(UnkeyedListApp).mount(unkeyedListHost);
         const unkeyedIsConservative = unkeyedFragmentFlag === 256 && unkeyedFragmentFlag !== 64;
 
+        // These are the E3 stable/dynamic slot shapes emitted by RazorVue. Stable slots rely on
+        // the child's render effect for captured reactive values; conditional descriptors must
+        // replace the active branch through DYNAMIC_SLOTS on every parent patch.
+        // 稳定 slot 验证父状态更新，条件 slot 验证 descriptor 分支与 DOM 同步切换。
+        const StableSlotChild = {
+          setup: (_, { slots }) => () => h("section", { id: "stable-slot-output" }, slots.default?.())
+        };
+        const stableSlotText = ref("stable-first");
+        const StableSlotApp = { setup: () => () => (
+          openBlock(),
+          createBlock(StableSlotChild, null, {
+            default: withCtx(() => [h("span", { "data-slot": "stable" }, stableSlotText.value)]),
+            _: 1
+          })
+        ) };
+        const stableSlotHost = document.createElement("div");
+        document.body.append(stableSlotHost);
+        createApp(StableSlotApp).mount(stableSlotHost);
+        const stableSlotMounted = stableSlotHost.querySelector("[data-slot=stable]")?.textContent === "stable-first";
+        stableSlotText.value = "stable-second";
+        await nextTick();
+        const stableSlotPatched = stableSlotHost.querySelector("[data-slot=stable]")?.textContent === "stable-second";
+
+        const ConditionalSlotChild = {
+          setup: (_, { slots }) => () => h("section", { id: "conditional-slot-output" }, slots.default?.())
+        };
+        const usePrimarySlot = ref(true);
+        const conditionalSlotText = ref("primary");
+        const ConditionalSlotApp = { setup: () => () => (
+          openBlock(),
+          createBlock(
+            ConditionalSlotChild,
+            null,
+            createSlots({ _: 2 }, [
+              usePrimarySlot.value
+                ? { name: "default", fn: withCtx(() => [h("strong", { "data-slot": "primary" }, conditionalSlotText.value)]), key: "0t" }
+                : { name: "default", fn: withCtx(() => [h("em", { "data-slot": "fallback" }, conditionalSlotText.value)]), key: "0f" }
+            ]),
+            1024
+          )
+        ) };
+        const conditionalSlotHost = document.createElement("div");
+        document.body.append(conditionalSlotHost);
+        createApp(ConditionalSlotApp).mount(conditionalSlotHost);
+        const conditionalSlotMounted = conditionalSlotHost.querySelector("[data-slot=primary]")?.textContent === "primary";
+        usePrimarySlot.value = false;
+        conditionalSlotText.value = "fallback";
+        await nextTick();
+        const conditionalSlotPatched = conditionalSlotHost.querySelector("[data-slot=fallback]")?.textContent === "fallback" &&
+          conditionalSlotHost.querySelector("[data-slot=primary]") === null;
+
         const host = document.createElement("div");
         host.innerHTML = "<section id=\"hydrated\"><strong>one</strong><em>two</em></section>";
         document.body.append(host);
         createSSRApp({ render: () => h("section", { id: "hydrated" }, [createStaticVNode("<strong>one</strong><em>two</em>", 2)]) }).mount(host);
         const hydrated = host.querySelectorAll("#hydrated strong, #hydrated em").length === 2;
-        document.documentElement.setAttribute("data-jazor-production-vue", mounted && patched && directPatched && blockMounted && blockPatched && keyedReordered && unkeyedIsConservative && hydrated ? "passed" : "failed");
-        document.documentElement.setAttribute("data-jazor-production-vue-detail", `mounted:${mounted};dynamicCount:${dynamicCount};commentElementCount:${commentElementCount};hasWrapper:${hasWrapper};cases:${casesPresent};patched:${patched};directPatched:${directPatched};blockMounted:${blockMounted};blockPatched:${blockPatched};keyedReordered:${keyedReordered};keyedOrder:${keyedOrder};unkeyedFragmentFlag:${unkeyedFragmentFlag};dynamicText:${dynamic.textContent};hydrated:${hydrated}`);
+        document.documentElement.setAttribute("data-jazor-production-vue", mounted && patched && directPatched && blockMounted && blockPatched && keyedReordered && unkeyedIsConservative && stableSlotMounted && stableSlotPatched && conditionalSlotMounted && conditionalSlotPatched && hydrated ? "passed" : "failed");
+        document.documentElement.setAttribute("data-jazor-production-vue-detail", `mounted:${mounted};dynamicCount:${dynamicCount};commentElementCount:${commentElementCount};hasWrapper:${hasWrapper};cases:${casesPresent};patched:${patched};directPatched:${directPatched};blockMounted:${blockMounted};blockPatched:${blockPatched};keyedReordered:${keyedReordered};keyedOrder:${keyedOrder};unkeyedFragmentFlag:${unkeyedFragmentFlag};stableSlotMounted:${stableSlotMounted};stableSlotPatched:${stableSlotPatched};conditionalSlotMounted:${conditionalSlotMounted};conditionalSlotPatched:${conditionalSlotPatched};dynamicText:${dynamic.textContent};hydrated:${hydrated}`);
         </script>
         """;
 
@@ -734,7 +785,7 @@ internal sealed record ProductionVueRuntimeVerification(
 - Status: {Status}
 - Runtime: `{Runtime}`
 
-验证覆盖 production Vue 的 static multi-root、text/element、table、SVG/MathML、dynamic raw markup patch、leading comment framing、E1 child block/text patch、SSR 与 hydration。
+验证覆盖 production Vue 的 static multi-root、text/element、table、SVG/MathML、dynamic raw markup patch、leading comment framing、E1 child block/text patch、E2 list fragment identity、E3 stable/conditional slot patch、SSR 与 hydration。
 
 {Details}
 """;

@@ -66,6 +66,8 @@ internal static class RenderEmitter
                 UsesBlockTree: lowered.UsesBlockTree,
                 UsesTextVNode: lowered.UsesTextVNode,
                 UsesRenderList: lowered.UsesRenderList,
+                UsesWithCtx: lowered.UsesWithCtx,
+                UsesCreateSlots: lowered.UsesCreateSlots,
                 UsesHandlerCache: lowered.UsesHandlerCache,
                 UsesProps: AstReferenceAnalysis.ReferencesIdentifier(lowered.RenderExpression, "props") ||
                            lowered.PreludeStatements.Any(static statement => AstReferenceAnalysis.ReferencesIdentifier(statement, "props")),
@@ -121,6 +123,8 @@ internal static class RenderEmitter
         private bool _usesBlockTree;
         private bool _usesTextVNode;
         private bool _usesRenderList;
+        private bool _usesWithCtx;
+        private bool _usesCreateSlots;
         private bool _usesHandlerCache;
         private int _nonHoistableRenderScopeDepth;
         private int _staticPropsHoistCount;
@@ -195,6 +199,8 @@ internal static class RenderEmitter
                 _usesBlockTree,
                 _usesTextVNode,
                 _usesRenderList,
+                _usesWithCtx,
+                _usesCreateSlots,
                 _usesHandlerCache,
                 _usesSlots,
                 BuildImportDeclarations(),
@@ -899,7 +905,10 @@ internal static class RenderEmitter
                         CacheStableEventHandler,
                         CanCacheStableEventHandler,
                         handler => IsStableEventHandler(handler, context),
-                        UseBlockTree));
+                        UseBlockTree,
+                        UseWithCtx,
+                        UseCreateSlots,
+                        slotsAreInStableScope: _nonHoistableRenderScopeDepth == 0));
                     return true;
 
                 case "CloseComponent":
@@ -1310,6 +1319,12 @@ internal static class RenderEmitter
 
         private void UseTextVNode()
             => _usesTextVNode = true;
+
+        private void UseWithCtx()
+            => _usesWithCtx = true;
+
+        private void UseCreateSlots()
+            => _usesCreateSlots = true;
 
         private static bool IsInlineFunction(Expression expression)
             => expression is ArrowFunctionExpression or FunctionExpression;
@@ -4731,6 +4746,9 @@ internal static class RenderEmitter
         private readonly ImmutableDictionary<string, string> _parameterNameMap;
         private readonly ImmutableDictionary<string, string> _slotNameMap;
         private readonly Action? _useBlockTree;
+        private readonly Action? _useWithCtx;
+        private readonly Action? _useCreateSlots;
+        private readonly bool _slotsAreInStableScope;
 
         public ComponentFrame(
             Expression componentExpression,
@@ -4743,7 +4761,7 @@ internal static class RenderEmitter
             Expression componentExpression,
             ImmutableDictionary<string, string> parameterNameMap,
             ImmutableDictionary<string, string> slotNameMap)
-            : this(componentExpression, parameterNameMap, slotNameMap, null, null, null, null, null, null)
+            : this(componentExpression, parameterNameMap, slotNameMap, null, null, null, null, null, null, null, null, true)
         {
         }
 
@@ -4756,7 +4774,10 @@ internal static class RenderEmitter
             Func<Expression, Expression>? cacheStableEventHandler,
             Func<Expression, bool>? canCacheStableEventHandler,
             Func<Expression, bool>? isStableEventHandler,
-            Action? useBlockTree)
+            Action? useBlockTree,
+            Action? useWithCtx,
+            Action? useCreateSlots,
+            bool slotsAreInStableScope)
             : base(
                 hoistStaticProps,
                 canHoistStaticProps,
@@ -4768,6 +4789,9 @@ internal static class RenderEmitter
             _parameterNameMap = parameterNameMap;
             _slotNameMap = slotNameMap;
             _useBlockTree = useBlockTree;
+            _useWithCtx = useWithCtx;
+            _useCreateSlots = useCreateSlots;
+            _slotsAreInStableScope = slotsAreInStableScope;
         }
 
         public List<DirectSlot> Slots { get; } = new();
@@ -4800,22 +4824,48 @@ internal static class RenderEmitter
             var additionalFlags = 0;
             if (Slots.Count > 0)
             {
-                var slotMembers = new List<Node>(Slots.Count);
-                foreach (var slot in Slots)
+                var slotsAreStable = _slotsAreInStableScope &&
+                                     Slots.All(static slot =>
+                                         slot.Fragment.Selection is null &&
+                                         slot.Fragment.AvailabilityCondition is null &&
+                                         !slot.Fragment.ReturnsVueSlotContent);
+                if (slotsAreStable)
                 {
-                    if (slot.Fragment.Selection is null &&
-                        slot.Fragment.AvailabilityCondition is null)
+                    // Stable slots must still carry withCtx so Vue restores the rendering
+                    // instance when a child invokes them later. `_: 1` enables the compiler
+                    // fast path without hoisting a closure across component instances.
+                    // 固定 slot 使用 withCtx 保持实例上下文，_: 1 只声明对象稳定性。
+                    _useWithCtx?.Invoke();
+                    var stableMembers = new List<Node>(Slots.Count + 1);
+                    stableMembers.AddRange(Slots.Select(static slot => (Node)CreateSlotProperty(slot, slot.Fragment, wrapWithCtx: true)));
+                    stableMembers.Add(CreateObjectProperty("_", new NumericLiteral(1, "1")));
+                    children = new ObjectExpression(NodeList.From(stableMembers));
+                }
+                else
+                {
+                    // Conditional/forwarded/non-stable-scope slots may change their presence
+                    // or capture on each render. Vue's createSlots protocol owns that update
+                    // boundary; never mark them stable merely because their key is constant.
+                    // 条件、转发或非稳定 scope slot 必须走 createSlots + 1024。
+                    _useWithCtx?.Invoke();
+                    _useCreateSlots?.Invoke();
+                    var baseMembers = new List<Node> { CreateObjectProperty("_", new NumericLiteral(2, "2")) };
+                    var dynamicSlots = new List<Expression>(Slots.Count);
+                    for (var index = 0; index < Slots.Count; index++)
                     {
-                        slotMembers.Add(CreateSlotProperty(slot, slot.Fragment));
-                        continue;
+                        var slot = Slots[index];
+                        dynamicSlots.Add(CreateDynamicSlotExpression(
+                            slot,
+                            slot.Fragment,
+                            index.ToString(System.Globalization.CultureInfo.InvariantCulture)));
                     }
 
-                    slotMembers.Add(new SpreadElement(
-                        CreateSlotProjectionExpression(slot, slot.Fragment)));
+                    children = Call(
+                        "createSlots",
+                        new ObjectExpression(NodeList.From(baseMembers)),
+                        CreateArray(dynamicSlots));
+                    additionalFlags |= VuePatchFlags.DynamicSlots;
                 }
-
-                children = new ObjectExpression(NodeList.From(slotMembers));
-                additionalFlags |= VuePatchFlags.DynamicSlots;
             }
             else if (Children.Count > 0)
             {
@@ -4827,7 +4877,11 @@ internal static class RenderEmitter
             }
 
             var patch = BuildPatchMetadata(
-                hasBlockChild: false,
+                // Vue invokes component slots outside the parent's direct child traversal.
+                // Even a stable slot object must therefore create a component block, otherwise
+                // the parent cannot retain Vue's component/slot update boundary.
+                // slot 即便稳定也必须有 component block，不能退化成普通 h(...)。
+                hasBlockChild: Slots.Count != 0,
                 componentProps: true,
                 additionalFlags: additionalFlags);
             // Non-slot component children are eagerly created while the block is open. Keep
@@ -4859,56 +4913,70 @@ internal static class RenderEmitter
                 CanUseRenderList);
         }
 
-        private static Expression CreateSlotProjectionExpression(
+        private static Expression CreateDynamicSlotExpression(
             DirectSlot slot,
-            DirectRenderFragment fragment)
+            DirectRenderFragment fragment,
+            string branchKey)
         {
             if (fragment.Selection is { } selection)
             {
                 return new ConditionalExpression(
                     selection.Condition,
-                    CreateSlotProjectionExpression(slot, selection.WhenTrue),
-                    CreateSlotProjectionExpression(slot, selection.WhenFalse));
+                    CreateDynamicSlotExpression(slot, selection.WhenTrue, branchKey + "t"),
+                    CreateDynamicSlotExpression(slot, selection.WhenFalse, branchKey + "f"));
             }
 
             if (fragment.AvailabilityCondition is BooleanLiteral availability)
             {
                 return availability.Value
-                    ? CreateSlotPropertyObject(slot, fragment)
-                    : new ObjectExpression(NodeList.Empty<Node>());
+                    ? CreateDynamicSlotDescriptor(slot, fragment, branchKey)
+                    : Null();
             }
 
-            var propertyObject = CreateSlotPropertyObject(slot, fragment);
+            var descriptor = CreateDynamicSlotDescriptor(slot, fragment, branchKey);
             return fragment.AvailabilityCondition is null
-                ? propertyObject
+                ? descriptor
                 : new ConditionalExpression(
                     fragment.AvailabilityCondition,
-                    propertyObject,
-                    new ObjectExpression(NodeList.Empty<Node>()));
+                    descriptor,
+                    Null());
         }
 
-        private static ObjectExpression CreateSlotPropertyObject(
+        private static ObjectExpression CreateDynamicSlotDescriptor(
             DirectSlot slot,
-            DirectRenderFragment fragment)
-        {
-            var propertyObject = new ObjectExpression(NodeList.From<Node>(
-                CreateSlotProperty(slot, fragment)));
-            return propertyObject;
-        }
+            DirectRenderFragment fragment,
+            string branchKey)
+            => new(NodeList.From<Node>(
+                CreateObjectProperty("name", StringLiteral(slot.Name)),
+                CreateObjectProperty("fn", CreateSlotFunction(slot, fragment, wrapWithCtx: true)),
+                CreateObjectProperty("key", StringLiteral(branchKey))));
 
         private static Property CreateSlotProperty(
             DirectSlot slot,
             DirectRenderFragment fragment)
-            => CreateObjectProperty(
-                slot.Name,
-                new ArrowFunctionExpression(
-                    slot.Fragment.ParameterName is null
-                        ? NodeList.From<Node>()
-                        : NodeList.From<Node>(new Identifier(slot.Fragment.ParameterName)),
-                    NormalizeSlotRenderExpression(
-                        BindSlotRenderExpression(slot.Fragment.ParameterName, fragment)),
-                    expression: true,
-                    async: false));
+            => CreateSlotProperty(slot, fragment, wrapWithCtx: false);
+
+        private static Property CreateSlotProperty(
+            DirectSlot slot,
+            DirectRenderFragment fragment,
+            bool wrapWithCtx)
+            => CreateObjectProperty(slot.Name, CreateSlotFunction(slot, fragment, wrapWithCtx));
+
+        private static Expression CreateSlotFunction(
+            DirectSlot slot,
+            DirectRenderFragment fragment,
+            bool wrapWithCtx)
+        {
+            var slotFunction = new ArrowFunctionExpression(
+                slot.Fragment.ParameterName is null
+                    ? NodeList.From<Node>()
+                    : NodeList.From<Node>(new Identifier(slot.Fragment.ParameterName)),
+                NormalizeSlotRenderExpression(
+                    BindSlotRenderExpression(slot.Fragment.ParameterName, fragment)),
+                expression: true,
+                async: false);
+            return wrapWithCtx ? Call("withCtx", slotFunction) : slotFunction;
+        }
 
         private static Expression BindSlotRenderExpression(
             string? slotParameterName,
@@ -4998,6 +5066,8 @@ internal static class RenderEmitter
         bool UsesBlockTree,
         bool UsesTextVNode,
         bool UsesRenderList,
+        bool UsesWithCtx,
+        bool UsesCreateSlots,
         bool UsesHandlerCache,
         bool UsesSlots,
         ImmutableArray<ImportDeclaration> ImportDeclarations,
@@ -5177,6 +5247,8 @@ internal sealed record RenderResult(
     bool UsesBlockTree,
     bool UsesTextVNode,
     bool UsesRenderList,
+    bool UsesWithCtx,
+    bool UsesCreateSlots,
     bool UsesHandlerCache,
     bool UsesProps,
     bool UsesSlots,

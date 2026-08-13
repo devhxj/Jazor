@@ -67,7 +67,7 @@ public sealed class RazorSgOfficialVueInjectRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "from \"./injected-shell-runtime.mjs\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "injectedTitle: \"Account\"", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "\"injected-content\": () =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "\"injected-content\": withCtx(() =>", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("contract-shell-runtime", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(

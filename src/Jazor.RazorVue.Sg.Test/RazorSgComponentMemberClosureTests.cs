@@ -876,7 +876,9 @@ public sealed class MemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         Assert.IsFalse(script.Contains("typeof slots.headerNavigation", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "...props.Top ? { Navigation:", StringComparison.Ordinal);
+        StringAssert.Contains(script, "createSlots({ _: 2 }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "props.Top ? {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "name: \"Navigation\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "Horizontal: true", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
@@ -1266,7 +1268,8 @@ public sealed class MemberClosureTests
 
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "ChildContent: () => [].concat((openBlock(), createElementBlock(\"span\", null, state.title, 1)) ?? [])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ChildContent: withCtx(() => [].concat((openBlock(), createElementBlock(\"span\", null, state.title, 1)) ?? []))", StringComparison.Ordinal);
+        StringAssert.Contains(script, "_: 1", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -1419,7 +1422,7 @@ public sealed class MemberClosureTests
             1,
             script.Split("from \"npm:demo-links@1.mjs\";", StringSplitOptions.None).Length - 1,
             script);
-        StringAssert.Contains(script, "default: () => [].concat(\"linked\" ?? [])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "default: withCtx(() => [].concat(\"linked\" ?? []))", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("childBuilder =>", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("childBuilder.addContent", StringComparison.Ordinal), script);
     }
@@ -1495,7 +1498,7 @@ public sealed class MemberClosureTests
         Assert.IsTrue(injectedImport.StartsWith("import i$", StringComparison.Ordinal), injectedImport);
         Assert.IsFalse(injectedImport.StartsWith("import {", StringComparison.Ordinal), injectedImport);
         StringAssert.Contains(script, "injectedTitle: \"Injected title\"", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"injected-content\": () => [].concat(\"Injected content\" ?? [])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "\"injected-content\": withCtx(() => [].concat(\"Injected content\" ?? []))", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("contract-shell", StringComparison.Ordinal), script);
 
         var injectedComponent = fixture.Binding.Components.Single(static component =>
@@ -1561,8 +1564,10 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "function createCounterSetupScope(slots)", StringComparison.Ordinal);
         StringAssert.Contains(
             script,
-            "...SuppressLogo() ? {} : typeof slots.Logo === \"function\" ? { Logo: () => [].concat(slots.Logo() ?? []) } : {}",
+            "SuppressLogo() ? null : typeof slots.Logo === \"function\" ? {",
             StringComparison.Ordinal);
+        StringAssert.Contains(script, "name: \"Logo\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "fn: withCtx(() => [].concat(slots.Logo() ?? []))", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -1665,8 +1670,10 @@ public sealed class MemberClosureTests
 
         StringAssert.Contains(
             script,
-            "...typeof slots.Logo === \"function\" ? { Logo: () => [].concat(slots.Logo() ?? []) } : {}",
+            "typeof slots.Logo === \"function\" ? {",
             StringComparison.Ordinal);
+        StringAssert.Contains(script, "name: \"Logo\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "fn: withCtx(() => [].concat(slots.Logo() ?? []))", StringComparison.Ordinal);
         Assert.IsFalse(
             script.Contains("Logo: () => typeof slots.Logo", StringComparison.Ordinal),
             script);
@@ -3223,6 +3230,17 @@ public sealed class MemberClosureTests
                 }
                 export function createBlock(type, props, children) {
                   return h(type, props, children);
+                }
+                export function withCtx(slot) {
+                  return slot;
+                }
+                export function createSlots(slots, dynamicSlots) {
+                  for (const slot of dynamicSlots) {
+                    if (slot) {
+                      slots[slot.name] = slot.fn;
+                    }
+                  }
+                  return slots;
                 }
                 export function createTextVNode(children) {
                   return document.createTextNode(String(children));
@@ -5166,7 +5184,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("builder.addComponentSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ Header: () => [].concat(h(\"h1\", null, [\"Named header\"]) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ Header: withCtx(() => [].concat(h(\"h1\", null, [\"Named header\"]) ?? [])), _: 1 }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -5345,7 +5363,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ Header: value => [].concat((openBlock(), createElementBlock(\"h1\", null, value, 1)) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ Header: withCtx(value => [].concat((openBlock(), createElementBlock(\"h1\", null, value, 1)) ?? [])), _: 1 }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -5497,7 +5515,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("\"Header\": \"title\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentSlot(\"Header\", title);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ title: () => [].concat(h(\"h1\", null, [\"Descriptor title\"]) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ title: withCtx(() => [].concat(h(\"h1\", null, [\"Descriptor title\"]) ?? [])), _: 1 }", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -5566,7 +5584,7 @@ public sealed class MemberClosureTests
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
 
         Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ title: value => [].concat((openBlock(), createElementBlock(\"h1\", null, value, 1)) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ title: withCtx(value => [].concat((openBlock(), createElementBlock(\"h1\", null, value, 1)) ?? [])), _: 1 }", StringComparison.Ordinal);
         Assert.IsFalse(parentScript.Contains("slots.titleContent", StringComparison.Ordinal), parentScript);
     }
 
@@ -6497,7 +6515,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(parentScript, "modelValue: state.text", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "\"onUpdate:modelValue\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.text = __value)", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "onAction: HandleAction", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "{ title: value => [].concat((openBlock(), createElementBlock(\"h1\", null, [\"slot:\", createTextVNode(value, 1)])) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ title: withCtx(value => [].concat((openBlock(), createElementBlock(\"h1\", null, [\"slot:\", createTextVNode(value, 1)])) ?? [])), _: 1 }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -7029,6 +7047,33 @@ public sealed class MemberClosureTests
                         return Object.keys(source).map((key, index) => renderItem(source[key], key, index));
                     }
                     return [];
+                }
+                """;
+            }
+            if (!contents.Contains("export function withCtx", StringComparison.Ordinal))
+            {
+                contents += """
+
+                export function withCtx(slot) {
+                    return slot;
+                }
+                """;
+            }
+            if (!contents.Contains("export function createSlots", StringComparison.Ordinal))
+            {
+                contents += """
+
+                export function createSlots(slots, dynamicSlots) {
+                    for (const slot of dynamicSlots) {
+                        if (Array.isArray(slot)) {
+                            for (const entry of slot) {
+                                if (entry) slots[entry.name] = entry.fn;
+                            }
+                        } else if (slot) {
+                            slots[slot.name] = slot.fn;
+                        }
+                    }
+                    return slots;
                 }
                 """;
             }

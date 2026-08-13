@@ -257,19 +257,21 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsInstanceOfType<Identifier>(Invoke<ObjectProperty>("CreateObjectProperty", "ready", new Identifier("value")).Key);
         Assert.IsInstanceOfType<StringLiteral>(Invoke<ObjectProperty>("CreateObjectProperty", "data-title", new Identifier("value")).Key);
 
-        var minimalVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", false, false, false, false, false, false, false, false, false, false, false);
+        var minimalVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", false, false, false, false, false, false, false, false, false, false, false, false, false);
         CollectionAssert.AreEquivalent(
             new[] { "defineComponent", "h" },
             GetImportedNames(minimalVueImport));
-        var fullVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", true, true, true, true, true, true, true, true, true, true, true);
+        var fullVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", true, true, true, true, true, true, true, true, true, true, true, true, true);
         CollectionAssert.AreEquivalent(
-            new[] { "defineComponent", "h", "Fragment", "createStaticVNode", "openBlock", "createElementBlock", "createBlock", "createTextVNode", "renderList", "onMounted", "onUnmounted", "onUpdated", "reactive", "watch" },
+            new[] { "defineComponent", "h", "Fragment", "createStaticVNode", "openBlock", "createElementBlock", "createBlock", "createTextVNode", "renderList", "withCtx", "createSlots", "onMounted", "onUnmounted", "onUpdated", "reactive", "watch" },
             GetImportedNames(fullVueImport));
         var framingReservedNames = (ImmutableHashSet<string>)typeof(VueModuleBuilder)
             .GetField("FramingReservedNames", BindingFlags.NonPublic | BindingFlags.Static)!
             .GetValue(null)!;
         Assert.IsTrue(framingReservedNames.Contains("createTextVNode"));
         Assert.IsTrue(framingReservedNames.Contains("renderList"));
+        Assert.IsTrue(framingReservedNames.Contains("withCtx"));
+        Assert.IsTrue(framingReservedNames.Contains("createSlots"));
 
         var module = new Parser().ParseModule(
             """
@@ -707,6 +709,8 @@ public sealed class VueModuleBuilderPrivateContractTests
             "$renderDirect",
             preludeStatements,
             CreateImmutableArray(typeof(RenderModuleHoist)),
+            false,
+            false,
             false,
             false,
             false,

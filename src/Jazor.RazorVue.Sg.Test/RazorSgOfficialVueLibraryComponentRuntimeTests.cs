@@ -113,9 +113,9 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
             });
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "title: () =>", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "\"prepend-item\": () =>", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "default: () =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "title: withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "\"prepend-item\": withCtx(() =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "default: withCtx(() =>", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("titleContent", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("prependItem", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("defaultContent", StringComparison.Ordinal), observation.ModuleText);
@@ -169,7 +169,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "title: \"Menu title\"", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "title: () =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "title: withCtx(() =>", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("titleContent", StringComparison.Ordinal), observation.ModuleText);
     }
 

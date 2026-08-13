@@ -66,7 +66,8 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "UseIncomingTemplate", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 }", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "name: \"item\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "Fallback: ", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(

@@ -974,10 +974,11 @@ public sealed class RenderEmitterPrivateContractTests
 
         var slotFrame = CreateComponentFrame(parameterNames);
         AddComponentSlot(slotFrame, "header", CreateDirectRenderFragment(new Identifier("headerContent"), parameterName: null));
-        StringAssert.Contains(
-            InvokeNestedInstance<Expression>(slotFrame, "ToRenderExpression").ToKnRECMAScript(),
-            "header",
-            StringComparison.Ordinal);
+        var stableSlots = InvokeNestedInstance<Expression>(slotFrame, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(stableSlots, "withCtx", StringComparison.Ordinal);
+        StringAssert.Contains(stableSlots, "_: 1", StringComparison.Ordinal);
+        StringAssert.Contains(stableSlots, "createBlock", StringComparison.Ordinal);
+        Assert.IsFalse(stableSlots.Contains("createSlots", StringComparison.Ordinal), stableSlots);
     }
 
     [TestMethod]
@@ -1054,7 +1055,7 @@ public sealed class RenderEmitterPrivateContractTests
             CreateDirectRenderFragment(new Identifier("fallback"), parameterName: null, selection: selection));
         StringAssert.Contains(
             InvokeNestedInstance<Expression>(selectedSlotFrame, "ToRenderExpression").ToKnRECMAScript(),
-            "showHeader",
+            "createSlots",
             StringComparison.Ordinal);
 
         var unavailableSlotFrame = CreateComponentFrame(ImmutableDictionary<string, string>.Empty);

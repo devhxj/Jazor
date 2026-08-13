@@ -62,7 +62,7 @@ public sealed class RazorSgOfficialVueLibraryComponentDescriptorTests
             StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "theme: \"primary\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "onClick: QueueRelease", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "default: () =>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "default: withCtx(() =>", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "data-action", StringComparison.Ordinal);
     }
 }

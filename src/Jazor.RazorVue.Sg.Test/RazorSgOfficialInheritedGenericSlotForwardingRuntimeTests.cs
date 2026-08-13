@@ -65,7 +65,8 @@ public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.GeneratedCSharp, "RenderFragment<global::Demo.Components.ReleaseEntry>", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "slots[\"forwarded-item\"]", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "item:", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "createSlots({ _: 2 }", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "name: \"item\"", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/inherited-release-template-forwarder-runtime.mjs",
