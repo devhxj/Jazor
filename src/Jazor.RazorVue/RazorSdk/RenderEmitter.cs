@@ -111,6 +111,8 @@ internal static class RenderEmitter
         private readonly Dictionary<IMethodSymbol, string> _renderFragmentHelperFunctionNames = new(SymbolComparer);
         private readonly HashSet<IMethodSymbol> _emittingRenderFragmentHelperFunctions = new(SymbolComparer);
         private readonly HashSet<ISymbol> _referenceCaptureStateMembers = new(SymbolComparer);
+        private readonly Dictionary<Expression, DirectBinderValueKind> _directBinderHandlers =
+            new(ReferenceExpressionComparer.Instance);
         private readonly Dictionary<ILocalSymbol, IOperation> _compileTimeFrameLocalValues = new(SymbolComparer);
         private readonly HashSet<ILocalSymbol> _erasedRenderObjectLocals = new(SymbolComparer);
         private readonly HashSet<string> _renderLocalNames = new(StringComparer.Ordinal);
@@ -147,7 +149,8 @@ internal static class RenderEmitter
                     memberRuntimeNames: declaredNames,
                     parameterReferenceRewriter: RewriteDirectParameterReference,
                     localReferenceRewriter: RewriteDirectLocalReference,
-                    propertyReferenceRewriter: RewriteDirectRenderFragmentParameterReference)
+                    propertyReferenceRewriter: RewriteDirectRenderFragmentParameterReference,
+                    directBinderHandlerObserver: (handler, valueKind) => _directBinderHandlers[handler] = valueKind)
             };
             _argument = new SenseArgument(Sense.Any, UseImportAliases: true);
             _componentSlotNames = BuildComponentSlotNameMap(componentSymbol);
@@ -1159,7 +1162,12 @@ internal static class RenderEmitter
             var value = invocation.Arguments.Length == 2
                 ? new BooleanLiteral(true, "true")
                 : LowerExpression(invocation.Arguments[2].Value, context);
-            frame.AddAttribute(new DirectAttribute(frame.NormalizeAttributeName(name), value));
+            frame.AddAttribute(new DirectAttribute(
+                frame.NormalizeAttributeName(name),
+                value,
+                DirectBinderValueKind: _directBinderHandlers.TryGetValue(value, out var directBinderValueKind)
+                    ? directBinderValueKind
+                    : DirectBinderValueKind.None));
         }
 
         private void EmitAddComponentParameter(IInvocationOperation invocation, EmitContext context, RenderState state)
@@ -3859,6 +3867,32 @@ internal static class RenderEmitter
             async: false);
     }
 
+    private static Expression BuildFusedDirectDomBindHandler(
+        ArrowFunctionExpression handlerExpression,
+        string attributeName)
+    {
+        var eventParameter = new Identifier("event");
+        var target = new MemberExpression(eventParameter, new Identifier("target"), computed: false, optional: false);
+        var value = new MemberExpression(target, StringLiteral(attributeName), computed: true, optional: false);
+        var sourceAssignment = (AssignmentExpression)handlerExpression.Body;
+        var assignment = new AssignmentExpression(sourceAssignment.Operator, sourceAssignment.Left, value)
+        {
+            UserData = sourceAssignment.UserData
+        };
+        // Roslyn has already proved this binder is one direct parameter-to-target assignment.
+        // Keep the compiler-lowered lambda as the semantic owner while removing the generic
+        // value/event discriminator and rest forwarding from the hot DOM event path.
+        // direct bind 只融合 target.value/checked 提取；赋值本身仍由 SemanticWalker 产物执行。
+        return new ArrowFunctionExpression(
+            NodeList.From<Node>(eventParameter),
+            assignment,
+            expression: true,
+            async: false)
+        {
+            UserData = handlerExpression.UserData
+        };
+    }
+
     private static Expression BuildDirectEventModifierHandler(Expression handlerExpression, DirectEventModifier modifier)
     {
         var eventParameter = new Identifier("event");
@@ -4680,7 +4714,14 @@ internal static class RenderEmitter
             if (_updatesAttributeName is not null &&
                 string.Equals(attribute.Name, _updatesEventName, StringComparison.Ordinal))
             {
-                value = BuildDirectDomBindHandler(value, _updatesAttributeName);
+                value = !_eventModifiers.ContainsKey(attribute.Name) &&
+                        value is ArrowFunctionExpression directBinder &&
+                        IsFusibleDirectDomBindAttribute(
+                            _updatesAttributeName,
+                            attribute.DirectBinderValueKind,
+                            directBinder)
+                    ? BuildFusedDirectDomBindHandler(directBinder, _updatesAttributeName)
+                    : BuildDirectDomBindHandler(value, _updatesAttributeName);
             }
 
             if (_eventModifiers.TryGetValue(attribute.Name, out var modifier))
@@ -4718,6 +4759,25 @@ internal static class RenderEmitter
         private bool IsUpdatesEvent(DirectAttribute attribute)
             => _updatesAttributeName is not null &&
                string.Equals(attribute.Name, _updatesEventName, StringComparison.Ordinal);
+
+        private static bool IsFusibleDirectDomBindAttribute(
+            string attributeName,
+            DirectBinderValueKind valueKind,
+            ArrowFunctionExpression handler)
+        {
+            if (handler.Params.Count != 1 ||
+                handler.Params[0] is not Identifier ||
+                handler.Body is not AssignmentExpression { Operator: Operator.Assignment })
+                return false;
+
+            // DOM value is already a string and checked is already a boolean. Other binder
+            // types can require BindConverter parse/culture semantics and stay on the generic path.
+            // 仅 value:string 与 checked:boolean 可无转换直传；数值/日期等不得绕过解析语义。
+            return string.Equals(attributeName, "value", StringComparison.Ordinal) &&
+                       valueKind == DirectBinderValueKind.String ||
+                   string.Equals(attributeName, "checked", StringComparison.Ordinal) &&
+                       valueKind == DirectBinderValueKind.Boolean;
+        }
 
         private Expression FormatChildrenExpression()
             => Children.Count == 0
@@ -5080,7 +5140,20 @@ internal static class RenderEmitter
     /// <summary>Preserves an attribute pair until frame completion determines its Vue prop form.</summary>
     private sealed record DirectAttribute(
         string Name,
-        Expression ValueExpression);
+        Expression ValueExpression,
+        DirectBinderValueKind DirectBinderValueKind = DirectBinderValueKind.None);
+
+    /// <summary>Tracks compiler-returned AST nodes by identity without occupying Node.UserData.</summary>
+    private sealed class ReferenceExpressionComparer : IEqualityComparer<Expression>
+    {
+        public static ReferenceExpressionComparer Instance { get; } = new();
+
+        public bool Equals(Expression? x, Expression? y)
+            => ReferenceEquals(x, y);
+
+        public int GetHashCode(Expression obj)
+            => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
+    }
 
     /// <summary>Discriminated source of props merged into an element or component.</summary>
     private abstract record PropSource;

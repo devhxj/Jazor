@@ -59,6 +59,7 @@ internal static class VueModuleBuilder
         "parametersSetAsyncGen",
         "parametersSetAsyncTail",
         "runOnParametersSetAsync",
+        "parameterWatchSource",
         HmrComponentVariableName
     }.ToImmutableHashSet(StringComparer.Ordinal);
 
@@ -559,7 +560,8 @@ internal static class VueModuleBuilder
             closure,
             setupFactoryName,
             directRender,
-            features));
+            features,
+            GetVuePropNames(closure)));
         moduleStatements.Add(BuildVueHmrRegistration(hmrModuleId));
         moduleStatements.Add(new ExportDefaultDeclaration(new Identifier(HmrComponentVariableName)));
 
@@ -660,10 +662,10 @@ internal static class VueModuleBuilder
         MemberClosure closure,
         string setupFactoryName,
         DirectRenderBuildResult directRender,
-        VueModuleFeatures features)
+        VueModuleFeatures features,
+        ImmutableArray<string> propNames)
     {
         var componentOptions = new List<Node>();
-        var propNames = GetVuePropNames(closure);
         if (propNames.Length > 0)
             componentOptions.Add(CreateObjectProperty("props", CreateStringArray(propNames)));
 
@@ -673,7 +675,8 @@ internal static class VueModuleBuilder
             body: CreateFunctionBody(BuildVueSetupStatements(
                 setupFactoryName,
                 directRender,
-                features)),
+                features,
+                propNames)),
             generator: false,
             async: false);
         componentOptions.Add(new ObjectProperty(
@@ -763,7 +766,8 @@ internal static class VueModuleBuilder
     private static List<Statement> BuildVueSetupStatements(
         string setupFactoryName,
         DirectRenderBuildResult directRender,
-        VueModuleFeatures features)
+        VueModuleFeatures features,
+        ImmutableArray<string> propNames)
     {
         var statements = new List<Statement>();
 
@@ -817,11 +821,11 @@ internal static class VueModuleBuilder
         if (features.OnParametersSet is { } onParametersSet)
         {
             statements.Add(CreateExpressionStatement(CreateScopeCall(onParametersSet)));
-            statements.Add(CreateWatchStatement(onParametersSet));
+            statements.Add(CreateWatchStatement(onParametersSet, propNames));
         }
 
         if (features.OnParametersSetAsync is { } onParametersSetAsync)
-            statements.AddRange(BuildOnParametersSetAsyncStatements(onParametersSetAsync));
+            statements.AddRange(BuildOnParametersSetAsyncStatements(onParametersSetAsync, propNames));
 
         if (features.OnAfterRender is { } onAfterRender)
         {
@@ -927,16 +931,19 @@ internal static class VueModuleBuilder
             [],
             [CreateExpressionStatement(CreateCall("stateHasChanged"))]);
 
-    private static Statement CreateWatchStatement(string scopeMethod)
+    private static Statement CreateWatchStatement(
+        string scopeMethod,
+        ImmutableArray<string> propNames)
         => CreateExpressionStatement(CreateCall(
             "watch",
-            CreateArrowExpression(new Identifier("props")),
+            CreateParameterWatchSource(propNames),
             CreateArrowFunction(
                 [],
-                [CreateExpressionStatement(CreateScopeCall(scopeMethod))]),
-            BuildDeepWatchOptions()));
+                [CreateExpressionStatement(CreateScopeCall(scopeMethod))])));
 
-    private static IEnumerable<Statement> BuildOnParametersSetAsyncStatements(string scopeMethod)
+    private static IEnumerable<Statement> BuildOnParametersSetAsyncStatements(
+        string scopeMethod,
+        ImmutableArray<string> propNames)
     {
         // Serialize parameter callbacks and version each run. Vue may publish newer props while
         // an earlier Task is pending; only the newest completion may request a rerender.
@@ -998,11 +1005,10 @@ internal static class VueModuleBuilder
         yield return CreateExpressionStatement(CreateCall("runOnParametersSetAsync"));
         yield return CreateExpressionStatement(CreateCall(
             "watch",
-            CreateArrowExpression(new Identifier("props")),
+            CreateParameterWatchSource(propNames),
             CreateArrowFunction(
                 [],
-                [CreateExpressionStatement(CreateCall("runOnParametersSetAsync"))]),
-            BuildDeepWatchOptions()));
+                [CreateExpressionStatement(CreateCall("runOnParametersSetAsync"))])));
     }
 
     private static ArrowFunctionExpression CreateParametersSetCompletionCallback()
@@ -1016,8 +1022,18 @@ internal static class VueModuleBuilder
                 CreateBlock(CreateExpressionStatement(CreateCall("stateHasChanged"))),
                 null)]);
 
-    private static ObjectExpression BuildDeepWatchOptions()
-        => new(NodeList.From<Node>(CreateObjectProperty("deep", BooleanLiteral(true))));
+    private static ArrowFunctionExpression CreateParameterWatchSource(ImmutableArray<string> propNames)
+    {
+        // ComponentBase parameter lifecycle is keyed by the parent's supplied parameter values.
+        // Vue mutates the stable props proxy in place, so watching `props` itself cannot observe
+        // replacement. Project declared props into a shallow array: value/reference replacement
+        // triggers once, while nested mutation of the same object is explicitly not a new parameter set.
+        // 只观察声明参数的浅层 value/reference；同一引用内部变更不属于参数重新赋值。
+        var values = propNames.Select(static name => (Expression?)CreateMemberAccess(
+            new Identifier("props"),
+            name));
+        return CreateArrowExpression(new ArrayExpression(NodeList.From(values)));
+    }
 
     private static Statement CreateLifecycleRegistration(
         string vueLifecycleMethod,

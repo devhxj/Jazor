@@ -44,7 +44,8 @@ public sealed class RazorSgOfficialLoopCheckboxBindingRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "CreateBinder", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "task.IsDone", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "eventOrValue.target[\"checked\"]", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "event => task.IsDone = event.target[\"checked\"]", StringComparison.Ordinal);
+        Assert.IsFalse(observation.ModuleText.Contains("eventOrValue", StringComparison.Ordinal), observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "task.IsDone =", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("    Title: null", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("    IsDone: false", StringComparison.Ordinal), observation.ModuleText);

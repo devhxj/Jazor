@@ -20,7 +20,8 @@ internal sealed class VueSemanticWalkerHost : CompositeSemanticWalkerHost
         IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames = null,
         Func<IParameterReferenceOperation, SenseArgument, Expression?>? parameterReferenceRewriter = null,
         Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter = null,
-        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null)
+        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null,
+        Action<Expression, DirectBinderValueKind>? directBinderHandlerObserver = null)
         : base(
             new CurrentComponentSemanticWalkerHost(
                 componentType,
@@ -30,7 +31,8 @@ internal sealed class VueSemanticWalkerHost : CompositeSemanticWalkerHost
                 memberRuntimeNames,
                 parameterReferenceRewriter,
                 localReferenceRewriter,
-            propertyReferenceRewriter),
+                propertyReferenceRewriter,
+                directBinderHandlerObserver),
             ChildrenToSlotSemanticWalkerHost.Instance)
     {
     }

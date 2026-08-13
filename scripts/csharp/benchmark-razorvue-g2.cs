@@ -416,7 +416,7 @@ static string CreateProductionVueBrowserHtml()
         <meta charset="utf-8">
         <div id="app"></div>
         <script type="module">
-        import { Fragment, createApp, createBlock, createElementBlock, createSlots, createSSRApp, createStaticVNode, createTextVNode, h, nextTick, openBlock, ref, render, renderList, withCtx } from "./vue.mjs";
+        import { Fragment, createApp, createBlock, createElementBlock, createSlots, createSSRApp, createStaticVNode, createTextVNode, h, nextTick, openBlock, reactive, ref, render, renderList, watch, withCtx } from "./vue.mjs";
         import { createRawMarkup } from "./raw-markup.mjs";
 
         const cases = [
@@ -584,13 +584,35 @@ static string CreateProductionVueBrowserHtml()
         const conditionalSlotPatched = conditionalSlotHost.querySelector("[data-slot=fallback]")?.textContent === "fallback" &&
           conditionalSlotHost.querySelector("[data-slot=primary]") === null;
 
+        // E4 mirrors generated direct bind and parameter watch shapes. The hot handler must
+        // assign from the DOM carrier without generic event/value discrimination; the lifecycle
+        // source observes only shallow prop value/reference replacement.
+        // direct bind 与浅参数 watch 均在真实 Vue scheduler 下验证，不依赖测试 stub 主动回调。
+        const bindState = reactive({ value: "before" });
+        const directBindHandler = event => bindState.value = event.target["value"];
+        directBindHandler({ target: { value: "after" } });
+        const directBindPatched = bindState.value === "after";
+
+        const lifecycleProps = reactive({ label: "one", model: { value: "nested-one" } });
+        let lifecycleRuns = 0;
+        watch(() => [lifecycleProps.label, lifecycleProps.model], () => lifecycleRuns++);
+        lifecycleProps.model.value = "nested-two";
+        await nextTick();
+        const nestedMutationIgnored = lifecycleRuns === 0;
+        lifecycleProps.label = "two";
+        await nextTick();
+        const scalarReplacementObserved = lifecycleRuns === 1;
+        lifecycleProps.model = { value: "replacement" };
+        await nextTick();
+        const referenceReplacementObserved = lifecycleRuns === 2;
+
         const host = document.createElement("div");
         host.innerHTML = "<section id=\"hydrated\"><strong>one</strong><em>two</em></section>";
         document.body.append(host);
         createSSRApp({ render: () => h("section", { id: "hydrated" }, [createStaticVNode("<strong>one</strong><em>two</em>", 2)]) }).mount(host);
         const hydrated = host.querySelectorAll("#hydrated strong, #hydrated em").length === 2;
-        document.documentElement.setAttribute("data-jazor-production-vue", mounted && patched && directPatched && blockMounted && blockPatched && keyedReordered && unkeyedIsConservative && stableSlotMounted && stableSlotPatched && conditionalSlotMounted && conditionalSlotPatched && hydrated ? "passed" : "failed");
-        document.documentElement.setAttribute("data-jazor-production-vue-detail", `mounted:${mounted};dynamicCount:${dynamicCount};commentElementCount:${commentElementCount};hasWrapper:${hasWrapper};cases:${casesPresent};patched:${patched};directPatched:${directPatched};blockMounted:${blockMounted};blockPatched:${blockPatched};keyedReordered:${keyedReordered};keyedOrder:${keyedOrder};unkeyedFragmentFlag:${unkeyedFragmentFlag};stableSlotMounted:${stableSlotMounted};stableSlotPatched:${stableSlotPatched};conditionalSlotMounted:${conditionalSlotMounted};conditionalSlotPatched:${conditionalSlotPatched};dynamicText:${dynamic.textContent};hydrated:${hydrated}`);
+        document.documentElement.setAttribute("data-jazor-production-vue", mounted && patched && directPatched && blockMounted && blockPatched && keyedReordered && unkeyedIsConservative && stableSlotMounted && stableSlotPatched && conditionalSlotMounted && conditionalSlotPatched && directBindPatched && nestedMutationIgnored && scalarReplacementObserved && referenceReplacementObserved && hydrated ? "passed" : "failed");
+        document.documentElement.setAttribute("data-jazor-production-vue-detail", `mounted:${mounted};dynamicCount:${dynamicCount};commentElementCount:${commentElementCount};hasWrapper:${hasWrapper};cases:${casesPresent};patched:${patched};directPatched:${directPatched};blockMounted:${blockMounted};blockPatched:${blockPatched};keyedReordered:${keyedReordered};keyedOrder:${keyedOrder};unkeyedFragmentFlag:${unkeyedFragmentFlag};stableSlotMounted:${stableSlotMounted};stableSlotPatched:${stableSlotPatched};conditionalSlotMounted:${conditionalSlotMounted};conditionalSlotPatched:${conditionalSlotPatched};directBindPatched:${directBindPatched};nestedMutationIgnored:${nestedMutationIgnored};scalarReplacementObserved:${scalarReplacementObserved};referenceReplacementObserved:${referenceReplacementObserved};dynamicText:${dynamic.textContent};hydrated:${hydrated}`);
         </script>
         """;
 
@@ -785,7 +807,7 @@ internal sealed record ProductionVueRuntimeVerification(
 - Status: {Status}
 - Runtime: `{Runtime}`
 
-验证覆盖 production Vue 的 static multi-root、text/element、table、SVG/MathML、dynamic raw markup patch、leading comment framing、E1 child block/text patch、E2 list fragment identity、E3 stable/conditional slot patch、SSR 与 hydration。
+验证覆盖 production Vue 的 static multi-root、text/element、table、SVG/MathML、dynamic raw markup patch、leading comment framing、E1 child block/text patch、E2 list fragment identity、E3 stable/conditional slot patch、E4 direct bind/shallow parameter watch、SSR 与 hydration。
 
 {Details}
 """;

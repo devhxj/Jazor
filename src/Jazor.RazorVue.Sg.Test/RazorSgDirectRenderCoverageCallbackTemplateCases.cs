@@ -112,7 +112,7 @@ internal static partial class DirectRenderCaseCatalog
                 "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"type\", \"checkbox\"); builder.AddAttribute(2, \"checked\", " + boolField + "); builder.AddAttribute(3, \"onchange\", EventCallback.Factory.CreateBinder<bool>(this, value => " + boolField + " = value, " + boolField + ")); builder.SetUpdatesAttributeName(\"checked\"); builder.AddAttribute(4, \"data-case\", " + CSharpStringLiteral(marker) + "); builder.CloseElement();",
                 "onChange")
             {
-                AdditionalExpectedFragment = "eventOrValue",
+                AdditionalExpectedFragment = "event.target[\"checked\"]",
                 TertiaryExpectedFragment = "checked",
                 Members = "private bool " + boolField + ";"
             },
@@ -128,7 +128,7 @@ internal static partial class DirectRenderCaseCatalog
                 "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"value\", " + field + "); builder.AddAttribute(2, \"oninput\", EventCallback.Factory.CreateBinder<string?>(this, value => " + field + " = value, " + field + ")); builder.SetUpdatesAttributeName(\"value\"); builder.AddAttribute(3, \"data-case\", " + CSharpStringLiteral(marker) + "); builder.CloseElement();",
                 "onInput")
             {
-                AdditionalExpectedFragment = "eventOrValue",
+                AdditionalExpectedFragment = "event.target[\"value\"]",
                 TertiaryExpectedFragment = field,
                 Members = "private string? " + field + " = " + CSharpStringLiteral(marker) + ";"
             },
@@ -148,7 +148,7 @@ internal static partial class DirectRenderCaseCatalog
             "builder.OpenElement(0, " + CSharpStringLiteral(tag) + "); builder.AddAttribute(1, " + CSharpStringLiteral(attribute) + ", " + field + "); builder.AddAttribute(2, " + CSharpStringLiteral(eventName) + ", EventCallback.Factory.CreateBinder<string>(this, value => " + field + " = value, " + field + ")); builder.SetUpdatesAttributeName(" + CSharpStringLiteral(attribute) + "); builder.AddAttribute(3, \"data-case\", " + CSharpStringLiteral(marker) + "); builder.CloseElement();",
             NormalizeCoverageEventName(eventName))
         {
-            AdditionalExpectedFragment = "eventOrValue",
+            AdditionalExpectedFragment = "event.target[\"value\"]",
             TertiaryExpectedFragment = marker,
             Members = "private string " + field + " = " + CSharpStringLiteral(marker) + ";"
         };

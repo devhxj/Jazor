@@ -243,7 +243,7 @@ internal static partial class DirectRenderCaseCatalog
                     case 6:
                         var field = "boundMetadata" + host + shapeId;
                         body = "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"value\", " + CSharpStringLiteral(marker) + "); builder.AddAttribute(2, " + CSharpStringLiteral(eventName) + ", EventCallback.Factory.CreateBinder<string>(this, value => " + field + " = value, " + field + ")); builder.SetUpdatesAttributeName(\"value\"); builder.CloseElement();";
-                        additional = "eventOrValue";
+                        additional = "event.target[\"value\"]";
                         tertiary = marker;
                         members = "private string " + field + " = \"\";";
                         break;

@@ -12,7 +12,7 @@ Jazor 的当前核心是受控 C# -> ECMAScript 转换：Roslyn `IOperation` 进
 
 当前已实现的框架集成是 Razor-to-Vue。它以官方 Razor Source Generator 完成后的最终 `Compilation` 为输入，通过 `Jazor.RazorVue` 完成组件绑定和 Vue framing，并复用核心编译器降低 C# 语义。
 
-RazorVue 的生产输出是 direct Vue render-function `.mjs`。当前已接受的 static hoist、精确 static VNode cardinality、按需 raw-markup runtime、child-level block tree（dynamic string text、mixed text 与 nested block）、保守 patch flags、setup-instance handler cache、已证明安全的 `foreach` `renderList` / keyed-unkeyed fragment，以及 stable/dynamic slot 精确 lowering 边界见 [RazorVue Direct Render 性能评审](./razorvue-direct-h-performance.md)。production Vue gate 已确认 keyed list reorder 保留原 DOM identity、unkeyed list 不会误标为 stable，并验证 fixed `withCtx + _: 1` slot 更新和 conditional `createSlots + 1024` 分支切换；后续 bind/lifecycle、SSR 与交付性能工作遵循 [RazorVue 极致性能路线图](./razorvue-extreme-performance.md) 的依赖和真实 runtime 门禁。
+RazorVue 的生产输出是 direct Vue render-function `.mjs`。当前已接受的 static hoist、精确 static VNode cardinality、按需 raw-markup runtime、child-level block tree（dynamic string text、mixed text 与 nested block）、保守 patch flags、setup-instance handler cache、已证明安全的 `foreach` `renderList` / keyed-unkeyed fragment、stable/dynamic slot 精确 lowering、direct string/boolean DOM bind，以及 shallow parameter lifecycle watch 边界见 [RazorVue Direct Render 性能评审](./razorvue-direct-h-performance.md)。production Vue gate 已确认 keyed reorder identity、slot 分支更新、direct bind patch，以及 scalar/reference parameter replacement；同一 prop 引用内部的 nested mutation 不定义为新参数赋值。后续 SSR 与交付性能工作遵循 [RazorVue 极致性能路线图](./razorvue-extreme-performance.md) 的依赖和真实 runtime 门禁。
 
 Vue 3、Vue Router、Pinia、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` 和 ASP.NET Core SSR 都围绕核心平台或当前 RazorVue 集成提供能力；它们不改变 Jazor 的框架无关核心定位。
 

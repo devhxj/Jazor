@@ -40,6 +40,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private readonly Func<IParameterReferenceOperation, SenseArgument, Expression?>? _parameterReferenceRewriter;
     private readonly Func<ILocalReferenceOperation, SenseArgument, Expression?>? _localReferenceRewriter;
     private readonly Func<IPropertyReferenceOperation, SenseArgument, Expression?>? _propertyReferenceRewriter;
+    private readonly Action<Expression, DirectBinderValueKind>? _directBinderHandlerObserver;
 
     public CurrentComponentSemanticWalkerHost(
         INamedTypeSymbol componentType,
@@ -49,7 +50,8 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames = null,
         Func<IParameterReferenceOperation, SenseArgument, Expression?>? parameterReferenceRewriter = null,
         Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter = null,
-        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null)
+        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null,
+        Action<Expression, DirectBinderValueKind>? directBinderHandlerObserver = null)
     {
         _componentType = componentType ?? throw new ArgumentNullException(nameof(componentType));
         if (string.IsNullOrWhiteSpace(stateIdentifier))
@@ -64,6 +66,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         _parameterReferenceRewriter = parameterReferenceRewriter;
         _localReferenceRewriter = localReferenceRewriter;
         _propertyReferenceRewriter = propertyReferenceRewriter;
+        _directBinderHandlerObserver = directBinderHandlerObserver;
     }
 
     public override Expression? RewriteParameterReference(
@@ -255,8 +258,13 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (!IsCurrentComponentEventCallbackReceiver(receiver))
             throw CreateUnsupportedEventCallbackFactoryCreateBinderException(operation);
 
-        return RewriteBinderHandler(handler, argument)
+        var rewritten = RewriteBinderHandler(handler, argument)
             ?? throw CreateUnsupportedEventCallbackFactoryCreateBinderException(operation);
+        if (HasOnlyDefaultBinderOptions(operation) &&
+            TryGetDirectBinderValueKind(handler, out var valueKind))
+            _directBinderHandlerObserver?.Invoke(rewritten, valueKind);
+
+        return rewritten;
     }
 
     private static bool TryGetCreateBinderReceiverAndHandler(
@@ -296,6 +304,66 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             IAnonymousFunctionOperation anonymousFunction => RewriteBinderHandler(anonymousFunction, argument),
             _ => null
         };
+
+    private static bool HasOnlyDefaultBinderOptions(IInvocationOperation operation)
+    {
+        var receiverIndex = operation.Arguments[0].Value is IFieldReferenceOperation ? 1 : 0;
+        var handlerIndex = receiverIndex + 1;
+        var currentValueIndex = handlerIndex + 1;
+        return operation.Arguments.Length > currentValueIndex &&
+               operation.Arguments
+                   .Skip(currentValueIndex + 1)
+                   .All(static option => option.ArgumentKind == ArgumentKind.DefaultValue);
+    }
+
+    private static bool TryGetDirectBinderValueKind(
+        IOperation operation,
+        out DirectBinderValueKind valueKind)
+    {
+        switch (operation)
+        {
+            case IConversionOperation conversion:
+                return TryGetDirectBinderValueKind(conversion.Operand, out valueKind);
+            case IDelegateCreationOperation delegateCreation:
+                return TryGetDirectBinderValueKind(delegateCreation.Target, out valueKind);
+            case IAnonymousFunctionOperation anonymousFunction:
+                return TryGetDirectBinderValueKind(anonymousFunction, out valueKind);
+            default:
+                valueKind = DirectBinderValueKind.None;
+                return false;
+        }
+    }
+
+    private static bool TryGetDirectBinderValueKind(
+        IAnonymousFunctionOperation anonymousFunction,
+        out DirectBinderValueKind valueKind)
+    {
+        if (anonymousFunction.Symbol.Parameters.Length != 1 ||
+            TryGetSingleBinderAssignment(anonymousFunction.Body) is not ISimpleAssignmentOperation assignment)
+        {
+            valueKind = DirectBinderValueKind.None;
+            return false;
+        }
+
+        var parameter = anonymousFunction.Symbol.Parameters[0];
+        if (!IsAssignmentFromParameter(assignment.Value, parameter))
+        {
+            valueKind = DirectBinderValueKind.None;
+            return false;
+        }
+
+        // This fact is intentionally narrower than general CreateBinder support. Only the
+        // exact single assignment recognized by Roslyn may be fused with target.value/checked;
+        // inferred setters, conversions and callbacks retain the generic adapter.
+        // 该标记只证明“参数直接写入目标”，不能从最终 JS lambda 形状反推复杂 bind 安全性。
+        valueKind = parameter.Type.SpecialType switch
+        {
+            SpecialType.System_String => DirectBinderValueKind.String,
+            SpecialType.System_Boolean => DirectBinderValueKind.Boolean,
+            _ => DirectBinderValueKind.None
+        };
+        return valueKind != DirectBinderValueKind.None;
+    }
 
     private Expression? RewriteInferredBindSetterHandler(IOperation operation, SenseArgument argument)
         => operation switch
@@ -427,7 +495,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private static bool IsEmptyReturn(IOperation operation)
         => operation is IReturnOperation { ReturnedValue: null };
 
-    private bool IsAssignmentFromParameter(IOperation operation, IParameterSymbol parameter)
+    private static bool IsAssignmentFromParameter(IOperation operation, IParameterSymbol parameter)
         => operation switch
         {
             IConversionOperation conversion => IsAssignmentFromParameter(conversion.Operand, parameter),
@@ -976,4 +1044,12 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             ? runtimeName
             : GetMemberName(symbol);
 
+}
+
+/// <summary>DOM carrier kind proven by Roslyn for a single-assignment CreateBinder lambda.</summary>
+internal enum DirectBinderValueKind
+{
+    None,
+    String,
+    Boolean
 }

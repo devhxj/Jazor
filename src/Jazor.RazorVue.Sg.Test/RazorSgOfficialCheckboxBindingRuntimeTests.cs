@@ -30,8 +30,11 @@ public sealed class RazorSgOfficialCheckboxBindingRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "\"checked\"", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "SetUpdatesAttributeName(\"checked\")", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "eventOrValue.target", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "\"checked\" in eventOrValue.target", StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "event => state.Approved = event.target[\"checked\"]",
+            StringComparison.Ordinal);
+        Assert.IsFalse(observation.ModuleText.Contains("eventOrValue", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/release-approval-toggle-runtime.mjs",

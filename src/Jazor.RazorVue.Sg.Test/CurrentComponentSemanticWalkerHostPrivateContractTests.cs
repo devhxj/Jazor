@@ -495,8 +495,7 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             convertedReturn);
         Assert.IsNotNull(convertedAssignment);
         Assert.IsInstanceOfType<IConversionOperation>(convertedAssignment.Value);
-        Assert.IsTrue(InvokeInstance<bool>(
-            host,
+        Assert.IsTrue(InvokeStatic<bool>(
             "IsAssignmentFromParameter",
             convertedAssignment.Value,
             convertedReturnMethod.Parameters.Single()));

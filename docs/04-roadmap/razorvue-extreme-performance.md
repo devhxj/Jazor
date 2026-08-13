@@ -122,6 +122,8 @@ slot object 需要区分稳定、conditional、loop-generated 和动态名字：
 
 **完成门槛：** direct bind、复杂 bind、named/dynamic handler、sync/async lifecycle、nested object prop、rapid prop updates 均有 regression；优化不靠改变 Razor-visible callback 时机来获得数字。
 
+**状态：已完成。** `CreateBinder` lowering 现在由 `SemanticWalker` host 显式返回 Roslyn 已证明的 direct-binder fact；只有默认 binder options、无 modifier、single direct parameter-to-target assignment，且 DOM carrier 已与参数类型完全一致的 `value:string` / `checked:boolean` 会融合为 `event => target = event.target[...]`。赋值 AST 仍来自核心编译器，复杂 setter、method group、`bind:set` / `bind:after`、modifier、数值/日期转换和其他带解析语义的 binder 保持通用 adapter。`OnParametersSet*` 改为按声明 prop 名稳定排序的 shallow projection watch：scalar value 与 reference replacement 触发，同一对象引用内部的 nested mutation 明确不属于新参数赋值。同步初次调用、异步 serial tail、generation stale suppression 与 `StateHasChanged` 契约不变。完整 Razor SG suite 通过 `4646/4646`，production Vue gate 验证 direct event patch、nested mutation ignored、scalar/reference replacement observed 与 hydration。
+
 ### E5: release payload、SSR 与 build/HMR 吞吐
 
 这些工作与 RenderPlan 独立，但决定真实首屏和服务器成本。

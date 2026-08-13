@@ -34,12 +34,13 @@ public sealed class RazorSgOfficialBindingAuthoringTests
         var script = observation.ModuleText;
         StringAssert.Contains(script, "value: state.Text", StringComparison.Ordinal);
         StringAssert.Contains(script, "onInput", StringComparison.Ordinal);
-        StringAssert.Contains(script, "eventOrValue", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return (__value => state.Text = __value)(value, ...args);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "event => state.Text = event.target[\"value\"]", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("eventOrValue", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("...args", StringComparison.Ordinal), script);
 
         var valueRead = script.IndexOf("value: state.Text", StringComparison.Ordinal);
         var handler = script.IndexOf("onInput", valueRead, StringComparison.Ordinal);
-        var assignment = script.IndexOf("state.Text = __value", handler, StringComparison.Ordinal);
+        var assignment = script.IndexOf("state.Text = event.target[\"value\"]", handler, StringComparison.Ordinal);
         Assert.IsTrue(valueRead < handler, script);
         Assert.IsTrue(handler < assignment, script);
 
@@ -277,6 +278,38 @@ public sealed class RazorSgOfficialBindingAuthoringTests
 
         Assert.IsFalse(script.Contains("CreateBinder", StringComparison.Ordinal), script);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_NumericAndExplicitSetterBinds_KeepGenericDomAdapter()
+    {
+        var explicitSetter = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\ExplicitSetterBinding.razor",
+            documentText:
+            """
+            @using Microsoft.AspNetCore.Components.Web
+
+            <input @bind:get="Text" @bind:set="SetText" @bind:event="oninput" />
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/explicit-setter-binding")]
+            public partial class ExplicitSetterBinding : ComponentBase, IVueComponent
+            {
+                private string Text { get; set; } = "initial";
+                private void SetText(string value) => Text = value.Trim();
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ExplicitSetterBinding");
+
+        StringAssert.Contains(explicitSetter.ModuleText, "eventOrValue", StringComparison.Ordinal);
+        StringAssert.Contains(explicitSetter.ModuleText, "SetText(__value)", StringComparison.Ordinal);
+        Assert.IsFalse(
+            explicitSetter.ModuleText.Contains("event => state.Text = event.target", StringComparison.Ordinal),
+            explicitSetter.ModuleText);
     }
 
     private static int CountOccurrences(string value, string fragment)

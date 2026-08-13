@@ -3768,8 +3768,8 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "import { defineComponent, h, reactive, watch } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "scope.OnParametersSet();", StringComparison.Ordinal);
         StringAssert.Contains(script, "watch(", StringComparison.Ordinal);
-        StringAssert.Contains(script, "() => props,", StringComparison.Ordinal);
-        StringAssert.Contains(script, "{ deep: true }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "() => [props.Title]", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("deep: true", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function OnParametersSet()", StringComparison.Ordinal);
         StringAssert.Contains(script, "state.count = props.Title.length;", StringComparison.Ordinal);
     }
@@ -4705,6 +4705,8 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "return Promise.resolve(scope.OnParametersSetAsync()).then(", StringComparison.Ordinal);
         StringAssert.Contains(script, "if (gen === parametersSetAsyncGen) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "runOnParametersSetAsync();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "() => [props.Title]", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("deep: true", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function OnParametersSetAsync()", StringComparison.Ordinal);
         StringAssert.Contains(script, "state.count = props.Title.length;", StringComparison.Ordinal);
     }

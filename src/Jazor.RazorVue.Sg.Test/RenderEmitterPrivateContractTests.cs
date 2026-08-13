@@ -1523,8 +1523,10 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNotNull(attributeType);
         var constructor = attributeType!
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Single(candidate => candidate.GetParameters().Length == 2);
-        return constructor.Invoke([name, value]);
+            .Single(candidate => candidate.GetParameters().Length == 3);
+        var directBinderValueKind = typeof(RenderEmitter).Assembly
+            .GetType("Jazor.RazorVue.RazorSdk.DirectBinderValueKind", throwOnError: true)!;
+        return constructor.Invoke([name, value, Enum.Parse(directBinderValueKind, "None")]);
     }
 
     private static object CreateDirectAttributeArray(params object[] attributes)

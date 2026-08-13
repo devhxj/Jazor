@@ -69,7 +69,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 const watchers = [];
 
                 export function watch(source, callback) {
-                    watchers.push(callback);
+                    watchers.push({ source, callback, value: source() });
                     return () => {};
                 }
 
@@ -104,8 +104,16 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 }
 
                 export function __runWatchers() {
-                    for (const callback of watchers) {
-                        callback();
+                    for (const watcher of watchers) {
+                        const next = watcher.source();
+                        const changed = Array.isArray(next) && Array.isArray(watcher.value)
+                            ? next.length !== watcher.value.length || next.some((value, index) => !Object.is(value, watcher.value[index]))
+                            : !Object.is(next, watcher.value);
+                        if (changed) {
+                            const previous = watcher.value;
+                            watcher.value = next;
+                            watcher.callback(next, previous);
+                        }
                     }
                 }
 

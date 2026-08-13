@@ -517,6 +517,11 @@ public sealed class RazorSgVueCompilerOptimizationTests
         Assert.IsGreaterThan(
             observation.ModuleText.IndexOf("function createStableHandlerSetupScope", StringComparison.Ordinal),
             observation.ModuleText.IndexOf("const __jazor$handlerCache = [];", StringComparison.Ordinal));
+        StringAssert.Contains(
+            observation.ModuleText,
+            "event => state.Value = event.target[\"value\"]",
+            StringComparison.Ordinal);
+        Assert.IsFalse(observation.ModuleText.Contains("eventOrValue", StringComparison.Ordinal), observation.ModuleText);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/stable-handler.mjs",

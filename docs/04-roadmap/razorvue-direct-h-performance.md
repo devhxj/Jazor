@@ -88,6 +88,18 @@ cache array 在 setup factory 内创建，而不是 module scope。这样同一 
 
 这里的 “named” 不等于所有 `Identifier`。render prelude 的 local handler 也会以 identifier 形式出现，但每轮 render 可能重新赋值；它必须继续进入 patch flags 的 dynamic-prop 列表，不能被误当作稳定 listener 而跳过 Vue listener 更新。
 
+### Direct DOM bind
+
+`CreateBinder` 的 direct fast path 不分析最终 JavaScript 字符串，而是消费 compiler host 在 Roslyn `IOperation` 上证明的 fact。只有默认 binder options、无 event modifier、single direct assignment，并且参数类型与 DOM carrier 完全一致的两种形状会融合：`string` 对应 `value`，`bool` 对应 `checked`。它们直接生成 `event => state.Member = event.target["value" | "checked"]`，省去通用 event/value discriminator、rest argument forwarding 与事件时 IIFE。
+
+赋值左侧、source origin 和副作用语义仍由 `SemanticWalker` 返回的 AST 决定。`bind:set`、`bind:after`、method group、modifier、数值/日期转换、culture/format 与复杂 setter 继续使用通用 adapter；不得从一个相似的 arrow-function text 猜测它们可融合。
+
+### Parameter lifecycle watch
+
+Vue 会原地更新稳定的 `props` proxy，因此观察 `() => props` 不能表达浅层 replacement；旧 `{ deep: true }` 又会递归遍历整个对象图。当前 setup 按已声明 runtime prop 名的稳定顺序生成 `() => [props.A, props.B, ...]`：scalar value 变化和 reference replacement 会触发 `OnParametersSet*`，同一引用内部的 nested mutation 明确不触发。无参数组件使用空 projection，只执行 initial lifecycle。
+
+这个契约保留 `OnParametersSet` 的同步初次调用，以及 `OnParametersSetAsync` 的 serial tail、generation stale-completion suppression 和 completion-time `StateHasChanged`。它把 Razor parameter assignment 与任意对象深层变化区分开，避免生命周期成本随参数对象图大小增长。
+
 ## 没有回退路径
 
 生产输入固定为 official Razor SG generated C#，最终输出固定为 Vue render-function `.mjs`。direct lowering 失败时提供带 source 位置的诊断；不回退到 runtime builder、SFC、wrapper marker 或字符串拼接的 JavaScript。
@@ -118,6 +130,6 @@ dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --verify-vue-runtim
 
 ## 后续演进
 
-下一步是优化已证明为 direct assignment 的 DOM `@bind`，并定义 parameter lifecycle 的浅层 identity/change 契约。复杂 binder 和同一引用内的 nested mutation 在契约明确前继续走当前安全路径。
+下一步是 release payload、persistent SSR worker、deterministic bounded artifact generation 与实测驱动的 critical asset delivery。render lowering 继续只扩大已有 compiler fact 能证明的范围。
 
 每一项都应先证明：evaluation order、side-effect count、最终 VNode、slot/loop closure identity 与 source-map anchoring 不退化；否则继续使用 `h(...)` 是正确的保守行为。
