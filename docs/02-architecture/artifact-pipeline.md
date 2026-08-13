@@ -35,4 +35,12 @@
 
 ASP.NET Core 负责请求管线、静态文件、响应文档和 hydration；DenoHost 负责执行生成的 Vue 服务器模块；Netpack 只负责浏览器构建。应用不需要全局 Deno、项目 `node_modules`、CDN 或远程 import 才能使用受支持的 SSR 路径。
 
+SSR executor 是有界 persistent Deno worker pool。每个 worker 通过 line-delimited stdin/stdout protocol 串行处理请求，应用级 `WorkerCount` 限制跨 generation 的总并发。`jazor-manifest.json`、`ssr-importmap.json` 与 packaged runner 的内容哈希共同标识 generation；新 generation 不复用旧 ESM module cache，旧请求则允许完成。请求取消或 worker crash 会丢弃对应进程，后续租约按需补 worker；应用关闭时先停止接收请求并 drain in-flight render，再关闭 stdin 和进程。协议不落 per-request temporary JSON。
+
+可复现的 cold/warm/concurrent 测量入口是：
+
+```bash
+dotnet run --file scripts/csharp/benchmark-razorvue-ssr.cs -- --samples 5 --iterations 50 --workers 4
+```
+
 使用方式见 [安装与配置](../03-guides/installation-and-configuration.md)，实现级 API 见 [Jazor.Emit README](../../src/Jazor.Emit/README.md)。

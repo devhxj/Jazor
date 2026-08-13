@@ -46,6 +46,7 @@ internal sealed class SsrArtifactLocator
 
             return new SsrArtifacts(
                 candidate,
+                Path.Combine(candidate, ArtifactManifestFileName),
                 Path.Combine(candidate, BrowserImportMapFileName),
                 Path.Combine(candidate, SsrImportMapFileName),
                 Path.Combine(candidate, AssetManifestFileName),
@@ -234,6 +235,7 @@ internal sealed class SsrArtifactLocator
 /// <summary>Resolved paths for one self-contained SSR artifact graph.</summary>
 internal sealed record SsrArtifacts(
     string RootPath,
+    string ArtifactManifestPath,
     string BrowserImportMapPath,
     string SsrImportMapPath,
     string AssetManifestPath,

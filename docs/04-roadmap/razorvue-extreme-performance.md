@@ -130,6 +130,8 @@ slot object 需要区分稳定、conditional、loop-generated 和动态名字：
 
 - 对 Jazor-owned CLR runtime 实施 member/family splitting，或在不改变 runtime module semantics 的前提下实现可证明安全的 production DCE；不能把 Netpack 的非 lossless printer 风险隐藏为“tree shaking”。
 - 将 SSR 改为有界、generation-aware 的 persistent Deno worker pool：stdin/stdout request protocol、artifact generation invalidation、worker crash recovery、cancellation、bounded concurrency 与 graceful disposal。每次 request 不再落 temp JSON/起新 Deno。
+- **SSR 状态：已完成。** `SsrRenderer` 现在按应用实例复用 DenoHost-managed worker，`WorkerCount` 同时限制跨 generation 总进程数与 render 并发。worker 以 line-delimited JSON stdin/stdout 串行执行；`jazor-manifest.json`、`ssr-importmap.json` 与 packaged runner 内容哈希决定 generation，旧 generation 不再接收租约且不会污染新 ESM cache。取消会终止 leased worker，crash worker 不回池，后续请求按需恢复；应用 disposal 先 drain in-flight render 再关闭全部进程。真实 Deno integration tests 覆盖 warm PID reuse、generation invalidation、crash recovery、cancellation、bounded concurrency 与 disposal。
+- `scripts/csharp/benchmark-razorvue-ssr.cs` 使用 production `IJazorSsrRenderer`、packaged DenoHost 和 production Vue/server-renderer graph 分开测 cold/warm/concurrent。2026-08-14 在 `LAPTOP-JMGSKOP9`、Windows `10.0.26200.0`、.NET `11.0.0`、2 workers、5 cold/50 warm samples 上，cold median 为 `249.311 ms`，warm median 为 `0.397 ms`，warm PID 单一复用；20-request concurrent lane 使用恰好 2 个 PID，`82.86 req/s`，per-request temp JSON 为 0。该数字只作同机演进基线，不是跨环境承诺。
 - 在 profiling 证明瓶颈后，保持 catalog 顺序确定性的前提下评估有界并行 RazorVue artifact construction；release asset cache/preload 只为已测量的 critical graph 引入。
 
 **完成门槛：** release bundle 保持可运行且 source-map/manifest/import rewrite 正确；未使用 CLR surface 不增加首屏解析负担；SSR warm request 复用 worker，reload 后不使用旧 artifact，取消/故障不泄漏 process；并行生成产物 byte-for-byte deterministic。

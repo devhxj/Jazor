@@ -44,11 +44,12 @@ public sealed class SdkIntegrationTests
         CollectionAssert.AreEqual(
             new[]
             {
+                "analyzers/dotnet/cs/AngleSharp.dll",
                 "analyzers/dotnet/cs/Jazor.RazorVue.dll",
                 "analyzers/dotnet/cs/Jazor.RazorVue.pdb"
             },
             vueAnalyzerEntries,
-            "Jazor.Vue must install only the merged RazorVue analyzer and rely on Jazor for shared dependencies.");
+            "Jazor.Vue must install the RazorVue analyzer and its static-markup parser, while relying on Jazor for shared compiler dependencies.");
         CollectionAssert.Contains(vueEntryNames, "buildTransitive/Jazor.Vue.targets");
     }
 

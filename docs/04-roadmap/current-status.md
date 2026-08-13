@@ -20,7 +20,7 @@ Vue 3、Vue Router、Pinia、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` �
 
 ## 交付与 SSR
 
-`JazorMode=debug` 生成模块、source map 与 manifest；`JazorMode=release` 通过 Netpack 生成浏览器 bundle。启用 `JazorSSR=true` 的 ASP.NET Core 应用可使用本地 Vue SSR 与 hydration，DenoHost 负责服务器模块执行，Netpack 只负责浏览器构建。
+`JazorMode=debug` 生成模块、source map 与 manifest；`JazorMode=release` 通过 Netpack 生成浏览器 bundle。启用 `JazorSSR=true` 的 ASP.NET Core 应用可使用本地 Vue SSR 与 hydration，DenoHost 负责服务器模块执行，Netpack 只负责浏览器构建。SSR 使用有界、generation-aware persistent Deno worker pool；manifest/import-map 变化会轮换 ESM generation，取消、crash、并发上限与应用关闭均有真实进程回归。
 
 配置方法见 [安装与配置](../03-guides/installation-and-configuration.md)。
 

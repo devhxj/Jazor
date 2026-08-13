@@ -39,6 +39,7 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 - 已证明安全的简单 Razor `foreach` 现在通过 Vue `renderList` 降低：显式 `@key` 使用 keyed fragment，无 key 使用保守的 unkeyed fragment；production Vue 门禁验证 keyed reorder 的 DOM identity。
 - 固定 authored、named 与 scoped slot 现在使用 Vue `withCtx` 和稳定 `_: 1` marker；conditional、forwarded 与非稳定 scope slot 使用 `createSlots + DYNAMIC_SLOTS`，production 门禁验证父级更新与条件分支替换。
 - 已证明为直接赋值的 `string` / `bool` DOM bind 现在绕过通用 event/value adapter，同时保留 compiler-owned assignment 语义。参数生命周期改为声明 prop 的 shallow projection watch：scalar/reference replacement 会触发，同一引用内部的 nested mutation 不触发。
+- ASP.NET Core SSR 现在复用有界、generation-aware Deno worker pool，不再为每次 render 启动进程和写临时请求文件。artifact 变化会轮换 ESM generation；真实进程测试覆盖取消、crash recovery、并发限制与应用 graceful disposal。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 

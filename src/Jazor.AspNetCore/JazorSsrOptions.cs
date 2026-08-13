@@ -18,4 +18,9 @@ public sealed class JazorSsrOptions
     /// <summary>Identifies the element that receives both the server HTML and client hydration.</summary>
     public string MountElementId { get; set; } = "app";
 
+    /// <summary>
+    /// Limits persistent Deno SSR workers and concurrent renders for one application instance.
+    /// 默认按 CPU 数取 <c>[1, 4]</c> 区间，避免小站点无请求时预留过多运行时资源。
+    /// </summary>
+    public int WorkerCount { get; set; } = Math.Clamp(Environment.ProcessorCount, 1, 4);
 }

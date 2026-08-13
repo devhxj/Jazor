@@ -39,6 +39,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 - Proven simple Razor `foreach` loops now lower through Vue `renderList`: explicit `@key` uses keyed fragments, unkeyed loops use conservative unkeyed fragments, and the production Vue gate verifies DOM identity across keyed reorders.
 - Fixed authored, named, and scoped slots now use Vue `withCtx` with the stable `_: 1` marker. Conditional, forwarded, and non-stable-scope slots use `createSlots` with `DYNAMIC_SLOTS`; the production gate verifies both parent updates and branch replacement.
 - Proven direct `string`/`bool` DOM binds now bypass the generic event/value adapter while retaining compiler-owned assignment semantics. Parameter lifecycle watches use a shallow declared-prop projection: scalar and reference replacement trigger callbacks, while nested mutation of the same reference does not.
+- ASP.NET Core SSR now reuses a bounded generation-aware Deno worker pool instead of starting a process and writing a temporary request file for every render. Artifact changes rotate the ESM generation; cancellation, crash recovery, concurrency limits, and graceful application disposal are covered by real-process tests.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

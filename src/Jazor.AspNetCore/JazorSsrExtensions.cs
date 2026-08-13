@@ -91,6 +91,9 @@ public static class JazorSsrExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         var options = services.AddOptions<JazorSsrOptions>();
+        options.Validate(
+            static value => value.WorkerCount > 0,
+            "Jazor SSR WorkerCount must be greater than zero.");
         if (configure is not null)
             options.Configure(configure);
 

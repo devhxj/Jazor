@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
+using System.Diagnostics;
 using System.Net;
 using Jazor.AspNetCore;
 using Jazor.Emit;
@@ -102,6 +103,131 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
+    public async Task JazorSsrRenderer_ReusesWarmWorkerForSameGeneration()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        await workspace.WriteWorkerProbeAsync("warm");
+        await using var app = CreateRendererApplication(workspace.RootPath, artifactRoot, workerCount: 1);
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+
+        var first = ParseWorkerProbe(await renderer.RenderAsync(
+            new JazorSsrRequest("components/worker-probe.mjs")));
+        var second = ParseWorkerProbe(await renderer.RenderAsync(
+            new JazorSsrRequest("components/worker-probe.mjs")));
+
+        Assert.AreEqual(first.ProcessId, second.ProcessId);
+        Assert.AreEqual(1, first.RenderCount);
+        Assert.AreEqual(2, second.RenderCount);
+        Assert.AreEqual("warm", second.Version);
+    }
+
+    [TestMethod]
+    public async Task JazorSsrRenderer_ManifestGenerationChangeReplacesWorkersAndModuleCache()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        await workspace.WriteWorkerProbeAsync("before");
+        await using var app = CreateRendererApplication(workspace.RootPath, artifactRoot, workerCount: 1);
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+
+        var before = ParseWorkerProbe(await renderer.RenderAsync(
+            new JazorSsrRequest("components/worker-probe.mjs")));
+        await workspace.WriteWorkerProbeAsync("after");
+        await workspace.PublishGenerationAsync("generation-after-module-rewrite");
+        var after = ParseWorkerProbe(await renderer.RenderAsync(
+            new JazorSsrRequest("components/worker-probe.mjs")));
+
+        Assert.AreNotEqual(before.ProcessId, after.ProcessId);
+        Assert.AreEqual(1, after.RenderCount);
+        Assert.AreEqual("after", after.Version);
+    }
+
+    [TestMethod]
+    public async Task JazorSsrRenderer_CrashedWorkerIsDiscardedAndReplaced()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        await workspace.WriteWorkerProbeAsync("recovery");
+        await workspace.WriteCrashComponentAsync();
+        await using var app = CreateRendererApplication(workspace.RootPath, artifactRoot, workerCount: 1);
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+
+        var before = ParseWorkerProbe(await renderer.RenderAsync(
+            new JazorSsrRequest("components/worker-probe.mjs")));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => renderer.RenderAsync(
+            new JazorSsrRequest("components/crash.mjs")));
+        var after = ParseWorkerProbe(await renderer.RenderAsync(
+            new JazorSsrRequest("components/worker-probe.mjs")));
+
+        Assert.AreNotEqual(before.ProcessId, after.ProcessId);
+        Assert.AreEqual(1, after.RenderCount);
+    }
+
+    [TestMethod]
+    public async Task JazorSsrRenderer_CancellationTerminatesLeasedWorkerAndRestoresCapacity()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        await workspace.WriteWorkerProbeAsync("cancellation");
+        await workspace.WriteDelayedComponentAsync();
+        await using var app = CreateRendererApplication(workspace.RootPath, artifactRoot, workerCount: 1);
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+
+        var before = ParseWorkerProbe(await renderer.RenderAsync(
+            new JazorSsrRequest("components/worker-probe.mjs")));
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(400));
+        await Assert.ThrowsExactlyAsync<TaskCanceledException>(() => renderer.RenderAsync(
+            new JazorSsrRequest("components/delayed.mjs", new { Delay = 30_000 }),
+            cancellation.Token));
+        var after = ParseWorkerProbe(await renderer.RenderAsync(
+            new JazorSsrRequest("components/worker-probe.mjs")));
+
+        Assert.AreNotEqual(before.ProcessId, after.ProcessId);
+        Assert.AreEqual(1, after.RenderCount);
+    }
+
+    [TestMethod]
+    public async Task JazorSsrRenderer_BoundsConcurrentDenoWorkers()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        await workspace.WriteDelayedComponentAsync();
+        await using var app = CreateRendererApplication(workspace.RootPath, artifactRoot, workerCount: 2);
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+
+        var renders = Enumerable.Range(0, 6)
+            .Select(_ => renderer.RenderAsync(
+                new JazorSsrRequest("components/delayed.mjs", new { Delay = 300 })))
+            .ToArray();
+        var results = await Task.WhenAll(renders);
+        var processIds = results
+            .Select(ParseDelayedProcessId)
+            .Distinct()
+            .ToArray();
+
+        Assert.HasCount(2, processIds);
+    }
+
+    [TestMethod]
+    public async Task JazorSsrRenderer_ApplicationDisposalStopsPersistentWorkers()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        await workspace.WriteWorkerProbeAsync("dispose");
+        var app = CreateRendererApplication(workspace.RootPath, artifactRoot, workerCount: 1);
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+        var probe = ParseWorkerProbe(await renderer.RenderAsync(
+            new JazorSsrRequest("components/worker-probe.mjs")));
+
+        await app.DisposeAsync();
+
+        Assert.IsTrue(
+            await WaitForProcessExitAsync(probe.ProcessId, TimeSpan.FromSeconds(5)),
+            "The persistent Deno worker remained alive after the application service provider was disposed.");
+    }
+
+    [TestMethod]
     [TestCategory("Browser")]
     public async Task UseJazorSsr_HydratesServerHtmlInRealBrowser()
     {
@@ -165,6 +291,67 @@ public sealed class JazorSsrHostingTests
         configure(app);
         await app.StartAsync();
         return app;
+    }
+
+    private static WebApplication CreateRendererApplication(
+        string contentRootPath,
+        string artifactRoot,
+        int workerCount)
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = contentRootPath,
+            WebRootPath = Path.Combine(contentRootPath, "wwwroot"),
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddJazorSsr(options =>
+        {
+            options.ArtifactRootPath = artifactRoot;
+            options.WorkerCount = workerCount;
+        });
+        return builder.Build();
+    }
+
+    private static WorkerProbe ParseWorkerProbe(JazorSsrRenderResult result)
+    {
+        const string prefix = "<main id=\"worker-probe\">";
+        const string suffix = "</main>";
+        Assert.IsTrue(result.Html.StartsWith(prefix, StringComparison.Ordinal));
+        Assert.IsTrue(result.Html.EndsWith(suffix, StringComparison.Ordinal));
+        var parts = result.Html[prefix.Length..^suffix.Length].Split('|');
+        Assert.HasCount(3, parts);
+        return new WorkerProbe(int.Parse(parts[0]), int.Parse(parts[1]), parts[2]);
+    }
+
+    private static int ParseDelayedProcessId(JazorSsrRenderResult result)
+    {
+        const string prefix = "<main id=\"delayed\">";
+        const string suffix = "</main>";
+        Assert.IsTrue(result.Html.StartsWith(prefix, StringComparison.Ordinal));
+        Assert.IsTrue(result.Html.EndsWith(suffix, StringComparison.Ordinal));
+        return int.Parse(result.Html[prefix.Length..^suffix.Length]);
+    }
+
+    private static async Task<bool> WaitForProcessExitAsync(int processId, TimeSpan timeout)
+    {
+        var deadline = Stopwatch.GetTimestamp() + (long)(timeout.TotalSeconds * Stopwatch.Frequency);
+        while (Stopwatch.GetTimestamp() < deadline)
+        {
+            try
+            {
+                using var process = Process.GetProcessById(processId);
+                if (process.HasExited)
+                    return true;
+            }
+            catch (ArgumentException)
+            {
+                return true;
+            }
+
+            await Task.Delay(50);
+        }
+
+        return false;
     }
 
     private static async Task<WebApplication> CreateNetworkHostAsync(
@@ -267,10 +454,60 @@ public sealed class JazorSsrHostingTests
             return artifactRoot;
         }
 
+        public Task PublishGenerationAsync(string generation)
+            => File.WriteAllTextAsync(
+                Path.Combine(RootPath, "jazor", "jazor-manifest.json"),
+                "{\"generation\":" + System.Text.Json.JsonSerializer.Serialize(generation) + "}\n");
+
+        public Task WriteWorkerProbeAsync(string version)
+            => File.WriteAllTextAsync(
+                Path.Combine(RootPath, "jazor", "components", "worker-probe.mjs"),
+                $$"""
+                import { defineComponent, h } from "vue";
+
+                let renderCount = 0;
+                export default defineComponent({
+                  setup() {
+                    const currentRender = ++renderCount;
+                    return () => h("main", { id: "worker-probe" }, `${Deno.pid}|${currentRender}|{{version}}`);
+                  }
+                });
+                """);
+
+        public Task WriteCrashComponentAsync()
+            => File.WriteAllTextAsync(
+                Path.Combine(RootPath, "jazor", "components", "crash.mjs"),
+                """
+                import { defineComponent } from "vue";
+
+                export default defineComponent({
+                  setup() {
+                    Deno.exit(73);
+                  }
+                });
+                """);
+
+        public Task WriteDelayedComponentAsync()
+            => File.WriteAllTextAsync(
+                Path.Combine(RootPath, "jazor", "components", "delayed.mjs"),
+                """
+                import { defineComponent, h, onServerPrefetch } from "vue";
+
+                export default defineComponent({
+                  props: ["Delay"],
+                  setup(props) {
+                    onServerPrefetch(() => new Promise((resolve) => setTimeout(resolve, props.Delay)));
+                    return () => h("main", { id: "delayed" }, String(Deno.pid));
+                  }
+                });
+                """);
+
         public void Dispose()
         {
             if (Directory.Exists(RootPath))
                 Directory.Delete(RootPath, recursive: true);
         }
     }
+
+    private sealed record WorkerProbe(int ProcessId, int RenderCount, string Version);
 }

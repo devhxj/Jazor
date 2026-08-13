@@ -1,6 +1,13 @@
 import { createSSRApp } from "vue";
 import { renderToString } from "@vue/server-renderer";
 
+const protocolPrefix = "__JAZOR_SSR__:";
+const artifactRootUrl = new URL("../", import.meta.url);
+
+function writeResponse(response) {
+  console.log(protocolPrefix + JSON.stringify(response));
+}
+
 function normalizeModulePath(value) {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new Error("Jazor SSR request modulePath must be a non-empty relative string.");
@@ -14,25 +21,55 @@ function normalizeModulePath(value) {
   return segments.join("/");
 }
 
-const requestPath = Deno.args[0];
-if (typeof requestPath !== "string" || requestPath.length === 0 || Deno.args.length !== 1) {
-  throw new Error("Jazor SSR runner requires one request payload path.");
+async function render(request) {
+  const modulePath = normalizeModulePath(request.modulePath);
+  const moduleUrl = new URL(modulePath, artifactRootUrl);
+  if (!moduleUrl.href.startsWith(artifactRootUrl.href)) {
+    throw new Error("Jazor SSR request modulePath resolved outside the artifact root.");
+  }
+
+  const module = await import(moduleUrl.href);
+  if (!("default" in module)) {
+    throw new Error(`Jazor SSR root module '${modulePath}' must export a default component.`);
+  }
+
+  const app = createSSRApp(module.default, request.props);
+  return await renderToString(app);
 }
 
-const requestText = await Deno.readTextFile(requestPath);
-const request = JSON.parse(requestText);
-const modulePath = normalizeModulePath(request.modulePath);
-const artifactRootUrl = new URL("../", import.meta.url);
-const moduleUrl = new URL(modulePath, artifactRootUrl);
-if (!moduleUrl.href.startsWith(artifactRootUrl.href)) {
-  throw new Error("Jazor SSR request modulePath resolved outside the artifact root.");
+async function handleLine(line) {
+  if (line.trim().length === 0) {
+    return;
+  }
+
+  let request;
+  try {
+    request = JSON.parse(line);
+    const html = await render(request);
+    writeResponse({ id: request.id, html });
+  } catch (error) {
+    const message = error instanceof Error ? error.stack ?? error.message : String(error);
+    writeResponse({ id: request?.id ?? null, error: message });
+  }
 }
 
-const module = await import(moduleUrl.href);
-if (!("default" in module)) {
-  throw new Error(`Jazor SSR root module '${modulePath}' must export a default component.`);
+// One worker processes one request at a time. The .NET pool owns concurrency, which keeps
+// response correlation deterministic and lets cancellation terminate only the leased worker.
+// 单 worker 串行消费 stdin；generation 变化由宿主整体轮换进程，避免 ESM cache 读取旧产物。
+writeResponse({ kind: "ready" });
+const decoder = new TextDecoder();
+let buffered = "";
+for await (const chunk of Deno.stdin.readable) {
+  buffered += decoder.decode(chunk, { stream: true });
+  let newlineIndex;
+  while ((newlineIndex = buffered.indexOf("\n")) >= 0) {
+    const line = buffered.slice(0, newlineIndex).replace(/\r$/, "");
+    buffered = buffered.slice(newlineIndex + 1);
+    await handleLine(line);
+  }
 }
 
-const app = createSSRApp(module.default, request.props);
-const html = await renderToString(app);
-console.log(JSON.stringify({ html }));
+buffered += decoder.decode();
+if (buffered.length > 0) {
+  await handleLine(buffered);
+}

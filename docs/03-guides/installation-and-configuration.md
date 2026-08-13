@@ -103,14 +103,18 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 随后在应用启动代码中注册并使用 SSR 服务：
 
 ```csharp
-builder.Services.AddJazorSsr();
+builder.Services.AddJazorSsr(options =>
+{
+    // 默认 min(Environment.ProcessorCount, 4)；按 SSR CPU/内存 profile 调整。
+    options.WorkerCount = 4;
+});
 
 var app = builder.Build();
 app.UseJazorHost();
 app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 ```
 
-ASP.NET Core 负责路由、静态文件与响应；DenoHost 执行本地 Vue 服务器模块；Netpack 负责浏览器 bundle。SSR 不自动传递 Vue server-prefetch 状态，应用应把需要共享的状态显式放入 props 或自己的 payload。
+ASP.NET Core 负责路由、静态文件与响应；DenoHost 通过 generation-aware persistent worker pool 执行本地 Vue 服务器模块；Netpack 负责浏览器 bundle。`WorkerCount` 同时限制单应用实例的 Deno worker 数和 SSR 并发数，必须大于零，默认值为 `min(Environment.ProcessorCount, 4)`。artifact manifest 或 SSR import map 内容变化时，旧 generation 停止接收新请求；进行中的请求完成后其 worker 被释放。SSR 不自动传递 Vue server-prefetch 状态，应用应把需要共享的状态显式放入 props 或自己的 payload。
 
 ## 后续阅读
 
