@@ -28,7 +28,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "AddContent(0,", StringComparison.Ordinal);
         StringAssert.Contains(observation.GeneratedCSharp, "Summary", StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "createStaticVNode", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "createRawMarkup", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/nullable-release-summary-runtime.mjs",
@@ -216,7 +216,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "default:", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "createStaticVNode", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "createRawMarkup", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
             "components/nullable-release-summary-slot-runtime.mjs",

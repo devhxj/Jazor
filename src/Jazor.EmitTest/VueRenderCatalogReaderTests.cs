@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Jazor.Emit;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -318,6 +319,68 @@ public sealed class ArtifactCatalogReaderTests
         CollectionAssert.Contains(paths, "components/context-usage.mjs");
         CollectionAssert.Contains(paths, "@adapter/runtime/context.mjs");
         CollectionAssert.Contains(paths, "@adapter/runtime/core.mjs");
+    }
+
+    [TestMethod]
+    public void RazorVueRawMarkupRuntime_IsRetainedAndMaterializedOnlyWhenReferenced()
+    {
+        var catalog = CatalogReader.TryReadCatalogs(typeof(VueRawMarkup).Assembly);
+
+        Assert.HasCount(1, catalog.Modules);
+        var runtime = catalog.Modules[0];
+        Assert.AreEqual("jazor.vue", runtime.RuntimeProviderId);
+        Assert.AreEqual("@jazor/vue-runtime/raw-markup.mjs", runtime.RelativePath);
+        StringAssert.Contains(runtime.Content, "export function createRawMarkup", StringComparison.Ordinal);
+        Assert.HasCount(1, catalog.ImportMapEntries);
+        Assert.AreEqual("@jazor/vue-runtime/", catalog.ImportMapEntries[0].Specifier);
+
+        var inactiveComponent = CreateModule("components/plain.mjs", "export default {};\n");
+        var inactive = ModuleCollector.RetainReferencedRuntimeProviderModules([inactiveComponent, runtime]);
+        Assert.HasCount(1, inactive);
+        Assert.AreEqual("components/plain.mjs", inactive[0].RelativePath);
+
+        var activeComponent = CreateModule(
+            "components/raw-markup.mjs",
+            "import { createRawMarkup } from \"@jazor/vue-runtime/raw-markup.mjs\";\nexport default createRawMarkup;\n");
+        var active = ModuleCollector.RetainReferencedRuntimeProviderModules([activeComponent, runtime]);
+        CollectionAssert.AreEquivalent(
+            new[] { "components/raw-markup.mjs", "@jazor/vue-runtime/raw-markup.mjs" },
+            active.Select(static module => module.RelativePath).ToArray());
+
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var inactiveOutput = Path.Combine(root, "inactive");
+            var inactiveWrite = ModuleWriter.Write(
+                "RawMarkup.Provider.Tests.dll",
+                inactiveOutput,
+                Path.Combine(inactiveOutput, "jazor-manifest.json"),
+                inactive,
+                clean: true);
+            Assert.IsTrue(inactiveWrite.IsSuccess, inactiveWrite.Error);
+            Assert.IsFalse(File.Exists(Path.Combine(inactiveOutput, "@jazor", "vue-runtime", "raw-markup.mjs")));
+
+            var activeOutput = Path.Combine(root, "active");
+            var activeWrite = ModuleWriter.Write(
+                "RawMarkup.Provider.Tests.dll",
+                activeOutput,
+                Path.Combine(activeOutput, "jazor-manifest.json"),
+                active,
+                clean: true,
+                importMapEntries: catalog.ImportMapEntries);
+            Assert.IsTrue(activeWrite.IsSuccess, activeWrite.Error);
+            Assert.IsTrue(File.Exists(Path.Combine(activeOutput, "@jazor", "vue-runtime", "raw-markup.mjs")));
+
+            var manifest = ManifestModel.TryLoad(Path.Combine(activeOutput, "jazor-manifest.json"));
+            Assert.IsNotNull(manifest);
+            Assert.HasCount(1, manifest.ImportMapEntries);
+            Assert.AreEqual("@jazor/vue-runtime/", manifest.ImportMapEntries[0].Specifier);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
     }
 
     [TestMethod]

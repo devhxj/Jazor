@@ -47,6 +47,7 @@
     <Analyzer Include="$(JazorRazorVueOutputRoot)ECMAScript.Contract.dll" />
     <Analyzer Include="$(JazorRazorVueOutputRoot)Acornima.dll" />
     <Analyzer Include="$(JazorRazorVueOutputRoot)Acornima.Extras.dll" />
+    <Analyzer Include="$(JazorRazorVueOutputRoot)AngleSharp.dll" />
   </ItemGroup>
 
   <Import Project="..\Packaging\JazorPackage.targets" />

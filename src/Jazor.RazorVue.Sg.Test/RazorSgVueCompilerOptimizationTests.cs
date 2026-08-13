@@ -37,7 +37,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
             StringComparison.Ordinal);
         StringAssert.Contains(
             observation.ModuleText,
-            "createStaticVNode(\"<strong>module-static</strong>",
+            "createStaticVNode(\"<strong>module-static</strong>\", 1)",
             StringComparison.Ordinal);
         Assert.IsLessThan(
             observation.ModuleText.IndexOf("function createStaticHoistsSetupScope", StringComparison.Ordinal),
@@ -82,6 +82,52 @@ public sealed class RazorSgVueCompilerOptimizationTests
                 assert.equal(firstStatic, otherStatic);
             });
             """);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_DynamicAndCommentFirstMarkup_ImportSharedRuntimeOnlyOnce()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\DynamicRawMarkup.razor",
+            documentText:
+            """
+            @((MarkupString)"<!--lead--><b>fixed</b>")
+            @Summary
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/dynamic-raw-markup")]
+            public partial class DynamicRawMarkup : ComponentBase, IVueComponent
+            {
+                [Parameter] public MarkupString Summary { get; set; }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.DynamicRawMarkup");
+
+        Assert.AreEqual(
+            1,
+            CountOccurrences(observation.ModuleText, "from \"@jazor/vue-runtime/raw-markup.mjs\""),
+            observation.ModuleText);
+        Assert.AreEqual(
+            0,
+            CountOccurrences(observation.ModuleText, "function __jazor$createRawMarkup"),
+            observation.ModuleText);
+    }
+
+    private static int CountOccurrences(string value, string needle)
+    {
+        var count = 0;
+        var offset = 0;
+        while ((offset = value.IndexOf(needle, offset, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            offset += needle.Length;
+        }
+
+        return count;
     }
 
     [TestMethod]

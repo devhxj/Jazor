@@ -69,7 +69,7 @@ public sealed class RazorSgDirectRenderNullableMarkupStringComponentChildRuntime
 
         var artifact = await VueModuleBuilder.BuildAsync(binding, component, closure!);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(artifact.ModuleText);
-        StringAssert.Contains(artifact.ModuleText, "createStaticVNode", StringComparison.Ordinal);
+        StringAssert.Contains(artifact.ModuleText, "createRawMarkup", StringComparison.Ordinal);
         StringAssert.Contains(artifact.ModuleText, "[].concat", StringComparison.Ordinal);
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(

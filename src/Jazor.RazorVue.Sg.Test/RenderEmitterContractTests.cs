@@ -177,10 +177,37 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(emitted, failure);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.UsesFragment);
-        Assert.IsTrue(result.UsesStaticVNode);
+        Assert.IsTrue(result.UsesRawMarkupRuntime);
         var output = result.RenderExpression.ToKnRECMAScript();
-        StringAssert.Contains(output, "createStaticVNode", StringComparison.Ordinal);
+        StringAssert.Contains(output, "__jazor$createRawMarkup", StringComparison.Ordinal);
         StringAssert.Contains(output, "Array.from(props.Items ?? []", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_StaticMultiRootMarkup_UsesExactHtmlFragmentCardinality()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddMarkupContent(0, \"<strong>one</strong><em>two</em>\");",
+            string.Empty);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesStaticVNode);
+        Assert.IsFalse(result.UsesRawMarkupRuntime);
+        var hoist = result.ModuleHoists.Single();
+        Assert.AreEqual(
+            "createStaticVNode(\"<strong>one</strong><em>two</em>\", 2)",
+            hoist.Initializer.ToKnRECMAScript());
     }
 
     [TestMethod]
@@ -508,7 +535,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(emitted, failure);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.UsesSlots);
-        Assert.IsTrue(result.UsesStaticVNode);
+        Assert.IsTrue(result.UsesRawMarkupRuntime);
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "slots.ItemTemplate", StringComparison.Ordinal);
         StringAssert.Contains(output, "props.Markup", StringComparison.Ordinal);
@@ -1245,7 +1272,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(emitted, failure);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.UsesFragment);
-        Assert.IsTrue(result.UsesStaticVNode);
+        Assert.IsTrue(result.UsesRawMarkupRuntime);
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "conditional:true:", StringComparison.Ordinal);
         StringAssert.Contains(output, "conditional:false:", StringComparison.Ordinal);

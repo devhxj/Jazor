@@ -70,6 +70,8 @@ Razor source
 
 **完成门槛：** real Vue DOM 与 hydration 测试覆盖静态一根、多根、相邻文本/element/comment 情况；benchmark 同时能跑 browser、SSR 和 artifact-size lane；没有把 mock render 数字写成页面性能结论。
 
+**状态：已完成。** `VueRawMarkup` 已使用 HTML5 fragment parser 计算顶层 node cardinality；production Vue gate 覆盖单/多根、text+element、table、SVG/MathML、leading comment、动态 `MarkupString` patch、SSR 与 hydration。动态 raw markup 已迁移为按需 `@jazor/vue-runtime/raw-markup.mjs` provider，Emit 只在 artifact 引用时保留并物化该 runtime 与 import-map 条目。
+
 ### E1: RenderPlan v1 与 child block tree
 
 在 `RenderEmitter` 内引入 RazorVue 专用的 `RenderPlan` / `VNodePlan`，让 lowering 在最终 ESTree expression 之外保留最小必要 metadata：

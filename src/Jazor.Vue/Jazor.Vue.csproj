@@ -32,12 +32,15 @@
 
   <ItemGroup>
     <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="AngleSharp" Version="$(AngleSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="$(JazorVuePackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorVuePackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <!-- RazorVue parses static HTML fragments inside the analyzer process; ship its parser beside the analyzer. -->
+    <None Include="$(NuGetPackageRoot)anglesharp\$(AngleSharpVersion)\lib\netstandard2.0\AngleSharp.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
   </ItemGroup>
 
   <ItemGroup>

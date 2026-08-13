@@ -62,6 +62,7 @@ internal static class RenderEmitter
                 lowered.ModuleHoists,
                 UsesFragment: lowered.UsesFragment,
                 UsesStaticVNode: lowered.UsesStaticVNode,
+                UsesRawMarkupRuntime: lowered.UsesRawMarkupRuntime,
                 UsesBlockTree: lowered.UsesBlockTree,
                 UsesHandlerCache: lowered.UsesHandlerCache,
                 UsesProps: AstReferenceAnalysis.ReferencesIdentifier(lowered.RenderExpression, "props") ||
@@ -113,6 +114,7 @@ internal static class RenderEmitter
         private bool _usesMergeProps;
         private bool _usesFragment;
         private bool _usesStaticVNode;
+        private bool _usesRawMarkupRuntime;
         private bool _usesSlots;
         private bool _usesBlockTree;
         private bool _usesHandlerCache;
@@ -181,6 +183,7 @@ internal static class RenderEmitter
                 moduleHoists,
                 usesFragment,
                 usesStaticVNode,
+                _usesRawMarkupRuntime,
                 _usesBlockTree,
                 _usesHandlerCache,
                 _usesSlots,
@@ -874,16 +877,12 @@ internal static class RenderEmitter
                 case "AddMarkupContent":
                     EnsureSignature(invocation, invocation.Arguments.Length == 2);
                     RequireOmittableSequence(invocation.Arguments[0].Value);
-                    state.UsesStaticVNode = true;
-                    state.AddChild(TryCreateStaticMarkupVNode(
+                    state.AddOptionalChild(TryCreateStaticMarkupVNode(
                         invocation.Arguments[1].Value,
                         allowRawStringLiteral: true,
                         out var staticVNode)
                         ? staticVNode
-                        : Call(
-                            "createStaticVNode",
-                            LowerExpression(invocation.Arguments[1].Value, context),
-                            new NumericLiteral(1, "1")));
+                        : CreateRawMarkupContent(LowerExpression(invocation.Arguments[1].Value, context)));
                     return true;
 
                 case "AddElementReferenceCapture":
@@ -1294,17 +1293,63 @@ internal static class RenderEmitter
                 return false;
             }
 
+            // Empty raw HTML is zero Razor content, not a Static vnode with staticCount 0.
+            // Vue cannot mount/unmount an empty Static vnode because it has neither el nor anchor.
+            // 空 MarkupString 必须直接省略；不能生成 createStaticVNode("", 0) 作为伪子节点。
+            if (markup.Length == 0)
+            {
+                vnode = Null();
+                return true;
+            }
+
+            var analysis = VueRawMarkup.AnalyzeStatic(markup);
+            if (analysis.NodeCount == 0)
+            {
+                vnode = Null();
+                return true;
+            }
+
+            if (!analysis.CanHydrateAsStaticVNode)
+            {
+                // A comment-first static fragment is rare, but Vue Static hydration cannot
+                // adopt it. Keep static input at module scope while delegating only the VNode
+                // framing to the shared runtime; no C# expression is re-evaluated here.
+                // leading comment 走共享 runtime，避免错误 staticCount 导致 sibling 脱位。
+                var runtimeName = "__jazor$hoistedRawMarkup" +
+                    _staticVNodeHoistCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                _staticVNodeHoistCount++;
+                _usesRawMarkupRuntime = true;
+                _moduleHoists.Add(new RenderModuleHoist(
+                    runtimeName,
+                    Call(VueRawMarkup.CreateRawMarkupName, StringLiteral(markup))));
+                vnode = new Identifier(runtimeName);
+                return true;
+            }
+
             var name = "__jazor$hoistedStatic" +
                 _staticVNodeHoistCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
             _staticVNodeHoistCount++;
+            _usesStaticVNode = true;
             _moduleHoists.Add(new RenderModuleHoist(
                 name,
                 Call(
                     "createStaticVNode",
                     StringLiteral(markup),
-                    new NumericLiteral(1, "1"))));
+                    new NumericLiteral(
+                        analysis.NodeCount,
+                        analysis.NodeCount.ToString(System.Globalization.CultureInfo.InvariantCulture)))));
             vnode = new Identifier(name);
             return true;
+        }
+
+        private Expression CreateRawMarkupContent(Expression markup)
+        {
+            // The source expression is deliberately passed once. The helper owns only Vue's
+            // DOM-cardinality/comment framing; normal C# conversion/member/call lowering has
+            // already happened before this point.
+            // 参数必须单次传入 helper，不能为 count 再求值一次 MarkupString getter/call。
+            _usesRawMarkupRuntime = true;
+            return Call(VueRawMarkup.CreateRawMarkupName, markup);
         }
 
         private Expression LowerMarkupStringExpression(IOperation operation, EmitContext context)
@@ -1453,23 +1498,20 @@ internal static class RenderEmitter
 
             if (IsMarkupStringOperationValue(invocation.Arguments[1].Value))
             {
-                state.UsesStaticVNode = true;
                 if (IsNullableMarkupStringOperationValue(invocation.Arguments[1].Value))
                 {
+                    _usesRawMarkupRuntime = true;
                     state.AddOptionalChild(BuildNullableMarkupContent(
                         LowerMarkupStringExpression(invocation.Arguments[1].Value, context)));
                     return;
                 }
 
-                state.AddChild(TryCreateStaticMarkupVNode(
+                state.AddOptionalChild(TryCreateStaticMarkupVNode(
                     invocation.Arguments[1].Value,
                     allowRawStringLiteral: false,
                     out var staticVNode)
                     ? staticVNode
-                    : Call(
-                        "createStaticVNode",
-                        LowerMarkupStringExpression(invocation.Arguments[1].Value, context),
-                        new NumericLiteral(1, "1")));
+                    : CreateRawMarkupContent(LowerMarkupStringExpression(invocation.Arguments[1].Value, context)));
                 return;
             }
 
@@ -3670,26 +3712,9 @@ internal static class RenderEmitter
 
     private static Expression BuildNullableMarkupContent(Expression markupExpression)
     {
-        // AddContent(MarkupString?) omits null rather than materializing a static vnode.
-        // Keep the source expression single-evaluated because a component property getter can
-        // be observable, then let parent frames expand null to zero children.
-        var markup = new Identifier("__markup");
-        var isAbsent = new LogicalExpression(
-            Operator.LogicalOr,
-            new NonLogicalBinaryExpression(Operator.StrictEquality, markup, Null()),
-            new NonLogicalBinaryExpression(Operator.StrictEquality, markup, new Identifier("undefined")));
-        var content = new ConditionalExpression(
-            isAbsent,
-            Null(),
-            Call("createStaticVNode", markup, new NumericLiteral(1, "1")));
-        var declaration = new VariableDeclaration(
-            VariableDeclarationKind.Const,
-            NodeList.From(new VariableDeclarator(markup, markupExpression)));
-        return Call(new ArrowFunctionExpression(
-            NodeList.Empty<Node>(),
-            new FunctionBody(NodeList.From<Statement>(declaration, new ReturnStatement(content)), strict: true),
-            expression: false,
-            async: false));
+        // AddContent(MarkupString?) must omit null and evaluate the payload once. Passing it as
+        // one function argument preserves both properties without an extra IIFE in every render.
+        return Call(VueRawMarkup.CreateRawMarkupName, markupExpression);
     }
 
     private static Expression FormatSlotAccessExpression(string slotName)
@@ -4678,6 +4703,7 @@ internal static class RenderEmitter
         ImmutableArray<RenderModuleHoist> ModuleHoists,
         bool UsesFragment,
         bool UsesStaticVNode,
+        bool UsesRawMarkupRuntime,
         bool UsesBlockTree,
         bool UsesHandlerCache,
         bool UsesSlots,
@@ -4849,6 +4875,7 @@ internal sealed record RenderResult(
     ImmutableArray<RenderModuleHoist> ModuleHoists,
     bool UsesFragment,
     bool UsesStaticVNode,
+    bool UsesRawMarkupRuntime,
     bool UsesBlockTree,
     bool UsesHandlerCache,
     bool UsesProps,

@@ -31,6 +31,7 @@ internal static class VueModuleBuilder
         "h",
         "Fragment",
         "createStaticVNode",
+        VueRawMarkup.CreateRawMarkupName,
         "openBlock",
         "createElementBlock",
         "createBlock",
@@ -492,7 +493,17 @@ internal static class VueModuleBuilder
             features.UsesWatch,
             directRender.UsesFragment,
             directRender.UsesStaticVNode,
+            directRender.UsesRawMarkupRuntime,
             directRender.UsesBlockTree));
+
+        if (directRender.UsesRawMarkupRuntime)
+        {
+            moduleStatements.AddRange(ImportDeclarationFactory.Create(
+                VueRawMarkup.RuntimeModuleSpecifier,
+                [new ImportSpecifier(
+                    new Identifier(VueRawMarkup.RuntimeExportName),
+                    new Identifier(VueRawMarkup.CreateRawMarkupName))]));
+        }
 
         foreach (var importDeclaration in parts.ImportDeclarations)
         {
@@ -1297,6 +1308,7 @@ internal static class VueModuleBuilder
             operationResult.ModuleHoists,
             operationResult.UsesFragment,
             operationResult.UsesStaticVNode,
+            operationResult.UsesRawMarkupRuntime,
             operationResult.UsesBlockTree,
             operationResult.UsesHandlerCache,
             operationResult.UsesProps,
@@ -1758,6 +1770,7 @@ internal static class VueModuleBuilder
         bool usesWatch,
         bool usesFragment,
         bool usesStaticVNode,
+        bool usesRawMarkupRuntime,
         bool usesBlockTree)
     {
         var imports = new List<string>
@@ -2926,6 +2939,7 @@ internal static class VueModuleBuilder
         ImmutableArray<RenderModuleHoist> ModuleHoists,
         bool UsesFragment,
         bool UsesStaticVNode,
+        bool UsesRawMarkupRuntime,
         bool UsesBlockTree,
         bool UsesHandlerCache,
         bool UsesProps,

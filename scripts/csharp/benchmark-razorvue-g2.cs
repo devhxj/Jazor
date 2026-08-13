@@ -40,6 +40,20 @@ if (options.MeasureBrowser)
     Console.WriteLine(browserReport.ToMarkdown());
 }
 
+if (options.VerifyVueRuntime)
+{
+    var verification = await RunProductionVueRuntimeVerificationAsync(repoRoot);
+    WriteText(
+        Path.Combine(outputDirectory, "razorvue-production-vue-runtime-verification.json"),
+        JsonSerializer.Serialize(verification, new JsonSerializerOptions { WriteIndented = true }));
+    WriteText(
+        Path.Combine(outputDirectory, "razorvue-production-vue-runtime-verification.md"),
+        verification.ToMarkdown());
+    Console.WriteLine(verification.ToMarkdown());
+    if (!verification.Passed)
+        Environment.ExitCode = 1;
+}
+
 static string RequireRepositoryRoot()
 {
     var directory = new DirectoryInfo(Environment.CurrentDirectory);
@@ -295,6 +309,159 @@ static string CreateBrowserBenchmark(BenchmarkOptions options)
         </script>
         """;
 
+static async Task<ProductionVueRuntimeVerification> RunProductionVueRuntimeVerificationAsync(string repoRoot)
+{
+    var browser = ResolveBrowserExecutable();
+    if (browser is null)
+    {
+        return new ProductionVueRuntimeVerification(
+            "razorvue-production-vue-runtime-v1",
+            false,
+            "unavailable",
+            string.Empty,
+            "No Edge/Chrome executable was found. Set RAZORVUE_BROWSER_EXE to enable this gate.");
+    }
+
+    var directory = Path.Combine(repoRoot, ".tmp", "razorvue-production-vue", Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(directory);
+    var vueRuntimePath = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "dist", "vue.runtime.esm-browser.prod.js");
+    var serverRendererPath = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "dist", "server-renderer.esm-browser.prod.js");
+    if (!File.Exists(vueRuntimePath) || !File.Exists(serverRendererPath))
+    {
+        return new ProductionVueRuntimeVerification(
+            "razorvue-production-vue-runtime-v1",
+            false,
+            "unavailable",
+            browser,
+            "Production Vue runtime assets were not found under src/ECMAScript.Vue/dist.");
+    }
+
+    File.Copy(vueRuntimePath, Path.Combine(directory, "vue.mjs"), overwrite: true);
+    File.Copy(serverRendererPath, Path.Combine(directory, "server-renderer.mjs"), overwrite: true);
+    WriteText(Path.Combine(directory, "package.json"), "{\"type\":\"module\"}");
+    // Exercise the exact embedded runtime resource that Emit materializes. The probe only
+    // rewrites Vue's package import to its colocated production asset; maintaining a copied
+    // helper here previously let the benchmark validate a different implementation.
+    // 基准必须验证 production runtime 原文件，不能再维护一份容易漂移的简化版 helper。
+    var rawMarkupRuntimePath = Path.Combine(repoRoot, "src", "Jazor.RazorVue", "Runtime", "raw-markup.mjs");
+    if (!File.Exists(rawMarkupRuntimePath))
+    {
+        return new ProductionVueRuntimeVerification(
+            "razorvue-production-vue-runtime-v1",
+            false,
+            "unavailable",
+            browser,
+            "RazorVue raw-markup runtime resource was not found under src/Jazor.RazorVue/Runtime.");
+    }
+
+    WriteText(
+        Path.Combine(directory, "raw-markup.mjs"),
+        File.ReadAllText(rawMarkupRuntimePath)
+            .Replace("from \"vue\"", "from \"./vue.mjs\"", StringComparison.Ordinal));
+    var ssrScript = Path.Combine(directory, "verify-ssr.mjs");
+    WriteText(ssrScript, CreateProductionVueSsrScript());
+    var ssrResult = await RunProcessAsync("node", "\"" + ssrScript + "\"");
+    if (ssrResult.ExitCode != 0)
+    {
+        return new ProductionVueRuntimeVerification(
+            "razorvue-production-vue-runtime-v1",
+            false,
+            "failed",
+            "node",
+            ssrResult.StandardError);
+    }
+
+    var htmlPath = Path.Combine(directory, "verify-browser.html");
+    WriteText(htmlPath, CreateProductionVueBrowserHtml());
+    var browserResult = await RunProcessAsync(
+        browser,
+        "--headless --disable-gpu --no-sandbox --allow-file-access-from-files --dump-dom \"" + htmlPath + "\"");
+    var passed = browserResult.ExitCode == 0 &&
+                 browserResult.StandardOutput.Contains("data-jazor-production-vue=\"passed\"", StringComparison.Ordinal);
+    return new ProductionVueRuntimeVerification(
+        "razorvue-production-vue-runtime-v1",
+        passed,
+        passed ? "passed" : "failed",
+        browser,
+        browserResult.ExitCode == 0 ? browserResult.StandardOutput : browserResult.StandardError);
+}
+
+static string CreateProductionVueSsrScript()
+    => """
+        import { createSSRApp, createStaticVNode, h } from "./vue.mjs";
+        import { renderToString } from "./server-renderer.mjs";
+        import { createRawMarkup } from "./raw-markup.mjs";
+
+        const cases = [
+          ["single", "<strong>one</strong>", 1],
+          ["multi", "<strong>one</strong><em>two</em>", 2],
+          ["text-element", "text<span>two</span>", 2],
+          ["table", "<table><tbody><tr><td>cell</td></tr></tbody></table>", 1],
+          ["svg-math", "<svg><circle></circle></svg><math><mi>x</mi></math>", 2]
+        ];
+        const App = { render: () => h("main", null, [
+          ...cases.map(([id, html, count]) => h("section", { id }, [createStaticVNode(html, count)])),
+          h("section", { id: "dynamic" }, [createRawMarkup("<i>before</i><b>after</b>")]),
+          h("section", { id: "comment" }, [createRawMarkup("<!--lead--><span>comment-safe</span>")])
+        ]) };
+        const output = await renderToString(createSSRApp(App));
+        for (const [id] of cases) if (!output.includes(id)) throw new Error("SSR omitted " + id);
+        if (!output.includes("comment-safe")) throw new Error("SSR omitted comment-framed markup");
+        process.stdout.write("passed");
+        """;
+
+static string CreateProductionVueBrowserHtml()
+    => """
+        <!doctype html>
+        <meta charset="utf-8">
+        <div id="app"></div>
+        <script type="module">
+        import { createApp, createSSRApp, createStaticVNode, h, nextTick, ref, render } from "./vue.mjs";
+        import { createRawMarkup } from "./raw-markup.mjs";
+
+        const cases = [
+          ["single", "<strong>one</strong>", 1],
+          ["multi", "<strong>one</strong><em>two</em>", 2],
+          ["text-element", "text<span>two</span>", 2],
+          ["table", "<table><tbody><tr><td>cell</td></tr></tbody></table>", 1],
+          ["svg-math", "<svg><circle></circle></svg><math><mi>x</mi></math>", 2]
+        ];
+        const phase = ref(0);
+        const App = { setup: () => () => h("main", null, [
+          ...cases.map(([id, html, count]) => h("section", { id }, [createStaticVNode(html, count)])),
+          h("section", { id: "dynamic" }, [createRawMarkup(phase.value === 0 ? "<i>before</i><b>after</b>" : "<u>updated</u>")]),
+          h("section", { id: "comment" }, [createRawMarkup("<!--lead--><span>comment-safe</span>")])
+        ]) };
+        createApp(App).mount("#app");
+        const dynamic = document.querySelector("#dynamic");
+        const comment = document.querySelector("#comment");
+        const dynamicCount = dynamic.querySelectorAll(":scope > i, :scope > b").length;
+        const commentElementCount = comment.querySelectorAll(":scope > span").length;
+        const hasWrapper = dynamic.querySelector(":scope > span") !== null;
+        const casesPresent = cases.every(([id]) => document.querySelector("#" + id) !== null);
+        const mounted = dynamicCount === 2 && commentElementCount === 1 && !hasWrapper && casesPresent;
+        phase.value = 1;
+        await nextTick();
+        const patched = dynamic.querySelectorAll(":scope > u").length === 1 && dynamic.textContent === "updated";
+
+        const directHost = document.createElement("section");
+        const directBefore = h("section", { id: "direct-static" }, [createRawMarkup("<i>before</i><b>after</b>")]);
+        const directAfter = h("section", { id: "direct-static" }, [createRawMarkup("<u>updated</u>")]);
+        document.body.append(directHost);
+        render(directBefore, directHost);
+        render(directAfter, directHost);
+        const directPatched = directHost.querySelector("#direct-static > u") !== null && directHost.textContent === "updated";
+
+        const host = document.createElement("div");
+        host.innerHTML = "<section id=\"hydrated\"><strong>one</strong><em>two</em></section>";
+        document.body.append(host);
+        createSSRApp({ render: () => h("section", { id: "hydrated" }, [createStaticVNode("<strong>one</strong><em>two</em>", 2)]) }).mount(host);
+        const hydrated = host.querySelectorAll("#hydrated strong, #hydrated em").length === 2;
+        document.documentElement.setAttribute("data-jazor-production-vue", mounted && patched && directPatched && hydrated ? "passed" : "failed");
+        document.documentElement.setAttribute("data-jazor-production-vue-detail", `mounted:${mounted};dynamicCount:${dynamicCount};commentElementCount:${commentElementCount};hasWrapper:${hasWrapper};cases:${casesPresent};patched:${patched};directPatched:${directPatched};dynamicText:${dynamic.textContent};hydrated:${hydrated}`);
+        </script>
+        """;
+
 static string? ResolveBrowserExecutable()
 {
     var explicitPath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_EXE")?.Trim();
@@ -336,13 +503,14 @@ internal sealed record BenchmarkOptions(
     bool DryRun,
     bool MeasureRuntime,
     bool MeasureBrowser,
+    bool VerifyVueRuntime,
     string? OutputDirectory,
     int Samples,
     int Iterations)
 {
     public static BenchmarkOptions Parse(string[] args)
     {
-        var result = new BenchmarkOptions(true, false, false, null, 5, 10_000);
+        var result = new BenchmarkOptions(true, false, false, false, null, 5, 10_000);
         for (var index = 0; index < args.Length; index++)
         {
             switch (args[index])
@@ -350,17 +518,18 @@ internal sealed record BenchmarkOptions(
                 case "--dry-run": result = result with { DryRun = true }; break;
                 case "--measure-runtime": result = result with { DryRun = false, MeasureRuntime = true }; break;
                 case "--measure-browser": result = result with { DryRun = false, MeasureBrowser = true }; break;
+                case "--verify-vue-runtime": result = result with { DryRun = false, VerifyVueRuntime = true }; break;
                 case "--out": result = result with { OutputDirectory = Next(args, ref index, "--out") }; break;
                 case "--samples": result = result with { Samples = PositiveInt(Next(args, ref index, "--samples"), "--samples") }; break;
                 case "--iterations": result = result with { Iterations = PositiveInt(Next(args, ref index, "--iterations"), "--iterations") }; break;
                 case "--help":
-                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- [--dry-run] [--measure-runtime] [--measure-browser] [--out DIR] [--samples N] [--iterations N]");
+                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- [--dry-run] [--measure-runtime] [--measure-browser] [--verify-vue-runtime] [--out DIR] [--samples N] [--iterations N]");
                     Environment.Exit(0);
                     break;
                 default: throw new InvalidOperationException("Unknown benchmark argument: " + args[index]);
             }
         }
-        return result with { DryRun = !result.MeasureRuntime && !result.MeasureBrowser && result.DryRun };
+        return result with { DryRun = !result.MeasureRuntime && !result.MeasureBrowser && !result.VerifyVueRuntime && result.DryRun };
     }
 
     private static string Next(string[] args, ref int index, string name)
@@ -464,6 +633,27 @@ internal sealed record BrowserProbeReport(string SchemaVersion, string Status, s
 - Status: {Status}
 - Browser: `{Browser}`
 - Scope: {Scope}
+
+{Details}
+""";
+}
+
+internal sealed record ProductionVueRuntimeVerification(
+    string SchemaVersion,
+    bool Passed,
+    string Status,
+    string Runtime,
+    string Details)
+{
+    public string ToMarkdown()
+        => $"""
+# RazorVue Production Vue Runtime Verification
+
+- Schema: {SchemaVersion}
+- Status: {Status}
+- Runtime: `{Runtime}`
+
+验证覆盖 production Vue 的 static multi-root、text/element、table、SVG/MathML、dynamic raw markup patch、leading comment framing、SSR 与 hydration。
 
 {Details}
 """;

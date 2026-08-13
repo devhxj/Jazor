@@ -40,6 +40,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     WriteFile(Path.Combine(root, module.Key), module.Value);
             }
             MaterializeCatalogDependencies(root, moduleText, supportingModules);
+            MaterializeRazorVueRuntimeDependencies(root, moduleText, supportingModules);
             WriteFile(
                 Path.Combine(root, "package.json"),
                 """{"type":"module"}""");
@@ -112,6 +113,10 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     return { name: "__static", props: { html, count }, children: html };
                 }
 
+                export function createCommentVNode(text) {
+                    return { name: "__comment", children: text };
+                }
+
                 export function openBlock() {
                     return null;
                 }
@@ -157,6 +162,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         var imports = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
             ["System/"] = "./System/",
+            ["@jazor/vue-runtime/"] = "./@jazor/vue-runtime/",
             ["vue"] = "./node_modules/vue/index.mjs",
         };
 
@@ -235,6 +241,60 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 pendingPaths.Enqueue(dependency);
         }
     }
+
+    /// <summary>
+    /// Writes RazorVue-owned ESM helpers needed by the generated artifact under the same prefix
+    /// Emit materializes in production. 测试 host 不模拟 helper 文本，直接读取 embedded resource。
+    /// </summary>
+    private static void MaterializeRazorVueRuntimeDependencies(
+        string root,
+        string moduleText,
+        IReadOnlyDictionary<string, string>? supportingModules)
+    {
+        var imports = GetJavaScriptModules(moduleText, supportingModules)
+            .SelectMany(static text => new Parser().ParseModule(text).Body.OfType<ImportDeclaration>())
+            .Select(static declaration => declaration.Source.Value)
+            .Where(static path => path.StartsWith("@jazor/vue-runtime/", StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static path => path, StringComparer.Ordinal);
+
+        foreach (var importPath in imports)
+        {
+            if (!string.Equals(importPath, "@jazor/vue-runtime/raw-markup.mjs", StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Official RazorVue Deno test host does not know runtime import '{importPath}'.");
+            }
+
+            WriteFile(
+                Path.Combine(root, importPath.Replace('/', Path.DirectorySeparatorChar)),
+                ReadRazorVueRuntimeResource("Jazor.RazorVue.Runtime.raw-markup.mjs"));
+        }
+    }
+
+    private static IEnumerable<string> GetJavaScriptModules(
+        string moduleText,
+        IReadOnlyDictionary<string, string>? supportingModules)
+    {
+        yield return moduleText;
+        if (supportingModules is null)
+            yield break;
+
+        foreach (var module in supportingModules)
+        {
+            if (IsJavaScriptModulePath(module.Key))
+                yield return module.Value;
+        }
+    }
+
+    private static string ReadRazorVueRuntimeResource(string resourceName)
+    {
+        using var stream = typeof(Jazor.RazorVue.RazorSdk.RenderEmitter).Assembly.GetManifestResourceStream(resourceName)
+            ?? throw new InvalidOperationException($"RazorVue runtime resource '{resourceName}' was not found.");
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
 
     private static bool IsJavaScriptModulePath(string path)
         => path.EndsWith(".js", StringComparison.OrdinalIgnoreCase) ||
