@@ -5,6 +5,7 @@ namespace Jazor.RazorVue.RazorSdk.Catalog;
 
 /// <summary>
 /// 声明 WebRenderTreeBuilder 的事件 preventDefault/stopPropagation 扩展白名单。
+/// Provides the static adapter surface that keeps Razor SG extension calls bindable.
 /// </summary>
 /// <remarks>
 /// 扩展方法本身不在 CLR runtime 中实现；它们由 RazorVue 宿主转换为事件修饰语义，

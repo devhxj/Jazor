@@ -10,6 +10,7 @@ namespace Jazor.RazorVue.RazorSdk.Catalog;
 /// ComponentBase is not emitted as a JavaScript base class. These declarations
 /// admit only the members that CurrentComponentSemanticWalkerHost projects to
 /// setup-scoped runtime functions, keeping analyzer and lowering contracts aligned.
+/// 这些 extern adapter 仅提供 Roslyn/whitelist 绑定，不能被视为可直接调用的 CLR runtime 实现。
 /// </remarks>
 [Jazor(Op.Allowed, "Microsoft.AspNetCore.Components.ComponentBase")]
 public static class ComponentBaseCatalog

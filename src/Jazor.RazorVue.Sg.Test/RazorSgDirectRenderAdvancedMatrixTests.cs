@@ -22,7 +22,9 @@ internal static class RazorSgDirectRenderMatrixAssertions
     public static void AssertEmission(DirectRenderCase testCase)
     {
         var observation = RazorSgDirectRenderMatrixTestHost.Emit(testCase);
-        var emitted = observation.Prelude + "\n" + observation.RenderExpression;
+        // Direct emit now has an explicit module-static region. Matrix cases assert the full
+        // artifact surface so static prop/VNode hoists do not hide authored literals.
+        var emitted = observation.ArtifactExpression;
 
         StringAssert.Contains(emitted, testCase.ExpectedFragment, StringComparison.Ordinal);
         if (testCase.AdditionalExpectedFragment is not null)
@@ -36,7 +38,6 @@ internal static class RazorSgDirectRenderMatrixAssertions
         Assert.AreEqual(testCase.UsesProps, observation.UsesProps);
         Assert.AreEqual(testCase.UsesSlots, observation.UsesSlots);
         Assert.AreEqual(testCase.ImportCount, observation.ImportCount);
-        Assert.IsFalse(emitted.Contains("createRenderContext", StringComparison.Ordinal));
         Assert.IsFalse(emitted.Contains("buildRenderTree", StringComparison.Ordinal));
         Assert.IsFalse(emitted.Contains("builder.", StringComparison.Ordinal));
     }

@@ -16,6 +16,7 @@ internal sealed class ReloadHub : IAsyncDisposable
     private static readonly TimeSpan DefaultHeartbeatTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan DefaultHeartbeatSweepInterval = TimeSpan.FromSeconds(10);
     private const int DefaultMaxIncomingMessageBytes = 64 * 1024;
+    internal const int ProtocolVersion = 1;
     internal const string ModuleUpdateCapability = "module-update";
     private readonly ConcurrentDictionary<WebSocket, ReloadClient> _sockets = new();
     private readonly TimeSpan _sendTimeout;
@@ -70,6 +71,7 @@ internal sealed class ReloadHub : IAsyncDisposable
                 client,
                 new ReloadMessage
                 {
+                    ProtocolVersion = ProtocolVersion,
                     Type = "connected",
                     ClientId = client.ClientId,
                     ConnectedClientCount = ConnectedClientCount,
@@ -100,6 +102,20 @@ internal sealed class ReloadHub : IAsyncDisposable
             closeStatus = WebSocketCloseStatus.MessageTooBig;
             closeDescription = exception.Message;
         }
+        // A browser tab can disappear while ReceiveAsync is pending. This is an ordinary
+        // transport teardown, not a host failure that should reach DeveloperExceptionPage.
+        catch (WebSocketException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (InvalidOperationException) when (IsClosedOrAborted(socket))
+        {
+        }
         finally
         {
             RemoveSocket(socket);
@@ -115,6 +131,7 @@ internal sealed class ReloadHub : IAsyncDisposable
         => BroadcastAsync(
             new ReloadMessage
             {
+                ProtocolVersion = ProtocolVersion,
                 Type = "full-reload",
                 ServerInstanceId = serverInstanceId,
                 ReloadSequence = reloadSequence,
@@ -148,10 +165,11 @@ internal sealed class ReloadHub : IAsyncDisposable
             })
             .ToArray();
 
-        // Older clients only understand full reload. The server selects their payload
-        // individually so a newer client can keep component state during the same change.
+        // A client may expose the same capability name while speaking an older protocol. Select
+        // payloads per connection so only an acknowledged matching protocol can retain state.
         var moduleUpdate = new ReloadMessage
         {
+            ProtocolVersion = ProtocolVersion,
             Type = "module-update",
             ServerInstanceId = serverInstanceId,
             ReloadSequence = reloadSequence,
@@ -161,6 +179,7 @@ internal sealed class ReloadHub : IAsyncDisposable
         };
         var fullReloadFallback = new ReloadMessage
         {
+            ProtocolVersion = ProtocolVersion,
             Type = "full-reload",
             ServerInstanceId = serverInstanceId,
             ReloadSequence = reloadSequence,
@@ -168,7 +187,10 @@ internal sealed class ReloadHub : IAsyncDisposable
         };
 
         return BroadcastAsync(
-            client => client.SupportsCapability(ModuleUpdateCapability) ? moduleUpdate : fullReloadFallback,
+            client => client.SupportsProtocolVersion(ProtocolVersion) &&
+                      client.SupportsCapability(ModuleUpdateCapability)
+                ? moduleUpdate
+                : fullReloadFallback,
             cancellationToken);
     }
 
@@ -371,7 +393,7 @@ internal sealed class ReloadHub : IAsyncDisposable
 
         if (string.Equals(message.Type, "ready", StringComparison.OrdinalIgnoreCase))
         {
-            client.MarkReady(message.Capabilities);
+            client.MarkReady(message.ProtocolVersion, message.Capabilities);
             client.LastSeenUtc = DateTimeOffset.UtcNow;
             return;
         }
@@ -471,11 +493,17 @@ internal sealed class ReloadHub : IAsyncDisposable
             WebSocketCloseStatus.NormalClosure,
             "Jazor reload shutdown",
             cancellationToken);
+
+    private static bool IsClosedOrAborted(WebSocket socket)
+        => socket.State is WebSocketState.Aborted or WebSocketState.Closed or WebSocketState.CloseSent or WebSocketState.CloseReceived;
 }
 
 /// <summary>Outbound JSON envelope for the stable browser reload protocol.</summary>
 internal sealed class ReloadMessage
 {
+    [JsonPropertyName("protocolVersion")]
+    public required int ProtocolVersion { get; init; }
+
     [JsonPropertyName("type")]
     public required string Type { get; init; }
 
@@ -532,6 +560,9 @@ internal sealed class ReloadModuleUpdate
 /// <summary>Inbound JSON envelope sent by the browser reload client.</summary>
 internal sealed class ReloadClientMessage
 {
+    [JsonPropertyName("protocolVersion")]
+    public int? ProtocolVersion { get; init; }
+
     [JsonPropertyName("type")]
     public string? Type { get; init; }
 
@@ -543,6 +574,7 @@ internal sealed class ReloadClientMessage
 internal sealed class ReloadClient(string clientId) : IDisposable
 {
     private string[] _capabilities = [];
+    private int _protocolVersion;
     private int _isReady;
 
     public string ClientId { get; } = clientId;
@@ -551,7 +583,7 @@ internal sealed class ReloadClient(string clientId) : IDisposable
 
     public SemaphoreSlim SendGate { get; } = new(1, 1);
 
-    public void MarkReady(IEnumerable<string>? capabilities)
+    public void MarkReady(int? protocolVersion, IEnumerable<string>? capabilities)
     {
         var normalizedCapabilities = capabilities?
             .Where(static capability => !string.IsNullOrWhiteSpace(capability))
@@ -560,8 +592,13 @@ internal sealed class ReloadClient(string clientId) : IDisposable
             .ToArray()
             ?? [];
         Volatile.Write(ref _capabilities, normalizedCapabilities);
+        Volatile.Write(ref _protocolVersion, protocolVersion ?? 0);
         Volatile.Write(ref _isReady, 1);
     }
+
+    public bool SupportsProtocolVersion(int protocolVersion)
+        => Volatile.Read(ref _isReady) != 0 &&
+           Volatile.Read(ref _protocolVersion) == protocolVersion;
 
     public bool SupportsCapability(string capability)
         => Volatile.Read(ref _isReady) != 0

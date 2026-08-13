@@ -180,6 +180,17 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitBranch(IBranchOperation operation, SenseArgument argument)
 	{
+		// Preview C# labeled break/continue remains IBranchOperation, but Target is Roslyn's
+		// internal "break"/"continue" label rather than the authored label. The current package
+		// does not expose the authored label structurally, so never silently emit an unlabeled jump.
+		// Preview 语法仍复用 IBranchOperation；当前 Roslyn API 未暴露作者 label，必须明确拒绝。
+		if (HasUnmodeledLabeledBranchSyntax(operation.Syntax))
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				"Labeled break/continue requires a Roslyn operation/syntax API that exposes the authored label. The current compiler package only exposes an internal branch target, so Razor-to-JavaScript lowering cannot preserve the target safely.");
+		}
+
 		if (operation.BranchKind == BranchKind.Break)
 			return new BreakStatement(null);
 
@@ -189,6 +200,19 @@ public partial class SemanticWalker
 		// Roslyn only models break, continue and goto through IBranchOperation. Goto remains an
 		// explicit product boundary because JavaScript has no equivalent structured target.
 		return HandleTransformationFailure<Node>(operation, "Goto statements are not supported in JavaScript.");
+	}
+
+	private static bool HasUnmodeledLabeledBranchSyntax(SyntaxNode syntax)
+	{
+		if (syntax is not BreakStatementSyntax and not ContinueStatementSyntax)
+			return false;
+
+		// In this preview Roslyn package the branch node's child tokens contain only the keyword
+		// and semicolon, while Syntax.ToFullString still contains the source label. This detects that
+		// incomplete projection without parsing text into a second, divergent semantic protocol.
+		// 当前 package 漏出 label 文本却未给结构化 token；这里只识别 API 不完整状态，不手工解析 label。
+		var modeledText = string.Concat(syntax.ChildTokens().Select(static token => token.ToFullString()));
+		return !string.Equals(syntax.ToFullString(), modeledText, StringComparison.Ordinal);
 	}
 
 	/// <summary>
@@ -1555,6 +1579,25 @@ public partial class SemanticWalker
 			field.Type,
 			argument,
 			typeSymbol => IsDirectlySupportedImplicitFieldDefaultType(field, typeSymbol),
+			message => (Expression)HandleTransformationFailure(origin, message));
+	}
+
+	internal Expression BuildImplicitPrimaryConstructorParameterDefaultValue(
+		IParameterSymbol parameter,
+		SenseArgument argument)
+	{
+		// Primary-constructor capture is emitted as a private class field by AstConverter. Keep
+		// its CLR default on the same SemanticWalker path as source fields so bigint, tuples, and
+		// whitelist value carriers retain their runtime representation and required imports.
+		var syntaxReference = parameter.DeclaringSyntaxReferences.FirstOrDefault()
+			?? throw new InvalidOperationException(
+				$"Primary constructor parameter '{parameter.Name}' has no source declaration.");
+		var origin = syntaxReference.GetSyntax();
+
+		return BuildDefaultValueExpression(
+			parameter.Type,
+			argument,
+			typeSymbol => IsDirectlySupportedExternalType(typeSymbol, GetTopMostContainingType(parameter)),
 			message => (Expression)HandleTransformationFailure(origin, message));
 	}
 

@@ -15,6 +15,7 @@ namespace Jazor.RazorVue.RazorSdk;
 /// <summary>
 /// Builds the final Vue render module from official Razor SG C# and compiler-owned lowering.
 /// Framing stays here; C# expression semantics stay in <see cref="AstConverter"/>.
+/// 该边界负责模块、HMR 与 sourcemap 的 artifact framing，不以手工 JavaScript 替代 C# lowering。
 /// </summary>
 internal static class VueModuleBuilder
 {
@@ -30,6 +31,9 @@ internal static class VueModuleBuilder
         "h",
         "Fragment",
         "createStaticVNode",
+        "openBlock",
+        "createElementBlock",
+        "createBlock",
         "onMounted",
         "onUnmounted",
         "onUpdated",
@@ -44,6 +48,7 @@ internal static class VueModuleBuilder
         "disposed",
         "hasRendered",
         "cachedVNode",
+        "__jazor$handlerCache",
         "stateHasChanged",
         "invokeAsync",
         "parametersSetAsyncGen",
@@ -143,6 +148,9 @@ internal static class VueModuleBuilder
         IReadOnlyDictionary<ISymbol, string> declaredNames,
         CancellationToken cancellationToken)
     {
+        // Delegate all C# semantics, import discovery, and source origins to AstConverter. This
+        // builder only frames its module output into Vue setup/render conventions.
+        // C# lowering 绝不能在此手工重建；本层只消费 compiler 的 AST 结果。
         var converter = new AstConverter(
             component.ComponentSymbol,
             semanticModel,
@@ -168,6 +176,9 @@ internal static class VueModuleBuilder
         MemberClosure closure,
         CancellationToken cancellationToken)
     {
+        // Nested member runtime classes may be referenced by field initializers before setup
+        // state exists. Emit them first, in stable containment order, to avoid JS TDZ failures.
+        // 内嵌运行时类必须先于 state 声明，避免类声明 temporal dead zone 改变 C# 初始化时序。
         var flattenedClasses = GetFlattenedRuntimeClasses(component.ComponentSymbol, closure);
         if (flattenedClasses.Length == 0)
             return module;
@@ -404,6 +415,9 @@ internal static class VueModuleBuilder
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
         string hmrModuleId)
     {
+        // Partition compiler output before adding Vue framing. Imports/declarations/setup state
+        // have different ordering and source-map responsibilities in the final artifact.
+        // 先拆分 compiler 输出，保证 import、state、setup 以确定顺序进入 artifact。
         var parts = BuildCompilerModuleParts(compilerModule, compilerNodePositions, closure);
         var componentSymbol = component.ComponentSymbol;
         var buildRenderTreeMemberName = GetRuntimeMemberName(
@@ -477,7 +491,8 @@ internal static class VueModuleBuilder
             features.UsesReactive,
             features.UsesWatch,
             directRender.UsesFragment,
-            directRender.UsesStaticVNode));
+            directRender.UsesStaticVNode,
+            directRender.UsesBlockTree));
 
         foreach (var importDeclaration in parts.ImportDeclarations)
         {
@@ -502,7 +517,18 @@ internal static class VueModuleBuilder
                 continue;
             moduleStatements.Add(rebasedImport);
             AddImportLocalNames(rebasedImport, emittedImportLocals);
+            // Component references discovered by RenderEmitter bypass compiler module
+            // statements, but their .vue source still has to reach the artifact catalog.
+            // direct render import 也必须登记 asset，否则 SFC 只会出现在 import 而不会被 Emit 复制。
+            if (TryCreateVueSfcAsset(rebasedImport, relativePath, out var asset))
+                assets.Add(asset);
         }
+
+        // Vue helper imports must precede hoist initializers. Hoists themselves remain module
+        // constants, while handler caches stay in setup so component instances never share one.
+        // 静态 props/VNode 可跨实例复用；事件闭包只能由 setup instance 持有。
+        moduleStatements.AddRange(directRender.ModuleHoists.Select(static hoist =>
+            CreateVariableDeclaration(VariableDeclarationKind.Const, hoist.Name, hoist.Initializer)));
 
         moduleStatements.Add(BuildSetupFactoryDeclaration(
             setupFactoryName,
@@ -562,6 +588,16 @@ internal static class VueModuleBuilder
         statements.AddRange(parts.SetupStatements
             .Where(static item => item.Statement is not ClassDeclaration)
             .Select(static item => item.Statement));
+        if (directRender.UsesHandlerCache)
+        {
+            // Vue's compiler cache is instance-owned: a module-level array would retain the
+            // first component's state/props closure and break instance isolation.
+            // handler cache 必须在 setup factory 内创建，不能提升成模块全局数组。
+            statements.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "__jazor$handlerCache",
+                new ArrayExpression(NodeList.Empty<Expression?>())));
+        }
         var renderStatements = directRender.PreludeStatements.ToList();
         renderStatements.Add(new ReturnStatement(directRender.RenderExpression));
         statements.Add(new FunctionDeclaration(
@@ -712,6 +748,9 @@ internal static class VueModuleBuilder
     {
         var statements = new List<Statement>();
 
+        // Setup owns the bridge from Vue lifecycle to component methods. Keep all mutable
+        // protocol state in this closure so separate component instances never share it.
+        // 生命周期与失效状态必须是 setup-instance scoped，不能泄漏为 module 全局状态。
         if (features.UsesUnmounted)
             statements.Add(CreateVariableDeclaration(VariableDeclarationKind.Let, "disposed", BooleanLiteral(false)));
 
@@ -792,6 +831,9 @@ internal static class VueModuleBuilder
 
     private static VariableDeclaration BuildStateHasChangedDeclaration(bool usesUnmounted)
     {
+        // Calls before reactive invalidation is ready are counted, then folded into its initial
+        // tick. This preserves lifecycle calls made while setup is still being constructed.
+        // setup 早期 StateHasChanged 不能丢失，先计数并在 invalidate 建立后一次性体现。
         var body = new List<Statement>();
         if (usesUnmounted)
         {
@@ -877,6 +919,9 @@ internal static class VueModuleBuilder
 
     private static IEnumerable<Statement> BuildOnParametersSetAsyncStatements(string scopeMethod)
     {
+        // Serialize parameter callbacks and version each run. Vue may publish newer props while
+        // an earlier Task is pending; only the newest completion may request a rerender.
+        // 异步 ParametersSet 必须串行且淘汰旧完成回调，避免旧任务覆盖最新 props 状态。
         yield return CreateVariableDeclaration(
             VariableDeclarationKind.Let,
             "parametersSetAsyncGen",
@@ -961,6 +1006,9 @@ internal static class VueModuleBuilder
         BooleanLiteral firstRender,
         bool discardResult)
     {
+        // Vue does not await lifecycle callbacks. Async ComponentBase methods are deliberately
+        // observed through Promise.resolve while the component update protocol remains explicit.
+        // Vue hook 不等待 Task；这里确保 rejected/fulfilled 都不会改变已定义的 render 调度边界。
         Expression invocation = CreateScopeCall(scopeMethod, firstRender);
         if (discardResult)
         {
@@ -1066,15 +1114,25 @@ internal static class VueModuleBuilder
         var mappings = new HashSet<CompiledLineMapping>();
         foreach (var pair in generatedNodePositions)
         {
-            if (pair.Key.UserData is SourceOrigin { IsSynthetic: false } origin &&
-                parts.CompilerOriginPositions.TryGetValue(origin, out var compiledPosition))
-            {
-                mappings.Add(new CompiledLineMapping(
-                    pair.Value.Line,
-                    pair.Value.Column,
-                    compiledPosition.Line,
-                    compiledPosition.Column));
-            }
+            if (pair.Key.UserData is not SourceOrigin { IsSynthetic: false } origin)
+                continue;
+
+            // Direct RenderTree lowering creates Vue AST nodes after the generic compiler has
+            // emitted its setup module. Those nodes still carry their C# origin, but naturally
+            // have no entry in CompilerOriginPositions. Preserve that origin so the chained
+            // Razor map retains each authored fragment instead of collapsing to BuildRenderTree.
+            // 直接 h(...) 节点不经过 compiler module；缺少 compiler position 时仍应保留其真实 C# 坐标。
+            var hasCompilerPosition = parts.CompilerOriginPositions.TryGetValue(origin, out var position);
+            var compiledPosition = hasCompilerPosition
+                ? position
+                : new GeneratedNodePosition(origin.StartLine, origin.StartColumn);
+
+            mappings.Add(new CompiledLineMapping(
+                pair.Value.Line,
+                pair.Value.Column,
+                compiledPosition.Line,
+                compiledPosition.Column,
+                IsDirectRenderOrigin: !hasCompilerPosition));
         }
 
         foreach (var statement in parts.SetupStatements)
@@ -1236,8 +1294,11 @@ internal static class VueModuleBuilder
             operationResult.RenderExpression,
             "$renderDirect",
             operationResult.PreludeStatements,
+            operationResult.ModuleHoists,
             operationResult.UsesFragment,
             operationResult.UsesStaticVNode,
+            operationResult.UsesBlockTree,
+            operationResult.UsesHandlerCache,
             operationResult.UsesProps,
             operationResult.UsesSlots,
             operationResult.ImportDeclarations,
@@ -1297,6 +1358,7 @@ internal static class VueModuleBuilder
         return collector.Names;
     }
 
+    /// <summary>Collects direct-render local names before setup bindings are allocated.</summary>
     private sealed class DirectRenderLocalNameCollector : OperationWalker
     {
         public HashSet<string> Names { get; } = new(StringComparer.Ordinal);
@@ -1464,6 +1526,7 @@ internal static class VueModuleBuilder
         // are side-effect free, while every other top-level statement remains intact.
         var roots = new List<Node> { directRender.RenderExpression };
         roots.AddRange(directRender.PreludeStatements);
+        roots.AddRange(directRender.ModuleHoists.Select(static hoist => hoist.Initializer));
         roots.AddRange(stateSlots
             .Where(static slot => slot.Initializer is not null)
             .Select(static slot => slot.Initializer!));
@@ -1506,7 +1569,7 @@ internal static class VueModuleBuilder
     }
 
     private static bool IsVueFramingImport(ImportDeclaration declaration)
-        => declaration.Source.Value is "vue" or "@jazor/vue-runtime/render-context.mjs";
+        => declaration.Source.Value is "vue";
 
     private static bool TryCreateVueSfcAsset(
         ImportDeclaration declaration,
@@ -1587,6 +1650,7 @@ internal static class VueModuleBuilder
             var localName = GetImportLocalName(specifier);
             if (AstReferenceAnalysis.ReferencesIdentifier(directRender.RenderExpression, localName) ||
                 directRender.PreludeStatements.Any(statement => AstReferenceAnalysis.ReferencesIdentifier(statement, localName)) ||
+                directRender.ModuleHoists.Any(hoist => AstReferenceAnalysis.ReferencesIdentifier(hoist.Initializer, localName)) ||
                 ReferencesIdentifier(parts.SetupStatements, localName) ||
                 parts.StateSlots.Any(slot =>
                     slot.Initializer is not null &&
@@ -1693,7 +1757,8 @@ internal static class VueModuleBuilder
         bool usesReactive,
         bool usesWatch,
         bool usesFragment,
-        bool usesStaticVNode)
+        bool usesStaticVNode,
+        bool usesBlockTree)
     {
         var imports = new List<string>
         {
@@ -1705,6 +1770,12 @@ internal static class VueModuleBuilder
             imports.Add("Fragment");
         if (usesStaticVNode)
             imports.Add("createStaticVNode");
+        if (usesBlockTree)
+        {
+            imports.Add("openBlock");
+            imports.Add("createElementBlock");
+            imports.Add("createBlock");
+        }
 
         if (usesMounted)
             imports.Add("onMounted");
@@ -2134,6 +2205,9 @@ internal static class VueModuleBuilder
         string? compilerSourceMapContent,
         ImmutableArray<CompiledLineMapping> compiledLineMappings)
     {
+        // Prefer the precise chained map back to authored Razor. A malformed/partial compiler map
+        // must not fail generation; the coarse map keeps DevTools source navigation available.
+        // 高精度 chain 只是增强项，失败时退回 coarse map 仍保证 artifact 可生成并指向 Razor。
         if (!string.IsNullOrWhiteSpace(compilerSourceMapContent) &&
             compiledLineMappings.Length > 0 &&
             TryBuildChainedSourceMapContent(
@@ -2160,12 +2234,19 @@ internal static class VueModuleBuilder
 
         var writer = new SourceMapWriter();
         var compilerMap = new SourceMapReader().Read(compilerSourceMapContent);
-        var projectedCompilerMap = ProjectCompilerSourceMap(relativePath, compilerMap, compiledLineMappings);
+        var projectedCompilerMap = ProjectCompilerSourceMap(
+            relativePath,
+            compilerMap,
+            compiledLineMappings,
+            component.Document.HintName);
         if (projectedCompilerMap.Segments.Count == 0)
             return false;
 
         var moduleMaps = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+        // The compiler map starts at generated C#. Join it with Razor #line mappings here so
+        // downstream consumers only need the final .mjs.map and never load SDK-generated files.
+        // 将 compiler -> .g.cs map 与 .g.cs -> .razor map 在此链接，最终产物只暴露作者源文件。
         var generatedCSharpMap = BuildGeneratedCSharpSourceMap(component.Document, compilerMap);
         if (generatedCSharpMap.Segments.Count > 0)
         {
@@ -2199,7 +2280,8 @@ internal static class VueModuleBuilder
     private static SourceMapDocument ProjectCompilerSourceMap(
         string relativePath,
         SourceMapDocument compilerMap,
-        ImmutableArray<CompiledLineMapping> compiledLineMappings)
+        ImmutableArray<CompiledLineMapping> compiledLineMappings,
+        string generatedCSharpHintName)
     {
         var mappingsByCompiledLine = compiledLineMappings
             .GroupBy(static mapping => mapping.CompiledLine)
@@ -2237,9 +2319,42 @@ internal static class VueModuleBuilder
                 segment.SourceColumn));
         }
 
+        // RenderEmitter nodes are created after BuildRenderTree has been intentionally removed
+        // from the generic compiler module. Their SourceOrigin coordinates are nevertheless in
+        // the official generated C# document, so add them as an explicit first hop before the
+        // existing generated-C# -> Razor map is chained below.
+        // direct h(...) 不存在 compiler map 段，必须显式接回 .g.cs，随后复用 Razor 链式 map。
+        var sources = compilerMap.Sources.ToList();
+        var generatedCSharpSourceIndex = -1;
+        foreach (var mapping in compiledLineMappings
+                     .Where(static mapping => mapping.IsDirectRenderOrigin)
+                     .OrderBy(static mapping => mapping.GeneratedLine)
+                     .ThenBy(static mapping => mapping.GeneratedColumn))
+        {
+            if (generatedCSharpSourceIndex < 0)
+            {
+                generatedCSharpSourceIndex = sources.FindIndex(source =>
+                    IsGeneratedCSharpSourcePath(source.Path, generatedCSharpHintName));
+                if (generatedCSharpSourceIndex < 0)
+                {
+                    generatedCSharpSourceIndex = sources.Count;
+                    sources.Add(new SourceMapSource(
+                        NormalizeGeneratedSourcePath(generatedCSharpHintName),
+                        null));
+                }
+            }
+
+            segments.Add(new SourceMapSegment(
+                mapping.GeneratedLine,
+                mapping.GeneratedColumn,
+                generatedCSharpSourceIndex,
+                mapping.CompiledLine,
+                mapping.CompiledColumn));
+        }
+
         return new SourceMapDocument(
             relativePath,
-            compilerMap.Sources,
+            sources,
             segments
                 .GroupBy(static segment => (segment.GeneratedLine, segment.GeneratedColumn, segment.SourceIndex, segment.SourceLine, segment.SourceColumn))
                 .Select(static group => group.First())
@@ -2619,6 +2734,7 @@ internal static class VueModuleBuilder
         return normalized.TrimStart('/');
     }
 
+    /// <summary>Groups lifecycle symbols after they have been projected to runtime member names.</summary>
     private sealed record ComponentLifecycleRuntimeMembers(
         string? OnInitialized,
         string? OnInitializedAsync,
@@ -2718,6 +2834,7 @@ internal static class VueModuleBuilder
         }
     }
 
+    /// <summary>Captures Vue helper requirements discovered during module framing.</summary>
     private sealed record VueModuleFeatures(
         ComponentLifecycleRuntimeMembers LifecycleMembers,
         bool UsesSlots,
@@ -2763,6 +2880,7 @@ internal static class VueModuleBuilder
         public bool UsesReactive => UsesState || UsesStateHasChanged;
     }
 
+    /// <summary>Returns framed module text and compiler-to-artifact line correspondence.</summary>
     private sealed record ModuleTextBuildResult(
         string ModuleText,
         ImmutableArray<CompiledLineMapping> CompiledLineMappings,
@@ -2779,34 +2897,43 @@ internal static class VueModuleBuilder
         int GeneratedLine,
         int GeneratedColumn,
         int CompiledLine,
-        int CompiledColumn);
+        int CompiledColumn,
+        bool IsDirectRenderOrigin = false);
 
+    /// <summary>Pairs one compiler statement with its source position for source-map merging.</summary>
     private sealed record CompilerStatement(
         Statement Statement,
         int CompiledLine,
         int CompiledColumn);
 
+    /// <summary>Bundles compiler output and optional layout metadata for one component pass.</summary>
     private sealed record CompilerOutput(
         Module? Module,
         GeneratedJavaScriptLayout? Layout);
 
+    /// <summary>Separates imports, declarations, and executable statements for deterministic framing.</summary>
     private sealed record CompilerModuleParts(
         ImmutableArray<ImportDeclaration> ImportDeclarations,
         ImmutableArray<CompilerStatement> SetupStatements,
         ImmutableArray<StateSlot> StateSlots,
         IReadOnlyDictionary<SourceOrigin, GeneratedNodePosition> CompilerOriginPositions);
 
+    /// <summary>Stores direct RenderTree lowering plus the Vue helper features it requires.</summary>
     private sealed record DirectRenderBuildResult(
         Expression RenderExpression,
         string MemberName,
         ImmutableArray<Statement> PreludeStatements,
+        ImmutableArray<RenderModuleHoist> ModuleHoists,
         bool UsesFragment,
         bool UsesStaticVNode,
+        bool UsesBlockTree,
+        bool UsesHandlerCache,
         bool UsesProps,
         bool UsesSlots,
         ImmutableArray<ImportDeclaration> ImportDeclarations,
         ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
 
+    /// <summary>Represents one component field/property projected into Vue reactive state.</summary>
     private sealed record StateSlot(
         ISymbol Member,
         string RuntimeName,
@@ -2817,7 +2944,7 @@ internal static class VueModuleBuilder
         int? InitializerCompiledColumn = null);
 }
 
-/// <summary>One generated Vue module and the source assets it imports.</summary>
+/// <summary>One generated Vue module and the source assets it imports. 是 emit pipeline 写入 .mjs、map 与附属资源的不可变载体。</summary>
 internal sealed record VueModuleArtifact(
     string ComponentId,
     string RelativePath,
@@ -2830,7 +2957,7 @@ internal sealed record VueModuleArtifact(
     ImmutableArray<VueAsset> Assets,
     VueHmrMetadata Hmr);
 
-/// <summary>One source asset copied beside the generated module.</summary>
+/// <summary>One source asset copied beside the generated module. 记录 artifact 相对路径与内容哈希以支持确定性物化。</summary>
 internal sealed record VueAsset(
     string SourcePath,
     string ArtifactPath,

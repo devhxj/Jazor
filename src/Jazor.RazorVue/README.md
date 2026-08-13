@@ -8,9 +8,9 @@
 
 - 选择 RazorVue 组件并绑定最终 generated C# 中的组件类型与 `BuildRenderTree` operation。
 - 建立当前组件成员闭包，并通过 `AstConverterOptions`、`SemanticWalkerHost` 和模块策略进入核心 compiler。
-- 在 `RazorSdk/Lowering/` 中处理 RenderTreeBuilder、current-component state、children-to-slot 和 Vue runtime bridge 等产品特有 framing。
+- 在 `RazorSdk/Lowering/` 中处理 current-component state、children-to-slot 等产品特有 projection；`RenderEmitter` 直接将 RenderTreeBuilder operation 组织为 Vue VNode AST。
 - 构建确定的 Vue module、source map 与 `Jazor.Generated.ArtifactCatalog` carrier，交由 `Jazor.Emit` 写入 `.mjs`、map 与 manifest。
-- 通过 `Jazor.Artifacts.RuntimeProviderCatalog` 声明 Vue runtime resource、依赖闭包与 import-map prefix；Vue HMR payload 仍由本项目生成和解释。
+- Vue runtime helper 直接从 `vue` 导入；Vue HMR payload 仍由本项目生成和解释。
 
 ## 边界
 

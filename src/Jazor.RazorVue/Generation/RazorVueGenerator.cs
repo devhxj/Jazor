@@ -5,6 +5,7 @@ namespace Jazor.RazorVue.Generation;
 /// <summary>
 /// Registers RazorVue generation against the completed compilation exposed by the analyzer hook.
 /// Incremental generators cannot otherwise observe source produced by another generator in the same pass.
+/// 该生成器只消费 Razor SG 已完成的 C# 编译结果，不重新解析 Razor 或建立平行前端。
 /// </summary>
 [Generator]
 public sealed class RazorVueGenerator : IIncrementalGenerator
@@ -18,6 +19,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        // Must precede registration because the current generator pass needs the native hook.
+        // 必须先确认 hook；否则本轮 Razor SG 产物不会进入 RazorVue 的最终编译输入。
         Bootstrap.Initialize();
 
         var razorSources = context.AdditionalTextsProvider

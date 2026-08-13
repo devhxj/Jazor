@@ -64,6 +64,7 @@ public sealed class JazorAspNetCoreReloadTests
         StringAssert.Contains(clientScript, "/@jazor/reload");
         StringAssert.Contains(clientScript, "location.reload()");
         StringAssert.Contains(clientScript, "new WebSocket");
+        StringAssert.Contains(clientScript, "const protocolVersion = 1;");
         StringAssert.Contains(clientScript, "const moduleUpdateCapability = \"module-update\";");
         StringAssert.Contains(clientScript, "new CustomEvent(\"jazor:module-update\", {");
         StringAssert.Contains(clientScript, "cancelable: true");
@@ -75,7 +76,9 @@ public sealed class JazorAspNetCoreReloadTests
         StringAssert.Contains(clientScript, "runtime.reload(moduleId, component);");
         StringAssert.Contains(clientScript, "moduleUrl.searchParams.set(\"__jazor_hmr\"");
         StringAssert.Contains(clientScript, "void acceptModuleUpdate(payload).then(accepted => {");
-        StringAssert.Contains(clientScript, "sendMessage({ type: \"ready\", capabilities: [moduleUpdateCapability] });");
+        StringAssert.Contains(clientScript, "sendMessage({ type: \"ready\", protocolVersion, capabilities: [moduleUpdateCapability] });");
+        StringAssert.Contains(clientScript, "Jazor reload protocol mismatch. Refreshing the page.");
+        StringAssert.Contains(clientScript, "Jazor reload client received an unknown message type.");
     }
 
     [TestMethod]
@@ -119,6 +122,7 @@ public sealed class JazorAspNetCoreReloadTests
         using var socket = await socketClient.ConnectAsync(new Uri("ws://localhost/docs/@jazor/reload"), CancellationToken.None);
         var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
         Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+        Assert.AreEqual(1, connectedMessage.GetProperty("protocolVersion").GetInt32());
     }
 
     [TestMethod]
@@ -159,6 +163,7 @@ public sealed class JazorAspNetCoreReloadTests
 
         var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
         Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+        Assert.AreEqual(1, connectedMessage.GetProperty("protocolVersion").GetInt32());
 
         await SendWebSocketJsonAsync(socket, new { type = "ready", capabilities = Array.Empty<string>() });
         await Task.Delay(TestPollingInterval);
@@ -168,6 +173,7 @@ public sealed class JazorAspNetCoreReloadTests
 
         var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
         Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+        Assert.AreEqual(1, reloadMessage.GetProperty("protocolVersion").GetInt32());
 
         await AssertNoWebSocketJsonAsync(socket, NoDuplicateMessageTimeout);
     }
@@ -209,8 +215,9 @@ public sealed class JazorAspNetCoreReloadTests
 
         var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
         Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
+        Assert.AreEqual(1, connectedMessage.GetProperty("protocolVersion").GetInt32());
 
-        await SendWebSocketJsonAsync(socket, new { type = "ready", capabilities = new[] { "module-update" } });
+        await SendWebSocketJsonAsync(socket, new { type = "ready", protocolVersion = 1, capabilities = new[] { "module-update" } });
         await Task.Delay(TestPollingInterval);
 
         await File.WriteAllTextAsync(watchedFilePath, "export const version = 2;\n");
@@ -218,6 +225,7 @@ public sealed class JazorAspNetCoreReloadTests
 
         var updateMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
         Assert.AreEqual("module-update", updateMessage.GetProperty("type").GetString());
+        Assert.AreEqual(1, updateMessage.GetProperty("protocolVersion").GetInt32());
         Assert.AreEqual("hmr-template-only", updateMessage.GetProperty("reason").GetString());
         CollectionAssert.AreEqual(
             new[] { "main.mjs" },
@@ -233,6 +241,61 @@ public sealed class JazorAspNetCoreReloadTests
         Assert.AreEqual("template-only", update.GetProperty("boundaryKind").GetString());
 
         await AssertNoWebSocketJsonAsync(socket, NoDuplicateMessageTimeout);
+    }
+
+    [TestMethod]
+    public async Task UseJazorReload_WhenMappedModuleChanges_FallsBackForMissingOrMismatchedProtocolVersion()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var watchRoot = Path.Combine(workspace.RootPath, "jazor");
+        Directory.CreateDirectory(watchRoot);
+        var watchedFilePath = Path.Combine(watchRoot, "main.mjs");
+        var manifestPath = Path.Combine(watchRoot, "jazor-manifest.json");
+        await File.WriteAllTextAsync(watchedFilePath, "export const version = 1;\n");
+        await WriteHmrManifestAsync(manifestPath, "main.mjs", "hash-v1", "template-v1", "logic-v1", "descriptor-v1");
+
+        await using var host = await CreateHostAsync(
+            workspace.RootPath,
+            Environments.Development,
+            services => services.AddJazorReload(options =>
+            {
+                options.WatchPaths.Clear();
+                options.HmrMappings.Clear();
+                options.HmrMappings.Add(new JazorHmrMapping
+                {
+                    ArtifactRootPath = "jazor",
+                    RequestPath = new PathString("/jazor")
+                });
+                options.DebounceInterval = TestDebounceInterval;
+                options.PollingInterval = TestPollingInterval;
+            }),
+            app =>
+            {
+                app.UseJazorReload();
+                app.MapGet("/", static () => Results.Content("<html><head></head><body>ready</body></html>", "text/html"));
+            });
+
+        var socketClient = host.GetTestServer().CreateWebSocketClient();
+        using var missingVersionSocket = await socketClient.ConnectAsync(new Uri("ws://localhost/@jazor/reload"), CancellationToken.None);
+        using var mismatchedVersionSocket = await socketClient.ConnectAsync(new Uri("ws://localhost/@jazor/reload"), CancellationToken.None);
+
+        _ = await ReceiveWebSocketJsonAsync(missingVersionSocket, TimeSpan.FromSeconds(5));
+        _ = await ReceiveWebSocketJsonAsync(mismatchedVersionSocket, TimeSpan.FromSeconds(5));
+        await SendWebSocketJsonAsync(missingVersionSocket, new { type = "ready", capabilities = new[] { "module-update" } });
+        await SendWebSocketJsonAsync(mismatchedVersionSocket, new { type = "ready", protocolVersion = 99, capabilities = new[] { "module-update" } });
+        await Task.Delay(TestPollingInterval);
+
+        await File.WriteAllTextAsync(watchedFilePath, "export const version = 2;\n");
+        await WriteHmrManifestAsync(manifestPath, "main.mjs", "hash-v2", "template-v2", "logic-v1", "descriptor-v1");
+
+        var missingVersionMessage = await ReceiveWebSocketJsonAsync(missingVersionSocket, TimeSpan.FromSeconds(5));
+        var mismatchedVersionMessage = await ReceiveWebSocketJsonAsync(mismatchedVersionSocket, TimeSpan.FromSeconds(5));
+        Assert.AreEqual("full-reload", missingVersionMessage.GetProperty("type").GetString());
+        Assert.AreEqual("full-reload", mismatchedVersionMessage.GetProperty("type").GetString());
+        Assert.AreEqual(1, missingVersionMessage.GetProperty("protocolVersion").GetInt32());
+        Assert.AreEqual(1, mismatchedVersionMessage.GetProperty("protocolVersion").GetInt32());
+        Assert.AreEqual(JsonValueKind.Null, missingVersionMessage.GetProperty("moduleUpdates").ValueKind);
+        Assert.AreEqual(JsonValueKind.Null, mismatchedVersionMessage.GetProperty("moduleUpdates").ValueKind);
     }
 
     [TestMethod]
@@ -272,7 +335,7 @@ public sealed class JazorAspNetCoreReloadTests
         using var socket = await socketClient.ConnectAsync(new Uri("ws://localhost/@jazor/reload"), CancellationToken.None);
 
         _ = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
-        await SendWebSocketJsonAsync(socket, new { type = "ready", capabilities = new[] { "module-update" } });
+        await SendWebSocketJsonAsync(socket, new { type = "ready", protocolVersion = 1, capabilities = new[] { "module-update" } });
         await Task.Delay(TestPollingInterval);
 
         await File.WriteAllTextAsync(watchedFilePath, "export const version = 2;\n");
@@ -280,6 +343,7 @@ public sealed class JazorAspNetCoreReloadTests
 
         var reloadMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
         Assert.AreEqual("full-reload", reloadMessage.GetProperty("type").GetString());
+        Assert.AreEqual(1, reloadMessage.GetProperty("protocolVersion").GetInt32());
         Assert.AreEqual("hmr-descriptor-changed", reloadMessage.GetProperty("reason").GetString());
 
         await AssertNoWebSocketJsonAsync(socket, NoDuplicateMessageTimeout);

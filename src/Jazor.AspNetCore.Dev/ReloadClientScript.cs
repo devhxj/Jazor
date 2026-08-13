@@ -33,6 +33,7 @@ internal static class ReloadClientScript
         const socketPath = {{serializedWebSocketPath}};
         const socketUrl = `${socketProtocol}://${location.host}${pathBase}${socketPath}`;
         const reloadOnReconnect = {{reloadOnReconnect}};
+        const protocolVersion = {{ReloadHub.ProtocolVersion}};
         const moduleUpdateCapability = "module-update";
         let socket;
         let reconnectTimer;
@@ -77,6 +78,17 @@ internal static class ReloadClientScript
         }
         function reloadPage() {
           location.reload();
+        }
+        function hasCompatibleProtocol(payload) {
+          return Number.isInteger(payload?.protocolVersion) && payload.protocolVersion === protocolVersion;
+        }
+        function reloadForProtocolMismatch(payload) {
+          console.error("Jazor reload protocol mismatch. Refreshing the page.", {
+            expectedProtocolVersion: protocolVersion,
+            receivedProtocolVersion: payload?.protocolVersion,
+            messageType: payload?.type
+          });
+          reloadPage();
         }
         function normalizeModuleUpdates(payload) {
           if (!Array.isArray(payload?.moduleUpdates)) {
@@ -201,6 +213,10 @@ internal static class ReloadClientScript
           })
         });
         function handleConnected(payload) {
+          if (!hasCompatibleProtocol(payload)) {
+            reloadForProtocolMismatch(payload);
+            return;
+          }
           const nextServerInstanceId = typeof payload?.serverInstanceId === "string" ? payload.serverInstanceId : null;
           const nextReloadSequence = Number.isFinite(payload?.reloadSequence) ? payload.reloadSequence : 0;
           const shouldReloadAfterReconnect = hasConnected && (
@@ -222,8 +238,19 @@ internal static class ReloadClientScript
           } catch {
             payload = { type: event.data };
           }
+          if (!hasCompatibleProtocol(payload)) {
+            reloadForProtocolMismatch(payload);
+            return;
+          }
           if (payload?.type === "connected") {
             handleConnected(payload);
+            return;
+          }
+          if (payload?.type !== "reload" &&
+              payload?.type !== "full-reload" &&
+              payload?.type !== "module-update") {
+            console.warn("Jazor reload client received an unknown message type.", payload?.type);
+            reloadPage();
             return;
           }
           if (payload?.type === "reload" || payload?.type === "full-reload") {
@@ -252,7 +279,7 @@ internal static class ReloadClientScript
                 clearTimeout(reconnectTimer);
                 reconnectTimer = undefined;
               }
-              sendMessage({ type: "ready", capabilities: [moduleUpdateCapability] });
+              sendMessage({ type: "ready", protocolVersion, capabilities: [moduleUpdateCapability] });
               resolveTransportReady();
               startHeartbeat();
             });

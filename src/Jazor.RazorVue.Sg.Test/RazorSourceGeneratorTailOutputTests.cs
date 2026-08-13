@@ -78,7 +78,6 @@ public sealed class RazorTailOutputTests
         StringAssert.Contains(catalogSource, "logicHash");
         StringAssert.Contains(catalogSource, "boundaryKind");
         StringAssert.Contains(catalogSource, "function $renderDirect()");
-        Assert.IsFalse(catalogSource.Contains("createRenderContext", StringComparison.Ordinal));
         Assert.IsFalse(catalogSource.Contains("\"module-source\"", StringComparison.Ordinal));
     }
 

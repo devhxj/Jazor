@@ -232,7 +232,6 @@ public sealed class ProductionRazorCompilerReferenceTests
         var moduleBuilderText = File.ReadAllText(moduleBuilderPath);
         var retiredFallbackTokens = new[]
         {
-            "createRenderContext",
             "scope.buildRenderTree(builder)",
             "builder.finish()",
             "componentProps",

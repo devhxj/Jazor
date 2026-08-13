@@ -9,6 +9,7 @@ namespace Jazor.RazorVue.RazorSdk;
 /// <summary>
 /// Computes the component members required by a render method before Vue module framing.
 /// Keeping this closure explicit prevents the module builder from re-discovering compiler semantics.
+/// 生命周期根也纳入同一闭包，使 setup 函数、state 与 dispose 逻辑来自确定的最小成员集合。
 /// </summary>
 internal static class MemberClosureBuilder
 {
@@ -16,6 +17,7 @@ internal static class MemberClosureBuilder
     private const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
     private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
+    private const string RenderFragmentMetadataName = "Microsoft.AspNetCore.Components.RenderFragment";
     private const string IDisposableMetadataName = "System.IDisposable";
     private const string IAsyncDisposableMetadataName = "System.IAsyncDisposable";
 
@@ -88,6 +90,9 @@ internal static class MemberClosureBuilder
         var componentBase = compilation.GetTypeByMetadataName(ComponentBaseMetadataName);
         var disposable = compilation.GetTypeByMetadataName(IDisposableMetadataName);
         var asyncDisposable = compilation.GetTypeByMetadataName(IAsyncDisposableMetadataName);
+        // Only explicit ComponentBase overrides and disposal entry points become lifecycle roots.
+        // Same-named helper methods must stay ordinary component members, never acquire Vue hooks.
+        // 生命周期识别依赖 Roslyn override/interface 关系，不能只按方法名猜测。
         return componentSymbol
             .GetMembers()
             .OfType<IMethodSymbol>()
@@ -194,7 +199,7 @@ internal static class MemberClosureBuilder
     }
 }
 
-/// <summary>Declared component members required by one emitted Vue module.</summary>
+/// <summary>Declared component members required by one emitted Vue module. 它把 compiler closure 按 Vue 的 state/props/lifecycle 使用方式重新分类。</summary>
 internal sealed record MemberClosure(
     INamedTypeSymbol ComponentSymbol,
     IMethodSymbol BuildRenderTreeMethod,
@@ -202,12 +207,17 @@ internal sealed record MemberClosure(
     ImmutableArray<IMethodSymbol> LifecycleRoots)
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
+    private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
+    private const string RenderFragmentMetadataName = "Microsoft.AspNetCore.Components.RenderFragment";
 
     public ImmutableArray<ISymbol> OrderedMembers
         => CompilerClosure.Members;
 
     public ImmutableArray<IFieldSymbol> StateFields
-        => OrderedMembers.OfType<IFieldSymbol>().ToImmutableArray();
+        => OrderedMembers
+            .OfType<IFieldSymbol>()
+            .Where(IsComponentSurfaceMember)
+            .ToImmutableArray();
 
     public ImmutableArray<IPropertySymbol> ParameterProperties
     {
@@ -227,23 +237,35 @@ internal sealed record MemberClosure(
     public ImmutableArray<IPropertySymbol> StateProperties
         => OrderedMembers
             .OfType<IPropertySymbol>()
-            .Where(static property => !IsParameterProperty(property) && IsAutoProperty(property))
+            .Where(property =>
+                IsComponentSurfaceMember(property) &&
+                !IsParameterProperty(property) &&
+                IsAutoProperty(property))
             .ToImmutableArray();
 
     public ImmutableArray<IPropertySymbol> ComputedProperties
         => OrderedMembers
             .OfType<IPropertySymbol>()
-            .Where(static property => !IsParameterProperty(property) && !IsAutoProperty(property))
+            .Where(property =>
+                IsComponentSurfaceMember(property) &&
+                !IsParameterProperty(property) &&
+                !IsAutoProperty(property))
             .ToImmutableArray();
 
     public ImmutableArray<IMethodSymbol> ReachableMethods
         => OrderedMembers
             .OfType<IMethodSymbol>()
             .Where(method =>
+                IsComponentSurfaceMember(method) &&
                 method.MethodKind == MethodKind.Ordinary &&
                 !Comparer.Equals(method.OriginalDefinition, BuildRenderTreeMethod.OriginalDefinition) &&
                 !LifecycleRoots.Any(lifecycle => Comparer.Equals(lifecycle.OriginalDefinition, method.OriginalDefinition)))
             .ToImmutableArray();
+
+    private bool IsComponentSurfaceMember(ISymbol member)
+        => ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(
+            ComponentSymbol,
+            member.ContainingType);
 
     public Func<ISymbol, bool> CreateMemberFilter()
         => ShouldIncludeCompilerMember;
@@ -268,6 +290,17 @@ internal sealed record MemberClosure(
 
     private bool ShouldIncludeCompilerMember(ISymbol symbol)
     {
+        // BuildRenderTree and template-only helpers are consumed by RenderEmitter before the
+        // generic compiler module pass. Keeping them here would emit dead functions in the
+        // final module because direct VNode lowering already owns their execution shape.
+        // 仅跳过已被 direct emitter 完整接管的模板成员；事件/普通业务方法仍必须由 compiler 发射。
+        if (symbol is IMethodSymbol method &&
+            (Comparer.Equals(method.OriginalDefinition, BuildRenderTreeMethod.OriginalDefinition) ||
+             IsDirectRenderTemplateHelper(method)))
+        {
+            return false;
+        }
+
         // Storage properties are projected to props/state. Their compiler-generated
         // accessors would otherwise survive as dead functions that reference a backing
         // field removed later by module materialization. Computed accessors remain real
@@ -280,6 +313,33 @@ internal sealed record MemberClosure(
 
         return CompilerClosure.ShouldInclude(symbol);
     }
+
+    private static bool IsDirectRenderTemplateHelper(IMethodSymbol method)
+        => IsAnyRenderFragmentType(method.ReturnType) ||
+           (method.ReturnsVoid &&
+            method.Parameters.Length == 1 &&
+            IsRenderTreeBuilderType(method.Parameters[0].Type));
+
+    private static bool IsAnyRenderFragmentType(ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol named || !string.Equals(named.Name, "RenderFragment", StringComparison.Ordinal))
+            return false;
+
+        return string.Equals(
+            named.OriginalDefinition.ToDisplayString(),
+            RenderFragmentMetadataName,
+            StringComparison.Ordinal) ||
+            string.Equals(
+                named.OriginalDefinition.ToDisplayString(),
+                RenderFragmentMetadataName + "<TValue>",
+                StringComparison.Ordinal);
+    }
+
+    private static bool IsRenderTreeBuilderType(ITypeSymbol type)
+        => string.Equals(
+            type.OriginalDefinition.ToDisplayString(),
+            RenderTreeBuilderMetadataName,
+            StringComparison.Ordinal);
 
     private static bool IsParameterProperty(IPropertySymbol property)
         => LibraryComponentConventions.IsParameterProperty(property);

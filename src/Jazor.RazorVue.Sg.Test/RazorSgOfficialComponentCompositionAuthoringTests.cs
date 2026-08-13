@@ -79,7 +79,10 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
         StringAssert.Contains(script, "from \"./authoring-child.mjs\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "heading: state.Title", StringComparison.Ordinal);
         StringAssert.Contains(script, "modelValue: state.Selected", StringComparison.Ordinal);
-        StringAssert.Contains(script, "\"onUpdate:modelValue\": __value => state.Selected = __value", StringComparison.Ordinal);
+        StringAssert.Contains(
+            script,
+            "\"onUpdate:modelValue\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.Selected = __value)",
+            StringComparison.Ordinal);
         StringAssert.Contains(script, "header: () =>", StringComparison.Ordinal);
         StringAssert.Contains(script, "default: () =>", StringComparison.Ordinal);
         StringAssert.Contains(script, "item: item =>", StringComparison.Ordinal);

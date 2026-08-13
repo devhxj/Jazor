@@ -21,6 +21,9 @@ internal static class CurrentComponentStateDefaultInitializer
         if (type is ITypeParameterSymbol)
             throw CreateUnsupportedException(type);
 
+        // Reference/nullable defaults erase to null. Other value types are intentionally not
+        // constructed here: only scalar CLR defaults have a faithful direct JS representation.
+        // 引用与 nullable 可直接为 null；复杂值类型必须显式初始化，不能伪造 CLR 构造语义。
         if (!type.IsValueType ||
             type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
         {
@@ -56,6 +59,8 @@ internal static class CurrentComponentStateDefaultInitializer
 
     private static Expression CreateEnumZeroExpression(ITypeSymbol type)
     {
+        // Enums erase to their underlying scalar. String enums have no CLR-compatible zero value.
+        // 枚举默认值跟随底层标量；string enum 不存在可安全投影的零值。
         if (Util.IsStringEnumType(type))
             throw CreateUnsupportedException(type);
 

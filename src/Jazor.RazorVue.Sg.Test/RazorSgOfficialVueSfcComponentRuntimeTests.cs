@@ -45,7 +45,6 @@ public sealed class RazorSgOfficialVueSfcComponentRuntimeTests
         StringAssert.Contains(observation.GeneratedCSharp, "OpenComponent<global::Demo.Components.ReleaseCard>", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "from \"./release-card.vue.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "title: props.ReleaseTitle", StringComparison.Ordinal);
-        Assert.IsFalse(observation.ModuleText.Contains("createRenderContext", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), observation.ModuleText);
         Assert.IsFalse(observation.ModuleText.Contains("builder.finish()", StringComparison.Ordinal), observation.ModuleText);
 
@@ -64,7 +63,7 @@ public sealed class RazorSgOfficialVueSfcComponentRuntimeTests
                 const vnode = component.setup({ ReleaseTitle: "June deployment" }, { slots: {} })();
                 assert.equal(vnode.name, releaseCard);
                 assert.deepEqual(vnode.props, { title: "June deployment" });
-                assert.equal(vnode.children, undefined);
+                assert.equal(vnode.children, null);
             });
             """,
             new Dictionary<string, string>

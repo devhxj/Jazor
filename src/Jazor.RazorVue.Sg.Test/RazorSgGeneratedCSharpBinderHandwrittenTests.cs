@@ -238,7 +238,6 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         StringAssert.Contains(script, "function Label()", StringComparison.Ordinal);
         StringAssert.Contains(script, "return state.count.toString();", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("this.count", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("createRenderContext", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish()", StringComparison.Ordinal), script);
     }
 }

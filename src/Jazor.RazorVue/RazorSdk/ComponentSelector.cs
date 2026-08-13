@@ -7,6 +7,7 @@ namespace Jazor.RazorVue.RazorSdk;
 /// <summary>
 /// Finds component candidates whose render methods can be consumed from the final compilation.
 /// The G0 tail boundary must not instantiate the legacy Razor document or IR frontend.
+/// 它只选择当前 compilation 的 RazorVue 根组件，后续 binder 才负责取得 BuildRenderTree operation。
 /// </summary>
 internal static class ComponentSelector
 {

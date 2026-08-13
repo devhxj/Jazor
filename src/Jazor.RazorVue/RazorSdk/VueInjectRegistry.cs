@@ -4,7 +4,10 @@ using Microsoft.CodeAnalysis;
 
 namespace Jazor.RazorVue.RazorSdk;
 
-/// <summary>Resolves authored container component contracts to their Vue implementation types per compilation.</summary>
+/// <summary>
+/// Resolves authored container component contracts to their Vue implementation types per compilation.
+/// 从 assembly-level VueInject 声明建立不可变映射并按 Compilation 缓存，不在 render 阶段重复扫描元数据。
+/// </summary>
 internal sealed class VueInjectRegistry
 {
     private const string VueInjectAttributeMetadataName = "ECMAScript.VueContract.VueInjectAttribute";
@@ -30,6 +33,9 @@ internal sealed class VueInjectRegistry
         if (compilation is null)
             throw new ArgumentNullException(nameof(compilation));
 
+        // Symbols belong to one Compilation. ConditionalWeakTable keeps discovery immutable per
+        // compilation without retaining obsolete design-time compilations indefinitely.
+        // 注入映射不能跨 Compilation 复用，弱缓存也避免长期设计期宿主泄漏。
         return Cache.GetValue(compilation, static current => Create(current));
     }
 
@@ -50,6 +56,9 @@ internal sealed class VueInjectRegistry
             return new VueInjectRegistry(CreateImplementationBuilder().ToImmutable());
 
         var implementations = CreateImplementationBuilder();
+        // Assembly registrations define a one-to-one authored contract -> Vue implementation
+        // mapping. Validate before lowering so generated props/slots cannot silently drift.
+        // 先验证声明再生成，防止 contract 与实现的参数 ABI 在运行时才暴露不一致。
         foreach (var attribute in compilation.Assembly.GetAttributes())
         {
             if (!SymbolComparer.Equals(attribute.AttributeClass, attributeType))
@@ -133,6 +142,9 @@ internal sealed class VueInjectRegistry
     {
         var contractParameters = GetParameters(contract);
         var implementationParameters = GetParameters(implementation);
+        // The implementation may add private/internal details, but every public contract
+        // parameter must preserve type and Razor binding modifiers exactly.
+        // implementation 可以扩展内部细节，却不能改变 contract 参数的类型或 Razor 绑定语义。
         foreach (var pair in contractParameters)
         {
             if (!implementationParameters.TryGetValue(pair.Key, out var implementationProperty))

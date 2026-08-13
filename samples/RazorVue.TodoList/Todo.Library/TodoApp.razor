@@ -1,0 +1,48 @@
+<main class="@TodoStyleSheet.Application" data-todo-template="todo-template-v1">
+    <header class="@TodoStyleSheet.Header">
+        <div>
+            <p class="@TodoStyleSheet.Eyebrow">RazorVue task board</p>
+            <h1 class="@TodoStyleSheet.Title">TODOList</h1>
+            <p class="@TodoStyleSheet.Subtitle">@TemplateLabel</p>
+        </div>
+        <output id="todo-logic-marker" class="@TodoStyleSheet.LogicMarker">@LogicMarker</output>
+    </header>
+
+    <section class="@TodoStyleSheet.Composer" aria-label="Add task">
+        <label class="@TodoStyleSheet.Field">
+            <span>Task</span>
+            <input id="todo-draft" @bind="draftTitle" @bind:event="oninput" autocomplete="off" />
+        </label>
+        <button id="todo-add" class="@TodoStyleSheet.AddButton" type="button" @onclick="AddTask">Add task</button>
+    </section>
+
+    <section class="@TodoStyleSheet.Summary" aria-label="Task summary">
+        <div>
+            <span>Open</span>
+            <strong id="todo-open-count">@OpenCount</strong>
+        </div>
+        <div>
+            <span>Done</span>
+            <strong id="todo-done-count">@DoneCount</strong>
+        </div>
+        <div>
+            <span>Total</span>
+            <strong id="todo-total-count">@tasks.Count</strong>
+        </div>
+    </section>
+
+    <section class="@TodoStyleSheet.ListPanel" aria-label="Tasks">
+        <ul class="@TodoStyleSheet.List">
+            @foreach (var task in tasks)
+            {
+                <li class="@(task.IsDone ? TodoStyleSheet.TaskDone : TodoStyleSheet.Task)">
+                    <label class="@TodoStyleSheet.TaskLabel">
+                        <input type="checkbox" @bind="task.IsDone" />
+                        <span>@task.Title</span>
+                    </label>
+                    <span class="@TodoStyleSheet.TaskState">@(task.IsDone ? "Done" : "Open")</span>
+                </li>
+            }
+        </ul>
+    </section>
+</main>

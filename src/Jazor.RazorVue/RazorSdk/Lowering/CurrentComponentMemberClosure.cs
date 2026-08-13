@@ -71,6 +71,9 @@ internal sealed class CurrentComponentMemberClosure
         if (rootOperations is null)
             throw new ArgumentNullException(nameof(rootOperations));
 
+        // Seed roots before traversing their bodies. The builder canonicalizes symbols so a
+        // property/accessor pair is visited once while still retaining its source declaration.
+        // 先建立根符号再展开 body，保证 accessor/definition 不会导致重复或遗漏闭包成员。
         var builder = new Builder(componentType, compilation, cancellationToken);
         foreach (var root in roots)
         {
@@ -127,6 +130,9 @@ internal sealed class CurrentComponentMemberClosure
 
     private static string GetStableMemberKey(ISymbol symbol)
     {
+        // Source location is the primary order because lifecycle/setup emission must remain stable
+        // under symbol-table traversal changes. Metadata-only fallback remains deterministic.
+        // 源位置优先保证 module 声明顺序稳定；无源码位置时再使用完整符号名兜底。
         foreach (var location in symbol.Locations)
         {
             if (!location.IsInSource)
@@ -149,6 +155,10 @@ internal sealed class CurrentComponentMemberClosure
         return "~|" + symbol.Kind + "|" + symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
 
+    /// <summary>
+    /// Traverses reachable current-component symbols from render/lifecycle roots.
+    /// 该收集器只扩展源码组件层级，外部框架成员必须保留为 host seam。
+    /// </summary>
     private sealed class Builder
     {
         private readonly INamedTypeSymbol _componentType;
@@ -393,7 +403,8 @@ internal sealed class CurrentComponentMemberClosure
                 _ => false
             };
 
-        private sealed class CurrentComponentOperationWalker : OperationWalker
+    /// <summary>Finds symbol dependencies in member bodies while the closure builder owns inclusion policy.</summary>
+    private sealed class CurrentComponentOperationWalker : OperationWalker
         {
             private readonly Builder _builder;
 

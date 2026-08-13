@@ -13,6 +13,11 @@ namespace Jazor.ComplierTest;
 [TestClass]
 public sealed class SemanticWalkerOrdinaryTest
 {
+  // The compiler supports preview language syntax. Keep operation fixtures on the same parser
+  // level as production, otherwise a new Roslyn operation can never reach SemanticWalker.
+  // 测试 parser 必须与生产 LangVersion=preview 对齐，才能覆盖新的 operation tree 形状。
+  private static readonly CSharpParseOptions PreviewParseOptions = new(LanguageVersion.Preview);
+
   /// <summary>
   /// 编译代码并获取roslyn代码块
   /// </summary>
@@ -34,8 +39,8 @@ public sealed class SemanticWalkerOrdinaryTest
     var compilation = CSharpCompilation.Create(
       assemblyName: "TestAssembly",
       syntaxTrees: [
-        CSharpSyntaxTree.ParseText(usings),
-          CSharpSyntaxTree.ParseText(code)
+        CSharpSyntaxTree.ParseText(usings, PreviewParseOptions),
+          CSharpSyntaxTree.ParseText(code, PreviewParseOptions)
       ],
       references: references,
       options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -83,8 +88,8 @@ public sealed class SemanticWalkerOrdinaryTest
     var compilation = CSharpCompilation.Create(
       assemblyName: "TestAssembly",
       syntaxTrees: [
-        CSharpSyntaxTree.ParseText(usings),
-          CSharpSyntaxTree.ParseText(code)
+        CSharpSyntaxTree.ParseText(usings, PreviewParseOptions),
+          CSharpSyntaxTree.ParseText(code, PreviewParseOptions)
       ],
       references: references,
       options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -125,8 +130,8 @@ public sealed class SemanticWalkerOrdinaryTest
     var compilation = CSharpCompilation.Create(
       assemblyName: "TestAssembly",
       syntaxTrees: [
-        CSharpSyntaxTree.ParseText(usings),
-          CSharpSyntaxTree.ParseText(code)
+        CSharpSyntaxTree.ParseText(usings, PreviewParseOptions),
+          CSharpSyntaxTree.ParseText(code, PreviewParseOptions)
       ],
       references: references,
       options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -458,6 +463,38 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 }", script);
 
+  }
+
+  /// <summary>
+  /// Preview C# 的 labeled break/continue 仍是 IBranchOperation；当前 package 没有暴露
+  /// 作者 label 的结构化 syntax/operation 信息，因此必须拒绝而不能错误输出无标签跳转。
+  /// </summary>
+  [TestMethod]
+  public void Visit_Branch_LabeledBreakAndContinue_RejectsUntilRoslynExposesAuthoredLabel()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                outer:
+                    for (var i = 0; i < 3; i++)
+                    {
+                        for (var j = 0; j < 3; j++)
+                        {
+                            if (j == 0)
+                                continue outer;
+                            if (j == 1)
+                                break outer;
+                        }
+                    }
+                }
+            }
+            ");
+
+    var exception = Assert.Throws<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new()));
+    Assert.AreEqual(OperationKind.Branch, exception.Kind);
+    StringAssert.Contains(exception.Message, "Labeled break/continue requires a Roslyn operation/syntax API");
   }
 
   /// <summary>

@@ -9,6 +9,7 @@ namespace Jazor.RazorVue.RazorSdk;
 /// <summary>
 /// Binds final-compilation BuildRenderTree methods to Roslyn operations and source-map documents.
 /// This is the boundary from Razor SG output into RazorVue lowering.
+/// 同时保留 authored Razor source identity，避免 sourcemap 把用户导向 SDK 的 .g.cs 文件。
 /// </summary>
 internal static class GeneratedCSharpBinder
 {
@@ -119,6 +120,9 @@ internal static class GeneratedCSharpBinder
     {
         component = null;
         failure = null;
+        // Bind the Roslyn IBlockOperation once at the SG-produced method declaration. All later
+        // lowering consumes this semantic body rather than re-parsing generated source text.
+        // operation binding 是 SG C# 到 lowering 的唯一语义入口，后续不得再做文本解析。
         var syntaxReference = buildRenderTree.DeclaringSyntaxReferences
             .FirstOrDefault(reference => reference.GetSyntax() is MethodDeclarationSyntax);
         var declaration = syntaxReference?.GetSyntax() as MethodDeclarationSyntax;
@@ -214,13 +218,13 @@ internal static class GeneratedCSharpBinder
             path.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase));
 }
 
-/// <summary>Records how a generated compilation was obtained for a binding.</summary>
+/// <summary>Records how a generated compilation was obtained for a binding. 区分 Razor SG 与手写 BuildRenderTree 输入。</summary>
 internal enum CompilationBindingMode
 {
     ReusedHookCompilation
 }
 
-/// <summary>Bound source documents and render methods from one final compilation.</summary>
+/// <summary>Bound source documents and render methods from one final compilation. 是后续 module build 的统一输入快照。</summary>
 internal sealed record GeneratedCSharpBinding(
     Compilation Compilation,
     CompilationBindingMode BindingMode,
@@ -229,7 +233,7 @@ internal sealed record GeneratedCSharpBinding(
     int ReusedGeneratedTreeCount,
     int DerivedGeneratedTreeCount);
 
-/// <summary>One component render method after Roslyn operation binding.</summary>
+/// <summary>One component render method after Roslyn operation binding. 保留符号、operation body 与 source document 的对应关系。</summary>
 internal sealed record BoundComponent(
     GeneratedDocument Document,
     INamedTypeSymbol ComponentSymbol,

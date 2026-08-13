@@ -5,6 +5,7 @@ namespace Jazor.RazorVue.RazorSdk.Catalog;
 
 /// <summary>
 /// 为 Razor Source Generator 产生的 RenderTreeBuilder 调用声明可进入编译域的成员。
+/// 这些 adapter 签名是 Razor SG 调用与 RazorVue lowering host 之间的静态入口。
 /// </summary>
 /// <remarks>
 /// 这里是 RazorVue producer 侧允许列表，不实现 RenderTreeBuilder 本身；实际 Vue artifact

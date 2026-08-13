@@ -457,6 +457,22 @@ jazor/
 !samples/ECMAScript.VueRoute.MemorySmoke/VueRoute.MemorySmoke.Host/jazor/**
 !samples/Jazor.MultiProject/Sample.Host/jazor/
 !samples/Jazor.MultiProject/Sample.Host/jazor/**
+# The TodoList source is a development-host fixture. Keep its generated graph and
+# build output ignored while retaining the authored Host and Library projects.
+!samples/RazorVue.TodoList/
+samples/RazorVue.TodoList/**
+!samples/RazorVue.TodoList/Directory.Build.props
+!samples/RazorVue.TodoList/README.md
+!samples/RazorVue.TodoList/Todo.Library/
+!samples/RazorVue.TodoList/Todo.Library/*.csproj
+!samples/RazorVue.TodoList/Todo.Library/*.cs
+!samples/RazorVue.TodoList/Todo.Library/*.razor
+!samples/RazorVue.TodoList/Todo.Host/
+!samples/RazorVue.TodoList/Todo.Host/*.csproj
+!samples/RazorVue.TodoList/Todo.Host/*.cs
+# Browser gates clone this source fixture under samples/ so its ../../../src project
+# references remain valid. The disposable clones must never appear as untracked work.
+samples/.todolist-hmr-*/
 src/vben/
 .golutra
 dist-prod-optimized/

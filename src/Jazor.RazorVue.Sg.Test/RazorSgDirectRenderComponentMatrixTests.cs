@@ -17,9 +17,9 @@ public sealed class RazorSgDirectRenderComponentMatrixTests
     {
         var observation = RazorSgDirectRenderMatrixTestHost.Emit(testCase);
 
-        StringAssert.Contains(observation.RenderExpression, testCase.ExpectedFragment, StringComparison.Ordinal);
+        StringAssert.Contains(observation.ArtifactExpression, testCase.ExpectedFragment, StringComparison.Ordinal);
         if (testCase.AdditionalExpectedFragment is not null)
-            StringAssert.Contains(observation.RenderExpression, testCase.AdditionalExpectedFragment, StringComparison.Ordinal);
+            StringAssert.Contains(observation.ArtifactExpression, testCase.AdditionalExpectedFragment, StringComparison.Ordinal);
         Assert.AreEqual(testCase.UsesFragment, observation.UsesFragment);
         Assert.AreEqual(testCase.UsesStaticVNode, observation.UsesStaticVNode);
         Assert.AreEqual(testCase.UsesProps, observation.UsesProps);
@@ -29,7 +29,6 @@ public sealed class RazorSgDirectRenderComponentMatrixTests
             StringAssert.Contains(observation.Imports, testCase.ExpectedImportFragment, StringComparison.Ordinal);
         if (testCase.UnexpectedImportFragment is not null)
             Assert.IsFalse(observation.Imports.Contains(testCase.UnexpectedImportFragment, StringComparison.Ordinal), observation.Imports);
-        Assert.IsFalse(observation.RenderExpression.Contains("createRenderContext", StringComparison.Ordinal));
-        Assert.IsFalse(observation.RenderExpression.Contains("builder.", StringComparison.Ordinal));
+        Assert.IsFalse(observation.ArtifactExpression.Contains("builder.", StringComparison.Ordinal));
     }
 }

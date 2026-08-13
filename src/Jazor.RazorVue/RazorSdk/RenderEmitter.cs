@@ -12,6 +12,7 @@ namespace Jazor.RazorVue.RazorSdk;
 /// <summary>
 /// Lowers bound BuildRenderTree operations to the final Vue render AST shape.
 /// C# member and expression semantics remain delegated to the compiler's SemanticWalker hooks.
+/// 此 direct path 只解释 RenderTreeBuilder 协议，再将值表达式交回 compiler，避免双重实现 C# 语义。
 /// </summary>
 internal static class RenderEmitter
 {
@@ -58,8 +59,11 @@ internal static class RenderEmitter
             result = new RenderResult(
                 lowered.RenderExpression,
                 lowered.PreludeStatements,
+                lowered.ModuleHoists,
                 UsesFragment: lowered.UsesFragment,
                 UsesStaticVNode: lowered.UsesStaticVNode,
+                UsesBlockTree: lowered.UsesBlockTree,
+                UsesHandlerCache: lowered.UsesHandlerCache,
                 UsesProps: AstReferenceAnalysis.ReferencesIdentifier(lowered.RenderExpression, "props") ||
                            lowered.PreludeStatements.Any(static statement => AstReferenceAnalysis.ReferencesIdentifier(statement, "props")),
                 UsesSlots: lowered.UsesSlots,
@@ -79,6 +83,10 @@ internal static class RenderEmitter
         }
     }
 
+    /// <summary>
+    /// Stateful one-pass RenderTree operation emitter.
+    /// 栈帧和临时变量都归一次 emit 所有，确保嵌套 builder 区域按 Razor 原始顺序关闭。
+    /// </summary>
     private sealed class Emitter
     {
         private readonly Compilation _compilation;
@@ -86,6 +94,7 @@ internal static class RenderEmitter
         private readonly SemanticWalker _walker;
         private readonly SenseArgument _argument;
         private readonly List<Statement> _preludeStatements = new();
+        private readonly List<RenderModuleHoist> _moduleHoists = new();
         private readonly List<VariableDeclaration> _renderFragmentPreludeDeclarations = new();
         private readonly Dictionary<string, int> _localNameCounts = new(StringComparer.Ordinal);
         private readonly ImmutableDictionary<IPropertySymbol, string> _componentSlotNames;
@@ -99,11 +108,18 @@ internal static class RenderEmitter
         private readonly HashSet<ISymbol> _referenceCaptureStateMembers = new(SymbolComparer);
         private readonly Dictionary<ILocalSymbol, IOperation> _compileTimeFrameLocalValues = new(SymbolComparer);
         private readonly HashSet<ILocalSymbol> _erasedRenderObjectLocals = new(SymbolComparer);
+        private readonly HashSet<string> _renderLocalNames = new(StringComparer.Ordinal);
         private string? _componentAttributeNormalizerName;
         private bool _usesMergeProps;
         private bool _usesFragment;
         private bool _usesStaticVNode;
         private bool _usesSlots;
+        private bool _usesBlockTree;
+        private bool _usesHandlerCache;
+        private int _nonHoistableRenderScopeDepth;
+        private int _staticPropsHoistCount;
+        private int _staticVNodeHoistCount;
+        private int _handlerCacheCount;
 
         public Emitter(
             Compilation compilation,
@@ -148,14 +164,25 @@ internal static class RenderEmitter
                 throw Unsupported(block, "RazorVue direct render operation lowering found unclosed RenderTreeBuilder frames.");
 
             var renderExpression = WrapWithExpressionScope(context.Argument, [], state.ToRenderExpression());
+            // The final vnode may be assembled from several compiler-lowered children. Anchor
+            // that synthetic composition to the BuildRenderTree body so VueModuleBuilder can
+            // retain Razor source-map coverage even when a direct frame replaces builder calls.
+            // 最终 vnode 组合没有单一子表达式来源，锚定到 BuildRenderTree body 保持 Razor map 可追踪。
+            renderExpression.UserData = CreateDirectRenderSourceOrigin(block);
             PruneUnreferencedRenderFragmentDeclarations(_preludeStatements, renderExpression);
+            var moduleHoists = PruneUnreferencedModuleHoists(renderExpression, _preludeStatements);
             var usesFragment = _usesFragment || state.UsesFragment || state.Roots.Count > 1;
-            var usesStaticVNode = _usesStaticVNode || state.UsesStaticVNode;
+            var usesStaticVNode = _usesStaticVNode || state.UsesStaticVNode ||
+                                  moduleHoists.Any(static hoist =>
+                                      AstReferenceAnalysis.ReferencesIdentifier(hoist.Initializer, "createStaticVNode"));
             return new LoweredRender(
                 renderExpression,
                 _preludeStatements.ToImmutableArray(),
+                moduleHoists,
                 usesFragment,
                 usesStaticVNode,
+                _usesBlockTree,
+                _usesHandlerCache,
                 _usesSlots,
                 BuildImportDeclarations(),
                 _referenceCaptureStateMembers
@@ -239,6 +266,9 @@ internal static class RenderEmitter
                 return;
             }
 
+            // RenderTreeBuilder's imperative protocol is represented by invocation statements.
+            // Other C# statements need an explicit direct-render model instead of being guessed.
+            // direct render 不把任意表达式当 vnode 副作用，未建模的语句必须明确失败。
             if (expression is not IInvocationOperation invocation)
                 throw Unsupported(
                     expression,
@@ -368,12 +398,26 @@ internal static class RenderEmitter
                         continue;
                     }
 
-                    var valueExpression = LowerExpression(declarator.Initializer.Value, declarationContext);
+                    // MarkupString is a Razor transport marker, not a CLR value retained by
+                    // the Vue artifact. Route local initializers through the same payload
+                    // projection used by AddContent so helper locals never fall back to a
+                    // synthetic `new MarkupString(...)` runtime shape.
+                    // MarkupString 局部变量只保留 raw HTML payload；不能让已退休的 builder
+                    // 协议或普通 object creation 再承担它的擦除职责。
+                    var valueExpression = IsMarkupString(declarator.Symbol.Type) ||
+                                          IsNullableMarkupString(declarator.Symbol.Type)
+                        ? LowerMarkupStringExpression(declarator.Initializer.Value, declarationContext)
+                        : LowerExpression(declarator.Initializer.Value, declarationContext);
                     var runtimeDeclaration = new VariableDeclaration(
                         VariableDeclarationKind.Const,
                         NodeList.From(new VariableDeclarator(new Identifier(localName), valueExpression)));
                     preludeStatements.Add(runtimeDeclaration);
                     localAliases = localAliases.SetItem(declarator.Symbol, localName);
+                    // A render local is recreated whenever this expression scope runs. An
+                    // inline event closure that captures it cannot use the setup cache, or the
+                    // first render's local value would leak into later branches/renders.
+                    // render-local 每次求值都会重建；捕获它的 handler 绝不能复用首轮缓存。
+                    _renderLocalNames.Add(localName);
                     if (TryResolveRenderFragmentExpression(declarator.Initializer.Value, declarationContext, out var renderFragment))
                     {
                         localRenderFragments = localRenderFragments.SetItem(declarator.Symbol, renderFragment);
@@ -420,6 +464,9 @@ internal static class RenderEmitter
 
         private void EmitConditional(IConditionalOperation conditional, EmitContext context, RenderState state)
         {
+            // A conditional can either select vnode content or contribute a prop branch. Probe the
+            // latter before lowering child bodies because props are only legal before children.
+            // 条件属性必须在 children 开始前合并；否则同一 conditional 要作为 vnode 内容分支处理。
             var condition = LowerExpression(conditional.Condition, context);
             if (TryEmitConditionalAttribute(conditional, condition, context, state))
                 return;
@@ -477,6 +524,9 @@ internal static class RenderEmitter
                 whenTrueInvocations.Length == 0 && whenFalseInvocations.Length == 0)
                 return false;
 
+            // Keep both branches as prop sources instead of executing either during emission.
+            // mergeProps will evaluate the selected runtime branch in the original render pass.
+            // 条件分支不能在生成期拍平，必须由运行时选择以保留属性值的单次求值。
             frame.AddConditionalAttributes(
                 condition,
                 BuildConditionalAttributes(whenTrueInvocations, context, frame),
@@ -525,6 +575,9 @@ internal static class RenderEmitter
 
         private void EmitForEachLoop(IForEachLoopOperation forEachLoop, EmitContext context, RenderState state)
         {
+            // Array.from maps lazily at render time and supplies each iteration its own alias
+            // scope. Building children once outside the mapper would duplicate/collapse loop effects.
+            // 循环体必须留在 mapper 内运行，不能在 lowering 时预先展开或共享局部变量。
             var collection = LowerExpression(forEachLoop.Collection, context);
             Node mapperParameter;
             EmitContext loopContext;
@@ -532,6 +585,7 @@ internal static class RenderEmitter
             {
                 var itemName = SanitizeJavaScriptIdentifierPart(loopVariable.Name, "item");
                 mapperParameter = new Identifier(itemName);
+                _renderLocalNames.Add(itemName);
                 loopContext = context with
                 {
                     LocalAliases = context.LocalAliases.SetItem(loopVariable, itemName)
@@ -543,7 +597,16 @@ internal static class RenderEmitter
                 mapperParameter = LowerForEachLoopBinding(forEachLoop, loopContext);
             }
 
-            var body = EmitChildContentExpression(forEachLoop.Body, loopContext);
+            DirectRenderFragmentBody body;
+            try
+            {
+                body = EmitNonHoistableChildContentExpression(forEachLoop.Body, loopContext);
+            }
+            finally
+            {
+                foreach (var name in loopContext.LocalAliases.Values.Except(context.LocalAliases.Values, StringComparer.Ordinal))
+                    _renderLocalNames.Remove(name);
+            }
             var mapper = new ArrowFunctionExpression(
                 NodeList.From<Node>(mapperParameter),
                 body.RenderExpression,
@@ -647,6 +710,21 @@ internal static class RenderEmitter
             });
         }
 
+        private DirectRenderFragmentBody EmitNonHoistableChildContentExpression(
+            IOperation operation,
+            EmitContext context)
+        {
+            _nonHoistableRenderScopeDepth++;
+            try
+            {
+                return EmitChildContentExpression(operation, context);
+            }
+            finally
+            {
+                _nonHoistableRenderScopeDepth--;
+            }
+        }
+
         private DirectRenderFragmentBody EmitRenderFragmentBodyExpression(
             IParameterSymbol builder,
             IOperation body,
@@ -654,42 +732,50 @@ internal static class RenderEmitter
             IOperation sourceOperation,
             string description)
         {
-            return WithScopedLocalNames(() =>
+            _nonHoistableRenderScopeDepth++;
+            try
             {
-                var slotState = new RenderState();
-                var preludeStatements = new List<Statement>();
-                var slotArgument = context.Argument.WithNewScope();
-                _ = EmitOperation(
-                    body,
-                    new EmitContext(
-                        BuilderBinding.ForSymbol(builder),
-                        context.Substitutions,
-                        context.ParameterAliases,
-                        context.LocalAliases,
-                        context.LocalRenderFragments,
-                        context.LocalRenderObjects,
-                        context.LocalComponentTypes,
-                        context.SecondaryBuilders,
-                        preludeStatements,
-                        AllowPreludeDeclarations: true,
-                        Argument: slotArgument),
-                    slotState);
-                if (slotState.Stack.Count != 0)
+                return WithScopedLocalNames(() =>
                 {
-                    throw Unsupported(
-                        sourceOperation,
-                        description +
-                        " left unclosed " +
-                        slotState.Stack.Peek().Describe() +
-                        " frames.");
-                }
+                    var slotState = new RenderState();
+                    var preludeStatements = new List<Statement>();
+                    var slotArgument = context.Argument.WithNewScope();
+                    _ = EmitOperation(
+                        body,
+                        new EmitContext(
+                            BuilderBinding.ForSymbol(builder),
+                            context.Substitutions,
+                            context.ParameterAliases,
+                            context.LocalAliases,
+                            context.LocalRenderFragments,
+                            context.LocalRenderObjects,
+                            context.LocalComponentTypes,
+                            context.SecondaryBuilders,
+                            preludeStatements,
+                            AllowPreludeDeclarations: true,
+                            Argument: slotArgument),
+                        slotState);
+                    if (slotState.Stack.Count != 0)
+                    {
+                        throw Unsupported(
+                            sourceOperation,
+                            description +
+                            " left unclosed " +
+                            slotState.Stack.Peek().Describe() +
+                            " frames.");
+                    }
 
-                var usesFragment = slotState.UsesFragment || slotState.Roots.Count > 1;
-                return new DirectRenderFragmentBody(
-                    WrapWithExpressionScope(slotArgument, preludeStatements, slotState.ToRenderExpression()),
-                    usesFragment,
-                    slotState.UsesStaticVNode);
-            });
+                    var usesFragment = slotState.UsesFragment || slotState.Roots.Count > 1;
+                    return new DirectRenderFragmentBody(
+                        WrapWithExpressionScope(slotArgument, preludeStatements, slotState.ToRenderExpression()),
+                        usesFragment,
+                        slotState.UsesStaticVNode);
+                });
+            }
+            finally
+            {
+                _nonHoistableRenderScopeDepth--;
+            }
         }
 
         private bool TryEmitRenderTreeBuilderInvocation(
@@ -702,6 +788,9 @@ internal static class RenderEmitter
                 return false;
             }
 
+            // Match SDK names only after receiver identity is proven. A user method sharing an
+            // OpenElement name must remain ordinary C# lowering and never mutate this frame stack.
+            // 先确认 builder receiver，避免同名用户方法误操作 RenderTree 栈。
             var method = invocation.TargetMethod.OriginalDefinition;
             switch (method.Name)
             {
@@ -712,7 +801,15 @@ internal static class RenderEmitter
                     if (!TryGetConstantString(invocation.Arguments[1].Value, out var tagName))
                         throw Unsupported(invocation.Arguments[1].Value, "OpenElement tag names must be compile-time strings for direct render lowering.");
                     state.StartChildren();
-                    state.Stack.Push(new ElementFrame(tagExpression, tagName));
+                    state.Stack.Push(new ElementFrame(
+                        tagExpression,
+                        tagName,
+                        HoistStaticProps,
+                        CanHoistStaticProps,
+                        CacheStableEventHandler,
+                        CanCacheStableEventHandler,
+                        handler => IsStableEventHandler(handler, context),
+                        UseBlockTree));
                     return true;
 
                 case "CloseElement":
@@ -729,7 +826,16 @@ internal static class RenderEmitter
                     var parameterNameMap = BuildComponentParameterNameMap(runtimeComponentType);
                     var slotNameMap = BuildComponentSlotParameterNameMap(runtimeComponentType);
                     state.StartChildren();
-                    state.Stack.Push(new ComponentFrame(componentExpression, parameterNameMap, slotNameMap));
+                    state.Stack.Push(new ComponentFrame(
+                        componentExpression,
+                        parameterNameMap,
+                        slotNameMap,
+                        HoistStaticProps,
+                        CanHoistStaticProps,
+                        CacheStableEventHandler,
+                        CanCacheStableEventHandler,
+                        handler => IsStableEventHandler(handler, context),
+                        UseBlockTree));
                     return true;
 
                 case "CloseComponent":
@@ -768,9 +874,16 @@ internal static class RenderEmitter
                 case "AddMarkupContent":
                     EnsureSignature(invocation, invocation.Arguments.Length == 2);
                     RequireOmittableSequence(invocation.Arguments[0].Value);
-                    var markup = LowerExpression(invocation.Arguments[1].Value, context);
                     state.UsesStaticVNode = true;
-                    state.AddChild(Call("createStaticVNode", markup, new NumericLiteral(1, "1")));
+                    state.AddChild(TryCreateStaticMarkupVNode(
+                        invocation.Arguments[1].Value,
+                        allowRawStringLiteral: true,
+                        out var staticVNode)
+                        ? staticVNode
+                        : Call(
+                            "createStaticVNode",
+                            LowerExpression(invocation.Arguments[1].Value, context),
+                            new NumericLiteral(1, "1")));
                     return true;
 
                 case "AddElementReferenceCapture":
@@ -943,6 +1056,9 @@ internal static class RenderEmitter
 
         private void EmitAddAttribute(IInvocationOperation invocation, EmitContext context, RenderState state)
         {
+            // Razor's frame protocol commits attributes before child content. Enforcing it here
+            // keeps duplicate/splat precedence deterministic when the frame later forms a vnode.
+            // 属性顺序是 RenderTree ABI 的一部分，children 后追加属性不能被随意重排。
             EnsureSignature(invocation, invocation.Arguments.Length is 2 or 3);
             RequireOmittableSequence(invocation.Arguments[0].Value);
             if (state.Stack.Count == 0 || state.Stack.Peek() is not PropFrame frame || frame.ChildrenStarted)
@@ -1042,6 +1158,7 @@ internal static class RenderEmitter
             if (frame is ComponentFrame component)
                 // Runtime splats have no C# operation per entry. Normalize them in the
                 // generated setup scope so descriptor-owned Vue names still win.
+                // 动态 splat 无法逐项绑定；必须先规范化再进入 mergeProps 的覆盖顺序。
                 attributes = NormalizeDynamicComponentAttributes(component, attributes);
 
             if (frame.AddMultipleAttributes(attributes))
@@ -1064,6 +1181,146 @@ internal static class RenderEmitter
                 new Identifier(helperName),
                 attributes,
                 component.CreateParameterNameMapExpression());
+        }
+
+        private Expression HoistStaticProps(ObjectExpression props)
+        {
+            var name = "__jazor$hoistedProps" +
+                _staticPropsHoistCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            _staticPropsHoistCount++;
+            _moduleHoists.Add(new RenderModuleHoist(name, props));
+            return new Identifier(name);
+        }
+
+        private Expression CacheStableEventHandler(Expression handler)
+        {
+            var index = _handlerCacheCount++;
+            _usesHandlerCache = true;
+            var cache = new MemberExpression(
+                new Identifier("__jazor$handlerCache"),
+                new NumericLiteral(index, index.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                computed: true,
+                optional: false);
+            // The cache belongs to one setup instance. `||` has the same lazily-created
+            // handler behavior as Vue's SFC cache while avoiding a render-time allocation.
+            // 缓存位于 setup 实例而非模块；每个组件实例保留自己的闭包与事件身份。
+            return new LogicalExpression(
+                Operator.LogicalOr,
+                cache,
+                new AssignmentExpression(Operator.Assignment, cache, handler));
+        }
+
+        private bool CanCacheStableEventHandler(Expression handler)
+        {
+            if (_nonHoistableRenderScopeDepth != 0 || !IsInlineFunction(handler))
+                return false;
+
+            // A loop/slot local would be captured by the first render and become stale. The
+            // direct emitter records aliases while entering those lexical scopes, so checking
+            // references here is conservative and independent of AST traversal order.
+            // foreach/slot 局部一旦被缓存会固定首轮值，因此只缓存不捕获 render-local 的闭包。
+            return !_renderLocalNames.Any(name => AstReferenceAnalysis.ReferencesIdentifier(handler, name));
+        }
+
+        private bool IsStableEventHandler(Expression handler, EmitContext context)
+        {
+            if (handler is Identifier identifier)
+            {
+                // A named component member is emitted once in setup, whereas a direct-render
+                // local or template parameter is recreated by the render function. Only the
+                // former can be omitted from Vue's dynamic-prop list.
+                // 同名 Identifier 不能一概当稳定：render local/template 参数每轮会变化，必须参与 patch。
+                return !_renderLocalNames.Contains(identifier.Name) &&
+                       !context.LocalAliases.Values.Contains(identifier.Name, StringComparer.Ordinal) &&
+                       !context.ParameterAliases.Values.Contains(identifier.Name, StringComparer.Ordinal);
+            }
+
+            return CanCacheStableEventHandler(handler);
+        }
+
+        private void UseBlockTree()
+            => _usesBlockTree = true;
+
+        private static bool IsInlineFunction(Expression expression)
+            => expression is ArrowFunctionExpression or FunctionExpression;
+
+        private bool CanHoistStaticProps(ObjectExpression props)
+        {
+            if (_nonHoistableRenderScopeDepth != 0 || props.Properties.Count == 0)
+                return false;
+
+            foreach (var member in props.Properties)
+            {
+                if (member is not ObjectProperty
+                    {
+                        Computed: false,
+                        Key: Identifier or Acornima.Ast.StringLiteral,
+                        Value: Expression value
+                    } property ||
+                    !IsStaticPropValue(value))
+                {
+                    return false;
+                }
+
+                var name = property.Key switch
+                {
+                    Identifier identifier => identifier.Name,
+                    Acornima.Ast.StringLiteral literal => literal.Value,
+                    _ => string.Empty
+                };
+                if (string.Equals(name, "key", StringComparison.Ordinal) ||
+                    string.Equals(name, "ref", StringComparison.Ordinal) ||
+                    IsDirectEventAttributeName(name))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsStaticPropValue(Expression expression)
+            => expression is NullLiteral or Acornima.Ast.StringLiteral or BooleanLiteral or NumericLiteral or BigIntLiteral;
+
+        private bool TryCreateStaticMarkupVNode(
+            IOperation operation,
+            bool allowRawStringLiteral,
+            out Expression vnode)
+        {
+            if (_nonHoistableRenderScopeDepth != 0 ||
+                !TryGetStaticMarkupText(operation, allowRawStringLiteral, out var markup))
+            {
+                vnode = null!;
+                return false;
+            }
+
+            var name = "__jazor$hoistedStatic" +
+                _staticVNodeHoistCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            _staticVNodeHoistCount++;
+            _moduleHoists.Add(new RenderModuleHoist(
+                name,
+                Call(
+                    "createStaticVNode",
+                    StringLiteral(markup),
+                    new NumericLiteral(1, "1"))));
+            vnode = new Identifier(name);
+            return true;
+        }
+
+        private Expression LowerMarkupStringExpression(IOperation operation, EmitContext context)
+        {
+            operation = UnwrapTransparentRazorSgOperation(operation);
+            if (operation is IObjectCreationOperation creation &&
+                IsMarkupString(creation.Type) &&
+                creation.Arguments.Length == 1)
+            {
+                // MarkupString is a Razor render marker, not a CLR object in the emitted Vue
+                // module. Keep the payload expression's normal compiler lowering and lifetime.
+                // MarkupString 只携带 raw HTML payload，不能让 retired host 再负责它的擦除。
+                return LowerExpression(creation.Arguments[0].Value, context);
+            }
+
+            return LowerExpression(operation, context);
         }
 
         private void EmitSetAttributeValue(IInvocationOperation invocation, EmitContext context, RenderState state)
@@ -1197,17 +1454,22 @@ internal static class RenderEmitter
             if (IsMarkupStringOperationValue(invocation.Arguments[1].Value))
             {
                 state.UsesStaticVNode = true;
-                var markup = LowerExpression(invocation.Arguments[1].Value, context);
                 if (IsNullableMarkupStringOperationValue(invocation.Arguments[1].Value))
                 {
-                    state.AddOptionalChild(BuildNullableMarkupContent(markup));
+                    state.AddOptionalChild(BuildNullableMarkupContent(
+                        LowerMarkupStringExpression(invocation.Arguments[1].Value, context)));
                     return;
                 }
 
-                state.AddChild(Call(
-                    "createStaticVNode",
-                    markup,
-                    new NumericLiteral(1, "1")));
+                state.AddChild(TryCreateStaticMarkupVNode(
+                    invocation.Arguments[1].Value,
+                    allowRawStringLiteral: false,
+                    out var staticVNode)
+                    ? staticVNode
+                    : Call(
+                        "createStaticVNode",
+                        LowerMarkupStringExpression(invocation.Arguments[1].Value, context),
+                        new NumericLiteral(1, "1")));
                 return;
             }
 
@@ -2589,6 +2851,7 @@ internal static class RenderEmitter
         private T WithScopedLocalNames<T>(Func<T> action)
         {
             var snapshot = new Dictionary<string, int>(_localNameCounts, StringComparer.Ordinal);
+            var renderLocalSnapshot = new HashSet<string>(_renderLocalNames, StringComparer.Ordinal);
             try
             {
                 return action();
@@ -2598,6 +2861,10 @@ internal static class RenderEmitter
                 _localNameCounts.Clear();
                 foreach (var pair in snapshot)
                     _localNameCounts.Add(pair.Key, pair.Value);
+
+                _renderLocalNames.Clear();
+                foreach (var name in renderLocalSnapshot)
+                    _renderLocalNames.Add(name);
             }
         }
 
@@ -2677,6 +2944,41 @@ internal static class RenderEmitter
         private bool IsTrackedRenderFragmentDeclaration(VariableDeclaration declaration)
             => _renderFragmentPreludeDeclarations.Any(candidate => ReferenceEquals(candidate, declaration));
 
+        private ImmutableArray<RenderModuleHoist> PruneUnreferencedModuleHoists(
+            Expression renderExpression,
+            IReadOnlyList<Statement> preludeStatements)
+        {
+            if (_moduleHoists.Count == 0)
+                return [];
+
+            // `Clear()` and conditional template paths can discard a previously created static
+            // node. Module hoists have no observable initializer side effects, so retain only
+            // entries reachable from the final render/prelude roots, then follow hoist-to-hoist
+            // references until stable.
+            // 静态 hoist 只有最终 render 可达时才输出，避免 Clear 后仍携带死常量。
+            var referencedNames = AstReferenceAnalysis.CollectIdentifiers(
+                [renderExpression, .. preludeStatements]);
+            var retained = new List<RenderModuleHoist>(_moduleHoists.Count);
+            var retainedNames = new HashSet<string>(StringComparer.Ordinal);
+            var changed = true;
+            while (changed)
+            {
+                changed = false;
+                foreach (var hoist in _moduleHoists)
+                {
+                    if (!referencedNames.Contains(hoist.Name) || !retainedNames.Add(hoist.Name))
+                        continue;
+
+                    retained.Add(hoist);
+                    referencedNames.UnionWith(AstReferenceAnalysis.CollectIdentifiers([hoist.Initializer]));
+                    changed = true;
+                }
+            }
+
+            return retained.ToImmutableArray();
+        }
+
+        /// <summary>Captures a local RenderFragment declaration until liveness determines whether it is emitted.</summary>
         private sealed record RenderFragmentDeclarationCandidate(
             VariableDeclaration Declaration,
             string Name,
@@ -2808,44 +3110,76 @@ internal static class RenderEmitter
 
         private static bool IsMarkupStringOperationValue(IOperation operation)
         {
-            while (operation is IConversionOperation conversion)
-                operation = conversion.Operand;
+            operation = UnwrapMarkupStringOperation(operation);
 
-        var type = operation.Type;
-        if (type is null)
-            return false;
-
-        if (string.Equals(
-                type.OriginalDefinition.ToDisplayString(Format.NameFormat),
-                MarkupStringMetadataName,
-                StringComparison.Ordinal))
-        {
-            return true;
+            var type = operation.Type;
+            return IsMarkupString(type) || IsNullableMarkupString(type);
         }
 
-        return type is INamedTypeSymbol nullable &&
+        private static bool IsMarkupString(ITypeSymbol? type)
+            => type is not null &&
+               string.Equals(
+                   type.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                   MarkupStringMetadataName,
+                   StringComparison.Ordinal);
+
+        private static bool IsNullableMarkupString(ITypeSymbol? type)
+            => type is INamedTypeSymbol nullable &&
                nullable.IsGenericType &&
                nullable.TypeArguments.Length == 1 &&
                nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
-               string.Equals(
-                   nullable.TypeArguments[0].OriginalDefinition.ToDisplayString(Format.NameFormat),
-                   MarkupStringMetadataName,
-                   StringComparison.Ordinal);
-        }
+               IsMarkupString(nullable.TypeArguments[0]);
 
         private static bool IsNullableMarkupStringOperationValue(IOperation operation)
+        {
+            operation = UnwrapMarkupStringOperation(operation);
+            return IsNullableMarkupString(operation.Type);
+        }
+
+        private static bool TryGetStaticMarkupText(
+            IOperation operation,
+            bool allowRawStringLiteral,
+            out string markup)
+        {
+            operation = UnwrapMarkupStringOperation(operation);
+            if (allowRawStringLiteral && TryGetConstantString(operation, out markup))
+                return true;
+
+            if (operation is IObjectCreationOperation creation &&
+                IsMarkupString(creation.Type) &&
+                creation.Arguments.Length == 1 &&
+                TryGetConstantString(creation.Arguments[0].Value, out markup))
+            {
+                return true;
+            }
+
+            if (TryGetConstantString(operation, out markup) && IsMarkupString(operation.Type))
+                return true;
+
+            markup = string.Empty;
+            return false;
+        }
+
+        private static IOperation UnwrapMarkupStringOperation(IOperation operation)
         {
             while (operation is IConversionOperation conversion)
                 operation = conversion.Operand;
 
-            return operation.Type is INamedTypeSymbol nullable &&
-                   nullable.IsGenericType &&
-                   nullable.TypeArguments.Length == 1 &&
-                   nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
-                   string.Equals(
-                       nullable.TypeArguments[0].OriginalDefinition.ToDisplayString(Format.NameFormat),
-                       MarkupStringMetadataName,
-                       StringComparison.Ordinal);
+            return operation;
+        }
+
+        private static SourceOrigin CreateDirectRenderSourceOrigin(IOperation operation)
+        {
+            var lineSpan = operation.Syntax.GetLocation().GetMappedLineSpan();
+            var sourcePath = !string.IsNullOrWhiteSpace(lineSpan.Path)
+                ? lineSpan.Path
+                : operation.Syntax.SyntaxTree.FilePath;
+            return new SourceOrigin(
+                sourcePath,
+                lineSpan.StartLinePosition.Line,
+                lineSpan.StartLinePosition.Character,
+                lineSpan.EndLinePosition.Line,
+                lineSpan.EndLinePosition.Character);
         }
 
     private static bool IsTerminatingWithoutOutput(IOperation? operation)
@@ -3502,6 +3836,7 @@ internal static class RenderEmitter
     private static OperationTransformationException Unsupported(IOperation operation, string message)
         => new(operation, message);
 
+    /// <summary>Maintains the active RenderTree frame stack and produces the final vnode expression.</summary>
     private sealed class RenderState
     {
         public List<Expression> Roots { get; } = new();
@@ -3615,6 +3950,7 @@ internal static class RenderEmitter
         }
     }
 
+    /// <summary>Base stack frame for an open Razor render region. 子类决定关闭后的 Vue vnode 形状。</summary>
     private abstract class Frame
     {
         public bool ChildrenStarted { get; set; }
@@ -3627,11 +3963,31 @@ internal static class RenderEmitter
             => GetType().Name;
     }
 
+    /// <summary>Common frame for elements/components that collect props before their children close.</summary>
     private abstract class PropFrame : Frame
     {
         private readonly List<PropSource> _propSources = new();
         private readonly List<Expression> _referenceCaptures = new();
+        private readonly Func<ObjectExpression, Expression>? _hoistStaticProps;
+        private readonly Func<ObjectExpression, bool>? _canHoistStaticProps;
+        private readonly Func<Expression, Expression>? _cacheStableEventHandler;
+        private readonly Func<Expression, bool>? _canCacheStableEventHandler;
+        private readonly Func<Expression, bool>? _isStableEventHandler;
         private string? _lastAttributeName;
+
+        protected PropFrame(
+            Func<ObjectExpression, Expression>? hoistStaticProps = null,
+            Func<ObjectExpression, bool>? canHoistStaticProps = null,
+            Func<Expression, Expression>? cacheStableEventHandler = null,
+            Func<Expression, bool>? canCacheStableEventHandler = null,
+            Func<Expression, bool>? isStableEventHandler = null)
+        {
+            _hoistStaticProps = hoistStaticProps;
+            _canHoistStaticProps = canHoistStaticProps;
+            _cacheStableEventHandler = cacheStableEventHandler;
+            _canCacheStableEventHandler = canCacheStableEventHandler;
+            _isStableEventHandler = isStableEventHandler;
+        }
 
         protected IEnumerable<DirectAttribute> Attributes
             => _propSources
@@ -3703,6 +4059,22 @@ internal static class RenderEmitter
         protected virtual Expression FormatAttributeValueExpression(DirectAttribute attribute)
             => attribute.ValueExpression;
 
+        protected virtual bool ShouldCacheEventHandler(
+            DirectAttribute attribute,
+            Expression formattedValue)
+            => IsDirectEventAttributeName(attribute.Name) &&
+               CanCacheStableEventHandler(formattedValue);
+
+        protected bool CanCacheStableEventHandler(Expression handler)
+            => _canCacheStableEventHandler?.Invoke(handler) == true;
+
+        protected bool IsStableEventHandler(Expression handler)
+            => _isStableEventHandler?.Invoke(handler) == true;
+
+        protected virtual bool IsStableEventAttribute(DirectAttribute attribute)
+            => IsDirectEventAttributeName(attribute.Name) &&
+               IsStableEventHandler(attribute.ValueExpression);
+
         protected Expression FormatPropsExpression()
         {
             var arguments = new List<Expression>();
@@ -3738,16 +4110,33 @@ internal static class RenderEmitter
                 properties.Add(CreateObjectProperty("ref", FormatReferenceCaptureExpression()));
             FlushProperties(arguments, properties);
 
-            return arguments.Count switch
+            var result = arguments.Count switch
             {
                 0 => Null(),
                 1 => arguments[0],
                 _ => Call("mergeProps", arguments)
             };
+
+            // Hoist only one plain object literal. This excludes mergeProps, conditional
+            // sources, splats, ref captures, and any dynamic value by construction.
+            if (arguments.Count == 1 &&
+                arguments[0] is ObjectExpression objectExpression &&
+                _hoistStaticProps is not null &&
+                _canHoistStaticProps?.Invoke(objectExpression) == true)
+            {
+                result = _hoistStaticProps(objectExpression);
+            }
+
+            return result;
         }
 
         private ObjectProperty CreateAttributeProperty(DirectAttribute attribute)
-            => CreateObjectProperty(attribute.Name, FormatAttributeValueExpression(attribute));
+        {
+            var value = FormatAttributeValueExpression(attribute);
+            if (ShouldCacheEventHandler(attribute, value) && _cacheStableEventHandler is not null)
+                value = _cacheStableEventHandler(value);
+            return CreateObjectProperty(attribute.Name, value);
+        }
 
         private ObjectExpression CreateAttributeObject(IEnumerable<DirectAttribute> attributes)
             => new(NodeList.From<Node>(attributes.Select(CreateAttributeProperty)));
@@ -3760,6 +4149,105 @@ internal static class RenderEmitter
             arguments.Add(new ObjectExpression(NodeList.From(properties)));
             properties.Clear();
         }
+
+        protected DirectPatchMetadata BuildPatchMetadata(
+            bool hasBlockChild,
+            bool componentProps = false,
+            int additionalFlags = 0)
+        {
+            var flags = additionalFlags;
+            var fullProps = false;
+            var dynamicProps = new List<string>();
+            var seenDynamicProps = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var source in _propSources)
+            {
+                if (source is MultipleAttributesPropSource or ConditionalAttributesPropSource)
+                {
+                    fullProps = true;
+                    continue;
+                }
+
+                if (source is not AttributePropSource { Attribute: var attribute })
+                    continue;
+
+                if (string.Equals(attribute.Name, "ref", StringComparison.Ordinal))
+                {
+                    flags |= VuePatchFlags.NeedPatch;
+                    continue;
+                }
+
+                if (IsStaticPropValueCore(attribute.ValueExpression))
+                    continue;
+
+                if (string.Equals(attribute.Name, "key", StringComparison.Ordinal))
+                {
+                    fullProps = true;
+                    continue;
+                }
+
+                if (IsStableEventAttribute(attribute))
+                    continue;
+
+                if (string.Equals(attribute.Name, "class", StringComparison.Ordinal))
+                {
+                    if (componentProps)
+                    {
+                        // CLASS/STYLE are DOM-element fast paths in Vue. A component must
+                        // expose these as ordinary dynamic props, or shouldUpdateComponent()
+                        // can skip the child update entirely. 组件 class/style 不能复用元素 flag。
+                        flags |= VuePatchFlags.Props;
+                        if (seenDynamicProps.Add(attribute.Name))
+                            dynamicProps.Add(attribute.Name);
+                    }
+                    else
+                    {
+                        flags |= VuePatchFlags.Class;
+                    }
+                    continue;
+                }
+
+                if (string.Equals(attribute.Name, "style", StringComparison.Ordinal))
+                {
+                    if (componentProps)
+                    {
+                        // Keep the runtime name in dynamicProps: custom component ABI may
+                        // deliberately map a C# property to the exact lowercase Vue key.
+                        // dynamicProps 保留实际 Vue 名，不能回写 Razor 参数名。
+                        flags |= VuePatchFlags.Props;
+                        if (seenDynamicProps.Add(attribute.Name))
+                            dynamicProps.Add(attribute.Name);
+                    }
+                    else
+                    {
+                        flags |= VuePatchFlags.Style;
+                    }
+                    continue;
+                }
+
+                flags |= VuePatchFlags.Props;
+                if (seenDynamicProps.Add(attribute.Name))
+                    dynamicProps.Add(attribute.Name);
+            }
+
+            if (_referenceCaptures.Count > 0)
+                flags |= VuePatchFlags.NeedPatch;
+
+            if (fullProps)
+            {
+                flags &= ~VuePatchFlags.Props;
+                flags |= VuePatchFlags.FullProps;
+                dynamicProps.Clear();
+            }
+
+            return new DirectPatchMetadata(
+                RequiresBlock: hasBlockChild || flags != 0,
+                Flag: flags,
+                DynamicProps: dynamicProps.Count == 0 ? null : dynamicProps.ToImmutableArray());
+        }
+
+        private static bool IsStaticPropValueCore(Expression expression)
+            => expression is NullLiteral or Acornima.Ast.StringLiteral or BooleanLiteral or NumericLiteral or BigIntLiteral;
 
         private Expression FormatReferenceCaptureExpression()
         {
@@ -3778,17 +4266,39 @@ internal static class RenderEmitter
         }
     }
 
+    /// <summary>Accumulates one HTML element's attributes and children.</summary>
     private sealed class ElementFrame : PropFrame
     {
         private readonly Expression _tagExpression;
         private readonly Dictionary<string, DirectEventModifier> _eventModifiers = new(StringComparer.Ordinal);
+        private readonly Action? _useBlockTree;
         private string? _updatesAttributeName;
         private string? _updatesEventName;
 
         public ElementFrame(Expression tagExpression, string tagName)
+            : this(tagExpression, tagName, null, null, null, null, null, null)
+        {
+        }
+
+        public ElementFrame(
+            Expression tagExpression,
+            string tagName,
+            Func<ObjectExpression, Expression>? hoistStaticProps,
+            Func<ObjectExpression, bool>? canHoistStaticProps,
+            Func<Expression, Expression>? cacheStableEventHandler,
+            Func<Expression, bool>? canCacheStableEventHandler,
+            Func<Expression, bool>? isStableEventHandler,
+            Action? useBlockTree)
+            : base(
+                hoistStaticProps,
+                canHoistStaticProps,
+                cacheStableEventHandler,
+                canCacheStableEventHandler,
+                isStableEventHandler)
         {
             _tagExpression = tagExpression;
             TagName = tagName;
+            _useBlockTree = useBlockTree;
         }
 
         public string TagName { get; }
@@ -3797,7 +4307,34 @@ internal static class RenderEmitter
             => NormalizeDirectElementAttributeName(name);
 
         public override Expression ToRenderExpression()
-            => Call("h", _tagExpression, FormatPropsExpression(), FormatChildrenExpression());
+        {
+            var props = FormatPropsExpression();
+            var children = FormatChildrenExpression();
+            var patch = BuildPatchMetadata(
+                hasBlockChild: false);
+            // `createElementBlock` records an empty dynamicChildren list. It is correct only
+            // when this frame has no immediate children; otherwise Vue would skip ordinary
+            // child diffing for dynamic text/conditional/foreach content that this lowering
+            // has not yet converted into individually flagged VNodes.
+            // 带即时 children 时暂保留 h() 的完整 children diff，避免错误空 block 快路径。
+            if (Children.Count != 0 || !patch.RequiresBlock)
+                return Call("h", _tagExpression, props, children);
+
+            _useBlockTree?.Invoke();
+            var arguments = new List<Expression> { _tagExpression, props, children };
+            if (patch.Flag != 0 || patch.DynamicProps is not null)
+            {
+                arguments.Add(new NumericLiteral(
+                    patch.Flag,
+                    patch.Flag.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                if (patch.DynamicProps is not null)
+                    arguments.Add(CreateArray(patch.DynamicProps.Value.Select(static name => StringLiteral(name))));
+            }
+
+            // Comma expression preserves a single render invocation with no wrapper closure.
+            // openBlock/createElementBlock mirrors Vue compiler's block collection protocol.
+            return new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createElementBlock", arguments)));
+        }
 
         public override string Describe()
             => "ElementFrame('" + TagName + "')";
@@ -3852,15 +4389,47 @@ internal static class RenderEmitter
             return value;
         }
 
+        protected override bool ShouldCacheEventHandler(
+            DirectAttribute attribute,
+            Expression formattedValue)
+        {
+            if (_eventModifiers.ContainsKey(attribute.Name))
+                return false;
+
+            if (IsUpdatesEvent(attribute))
+            {
+                // The bind adapter itself is a fresh arrow on every render. Its captured
+                // Razor binder must still be an inline stable closure, otherwise caching would
+                // retain a stale user-supplied callback. Official @bind satisfies this shape.
+                // 无 modifier 的 @bind wrapper 可缓存；但底层 binder 必须是稳定 inline
+                // closure，不能把动态回调错误固定在首轮 render。
+                return CanCacheStableEventHandler(attribute.ValueExpression);
+            }
+
+            return base.ShouldCacheEventHandler(attribute, formattedValue);
+        }
+
+        protected override bool IsStableEventAttribute(DirectAttribute attribute)
+            => !_eventModifiers.ContainsKey(attribute.Name) &&
+               (IsUpdatesEvent(attribute)
+                   ? CanCacheStableEventHandler(attribute.ValueExpression)
+                   : base.IsStableEventAttribute(attribute));
+
+        private bool IsUpdatesEvent(DirectAttribute attribute)
+            => _updatesAttributeName is not null &&
+               string.Equals(attribute.Name, _updatesEventName, StringComparison.Ordinal);
+
         private Expression FormatChildrenExpression()
             => Children.Count == 0 ? Null() : CreateArray(Children);
     }
 
+    /// <summary>Accumulates component props, event listeners, and named/default slots.</summary>
     private sealed class ComponentFrame : PropFrame
     {
         private readonly Expression _componentExpression;
         private readonly ImmutableDictionary<string, string> _parameterNameMap;
         private readonly ImmutableDictionary<string, string> _slotNameMap;
+        private readonly Action? _useBlockTree;
 
         public ComponentFrame(
             Expression componentExpression,
@@ -3873,10 +4442,31 @@ internal static class RenderEmitter
             Expression componentExpression,
             ImmutableDictionary<string, string> parameterNameMap,
             ImmutableDictionary<string, string> slotNameMap)
+            : this(componentExpression, parameterNameMap, slotNameMap, null, null, null, null, null, null)
+        {
+        }
+
+        public ComponentFrame(
+            Expression componentExpression,
+            ImmutableDictionary<string, string> parameterNameMap,
+            ImmutableDictionary<string, string> slotNameMap,
+            Func<ObjectExpression, Expression>? hoistStaticProps,
+            Func<ObjectExpression, bool>? canHoistStaticProps,
+            Func<Expression, Expression>? cacheStableEventHandler,
+            Func<Expression, bool>? canCacheStableEventHandler,
+            Func<Expression, bool>? isStableEventHandler,
+            Action? useBlockTree)
+            : base(
+                hoistStaticProps,
+                canHoistStaticProps,
+                cacheStableEventHandler,
+                canCacheStableEventHandler,
+                isStableEventHandler)
         {
             _componentExpression = componentExpression;
             _parameterNameMap = parameterNameMap;
             _slotNameMap = slotNameMap;
+            _useBlockTree = useBlockTree;
         }
 
         public List<DirectSlot> Slots { get; } = new();
@@ -3902,6 +4492,8 @@ internal static class RenderEmitter
         public override Expression ToRenderExpression()
         {
             var props = FormatPropsExpression();
+            Expression? children = null;
+            var additionalFlags = 0;
             if (Slots.Count > 0)
             {
                 var slotMembers = new List<Node>(Slots.Count);
@@ -3918,19 +4510,41 @@ internal static class RenderEmitter
                         CreateSlotProjectionExpression(slot, slot.Fragment)));
                 }
 
-                var slots = new ObjectExpression(NodeList.From(slotMembers));
-                return Call("h", _componentExpression, props, slots);
+                children = new ObjectExpression(NodeList.From(slotMembers));
+                additionalFlags |= VuePatchFlags.DynamicSlots;
+            }
+            else if (Children.Count > 0)
+            {
+                children = Children.Count == 1
+                    ? Children[0] is SpreadElement spread
+                        ? spread.Argument
+                        : Children[0]
+                    : CreateArray(Children);
             }
 
-            if (Children.Count == 0)
-                return Call("h", _componentExpression, props);
+            var patch = BuildPatchMetadata(
+                hasBlockChild: false,
+                componentProps: true,
+                additionalFlags: additionalFlags);
+            // Non-slot component children are eagerly created while the block is open. Keep
+            // them on h() until each direct child carries a proven patch contract.
+            if (Children.Count != 0 || !patch.RequiresBlock)
+                return children is null
+                    ? Call("h", _componentExpression, props)
+                    : Call("h", _componentExpression, props, children);
 
-            var children = Children.Count == 1
-                ? Children[0] is SpreadElement spread
-                    ? spread.Argument
-                    : Children[0]
-                : CreateArray(Children);
-            return Call("h", _componentExpression, props, children);
+            _useBlockTree?.Invoke();
+            var arguments = new List<Expression> { _componentExpression, props, children ?? Null() };
+            if (patch.Flag != 0 || patch.DynamicProps is not null)
+            {
+                arguments.Add(new NumericLiteral(
+                    patch.Flag,
+                    patch.Flag.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                if (patch.DynamicProps is not null)
+                    arguments.Add(CreateArray(patch.DynamicProps.Value.Select(static name => StringLiteral(name))));
+            }
+
+            return new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createBlock", arguments)));
         }
 
         private static Expression CreateSlotProjectionExpression(
@@ -4005,6 +4619,7 @@ internal static class RenderEmitter
         }
     }
 
+    /// <summary>Groups a RenderTree region without creating an extra DOM element.</summary>
     private sealed class RegionFrame : Frame
     {
         public override Expression ToRenderExpression()
@@ -4016,6 +4631,7 @@ internal static class RenderEmitter
             };
     }
 
+    /// <summary>Describes lexical context needed while lowering one expression into the active frame.</summary>
     private sealed record EmitContext(
         BuilderBinding Builder,
         ImmutableDictionary<IParameterSymbol, IOperation> Substitutions,
@@ -4055,38 +4671,49 @@ internal static class RenderEmitter
         }
     }
 
-        private sealed record LoweredRender(
-            Expression RenderExpression,
-            ImmutableArray<Statement> PreludeStatements,
-            bool UsesFragment,
-            bool UsesStaticVNode,
-            bool UsesSlots,
-            ImmutableArray<ImportDeclaration> ImportDeclarations,
-            ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
+    /// <summary>Represents a render expression and statements needed to evaluate it once.</summary>
+    private sealed record LoweredRender(
+        Expression RenderExpression,
+        ImmutableArray<Statement> PreludeStatements,
+        ImmutableArray<RenderModuleHoist> ModuleHoists,
+        bool UsesFragment,
+        bool UsesStaticVNode,
+        bool UsesBlockTree,
+        bool UsesHandlerCache,
+        bool UsesSlots,
+        ImmutableArray<ImportDeclaration> ImportDeclarations,
+        ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
 
     private readonly record struct ComponentImportDescriptor(
         string ImportSpecifier,
         string ExportName);
 
+    /// <summary>Preserves an attribute pair until frame completion determines its Vue prop form.</summary>
     private sealed record DirectAttribute(
         string Name,
         Expression ValueExpression);
 
+    /// <summary>Discriminated source of props merged into an element or component.</summary>
     private abstract record PropSource;
 
+    /// <summary>Prop source backed by one ordinary Razor attribute.</summary>
     private sealed record AttributePropSource(DirectAttribute Attribute) : PropSource;
 
+    /// <summary>Prop source backed by Razor's splatted-attributes expression.</summary>
     private sealed record MultipleAttributesPropSource(Expression Expression) : PropSource;
 
+    /// <summary>Conditional prop source retained so the selected branch keeps source evaluation order.</summary>
     private sealed record ConditionalAttributesPropSource(
         Expression Condition,
         ImmutableArray<DirectAttribute> WhenTrue,
         ImmutableArray<DirectAttribute> WhenFalse) : PropSource;
 
+    /// <summary>Represents a slot callback and source order before attachment to a component vnode.</summary>
     private sealed record DirectSlot(
         string Name,
         DirectRenderFragment Fragment);
 
+    /// <summary>Models a RenderFragment value selected by conditional Razor control flow.</summary>
     private sealed record ConditionalRenderFragmentSelection(
         Expression Condition,
         DirectRenderFragment WhenTrue,
@@ -4113,6 +4740,7 @@ internal static class RenderEmitter
         bool UsesFragment,
         bool UsesStaticVNode);
 
+    /// <summary>Tracks a compile-time render-object local erased after direct lowering.</summary>
     private sealed record DirectRenderObject(
         ImmutableDictionary<IPropertySymbol, DirectRenderFragment> RenderFragments);
 
@@ -4124,6 +4752,23 @@ internal static class RenderEmitter
     private readonly record struct DirectEventModifier(
         Expression? PreventDefaultCondition,
         Expression? StopPropagationCondition);
+
+    /// <summary>Vue runtime patch-flag values used by the conservative direct-render subset.</summary>
+    private static class VuePatchFlags
+    {
+        public const int Class = 1 << 1;
+        public const int Style = 1 << 2;
+        public const int Props = 1 << 3;
+        public const int FullProps = 1 << 4;
+        public const int NeedPatch = 1 << 9;
+        public const int DynamicSlots = 1 << 10;
+    }
+
+    /// <summary>Captures one vnode's runtime update surface without widening C# semantics.</summary>
+    private readonly record struct DirectPatchMetadata(
+        bool RequiresBlock,
+        int Flag,
+        ImmutableArray<string>? DynamicProps);
 
     private static NullLiteral Null()
         => new("null");
@@ -4196,13 +4841,22 @@ internal static class RenderEmitter
 
 }
 
-/// <summary>Vue render lowering output together with imports and source-origin metadata.</summary>
+/// <summary>Vue render lowering output together with imports and source-origin metadata. Module builder 据此完成 setup/render framing。</summary>
+/// <remarks>Hoist metadata is file-level so the module builder can materialize it before setup.</remarks>
 internal sealed record RenderResult(
     Expression RenderExpression,
     ImmutableArray<Statement> PreludeStatements,
+    ImmutableArray<RenderModuleHoist> ModuleHoists,
     bool UsesFragment,
     bool UsesStaticVNode,
+    bool UsesBlockTree,
+    bool UsesHandlerCache,
     bool UsesProps,
     bool UsesSlots,
     ImmutableArray<ImportDeclaration> ImportDeclarations,
     ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
+
+/// <summary>Represents an immutable expression allocated once at module scope.</summary>
+internal sealed record RenderModuleHoist(
+    string Name,
+    Expression Initializer);

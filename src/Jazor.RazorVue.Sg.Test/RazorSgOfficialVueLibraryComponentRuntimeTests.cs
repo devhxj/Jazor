@@ -56,7 +56,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "selected: state.Selected", StringComparison.Ordinal);
         StringAssert.Contains(
             observation.ModuleText,
-            "\"onUpdate:selected\": __value => state.Selected = __value",
+            "\"onUpdate:selected\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.Selected = __value)",
             StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("selectedChanged", StringComparison.Ordinal), observation.ModuleText);
     }
@@ -272,7 +272,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
         StringAssert.Contains(observation.ModuleText, "modelValue: state.Selected", StringComparison.Ordinal);
         StringAssert.Contains(
             observation.ModuleText,
-            "\"onUpdate:modelValue\": __value => state.Selected = __value",
+            "\"onUpdate:modelValue\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.Selected = __value)",
             StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("selectedValue", StringComparison.Ordinal), observation.ModuleText);
     }
@@ -326,7 +326,9 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
             "import { Button } from \"tdesign-vue-next\";",
             StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "status: props.Status", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "h(Button, { status: props.Status })", StringComparison.Ordinal);
-        Assert.IsFalse(observation.ModuleText.Contains("createRenderContext", StringComparison.Ordinal), observation.ModuleText);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "openBlock(), createBlock(Button, { status: props.Status }, null, 8, [\"status\"])",
+            StringComparison.Ordinal);
     }
 }

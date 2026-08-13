@@ -48,6 +48,9 @@ internal static class ChildrenToSlotIntrinsic
 		IContext context,
 		out Expression? expression)
 	{
+		// Recognition is deliberately structural and narrow. Returning false delegates normal
+		// invocations to SemanticWalker; a recognized invalid slot contract gets an actionable error.
+		// 只认领精确的 Razor children 传输形状，避免把普通 h 调用误当作 slot protocol。
 		expression = null;
 		if (method.ContainingType is not { } containingType ||
 			!IsRenderFactoryMethod(method, containingType, context))
@@ -60,6 +63,9 @@ internal static class ChildrenToSlotIntrinsic
 			return false;
 
 
+		// Untyped implicit children would lose the authored slot ABI. Require an explicit slots
+		// object unless the component contract supplies a typed default slot declaration.
+		// 无类型 children 不能猜测 slot 名；只有已声明 typed default slot 才允许隐式传递。
 		var defaultSlotName = defaultSlotKind is DefaultSlotInvocationKind.TypedNoProps or DefaultSlotInvocationKind.TypedWithProps
 			? ValidateTypedDefaultSlotAuthoring(method, hostContracts, operation, context)
 			: throw context.CreateException(
@@ -446,6 +452,7 @@ internal static class ChildrenToSlotIntrinsic
 		return new ObjectExpression(NodeList.From<Node>(slotProperty));
 	}
 
+	/// <summary>Distinguishes the supported default-slot callback signatures before AST projection.</summary>
 	private enum DefaultSlotInvocationKind
 	{
 		UntypedNoProps,
@@ -454,6 +461,7 @@ internal static class ChildrenToSlotIntrinsic
 		TypedWithProps
 	}
 
+	/// <summary>Cached Roslyn symbols for the narrow Vue child/slot host contract.</summary>
 	private sealed class HostContracts
 	{
 		public HostContracts(
@@ -489,6 +497,7 @@ internal static class ChildrenToSlotIntrinsic
 		public INamedTypeSymbol? TypedComponent { get; }
 	}
 
+	/// <summary>Compiler services required by this intrinsic without depending on a concrete walker host.</summary>
 	private interface IContext
 	{
 		bool TryBuildImportedModuleMember(

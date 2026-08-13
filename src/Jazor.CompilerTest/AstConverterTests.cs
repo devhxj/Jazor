@@ -868,6 +868,60 @@ Assert.AreEqual(
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithNestedPrimaryConstructor_LowersInitializersAndCapturedParameters()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass(string title, bool isDone)
+                {
+                    public string Title { get; } = title;
+
+                    public bool IsDone { get; set; } = isDone;
+
+                    public string Describe()
+                    {
+                        return title + ":" + IsDone;
+                    }
+                }
+
+                public static NestedClass Create()
+                {
+                    return new NestedClass("todo", true);
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var titleBackingField = PropertyBackingFieldName(nestedClass, "Title");
+        var isDoneBackingField = PropertyBackingFieldName(nestedClass, "IsDone");
+        var titleParameter = nestedClass.InstanceConstructors.Single().Parameters[0];
+        var isDoneParameter = nestedClass.InstanceConstructors.Single().Parameters[1];
+        var titleStorage = "$jazorPrimary_" + Format.HashName(
+            titleParameter.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_');
+        var isDoneStorage = "$jazorPrimary_" + Format.HashName(
+            isDoneParameter.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_');
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, $"#{titleBackingField} = null;", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"#{isDoneBackingField} = false;", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"#{titleStorage} = null;", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"#{isDoneStorage} = false;", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"constructor(title, isDone) {{\n    this.#{titleStorage} = title;", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"this.#{isDoneStorage} = isDone;", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"this.#{titleBackingField} = this.#{titleStorage};", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"this.#{isDoneBackingField} = this.#{isDoneStorage};", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return this.#{titleStorage} + \":\" + this.IsDone;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return new NestedClass(\"todo\", true);", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithNestedClassMultipleInstanceConstructors_GeneratesDispatcher()
     {
         var code = """

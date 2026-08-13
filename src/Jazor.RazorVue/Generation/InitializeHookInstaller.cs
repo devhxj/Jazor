@@ -11,6 +11,7 @@ namespace Jazor.RazorVue.Generation;
 /// <summary>
 /// Installs the Roslyn initialization hook that exposes the post-Razor-SG compilation.
 /// The hook is isolated here because its runtime patching is outside normal generator lowering.
+/// 此处维护进程级安装状态；tail output 只在成功完成的 Compilation 上执行。
 /// </summary>
 internal static class InitializeHookInstaller
 {

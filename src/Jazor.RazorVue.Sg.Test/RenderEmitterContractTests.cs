@@ -662,10 +662,14 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(emitted, failure);
         Assert.IsNotNull(result);
         var output = result.RenderExpression.ToKnRECMAScript();
-        StringAssert.Contains(output, "data-indexer", StringComparison.Ordinal);
-        StringAssert.Contains(output, "indexer-value", StringComparison.Ordinal);
-        StringAssert.Contains(output, "data-add", StringComparison.Ordinal);
-        StringAssert.Contains(output, "add-value", StringComparison.Ordinal);
+        var hoists = string.Join(
+            Environment.NewLine,
+            result.ModuleHoists.Select(static hoist => hoist.Initializer.ToKnRECMAScript()));
+        StringAssert.Contains(output, "__jazor$hoistedProps0", StringComparison.Ordinal);
+        StringAssert.Contains(hoists, "data-indexer", StringComparison.Ordinal);
+        StringAssert.Contains(hoists, "indexer-value", StringComparison.Ordinal);
+        StringAssert.Contains(hoists, "data-add", StringComparison.Ordinal);
+        StringAssert.Contains(hoists, "add-value", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -880,7 +884,10 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(emitted, failure);
         Assert.IsNotNull(result);
         var output = result.RenderExpression.ToKnRECMAScript();
-        StringAssert.Contains(output, "typeof-component", StringComparison.Ordinal);
+        var hoists = string.Join(
+            Environment.NewLine,
+            result.ModuleHoists.Select(static hoist => hoist.Initializer.ToKnRECMAScript()));
+        StringAssert.Contains(hoists, "typeof-component", StringComparison.Ordinal);
         var imports = string.Join(
             Environment.NewLine,
             result.ImportDeclarations.Select(static declaration => declaration.ToKnRECMAScript()));
@@ -1293,7 +1300,10 @@ public sealed class RenderEmitterContractTests
         var prelude = string.Join(
             Environment.NewLine,
             result.PreludeStatements.Select(static statement => statement.ToKnRECMAScript()));
-        StringAssert.Contains(prelude, "<i>first</i>", StringComparison.Ordinal);
+        var hoists = string.Join(
+            Environment.NewLine,
+            result.ModuleHoists.Select(static hoist => hoist.Initializer.ToKnRECMAScript()));
+        StringAssert.Contains(hoists, "<i>first</i>", StringComparison.Ordinal);
         StringAssert.Contains(prelude, "depth - 1", StringComparison.Ordinal);
     }
 
@@ -1332,6 +1342,105 @@ public sealed class RenderEmitterContractTests
         StringAssert.Contains(output, "disabled", StringComparison.Ordinal);
         StringAssert.Contains(output, "required", StringComparison.Ordinal);
         StringAssert.Contains(output, "data-state", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_TracksRenderLocalEventHandlerInDynamicProps()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            System.Action handler = () => OnClick();
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "onclick", handler);
+            builder.AddAttribute(2, "value", Value);
+            builder.CloseElement();
+            """,
+            """
+            [Parameter] public string Value { get; set; } = string.Empty;
+
+            private void OnClick()
+            {
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        StringAssert.Contains(
+            result.RenderExpression.ToKnRECMAScript(),
+            "createElementBlock(\"input\", { onClick: handler, value: props.Value }, null, 8, [\"onClick\", \"value\"])",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_TracksGenericRenderFragmentParameterEventHandlerInDynamicProps()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "RenderFragment<System.Action> template = callback => child => { child.OpenElement(0, \"button\"); child.AddAttribute(1, \"onclick\", callback); child.CloseElement(); }; builder.AddContent(0, template.Invoke(OnClick));",
+            "private void OnClick() { }");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "onClick: callback", StringComparison.Ordinal);
+        StringAssert.Contains(output, "[\"onClick\"]", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_UsesComponentPropsPatchFlagForDynamicClassAndStyle()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.OpenComponent<ChildComponent>(0); builder.AddComponentParameter(1, \"Class\", CssClass); builder.AddComponentParameter(2, \"Style\", CssStyle); builder.CloseComponent();",
+            """
+            [Parameter] public string CssClass { get; set; } = string.Empty;
+            [Parameter] public string CssStyle { get; set; } = string.Empty;
+
+            [global::ECMAScript.ECMAScriptModule("./components/patch-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter, global::ECMAScript.ECMAScriptName("class")] public string Class { get; set; } = string.Empty;
+                [Parameter, global::ECMAScript.ECMAScriptName("style")] public string Style { get; set; } = string.Empty;
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "createBlock(", StringComparison.Ordinal);
+        StringAssert.Contains(
+            output,
+            "{ class: props.CssClass, style: props.CssStyle }, null, 8, [\"class\", \"style\"])",
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(", null, 6", output, StringComparison.Ordinal);
     }
 
     private static Fixture CreateFixture()

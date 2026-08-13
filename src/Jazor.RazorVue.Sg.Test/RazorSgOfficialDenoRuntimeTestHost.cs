@@ -112,6 +112,18 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     return { name: "__static", props: { html, count }, children: html };
                 }
 
+                export function openBlock() {
+                    return null;
+                }
+
+                export function createElementBlock(name, props, children, patchFlag, dynamicProps) {
+                    return { name, props, children, patchFlag, dynamicProps, block: "element" };
+                }
+
+                export function createBlock(name, props, children, patchFlag, dynamicProps) {
+                    return { name, props, children, patchFlag, dynamicProps, block: "component" };
+                }
+
                 export function mergeProps(...sources) {
                     return Object.assign({}, ...sources.filter(source => source != null));
                 }

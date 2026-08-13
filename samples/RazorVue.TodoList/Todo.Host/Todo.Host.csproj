@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <JazorMode>debug</JazorMode>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS0626</NoWarn>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\src\Jazor\buildTransitive\Jazor.props" />
+
+  <ItemGroup>
+    <Compile Remove="jazor\**" />
+    <Content Remove="jazor\**" />
+    <EmbeddedResource Remove="jazor\**" />
+    <None Remove="jazor\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <JazorLibraryManifest Include="..\..\..\src\ECMAScript.Vue\manifest.json" />
+    <ProjectReference Include="..\Todo.Library\Todo.Library.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.Vue\ECMAScript.Vue.csproj" />
+    <ProjectReference Include="..\..\..\src\ECMAScript.Style\ECMAScript.Style.csproj" />
+    <ProjectReference Include="..\..\..\src\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\src\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
+    <ProjectReference Include="..\..\..\src\Jazor.CLR\Jazor.CLR.csproj" />
+    <ProjectReference Include="..\..\..\src\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\src\Jazor.Compiler\Jazor.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\src\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="RegisterLocalRazorVueArtifactProvider" BeforeTargets="JazorDebug;JazorRelease">
+    <ItemGroup>
+      <JazorArtifactProviderAssembly Include="$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll"
+                                     Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="..\..\..\src\Jazor\buildTransitive\Jazor.targets" />
+</Project>

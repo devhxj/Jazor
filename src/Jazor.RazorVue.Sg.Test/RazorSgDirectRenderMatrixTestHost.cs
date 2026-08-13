@@ -37,8 +37,12 @@ internal static class RazorSgDirectRenderMatrixTestHost
         return new DirectRenderObservation(
             result.RenderExpression.ToKnRECMAScript(),
             string.Join("\n", result.PreludeStatements.Select(static statement => statement.ToKnRECMAScript())),
+            string.Join("\n", result.ModuleHoists.Select(static hoist =>
+                "const " + hoist.Name + " = " + hoist.Initializer.ToKnRECMAScript() + ";")),
             result.UsesFragment,
             result.UsesStaticVNode,
+            result.UsesBlockTree,
+            result.UsesHandlerCache,
             result.UsesProps,
             result.UsesSlots,
             string.Join("\n", result.ImportDeclarations.Select(static declaration => declaration.ToKnRECMAScript())),
@@ -168,12 +172,19 @@ internal static class RazorSgDirectRenderMatrixTestHost
 internal sealed record DirectRenderObservation(
     string RenderExpression,
     string Prelude,
+    string ModuleHoists,
     bool UsesFragment,
     bool UsesStaticVNode,
+    bool UsesBlockTree,
+    bool UsesHandlerCache,
     bool UsesProps,
     bool UsesSlots,
     string Imports,
-    int ImportCount);
+    int ImportCount)
+{
+    public string ArtifactExpression
+        => ModuleHoists + "\n" + Prelude + "\n" + RenderExpression;
+}
 
 public sealed record DirectRenderCase(
     string Id,
@@ -343,6 +354,39 @@ internal static partial class DirectRenderCaseCatalog
                 usesFragment: false,
                 usesStaticVNode: true);
         }
+
+        // AddMarkupContent accepts raw HTML strings, unlike AddContent(string). The literal is
+        // therefore safe to construct once at module scope as a static VNode.
+        Add(
+            cases,
+            "markup_static_hoist",
+            "builder.AddMarkupContent(0, \"<strong>module-hoisted</strong>\");",
+            "const __jazor$hoistedStatic0 = createStaticVNode",
+            "__jazor$hoistedStatic0",
+            usesFragment: false,
+            usesStaticVNode: true);
+
+        // A literal ordinary attribute object is module-static too. Dynamic property cases are
+        // covered separately and must continue to allocate in the render function.
+        Add(
+            cases,
+            "static_props_hoist",
+            "builder.OpenElement(0, \"article\"); builder.AddAttribute(1, \"class\", \"summary\"); builder.AddAttribute(2, \"data-kind\", \"fixed\"); builder.CloseElement();",
+            "const __jazor$hoistedProps0 = { class: \"summary\", \"data-kind\": \"fixed\" };",
+            "h(\"article\", __jazor$hoistedProps0",
+            usesFragment: false,
+            usesStaticVNode: false);
+
+        Add(
+            cases,
+            "dynamic_prop_block",
+            "builder.OpenElement(0, \"input\"); builder.AddAttribute(1, \"value\", Value); builder.CloseElement();",
+            "openBlock(), createElementBlock(\"input\", { value: props.Value }, null, 8, [\"value\"])",
+            additionalExpectedFragment: null,
+            usesFragment: false,
+            usesStaticVNode: false,
+            members: "[Parameter] public string Value { get; set; } = \"\";",
+            usesProps: true);
     }
 
     private static void AddElementCases(List<DirectRenderCase> cases)

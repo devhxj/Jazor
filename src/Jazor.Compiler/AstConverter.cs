@@ -8,6 +8,7 @@ using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Immutable;
 using System.Collections.Generic;
 using System.Globalization;
@@ -42,10 +43,41 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 {
     private sealed record MemberConstructorLowering(
         IMethodSymbol Symbol,
-        ConstructorInitializerSyntax? InitializerSyntax,
+        ImmutableArray<ArgumentSyntax> BaseArguments,
         IMethodSymbol? BaseConstructorSymbol,
         FunctionBody Body,
-        string HelperName);
+        string HelperName,
+        ImmutableArray<PrimaryConstructorParameterStorage> PrimaryParameterStorage);
+
+    private sealed record PrimaryConstructorParameterStorage(
+        IParameterSymbol Parameter,
+        string FieldName);
+
+    private sealed record PrimaryConstructorInitializer(
+        IFieldSymbol Field,
+        EqualsValueClauseSyntax Syntax);
+
+    /// <summary>
+    /// Projects captured primary-constructor parameters onto compiler-owned private storage.
+    /// Primary constructor syntax has no Roslyn constructor-body operation, so later instance
+    /// methods need an explicit carrier after the generated JavaScript constructor returns.
+    /// </summary>
+    private sealed class PrimaryConstructorParameterSemanticWalkerHost(
+        IReadOnlyDictionary<string, string> storage) : SemanticWalkerHost
+    {
+        public override Expression? RewriteParameterReference(
+            IParameterReferenceOperation operation,
+            SenseArgument argument)
+            => storage.TryGetValue(
+                    operation.Parameter.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                    out var fieldName)
+                ? new MemberExpression(
+                    new ThisExpression(),
+                    new PrivateIdentifier(fieldName),
+                    computed: false,
+                    optional: false)
+                : null;
+    }
 
     private readonly INamedTypeSymbol _classSymbol = classSymbol;
     private readonly SemanticModel _classModel = classModel;
@@ -243,11 +275,72 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
     }
 
-    private SemanticWalker CreateSemanticWalker(CancellationToken cancellationToken)
-        => new(_classSymbol, ModuleDeclaredNames, cancellationToken)
+    private SemanticWalker CreateSemanticWalker(
+        CancellationToken cancellationToken,
+        SemanticWalkerHost? host = null,
+        INamedTypeSymbol? runtimeType = null,
+        bool rewritePrimaryConstructorParameters = true)
+    {
+        SemanticWalkerHost? primaryConstructorHost = null;
+        if (rewritePrimaryConstructorParameters && runtimeType is not null)
         {
-            Host = _semanticWalkerHost
+            var parameterStorage = GetPrimaryConstructorParameterStorage(runtimeType);
+            if (parameterStorage.Length > 0)
+            {
+                primaryConstructorHost = new PrimaryConstructorParameterSemanticWalkerHost(
+                    parameterStorage.ToDictionary(
+                        static storage => storage.Parameter.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                        static storage => storage.FieldName,
+                        StringComparer.Ordinal));
+            }
+        }
+
+        var effectiveHost = CombineSemanticWalkerHosts(primaryConstructorHost, host, _semanticWalkerHost);
+        return new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken)
+        {
+            Host = effectiveHost
         };
+    }
+
+    private static SemanticWalkerHost? CombineSemanticWalkerHosts(params SemanticWalkerHost?[] hosts)
+    {
+        var effectiveHosts = hosts
+            .Where(static host => host is not null)
+            .Cast<SemanticWalkerHost>()
+            .ToArray();
+        return effectiveHosts.Length switch
+        {
+            0 => null,
+            1 => effectiveHosts[0],
+            _ => new CompositeSemanticWalkerHost(effectiveHosts)
+        };
+    }
+
+    private ImmutableArray<PrimaryConstructorParameterStorage> GetPrimaryConstructorParameterStorage(INamedTypeSymbol runtimeType)
+    {
+        foreach (var reference in runtimeType.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not ClassDeclarationSyntax { ParameterList: { } parameterList } declaration)
+                continue;
+
+            var semanticModel = GetSemanticModel(declaration);
+            var storage = ImmutableArray.CreateBuilder<PrimaryConstructorParameterStorage>(parameterList.Parameters.Count);
+            foreach (var parameter in parameterList.Parameters)
+            {
+                if (semanticModel.GetDeclaredSymbol(parameter) is not IParameterSymbol parameterSymbol)
+                    continue;
+
+                storage.Add(new PrimaryConstructorParameterStorage(
+                    parameterSymbol.OriginalDefinition,
+                    "$jazorPrimary_" + Format.HashName(
+                        parameterSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_')));
+            }
+
+            return storage.MoveToImmutable();
+        }
+
+        return ImmutableArray<PrimaryConstructorParameterStorage>.Empty;
+    }
 
     /// <summary>
     /// 为模块输出阶段创建共享导入上下文。
@@ -548,10 +641,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             null,
             NodeList.From<ImportAttribute>([]));
 
-    private PropertyDefinition ConvertMemberField(IFieldSymbol symbol)
+    private PropertyDefinition ConvertMemberField(
+        IFieldSymbol symbol,
+        bool suppressInitializer = false)
     {
         var name = GetMemberFieldDeclaredName(symbol);
-        var init = GetMemberFieldInitializer(symbol);
+        var init = suppressInitializer
+            ? GetMemberFieldDefaultValue(symbol)
+            : GetMemberFieldInitializer(symbol);
 
         Expression identifier = ShouldBePrivate(symbol.DeclaredAccessibility)
             ? new PrivateIdentifier(name)
@@ -563,6 +660,21 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             isStatic: symbol.IsStatic,
             decorators: NodeList.Empty<Decorator>()
         );
+    }
+
+    private Expression? GetMemberFieldDefaultValue(IFieldSymbol symbol)
+    {
+        if (symbol.HasConstantValue)
+            return CreateEqualsValueClauseSyntaxLiteral(symbol.Type.SpecialType, symbol.ConstantValue);
+
+        // Field declarations and auto-property backing fields share the compiler-owned default
+        // lowering. Do not synthesize a scalar fallback here: CLR carriers such as DateTime,
+        // long, and tuple values need SemanticWalker to preserve imports and representation.
+        var walker = CreateSemanticWalker(CancellationToken.None);
+        var argument = CreateImportAwareArgument(Sense.Any);
+        var defaultValue = walker.BuildImplicitMemberFieldDefaultValue(symbol, argument);
+        MergeImports(argument);
+        return defaultValue;
     }
 
     private Expression? GetMemberFieldInitializer(IFieldSymbol symbol)
@@ -592,9 +704,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             }
         }
 
+        return GetMemberFieldDefaultValue(symbol);
+    }
+
+    private Expression GetImplicitMemberFieldDefaultValue(IParameterSymbol parameter)
+    {
+        // Captured primary-constructor parameters become private JS class fields. Their initial
+        // value is usually overwritten immediately, but it must still use CLR default semantics
+        // because class-field initialization is observable in the generated runtime shape.
         var walker = CreateSemanticWalker(CancellationToken.None);
         var argument = CreateImportAwareArgument(Sense.Any);
-        var defaultValue = walker.BuildImplicitMemberFieldDefaultValue(symbol, argument);
+        var defaultValue = walker.BuildImplicitPrimaryConstructorParameterDefaultValue(parameter, argument);
         MergeImports(argument);
         return defaultValue;
     }
@@ -602,11 +722,18 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private FunctionBody ConvertMemberOperationToFunctionBody(
         IOperation operation,
         bool returnsVoid,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        SemanticWalkerHost? host = null,
+        INamedTypeSymbol? runtimeType = null,
+        bool rewritePrimaryConstructorParameters = true)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var walker = CreateSemanticWalker(cancellationToken);
+        var walker = CreateSemanticWalker(
+            cancellationToken,
+            host,
+            runtimeType,
+            rewritePrimaryConstructorParameters);
         var argument = CreateImportAwareArgument(Sense.Any);
         var visited = walker.Visit(operation, argument)!;
         MergeImports(argument);
@@ -663,7 +790,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         FunctionBody body;
         if (operation is not null)
         {
-            body = ConvertMemberOperationToFunctionBody(operation, symbol.ReturnsVoid, cancellationToken);
+            body = ConvertMemberOperationToFunctionBody(
+                operation,
+                symbol.ReturnsVoid,
+                cancellationToken,
+                runtimeType: symbol.ContainingType);
         }
         // Body-less property accessors only map to auto-properties.
         else if (isProperty)
@@ -733,7 +864,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     }
 
 
-    private List<ClassProperty> ConvertMemberProperty(IPropertySymbol symbol, CancellationToken cancellationToken)
+    private List<ClassProperty> ConvertMemberProperty(
+        IPropertySymbol symbol,
+        CancellationToken cancellationToken,
+        bool suppressInitializer = false)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -749,7 +883,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 .FirstOrDefault();
         if (backingFieldSymbol is not null)
         {
-            var backingFieldDecl = ConvertMemberField(backingFieldSymbol);
+            var backingFieldDecl = ConvertMemberField(backingFieldSymbol, suppressInitializer);
             properties.Add(backingFieldDecl);
         }
 
@@ -1011,7 +1145,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         var body = baseType is null
             ? lowering.Body
-            : PrependSuperConstructorCall(lowering.Body, lowering.InitializerSyntax, lowering.BaseConstructorSymbol, cancellationToken);
+            : PrependSuperConstructorCall(lowering.Body, lowering.BaseArguments, lowering.BaseConstructorSymbol, cancellationToken);
 
         var writableParameters = lowering.Symbol.Parameters
             .Where(static parameter => parameter.RefKind is RefKind.Ref or RefKind.Out)
@@ -1081,7 +1215,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 branchStatements.Add(binding);
 
             if (baseType is not null)
-                branchStatements.Add(CreateSuperConstructorCallStatement(lowering.InitializerSyntax, lowering.BaseConstructorSymbol, cancellationToken));
+                branchStatements.Add(CreateSuperConstructorCallStatement(lowering.BaseArguments, lowering.BaseConstructorSymbol, cancellationToken));
 
             branchStatements.Add(new NonSpecialExpressionStatement(
                 new CallExpression(
@@ -1159,6 +1293,15 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var nodes = new List<Node>();
         var constructorLowerings = GetMemberConstructorLowerings(symbol, baseType, cancellationToken);
         var hasExplicitConstructor = constructorLowerings.Count > 0;
+        var hasPrimaryConstructor = constructorLowerings
+            .SelectMany(static lowering => lowering.PrimaryParameterStorage)
+            .Any();
+        var primaryConstructorInitializerFields = hasPrimaryConstructor
+            ? new HashSet<IFieldSymbol>(
+                GetPrimaryConstructorInitializers(symbol)
+                    .Select(static initializer => initializer.Field.OriginalDefinition),
+                SymbolEqualityComparer.Default)
+            : new HashSet<IFieldSymbol>(SymbolEqualityComparer.Default);
         var constructorsEmitted = false;
 
         foreach (var member in symbol.GetMembers())
@@ -1170,20 +1313,39 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
             switch (member)
             {
-                case IFieldSymbol field when field.AssociatedSymbol is IPropertySymbol && field.IsImplicitlyDeclared:
-                case IFieldSymbol eventBackingField when eventBackingField.AssociatedSymbol is IEventSymbol && eventBackingField.IsImplicitlyDeclared:
+                case IFieldSymbol field when field.IsImplicitlyDeclared:
                     break;
                 case IFieldSymbol field:
-                    nodes.Add(ConvertMemberField(field));
+                    nodes.Add(ConvertMemberField(
+                        field,
+                        suppressInitializer: primaryConstructorInitializerFields.Contains(field.OriginalDefinition)));
                     break;
                 case IPropertySymbol prop:
-                    nodes.AddRange(ConvertMemberProperty(prop, cancellationToken));
+                    nodes.AddRange(ConvertMemberProperty(
+                        prop,
+                        cancellationToken,
+                        suppressInitializer: HasPrimaryConstructorInitializer(
+                            prop,
+                            primaryConstructorInitializerFields)));
                     break;
                 case IMethodSymbol accessor when accessor.AssociatedSymbol is IPropertySymbol:
                     break;
                 case IMethodSymbol ctor when ctor.MethodKind == MethodKind.Constructor:
                     if (!ctor.IsImplicitlyDeclared && !constructorsEmitted)
                     {
+                        foreach (var parameterStorage in constructorLowerings
+                                     .SelectMany(static lowering => lowering.PrimaryParameterStorage)
+                                     .GroupBy(static storage => storage.FieldName, StringComparer.Ordinal)
+                                     .Select(static group => group.First()))
+                        {
+                            nodes.Add(new PropertyDefinition(
+                                key: new PrivateIdentifier(parameterStorage.FieldName),
+                                value: GetImplicitMemberFieldDefaultValue(parameterStorage.Parameter),
+                                computed: false,
+                                isStatic: false,
+                                decorators: NodeList.Empty<Decorator>()));
+                        }
+
                         if (constructorLowerings.Count == 1)
                         {
                             nodes.Add(ConvertMemberConstructor(constructorLowerings[0], baseType, cancellationToken));
@@ -1251,6 +1413,21 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         );
 
         return declaration;
+    }
+
+    private static bool HasPrimaryConstructorInitializer(
+        IPropertySymbol property,
+        ISet<IFieldSymbol> primaryConstructorInitializerFields)
+    {
+        if (property.IsStatic || primaryConstructorInitializerFields.Count == 0)
+            return false;
+
+        var backingField = property.ContainingType
+            .GetMembers($"<{property.Name}>k__BackingField")
+            .OfType<IFieldSymbol>()
+            .FirstOrDefault();
+        return backingField is not null &&
+               primaryConstructorInitializerFields.Contains(backingField.OriginalDefinition);
     }
 
     private void ValidateRuntimeClassJavaScriptNameScope(INamedTypeSymbol runtimeType)
@@ -1360,37 +1537,205 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         cancellationToken.ThrowIfCancellationRequested();
 
         ConstructorDeclarationSyntax? constructorSyntax = null;
-        ConstructorInitializerSyntax? initializerSyntax = null;
+        ImmutableArray<ArgumentSyntax> baseArguments = ImmutableArray<ArgumentSyntax>.Empty;
         IMethodSymbol? baseConstructorSymbol = null;
         foreach (var reference in symbol.DeclaringSyntaxReferences)
         {
-            if (reference.GetSyntax() is not ConstructorDeclarationSyntax ctorDecl)
-                continue;
+            switch (reference.GetSyntax())
+            {
+                case ConstructorDeclarationSyntax ctorDecl:
+                    constructorSyntax = ctorDecl;
+                    if (ctorDecl.Initializer is not null &&
+                        (baseType is null || !ctorDecl.Initializer.ThisOrBaseKeyword.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.BaseKeyword)))
+                    {
+                        throw new NotSupportedException($"Jazor member class does not support constructor initializer on {symbol.Name}.");
+                    }
 
-            constructorSyntax = ctorDecl;
-            initializerSyntax = ctorDecl.Initializer;
-            if (ctorDecl.Initializer is not null &&
-                (baseType is null || !ctorDecl.Initializer.ThisOrBaseKeyword.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.BaseKeyword)))
-                throw new NotSupportedException($"Jazor member class does not support constructor initializer on {symbol.Name}.");
+                    if (ctorDecl.Initializer is not null)
+                    {
+                        baseArguments = ctorDecl.Initializer.ArgumentList.Arguments.ToImmutableArray();
+                        baseConstructorSymbol = GetSemanticModel(ctorDecl.Initializer).GetSymbolInfo(ctorDecl.Initializer).Symbol as IMethodSymbol;
+                    }
 
-            if (ctorDecl.Initializer is not null)
-                baseConstructorSymbol = GetSemanticModel(ctorDecl.Initializer).GetSymbolInfo(ctorDecl.Initializer).Symbol as IMethodSymbol;
+                    break;
+                case ClassDeclarationSyntax { ParameterList: { } } primaryConstructorDeclaration:
+                    return PreparePrimaryConstructorLowering(
+                        symbol,
+                        primaryConstructorDeclaration,
+                        baseType,
+                        cancellationToken);
+            }
 
-            break;
+            if (constructorSyntax is not null)
+                break;
         }
 
-        var declaredConstructor = constructorSyntax!;
+        if (constructorSyntax is null)
+            throw new NotSupportedException($"Jazor member class constructor {symbol.Name} has no supported source declaration.");
+
+        var declaredConstructor = constructorSyntax;
         var operation = declaredConstructor.Body is { } bodySyntax
             ? GetSemanticModel(bodySyntax).GetOperation(bodySyntax)!
             : GetSemanticModel(declaredConstructor.ExpressionBody!).GetOperation(declaredConstructor.ExpressionBody!)!;
-        var body = ConvertMemberOperationToFunctionBody(operation, returnsVoid: true, cancellationToken);
+        var body = ConvertMemberOperationToFunctionBody(
+            operation,
+            returnsVoid: true,
+            cancellationToken,
+            runtimeType: symbol.ContainingType);
 
         return new MemberConstructorLowering(
             Symbol: symbol,
-            InitializerSyntax: initializerSyntax,
+            BaseArguments: baseArguments,
             BaseConstructorSymbol: baseConstructorSymbol,
             Body: body,
-            HelperName: GetMemberConstructorHelperName(symbol));
+            HelperName: GetMemberConstructorHelperName(symbol),
+            PrimaryParameterStorage: ImmutableArray<PrimaryConstructorParameterStorage>.Empty);
+    }
+
+    private MemberConstructorLowering PreparePrimaryConstructorLowering(
+        IMethodSymbol symbol,
+        ClassDeclarationSyntax declaration,
+        INamedTypeSymbol? baseType,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var parameterStorage = GetPrimaryConstructorParameterStorage(symbol.ContainingType);
+        var storageByParameter = parameterStorage.ToDictionary(
+            static storage => storage.Parameter.OriginalDefinition.ToDisplayString(Format.NameFormat),
+            static storage => storage.FieldName,
+            StringComparer.Ordinal);
+        var parameterHost = new PrimaryConstructorParameterSemanticWalkerHost(storageByParameter);
+        var statements = new List<Statement>();
+
+        // Primary constructor syntax has no IConstructorBodyOperation. Rebuild only the source
+        // initialization phase here, in declaration order, and let SemanticWalker own every RHS.
+        // The private slots are assigned first so later initializer expressions observe the same
+        // captured parameter values as C# instance members.
+        foreach (var storage in parameterStorage)
+        {
+            statements.Add(new NonSpecialExpressionStatement(
+                new AssignmentExpression(
+                    Operator.Assignment,
+                    new MemberExpression(
+                        new ThisExpression(),
+                        new PrivateIdentifier(storage.FieldName),
+                        computed: false,
+                        optional: false),
+                    new Identifier(storage.Parameter.Name))));
+        }
+
+        foreach (var initializer in GetPrimaryConstructorInitializers(symbol.ContainingType))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var expression = ConvertPrimaryConstructorInitializerExpression(
+                initializer.Syntax,
+                parameterHost,
+                symbol.ContainingType,
+                cancellationToken);
+            statements.Add(new NonSpecialExpressionStatement(
+                new AssignmentExpression(
+                    Operator.Assignment,
+                    BuildFieldAccess(initializer.Field),
+                    expression)));
+        }
+
+        var (baseArguments, baseConstructorSymbol) = GetPrimaryConstructorBaseInvocation(
+            declaration,
+            baseType);
+        return new MemberConstructorLowering(
+            Symbol: symbol,
+            BaseArguments: baseArguments,
+            BaseConstructorSymbol: baseConstructorSymbol,
+            Body: new FunctionBody(NodeList.From(statements), strict: true),
+            HelperName: GetMemberConstructorHelperName(symbol),
+            PrimaryParameterStorage: parameterStorage);
+    }
+
+    private ImmutableArray<PrimaryConstructorInitializer> GetPrimaryConstructorInitializers(INamedTypeSymbol runtimeType)
+    {
+        var initializers = new List<PrimaryConstructorInitializer>();
+        foreach (var member in runtimeType.GetMembers())
+        {
+            switch (member)
+            {
+                case IFieldSymbol { IsStatic: false, IsImplicitlyDeclared: false } field:
+                    foreach (var reference in field.DeclaringSyntaxReferences)
+                    {
+                        if (reference.GetSyntax() is VariableDeclaratorSyntax { Initializer: { } initializer })
+                            initializers.Add(new PrimaryConstructorInitializer(field, initializer));
+                    }
+
+                    break;
+                case IPropertySymbol property when !property.IsStatic:
+                    foreach (var reference in property.DeclaringSyntaxReferences)
+                    {
+                        if (reference.GetSyntax() is PropertyDeclarationSyntax { Initializer: { } initializer })
+                        {
+                            var backingField = property.ContainingType
+                                .GetMembers($"<{property.Name}>k__BackingField")
+                                .OfType<IFieldSymbol>()
+                                .FirstOrDefault();
+                            if (backingField is not null)
+                                initializers.Add(new PrimaryConstructorInitializer(backingField, initializer));
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+        return initializers
+            .OrderBy(static initializer => initializer.Syntax.SpanStart)
+            .ToImmutableArray();
+    }
+
+    private Expression ConvertPrimaryConstructorInitializerExpression(
+        EqualsValueClauseSyntax syntax,
+        SemanticWalkerHost parameterHost,
+        INamedTypeSymbol runtimeType,
+        CancellationToken cancellationToken)
+    {
+        var operation = GetSemanticModel(syntax.Value).GetOperation(syntax.Value)!;
+        var walker = CreateSemanticWalker(
+            cancellationToken,
+            parameterHost,
+            runtimeType,
+            rewritePrimaryConstructorParameters: false);
+        var argument = CreateImportAwareArgument(Sense.Any);
+        var expression = (Expression)walker.Visit(operation, argument)!;
+        MergeImports(argument);
+        return MaterializeExpression(expression, argument);
+    }
+
+    private Expression BuildFieldAccess(IFieldSymbol field)
+    {
+        var fieldName = GetMemberFieldDeclaredName(field);
+        return new MemberExpression(
+            new ThisExpression(),
+            ShouldBePrivate(field.DeclaredAccessibility)
+                ? new PrivateIdentifier(fieldName)
+                : new Identifier(fieldName),
+            computed: false,
+            optional: false);
+    }
+
+    private (ImmutableArray<ArgumentSyntax> Arguments, IMethodSymbol? Constructor) GetPrimaryConstructorBaseInvocation(
+        ClassDeclarationSyntax declaration,
+        INamedTypeSymbol? baseType)
+    {
+        var baseTypeSyntax = declaration.BaseList?.Types
+            .OfType<PrimaryConstructorBaseTypeSyntax>()
+            .SingleOrDefault();
+        if (baseTypeSyntax is null)
+            return (ImmutableArray<ArgumentSyntax>.Empty, null);
+
+        if (baseType is null)
+            throw new NotSupportedException($"Jazor member class does not support primary constructor base initializer on {declaration.Identifier.ValueText}.");
+
+        return (
+            baseTypeSyntax.ArgumentList?.Arguments.ToImmutableArray() ?? ImmutableArray<ArgumentSyntax>.Empty,
+            GetSemanticModel(baseTypeSyntax).GetSymbolInfo(baseTypeSyntax).Symbol as IMethodSymbol);
     }
 
     private IEnumerable<Statement> BuildConstructorDispatcherParameterBindings(
@@ -1427,13 +1772,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     }
 
     private Statement CreateSuperConstructorCallStatement(
-        ConstructorInitializerSyntax? initializerSyntax,
+        ImmutableArray<ArgumentSyntax> baseArguments,
         IMethodSymbol? baseConstructorSymbol,
         CancellationToken cancellationToken)
         => new NonSpecialExpressionStatement(
             new CallExpression(
                 new Super(),
-                CreateConstructorInitializerArguments(initializerSyntax, baseConstructorSymbol, cancellationToken),
+                CreateConstructorInitializerArguments(baseArguments, baseConstructorSymbol, cancellationToken),
                 optional: false));
 
     private static string GetMemberConstructorHelperName(IMethodSymbol symbol)
@@ -1556,7 +1901,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private FunctionBody PrependSuperConstructorCall(
         FunctionBody body,
-        ConstructorInitializerSyntax? initializerSyntax,
+        ImmutableArray<ArgumentSyntax> baseArguments,
         IMethodSymbol? baseConstructorSymbol,
         CancellationToken cancellationToken)
     {
@@ -1567,7 +1912,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             new NonSpecialExpressionStatement(
                 new CallExpression(
                     new Super(),
-                    CreateConstructorInitializerArguments(initializerSyntax, baseConstructorSymbol, cancellationToken),
+                    CreateConstructorInitializerArguments(baseArguments, baseConstructorSymbol, cancellationToken),
                     optional: false))
         };
 
@@ -1576,15 +1921,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     }
 
     private NodeList<Expression> CreateConstructorInitializerArguments(
-        ConstructorInitializerSyntax? initializerSyntax,
+        ImmutableArray<ArgumentSyntax> baseArguments,
         IMethodSymbol? baseConstructorSymbol,
         CancellationToken cancellationToken)
     {
-        var arguments = initializerSyntax is null
-            ? []
-            : initializerSyntax.ArgumentList.Arguments
-                .Select(arg => ConvertConstructorInitializerArgument(arg, cancellationToken))
-                .ToList();
+        var arguments = baseArguments
+            .Select(argument => ConvertConstructorInitializerArgument(argument, cancellationToken))
+            .ToList();
 
         if (baseConstructorSymbol is not null && HasMultipleExplicitConstructors(baseConstructorSymbol.ContainingType))
             arguments.Insert(0, JavaScriptAstFactory.CreateStringLiteral(GetMemberConstructorHelperName(baseConstructorSymbol)));

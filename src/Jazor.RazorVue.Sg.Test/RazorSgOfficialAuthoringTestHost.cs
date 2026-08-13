@@ -158,7 +158,6 @@ internal static class RazorSgOfficialAuthoringTestHost
     public static void AssertDirectRenderModule(string moduleText)
     {
         Assert.IsFalse(string.IsNullOrWhiteSpace(moduleText), "Official Razor authoring produced a blank Vue module.");
-        Assert.IsFalse(moduleText.Contains("createRenderContext", StringComparison.Ordinal), moduleText);
         Assert.IsFalse(moduleText.Contains(".vue", StringComparison.Ordinal), moduleText);
         Assert.IsFalse(moduleText.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), moduleText);
         Assert.IsFalse(moduleText.Contains("builder.finish()", StringComparison.Ordinal), moduleText);

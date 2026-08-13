@@ -78,6 +78,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 
     public override Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
     {
+        // Claim protocol helpers before generic member lowering. A claimed unsupported dispatch
+        // must fail here rather than fall through as a normal JavaScript member invocation.
+        // 先处理组件协议调用，防止不支持的间接 dispatch 被静默降级成普通 JS 调用。
         if (IsEventCallbackFactoryCreateBinder(operation.TargetMethod))
             return RewriteEventCallbackFactoryCreateBinder(operation, argument);
 
@@ -99,6 +102,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         Expression? instance,
         IReadOnlyList<Expression> arguments)
     {
+        // SemanticWalker already lowered receiver/arguments once. These rewrites only choose
+        // the Vue runtime carrier, preserving the expression evaluation performed by core lowering.
+        // 此 hook 仅选择 state/props/setup 载体，不重复计算已由 compiler 降低的参数。
         if (IsStateHasChangedInvocation(operation.TargetMethod, operation.Instance))
             return RewriteStateHasChanged(operation);
 
@@ -176,6 +182,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                 $"Current-component indexed property '{operation.Property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported by RazorVue current-component rewrite v1.");
         }
 
+        // Parameters live on props; ordinary auto-properties live in reactive state. Current
+        // component methods use separate module declarations and therefore never become state.
+        // [Parameter] 与普通属性的运行时载体不同，不能都投影为同一个对象成员。
         return IsParameterProperty(operation.Property)
             ? BuildPropsAccess(operation.Property)
             : IsAutoProperty(operation.Property)
@@ -284,7 +293,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             // Vue event-handler protocol.
             IInvocationOperation invocation when TryGetInferredBindSetterHandler(invocation, out var inferredHandler)
                 => RewriteInferredBindSetterHandler(inferredHandler, argument),
-            IAnonymousFunctionOperation anonymousFunction => RewriteBinderHandler(anonymousFunction),
+            IAnonymousFunctionOperation anonymousFunction => RewriteBinderHandler(anonymousFunction, argument),
             _ => null
         };
 
@@ -348,7 +357,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         return true;
     }
 
-    private Expression? RewriteBinderHandler(IAnonymousFunctionOperation anonymousFunction)
+    private Expression? RewriteBinderHandler(
+        IAnonymousFunctionOperation anonymousFunction,
+        SenseArgument argument)
     {
         if (anonymousFunction.Symbol.Parameters.Length != 1 ||
             TryGetSingleBinderAssignment(anonymousFunction.Body) is not ISimpleAssignmentOperation assignment)
@@ -360,7 +371,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (!IsAssignmentFromParameter(assignment.Value, parameter))
             return null;
 
-        var assignmentTarget = RewriteBinderAssignmentTarget(assignment.Target);
+        var assignmentTarget = RewriteBinderAssignmentTarget(assignment.Target, argument);
         if (assignmentTarget is null)
             return null;
 
@@ -425,7 +436,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             _ => false
         };
 
-    private Expression? RewriteBinderAssignmentTarget(IOperation target)
+    private Expression? RewriteBinderAssignmentTarget(
+        IOperation target,
+        SenseArgument argument)
         => target switch
         {
             IFieldReferenceOperation fieldReference when IsCurrentComponentField(fieldReference.Field, fieldReference.Instance)
@@ -444,8 +457,28 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                         "EventCallbackFactory.CreateBinder cannot bind to current-component parameter '" +
                         propertyReference.Property.OriginalDefinition.ToDisplayString(Format.NameFormat) +
                         "' because RazorVue current-component parameters are lowered as read-only props."),
+            IPropertyReferenceOperation propertyReference when
+                propertyReference.Property.SetMethod is not null &&
+                !propertyReference.Property.IsStatic &&
+                !propertyReference.Property.IsIndexer &&
+                propertyReference.Arguments.Length == 0
+                    => RewriteWritableCapturedPropertyTarget(propertyReference, argument),
             _ => null
         };
+
+    private Expression? RewriteWritableCapturedPropertyTarget(
+        IPropertyReferenceOperation propertyReference,
+        SenseArgument argument)
+    {
+        // Razor emits CreateBinder(value => captured.Property = value, currentValue) for a
+        // foreach item. Let the compiler lower that member reference so the active direct-render
+        // lexical aliases still resolve to the mapper parameter rather than a C# local name.
+        var walker = new SemanticWalker(true)
+        {
+            Host = this
+        };
+        return walker.Visit(propertyReference, argument) as Expression;
+    }
 
     private Expression? RewriteEventCallbackHandler(IOperation operation, SenseArgument argument)
         => operation switch
@@ -471,7 +504,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                     => RewriteEventCallbackHandler(inferredHandler, argument),
             IConditionalOperation conditional => RewriteConditionalEventCallbackHandler(conditional, argument),
             IAnonymousFunctionOperation anonymousFunction
-                => RewriteBinderHandler(anonymousFunction) ??
+                => RewriteBinderHandler(anonymousFunction, argument) ??
                    RewriteEventCallbackLambdaHandler(anonymousFunction, argument),
             IMethodReferenceOperation methodReference when IsCurrentComponentMethod(methodReference.Method, methodReference.Instance)
                 => new Identifier(GetMemberName(methodReference.Method)),

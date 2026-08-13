@@ -49,7 +49,7 @@ public sealed class MemberClosureTests
         var script = module?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, ".addContent(state.count);", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("BuildRenderTree", StringComparison.Ordinal), script);
         Assert.IsFalse(script!.Contains("this.count", StringComparison.Ordinal), script);
     }
 
@@ -115,7 +115,7 @@ public sealed class MemberClosureTests
         AssertHasMethod(first, "Format");
         AssertNoMember(first, "Unused");
         Assert.IsInstanceOfType(first.CompilerClosure, typeof(CurrentComponentMemberClosure));
-        Assert.IsTrue(first.CreateMemberFilter()(first.BuildRenderTreeMethod));
+        Assert.IsFalse(first.CreateMemberFilter()(first.BuildRenderTreeMethod));
         Assert.IsFalse(first.CreateMemberFilter()(fixture.Component.ComponentSymbol.BaseType!.GetMembers("StateHasChanged").Single()));
     }
 
@@ -333,96 +333,11 @@ public sealed class MemberClosureTests
         var script = module?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "function BuildRenderTree(builder)", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addAttribute(\"onclick\", Increment);", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addContent(props.Title);", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addContent(state.count);", StringComparison.Ordinal);
+        Assert.IsFalse(script!.Contains("BuildRenderTree", StringComparison.Ordinal), script);
         StringAssert.Contains(script!, "function Increment()", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("function unused()", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".bind(", StringComparison.Ordinal), script);
-    }
-
-    [TestMethod]
-    public async Task Build_RenderTreeBuilderFullSurfaceSlice_LowersThroughCurrentComponentHost()
-    {
-        var fixture = CreateManualGeneratedFixture(
-            """
-            using ECMAScript;
-            using static ECMAScript.Vue;
-            using Microsoft.AspNetCore.Components;
-            using Microsoft.AspNetCore.Components.Rendering;
-
-            namespace Demo.Pages
-            {
-                [ECMAScriptModule("./components/child")]
-                public sealed class Child : ComponentBase, IVueComponent
-                {
-                }
-
-                [ECMAScriptModule("./components/counter")]
-                public partial class Counter : ComponentBase, IVueComponent
-                {
-                    private string ReadMarkup() => "<em>raw</em>";
-
-                    protected override void BuildRenderTree(RenderTreeBuilder builder)
-                    {
-                        builder.OpenElement(0, "input");
-                        builder.AddAttribute(1, "value", "before");
-                        builder.SetAttributeValue(2, "after");
-                        builder.AddContent(3, new MarkupString(ReadMarkup()));
-                        builder.CloseElement();
-                        builder.OpenComponent(4, typeof(Child));
-                        builder.AddAttribute(5, "Title", "from attribute");
-                        builder.AddComponentRenderMode(RenderMode(null));
-                        builder.CloseComponent();
-                        builder.Clear();
-                        builder.Dispose();
-                        var nested = new RenderTreeBuilder();
-                        nested.AddMarkupContent(0, ReadMarkup());
-                    }
-
-                    private IComponentRenderMode RenderMode(IComponentRenderMode mode) => mode;
-                }
-            }
-            """);
-        var closure = BuildClosure(fixture);
-        var syntaxTree = fixture.Component.BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree;
-        var semanticModel = fixture.Binding.Compilation.GetSemanticModel(syntaxTree);
-        var converter = new AstConverter(
-            fixture.Component.ComponentSymbol,
-            semanticModel,
-            closure.CreateAstConverterOptions());
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
-
-        Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "builder.setAttributeValue(\"after\");", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addMarkupContent(ReadMarkup());", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.openComponent(", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addAttribute(\"Title\", \"from attribute\");", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.addComponentRenderMode(RenderMode(null));", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.clear();", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "builder.dispose();", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "let nested = createRenderContext(h);", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "nested.addMarkupContent(ReadMarkup());", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "from \"./components/child.mjs\";", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "@jazor/vue-runtime/render-context.mjs", StringComparison.Ordinal);
-        Assert.IsFalse(script!.Contains("MarkupString", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("from \"./components/child\";", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("new RenderTreeBuilder", StringComparison.Ordinal), script);
-
-        var artifact = await VueModuleBuilder.BuildAsync(
-            fixture.Binding,
-            fixture.Component,
-            closure);
-        var moduleText = artifact.ModuleText.ReplaceLineEndings("\n");
-        Assert.IsFalse(moduleText.Contains("createRenderContext", StringComparison.Ordinal), moduleText);
-        Assert.IsFalse(moduleText.Contains(".addComponentRenderMode(", StringComparison.Ordinal), moduleText);
-        Assert.IsFalse(moduleText.Contains(".clear()", StringComparison.Ordinal), moduleText);
-        Assert.IsFalse(moduleText.Contains(".dispose()", StringComparison.Ordinal), moduleText);
-        StringAssert.Contains(moduleText, "function $renderDirect()", StringComparison.Ordinal);
-        StringAssert.Contains(moduleText, "return null;", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -462,7 +377,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
 
@@ -502,22 +416,6 @@ public sealed class MemberClosureTests
                     return { name, props, children };
                 }
                 """);
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
-                """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-markup-attribute-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -527,7 +425,7 @@ public sealed class MemberClosureTests
 
                 import component from "./components/counter.mjs";
 
-                test("markup and SetAttributeValue materialize through render-context", () => {
+                test("markup and SetAttributeValue materialize through direct VNode lowering", () => {
                     const render = component.setup({}, { slots: {} });
                     const vnode = render();
 
@@ -583,10 +481,8 @@ public sealed class MemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         StringAssert.Contains(script, "import { Fragment, createStaticVNode, defineComponent, h } from \"vue\";", StringComparison.Ordinal);
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "h(Fragment, null, [h(Fragment, null, [\"region\", createStaticVNode(\"<strong>raw</strong>\", 1)]), \"tail\"])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const __jazor$hoistedStatic0 = createStaticVNode(\"<strong>raw</strong>\", 1);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "h(Fragment, null, [h(Fragment, null, [\"region\", __jazor$hoistedStatic0]), \"tail\"])", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -699,7 +595,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
@@ -831,7 +726,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("createRenderContext", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish()", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "mergeProps(", StringComparison.Ordinal);
@@ -959,7 +853,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("createRenderContext", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("typeof slots.headerNavigation", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "...props.Top ? { Navigation:", StringComparison.Ordinal);
         StringAssert.Contains(script, "Horizontal: true", StringComparison.Ordinal);
@@ -1212,7 +1105,6 @@ public sealed class MemberClosureTests
         // The authored typeof(Child) expressions themselves must still erase to imports.
         Assert.IsFalse(script.Contains("typeof(Child)", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("typeof Child", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "return h(\"section\", null, [h(", StringComparison.Ordinal);
@@ -1259,19 +1151,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-type-open-component-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -1351,7 +1230,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
         StringAssert.Contains(script, "ChildContent: () => [].concat(h(\"span\", null, [state.title]) ?? [])", StringComparison.Ordinal);
@@ -1644,7 +1522,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
         StringAssert.Contains(script, "function createCounterSetupScope(slots)", StringComparison.Ordinal);
@@ -1861,7 +1738,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
         StringAssert.Contains(script, "let text;", StringComparison.Ordinal);
@@ -1977,7 +1853,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
@@ -2096,7 +1971,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
 
@@ -2208,7 +2082,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
 
@@ -2341,7 +2214,7 @@ public sealed class MemberClosureTests
             """);
         var closure = BuildClosure(fixture);
 
-        OperationTransformationException? exception = null;
+        InvalidOperationException? exception = null;
         try
         {
             _ = await VueModuleBuilder.BuildAsync(
@@ -2349,14 +2222,14 @@ public sealed class MemberClosureTests
                 fixture.Component,
                 closure);
         }
-        catch (OperationTransformationException ex)
+        catch (InvalidOperationException ex)
         {
             exception = ex;
         }
 
         Assert.IsNotNull(exception);
-        StringAssert.Contains(exception.Message, "Dynamic Type OpenComponent", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "render-context v1", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "OpenComponent must use a generic component type or typeof(T)", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "direct render lowering", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -2423,7 +2296,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("createRenderContext", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".addMultipleAttributes(", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".addComponentRenderMode(", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "class: \"checkout\"", StringComparison.Ordinal);
@@ -2472,19 +2344,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-metadata-bulk-attributes-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -2572,7 +2431,6 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("const columnIsSorted = columnIsSorted(", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function ColumnIsSorted(column)", StringComparison.Ordinal);
         StringAssert.Contains(script, "const columnIsSorted = ColumnIsSorted(column);", StringComparison.Ordinal);
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
 
         var tempRoot = Path.Combine(
@@ -2673,7 +2531,6 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("from \"./const-field-condition.mjs\"", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "state.selectedKey === \"operations.releases\"", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("state.selectedKey === releasesKey", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
 
         var tempRoot = Path.Combine(
@@ -2802,12 +2659,10 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".addMultipleAttributes(", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "h(Fragment, null, [h(\"form\", { class: \"checkout\", onSubmit: Submit }, [state.submitted])", StringComparison.Ordinal);
-        StringAssert.Contains(script, "{ Title: \"bulk\", Count: 3 })", StringComparison.Ordinal);
+        StringAssert.Contains(script, "const __jazor$hoistedProps0 = { Title: \"bulk\", Count: 3 };", StringComparison.Ordinal);
+        StringAssert.Contains(script, "__jazor$hoistedProps0", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -2914,7 +2769,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".addNamedEvent(", StringComparison.Ordinal), script);
@@ -3190,12 +3044,11 @@ public sealed class MemberClosureTests
                 <html>
                 <head>
                   <meta charset="utf-8">
-                  <title>RazorVue browser render-context smoke</title>
+                  <title>RazorVue browser direct VNode smoke</title>
                   <script type="importmap">
                   {
                     "imports": {
-                      "vue": "/node_modules/vue/index.mjs",
-                      "@jazor/vue-runtime/render-context.mjs": "/node_modules/@jazor/vue-runtime/render-context.mjs"
+                      "vue": "/node_modules/vue/index.mjs"
                     }
                   }
                   </script>
@@ -3331,21 +3184,7 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
-
-            var testFile = Path.Combine(tempRoot, "browser-render-context-smoke.test.mjs");
+            var testFile = Path.Combine(tempRoot, "browser-direct-vnode-smoke.test.mjs");
             WriteFile(
                 testFile,
                 $$"""
@@ -3359,7 +3198,7 @@ public sealed class MemberClosureTests
                 const root = {{System.Text.Json.JsonSerializer.Serialize(tempRoot)}};
                 const browserPath = {{System.Text.Json.JsonSerializer.Serialize(browserPath)}};
 
-                test("generated render-context module mounts and updates in a browser", async () => {
+                test("generated direct VNode module mounts and updates in a browser", async () => {
                   const server = await startServer(root);
                   const browser = await startBrowser(browserPath);
                   try {
@@ -3651,7 +3490,6 @@ public sealed class MemberClosureTests
         StringAssert.Contains(artifact.SourceMapContent, "\"file\": \"components/counter.mjs\"", StringComparison.Ordinal);
         StringAssert.Contains(artifact.SourceMapContent, "\"sources\": [", StringComparison.Ordinal);
         StringAssert.Contains(script, "import { defineComponent, h, reactive } from \"vue\";", StringComparison.Ordinal);
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function createCounterSetupScope(props) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "const state = reactive({", StringComparison.Ordinal);
         StringAssert.Contains(script, "count: Seed()", StringComparison.Ordinal);
@@ -3676,7 +3514,6 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("const invokeAsync = ", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("invalidate = reactive({ tick: pendingInvalidations });", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("invalidate.tick;", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("const builder = createRenderContext(h);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("return builder.finish();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "return scope.$renderDirect();", StringComparison.Ordinal);
@@ -4005,7 +3842,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
 
@@ -4080,19 +3916,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-lifecycle-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -4263,19 +4086,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-should-render-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -4359,7 +4169,6 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains(".addElementReferenceCapture(", StringComparison.Ordinal), script);
@@ -4406,19 +4215,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-reference-capture-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -4598,19 +4394,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "invoke-async-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -4743,19 +4526,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-disposed-event-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -4947,19 +4717,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-parameters-set-async-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -5171,19 +4928,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-async-lifecycle-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -5353,7 +5097,6 @@ public sealed class MemberClosureTests
             parentFixture.Component,
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
-        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
@@ -5399,19 +5142,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-named-slot-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -5546,7 +5276,6 @@ public sealed class MemberClosureTests
             parentFixture.Component,
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
-        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
@@ -5592,19 +5321,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-scoped-slot-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -5783,7 +5499,6 @@ public sealed class MemberClosureTests
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal), parentScript);
         StringAssert.Contains(parentScript, "{ title: value => [].concat(h(\"h1\", null, [value]) ?? []) }", StringComparison.Ordinal);
         Assert.IsFalse(parentScript.Contains("slots.titleContent", StringComparison.Ordinal), parentScript);
@@ -6016,19 +5731,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -6136,7 +5838,6 @@ public sealed class MemberClosureTests
             "from \"./child.mjs\";",
             StringComparison.Ordinal);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "{ title: props.Title, onValueChanged: HandleValueChanged }", StringComparison.Ordinal);
@@ -6181,19 +5882,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-child-parameter-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -6317,19 +6005,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-child-event-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -6413,10 +6088,10 @@ public sealed class MemberClosureTests
             closure);
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(script.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.addComponentParameter(\"Value\", state.text);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.addComponentParameter(\"ValueChanged\", __value => state.text = __value);", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "{ value: state.text, \"onUpdate:value\": __value => state.text = __value }", StringComparison.Ordinal);
+        StringAssert.Contains(script, "value: state.text", StringComparison.Ordinal);
+        StringAssert.Contains(script, "\"onUpdate:value\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.text = __value)", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("modelValue", StringComparison.Ordinal), script);
 
         var tempRoot = Path.Combine(
@@ -6459,19 +6134,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-component-bind-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -6580,9 +6242,9 @@ public sealed class MemberClosureTests
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.openComponent(", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ modelValue: state.text, \"onUpdate:modelValue\": __value => state.text = __value }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "modelValue: state.text", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "\"onUpdate:modelValue\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.text = __value)", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -6624,19 +6286,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-component-bind-descriptor-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -6778,10 +6427,9 @@ public sealed class MemberClosureTests
             parentClosure);
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
 
-        Assert.IsFalse(parentScript.Contains("import { createRenderContext } from \"@jazor/vue-runtime/render-context.mjs\";", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal), parentScript);
         StringAssert.Contains(parentScript, "modelValue: state.text", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "\"onUpdate:modelValue\": __value => state.text = __value", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "\"onUpdate:modelValue\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.text = __value)", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "onAction: HandleAction", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "{ title: value => [].concat(h(\"h1\", null, [\"slot:\", value]) ?? []) }", StringComparison.Ordinal);
 
@@ -6825,19 +6473,6 @@ public sealed class MemberClosureTests
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
                 """{"type":"module"}""");
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context-core.mjs"),
-                System.IO.File.ReadAllText(FindRepositoryFile("src/Jazor.RazorVue/Runtime/render-context-core.mjs")));
-            WriteFile(
-                Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "render-context.mjs"),
-                """
-                import { Fragment, createStaticVNode } from "vue";
-                import { createRenderContextCore } from "./render-context-core.mjs";
-
-                export function createRenderContext(h) {
-                    return createRenderContextCore(h, Fragment, createStaticVNode);
-                }
-                """);
             var testFile = Path.Combine(tempRoot, "module-component-combined-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -7096,7 +6731,7 @@ public sealed class MemberClosureTests
         System.IO.File.WriteAllText(
             configPath,
             """
-            {"imports":{"vue":"./node_modules/vue/index.mjs","@jazor/vue-runtime/":"./node_modules/@jazor/vue-runtime/"}}
+            {"imports":{"vue":"./node_modules/vue/index.mjs"}}
             """);
 
         var startInfo = new ProcessStartInfo
@@ -7281,6 +6916,25 @@ public sealed class MemberClosureTests
     private static void WriteFile(string path, string contents)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        if (path.Replace('\\', '/').EndsWith("/node_modules/vue/index.mjs", StringComparison.Ordinal) &&
+            !contents.Contains("export function createBlock", StringComparison.Ordinal))
+        {
+            // Existing fixtures model Vue minimally. Add block helpers centrally so each
+            // runtime test observes the same direct-render helper contract.
+            // 统一补齐 block helper，避免每个历史 fixture 各自复制一份 mock。
+            contents += """
+
+                export function openBlock() {
+                    return null;
+                }
+                export function createElementBlock(type, props, children, patchFlag, dynamicProps) {
+                    return h(type, props, children);
+                }
+                export function createBlock(type, props, children, patchFlag, dynamicProps) {
+                    return h(type, props, children);
+                }
+                """;
+        }
         System.IO.File.WriteAllText(path, contents.ReplaceLineEndings("\n"));
     }
 

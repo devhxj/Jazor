@@ -1915,14 +1915,10 @@ public sealed class SdkIntegrationTests
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
         var componentMapPath = Path.Combine(outputRoot, "components", "counter.mjs.map");
-        var runtimeModulePath = Path.Combine(outputRoot, "@jazor", "vue-runtime", "render-context.mjs");
-        var runtimeCoreModulePath = Path.Combine(outputRoot, "@jazor", "vue-runtime", "render-context-core.mjs");
 
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue component module was not generated: {componentModulePath}");
         Assert.IsTrue(File.Exists(componentMapPath), $"RazorVue component source map was not generated: {componentMapPath}");
-        Assert.IsFalse(File.Exists(runtimeModulePath), $"Direct render must not emit an unused runtime bridge: {runtimeModulePath}");
-        Assert.IsFalse(File.Exists(runtimeCoreModulePath), $"Direct render must not emit an unused runtime core bridge: {runtimeCoreModulePath}");
 
         var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(componentModule, "import { defineComponent, h, reactive } from \"vue\";");
@@ -1930,7 +1926,6 @@ public sealed class SdkIntegrationTests
         Assert.IsFalse(componentModule.Contains("onMounted", StringComparison.Ordinal), componentModule);
         Assert.IsFalse(componentModule.Contains("onUpdated", StringComparison.Ordinal), componentModule);
         Assert.IsFalse(componentModule.Contains("onUnmounted", StringComparison.Ordinal), componentModule);
-        Assert.IsFalse(componentModule.Contains("createRenderContext", StringComparison.Ordinal), componentModule);
         StringAssert.Contains(componentModule, "const __jazorComponent = defineComponent({");
         StringAssert.Contains(componentModule, "export default __jazorComponent;");
         StringAssert.Contains(componentModule, "sourceMappingURL=counter.mjs.map");
@@ -1956,8 +1951,6 @@ public sealed class SdkIntegrationTests
             .Where(static path => !string.IsNullOrWhiteSpace(path))
             .ToArray();
         CollectionAssert.Contains(emittedRelativePaths, "components/counter.mjs");
-        CollectionAssert.DoesNotContain(emittedRelativePaths, "@jazor/vue-runtime/render-context.mjs");
-        CollectionAssert.DoesNotContain(emittedRelativePaths, "@jazor/vue-runtime/render-context-core.mjs");
 
         var counterEntry = manifest.Modules.Single(static moduleEntry => moduleEntry.RelativePath == "components/counter.mjs");
         Assert.AreEqual("components/counter.mjs.map", counterEntry.SourceMapPath);
@@ -2164,7 +2157,6 @@ public sealed class SdkIntegrationTests
         foreach (var modulePath in generatedModules)
         {
             var moduleText = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
-            Assert.IsFalse(moduleText.Contains("createRenderContext", StringComparison.Ordinal), modulePath);
             Assert.IsFalse(moduleText.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), modulePath);
             Assert.IsFalse(moduleText.Contains("builder.finish()", StringComparison.Ordinal), modulePath);
             Assert.IsFalse(moduleText.Contains(".vue", StringComparison.OrdinalIgnoreCase), modulePath);
@@ -2188,6 +2180,22 @@ public sealed class SdkIntegrationTests
 
             export function createStaticVNode(html, count) {
                 return { kind: "static", html, count };
+            }
+
+            // Direct RazorVue modules import Vue's compiler-oriented helpers when a vnode has
+            // a proven patch surface. Keep this local Deno shim shape-compatible with Vue so
+            // the external-package test exercises the same generated import contract.
+            // block helper 是 direct artifact 的正式 import，不是 runtime bridge fallback。
+            export function openBlock() {
+                return null;
+            }
+
+            export function createElementBlock(name, props, children, patchFlag, dynamicProps) {
+                return { name, props, children, patchFlag, dynamicProps, block: "element" };
+            }
+
+            export function createBlock(name, props, children, patchFlag, dynamicProps) {
+                return { name, props, children, patchFlag, dynamicProps, block: "component" };
             }
 
             export function defineComponent(options) {
@@ -2350,7 +2358,6 @@ public sealed class SdkIntegrationTests
 
         var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(bundle, "Clicks:");
-        Assert.IsFalse(bundle.Contains("createRenderContext", StringComparison.Ordinal), bundle);
         StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
         Assert.IsFalse(
             bundle.Contains("deno", StringComparison.OrdinalIgnoreCase),
@@ -2407,12 +2414,6 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(
             firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
             "components/keyed-list-100.mjs.map");
-        CollectionAssert.DoesNotContain(
-            firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "@jazor/vue-runtime/render-context.mjs");
-        CollectionAssert.DoesNotContain(
-            firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "@jazor/vue-runtime/render-context-core.mjs");
 
         var firstManifestText = await File.ReadAllTextAsync(Path.Combine(outputRoot, "jazor-manifest.json"));
         Assert.IsFalse(firstManifestText.Contains("generatedAtUtc", StringComparison.OrdinalIgnoreCase), firstManifestText);
@@ -2535,12 +2536,8 @@ public sealed class SdkIntegrationTests
         var outputRoot = Path.Combine(projectRoot, "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var componentModulePath = Path.Combine(outputRoot, "components", "counter.mjs");
-        var runtimeModulePath = Path.Combine(outputRoot, "@jazor", "vue-runtime", "render-context.mjs");
-        var runtimeCoreModulePath = Path.Combine(outputRoot, "@jazor", "vue-runtime", "render-context-core.mjs");
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue component module was not generated: {componentModulePath}");
-        Assert.IsFalse(File.Exists(runtimeModulePath), $"Direct render must not emit an unused runtime bridge: {runtimeModulePath}");
-        Assert.IsFalse(File.Exists(runtimeCoreModulePath), $"Direct render must not emit an unused runtime core bridge: {runtimeCoreModulePath}");
 
         var harnessRoot = Path.Combine(workspace.RootPath, "browser-harness");
         var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
@@ -3010,8 +3007,7 @@ public sealed class SdkIntegrationTests
         {
             imports = new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["vue"] = "." + vuePath,
-                ["@jazor/vue-runtime/"] = "./jazor/@jazor/vue-runtime/"
+                ["vue"] = "." + vuePath
             }
         };
         WriteFile(

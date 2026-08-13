@@ -64,6 +64,5 @@ public sealed class RazorSgOfficialVueLibraryComponentDescriptorTests
         StringAssert.Contains(observation.ModuleText, "onClick: QueueRelease", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "default: () =>", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "data-action", StringComparison.Ordinal);
-        Assert.IsFalse(observation.ModuleText.Contains("createRenderContext", StringComparison.Ordinal), observation.ModuleText);
     }
 }

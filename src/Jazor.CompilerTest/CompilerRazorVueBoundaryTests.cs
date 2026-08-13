@@ -14,9 +14,7 @@ public sealed class CompilerRazorVueBoundaryTests
             "CurrentComponentMemberClosure",
             "CurrentComponentSemanticWalkerHost",
             "CurrentComponentStateDefaultInitializer",
-            "RenderTreeBuilderSemanticWalkerHost",
             "ChildrenToSlotIntrinsic",
-            "@jazor/vue-runtime",
             "using Microsoft.AspNetCore.Components",
             "Jazor.RazorVue"
         };

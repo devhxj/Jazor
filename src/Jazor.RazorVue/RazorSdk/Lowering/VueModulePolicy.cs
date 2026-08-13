@@ -6,6 +6,7 @@ namespace Jazor.RazorVue.RazorSdk;
 /// <summary>
 /// Projects a Razor component hierarchy into one Vue artifact module without adding a
 /// RazorVue-specific mode to the core converter.
+/// 它定义模块成员枚举、命名及嵌套运行时类 flatten 策略，核心 AstConverter 不感知 Vue。
 /// </summary>
 internal sealed class VueModulePolicy : AstConverterModulePolicy
 {

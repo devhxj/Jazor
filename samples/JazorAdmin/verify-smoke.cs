@@ -153,7 +153,6 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     foreach (var (relativePath, description) in componentModules)
     {
         var module = File.ReadAllText(Path.Combine(generatedOutputRoot, relativePath));
-        AssertDoesNotContain(module, "createRenderContext", "render-context import in " + description);
         AssertDoesNotContain(module, ".vue", "legacy SFC reference in " + description);
         AssertDoesNotContain(module, "scope.buildRenderTree(builder)", "legacy scoped render-tree call in " + description);
         AssertDoesNotContain(module, "builder.finish()", "legacy render builder completion in " + description);
@@ -292,7 +291,6 @@ static void AssertInjectGeneratedArtifacts(string generatedOutputRoot)
     {
         var module = File.ReadAllText(modulePath);
         var description = "JazorAdmin VueInject module " + Path.GetFileName(modulePath);
-        AssertDoesNotContain(module, "createRenderContext", "render-context import in " + description);
         AssertDoesNotContain(module, ".vue", "legacy SFC reference in " + description);
         AssertDoesNotContain(module, "scope.buildRenderTree(builder)", "legacy scoped render-tree call in " + description);
         AssertDoesNotContain(module, "builder.finish()", "legacy render builder completion in " + description);
@@ -405,7 +403,6 @@ static async Task VerifyBrowserSmokeAsync(
                     "vue-router": "/vendor/vue-router.esm-browser.prod.js",
                     "tdesign-vue-next": "/vendor/tdesign-vue-next.bundle.mjs",
                     "style.mjs": "/style.mjs",
-                    "@jazor/vue-runtime/": "/@jazor/vue-runtime/",
                     "components/": "/components/",
                     "System/": "/System/"
                   }

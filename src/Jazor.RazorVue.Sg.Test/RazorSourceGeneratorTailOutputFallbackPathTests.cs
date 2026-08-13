@@ -63,7 +63,6 @@ public sealed class RazorTailOutputFallbackPathTests
         StringAssert.Contains(catalogSource, "ReleaseConsole/Demo/Pages/ReleaseStatus.mjs", StringComparison.Ordinal);
         StringAssert.Contains(catalogSource, "internal static partial class ArtifactCatalog", StringComparison.Ordinal);
         StringAssert.Contains(catalogSource, "ProducerId = \"jazor.vue\"", StringComparison.Ordinal);
-        Assert.IsFalse(catalogSource.Contains("createRenderContext", StringComparison.Ordinal), catalogSource);
         Assert.IsFalse(catalogSource.Contains("\"module-source\"", StringComparison.Ordinal), catalogSource);
         Assert.IsFalse(catalogSource.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), catalogSource);
         Assert.IsFalse(catalogSource.Contains("builder.finish()", StringComparison.Ordinal), catalogSource);
@@ -153,7 +152,6 @@ public sealed class RazorTailOutputFallbackPathTests
             1,
             CountOccurrences(catalogSource, "artifactPath: \"components/cards/ReleaseCard.vue\""),
             catalogSource);
-        Assert.IsFalse(catalogSource.Contains("createRenderContext", StringComparison.Ordinal), catalogSource);
         Assert.IsFalse(catalogSource.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), catalogSource);
         Assert.IsFalse(catalogSource.Contains("builder.finish()", StringComparison.Ordinal), catalogSource);
     }

@@ -4,7 +4,10 @@ using System.Runtime.InteropServices;
 
 namespace Jazor.RazorVue.Generation;
 
-/// <summary>Applies and validates the architecture-specific jump used by the initialization hook.</summary>
+/// <summary>
+/// Applies and validates the architecture-specific jump used by the initialization hook.
+/// 该对象封装进程内原生代码 patch 的安装与回滚，隔离于正常 RazorVue lowering 生命周期之外。
+/// </summary>
 internal sealed class InitializeNativeHook : IDisposable
 {
     private const int X64JumpLength = 12;
@@ -103,6 +106,9 @@ internal sealed class InitializeNativeHook : IDisposable
 
         try
         {
+            // Verify both patch and restoration on the live runtime before touching Roslyn's
+            // GeneratorDriver. Unsupported runtimes fail as a normal RazorVue diagnostic.
+            // 在 patch Roslyn 前先做本地自检，避免平台指令差异导致 generator host 不可恢复。
             Interlocked.Exchange(ref _selfTestReplacementCount, 0);
             var target = typeof(InitializeNativeHook).GetMethod(
                 nameof(SelfTestTarget),
@@ -173,6 +179,9 @@ internal sealed class InitializeNativeHook : IDisposable
         if (_applied)
             return;
 
+        // The original bytes were captured at construction and are restored by Dispose. The
+        // installer serializes ownership; this type intentionally has no independent global lock.
+        // 原始指令与跳转长度成对保存，进程级同步由 installer 负责。
         WriteBytes(_patchAddress, _jump);
         _applied = true;
     }
@@ -418,7 +427,7 @@ internal sealed class InitializeNativeHook : IDisposable
         UIntPtr len);
 }
 
-/// <summary>Platforms distinguished by the native code-patching implementation.</summary>
+/// <summary>Platforms distinguished by the native code-patching implementation. 枚举决定跳转指令编码。</summary>
 internal enum NativePlatform
 {
     Windows,

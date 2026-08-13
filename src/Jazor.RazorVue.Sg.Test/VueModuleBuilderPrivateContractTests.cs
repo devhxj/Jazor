@@ -257,25 +257,23 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsInstanceOfType<Identifier>(Invoke<ObjectProperty>("CreateObjectProperty", "ready", new Identifier("value")).Key);
         Assert.IsInstanceOfType<StringLiteral>(Invoke<ObjectProperty>("CreateObjectProperty", "data-title", new Identifier("value")).Key);
 
-        var minimalVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", false, false, false, false, false, false, false);
+        var minimalVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", false, false, false, false, false, false, false, false);
         CollectionAssert.AreEquivalent(
             new[] { "defineComponent", "h" },
             GetImportedNames(minimalVueImport));
-        var fullVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", true, true, true, true, true, true, true);
+        var fullVueImport = Invoke<ImportDeclaration>("BuildVueImportDeclaration", true, true, true, true, true, true, true, true);
         CollectionAssert.AreEquivalent(
-            new[] { "defineComponent", "h", "Fragment", "createStaticVNode", "onMounted", "onUnmounted", "onUpdated", "reactive", "watch" },
+            new[] { "defineComponent", "h", "Fragment", "createStaticVNode", "openBlock", "createElementBlock", "createBlock", "onMounted", "onUnmounted", "onUpdated", "reactive", "watch" },
             GetImportedNames(fullVueImport));
 
         var module = new Parser().ParseModule(
             """
             import { h } from "vue";
-            import context from "@jazor/vue-runtime/render-context.mjs";
             import local from "./local.mjs";
             """);
         var imports = module.Body.OfType<ImportDeclaration>().ToArray();
         Assert.IsTrue(Invoke<bool>("IsVueFramingImport", imports[0]));
-        Assert.IsTrue(Invoke<bool>("IsVueFramingImport", imports[1]));
-        Assert.IsFalse(Invoke<bool>("IsVueFramingImport", imports[2]));
+        Assert.IsFalse(Invoke<bool>("IsVueFramingImport", imports[1]));
     }
 
     [TestMethod]
@@ -622,7 +620,8 @@ public sealed class VueModuleBuilderPrivateContractTests
             compilerMap,
             CreateCompiledLineMappings(
                 (GeneratedLine: 20, GeneratedColumn: 3, CompiledLine: 5, CompiledColumn: 0),
-                (GeneratedLine: 20, GeneratedColumn: 9, CompiledLine: 5, CompiledColumn: 8)));
+                (GeneratedLine: 20, GeneratedColumn: 9, CompiledLine: 5, CompiledColumn: 8)),
+            "Generated/Component.razor.g.cs");
         Assert.HasCount(2, projected.Segments);
         Assert.AreEqual(20, projected.Segments[0].GeneratedLine);
         Assert.AreEqual(5, projected.Segments[0].GeneratedColumn);
@@ -702,6 +701,9 @@ public sealed class VueModuleBuilderPrivateContractTests
             new Identifier("renderReference"),
             "$renderDirect",
             preludeStatements,
+            CreateImmutableArray(typeof(RenderModuleHoist)),
+            false,
+            false,
             false,
             false,
             false,
@@ -889,13 +891,13 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsNotNull(mappingType);
         var constructor = mappingType!
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Single(candidate => candidate.GetParameters().Length == 4);
+            .Single(candidate => candidate.GetParameters().Length == 5);
         var values = Array.CreateInstance(mappingType!, mappings.Length);
         for (var index = 0; index < mappings.Length; index++)
         {
             var mapping = mappings[index];
             values.SetValue(
-                constructor.Invoke([mapping.GeneratedLine, mapping.GeneratedColumn, mapping.CompiledLine, mapping.CompiledColumn]),
+                constructor.Invoke([mapping.GeneratedLine, mapping.GeneratedColumn, mapping.CompiledLine, mapping.CompiledColumn, false]),
                 index);
         }
 

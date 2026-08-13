@@ -4,7 +4,10 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.RazorVue.RazorSdk;
 
-/// <summary>Supplies slot-specific intrinsic rewrites to the compiler host pipeline.</summary>
+/// <summary>
+/// Supplies slot-specific intrinsic rewrites to the compiler host pipeline.
+/// 只认领官方 Razor children transport 调用，普通 invocation 不会被此 host 改写。
+/// </summary>
 internal sealed class ChildrenToSlotSemanticWalkerHost : SemanticWalkerHost
 {
     public static ChildrenToSlotSemanticWalkerHost Instance { get; } = new();

@@ -23,7 +23,6 @@ public sealed class RazorSgDirectRenderFailureMatrixTests
         var failure = RazorSgDirectRenderFailureMatrixTestHost.EmitFailure(testCase);
 
         StringAssert.Contains(failure, testCase.ExpectedFailureFragment, StringComparison.Ordinal);
-        Assert.IsFalse(failure.Contains("createRenderContext", StringComparison.Ordinal));
         Assert.IsFalse(failure.Contains(".vue", StringComparison.Ordinal));
     }
 }
