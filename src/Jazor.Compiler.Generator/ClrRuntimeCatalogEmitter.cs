@@ -9,7 +9,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 /// </summary>
 /// <remarks>
 /// 该发射器使用 Roslyn 源码编译而不是反射加载 CLR 项目，因此能直接处理受限 helper 源码。
-/// 生成的 catalog 只携带模块文本、路径和 hash；模块语义仍由 AstConverter/SemanticWalker 负责。
+/// 生成的 catalog 携带模块文本、路径、hash 与已 lowering 的 <c>System/*</c> dependency metadata。
+/// 模块语义仍由 AstConverter/SemanticWalker 负责；Emit 只按这份结构化闭包裁剪，不重新解析 JavaScript。
 /// </remarks>
 internal static class ClrRuntimeCatalogEmitter
 {
@@ -55,7 +56,8 @@ internal static class ClrRuntimeCatalogEmitter
                     candidate.RootType.ToDisplayString(Format.NameFormat),
                     candidate.RelativePath.Replace('\\', '/'),
                     content,
-                    ComputeSha256Hex(content)));
+                    ComputeSha256Hex(content),
+                    CollectRuntimeDependencies(module)));
             }
             catch (Exception ex)
             {
@@ -163,7 +165,7 @@ internal static class ClrRuntimeCatalogEmitter
         builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("        private sealed class GeneratedModule");
         builder.AppendLine("        {");
-        builder.AppendLine("            public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash)");
+        builder.AppendLine("            public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash, global::System.Collections.Generic.IReadOnlyList<string> runtimeDependencies)");
         builder.AppendLine("            {");
         builder.AppendLine("                AssemblyName = assemblyName;");
         builder.AppendLine("                TypeName = typeName;");
@@ -171,6 +173,7 @@ internal static class ClrRuntimeCatalogEmitter
         builder.AppendLine("                RelativePath = relativePath;");
         builder.AppendLine("                Content = content;");
         builder.AppendLine("                Hash = hash;");
+        builder.AppendLine("                RuntimeDependencies = runtimeDependencies;");
         builder.AppendLine("            }");
         builder.AppendLine();
         builder.AppendLine("            public string AssemblyName { get; }");
@@ -179,6 +182,7 @@ internal static class ClrRuntimeCatalogEmitter
         builder.AppendLine("            public string RelativePath { get; }");
         builder.AppendLine("            public string Content { get; }");
         builder.AppendLine("            public string Hash { get; }");
+        builder.AppendLine("            public global::System.Collections.Generic.IReadOnlyList<string> RuntimeDependencies { get; }");
         builder.AppendLine("        }");
         builder.AppendLine();
         builder.AppendLine("        private static readonly GeneratedModule[] _modules = new GeneratedModule[]");
@@ -192,7 +196,10 @@ internal static class ClrRuntimeCatalogEmitter
             builder.Append("                id: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.TypeName)).AppendLine("\",");
             builder.Append("                relativePath: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.RelativePath)).AppendLine("\",");
             builder.Append("                content: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.Content)).AppendLine("\",");
-            builder.Append("                hash: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.Hash)).AppendLine("\"),");
+            builder.Append("                hash: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.Hash)).AppendLine("\",");
+            builder.Append("                runtimeDependencies: new string[] { ");
+            builder.Append(string.Join(", ", module.RuntimeDependencies.Select(static dependency => $"\"{SharedGeneration.EscapeForCSharpStringLiteral(dependency)}\"")));
+            builder.AppendLine(" }),");
         }
 
         builder.AppendLine("        };");
@@ -209,6 +216,20 @@ internal static class ClrRuntimeCatalogEmitter
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
+    private static IReadOnlyList<string> CollectRuntimeDependencies(Acornima.Ast.Module module)
+    {
+        // CLR imports have already passed compiler-owned symbol binding. Persist only the
+        // Jazor-owned System graph, so Emit can retain a precise closure without parsing JS.
+        return module.Body
+            .OfType<Acornima.Ast.ImportDeclaration>()
+            .Select(static declaration => declaration.Source.Value)
+            .Where(static source => source.StartsWith("System/", StringComparison.Ordinal))
+            .Select(ECMAScriptModulePath.NormalizeRelativePath)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static dependency => dependency, StringComparer.Ordinal)
+            .ToArray();
+    }
+
     /// <summary>待转换的 CLR runtime 模块及其语义模型。</summary>
     private sealed record ClrRuntimeModuleCandidate(
         INamedTypeSymbol RootType,
@@ -220,5 +241,6 @@ internal static class ClrRuntimeCatalogEmitter
         string TypeName,
         string RelativePath,
         string Content,
-        string Hash);
+        string Hash,
+        IReadOnlyList<string> RuntimeDependencies);
 }

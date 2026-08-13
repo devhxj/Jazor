@@ -31,6 +31,21 @@
     <ProjectReference Include="..\..\..\src\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <Target Name="AddLocalJazorAnalyzerDependencies" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <!-- Source builds register analyzers as separate files. Keep their dependency closure
+           beside the analyzer, matching the packaged analyzer layout. -->
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\..\src\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll"
+                Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\src\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll"
+                Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="RegisterLocalRazorVueArtifactProvider" BeforeTargets="JazorDebug;JazorRelease">
     <ItemGroup>
       <JazorArtifactProviderAssembly Include="$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll"

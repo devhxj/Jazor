@@ -32,7 +32,27 @@ public sealed class ClrRuntimeCatalogReaderTests
     }
 
     [TestMethod]
-    public void ModuleCollector_Collect_ReadsClrRuntimeModules_FromEcmascriptAssemblyCatalog()
+    public void CatalogReader_TryRead_ClrRuntimeModulesExposeStructuredProviderDependencies()
+    {
+        var modules = CatalogReader.TryRead(typeof(ECMAScript.Number).Assembly)!;
+
+        var byteModule = modules.Single(module =>
+            string.Equals(module.RelativePath, "System/ByteModule.js", StringComparison.OrdinalIgnoreCase));
+        Assert.AreEqual("jazor.clr", byteModule.RuntimeProviderId);
+        CollectionAssert.AreEquivalent(
+            new[] { "System/RuntimeModule.js", "System/StringModule.js" },
+            byteModule.RuntimeDependencies!.ToArray());
+
+        var runtimeModule = modules.Single(module =>
+            string.Equals(module.RelativePath, "System/RuntimeModule.js", StringComparison.OrdinalIgnoreCase));
+        Assert.AreEqual("jazor.clr", runtimeModule.RuntimeProviderId);
+        CollectionAssert.AreEquivalent(
+            new[] { "System/StringModule.js" },
+            runtimeModule.RuntimeDependencies!.ToArray());
+    }
+
+    [TestMethod]
+    public void ModuleCollector_Collect_DoesNotMaterializeUnreferencedClrRuntimeModules()
     {
         var assemblyPath = typeof(ECMAScript.Number).Assembly.Location;
         var loadContext = new EmitLoadContext(assemblyPath);
@@ -45,10 +65,37 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.AreEqual(1, result.AssemblyCount);
         Assert.AreEqual(1, result.CatalogCount);
 
-        AssertContainsModule(result.Modules, "System/RuntimeModule.js");
-        AssertContainsModule(result.Modules, "System/StringModule.js");
-        AssertContainsModule(result.Modules, "System/DecimalModule.js");
-        AssertContainsModule(result.Modules, "System/Globalization/CultureInfoModule.js");
+        Assert.HasCount(0, result.Modules);
+    }
+
+    [TestMethod]
+    public void ModuleCollector_RetainsOnlyReferencedClrRuntimeDependencyClosure()
+    {
+        var runtimeModules = CatalogReader.TryRead(typeof(ECMAScript.Number).Assembly)!;
+        var app = new ModuleRecord(
+            SourceAssemblyPath: "app.dll",
+            AssemblyName: "App",
+            TypeName: "App.Page",
+            Id: "App.Page",
+            RelativePath: "components/page.mjs",
+            Content: "import { _1234444e218b96c3 } from \"System/StringModule.js\";\nexport default _1234444e218b96c3;\n",
+            Hash: "sha256:app");
+
+        var retained = ModuleCollector.RetainReferencedRuntimeProviderModules([app, .. runtimeModules]);
+        var retainedPaths = retained.Select(static module => module.RelativePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        CollectionAssert.Contains(retainedPaths.ToArray(), "components/page.mjs");
+        CollectionAssert.Contains(retainedPaths.ToArray(), "System/StringModule.js");
+        CollectionAssert.Contains(retainedPaths.ToArray(), "System/RuntimeModule.js");
+        CollectionAssert.DoesNotContain(retainedPaths.ToArray(), "System/DateTimeModule.js");
+        CollectionAssert.DoesNotContain(retainedPaths.ToArray(), "System/DecimalModule.js");
+
+        var expectedRuntimePaths = CollectDependencyClosure(runtimeModules, "System/StringModule.js");
+        CollectionAssert.AreEquivalent(
+            expectedRuntimePaths.OrderBy(static path => path, StringComparer.OrdinalIgnoreCase).ToArray(),
+            retainedPaths.Where(static path => path.StartsWith("System/", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+                .ToArray());
     }
 
     [TestMethod]
@@ -404,5 +451,24 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(module.TypeName), $"Expected '{relativePath}' to have a type name.");
         Assert.IsFalse(string.IsNullOrWhiteSpace(module.Content), $"Expected '{relativePath}' to have emitted module content.");
         Assert.IsFalse(string.IsNullOrWhiteSpace(module.Hash), $"Expected '{relativePath}' to have a content hash.");
+    }
+
+    private static IReadOnlySet<string> CollectDependencyClosure(
+        IReadOnlyList<ModuleRecord> modules,
+        string entryPath)
+    {
+        var byPath = modules.ToDictionary(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase);
+        var selected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var pending = new Queue<string>([entryPath]);
+        while (pending.TryDequeue(out var path))
+        {
+            if (!selected.Add(path))
+                continue;
+
+            foreach (var dependency in byPath[path].RuntimeDependencies ?? [])
+                pending.Enqueue(dependency);
+        }
+
+        return selected;
     }
 }

@@ -36,6 +36,10 @@
                 Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll"
                 Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
+      <!-- RazorVue parses static markup in the analyzer load context; local source builds must
+           supply the same parser sidecar that the Jazor.Vue package ships beside the analyzer. -->
+      <Analyzer Include="$(NuGetPackageRoot)anglesharp\$(AngleSharpVersion)\lib\netstandard2.0\AngleSharp.dll"
+                Condition="Exists('$(NuGetPackageRoot)anglesharp\$(AngleSharpVersion)\lib\netstandard2.0\AngleSharp.dll')" />
     </ItemGroup>
   </Target>
 </Project>

@@ -13,6 +13,8 @@ internal static class CatalogReader
 {
     private const string ArtifactCatalogTypeName = "Jazor.Generated.ArtifactCatalog";
     private const string RuntimeProviderCatalogTypeName = "Jazor.Artifacts.RuntimeProviderCatalog";
+    private const string ClrRuntimeCatalogTypeName = "ECMAScript.Catalog";
+    private const string ClrRuntimeProviderId = "jazor.clr";
     private const int ContractSchemaVersion = 1;
 
     /// <summary>Compatibility helper for callers that only need materializable modules.</summary>
@@ -47,6 +49,7 @@ internal static class CatalogReader
     private static IReadOnlyList<ModuleRecord> ReadModuleCatalog(Assembly assembly, Type catalogType)
     {
         var sourceMapsById = TryReadSourceMapsById(assembly);
+        var isClrRuntimeCatalog = string.Equals(catalogType.FullName, ClrRuntimeCatalogTypeName, StringComparison.Ordinal);
 
         var getModules = catalogType.GetMethod("GetModules", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
             ?? throw new InvalidOperationException($"GetModules was not found in '{assembly.Location}'.");
@@ -73,7 +76,13 @@ internal static class CatalogReader
                 sourceMap?.SourceMapRelativePath,
                 sourceMap?.SourceMapContent,
                 sourceMap?.MapHash,
-                PackageImports: TryReadStrings(itemType, item, "PackageImports")));
+                PackageImports: TryReadStrings(itemType, item, "PackageImports"),
+                RuntimeProviderId: isClrRuntimeCatalog ? ClrRuntimeProviderId : null,
+                RuntimeDependencies: isClrRuntimeCatalog
+                    ? TryReadStrings(itemType, item, "RuntimeDependencies")
+                        .Select(NormalizeRelativePath)
+                        .ToArray()
+                    : null));
         }
 
         return modules;
