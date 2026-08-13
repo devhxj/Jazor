@@ -416,7 +416,7 @@ static string CreateProductionVueBrowserHtml()
         <meta charset="utf-8">
         <div id="app"></div>
         <script type="module">
-        import { createApp, createSSRApp, createStaticVNode, h, nextTick, ref, render } from "./vue.mjs";
+        import { createApp, createSSRApp, createElementBlock, createStaticVNode, createTextVNode, h, nextTick, openBlock, ref, render } from "./vue.mjs";
         import { createRawMarkup } from "./raw-markup.mjs";
 
         const cases = [
@@ -452,13 +452,42 @@ static string CreateProductionVueBrowserHtml()
         render(directAfter, directHost);
         const directPatched = directHost.querySelector("#direct-static > u") !== null && directHost.textContent === "updated";
 
+        // This mirrors the E1 output shape: an outer block records direct dynamic text and
+        // nested child blocks, while mixed children give the dynamic text an explicit flag.
+        // 真实 Vue 必须完成 patch，不能只验证 helper 调用字符串或测试 stub。
+        const blockPhase = ref("first");
+        const BlockApp = { setup: () => () => (
+          openBlock(),
+          createElementBlock("main", { id: "block-host" }, [
+            (openBlock(), createElementBlock("section", { id: "block-single" }, blockPhase.value, 1)),
+            (openBlock(), createElementBlock("section", { id: "block-mixed" }, [
+              createStaticVNode("<strong>fixed</strong>", 1),
+              createTextVNode(blockPhase.value, 1)
+            ])),
+            (openBlock(), createElementBlock("article", { id: "block-nested" }, [
+              (openBlock(), createElementBlock("span", null, blockPhase.value, 1))
+            ]))
+          ])
+        ) };
+        const blockHost = document.createElement("div");
+        document.body.append(blockHost);
+        createApp(BlockApp).mount(blockHost);
+        const blockMounted = blockHost.querySelector("#block-single")?.textContent === "first" &&
+          blockHost.querySelector("#block-mixed")?.textContent === "fixedfirst" &&
+          blockHost.querySelector("#block-nested span")?.textContent === "first";
+        blockPhase.value = "second";
+        await nextTick();
+        const blockPatched = blockHost.querySelector("#block-single")?.textContent === "second" &&
+          blockHost.querySelector("#block-mixed")?.textContent === "fixedsecond" &&
+          blockHost.querySelector("#block-nested span")?.textContent === "second";
+
         const host = document.createElement("div");
         host.innerHTML = "<section id=\"hydrated\"><strong>one</strong><em>two</em></section>";
         document.body.append(host);
         createSSRApp({ render: () => h("section", { id: "hydrated" }, [createStaticVNode("<strong>one</strong><em>two</em>", 2)]) }).mount(host);
         const hydrated = host.querySelectorAll("#hydrated strong, #hydrated em").length === 2;
-        document.documentElement.setAttribute("data-jazor-production-vue", mounted && patched && directPatched && hydrated ? "passed" : "failed");
-        document.documentElement.setAttribute("data-jazor-production-vue-detail", `mounted:${mounted};dynamicCount:${dynamicCount};commentElementCount:${commentElementCount};hasWrapper:${hasWrapper};cases:${casesPresent};patched:${patched};directPatched:${directPatched};dynamicText:${dynamic.textContent};hydrated:${hydrated}`);
+        document.documentElement.setAttribute("data-jazor-production-vue", mounted && patched && directPatched && blockMounted && blockPatched && hydrated ? "passed" : "failed");
+        document.documentElement.setAttribute("data-jazor-production-vue-detail", `mounted:${mounted};dynamicCount:${dynamicCount};commentElementCount:${commentElementCount};hasWrapper:${hasWrapper};cases:${casesPresent};patched:${patched};directPatched:${directPatched};blockMounted:${blockMounted};blockPatched:${blockPatched};dynamicText:${dynamic.textContent};hydrated:${hydrated}`);
         </script>
         """;
 
@@ -653,7 +682,7 @@ internal sealed record ProductionVueRuntimeVerification(
 - Status: {Status}
 - Runtime: `{Runtime}`
 
-验证覆盖 production Vue 的 static multi-root、text/element、table、SVG/MathML、dynamic raw markup patch、leading comment framing、SSR 与 hydration。
+验证覆盖 production Vue 的 static multi-root、text/element、table、SVG/MathML、dynamic raw markup patch、leading comment framing、E1 child block/text patch、SSR 与 hydration。
 
 {Details}
 """;

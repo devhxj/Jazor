@@ -117,6 +117,112 @@ public sealed class RazorSgVueCompilerOptimizationTests
             observation.ModuleText);
     }
 
+    [TestMethod]
+    public async Task BuildComponent_ChildPlans_UseTextAndNestedBlocksWithoutPromotingOpaqueChildren()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\ChildPlans.razor",
+            documentText:
+            """
+            <section id="single">@Value</section>
+            <section id="mixed"><strong>fixed</strong>@Value</section>
+            <article id="nested"><span>@Value</span></article>
+            <section id="conditional">
+                @if (Show)
+                {
+                    <span>@Value</span>
+                }
+            </section>
+            <section id="raw">@Summary</section>
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/child-plans")]
+            public partial class ChildPlans : ComponentBase, IVueComponent
+            {
+                [Parameter] public string Value { get; set; } = string.Empty;
+                [Parameter] public bool Show { get; set; }
+                [Parameter] public MarkupString? Summary { get; set; }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ChildPlans");
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "createElementBlock(\"section\", __jazor$hoistedProps0, props.Value, 1)",
+            StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "createTextVNode(props.Value, 1)",
+            StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "createElementBlock(\"article\", __jazor$hoistedProps2, [(openBlock(), createElementBlock(\"span\", null, props.Value, 1))])",
+            StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "h(\"section\", __jazor$hoistedProps3",
+            StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "h(\"section\", __jazor$hoistedProps4",
+            StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/child-plans.mjs",
+            observation.ModuleText,
+            "child-plans-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/child-plans.mjs";
+
+            function findById(vnode, id) {
+                if (vnode == null || typeof vnode !== "object") return null;
+                if (vnode?.props?.id === id) return vnode;
+                const children = Array.isArray(vnode?.children) ? vnode.children : [vnode?.children];
+                for (const child of children) {
+                    const found = findById(child, id);
+                    if (found) return found;
+                }
+                return null;
+            }
+
+            test("child plans retain Vue patch metadata and leave opaque content on h", () => {
+                const props = { Value: "first", Show: true, Summary: null };
+                const render = component.setup(props, { slots: {} });
+                const initial = render();
+                const single = findById(initial, "single");
+                const mixed = findById(initial, "mixed");
+                const nested = findById(initial, "nested");
+                const conditional = findById(initial, "conditional");
+                const raw = findById(initial, "raw");
+
+                assert.equal(single.block, "element");
+                assert.equal(single.patchFlag, 1);
+                assert.equal(mixed.block, "element");
+                assert.equal(mixed.children.at(-1).name, "__text");
+                assert.equal(mixed.children.at(-1).patchFlag, 1);
+                assert.equal(nested.block, "element");
+                assert.equal(nested.children[0].block, "element");
+                assert.equal(conditional.block, undefined);
+                assert.equal(raw.block, undefined);
+
+                props.Value = "second";
+                props.Show = false;
+                const updated = render();
+                assert.equal(findById(updated, "single").children, "second");
+                assert.equal(findById(updated, "mixed").children.at(-1).children, "second");
+                assert.equal(findById(updated, "nested").children[0].children, "second");
+            });
+            """);
+    }
+
     private static int CountOccurrences(string value, string needle)
     {
         var count = 0;
@@ -159,10 +265,10 @@ public sealed class RazorSgVueCompilerOptimizationTests
             observation.ModuleText,
             "openBlock(), createElementBlock(\"input\", { value: props.Value }, null, 8, [\"value\"])",
             StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "h(\"section\", { class: props.Css }", StringComparison.Ordinal);
-        Assert.IsFalse(
-            observation.ModuleText.Contains("createElementBlock(\"section\"", StringComparison.Ordinal),
-            observation.ModuleText);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "openBlock(), createElementBlock(\"section\", { class: props.Css }, props.Value, 3)",
+            StringComparison.Ordinal);
         Assert.IsFalse(
             observation.ModuleText.Contains("const __jazor$hoistedProps", StringComparison.Ordinal),
             observation.ModuleText);

@@ -32,13 +32,10 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### 2026-08-13
+### 2026-08-14
 
-- Jazor `0.13.0` adds a Windows release-publish gate that restores an isolated Wiki from locally packed `Jazor`, `Jazor.Vue`, and `ECMAScript.Style` packages, publishes the real `bundle.js` layout, and verifies it in Microsoft Edge below `/docs` before NuGet publication.
-- Wiki is now a real `H()` plus `ECMAScript.Style` application surface: generated `ecs-*` classes, managed CSS injection, source maps, SPA navigation, and the release HMR boundary are checked in both Debug and Release browser runs.
-- Release Wiki hosts explicitly serve `bundle.js`; Debug hosts select the ready project-root `jazor/` graph even when an empty copied `bin/.../jazor/` directory exists. Its PathBase-aware import map now resolves generated `style.mjs`, `components/`, and `System/` modules consistently.
-- CSS shorthand params marked with `PreserveAttribute` now preserve their array shape, so calls such as `padding(px(4), px(8))` emit valid `padding:4px 8px;` CSS without changing the `style.mjs` ABI.
-- Decimal-digit rounding for `double`, `float`, and `Math.Round` now evaluates the original IEEE-754 payload, preventing JavaScript multiplication from moving values such as `2.675` across a .NET rounding midpoint.
+- RazorVue direct render modules now use Vue child block trees and `TEXT` patching for proven dynamic string text, mixed static/dynamic text, and nested stable elements. Conditional content, slots, raw markup, and unproven children retain the normal Vue diff path.
+- The production Vue browser/SSR gate now verifies mount and reactive DOM patching for those child block shapes alongside static markup and hydration.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

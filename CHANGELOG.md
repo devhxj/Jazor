@@ -2,6 +2,11 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-14
+
+- RazorVue direct render modules now generate Vue child block trees for a single dynamic string child, static-plus-dynamic text, and nested stable elements. These artifacts use Vue `TEXT` patch flags and `createTextVNode` only where the generated Razor C# proves the text surface, reducing ordinary child traversal during updates without changing C# evaluation, formatting, slot, loop, or raw-markup behavior.
+- Conditional content, slots, render sequences, dynamic raw markup, and ordinary component children intentionally retain Vue's full `h(...)` children diff until their own stability and closure contracts are proven. Production Vue browser and SSR verification now exercises the new child block and text patch shapes alongside static markup and hydration coverage.
+
 ## 2026-08-13
 
 ### Jazor 0.13.0

@@ -129,6 +129,13 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     return { name, props, children, patchFlag, dynamicProps, block: "component" };
                 }
 
+                // Match the Vue helper shape closely enough for generated artifact assertions.
+                // block collection only relies on the returned VNode identity and patch flag.
+                // 测试 stub 保留 text vnode 的 patchFlag，验证 E1 不会遗漏动态文本协议。
+                export function createTextVNode(children, patchFlag) {
+                    return { name: "__text", children, patchFlag };
+                }
+
                 export function mergeProps(...sources) {
                     return Object.assign({}, ...sources.filter(source => source != null));
                 }

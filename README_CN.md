@@ -32,13 +32,10 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-13
+### 2026-08-14
 
-- Jazor `0.13.0` 增加 Windows Release publish 门禁：从本地打出的 `Jazor`、`Jazor.Vue` 与 `ECMAScript.Style` 包恢复隔离 Wiki，发布真实 `bundle.js` 形态，并在 NuGet 发布前由 Microsoft Edge 以 `/docs` 路径验证。
-- Wiki 现已成为真实的 `H()` 与 `ECMAScript.Style` 应用表面：生成的 `ecs-*` class、受管理 CSS 注入、source map、SPA 导航和 Release HMR 边界都会在 Debug 与 Release 浏览器验证中检查。
-- Release Wiki host 显式提供 `bundle.js`；即使存在空的复制 `bin/.../jazor/` 目录，Debug host 仍会选择项目根的 ready `jazor/` 图。PathBase 感知的 import map 会稳定解析生成的 `style.mjs`、`components/` 与 `System/` 模块。
-- 标记 `PreserveAttribute` 的 CSS shorthand params 现在会保留数组形态，因此 `padding(px(4), px(8))` 会生成合法的 `padding:4px 8px;`，不改变 `style.mjs` ABI。
-- `double`、`float` 与 `Math.Round` 的小数位舍入现直接比较原始 IEEE-754 位表示，避免 JavaScript 乘法把 `2.675` 一类值错误推到 .NET 舍入中点的另一侧。
+- RazorVue direct render 模块现可为已证明的动态 string 文本、静态/动态混合文本和嵌套稳定元素生成 Vue child block tree 与 `TEXT` patch。条件内容、slot、raw markup 和未证明 child 继续使用普通 Vue diff。
+- production Vue browser/SSR 门禁现在会验证这些 child block 的 mount 与响应式 DOM patch，并继续覆盖 static markup 与 hydration。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 

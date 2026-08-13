@@ -85,6 +85,8 @@ plan 不能保存或重新翻译 `IOperation`；其 expression 仍来自现有 c
 
 **完成门槛：** dynamic text、nested dynamic child、conditional child、reference capture、nested component 的 evaluation order 和 VNode 更新均有真实 runtime regression；同一输入的 module text/source map/import order 保持 deterministic。
 
+**状态：已完成。** `RenderEmitter` 现在以 RazorVue-only `RenderPlan` / `VNodePlan` 保存已降低 ESTree expression 的 VNode 分类和更新事实，不持有或重译 `IOperation`。单一已证明为 `string` 的动态 text child 使用 `TEXT`，静态与动态文本混合时发射 `createTextVNode(..., TEXT)`，完整的静态/dynamic-text/nested-block direct-child 集合使用 `openBlock()` / `createElementBlock(...)`。conditional、slot、sequence、dynamic raw markup 与普通 component children 仍为 opaque，因此继续用 `h(...)` 的完整 children diff。artifact/Deno 回归和 production Vue DOM gate 已覆盖单文本、混合文本、嵌套 block，以及不错误提升 opaque children 的边界。
+
 ### E2: `@foreach`、fragment 和 list fast path
 
 把已证明安全的 `foreach` 从通用 `Array.from(..., mapper)` 演进为 Vue `renderList` lowering：

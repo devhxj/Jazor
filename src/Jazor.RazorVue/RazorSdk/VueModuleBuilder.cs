@@ -35,6 +35,7 @@ internal static class VueModuleBuilder
         "openBlock",
         "createElementBlock",
         "createBlock",
+        "createTextVNode",
         "onMounted",
         "onUnmounted",
         "onUpdated",
@@ -494,7 +495,8 @@ internal static class VueModuleBuilder
             directRender.UsesFragment,
             directRender.UsesStaticVNode,
             directRender.UsesRawMarkupRuntime,
-            directRender.UsesBlockTree));
+            directRender.UsesBlockTree,
+            directRender.UsesTextVNode));
 
         if (directRender.UsesRawMarkupRuntime)
         {
@@ -1310,6 +1312,7 @@ internal static class VueModuleBuilder
             operationResult.UsesStaticVNode,
             operationResult.UsesRawMarkupRuntime,
             operationResult.UsesBlockTree,
+            operationResult.UsesTextVNode,
             operationResult.UsesHandlerCache,
             operationResult.UsesProps,
             operationResult.UsesSlots,
@@ -1771,7 +1774,8 @@ internal static class VueModuleBuilder
         bool usesFragment,
         bool usesStaticVNode,
         bool usesRawMarkupRuntime,
-        bool usesBlockTree)
+        bool usesBlockTree,
+        bool usesTextVNode)
     {
         var imports = new List<string>
         {
@@ -1789,6 +1793,8 @@ internal static class VueModuleBuilder
             imports.Add("createElementBlock");
             imports.Add("createBlock");
         }
+        if (usesTextVNode)
+            imports.Add("createTextVNode");
 
         if (usesMounted)
             imports.Add("onMounted");
@@ -2941,6 +2947,7 @@ internal static class VueModuleBuilder
         bool UsesStaticVNode,
         bool UsesRawMarkupRuntime,
         bool UsesBlockTree,
+        bool UsesTextVNode,
         bool UsesHandlerCache,
         bool UsesProps,
         bool UsesSlots,

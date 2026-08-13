@@ -46,7 +46,9 @@ patch metadata 根据最终 Vue props surface 构造：
 
 | 形状 | 当前 flag / 行为 |
 | --- | --- |
-| dynamic text | 保留 `h(...)` children diff，当前不发射 `TEXT` |
+| 单一已证明为 `string` 的 dynamic text child | `1` (`TEXT`)；element 使用 `createElementBlock(...)` |
+| static + dynamic `string` text children | dynamic child 发射 `createTextVNode(..., 1)`，由父 block 收集 |
+| complete static / dynamic-text / nested-block direct children | 父 element 使用 block collection，nested block 作为 dynamic child |
 | dynamic element `class` / `style` | `2` / `4` (`CLASS` / `STYLE`) |
 | dynamic component prop named `class` / `style` | `8` (`PROPS`) with `dynamicProps: ["class"]` / `["style"]` |
 | 已知动态 props | `8` (`PROPS`) 与稳定 dynamic-prop name array |
@@ -54,11 +56,11 @@ patch metadata 根据最终 Vue props surface 构造：
 | `ref` / reference capture | `512` (`NEED_PATCH`) |
 | slots | `1024` (`DYNAMIC_SLOTS`) |
 
-element 只有在**没有即时 children**且有明确动态更新面时才发射 `openBlock(), createElementBlock(...)`。component 则只在没有普通即时 children 且有明确动态更新面时发射 `createBlock(...)`；slot object 可以获得 dynamic-slots flag。含即时 child 的 element/component 继续用 `h(...)`，因为当前 lowering 尚未为每个子节点建立完整的 `dynamicChildren` 合同，伪造空 block 会让 Vue 错过子树 diff。
+`RenderEmitter` 以 RazorVue-only `RenderPlan` / `VNodePlan` 保留已经由 `SemanticWalker` 生成的 ESTree expression 与 VNode update facts；它不保存、分析或重译 `IOperation`。element 在没有 children、单一动态 string text，或所有 direct children 都是 static/dynamic-text/nested-block 时才发射 `openBlock(), createElementBlock(...)`。混合文本中的动态部分显式发射 `createTextVNode(...)`，使 Vue 可以把它收集进父 block。component 仍只在没有普通即时 children 且有明确动态更新面时发射 `createBlock(...)`；slot object 可以获得 dynamic-slots flag。
 
 `CLASS` / `STYLE` 是 Vue DOM element 的专用 patch 快路径，不能直接用于 component VNode。组件把参数映射到 runtime `class` 或 `style` 时，必须使用 `PROPS` 和精确的 `dynamicProps` 名称，否则 Vue 的 component-update gate 可能跳过子组件更新。
 
-因此 `TEXT` 虽是 Vue runtime 的标准 flag，但不是当前 direct lowering 的已实现契约。动态文本通常正是即时 child；在 child-level metadata、动态 child 收集和 C# 求值顺序能够一起证明前，保持 `h(...)` 的普通 children diff 是有意的保守选择。
+conditional、slot、sequence、dynamic/nullable raw markup 和普通 component children 仍不带完整 direct-child block contract，继续使用 `h(...)` 的完整 children diff。这里 `TEXT` 只接受 Roslyn 已证明为 `string` 的 authored expression；object/数值/自定义 formatting 可能有 CLR conversion 语义，不能为了 patch flag 跳过正常 child lowering。production Vue gate 已实际 mount/patch 单文本、混合文本和 nested block，而不是只验证生成字符串。
 
 ### Stable event handler cache
 
@@ -96,13 +98,13 @@ dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --verify-vue-runtim
 
 1. 官方 Razor SG -> direct `.mjs` 是唯一生产路径，仓库不保留 retired runtime bridge/import token。
 2. 静态 props 与 static VNode 在 module scope 只创建一次；slot/loop/render-local 不可提升。
-3. 仅已证明安全的叶节点和 component shape 使用 block/patch flag；有即时 children 时保留 `h`。
+3. 仅已证明安全的叶节点、完整 child plan 和 component shape 使用 block/patch flag；conditional、slot、sequence、raw markup 与未分类 child 继续保留 `h`。
 4. handler 在同一 setup instance 内保持 identity，跨 setup instance 不共享。
 5. `VueRawMarkupTests`、`RazorSgVueCompilerOptimizationTests` 与 Emit provider tests 覆盖 HTML cardinality、无 wrapper raw markup、按需 materialization 与 scope 约束；RazorVue、Emit、Compiler suites 保持通过。
 6. benchmark protocol 和 production Vue runtime gate 可独立执行，并明确记录各自测量/正确性边界。
 
 ## 后续演进
 
-下一步不是机械扩大发射 `createElementBlock` 的范围。只有在 direct lowering 能为即时 children 建立稳定、完整的 dynamic-child contract，并通过真实 Vue runtime regression 后，才考虑更深的 block tree。可能的候选包括静态子树分段、keyed list 的 fragment flag、以及按 C# 求值顺序保留的 child-level patch metadata。
+下一步是为 `@foreach` fragment 和 slot object 建立各自独立的稳定性合同，而不是机械扩大发射 `createElementBlock` 的范围。list 需要保留 collection/key/iteration closure 的 C# 求值顺序；slot 需要区分稳定、conditional 和 loop-generated closure。两者没有完整 metadata 与真实 Vue regression 前，保持 `h(...)` 是正确行为。
 
 每一项都应先证明：evaluation order、side-effect count、最终 VNode、slot/loop closure identity 与 source-map anchoring 不退化；否则继续使用 `h(...)` 是正确的保守行为。

@@ -64,6 +64,7 @@ internal static class RenderEmitter
                 UsesStaticVNode: lowered.UsesStaticVNode,
                 UsesRawMarkupRuntime: lowered.UsesRawMarkupRuntime,
                 UsesBlockTree: lowered.UsesBlockTree,
+                UsesTextVNode: lowered.UsesTextVNode,
                 UsesHandlerCache: lowered.UsesHandlerCache,
                 UsesProps: AstReferenceAnalysis.ReferencesIdentifier(lowered.RenderExpression, "props") ||
                            lowered.PreludeStatements.Any(static statement => AstReferenceAnalysis.ReferencesIdentifier(statement, "props")),
@@ -117,6 +118,7 @@ internal static class RenderEmitter
         private bool _usesRawMarkupRuntime;
         private bool _usesSlots;
         private bool _usesBlockTree;
+        private bool _usesTextVNode;
         private bool _usesHandlerCache;
         private int _nonHoistableRenderScopeDepth;
         private int _staticPropsHoistCount;
@@ -185,6 +187,7 @@ internal static class RenderEmitter
                 usesStaticVNode,
                 _usesRawMarkupRuntime,
                 _usesBlockTree,
+                _usesTextVNode,
                 _usesHandlerCache,
                 _usesSlots,
                 BuildImportDeclarations(),
@@ -812,7 +815,8 @@ internal static class RenderEmitter
                         CacheStableEventHandler,
                         CanCacheStableEventHandler,
                         handler => IsStableEventHandler(handler, context),
-                        UseBlockTree));
+                        UseBlockTree,
+                        UseTextVNode));
                     return true;
 
                 case "CloseElement":
@@ -877,12 +881,19 @@ internal static class RenderEmitter
                 case "AddMarkupContent":
                     EnsureSignature(invocation, invocation.Arguments.Length == 2);
                     RequireOmittableSequence(invocation.Arguments[0].Value);
-                    state.AddOptionalChild(TryCreateStaticMarkupVNode(
-                        invocation.Arguments[1].Value,
-                        allowRawStringLiteral: true,
-                        out var staticVNode)
-                        ? staticVNode
-                        : CreateRawMarkupContent(LowerExpression(invocation.Arguments[1].Value, context)));
+                    if (TryCreateStaticMarkupVNode(
+                            invocation.Arguments[1].Value,
+                            allowRawStringLiteral: true,
+                            out var staticVNode))
+                    {
+                        if (staticVNode is not NullLiteral)
+                            state.AddStaticChild(staticVNode);
+                    }
+                    else
+                    {
+                        state.AddOptionalChild(CreateRawMarkupContent(
+                            LowerExpression(invocation.Arguments[1].Value, context)));
+                    }
                     return true;
 
                 case "AddElementReferenceCapture":
@@ -1240,6 +1251,9 @@ internal static class RenderEmitter
         private void UseBlockTree()
             => _usesBlockTree = true;
 
+        private void UseTextVNode()
+            => _usesTextVNode = true;
+
         private static bool IsInlineFunction(Expression expression)
             => expression is ArrowFunctionExpression or FunctionExpression;
 
@@ -1506,16 +1520,30 @@ internal static class RenderEmitter
                     return;
                 }
 
-                state.AddOptionalChild(TryCreateStaticMarkupVNode(
-                    invocation.Arguments[1].Value,
-                    allowRawStringLiteral: false,
-                    out var staticVNode)
-                    ? staticVNode
-                    : CreateRawMarkupContent(LowerMarkupStringExpression(invocation.Arguments[1].Value, context)));
+                if (TryCreateStaticMarkupVNode(
+                        invocation.Arguments[1].Value,
+                        allowRawStringLiteral: false,
+                        out var staticVNode))
+                {
+                    if (staticVNode is not NullLiteral)
+                        state.AddStaticChild(staticVNode);
+                }
+                else
+                {
+                    state.AddOptionalChild(CreateRawMarkupContent(
+                        LowerMarkupStringExpression(invocation.Arguments[1].Value, context)));
+                }
                 return;
             }
 
-            state.AddChild(LowerExpression(invocation.Arguments[1].Value, context));
+            var textOperation = invocation.Arguments[1].Value;
+            var textExpression = LowerExpression(textOperation, context);
+            if (IsStaticTextContent(textOperation))
+                state.AddStaticChild(textExpression);
+            else if (IsGuaranteedStringTextContent(textOperation))
+                state.AddDynamicTextChild(textExpression);
+            else
+                state.AddChild(textExpression);
         }
 
         private void EmitReferenceCapture(
@@ -3821,6 +3849,34 @@ internal static class RenderEmitter
         return false;
     }
 
+    /// <summary>
+    /// Identifies text payloads that can be represented as immutable VNode children. This is
+    /// intentionally narrower than C# constant folding: only literal/null scalar payloads have
+    /// no render-time source evaluation or conversion semantics to preserve.
+    /// 只接受无运行时求值的标量文本；复杂 conversion/format/call 仍作为 dynamic text。
+    /// </summary>
+    private static bool IsStaticTextContent(IOperation operation)
+    {
+        while (operation is IConversionOperation conversion)
+            operation = conversion.Operand;
+        return operation.ConstantValue.HasValue &&
+               operation.ConstantValue.Value is null or string or bool or char or sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal;
+    }
+
+    /// <summary>
+    /// TEXT patching is enabled only for an authored string expression. Other AddContent values
+    /// may need CLR formatting or value-specific normalization, so they retain the conservative
+    /// child diff until that semantic slice has an explicit Vue contract.
+    /// 目前只优化 string，避免 object/数值/自定义格式化被错误当作 Vue text fast path。
+    /// </summary>
+    private static bool IsGuaranteedStringTextContent(IOperation operation)
+    {
+        while (operation is IConversionOperation conversion)
+            operation = conversion.Operand;
+
+        return operation.Type?.SpecialType == SpecialType.System_String;
+    }
+
     private static void RequireOmittableSequence(IOperation operation)
     {
         if (!CanOmit(operation))
@@ -3861,10 +3917,17 @@ internal static class RenderEmitter
     private static OperationTransformationException Unsupported(IOperation operation, string message)
         => new(operation, message);
 
-    /// <summary>Maintains the active RenderTree frame stack and produces the final vnode expression.</summary>
+    /// <summary>
+    /// Maintains the active RenderTree frame stack and the RazorVue-only RenderPlan.
+    /// C# expressions have already been lowered before entering this state; plans retain only
+    /// VNode framing/update facts, so this layer never becomes a second expression compiler.
+    /// 保留 Vue block 所需最小 metadata，不保存或重写 IOperation。
+    /// </summary>
     private sealed class RenderState
     {
-        public List<Expression> Roots { get; } = new();
+        public RenderPlan Plan { get; } = new();
+
+        public List<VNodePlan> Roots => Plan.Roots;
 
         public Stack<Frame> Stack { get; } = new();
 
@@ -3877,15 +3940,7 @@ internal static class RenderEmitter
         public bool UsesStaticVNode { get; set; }
 
         public Expression ToRenderExpression()
-        {
-            return Roots.Count switch
-            {
-                0 => Null(),
-                1 when Roots[0] is SpreadElement spread => spread.Argument,
-                1 => Roots[0],
-                _ => CreateFragment(Roots)
-            };
-        }
+            => Plan.ToRenderExpression();
 
         public void StartChildren()
         {
@@ -3894,18 +3949,33 @@ internal static class RenderEmitter
         }
 
         public void AddChild(Expression expression)
+            => AddChild(VNodePlan.Opaque(expression));
+
+        public void AddStaticChild(Expression expression)
+            => AddChild(VNodePlan.Static(expression));
+
+        public void AddDynamicTextChild(Expression expression)
+            => AddChild(VNodePlan.DynamicText(expression));
+
+        public void AddChild(VNodePlan child)
         {
             if (Stack.Count == 0)
             {
-                expression = WrapWithStatements(PendingPreludeStatements, expression);
+                var expression = WrapWithStatements(PendingPreludeStatements, child.Expression);
                 PendingPreludeStatements.Clear();
-                Roots.Add(ApplyGuards(expression));
+                var guarded = ApplyGuards(expression);
+                // A root guard is runtime control flow. Its contained VNode facts remain useful
+                // inside that branch, but the root itself cannot be treated as a static child.
+                // 根 guard 改变 vnode existence，因此最外层降级为 opaque。
+                Roots.Add(Guards.Count == 0
+                    ? child with { Expression = guarded }
+                    : VNodePlan.Opaque(guarded));
                 return;
             }
 
             var frame = Stack.Peek();
             frame.ChildrenStarted = true;
-            frame.Children.Add(expression);
+            frame.Children.Add(child);
         }
 
         public void AddChildSequence(Expression expression)
@@ -3915,13 +3985,13 @@ internal static class RenderEmitter
                 expression = WrapWithStatements(PendingPreludeStatements, expression);
                 PendingPreludeStatements.Clear();
                 expression = VueSlotAstFactory.NormalizeContent(ApplyGuards(expression));
-                Roots.Add(new SpreadElement(expression));
+                Roots.Add(VNodePlan.Sequence(expression));
                 return;
             }
 
             var frame = Stack.Peek();
             frame.ChildrenStarted = true;
-            frame.Children.Add(new SpreadElement(
+            frame.Children.Add(VNodePlan.Sequence(
                 VueSlotAstFactory.NormalizeContent(expression)));
         }
 
@@ -3971,8 +4041,79 @@ internal static class RenderEmitter
             var frame = Stack.Pop();
             if (frame is RegionFrame region && region.Children.Count > 1)
                 UsesFragment = true;
-            AddChild(frame.ToRenderExpression());
+            AddChild(frame.ToVNodePlan());
         }
+    }
+
+    /// <summary>
+    /// Final RazorVue VNode plan for one render scope. It deliberately stores only an already
+    /// lowered ESTree expression plus Vue update facts; it never retains Roslyn operations.
+    /// 该 plan 是 render framing metadata，不是第二套 C# lowering pipeline。
+    /// </summary>
+    private sealed class RenderPlan
+    {
+        public List<VNodePlan> Roots { get; } = new();
+
+        public Expression ToRenderExpression()
+        {
+            return Roots.Count switch
+            {
+                0 => Null(),
+                1 when Roots[0].Kind == VNodePlanKind.Sequence => Roots[0].Expression,
+                1 => Roots[0].Expression,
+                _ => CreateFragment(Roots.Select(static child => child.ToNormalArrayItem()))
+            };
+        }
+    }
+
+    /// <summary>Classifies a finished VNode without making claims about its C# source expression.</summary>
+    private enum VNodePlanKind
+    {
+        Static,
+        DynamicText,
+        Block,
+        Opaque,
+        Sequence
+    }
+
+    /// <summary>
+    /// Small immutable child-plan carrier. `Sequence` represents slot/nullable protocol output
+    /// and is intentionally excluded from block collection until fragment lowering owns it.
+    /// sequence/conditional/slot 保持 opaque，避免错误标记为 Vue dynamic child。
+    /// </summary>
+    private readonly record struct VNodePlan(Expression Expression, VNodePlanKind Kind)
+    {
+        public bool CanParticipateInBlock
+            => Kind is VNodePlanKind.Static or VNodePlanKind.DynamicText or VNodePlanKind.Block;
+
+        public bool IsDynamicChild
+            => Kind is VNodePlanKind.DynamicText or VNodePlanKind.Block;
+
+        public static VNodePlan Static(Expression expression)
+            => new(expression, VNodePlanKind.Static);
+
+        public static VNodePlan DynamicText(Expression expression)
+            => new(expression, VNodePlanKind.DynamicText);
+
+        public static VNodePlan Block(Expression expression)
+            => new(expression, VNodePlanKind.Block);
+
+        public static VNodePlan Opaque(Expression expression)
+            => new(expression, VNodePlanKind.Opaque);
+
+        public static VNodePlan Sequence(Expression expression)
+            => new(expression, VNodePlanKind.Sequence);
+
+        public Expression ToNormalArrayItem()
+            => Kind == VNodePlanKind.Sequence ? new SpreadElement(Expression) : Expression;
+
+        public Expression ToBlockArrayItem()
+            => Kind == VNodePlanKind.DynamicText
+                ? Call(
+                    "createTextVNode",
+                    Expression,
+                    new NumericLiteral(VuePatchFlags.Text, VuePatchFlags.Text.ToString(System.Globalization.CultureInfo.InvariantCulture)))
+                : Expression;
     }
 
     /// <summary>Base stack frame for an open Razor render region. 子类决定关闭后的 Vue vnode 形状。</summary>
@@ -3980,9 +4121,12 @@ internal static class RenderEmitter
     {
         public bool ChildrenStarted { get; set; }
 
-        public List<Expression> Children { get; } = new();
+        public List<VNodePlan> Children { get; } = new();
 
-        public abstract Expression ToRenderExpression();
+        public abstract VNodePlan ToVNodePlan();
+
+        public Expression ToRenderExpression()
+            => ToVNodePlan().Expression;
 
         public virtual string Describe()
             => GetType().Name;
@@ -4297,11 +4441,12 @@ internal static class RenderEmitter
         private readonly Expression _tagExpression;
         private readonly Dictionary<string, DirectEventModifier> _eventModifiers = new(StringComparer.Ordinal);
         private readonly Action? _useBlockTree;
+        private readonly Action? _useTextVNode;
         private string? _updatesAttributeName;
         private string? _updatesEventName;
 
         public ElementFrame(Expression tagExpression, string tagName)
-            : this(tagExpression, tagName, null, null, null, null, null, null)
+            : this(tagExpression, tagName, null, null, null, null, null, null, null)
         {
         }
 
@@ -4313,7 +4458,8 @@ internal static class RenderEmitter
             Func<Expression, Expression>? cacheStableEventHandler,
             Func<Expression, bool>? canCacheStableEventHandler,
             Func<Expression, bool>? isStableEventHandler,
-            Action? useBlockTree)
+            Action? useBlockTree,
+            Action? useTextVNode = null)
             : base(
                 hoistStaticProps,
                 canHoistStaticProps,
@@ -4324,6 +4470,7 @@ internal static class RenderEmitter
             _tagExpression = tagExpression;
             TagName = tagName;
             _useBlockTree = useBlockTree;
+            _useTextVNode = useTextVNode;
         }
 
         public string TagName { get; }
@@ -4331,19 +4478,34 @@ internal static class RenderEmitter
         public override string NormalizeAttributeName(string name)
             => NormalizeDirectElementAttributeName(name);
 
-        public override Expression ToRenderExpression()
+        public override VNodePlan ToVNodePlan()
         {
             var props = FormatPropsExpression();
-            var children = FormatChildrenExpression();
+            var isSingleDynamicTextChild = Children.Count == 1 && Children[0].Kind == VNodePlanKind.DynamicText;
+            // A leaf with dynamic props was already a proven G2 block shape. For non-leaf
+            // nodes, require a complete immediate-child plan before expanding that fast path.
+            // 无 children 的动态 props 保留旧安全 block；有 children 才要求完整 child plan。
+            var hasSafeBlockChildren = Children.Count == 0 ||
+                                       isSingleDynamicTextChild ||
+                                       Children.All(static child => child.CanParticipateInBlock);
+            var hasDynamicChild = isSingleDynamicTextChild || Children.Any(static child => child.IsDynamicChild);
+            var children = hasSafeBlockChildren
+                ? FormatBlockChildrenExpression()
+                : FormatChildrenExpression();
             var patch = BuildPatchMetadata(
-                hasBlockChild: false);
-            // `createElementBlock` records an empty dynamicChildren list. It is correct only
-            // when this frame has no immediate children; otherwise Vue would skip ordinary
-            // child diffing for dynamic text/conditional/foreach content that this lowering
-            // has not yet converted into individually flagged VNodes.
-            // 带即时 children 时暂保留 h() 的完整 children diff，避免错误空 block 快路径。
-            if (Children.Count != 0 || !patch.RequiresBlock)
-                return Call("h", _tagExpression, props, children);
+                hasBlockChild: hasDynamicChild,
+                additionalFlags: isSingleDynamicTextChild ? VuePatchFlags.Text : 0);
+            // A Vue block is valid only after every direct child has either static identity,
+            // its own block contract, or a TEXT vnode flag. Conditional/sequence/slot/raw
+            // values stay opaque and keep h()'s complete children diff.
+            // immediate child 不完整时绝不伪造 block，防止 Vue 跳过未知 child 更新。
+            if (!hasSafeBlockChildren || !patch.RequiresBlock)
+            {
+                var expression = Call("h", _tagExpression, props, children);
+                return !patch.RequiresBlock && Children.All(static child => child.Kind == VNodePlanKind.Static)
+                    ? VNodePlan.Static(expression)
+                    : VNodePlan.Opaque(expression);
+            }
 
             _useBlockTree?.Invoke();
             var arguments = new List<Expression> { _tagExpression, props, children };
@@ -4358,7 +4520,7 @@ internal static class RenderEmitter
 
             // Comma expression preserves a single render invocation with no wrapper closure.
             // openBlock/createElementBlock mirrors Vue compiler's block collection protocol.
-            return new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createElementBlock", arguments)));
+            return VNodePlan.Block(new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createElementBlock", arguments))));
         }
 
         public override string Describe()
@@ -4445,7 +4607,23 @@ internal static class RenderEmitter
                string.Equals(attribute.Name, _updatesEventName, StringComparison.Ordinal);
 
         private Expression FormatChildrenExpression()
-            => Children.Count == 0 ? Null() : CreateArray(Children);
+            => Children.Count == 0
+                ? Null()
+                : CreateArray(Children.Select(static child => child.ToNormalArrayItem()));
+
+        private Expression FormatBlockChildrenExpression()
+        {
+            if (Children.Count == 0)
+                return Null();
+
+            if (Children.Count == 1 && Children[0].Kind == VNodePlanKind.DynamicText)
+                return Children[0].Expression;
+
+            if (Children.Any(static child => child.Kind == VNodePlanKind.DynamicText))
+                _useTextVNode?.Invoke();
+
+            return CreateArray(Children.Select(static child => child.ToBlockArrayItem()));
+        }
     }
 
     /// <summary>Accumulates component props, event listeners, and named/default slots.</summary>
@@ -4514,7 +4692,7 @@ internal static class RenderEmitter
         public bool TryGetDeclaredSlotName(string parameterName, out string runtimeName)
             => _slotNameMap.TryGetValue(parameterName, out runtimeName!);
 
-        public override Expression ToRenderExpression()
+        public override VNodePlan ToVNodePlan()
         {
             var props = FormatPropsExpression();
             Expression? children = null;
@@ -4541,10 +4719,10 @@ internal static class RenderEmitter
             else if (Children.Count > 0)
             {
                 children = Children.Count == 1
-                    ? Children[0] is SpreadElement spread
-                        ? spread.Argument
-                        : Children[0]
-                    : CreateArray(Children);
+                    ? Children[0].Kind == VNodePlanKind.Sequence
+                        ? Children[0].Expression
+                        : Children[0].Expression
+                    : CreateArray(Children.Select(static child => child.ToNormalArrayItem()));
             }
 
             var patch = BuildPatchMetadata(
@@ -4554,9 +4732,14 @@ internal static class RenderEmitter
             // Non-slot component children are eagerly created while the block is open. Keep
             // them on h() until each direct child carries a proven patch contract.
             if (Children.Count != 0 || !patch.RequiresBlock)
-                return children is null
+            {
+                var expression = children is null
                     ? Call("h", _componentExpression, props)
                     : Call("h", _componentExpression, props, children);
+                return Children.Count == 0 && !patch.RequiresBlock
+                    ? VNodePlan.Static(expression)
+                    : VNodePlan.Opaque(expression);
+            }
 
             _useBlockTree?.Invoke();
             var arguments = new List<Expression> { _componentExpression, props, children ?? Null() };
@@ -4569,7 +4752,7 @@ internal static class RenderEmitter
                     arguments.Add(CreateArray(patch.DynamicProps.Value.Select(static name => StringLiteral(name))));
             }
 
-            return new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createBlock", arguments)));
+            return VNodePlan.Block(new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createBlock", arguments))));
         }
 
         private static Expression CreateSlotProjectionExpression(
@@ -4647,13 +4830,17 @@ internal static class RenderEmitter
     /// <summary>Groups a RenderTree region without creating an extra DOM element.</summary>
     private sealed class RegionFrame : Frame
     {
-        public override Expression ToRenderExpression()
-            => Children.Count switch
+        public override VNodePlan ToVNodePlan()
+        {
+            return Children.Count switch
             {
-                0 => Null(),
+                0 => VNodePlan.Static(Null()),
                 1 => Children[0],
-                _ => CreateFragment(Children)
+                _ => Children.All(static child => child.Kind == VNodePlanKind.Static)
+                    ? VNodePlan.Static(CreateFragment(Children.Select(static child => child.ToNormalArrayItem())))
+                    : VNodePlan.Opaque(CreateFragment(Children.Select(static child => child.ToNormalArrayItem())))
             };
+        }
     }
 
     /// <summary>Describes lexical context needed while lowering one expression into the active frame.</summary>
@@ -4705,6 +4892,7 @@ internal static class RenderEmitter
         bool UsesStaticVNode,
         bool UsesRawMarkupRuntime,
         bool UsesBlockTree,
+        bool UsesTextVNode,
         bool UsesHandlerCache,
         bool UsesSlots,
         ImmutableArray<ImportDeclaration> ImportDeclarations,
@@ -4782,6 +4970,7 @@ internal static class RenderEmitter
     /// <summary>Vue runtime patch-flag values used by the conservative direct-render subset.</summary>
     private static class VuePatchFlags
     {
+        public const int Text = 1 << 0;
         public const int Class = 1 << 1;
         public const int Style = 1 << 2;
         public const int Props = 1 << 3;
@@ -4877,6 +5066,7 @@ internal sealed record RenderResult(
     bool UsesStaticVNode,
     bool UsesRawMarkupRuntime,
     bool UsesBlockTree,
+    bool UsesTextVNode,
     bool UsesHandlerCache,
     bool UsesProps,
     bool UsesSlots,
