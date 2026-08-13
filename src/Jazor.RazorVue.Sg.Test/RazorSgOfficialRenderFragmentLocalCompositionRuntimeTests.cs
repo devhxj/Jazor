@@ -90,7 +90,7 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
                 assert.equal(nodes[0].children[0], "Queued: ");
                 assert.equal(nodes[0].children[1].name, "strong");
                 assert.equal(nodes[0].children[1].props["data-role"], "release-name");
-                assert.deepEqual(nodes[0].children[1].children, ["Accounts API"]);
+                assert.equal(nodes[0].children[1].children, "Accounts API");
             });
             """,
             new Dictionary<string, string>

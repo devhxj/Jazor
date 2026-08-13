@@ -93,7 +93,7 @@ public sealed class RazorSgOfficialRenderFragmentConstructorDescriptorRuntimeTes
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "strong");
                 assert.equal(nodes[0].props["data-scope"], "release-details");
-                assert.deepEqual(nodes[0].children, ["API gateway"]);
+                assert.equal(nodes[0].children, "API gateway");
             });
             """,
             new Dictionary<string, string>

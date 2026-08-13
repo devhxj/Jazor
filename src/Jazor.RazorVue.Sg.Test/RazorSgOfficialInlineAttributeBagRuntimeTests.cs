@@ -60,7 +60,7 @@ public sealed class RazorSgOfficialInlineAttributeBagRuntimeTests
                 assert.equal(idle.props["aria-busy"], false);
                 assert.equal(idle.props["data-phase"], "ready");
                 assert.equal(idle.props["data-action"], "deploy");
-                assert.deepEqual(idle.children, ["Deploy"]);
+                assert.equal(idle.children, "Deploy");
 
                 const deploying = component.setup({
                     IsDeploying: true,
@@ -71,7 +71,7 @@ public sealed class RazorSgOfficialInlineAttributeBagRuntimeTests
                 assert.equal(deploying.props["aria-busy"], true);
                 assert.equal(deploying.props["data-phase"], "deploying");
                 assert.equal(deploying.props["data-action"], "cancel");
-                assert.deepEqual(deploying.children, ["Cancel"]);
+                assert.equal(deploying.children, "Cancel");
             });
             """);
     }

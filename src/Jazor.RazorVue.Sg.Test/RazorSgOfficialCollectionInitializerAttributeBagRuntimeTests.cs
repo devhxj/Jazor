@@ -49,7 +49,7 @@ public sealed class RazorSgOfficialCollectionInitializerAttributeBagRuntimeTests
                 assert.equal(button.name, "button");
                 assert.equal(button.props["data-source"], "collection");
                 assert.equal(button.props["data-release"], "2026.08");
-                assert.deepEqual(button.children, ["Deploy"]);
+                assert.equal(button.children, "Deploy");
             });
             """);
     }

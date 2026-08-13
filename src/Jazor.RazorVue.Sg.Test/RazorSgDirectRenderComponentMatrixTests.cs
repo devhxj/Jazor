@@ -17,11 +17,10 @@ public sealed class RazorSgDirectRenderComponentMatrixTests
     {
         var observation = RazorSgDirectRenderMatrixTestHost.Emit(testCase);
 
-        StringAssert.Contains(observation.ArtifactExpression, testCase.ExpectedFragment, StringComparison.Ordinal);
+        RazorSgDirectRenderMatrixAssertions.AssertExpectedFragment(observation.ArtifactExpression, testCase.ExpectedFragment);
         if (testCase.AdditionalExpectedFragment is not null)
-            StringAssert.Contains(observation.ArtifactExpression, testCase.AdditionalExpectedFragment, StringComparison.Ordinal);
-        Assert.AreEqual(testCase.UsesFragment, observation.UsesFragment);
-        Assert.AreEqual(testCase.UsesStaticVNode, observation.UsesStaticVNode);
+            RazorSgDirectRenderMatrixAssertions.AssertExpectedFragment(observation.ArtifactExpression, testCase.AdditionalExpectedFragment);
+        RazorSgDirectRenderMatrixAssertions.AssertFeatureMetadata(testCase, observation);
         Assert.AreEqual(testCase.UsesProps, observation.UsesProps);
         Assert.AreEqual(testCase.UsesSlots, observation.UsesSlots);
         Assert.AreEqual(testCase.ImportCount, observation.ImportCount);

@@ -51,7 +51,11 @@ public sealed class RazorSgOfficialLocalMemberNameCollisionRuntimeTests
                 const section = component.setup({}, { slots: {} })();
                 assert.equal(section.name, "section");
                 assert.equal(section.props["data-kind"], "release-status");
-                assert.deepEqual(section.children, ["local", "|", "state"]);
+                assert.deepEqual(section.children, [
+                    { name: "__text", children: "local", patchFlag: 1 },
+                    "|",
+                    { name: "__text", children: "state", patchFlag: 1 }
+                ]);
             });
             """);
     }

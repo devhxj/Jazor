@@ -571,7 +571,7 @@ public sealed class RenderEmitterPrivateContractTests
             markupMethod,
             markupBody[1],
             context);
-        Assert.IsTrue(GetRecordProperty<bool>(markupFunction, "UsesStaticVNode"));
+        Assert.IsFalse(GetRecordProperty<bool>(markupFunction, "UsesStaticVNode"));
 
         var trailingMethod = GetMethodSymbol(fixture, "EmitterHost", "ExpressionFactory");
         var trailingBody = new object?[] { trailingMethod, null };
@@ -600,7 +600,7 @@ public sealed class RenderEmitterPrivateContractTests
             CreateEmitContext(genericContentSymbol.Parameters[0]),
             genericContentState);
         Assert.IsTrue(GetRecordProperty<bool>(genericContentState, "UsesFragment"));
-        Assert.IsTrue(GetRecordProperty<bool>(genericContentState, "UsesStaticVNode"));
+        Assert.IsFalse(GetRecordProperty<bool>(genericContentState, "UsesStaticVNode"));
     }
 
     [TestMethod]
@@ -1297,7 +1297,32 @@ public sealed class RenderEmitterPrivateContractTests
     {
         var method = instance.GetType()
             .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
+            .Single(candidate =>
+            {
+                if (candidate.Name != methodName)
+                    return false;
+
+                var parameters = candidate.GetParameters();
+                if (parameters.Length != arguments.Length)
+                    return false;
+
+                for (var index = 0; index < parameters.Length; index++)
+                {
+                    var argument = arguments[index];
+                    var parameterType = parameters[index].ParameterType;
+                    if (argument is null)
+                    {
+                        if (parameterType.IsValueType && Nullable.GetUnderlyingType(parameterType) is null)
+                            return false;
+                    }
+                    else if (!parameterType.IsInstanceOfType(argument))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
         return (T)method.Invoke(instance, arguments)!;
     }
 
@@ -1470,7 +1495,11 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNotNull(children);
         var values = children!.GetValue(frame) as System.Collections.IList;
         Assert.IsNotNull(values);
-        _ = values!.Add(child);
+        var vnodePlanType = typeof(RenderEmitter).GetNestedType("VNodePlan", BindingFlags.NonPublic);
+        Assert.IsNotNull(vnodePlanType);
+        var opaque = vnodePlanType!.GetMethod("Opaque", BindingFlags.Public | BindingFlags.Static);
+        Assert.IsNotNull(opaque);
+        _ = values!.Add(opaque!.Invoke(null, [child]));
     }
 
     private static void AddComponentSlot(object componentFrame, string name, object fragment)

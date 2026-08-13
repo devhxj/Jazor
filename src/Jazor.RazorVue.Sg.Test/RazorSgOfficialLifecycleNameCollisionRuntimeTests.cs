@@ -51,7 +51,7 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
                 const vnode = component.setup({}, { slots: {} })();
 
                 assert.equal(vnode.props["data-local"], "local");
-                assert.deepEqual(vnode.children, ["initialized"]);
+                assert.equal(vnode.children, "initialized");
             });
             """);
     }
@@ -164,15 +164,15 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
                 await Promise.resolve();
                 await Promise.resolve();
                 const afterParameters = render();
-                assert.deepEqual(afterParameters.children, ["init|initAsync|params|paramsAsync|should|"]);
+                assert.equal(afterParameters.children, "init|initAsync|params|paramsAsync|should|");
 
                 __runMounted();
                 const afterMounted = render();
-                assert.deepEqual(afterMounted.children, ["init|initAsync|params|paramsAsync|should|after:first|afterAsync:first|should|"]);
+                assert.equal(afterMounted.children, "init|initAsync|params|paramsAsync|should|after:first|afterAsync:first|should|");
 
                 __runUpdated();
                 const afterUpdated = render();
-                assert.deepEqual(afterUpdated.children, ["init|initAsync|params|paramsAsync|should|after:first|afterAsync:first|should|after:update|afterAsync:update|should|"]);
+                assert.equal(afterUpdated.children, "init|initAsync|params|paramsAsync|should|after:first|afterAsync:first|should|after:update|afterAsync:update|should|");
             });
             """);
     }

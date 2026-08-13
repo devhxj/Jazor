@@ -102,7 +102,7 @@ public sealed class RazorSgOfficialLocalRenderFragmentDescriptorRuntimeTests
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "strong");
                 assert.equal(nodes[0].props["data-summary"], "release");
-                assert.deepEqual(nodes[0].children, ["Gateway rollout"]);
+                assert.equal(nodes[0].children, "Gateway rollout");
             });
             """,
             new Dictionary<string, string>

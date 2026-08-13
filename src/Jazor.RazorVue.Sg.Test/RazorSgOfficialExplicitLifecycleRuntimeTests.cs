@@ -59,12 +59,12 @@ public sealed class RazorSgOfficialExplicitLifecycleRuntimeTests
 
             test("official Razor explicit disposal lifecycles run during unmount", async () => {
                 const render = component.setup({}, { slots: {} });
-                assert.deepEqual(render().children, [""]);
+                assert.equal(render().children, "");
 
                 __runUnmounted();
                 await Promise.resolve();
 
-                assert.deepEqual(render().children, ["dispose|disposeAsync|"]);
+                assert.equal(render().children, "dispose|disposeAsync|");
             });
             """);
     }

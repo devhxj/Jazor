@@ -97,7 +97,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 const title = summary.children[0];
                 assert.equal(title.name, "strong");
                 assert.equal(title.props["data-summary-part"], "title");
-                assert.deepEqual(title.children, ["May deployment"]);
+                assert.equal(title.children, "May deployment");
 
                 const status = summary.children[1];
                 assert.equal(status.name, "span");
@@ -207,7 +207,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 assert.equal(item.children.length, 1);
                 assert.equal(item.children[0].name, "strong");
                 assert.equal(item.children[0].props["data-release-id"], 42);
-                assert.deepEqual(item.children[0].children, ["Production"]);
+                assert.equal(item.children[0].children, "Production");
             });
             """,
             new Dictionary<string, string>
@@ -307,13 +307,13 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 const compact = compactPanel.children.item({ Id: 9, Label: "Review" })[0];
                 assert.equal(compact.name, "span");
                 assert.equal(compact.props["data-variant"], "compact");
-                assert.deepEqual(compact.children, ["Review"]);
+                assert.equal(compact.children, "Review");
 
                 const detailedPanel = component.setup({ Detailed: true }, { slots: {} })();
                 const detailed = detailedPanel.children.item({ Id: 9, Label: "Review" })[0];
                 assert.equal(detailed.name, "strong");
                 assert.equal(detailed.props["data-variant"], "detailed");
-                assert.deepEqual(detailed.children, ["9:Review"]);
+                assert.equal(detailed.children, "9:Review");
             });
             """,
             new Dictionary<string, string>
@@ -488,7 +488,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 const notice = host.children.content()[0];
                 assert.equal(notice.name, "aside");
                 assert.equal(notice.props["data-notice"], "release");
-                assert.deepEqual(notice.children, ["Approval pending"]);
+                assert.equal(notice.children, "Approval pending");
             });
             """,
             new Dictionary<string, string>

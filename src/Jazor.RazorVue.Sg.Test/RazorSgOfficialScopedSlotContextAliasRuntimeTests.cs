@@ -75,7 +75,7 @@ public sealed class RazorSgOfficialScopedSlotContextAliasRuntimeTests
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "article");
                 assert.equal(nodes[0].props["data-release-id"], 42);
-                assert.deepEqual(nodes[0].children, ["Production"]);
+                assert.equal(nodes[0].children, "Production");
             });
             """,
             new Dictionary<string, string>

@@ -136,6 +136,24 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     return { name: "__text", children, patchFlag };
                 }
 
+                // Keep the test contract aligned with Vue's array/iterable/object list domains.
+                // 这里不模拟 diff，只验证 mapper、fragment flag 与 iteration identity。
+                export function renderList(source, renderItem) {
+                    if (Array.isArray(source) || typeof source === "string") {
+                        return Array.from(source, (item, index) => renderItem(item, index));
+                    }
+                    if (typeof source === "number") {
+                        return Array.from({ length: source }, (_, index) => renderItem(index + 1, index));
+                    }
+                    if (source?.[Symbol.iterator]) {
+                        return Array.from(source, (item, index) => renderItem(item, index));
+                    }
+                    if (source && typeof source === "object") {
+                        return Object.keys(source).map((key, index) => renderItem(source[key], key, index));
+                    }
+                    return [];
+                }
+
                 export function mergeProps(...sources) {
                     return Object.assign({}, ...sources.filter(source => source != null));
                 }

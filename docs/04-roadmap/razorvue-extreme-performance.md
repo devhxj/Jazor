@@ -98,6 +98,8 @@ plan 不能保存或重新翻译 `IOperation`；其 expression 仍来自现有 c
 
 **完成门槛：** keyed reorder 保留 DOM/component identity，unkeyed 行为不被错误标为 stable，loop-local bind/handler/slot 不越过实例或迭代捕获；真实 DOM benchmark 显示目标 list fixture 的 patch 成本改善且非目标 fixture 无显著回归。
 
+**状态：已完成。** 只有 simple loop local、single direct element/component VNode root 且没有事件、`@bind`、ref、slot、解构或 nested loop capture 的 `foreach` 采用 `openBlock(true) + createElementBlock(Fragment, null, renderList(source, mapper), flag)`。显式 Razor `@key` 采用 `KEYED_FRAGMENT (128)`，没有 key 采用 `UNKEYED_FRAGMENT (256)`；`STABLE_FRAGMENT (64)` 没有被猜测性使用。`renderList` 接收原 collection，保留 Vue 对 array、iterable、object record 和 numeric range 的协议，避免旧 `Array.from(source ?? [])` 对 source 语义的改写。production Vue gate 已验证 keyed `c,a,b` reorder 保留原 DOM identity，且 unkeyed fragment flag 为 `256`。其他 foreach 继续保守使用旧的 `Array.from(... ?? [], mapper)` 路径。
+
 ### E3: stable slot 与精确 dynamic slots
 
 slot object 需要区分稳定、conditional、loop-generated 和动态名字：

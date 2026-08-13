@@ -97,7 +97,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "strong");
                 assert.equal(nodes[0].props["data-release-id"], 42);
-                assert.deepEqual(nodes[0].children, ["Queue: Deploy API"]);
+                assert.equal(nodes[0].children, "Queue: Deploy API");
             });
             """,
             new Dictionary<string, string>
@@ -194,7 +194,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "span");
                 assert.equal(nodes[0].props["data-release"], "release-17");
-                assert.deepEqual(nodes[0].children, ["Review CLI"]);
+                assert.equal(nodes[0].children, "Review CLI");
             });
             """,
             new Dictionary<string, string>

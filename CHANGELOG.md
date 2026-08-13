@@ -6,6 +6,7 @@
 
 - RazorVue direct render modules now generate Vue child block trees for a single dynamic string child, static-plus-dynamic text, and nested stable elements. These artifacts use Vue `TEXT` patch flags and `createTextVNode` only where the generated Razor C# proves the text surface, reducing ordinary child traversal during updates without changing C# evaluation, formatting, slot, loop, or raw-markup behavior.
 - Conditional content, slots, render sequences, dynamic raw markup, and ordinary component children intentionally retain Vue's full `h(...)` children diff until their own stability and closure contracts are proven. Production Vue browser and SSR verification now exercises the new child block and text patch shapes alongside static markup and hydration coverage.
+- Proven simple Razor `foreach` loops now lower to Vue `renderList` inside `openBlock(true)` fragments. Explicit `@key` emits `KEYED_FRAGMENT (128)`, unkeyed loops emit `UNKEYED_FRAGMENT (256)`, and the path deliberately retains Vue's original collection protocol instead of converting object/iterable/range sources through `Array.from(source ?? [])`. Production Vue verification confirms keyed DOM identity during reorder and rejects an accidental stable-fragment flag for unkeyed lists.
 
 ## 2026-08-13
 

@@ -55,9 +55,9 @@ public sealed class ProductionRazorCompilerReferenceTests
             .ToArray();
 
         CollectionAssert.AreEqual(
-            new[] { "Jazor.RazorVue.dll", "Jazor.RazorVue.pdb" },
+            new[] { "AngleSharp.dll", "Jazor.RazorVue.dll", "Jazor.RazorVue.pdb" },
             packagedAnalyzers,
-            "Jazor.Vue must rely on Jazor for shared analyzer dependencies so catalog generators are loaded only once.");
+            "Jazor.Vue must package RazorVue and its HTML parser while relying on Jazor for shared analyzer dependencies.");
     }
 
     [TestMethod]

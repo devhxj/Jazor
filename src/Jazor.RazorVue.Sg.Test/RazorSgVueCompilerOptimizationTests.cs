@@ -350,6 +350,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(loopObservation.ModuleText);
         StringAssert.Contains(loopObservation.ModuleText, "Array.from(state.Entries ?? []", StringComparison.Ordinal);
+        Assert.IsFalse(loopObservation.ModuleText.Contains("renderList(state.Entries", StringComparison.Ordinal), loopObservation.ModuleText);
         Assert.IsFalse(
             loopObservation.ModuleText.Contains("__jazor$handlerCache", StringComparison.Ordinal),
             loopObservation.ModuleText);

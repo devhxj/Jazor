@@ -71,8 +71,8 @@ public sealed class RazorSgOfficialLoopMemberNameCollisionRuntimeTests
                 assert.equal(buttons.length, 2);
                 assert.equal(buttons[0].props["data-release"], "Accounts API");
                 assert.equal(buttons[1].props["data-release"], "Billing API");
-                assert.deepEqual(buttons[0].children, ["Accounts API"]);
-                assert.deepEqual(buttons[1].children, ["Billing API"]);
+                assert.equal(buttons[0].children, "Accounts API");
+                assert.equal(buttons[1].children, "Billing API");
 
                 await Promise.resolve(buttons[1].props.onClick());
 

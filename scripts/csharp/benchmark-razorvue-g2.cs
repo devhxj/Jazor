@@ -416,7 +416,7 @@ static string CreateProductionVueBrowserHtml()
         <meta charset="utf-8">
         <div id="app"></div>
         <script type="module">
-        import { createApp, createSSRApp, createElementBlock, createStaticVNode, createTextVNode, h, nextTick, openBlock, ref, render } from "./vue.mjs";
+        import { Fragment, createApp, createSSRApp, createElementBlock, createStaticVNode, createTextVNode, h, nextTick, openBlock, ref, render, renderList } from "./vue.mjs";
         import { createRawMarkup } from "./raw-markup.mjs";
 
         const cases = [
@@ -481,13 +481,65 @@ static string CreateProductionVueBrowserHtml()
           blockHost.querySelector("#block-mixed")?.textContent === "fixedsecond" &&
           blockHost.querySelector("#block-nested span")?.textContent === "second";
 
+        // This is the E2 lowering shape. A keyed fragment must move the original DOM nodes
+        // with their keys after a reorder; an unkeyed fragment must never claim STABLE_FRAGMENT.
+        // 验证 renderList 的 key identity，同时锁定无 key 列表只能使用 256 而非 64。
+        const keyedItems = ref([
+          { id: "a", label: "A" },
+          { id: "b", label: "B" },
+          { id: "c", label: "C" }
+        ]);
+        const keyedListHost = document.createElement("div");
+        keyedListHost.id = "keyed-list-host";
+        document.body.append(keyedListHost);
+        const KeyedListApp = { setup: () => () => (
+          openBlock(true),
+          createElementBlock(
+            Fragment,
+            null,
+            renderList(keyedItems.value, item => h("li", { key: item.id, "data-key": item.id }, item.label)),
+            128
+          )
+        ) };
+        createApp(KeyedListApp).mount(keyedListHost);
+        const keyedBefore = Object.fromEntries(
+          [...keyedListHost.querySelectorAll("li")].map(node => [node.dataset.key, node])
+        );
+        keyedItems.value = [keyedItems.value[2], keyedItems.value[0], keyedItems.value[1]];
+        await nextTick();
+        const keyedNodesAfter = [...keyedListHost.querySelectorAll("li")];
+        const keyedOrder = keyedNodesAfter.map(node => node.dataset.key).join(",");
+        const keyedReordered = keyedOrder === "c,a,b" &&
+          keyedNodesAfter[0] === keyedBefore.c &&
+          keyedNodesAfter[1] === keyedBefore.a &&
+          keyedNodesAfter[2] === keyedBefore.b;
+
+        let unkeyedFragmentFlag = 0;
+        const UnkeyedListApp = { setup: () => () => {
+          const vnode = (
+            openBlock(true),
+            createElementBlock(
+              Fragment,
+              null,
+              renderList(["first", "second"], item => h("span", null, item)),
+              256
+            )
+          );
+          unkeyedFragmentFlag = vnode.patchFlag;
+          return vnode;
+        } };
+        const unkeyedListHost = document.createElement("div");
+        document.body.append(unkeyedListHost);
+        createApp(UnkeyedListApp).mount(unkeyedListHost);
+        const unkeyedIsConservative = unkeyedFragmentFlag === 256 && unkeyedFragmentFlag !== 64;
+
         const host = document.createElement("div");
         host.innerHTML = "<section id=\"hydrated\"><strong>one</strong><em>two</em></section>";
         document.body.append(host);
         createSSRApp({ render: () => h("section", { id: "hydrated" }, [createStaticVNode("<strong>one</strong><em>two</em>", 2)]) }).mount(host);
         const hydrated = host.querySelectorAll("#hydrated strong, #hydrated em").length === 2;
-        document.documentElement.setAttribute("data-jazor-production-vue", mounted && patched && directPatched && blockMounted && blockPatched && hydrated ? "passed" : "failed");
-        document.documentElement.setAttribute("data-jazor-production-vue-detail", `mounted:${mounted};dynamicCount:${dynamicCount};commentElementCount:${commentElementCount};hasWrapper:${hasWrapper};cases:${casesPresent};patched:${patched};directPatched:${directPatched};blockMounted:${blockMounted};blockPatched:${blockPatched};dynamicText:${dynamic.textContent};hydrated:${hydrated}`);
+        document.documentElement.setAttribute("data-jazor-production-vue", mounted && patched && directPatched && blockMounted && blockPatched && keyedReordered && unkeyedIsConservative && hydrated ? "passed" : "failed");
+        document.documentElement.setAttribute("data-jazor-production-vue-detail", `mounted:${mounted};dynamicCount:${dynamicCount};commentElementCount:${commentElementCount};hasWrapper:${hasWrapper};cases:${casesPresent};patched:${patched};directPatched:${directPatched};blockMounted:${blockMounted};blockPatched:${blockPatched};keyedReordered:${keyedReordered};keyedOrder:${keyedOrder};unkeyedFragmentFlag:${unkeyedFragmentFlag};dynamicText:${dynamic.textContent};hydrated:${hydrated}`);
         </script>
         """;
 

@@ -875,6 +875,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsNotNull(result);
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "Array.from(props.Items ?? []", StringComparison.Ordinal);
+        Assert.IsFalse(output.Contains("renderList", StringComparison.Ordinal), output);
         StringAssert.Contains(output, "data-key", StringComparison.Ordinal);
     }
 

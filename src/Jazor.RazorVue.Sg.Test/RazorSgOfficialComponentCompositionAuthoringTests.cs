@@ -86,9 +86,9 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
         StringAssert.Contains(script, "header: () =>", StringComparison.Ordinal);
         StringAssert.Contains(script, "default: () =>", StringComparison.Ordinal);
         StringAssert.Contains(script, "item: item =>", StringComparison.Ordinal);
-        StringAssert.Contains(script, "h(\"strong\", null, [state.Title])", StringComparison.Ordinal);
-        StringAssert.Contains(script, "h(\"span\", null, [state.Selected])", StringComparison.Ordinal);
-        StringAssert.Contains(script, "h(\"em\", null, [item])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "createElementBlock(\"strong\", null, state.Title, 1)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "createElementBlock(\"span\", null, state.Selected, 1)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "createElementBlock(\"em\", null, item, 1)", StringComparison.Ordinal);
 
         Assert.IsFalse(script.Contains("function title(", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("function selected(", StringComparison.Ordinal), script);

@@ -209,7 +209,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
                 const compactHeader = compact.children.header()[0];
                 assert.equal(compactHeader.name, "strong");
                 assert.equal(compactHeader.props["data-variant"], "compact");
-                assert.deepEqual(compactHeader.children, ["Orders API"]);
+                assert.equal(compactHeader.children, "Orders API");
 
                 const detailed = component.setup({
                     UseCompactHeader: false,
@@ -220,7 +220,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
                 assert.equal(detailedHeader.name, "section");
                 assert.equal(detailedHeader.props["data-variant"], "detailed");
                 assert.equal(detailedHeader.children[0].name, "h2");
-                assert.deepEqual(detailedHeader.children[0].children, ["Orders API"]);
+                assert.equal(detailedHeader.children[0].children, "Orders API");
                 assert.equal(detailedHeader.children[1].name, "p");
                 assert.deepEqual(detailedHeader.children[1].children, ["Ready for deployment"]);
             });

@@ -73,7 +73,7 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
 
                 assert.equal(article.name, "article");
                 assert.equal(article.props["data-release"], "release-key");
-                assert.deepEqual(article.children, ["release: Deploy API"]);
+                assert.equal(article.children, "release: Deploy API");
             });
             """);
     }

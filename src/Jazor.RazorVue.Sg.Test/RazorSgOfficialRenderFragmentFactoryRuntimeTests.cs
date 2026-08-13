@@ -84,7 +84,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "strong");
                 assert.equal(nodes[0].props["data-release-id"], 42);
-                assert.deepEqual(nodes[0].children, ["Deploy"]);
+                assert.equal(nodes[0].children, "Deploy");
             });
             """,
             new Dictionary<string, string>
@@ -473,7 +473,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 assert.equal(headerNodes.length, 1);
                 assert.equal(headerNodes[0].name, "strong");
                 assert.equal(headerNodes[0].props["data-source"], "instance");
-                assert.deepEqual(headerNodes[0].children, ["Deployments"]);
+                assert.equal(headerNodes[0].children, "Deployments");
 
                 assert.deepEqual(panel.children.footer(), ["Static footer"]);
             });

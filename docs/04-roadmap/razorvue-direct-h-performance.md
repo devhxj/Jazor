@@ -62,6 +62,12 @@ patch metadata 根据最终 Vue props surface 构造：
 
 conditional、slot、sequence、dynamic/nullable raw markup 和普通 component children 仍不带完整 direct-child block contract，继续使用 `h(...)` 的完整 children diff。这里 `TEXT` 只接受 Roslyn 已证明为 `string` 的 authored expression；object/数值/自定义 formatting 可能有 CLR conversion 语义，不能为了 patch flag 跳过正常 child lowering。production Vue gate 已实际 mount/patch 单文本、混合文本和 nested block，而不是只验证生成字符串。
 
+### Foreach 与 fragment fast path
+
+简单 `foreach` 只有在 loop variable、single direct VNode root 和迭代内 closure/ref/slot 边界都已证明时才使用 Vue `renderList`。该路径发射 `openBlock(true)` 隔离 list block collection；显式 Razor `@key` 使用 `KEYED_FRAGMENT (128)`，无 key 使用 `UNKEYED_FRAGMENT (256)`，不会根据集合看似固定而猜测 `STABLE_FRAGMENT (64)`。
+
+`renderList` 接收原始 collection expression，确保 Vue 自己处理 array、iterable、object record 和 numeric range。解构、prelude/IIFE、nested loop、动态 slot、event、`@bind` 和 ref 等形状继续使用保守的 `Array.from(source ?? [], mapper)` lowering。production Vue gate 已确认 keyed reorder 后 `c,a,b` 三个节点仍是 reorder 前的原 DOM identity，并确认无 key fragment flag 为 `256`。
+
 ### Stable event handler cache
 
 inline arrow/function handler 仅在以下前提下改写为 `__jazor$handlerCache[index] || (...)`：
@@ -105,6 +111,6 @@ dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --verify-vue-runtim
 
 ## 后续演进
 
-下一步是为 `@foreach` fragment 和 slot object 建立各自独立的稳定性合同，而不是机械扩大发射 `createElementBlock` 的范围。list 需要保留 collection/key/iteration closure 的 C# 求值顺序；slot 需要区分稳定、conditional 和 loop-generated closure。两者没有完整 metadata 与真实 Vue regression 前，保持 `h(...)` 是正确行为。
+下一步是为 slot object 建立独立的稳定性合同，而不是机械清除 `DYNAMIC_SLOTS`。slot 需要区分 stable、conditional、loop-generated 和动态名字，且 closure 必须继续属于正确的 setup/render/iteration scope；没有完整 metadata 与真实 Vue regression 前，保留动态 slot 是正确行为。
 
 每一项都应先证明：evaluation order、side-effect count、最终 VNode、slot/loop closure identity 与 source-map anchoring 不退化；否则继续使用 `h(...)` 是正确的保守行为。

@@ -112,7 +112,7 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
                 assert.equal(fallbackNodes.length, 1);
                 assert.equal(fallbackNodes[0].name, "span");
                 assert.equal(fallbackNodes[0].props["data-release-id"], 12);
-                assert.deepEqual(fallbackNodes[0].children, ["Fallback: Production"]);
+                assert.equal(fallbackNodes[0].children, "Fallback: Production");
             });
             """,
             new Dictionary<string, string>

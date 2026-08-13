@@ -416,6 +416,14 @@ public sealed class MemberClosureTests
                     return { name, props, children };
                 }
                 """);
+            WriteFile(
+                Path.Combine(tempRoot, "@jazor", "vue-runtime", "raw-markup.mjs"),
+                """
+                import { createStaticVNode } from "vue";
+                export function createRawMarkup(markup) {
+                    return markup == null || markup.length === 0 ? null : createStaticVNode(String(markup), 1);
+                }
+                """);
             var testFile = Path.Combine(tempRoot, "module-markup-attribute-runtime.test.mjs");
             WriteFile(
                 testFile,
@@ -599,7 +607,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
         StringAssert.Contains(script, "mergeProps(", StringComparison.Ordinal);
-        StringAssert.Contains(script, "Array.from(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "renderList(Items(),", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -630,6 +638,18 @@ public sealed class MemberClosureTests
                 export function reactive(value) {
                     return value;
                 }
+                export function openBlock() {
+                    return null;
+                }
+                export function createElementBlock(name, props, children, patchFlag) {
+                    return { name, props, children, patchFlag, block: "element" };
+                }
+                export function createBlock(name, props, children, patchFlag) {
+                    return { name, props, children, patchFlag, block: "component" };
+                }
+                export function renderList(source, renderItem) {
+                    return Array.from(source, renderItem);
+                }
                 """);
             var testFile = Path.Combine(tempRoot, "module-structured-runtime.test.mjs");
             WriteFile(
@@ -647,8 +667,10 @@ public sealed class MemberClosureTests
                     assert.equal(vnode.name, "section");
                     assert.equal(vnode.props.class, "structured");
                     assert.equal(vnode.props.id, "root");
-                    assert.equal(vnode.children[0][0].name, "span");
-                    assert.deepEqual(vnode.children[0].map((child) => child.children[0]), ["one", "two"]);
+                    assert.equal(vnode.children[0].block, "element");
+                    assert.equal(vnode.children[0].patchFlag, 256);
+                    assert.equal(vnode.children[0].children[0].name, "span");
+                    assert.deepEqual(vnode.children[0].children.map((child) => child.children), ["one", "two"]);
                 });
                 """);
 
@@ -1147,6 +1169,18 @@ public sealed class MemberClosureTests
                 export function h(name, props, children) {
                     return { name, props, children };
                 }
+                export function openBlock() {
+                    return null;
+                }
+                export function createElementBlock(name, props, children, patchFlag) {
+                    return { name, props, children, patchFlag, block: "element" };
+                }
+                export function createBlock(name, props, children, patchFlag) {
+                    return { name, props, children, patchFlag, block: "component" };
+                }
+                export function renderList(source, renderItem) {
+                    return Array.from(source, renderItem);
+                }
                 """);
             WriteFile(
                 Path.Combine(tempRoot, "node_modules", "@jazor", "vue-runtime", "package.json"),
@@ -1232,7 +1266,7 @@ public sealed class MemberClosureTests
 
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "ChildContent: () => [].concat(h(\"span\", null, [state.title]) ?? [])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "ChildContent: () => [].concat((openBlock(), createElementBlock(\"span\", null, state.title, 1)) ?? [])", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -1279,7 +1313,7 @@ public sealed class MemberClosureTests
 
                     assert.equal(child.name.name, "Child");
                     assert.equal(slot[0].name, "span");
-                    assert.deepEqual(slot[0].children, ["direct"]);
+                    assert.equal(slot[0].children, "direct");
                 });
                 """);
 
@@ -1784,7 +1818,7 @@ public sealed class MemberClosureTests
                     const vnode = render();
 
                     assert.equal(vnode.name, "ul");
-                    assert.deepEqual(vnode.children[0].filter(Boolean).map((child) => child.children[0]), ["one", "two"]);
+                    assert.deepEqual(vnode.children[0].filter(Boolean).map((child) => child.children), ["one", "two"]);
                 });
                 """);
 
@@ -2012,9 +2046,9 @@ public sealed class MemberClosureTests
 
                     assert.equal(vnode.name, "div");
                     assert.equal(vnode.children[0].name, "span");
-                    assert.deepEqual(vnode.children[0].children, ["first"]);
+                    assert.equal(vnode.children[0].children, "first");
                     assert.equal(vnode.children[1].name, "strong");
-                    assert.deepEqual(vnode.children[1].children, ["second"]);
+                    assert.equal(vnode.children[1].children, "second");
                 });
                 """);
 
@@ -2474,7 +2508,7 @@ public sealed class MemberClosureTests
 
                     assert.equal(vnode.name, "div");
                     assert.equal(vnode.children[0][0].name, "span");
-                    assert.deepEqual(vnode.children[0][0].children, ["sorted"]);
+                    assert.equal(vnode.children[0][0].children, "sorted");
                 });
                 """);
 
@@ -2660,7 +2694,7 @@ public sealed class MemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         Assert.IsFalse(script.Contains(".addMultipleAttributes(", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "h(Fragment, null, [h(\"form\", { class: \"checkout\", onSubmit: Submit }, [state.submitted])", StringComparison.Ordinal);
+        StringAssert.Contains(script, "h(Fragment, null, [(openBlock(), createElementBlock(\"form\", { class: \"checkout\", onSubmit: Submit }, state.submitted, 1)), h(", StringComparison.Ordinal);
         StringAssert.Contains(script, "const __jazor$hoistedProps0 = { Title: \"bulk\", Count: 3 };", StringComparison.Ordinal);
         StringAssert.Contains(script, "__jazor$hoistedProps0", StringComparison.Ordinal);
 
@@ -2711,11 +2745,11 @@ public sealed class MemberClosureTests
                     assert.equal(form.name, "form");
                     assert.equal(form.props.class, "checkout");
                     assert.equal(typeof form.props.onSubmit, "function");
-                    assert.equal(form.children[0], "idle");
+                    assert.equal(form.children, "idle");
                     assert.deepEqual(child.props, { Title: "bulk", Count: 3 });
 
                     form.props.onSubmit();
-                    assert.equal(render().children[0].children[0], "submitted");
+                    assert.equal(render().children[0].children, "submitted");
                 });
                 """);
 
@@ -3048,7 +3082,8 @@ public sealed class MemberClosureTests
                   <script type="importmap">
                   {
                     "imports": {
-                      "vue": "/node_modules/vue/index.mjs"
+                      "vue": "/node_modules/vue/index.mjs",
+                      "@jazor/vue-runtime/": "/@jazor/vue-runtime/"
                     }
                   }
                   </script>
@@ -3179,6 +3214,37 @@ public sealed class MemberClosureTests
                     }
                     parent.append(child instanceof Node ? child : document.createTextNode(String(child)));
                   }
+                }
+                export function openBlock() {
+                  return null;
+                }
+                export function createElementBlock(type, props, children) {
+                  return h(type, props, children);
+                }
+                export function createBlock(type, props, children) {
+                  return h(type, props, children);
+                }
+                export function createTextVNode(children) {
+                  return document.createTextNode(String(children));
+                }
+                export function renderList(source, renderItem) {
+                  if (Array.isArray(source) || typeof source === "string")
+                    return Array.from(source, renderItem);
+                  if (typeof source === "number")
+                    return Array.from({ length: source }, (_, index) => renderItem(index + 1, index));
+                  if (source?.[Symbol.iterator])
+                    return Array.from(source, renderItem);
+                  if (source && typeof source === "object")
+                    return Object.keys(source).map((key, index) => renderItem(source[key], key, index));
+                  return [];
+                }
+                """);
+            WriteFile(
+                Path.Combine(tempRoot, "@jazor", "vue-runtime", "raw-markup.mjs"),
+                """
+                import { createStaticVNode } from "vue";
+                export function createRawMarkup(markup) {
+                  return markup == null || markup.length === 0 ? null : createStaticVNode(String(markup), 1);
                 }
                 """);
             WriteFile(
@@ -3930,18 +3996,18 @@ public sealed class MemberClosureTests
                     const props = { Title: "one" };
                     const render = component.setup(props, { slots: {} });
 
-                    assert.deepEqual(render().children, ["init|params:one|"]);
+                    assert.equal(render().children, "init|params:one|");
 
                     __runMounted();
-                    assert.deepEqual(render().children, ["init|params:one|after:first|"]);
+                    assert.equal(render().children, "init|params:one|after:first|");
 
                     props.Title = "two";
                     __runWatchers();
                     __runUpdated();
-                    assert.deepEqual(render().children, ["init|params:one|after:first|params:two|after:update|"]);
+                    assert.equal(render().children, "init|params:one|after:first|params:two|after:update|");
 
                     __runUnmounted();
-                    assert.deepEqual(render().children, ["init|params:one|after:first|params:two|after:update|dispose|"]);
+                    assert.equal(render().children, "init|params:one|after:first|params:two|after:update|dispose|");
                 });
                 """);
 
@@ -4233,16 +4299,16 @@ public sealed class MemberClosureTests
                     assert.equal(typeof first.children[0].props.ref, "function");
                     assert.equal(first.children[1].name.name, "Child");
                     assert.equal(typeof first.children[1].props.ref, "function");
-                    assert.deepEqual(first.children[2].children, ["none"]);
+                    assert.equal(first.children[2].children, "none");
 
                     first.children[0].props.ref({ tagName: "INPUT" });
-                    assert.deepEqual(render().children[2].children, ["element"]);
+                    assert.equal(render().children[2].children, "element");
 
                     first.children[1].props.ref({ id: "child" });
-                    assert.deepEqual(render().children[2].children, ["component:ready"]);
+                    assert.equal(render().children[2].children, "component:ready");
 
                     first.children[1].props.ref(null);
-                    assert.deepEqual(render().children[2].children, ["component:null"]);
+                    assert.equal(render().children[2].children, "component:null");
                 });
                 """);
 
@@ -4941,16 +5007,16 @@ public sealed class MemberClosureTests
                 test("async after-render and dispose hooks run through Vue lifecycle hooks", async () => {
                     const render = component.setup({}, { slots: {} });
 
-                    assert.deepEqual(render().children, [""]);
+                    assert.equal(render().children, "");
 
                     await __runMounted();
-                    assert.deepEqual(render().children, ["afterAsync:first|"]);
+                    assert.equal(render().children, "afterAsync:first|");
 
                     await __runUpdated();
-                    assert.deepEqual(render().children, ["afterAsync:first|afterAsync:update|"]);
+                    assert.equal(render().children, "afterAsync:first|afterAsync:update|");
 
                     await __runUnmounted();
-                    assert.deepEqual(render().children, ["afterAsync:first|afterAsync:update|disposeAsync|"]);
+                    assert.equal(render().children, "afterAsync:first|afterAsync:update|disposeAsync|");
                 });
                 """);
 
@@ -5279,7 +5345,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ Header: value => [].concat(h(\"h1\", null, [value]) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ Header: value => [].concat((openBlock(), createElementBlock(\"h1\", null, value, 1)) ?? []) }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -5343,7 +5409,7 @@ public sealed class MemberClosureTests
                     assert.equal(rendered.name, "section");
                     assert.deepEqual(rendered.children[0], "before");
                     assert.equal(rendered.children[1].name, "h1");
-                    assert.deepEqual(rendered.children[1].children, ["Scoped header"]);
+                    assert.equal(rendered.children[1].children, "Scoped header");
                 });
                 """);
 
@@ -5500,7 +5566,7 @@ public sealed class MemberClosureTests
         var parentScript = parentArtifact.ModuleText.ReplaceLineEndings("\n");
 
         Assert.IsFalse(parentScript.Contains("builder.addComponentScopedSlot(\"TitleContent\", title);", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ title: value => [].concat(h(\"h1\", null, [value]) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ title: value => [].concat((openBlock(), createElementBlock(\"h1\", null, value, 1)) ?? []) }", StringComparison.Ordinal);
         Assert.IsFalse(parentScript.Contains("slots.titleContent", StringComparison.Ordinal), parentScript);
     }
 
@@ -6020,7 +6086,7 @@ public sealed class MemberClosureTests
                     const firstChildren = first.children;
 
                     assert.equal(firstChildren[0].name, "p");
-                    assert.deepEqual(firstChildren[0].children, ["initial"]);
+                    assert.equal(firstChildren[0].children, "initial");
                     assert.equal(firstChildren[1].props.title, "initial");
                     assert.equal(typeof firstChildren[1].props.onValueChanged, "function");
 
@@ -6028,7 +6094,7 @@ public sealed class MemberClosureTests
 
                     const second = render();
                     const secondChildren = second.children;
-                    assert.deepEqual(secondChildren[0].children, ["updated"]);
+                    assert.equal(secondChildren[0].children, "updated");
                     assert.equal(secondChildren[1].props.title, "updated");
                     assert.equal(typeof secondChildren[1].props.onValueChanged, "function");
                     assert.equal(secondChildren[1].props.OnValueChanged, undefined);
@@ -6431,7 +6497,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(parentScript, "modelValue: state.text", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "\"onUpdate:modelValue\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.text = __value)", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "onAction: HandleAction", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "{ title: value => [].concat(h(\"h1\", null, [\"slot:\", value]) ?? []) }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ title: value => [].concat((openBlock(), createElementBlock(\"h1\", null, [\"slot:\", createTextVNode(value, 1)])) ?? []) }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -6488,7 +6554,7 @@ public sealed class MemberClosureTests
                     const firstChildren = firstParent.children;
                     const firstChildVNode = firstChildren[1];
 
-                    assert.deepEqual(firstChildren[0].children, ["none"]);
+                    assert.equal(firstChildren[0].children, "none");
                     assert.equal(firstChildVNode.props.modelValue, "initial");
                     assert.equal(typeof firstChildVNode.props["onUpdate:modelValue"], "function");
                     assert.equal(typeof firstChildVNode.props.onAction, "function");
@@ -6502,12 +6568,12 @@ public sealed class MemberClosureTests
                     assert.equal(firstChild.name, "section");
                     assert.deepEqual(firstChild.children[0], "initial");
                     assert.equal(firstChild.children[1].name, "h1");
-                    assert.deepEqual(firstChild.children[1].children, ["slot:", "initial"]);
+                    assert.deepEqual(firstChild.children[1].children, ["slot:", { name: "__text", children: "initial", patchFlag: 1 }]);
                     assert.equal(firstChild.children[2].name, "button");
                     assert.equal(typeof firstChild.children[2].props.onClick, "function");
 
                     firstChild.children[2].props.onClick();
-                    assert.deepEqual(renderParent().children[0].children, ["initial"]);
+                    assert.equal(renderParent().children[0].children, "initial");
 
                     firstChildVNode.props["onUpdate:modelValue"]("updated");
                     const secondParent = renderParent();
@@ -6518,7 +6584,7 @@ public sealed class MemberClosureTests
                     const renderSecondChild = secondChildVNode.name.setup(secondChildVNode.props, { slots: secondChildVNode.children });
                     const secondChild = renderSecondChild();
                     assert.deepEqual(secondChild.children[0], "updated");
-                    assert.deepEqual(secondChild.children[1].children, ["slot:", "updated"]);
+                    assert.deepEqual(secondChild.children[1].children, ["slot:", { name: "__text", children: "updated", patchFlag: 1 }]);
                 });
                 """);
 
@@ -6731,7 +6797,7 @@ public sealed class MemberClosureTests
         System.IO.File.WriteAllText(
             configPath,
             """
-            {"imports":{"vue":"./node_modules/vue/index.mjs"}}
+            {"imports":{"vue":"./node_modules/vue/index.mjs","@jazor/vue-runtime/":"./@jazor/vue-runtime/"}}
             """);
 
         var startInfo = new ProcessStartInfo
@@ -6916,13 +6982,14 @@ public sealed class MemberClosureTests
     private static void WriteFile(string path, string contents)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        if (path.Replace('\\', '/').EndsWith("/node_modules/vue/index.mjs", StringComparison.Ordinal) &&
-            !contents.Contains("export function createBlock", StringComparison.Ordinal))
+        if (path.Replace('\\', '/').EndsWith("/node_modules/vue/index.mjs", StringComparison.Ordinal))
         {
-            // Existing fixtures model Vue minimally. Add block helpers centrally so each
-            // runtime test observes the same direct-render helper contract.
-            // 统一补齐 block helper，避免每个历史 fixture 各自复制一份 mock。
-            contents += """
+            // Historical fixtures intentionally provide minimal Vue stubs. Fill every direct
+            // rendering helper independently so a partial earlier stub cannot hide a missing
+            // E1/E2 import. 每个 helper 独立补齐，避免已有 createBlock 时漏掉 renderList/text。
+            if (!contents.Contains("export function openBlock", StringComparison.Ordinal))
+            {
+                contents += """
 
                 export function openBlock() {
                     return null;
@@ -6934,6 +7001,37 @@ public sealed class MemberClosureTests
                     return h(type, props, children);
                 }
                 """;
+            }
+            if (!contents.Contains("export function createTextVNode", StringComparison.Ordinal))
+            {
+                contents += """
+
+                export function createTextVNode(children, patchFlag) {
+                    return { name: "__text", children, patchFlag };
+                }
+                """;
+            }
+            if (!contents.Contains("export function renderList", StringComparison.Ordinal))
+            {
+                contents += """
+
+                export function renderList(source, renderItem) {
+                    if (Array.isArray(source) || typeof source === "string") {
+                        return Array.from(source, (item, index) => renderItem(item, index));
+                    }
+                    if (typeof source === "number") {
+                        return Array.from({ length: source }, (_, index) => renderItem(index + 1, index));
+                    }
+                    if (source?.[Symbol.iterator]) {
+                        return Array.from(source, (item, index) => renderItem(item, index));
+                    }
+                    if (source && typeof source === "object") {
+                        return Object.keys(source).map((key, index) => renderItem(source[key], key, index));
+                    }
+                    return [];
+                }
+                """;
+            }
         }
         System.IO.File.WriteAllText(path, contents.ReplaceLineEndings("\n"));
     }

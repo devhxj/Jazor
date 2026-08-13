@@ -108,7 +108,7 @@ public sealed class RazorSgOfficialLoopBoundSelectRuntimeTests
                 assert.equal(updatedSelects[1].props.value, "canary");
                 assert.equal(summary.length, 1);
                 assert.equal(summary[0].props["data-last-selection"], "2:canary");
-                assert.deepEqual(summary[0].children, ["2:canary"]);
+                assert.equal(summary[0].children, "2:canary");
             });
             """);
     }

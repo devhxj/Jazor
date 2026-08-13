@@ -56,7 +56,7 @@ public sealed class RazorSgOfficialNullPatternRuntimeTests
                 const present = component.setup({ Label: "release" }, { slots: {} })();
                 assert.equal(present.name, "span");
                 assert.equal(present.props["data-state"], "present");
-                assert.deepEqual(present.children, ["release"]);
+                assert.equal(present.children, "release");
             });
             """);
     }

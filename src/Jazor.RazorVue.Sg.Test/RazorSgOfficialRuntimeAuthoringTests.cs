@@ -327,13 +327,16 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                         { Id: 9, Name: "Deploy" }
                     ]
                 }, { slots: {} });
-                const nodes = render();
+                const fragment = render();
+                assert.equal(fragment.block, "element");
+                assert.equal(fragment.patchFlag, 128);
+                const nodes = fragment.children;
 
                 assert.equal(nodes.length, 2);
                 assert.deepEqual(nodes.map(node => node.name), ["li", "li"]);
                 assert.deepEqual(nodes.map(node => node.props.key), [7, 9]);
                 assert.deepEqual(nodes.map(node => node.props["data-id"]), [7, 9]);
-                assert.deepEqual(nodes.map(node => node.children), [["Audit"], ["Deploy"]]);
+                assert.deepEqual(nodes.map(node => node.children), ["Audit", "Deploy"]);
             });
             """);
     }
@@ -391,7 +394,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 assert.equal(nodes.length, 2);
                 assert.deepEqual(nodes.map(node => node.name), ["li", "li"]);
                 assert.deepEqual(nodes.map(node => node.props["data-id"]), [7, 9]);
-                assert.deepEqual(nodes.map(node => node.children), [["Audit"], ["Deploy"]]);
+                assert.deepEqual(nodes.map(node => node.children), ["Audit", "Deploy"]);
             });
             """);
     }
@@ -534,7 +537,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 const [headerNode] = header;
                 assert.equal(headerNode.name, "span");
                 assert.equal(headerNode.props["data-slot"], "header");
-                assert.deepEqual(headerNode.children, ["Account"]);
+                assert.equal(headerNode.children, "Account");
 
                 const content = panel.children.ChildContent();
                 assert.equal(Array.isArray(content), true);
@@ -542,7 +545,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 const [contentNode] = content;
                 assert.equal(contentNode.name, "strong");
                 assert.equal(contentNode.props["data-slot"], "default");
-                assert.deepEqual(contentNode.children, ["Account"]);
+                assert.equal(contentNode.children, "Account");
             });
             """,
             new Dictionary<string, string>
@@ -633,7 +636,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "li");
                 assert.equal(nodes[0].props["data-id"], 9);
-                assert.deepEqual(nodes[0].children, ["Deploy"]);
+                assert.equal(nodes[0].children, "Deploy");
             });
             """,
             new Dictionary<string, string>
@@ -746,12 +749,12 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 const urgentNodes = collectNodes(list.children.item(entries[0]));
                 const urgentArticle = urgentNodes.find(node => node.name === "article");
                 assert.equal(urgentArticle.props["data-id"], 7);
-                assert.deepEqual(urgentNodes.filter(node => node.name === "h3")[0].children, ["Audit"]);
+                assert.equal(urgentNodes.filter(node => node.name === "h3")[0].children, "Audit");
                 assert.equal(urgentNodes.filter(node => node.name === "__static" && node.props?.html === "<strong data-status=\"urgent\">Urgent</strong>").length, 1);
                 assert.equal(urgentNodes.filter(node => node.name === "__static" && node.props?.html === "<span data-status=\"standard\">Standard</span>").length, 0);
                 assert.deepEqual(
                     urgentNodes.filter(node => node.name === "li").map(node => [node.props["data-tag"], node.children]),
-                    [["release", ["release"]], ["production", ["production"]]]);
+                    [["release", "release"], ["production", "production"]]);
 
                 const standardNodes = collectNodes(list.children.item({ Id: 9, Label: "Deploy", IsUrgent: false, Tags: [] }));
                 assert.equal(standardNodes.filter(node => node.name === "__static" && node.props?.html === "<strong data-status=\"urgent\">Urgent</strong>").length, 0);
@@ -846,11 +849,11 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 assert.equal(urgentHeader.name, "header");
                 assert.equal(urgentHeader.props["data-status"], "urgent");
                 assert.equal(urgentHeader.children[0].name, "h2");
-                assert.deepEqual(urgentHeader.children[0].children, ["Deploy now"]);
+                assert.equal(urgentHeader.children[0].children, "Deploy now");
 
                 const standardHeader = renderHeader({ Title: "Scheduled", IsUrgent: false });
                 assert.equal(standardHeader.props["data-status"], "standard");
-                assert.deepEqual(standardHeader.children[0].children, ["Scheduled"]);
+                assert.equal(standardHeader.children[0].children, "Scheduled");
             });
             """,
             new Dictionary<string, string>
@@ -1127,7 +1130,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                     throw new Error("method-group slot element was not retained");
                 if (header.props["data-source"] !== "descriptor")
                     throw new Error("method-group slot attribute was not retained");
-                if (header.children[0] !== "Account")
+                if (header.children !== "Account")
                     throw new Error("method-group slot state was not retained");
             });
             """,
@@ -1182,7 +1185,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 const section = component.setup({ Title: "Deploy" }, { slots: {} })();
                 assert.equal(section.name, "section");
                 assert.equal(section.props["data-title"], "Deploy ready");
-                assert.deepEqual(section.children, ["Deploy ready"]);
+                assert.equal(section.children, "Deploy ready");
             });
             """);
     }
@@ -1258,19 +1261,19 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 const render = component.setup(props, { slots: {} });
 
                 assert.equal(render().props["data-title"], "one");
-                assert.deepEqual(render().children, ["init|params:one|"]);
+                assert.equal(render().children, "init|params:one|");
 
                 __runMounted();
-                assert.deepEqual(render().children, ["init|params:one|after:first|"]);
+                assert.equal(render().children, "init|params:one|after:first|");
 
                 props.Title = "two";
                 __runWatchers();
                 __runUpdated();
                 assert.equal(render().props["data-title"], "two");
-                assert.deepEqual(render().children, ["init|params:one|after:first|params:two|after:update|"]);
+                assert.equal(render().children, "init|params:one|after:first|params:two|after:update|");
 
                 __runUnmounted();
-                assert.deepEqual(render().children, ["init|params:one|after:first|params:two|after:update|dispose|"]);
+                assert.equal(render().children, "init|params:one|after:first|params:two|after:update|dispose|");
             });
             """);
     }

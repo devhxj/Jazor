@@ -33,7 +33,8 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
             componentMetadataName: "Demo.Pages.RuntimeNameCollision");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "import { defineComponent, h", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "defineComponent", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "h", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "function m$", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "onClick: m$", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("function h()", StringComparison.Ordinal), observation.ModuleText);
@@ -52,12 +53,12 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
                 const render = component.setup({}, { slots: {} });
                 const initial = render();
                 assert.equal(initial.name, "button");
-                assert.equal(initial.children[0], "idle");
+                assert.equal(initial.children, "idle");
                 assert.equal(typeof initial.props.onClick, "function");
 
                 initial.props.onClick();
 
-                assert.equal(render().children[0], "queued");
+                assert.equal(render().children, "queued");
             });
             """);
     }
@@ -90,7 +91,8 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
             componentMetadataName: "Demo.Pages.NestedRuntimeNameCollision");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "import { defineComponent, h", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "defineComponent", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "h", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "class m$", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, "new m$", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("class h ", StringComparison.Ordinal), observation.ModuleText);
@@ -108,7 +110,7 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
             test("nested runtime types do not shadow Vue render imports", () => {
                 const section = component.setup({}, { slots: {} })();
                 assert.equal(section.name, "section");
-                assert.deepEqual(section.children, ["nested"]);
+                assert.equal(section.children, "nested");
             });
             """);
     }

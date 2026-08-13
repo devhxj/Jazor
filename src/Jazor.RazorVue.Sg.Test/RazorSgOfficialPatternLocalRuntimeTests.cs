@@ -53,7 +53,7 @@ public sealed class RazorSgOfficialPatternLocalRuntimeTests
                 const matched = component.setup({ ReleaseName: "Deploy" }, { slots: {} })();
                 assert.equal(matched.name, "span");
                 assert.equal(matched.props["data-release"], "Deploy");
-                assert.deepEqual(matched.children, ["Deploy"]);
+                assert.equal(matched.children, "Deploy");
             });
             """);
     }

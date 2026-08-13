@@ -95,7 +95,7 @@ public sealed class RazorSgOfficialRenderFragmentMemberRuntimeTests
                 const header = panel.children.header()[0];
                 assert.equal(header.name, "strong");
                 assert.equal(header.props["data-summary-part"], "header");
-                assert.deepEqual(header.children, ["June deployment"]);
+                assert.equal(header.children, "June deployment");
 
                 const footer = panel.children.footer()[0];
                 assert.equal(footer.name, "small");

@@ -50,8 +50,8 @@ public sealed class RazorSgOfficialConventionalArtifactRuntimeTests
                 const status = page.children.find(node => node?.name === "p");
                 assert.ok(heading);
                 assert.ok(status);
-                assert.deepEqual(heading.children, ["Release overview"]);
-                assert.deepEqual(status.children, ["Ready"]);
+                assert.equal(heading.children, "Release overview");
+                assert.equal(status.children, "Ready");
             });
             """);
     }

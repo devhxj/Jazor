@@ -117,7 +117,7 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
                 assert.ok(initialStatus);
                 assert.ok(initialChild);
                 assert.equal(initialStatus.name, "span");
-                assert.deepEqual(initialStatus.children, ["waiting"]);
+                assert.equal(initialStatus.children, "waiting");
                 assert.equal(initialChild.name.name, "reference-child");
 
                 initialChild.props.ref({ Status: "attached" });
@@ -127,14 +127,14 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
                 const attachedChild = attached.children.find(node => node.name?.name === "reference-child");
                 assert.ok(attachedStatus);
                 assert.ok(attachedChild);
-                assert.deepEqual(attachedStatus.children, ["attached"]);
+                assert.equal(attachedStatus.children, "attached");
 
                 attachedChild.props.ref(null);
 
                 const detached = render();
                 const detachedStatus = detached.children.find(node => node.name === "span");
                 assert.ok(detachedStatus);
-                assert.deepEqual(detachedStatus.children, ["waiting"]);
+                assert.equal(detachedStatus.children, "waiting");
             });
             """,
             new Dictionary<string, string>

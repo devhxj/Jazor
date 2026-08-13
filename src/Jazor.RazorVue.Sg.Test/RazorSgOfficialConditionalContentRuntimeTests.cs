@@ -66,7 +66,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
                 assert.ok(heading);
                 assert.ok(toggle);
                 assert.equal(heading.props["data-release"], "Accounts API");
-                assert.deepEqual(heading.children, ["Accounts API"]);
+                assert.equal(heading.children, "Accounts API");
                 assert.equal(typeof toggle.props.onClick, "function");
 
                 toggle.props.onClick();

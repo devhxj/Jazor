@@ -39,7 +39,10 @@ public sealed class RazorSgOfficialKeyAuthoringTests
         Assert.IsTrue(generatedSetKey < generatedKeyValue, observation.GeneratedCSharp);
 
         var script = observation.ModuleText;
-        StringAssert.Contains(script, "Array.from(props.Items ?? [], item =>", StringComparison.Ordinal);
+        StringAssert.Contains(script, "renderList(props.Items, item =>", StringComparison.Ordinal);
+        StringAssert.Contains(script, "createElementBlock(Fragment, null", StringComparison.Ordinal);
+        StringAssert.Contains(script, ")), 128)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "renderList } from \"vue\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "key: item.Id", StringComparison.Ordinal);
         StringAssert.Contains(script, "\"data-id\": item.Id", StringComparison.Ordinal);
         StringAssert.Contains(script, "item.Name", StringComparison.Ordinal);

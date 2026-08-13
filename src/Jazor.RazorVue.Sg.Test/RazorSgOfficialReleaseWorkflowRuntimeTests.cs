@@ -144,7 +144,7 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
                 const header = panel.children.header();
                 assert.equal(header[0].name, "strong");
                 assert.equal(header[0].props["data-environment"], "production");
-                assert.deepEqual(header[0].children, ["ready"]);
+                assert.equal(header[0].children, "ready");
 
                 const ready = panel.children.item({ Id: 7, Name: "Deploy API", IsReady: true });
                 assert.equal(ready[0].name, "button");
@@ -157,7 +157,7 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
                 const pending = panel.children.item({ Id: 8, Name: "Audit Worker", IsReady: false });
                 assert.equal(pending[0].name, "span");
                 assert.equal(pending[0].props["data-state"], "pending");
-                assert.deepEqual(pending[0].children, ["Audit Worker"]);
+                assert.equal(pending[0].children, "Audit Worker");
             });
             """,
             new Dictionary<string, string>

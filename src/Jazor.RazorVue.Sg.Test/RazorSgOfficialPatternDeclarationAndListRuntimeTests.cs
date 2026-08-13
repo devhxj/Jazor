@@ -65,7 +65,7 @@ public sealed class RazorSgOfficialPatternDeclarationAndListRuntimeTests
                 assert.equal(nodes.length, 2);
                 assert.equal(nodes[0].name, "h2");
                 assert.equal(nodes[0].props["data-queue-title"], "Release Queue");
-                assert.deepEqual(nodes[0].children, ["Release Queue"]);
+                assert.equal(nodes[0].children, "Release Queue");
                 assert.equal(nodes[1].name, "span");
                 assert.equal(nodes[1].props["data-first-release"], 42);
                 assert.deepEqual(nodes[1].children, [42]);

@@ -65,6 +65,7 @@ internal static class RenderEmitter
                 UsesRawMarkupRuntime: lowered.UsesRawMarkupRuntime,
                 UsesBlockTree: lowered.UsesBlockTree,
                 UsesTextVNode: lowered.UsesTextVNode,
+                UsesRenderList: lowered.UsesRenderList,
                 UsesHandlerCache: lowered.UsesHandlerCache,
                 UsesProps: AstReferenceAnalysis.ReferencesIdentifier(lowered.RenderExpression, "props") ||
                            lowered.PreludeStatements.Any(static statement => AstReferenceAnalysis.ReferencesIdentifier(statement, "props")),
@@ -119,6 +120,7 @@ internal static class RenderEmitter
         private bool _usesSlots;
         private bool _usesBlockTree;
         private bool _usesTextVNode;
+        private bool _usesRenderList;
         private bool _usesHandlerCache;
         private int _nonHoistableRenderScopeDepth;
         private int _staticPropsHoistCount;
@@ -176,7 +178,11 @@ internal static class RenderEmitter
             PruneUnreferencedRenderFragmentDeclarations(_preludeStatements, renderExpression);
             var moduleHoists = PruneUnreferencedModuleHoists(renderExpression, _preludeStatements);
             var usesFragment = _usesFragment || state.UsesFragment || state.Roots.Count > 1;
-            var usesStaticVNode = _usesStaticVNode || state.UsesStaticVNode ||
+            // A previous branch can allocate a hoist and later be cleared/replaced. The module
+            // import contract must reflect only retained output, otherwise Vue gets an unused
+            // helper import and callers observe a false static-vnode capability.
+            // 只从最终保留的 hoist 推导 helper；不能让已剪枝的分支污染 import/feature metadata。
+            var usesStaticVNode = state.UsesStaticVNode ||
                                   moduleHoists.Any(static hoist =>
                                       AstReferenceAnalysis.ReferencesIdentifier(hoist.Initializer, "createStaticVNode"));
             return new LoweredRender(
@@ -188,6 +194,7 @@ internal static class RenderEmitter
                 _usesRawMarkupRuntime,
                 _usesBlockTree,
                 _usesTextVNode,
+                _usesRenderList,
                 _usesHandlerCache,
                 _usesSlots,
                 BuildImportDeclarations(),
@@ -587,7 +594,8 @@ internal static class RenderEmitter
             var collection = LowerExpression(forEachLoop.Collection, context);
             Node mapperParameter;
             EmitContext loopContext;
-            if (TryResolveLoopControlVariable(forEachLoop.LoopControlVariable, out var loopVariable))
+            var hasSimpleLoopVariable = TryResolveLoopControlVariable(forEachLoop.LoopControlVariable, out var loopVariable);
+            if (hasSimpleLoopVariable)
             {
                 var itemName = SanitizeJavaScriptIdentifierPart(loopVariable.Name, "item");
                 mapperParameter = new Identifier(itemName);
@@ -618,12 +626,56 @@ internal static class RenderEmitter
                 body.RenderExpression,
                 expression: true,
                 async: false);
-            state.AddChild(Call(
-                new MemberExpression(new Identifier("Array"), new Identifier("from"), computed: false, optional: false),
-                new LogicalExpression(Operator.NullishCoalescing, collection, CreateArray([])),
-                mapper));
+            if (hasSimpleLoopVariable &&
+                !body.UsesFragment &&
+                body.DirectRoot is { } directRoot &&
+                directRoot.CanUseRenderList)
+            {
+                // renderList must receive the original source: Vue supports arrays, iterables,
+                // object records, and numeric ranges. `?? []` would silently change those
+                // runtime contracts before Vue can apply its own list protocol.
+                // 保留原 collection 给 Vue；不能用 Array.from 的 null fallback 改写对象/range 语义。
+                _usesRenderList = true;
+                _usesBlockTree = true;
+                _usesFragment = true;
+                state.UsesFragment = true;
+                state.AddChild(VNodePlan.Block(CreateForEachFragmentExpression(
+                    collection,
+                    mapper,
+                    directRoot.HasExplicitKey
+                        ? VuePatchFlags.KeyedFragment
+                        : VuePatchFlags.UnkeyedFragment)));
+            }
+            else
+            {
+                state.AddChild(Call(
+                    new MemberExpression(new Identifier("Array"), new Identifier("from"), computed: false, optional: false),
+                    new LogicalExpression(Operator.NullishCoalescing, collection, CreateArray([])),
+                    mapper));
+            }
             state.UsesFragment = state.UsesFragment || body.UsesFragment;
             state.UsesStaticVNode = state.UsesStaticVNode || body.UsesStaticVNode;
+        }
+
+        private static Expression CreateForEachFragmentExpression(
+            Expression collection,
+            ArrowFunctionExpression mapper,
+            int fragmentFlag)
+        {
+            // openBlock(true) isolates dynamic children collected by renderList from the parent
+            // block. This is the Vue compiler's v-for protocol and prevents inner VNodes from
+            // being accidentally collected by an enclosing element block.
+            // disableTracking 必须为 true，确保 list children 只归 fragment 管理。
+            return new SequenceExpression(NodeList.From<Expression>(
+                Call("openBlock", new BooleanLiteral(true, "true")),
+                Call(
+                    "createElementBlock",
+                    new Identifier("Fragment"),
+                    Null(),
+                    Call("renderList", collection, mapper),
+                    new NumericLiteral(
+                        fragmentFlag,
+                        fragmentFlag.ToString(System.Globalization.CultureInfo.InvariantCulture)))));
         }
 
         private EmitContext CreateForEachDeconstructionContext(IForEachLoopOperation operation, EmitContext context)
@@ -709,10 +761,15 @@ internal static class RenderEmitter
                 if (childState.Roots.Count > 1)
                     childState.UsesFragment = true;
 
+                var hasDirectRoot = preludeStatements.Count == 0 &&
+                                    !childArgument.HasVarDeclarator &&
+                                    childState.Roots.Count == 1 &&
+                                    childState.Roots[0].IsDirectVNodeRoot;
                 return new DirectRenderFragmentBody(
                     WrapWithExpressionScope(childArgument, preludeStatements, childState.ToRenderExpression()),
                     childState.UsesFragment,
-                    childState.UsesStaticVNode);
+                    childState.UsesStaticVNode,
+                    hasDirectRoot ? childState.Roots[0] : null);
             });
         }
 
@@ -1400,7 +1457,7 @@ internal static class RenderEmitter
             if (state.Stack.Count == 0 || state.Stack.Peek() is not PropFrame frame || frame.ChildrenStarted)
                 throw Unsupported(invocation, "SetKey must target an open element or component before children.");
 
-            frame.AddAttribute(new DirectAttribute("key", LowerExpression(invocation.Arguments[0].Value, context)));
+            frame.SetExplicitVNodeKey(LowerExpression(invocation.Arguments[0].Value, context));
         }
 
         private void EmitSetUpdatesAttributeName(IInvocationOperation invocation, EmitContext context, RenderState state)
@@ -4081,7 +4138,11 @@ internal static class RenderEmitter
     /// and is intentionally excluded from block collection until fragment lowering owns it.
     /// sequence/conditional/slot 保持 opaque，避免错误标记为 Vue dynamic child。
     /// </summary>
-    private readonly record struct VNodePlan(Expression Expression, VNodePlanKind Kind)
+    private readonly record struct VNodePlan(
+        Expression Expression,
+        VNodePlanKind Kind,
+        bool HasExplicitKey = false,
+        bool CanUseRenderList = false)
     {
         public bool CanParticipateInBlock
             => Kind is VNodePlanKind.Static or VNodePlanKind.DynamicText or VNodePlanKind.Block;
@@ -4089,14 +4150,28 @@ internal static class RenderEmitter
         public bool IsDynamicChild
             => Kind is VNodePlanKind.DynamicText or VNodePlanKind.Block;
 
-        public static VNodePlan Static(Expression expression)
-            => new(expression, VNodePlanKind.Static);
+        // Only completed element/component/block nodes are legal renderList mapper roots.
+        // Text, static markup, sequence, and opaque protocol values retain Array.from because
+        // their fragment identity and Vue normalization contract are not proven here.
+        // 只把完整 VNode 交给 renderList，其他内容继续走保守路径。
+        public bool IsDirectVNodeRoot
+            => Kind == VNodePlanKind.Block ||
+               Kind == VNodePlanKind.Static && Expression is CallExpression;
+
+        public static VNodePlan Static(
+            Expression expression,
+            bool hasExplicitKey = false,
+            bool canUseRenderList = false)
+            => new(expression, VNodePlanKind.Static, hasExplicitKey, canUseRenderList);
 
         public static VNodePlan DynamicText(Expression expression)
             => new(expression, VNodePlanKind.DynamicText);
 
-        public static VNodePlan Block(Expression expression)
-            => new(expression, VNodePlanKind.Block);
+        public static VNodePlan Block(
+            Expression expression,
+            bool hasExplicitKey = false,
+            bool canUseRenderList = false)
+            => new(expression, VNodePlanKind.Block, hasExplicitKey, canUseRenderList);
 
         public static VNodePlan Opaque(Expression expression)
             => new(expression, VNodePlanKind.Opaque);
@@ -4163,10 +4238,30 @@ internal static class RenderEmitter
                 .OfType<AttributePropSource>()
                 .Select(static source => source.Attribute);
 
+        protected bool HasExplicitVNodeKey { get; private set; }
+
+        // Event callbacks, bind adapters, and refs are valid VNodes but are deliberately not
+        // part of E2's list proof. Their closure/ref identity is a later optimization slice.
+        // event/@bind/@ref 暂不进入 renderList 快路径，先保留现有 per-iteration 协议。
+        protected virtual bool CanUseRenderList
+            => _referenceCaptures.Count == 0 &&
+               !_propSources
+                   .OfType<AttributePropSource>()
+                   .Any(static source =>
+                       IsDirectEventAttributeName(source.Attribute.Name) ||
+                       source.Attribute.Name.StartsWith("@", StringComparison.Ordinal) ||
+                       source.Attribute.ValueExpression is ArrowFunctionExpression or FunctionExpression);
+
         public void AddAttribute(DirectAttribute attribute)
         {
             _propSources.Add(new AttributePropSource(attribute));
             _lastAttributeName = attribute.Name;
+        }
+
+        public void SetExplicitVNodeKey(Expression valueExpression)
+        {
+            AddAttribute(new DirectAttribute("key", valueExpression));
+            HasExplicitVNodeKey = true;
         }
 
         public bool AddMultipleAttributes(Expression attributesExpression)
@@ -4503,7 +4598,7 @@ internal static class RenderEmitter
             {
                 var expression = Call("h", _tagExpression, props, children);
                 return !patch.RequiresBlock && Children.All(static child => child.Kind == VNodePlanKind.Static)
-                    ? VNodePlan.Static(expression)
+                    ? VNodePlan.Static(expression, HasExplicitVNodeKey, CanUseRenderList)
                     : VNodePlan.Opaque(expression);
             }
 
@@ -4520,7 +4615,10 @@ internal static class RenderEmitter
 
             // Comma expression preserves a single render invocation with no wrapper closure.
             // openBlock/createElementBlock mirrors Vue compiler's block collection protocol.
-            return VNodePlan.Block(new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createElementBlock", arguments))));
+            return VNodePlan.Block(
+                new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createElementBlock", arguments))),
+                HasExplicitVNodeKey,
+                CanUseRenderList);
         }
 
         public override string Describe()
@@ -4674,6 +4772,9 @@ internal static class RenderEmitter
 
         public List<DirectSlot> Slots { get; } = new();
 
+        protected override bool CanUseRenderList
+            => base.CanUseRenderList && Slots.Count == 0;
+
         public override string NormalizeAttributeName(string name)
             => _parameterNameMap.TryGetValue(name, out var mapped)
                 ? mapped
@@ -4737,7 +4838,7 @@ internal static class RenderEmitter
                     ? Call("h", _componentExpression, props)
                     : Call("h", _componentExpression, props, children);
                 return Children.Count == 0 && !patch.RequiresBlock
-                    ? VNodePlan.Static(expression)
+                    ? VNodePlan.Static(expression, HasExplicitVNodeKey, CanUseRenderList)
                     : VNodePlan.Opaque(expression);
             }
 
@@ -4752,7 +4853,10 @@ internal static class RenderEmitter
                     arguments.Add(CreateArray(patch.DynamicProps.Value.Select(static name => StringLiteral(name))));
             }
 
-            return VNodePlan.Block(new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createBlock", arguments))));
+            return VNodePlan.Block(
+                new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createBlock", arguments))),
+                HasExplicitVNodeKey,
+                CanUseRenderList);
         }
 
         private static Expression CreateSlotProjectionExpression(
@@ -4893,6 +4997,7 @@ internal static class RenderEmitter
         bool UsesRawMarkupRuntime,
         bool UsesBlockTree,
         bool UsesTextVNode,
+        bool UsesRenderList,
         bool UsesHandlerCache,
         bool UsesSlots,
         ImmutableArray<ImportDeclaration> ImportDeclarations,
@@ -4961,7 +5066,8 @@ internal static class RenderEmitter
     private readonly record struct DirectRenderFragmentBody(
         Expression RenderExpression,
         bool UsesFragment,
-        bool UsesStaticVNode);
+        bool UsesStaticVNode,
+        VNodePlan? DirectRoot = null);
 
     private readonly record struct DirectEventModifier(
         Expression? PreventDefaultCondition,
@@ -4977,6 +5083,9 @@ internal static class RenderEmitter
         public const int FullProps = 1 << 4;
         public const int NeedPatch = 1 << 9;
         public const int DynamicSlots = 1 << 10;
+        public const int StableFragment = 1 << 6;
+        public const int KeyedFragment = 1 << 7;
+        public const int UnkeyedFragment = 1 << 8;
     }
 
     /// <summary>Captures one vnode's runtime update surface without widening C# semantics.</summary>
@@ -5067,6 +5176,7 @@ internal sealed record RenderResult(
     bool UsesRawMarkupRuntime,
     bool UsesBlockTree,
     bool UsesTextVNode,
+    bool UsesRenderList,
     bool UsesHandlerCache,
     bool UsesProps,
     bool UsesSlots,

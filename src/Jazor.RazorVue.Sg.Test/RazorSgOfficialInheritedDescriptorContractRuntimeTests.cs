@@ -152,7 +152,7 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
 
                 const headerNodes = panel.children.header();
                 assert.equal(headerNodes[0].name, "strong");
-                assert.deepEqual(headerNodes[0].children, ["Draft release"]);
+                assert.equal(headerNodes[0].children, "Draft release");
 
                 panel.props.onTitleChange("Approved release");
                 const updated = render();

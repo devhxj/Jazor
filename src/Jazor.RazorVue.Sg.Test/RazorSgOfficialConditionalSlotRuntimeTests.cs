@@ -88,9 +88,12 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
                 assert.ok(heading);
                 assert.ok(status);
                 assert.equal(heading.props["data-release"], "Orders API");
-                assert.deepEqual(heading.children, ["Orders API"]);
+                assert.equal(heading.children, "Orders API");
                 assert.equal(status.props["data-state"], "history");
-                assert.deepEqual(status.children, ["Orders API", " history available"]);
+                assert.deepEqual(status.children, [
+                    { name: "__text", children: "Orders API", patchFlag: 1 },
+                    " history available"
+                ]);
 
                 const hiddenPanel = component.setup({
                     ReleaseName: "Orders API",
