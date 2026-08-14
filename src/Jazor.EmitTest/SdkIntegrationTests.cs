@@ -235,13 +235,17 @@ public sealed class SdkIntegrationTests
         var serverRenderer = manifest.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer");
         Assert.AreEqual("dist/server-renderer.esm-browser.js", serverRenderer.GetProperty("development").GetString());
         Assert.AreEqual("dist/server-renderer.esm-browser.prod.js", serverRenderer.GetProperty("production").GetString());
-        var files = manifest.RootElement.GetProperty("files")
+        var devtoolsFiles = devtools.GetProperty("files")
             .EnumerateArray()
             .Select(static value => value.GetString())
             .ToArray();
-        CollectionAssert.Contains(files, "dist/devtools-api/api/index.js");
-        CollectionAssert.Contains(files, "licenses/VUE-DEVTOOLS-API-LICENSE");
-        CollectionAssert.Contains(files, "licenses/VUE-SERVER-RENDERER-LICENSE");
+        CollectionAssert.Contains(devtoolsFiles, "dist/devtools-api/api/index.js");
+        CollectionAssert.Contains(devtoolsFiles, "licenses/VUE-DEVTOOLS-API-LICENSE");
+        var serverRendererFiles = serverRenderer.GetProperty("files")
+            .EnumerateArray()
+            .Select(static value => value.GetString())
+            .ToArray();
+        CollectionAssert.Contains(serverRendererFiles, "licenses/VUE-SERVER-RENDERER-LICENSE");
 
         var devtoolsApi = ReadPackageEntryText(package.PackagePath, "jazor/vue3/dist/devtools-api/index.js");
         Assert.IsFalse(
@@ -463,6 +467,15 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(
             File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.13", "licenses", "VUE-SERVER-RENDERER-LICENSE")),
             "SSR server renderer license was not materialized.");
+        Assert.IsFalse(
+            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.13", "dist", "server-renderer.esm-browser.prod.js")),
+            "Browser release must not carry the SSR-only renderer entry.");
+        Assert.IsFalse(
+            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.13", "dist", "devtools-api", "index.js")),
+            "Browser release must not carry unused Vue devtools assets.");
+        Assert.IsFalse(
+            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.13", "dist", "devtools-api", "index.js")),
+            "SSR release must not carry browser-only Vue devtools assets.");
 
         var ssrImportMap = await File.ReadAllTextAsync(Path.Combine(ssrRoot, "ssr-importmap.json"));
         StringAssert.Contains(ssrImportMap, "\"@vue/server-renderer\"");

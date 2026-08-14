@@ -5,7 +5,14 @@
   "imports": {
     "element-plus": {
       "development": "dist/index.full.min.mjs",
-      "production": "dist/index.full.min.mjs"
+      "production": "dist/index.full.min.mjs",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "files": []
     }
   },
   "requires": {

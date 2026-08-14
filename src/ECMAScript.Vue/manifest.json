@@ -5,34 +5,39 @@
   "imports": {
     "vue": {
       "development": "dist/vue.runtime.esm-browser.js",
-      "production": "dist/vue.runtime.esm-browser.prod.js"
+      "production": "dist/vue.runtime.esm-browser.prod.js",
+      "files": []
     },
     "@vue/server-renderer": {
       "development": "dist/server-renderer.esm-browser.js",
-      "production": "dist/server-renderer.esm-browser.prod.js"
+      "production": "dist/server-renderer.esm-browser.prod.js",
+      "files": [
+        "licenses/VUE-SERVER-RENDERER-LICENSE"
+      ]
     },
     "@vue/devtools-api": {
       "development": "dist/devtools-api/index.js",
-      "production": "dist/devtools-api/index.js"
+      "production": "dist/devtools-api/index.js",
+      "files": [
+        "dist/devtools-api/const.js",
+        "dist/devtools-api/env.js",
+        "dist/devtools-api/plugin.js",
+        "dist/devtools-api/proxy.js",
+        "dist/devtools-api/time.js",
+        "dist/devtools-api/api/api.js",
+        "dist/devtools-api/api/app.js",
+        "dist/devtools-api/api/component.js",
+        "dist/devtools-api/api/context.js",
+        "dist/devtools-api/api/hooks.js",
+        "dist/devtools-api/api/index.js",
+        "dist/devtools-api/api/util.js",
+        "licenses/VUE-DEVTOOLS-API-LICENSE"
+      ]
     }
   },
   "requires": {},
   "styles": [],
   "files": [
-    "dist/devtools-api/const.js",
-    "dist/devtools-api/env.js",
-    "dist/devtools-api/plugin.js",
-    "dist/devtools-api/proxy.js",
-    "dist/devtools-api/time.js",
-    "dist/devtools-api/api/api.js",
-    "dist/devtools-api/api/app.js",
-    "dist/devtools-api/api/component.js",
-    "dist/devtools-api/api/context.js",
-    "dist/devtools-api/api/hooks.js",
-    "dist/devtools-api/api/index.js",
-    "dist/devtools-api/api/util.js",
-    "licenses/LICENSE",
-    "licenses/VUE-DEVTOOLS-API-LICENSE",
-    "licenses/VUE-SERVER-RENDERER-LICENSE"
+    "licenses/LICENSE"
   ]
 }

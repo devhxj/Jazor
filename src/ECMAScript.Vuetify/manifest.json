@@ -5,19 +5,47 @@
   "imports": {
     "vuetify": {
       "development": "dist/vuetify.esm.js",
-      "production": "dist/vuetify.esm.js"
+      "production": "dist/vuetify.esm.js",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ]
     },
     "vuetify/components": {
       "development": "dist/components.mjs",
-      "production": "dist/components.mjs"
+      "production": "dist/components.mjs",
+      "developmentDependencies": [
+        "vuetify"
+      ],
+      "productionDependencies": [
+        "vuetify"
+      ]
     },
     "vuetify/labs/components": {
       "development": "dist/labs.mjs",
-      "production": "dist/labs.mjs"
+      "production": "dist/labs.mjs",
+      "developmentDependencies": [
+        "vuetify"
+      ],
+      "productionDependencies": [
+        "vuetify"
+      ],
+      "files": [
+        "dist/vuetify-labs.esm.js"
+      ]
     },
     "vuetify/directives": {
       "development": "dist/directives.mjs",
-      "production": "dist/directives.mjs"
+      "production": "dist/directives.mjs",
+      "developmentDependencies": [
+        "vuetify"
+      ],
+      "productionDependencies": [
+        "vuetify"
+      ],
+      "files": []
     }
   },
   "requires": {

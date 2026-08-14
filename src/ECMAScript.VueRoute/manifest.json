@@ -5,7 +5,15 @@
   "imports": {
     "vue-router": {
       "development": "dist/vue-router.esm-browser.js",
-      "production": "dist/vue-router.esm-browser.prod.js"
+      "production": "dist/vue-router.esm-browser.prod.js",
+      "developmentDependencies": [
+        "vue",
+        "@vue/devtools-api"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "files": []
     }
   },
   "requires": {

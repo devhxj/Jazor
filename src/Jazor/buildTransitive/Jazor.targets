@@ -119,7 +119,13 @@
     <Copy SourceFiles="@(_JazorReleaseSsrArtifact)"
           DestinationFiles="@(_JazorReleaseSsrArtifact->'$(_JazorReleaseSsrOutputDir)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
-    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; manifest materialize --manifest &quot;$(_JazorReleaseSsrOutputDir)\jazor-manifest.json&quot; --out-root &quot;$(_JazorReleaseSsrOutputDir)&quot; --mode Production @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" />
+    <!--
+      The browser bundle only materializes imports observed in generated modules. SSR has a
+      packaged runner that also imports createSSRApp and renderToString, so declare both
+      logical entries here instead of copying every Vue package asset into every release.
+      SSR runner 的 Vue/server-renderer 是显式运行时依赖，不能依赖 browser 图的偶然全量复制。
+    -->
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; manifest materialize --manifest &quot;$(_JazorReleaseSsrOutputDir)\jazor-manifest.json&quot; --out-root &quot;$(_JazorReleaseSsrOutputDir)&quot; --mode Production --required-import &quot;vue&quot; --required-import &quot;@vue/server-renderer&quot; @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" />
   </Target>
 
   <!--

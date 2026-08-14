@@ -12,7 +12,7 @@ Jazor 的当前核心是受控 C# -> ECMAScript 转换：Roslyn `IOperation` 进
 
 当前已实现的框架集成是 Razor-to-Vue。它以官方 Razor Source Generator 完成后的最终 `Compilation` 为输入，通过 `Jazor.RazorVue` 完成组件绑定和 Vue framing，并复用核心编译器降低 C# 语义。
 
-RazorVue 的生产输出是 direct Vue render-function `.mjs`。当前已接受的 static hoist、精确 static VNode cardinality、按需 raw-markup runtime、child-level block tree（dynamic string text、mixed text 与 nested block）、保守 patch flags、setup-instance handler cache、已证明安全的 `foreach` `renderList` / keyed-unkeyed fragment、stable/dynamic slot 精确 lowering、direct string/boolean DOM bind，以及 shallow parameter lifecycle watch 边界见 [RazorVue Direct Render 性能评审](./razorvue-direct-h-performance.md)。production Vue gate 已确认 keyed reorder identity、slot 分支更新、direct bind patch，以及 scalar/reference parameter replacement；同一 prop 引用内部的 nested mutation 不定义为新参数赋值。后续 SSR 与交付性能工作遵循 [RazorVue 极致性能路线图](./razorvue-extreme-performance.md) 的依赖和真实 runtime 门禁。
+RazorVue 的生产输出是 direct Vue render-function `.mjs`。当前已接受的 static hoist、精确 static VNode cardinality、按需 raw-markup runtime、child-level block tree（dynamic string text、mixed text 与 nested block）、保守 patch flags、setup-instance handler cache、已证明安全的 `foreach` `renderList` / keyed-unkeyed fragment、stable/dynamic slot 精确 lowering、direct string/boolean DOM bind，以及 shallow parameter lifecycle watch 边界见 [RazorVue Direct Render 性能评审](./razorvue-direct-h-performance.md)。production Vue gate 已确认 keyed reorder identity、slot 分支更新、direct bind patch，以及 scalar/reference parameter replacement；同一 prop 引用内部的 nested mutation 不定义为新参数赋值。artifact generation 在保持 stable discovery/order 的前提下有界并行，release library assets 由 generated `PackageImports` 和 package-declared closure 按需物化；browser 不复制无关 SSR/devtools entry，SSR 则显式保留 `vue` / `@vue/server-renderer`。完整边界、实测口径和未启用的 cache/preload 策略见 [RazorVue 极致性能路线图](./razorvue-extreme-performance.md)。
 
 Vue 3、Vue Router、Pinia、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` 和 ASP.NET Core SSR 都围绕核心平台或当前 RazorVue 集成提供能力；它们不改变 Jazor 的框架无关核心定位。
 
@@ -20,7 +20,7 @@ Vue 3、Vue Router、Pinia、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` �
 
 ## 交付与 SSR
 
-`JazorMode=debug` 生成模块、source map 与 manifest；`JazorMode=release` 通过 Netpack 生成浏览器 bundle。启用 `JazorSSR=true` 的 ASP.NET Core 应用可使用本地 Vue SSR 与 hydration，DenoHost 负责服务器模块执行，Netpack 只负责浏览器构建。SSR 使用有界、generation-aware persistent Deno worker pool；manifest/import-map 变化会轮换 ESM generation，取消、crash、并发上限与应用关闭均有真实进程回归。
+`JazorMode=debug` 生成模块、source map 与 manifest；`JazorMode=release` 通过 Netpack 生成浏览器 bundle。library package ESM 保持 external，但只物化应用实际 import 的 entry 与 manifest 声明的依赖/relative-file closure；这减少发布目录和部署复制量，不将未请求的文件错误计入首屏网络收益。启用 `JazorSSR=true` 的 ASP.NET Core 应用可使用本地 Vue SSR 与 hydration，DenoHost 负责服务器模块执行，Netpack 只负责浏览器构建。SSR 使用有界、generation-aware persistent Deno worker pool；manifest/import-map 变化会轮换 ESM generation，取消、crash、并发上限与应用关闭均有真实进程回归。
 
 配置方法见 [安装与配置](../03-guides/installation-and-configuration.md)。
 

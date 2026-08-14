@@ -76,9 +76,25 @@ internal sealed class LibraryMaterializer
         var importHashes = new Dictionary<string, string>(StringComparer.Ordinal);
         var stylePaths = new List<string>();
         var copiedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var importsBySpecifier = CreateImportIndex(manifests);
+        var selectedImports = SelectImports(
+            importsBySpecifier,
+            mode,
+            requiredImports,
+            providedModulePaths);
 
         foreach (var manifest in manifests)
         {
+            var selectedForLibrary = selectedImports
+                .Where(selection => ReferenceEquals(selection.Manifest, manifest))
+                .OrderBy(static selection => selection.Specifier, StringComparer.Ordinal)
+                .ToArray();
+            if (selectedForLibrary.Length == 0)
+                continue;
+
+            // A library's root files are shared metadata/license assets. Entry-owned files carry
+            // relative ESM closure such as devtools modules, so they follow the selected entry.
+            // root files 随激活库复制；entry files 只跟随实际 import，避免 browser 带入 SSR/devtools 闭包。
             foreach (var file in manifest.Files)
             {
                 var sourcePath = GetSafeSourcePath(manifest.Directory, file);
@@ -87,8 +103,10 @@ internal sealed class LibraryMaterializer
                 CopyFile(sourcePath, targetPath, copiedPaths);
             }
 
-            foreach (var (specifier, entry) in manifest.Imports)
+            foreach (var selection in selectedForLibrary)
             {
+                var specifier = selection.Specifier;
+                var entry = selection.Entry;
                 var selectedPath = mode == BuildMode.Development
                     ? entry.Development
                     : entry.Production;
@@ -113,6 +131,14 @@ internal sealed class LibraryMaterializer
                 CopyFile(sourcePath, targetPath, copiedPaths);
                 importHashes.Add(specifier, hash);
                 importPaths.Add(specifier, targetRelativePath);
+
+                foreach (var file in entry.Files)
+                {
+                    var fileSourcePath = GetSafeSourcePath(manifest.Directory, file);
+                    var fileTargetRelativePath = $"vendor/{manifest.LibraryId}/{manifest.Version}/{file}";
+                    var fileTargetPath = GetSafeTargetPath(destinationRoot, fileTargetRelativePath);
+                    CopyFile(fileSourcePath, fileTargetPath, copiedPaths);
+                }
             }
 
             foreach (var style in manifest.Styles)
@@ -125,12 +151,8 @@ internal sealed class LibraryMaterializer
             }
         }
 
-        var missingImports = (requiredImports ?? [])
-            .Where(ECMAScriptModulePath.IsPackageSpecifier)
-            // Generated application modules may use bare catalog paths (for example host/app.mjs).
-            // Only paths absent from the application manifest must be supplied by a library package.
-            .Where(specifier => !IsProvidedModule(specifier, providedModulePaths))
-            .Distinct(StringComparer.Ordinal)
+        var missingImports = selectedImports
+            .Select(static selection => selection.Specifier)
             .Where(specifier => !importPaths.ContainsKey(specifier))
             .OrderBy(static specifier => specifier, StringComparer.Ordinal)
             .ToArray();
@@ -142,6 +164,83 @@ internal sealed class LibraryMaterializer
         }
 
         return new LibraryAssets(importPaths, stylePaths, manifests.Select(static item => item.SourcePath).ToArray());
+    }
+
+    private static Dictionary<string, ImportSelection> CreateImportIndex(IReadOnlyList<LibraryManifest> manifests)
+    {
+        var imports = new Dictionary<string, ImportSelection>(StringComparer.Ordinal);
+        foreach (var manifest in manifests)
+        {
+            foreach (var (specifier, entry) in manifest.Imports)
+            {
+                if (imports.TryGetValue(specifier, out var existing))
+                {
+                    var existingPath = existing.Entry.Production;
+                    if (!string.Equals(existingPath, entry.Production, StringComparison.Ordinal) ||
+                        !string.Equals(existing.Manifest.LibraryId, manifest.LibraryId, StringComparison.Ordinal) ||
+                        !string.Equals(existing.Manifest.Version, manifest.Version, StringComparison.Ordinal))
+                    {
+                        throw new LibraryException(
+                            "JAZOR_LIBRARY_IMPORT_CONFLICT",
+                            $"Library import '{specifier}' is provided by incompatible package assets. " +
+                            "Keep exactly one version/provider in the restore graph.");
+                    }
+
+                    continue;
+                }
+
+                imports.Add(specifier, new ImportSelection(manifest, specifier, entry));
+            }
+        }
+
+        return imports;
+    }
+
+    private static IReadOnlyList<ImportSelection> SelectImports(
+        IReadOnlyDictionary<string, ImportSelection> importsBySpecifier,
+        BuildMode mode,
+        IEnumerable<string>? requiredImports,
+        IEnumerable<string>? providedModulePaths)
+    {
+        var requested = requiredImports is null
+            ? importsBySpecifier.Keys
+            : requiredImports
+                .Where(ECMAScriptModulePath.IsPackageSpecifier)
+                // Generated application modules may use bare catalog paths (for example host/app.mjs).
+                // Only paths absent from the application manifest must be supplied by a library package.
+                .Where(specifier => !IsProvidedModule(specifier, providedModulePaths));
+        var selected = new Dictionary<string, ImportSelection>(StringComparer.Ordinal);
+
+        void Add(string specifier)
+        {
+            if (!importsBySpecifier.TryGetValue(specifier, out var selection))
+            {
+                throw new LibraryException(
+                    "JAZOR_LIBRARY_IMPORT_MISSING",
+                    $"No library manifest provides: {specifier}.");
+            }
+
+            if (!selected.TryAdd(specifier, selection))
+                return;
+
+            foreach (var dependency in selection.Entry.GetDependencies(mode))
+                Add(dependency);
+        }
+
+        foreach (var specifier in requested
+                     .Where(static specifier => !string.IsNullOrWhiteSpace(specifier))
+                     .Select(static specifier => specifier.Trim())
+                     .Distinct(StringComparer.Ordinal)
+                     .OrderBy(static specifier => specifier, StringComparer.Ordinal))
+        {
+            Add(specifier);
+        }
+
+        return selected.Values
+            .OrderBy(static selection => selection.Manifest.LibraryId, StringComparer.Ordinal)
+            .ThenBy(static selection => selection.Manifest.Version, StringComparer.Ordinal)
+            .ThenBy(static selection => selection.Specifier, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static bool IsProvidedModule(string specifier, IEnumerable<string>? modulePaths)
@@ -257,7 +356,18 @@ internal sealed record LibraryAssets(
     IReadOnlyList<string> ManifestPaths);
 
 /// <summary>Development and production entry points for one logical import.</summary>
-internal sealed record ImportEntry(string Development, string Production);
+internal sealed record ImportEntry(
+    string Development,
+    string Production,
+    IReadOnlyList<string> DevelopmentDependencies,
+    IReadOnlyList<string> ProductionDependencies,
+    IReadOnlyList<string> Files)
+{
+    public IReadOnlyList<string> GetDependencies(BuildMode mode)
+        => mode == BuildMode.Development
+            ? DevelopmentDependencies
+            : ProductionDependencies;
+}
 
 /// <summary>Validated package manifest for one browser-ready binding library.</summary>
 internal sealed record LibraryManifest(
@@ -317,10 +427,29 @@ internal sealed record LibraryManifest(
                 property.Name,
                 new ImportEntry(
                     GetRequiredString(property.Value, "development"),
-                    GetRequiredString(property.Value, "production")));
+                    GetRequiredString(property.Value, "production"),
+                    ReadDependencies(property.Value, "developmentDependencies"),
+                    ReadDependencies(property.Value, "productionDependencies"),
+                    ReadPathValues(property.Value, "files")));
         }
 
         return imports;
+    }
+
+    private static IReadOnlyList<string> ReadDependencies(JsonElement element, string name)
+    {
+        var values = ReadPathValues(element, name);
+        foreach (var value in values)
+        {
+            if (!ECMAScriptModulePath.IsPackageSpecifier(value))
+            {
+                throw new LibraryException(
+                    "JAZOR_LIBRARY_IMPORT_INVALID",
+                    $"Library import dependency '{value}' must be a logical package specifier.");
+            }
+        }
+
+        return values;
     }
 
     private static Dictionary<string, string> ReadStringMap(JsonElement root, string name)
@@ -386,3 +515,9 @@ internal sealed class LibraryException(string code, string message) : InvalidOpe
 {
     public string Code { get; } = code;
 }
+
+/// <summary>One selected logical import and the package manifest that owns its ESM entry.</summary>
+internal sealed record ImportSelection(
+    LibraryManifest Manifest,
+    string Specifier,
+    ImportEntry Entry);

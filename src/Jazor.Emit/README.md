@@ -21,6 +21,10 @@ Emit 只识别两个结构性数据 carrier，不引用 Vue、React 或其运行
 
 runtime provider 的模块仅在应用模块引用其入口时物化；provider 负责声明内部依赖闭包。`module-source` 资产以 producer 声明的 `ImportPath` 重写到其 artifact path，Emit 不再按框架类型分支处理 SFC、JSX 或其他源格式。
 
+## Library Asset Contract
+
+`PackageImports` selects the package ESM entries actually used by an application. A library manifest entry may declare mode-specific logical dependencies and relative `files`; Emit copies only the selected transitive entry closure, active library styles, and shared root metadata/license files. This keeps browser and SSR graphs explicit without probing `node_modules` or parsing third-party source at build time. SSR adds its runner-owned `vue` and `@vue/server-renderer` roots explicitly.
+
 ## 关键文件
 
 - `Program.cs`：CLI 入口。

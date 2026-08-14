@@ -5,7 +5,16 @@
   "imports": {
     "pinia": {
       "development": "dist/pinia.mjs",
-      "production": "dist/pinia.mjs"
+      "production": "dist/pinia.mjs",
+      "developmentDependencies": [
+        "vue",
+        "@vue/devtools-api"
+      ],
+      "productionDependencies": [
+        "vue",
+        "@vue/devtools-api"
+      ],
+      "files": []
     }
   },
   "requires": {

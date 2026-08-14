@@ -211,6 +211,13 @@ public sealed class ToolchainTests
         Assert.IsTrue(File.Exists(request.BundleOutputPath));
         Assert.IsTrue(File.Exists(request.BundleOutputPath + ".map"));
 
+        // Browser graph requests only the Vue runtime; SSR/devtools stay outside its vendor closure.
+        // 该断言经真实 Toolchain 路径验证，而非只测 LibraryMaterializer 的拷贝逻辑。
+        var vueVendorRoot = Path.Combine(workspace.OutputRoot, "vendor", "vue3", "3.5.13", "dist");
+        Assert.IsTrue(File.Exists(Path.Combine(vueVendorRoot, "vue.runtime.esm-browser.prod.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(vueVendorRoot, "server-renderer.esm-browser.prod.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(vueVendorRoot, "devtools-api", "index.js")));
+
         var script = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
         Assert.Contains("NetpackLocalCard", script);
         Assert.Contains("Netpack SFC", script);

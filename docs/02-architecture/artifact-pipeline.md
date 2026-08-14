@@ -31,6 +31,18 @@
 
 `jazor-manifest.json` 是模块与本地资源的共享清单。它避免将机器绝对路径或墙钟时间作为新产物的必要内容，从而支持可复现构建。
 
+## Package Asset Closure
+
+生成模块的 `PackageImports` 是 library ESM 的唯一应用根。`LibraryMaterializer` 依据这些 logical specifier 选择 package manifest 中的 entry，而不是把每个已引用 NuGet 包的全部 `dist/` 目录复制到应用输出。manifest schema-v1 的 import entry 可声明：
+
+- `developmentDependencies` / `productionDependencies`：该 entry 所需的其他 logical package imports；
+- `files`：该 entry 的 relative ESM closure 或 entry-specific license；
+- 根 `files`：仅在该 library 至少有一个 selected entry 时复制的 shared metadata/license。
+
+选择顺序和 copy order 都按 library/version/specifier 稳定排序。debug/release 有应用 manifest 时，空 `PackageImports` 表示不物化 package asset；直接 CLI 调用没有 application manifest 或 explicit import root 时，保留历史的 all-entry materialization 语义。package author 必须随 vendor entry 更新这些声明，Emit 不扫描 `node_modules`，也不把第三方 JS parser 变成运行时依赖。
+
+release browser graph 和 SSR graph 分开选择。浏览器只跟随 generated imports；SSR runner 额外显式请求 `vue` 与 `@vue/server-renderer`，因此不会依赖浏览器图碰巧全量复制 runtime。该机制减少 publish/deployment 文件集合和本地 asset footprint；它不自动等同于首屏 network saving，因为未被 import 的旧文件本来也不会由浏览器请求。
+
 ## SSR
 
 ASP.NET Core 负责请求管线、静态文件、响应文档和 hydration；DenoHost 负责执行生成的 Vue 服务器模块；Netpack 只负责浏览器构建。应用不需要全局 Deno、项目 `node_modules`、CDN 或远程 import 才能使用受支持的 SSR 路径。

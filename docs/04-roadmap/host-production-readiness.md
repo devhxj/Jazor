@@ -24,6 +24,7 @@
 4. 浏览器门禁在 Edge 中验证真实路由、`ecs-*` class、`#ecmascript-style`、生成 selector、source map 和生产环境无 HMR transport。
 5. `verify-windows-spa-release.cs` 复制 Wiki 到临时目录，以 `WikiUsePackages=true` 从本地 `Jazor`、`Jazor.Vue`、`ECMAScript.Style` 包恢复、发布并运行浏览器验证。
 6. Tag 发布工作流在上传和推送包之前消费刚打出的包运行该门禁。
+7. Release library assets follow generated package imports and manifest-declared closure: browser output excludes unused SSR/devtools entries, while SSR materializes its explicit Vue/server-renderer graph. This reduces publish footprint; it is not presented as a browser-transfer win for files the import graph never fetched.
 
 ### 验收命令
 
@@ -51,6 +52,6 @@ dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /d
 
 ### 第四阶段：运行与发布质量
 
-- 增加发布缓存、压缩、source-map 公开策略和健康检查的明确部署选项。
+- 增加发布缓存、压缩、source-map 公开策略和健康检查的明确部署选项。当前 `bundle.js` 没有 content hash，也没有 host-owned preload graph，因此不默认设置 immutable cache 或 `modulepreload`；先形成 artifact naming/invalidation 契约并用真实 navigation profile 证明收益。
 - 在 Windows 上验证并发发布、端口/文件锁清理和失败日志归档。
 - 将最终 SPA、HMR、SSR 门禁纳入版本发布前的统一质量报告。

@@ -5,7 +5,14 @@
   "imports": {
     "tdesign-vue-next": {
       "development": "dist/tdesign.mjs",
-      "production": "dist/tdesign.mjs"
+      "production": "dist/tdesign.mjs",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "files": []
     }
   },
   "requires": {

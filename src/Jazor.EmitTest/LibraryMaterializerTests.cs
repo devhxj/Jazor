@@ -217,6 +217,139 @@ public sealed class LibraryMaterializerTests
         Assert.AreEqual("vendor/pinia/3.0.4/dist/pinia.mjs", result.ImportPaths["pinia"]);
     }
 
+    [TestMethod]
+    public void Materialize_ProductionVueEntry_OmitsUnusedSsrAndDevtoolsAssets()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [FindLibraryManifest("ECMAScript.Vue")],
+            outputRoot,
+            BuildMode.Production,
+            ["vue"]);
+
+        Assert.HasCount(1, result.ImportPaths);
+        Assert.IsTrue(result.ImportPaths.ContainsKey("vue"));
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "dist",
+            "vue.runtime.esm-browser.prod.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "dist",
+            "server-renderer.esm-browser.prod.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "dist",
+            "devtools-api",
+            "index.js")));
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "licenses",
+            "LICENSE")));
+    }
+
+    [TestMethod]
+    public void Materialize_ProductionPiniaEntry_FollowsDeclaredRuntimeClosure()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.Pinia"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Production,
+            ["pinia"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "pinia", "vue", "@vue/devtools-api" },
+            result.ImportPaths.Keys.ToArray());
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "dist",
+            "devtools-api",
+            "index.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "dist",
+            "server-renderer.esm-browser.prod.js")));
+    }
+
+    [TestMethod]
+    public void Materialize_ProductionVuetifyLabsEntry_CopiesRelativeModuleClosureOnly()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.Vuetify"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Production,
+            ["vuetify/labs/components"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "vue", "vuetify", "vuetify/labs/components" },
+            result.ImportPaths.Keys.ToArray());
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vuetify",
+            "4.1.8",
+            "dist",
+            "vuetify-labs.esm.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vuetify",
+            "4.1.8",
+            "dist",
+            "components.mjs")));
+        Assert.IsFalse(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vuetify",
+            "4.1.8",
+            "dist",
+            "directives.mjs")));
+    }
+
+    private static string FindLibraryManifest(string projectName)
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            var candidate = Path.Combine(directory.FullName, "src", projectName, "manifest.json");
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        throw new FileNotFoundException($"Could not locate the {projectName} library manifest.");
+    }
+
     private sealed class LibraryWorkspace : IDisposable
     {
         public LibraryWorkspace()

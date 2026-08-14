@@ -5,7 +5,16 @@
   "imports": {
     "@pinia/testing": {
       "development": "dist/index.mjs",
-      "production": "dist/index.mjs"
+      "production": "dist/index.mjs",
+      "developmentDependencies": [
+        "pinia",
+        "vue"
+      ],
+      "productionDependencies": [
+        "pinia",
+        "vue"
+      ],
+      "files": []
     }
   },
   "requires": {

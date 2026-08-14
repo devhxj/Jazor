@@ -97,6 +97,7 @@ static async Task<int> RunManifestMaterializeAsync(string[] args)
     var manifestPath = string.Empty;
     var mode = BuildMode.Development;
     var manifests = new List<string>();
+    var requiredImports = new List<string>();
     for (var index = 0; index < args.Length; index++)
     {
         if (index + 1 >= args.Length)
@@ -120,6 +121,9 @@ static async Task<int> RunManifestMaterializeAsync(string[] args)
             case "--library-manifest":
                 manifests.Add(value);
                 break;
+            case "--required-import":
+                requiredImports.Add(value);
+                break;
             default:
                 Console.Error.WriteLine($"Unknown manifest materialize argument '{args[index - 1]}'.");
                 return 1;
@@ -140,17 +144,24 @@ static async Task<int> RunManifestMaterializeAsync(string[] args)
             ? null
             : ManifestModel.TryLoad(Path.GetFullPath(manifestPath))
                 ?? throw new FileNotFoundException("Manifest was not found.", manifestPath);
-        var requiredImports = manifest?.Modules
+        var manifestImports = manifest?.Modules
             .SelectMany(static module => module.PackageImports ?? [])
             .ToArray() ?? [];
         var providedModulePaths = manifest?.Modules
             .Select(static module => module.RelativePath)
             .ToArray() ?? [];
+        // A standalone CLI invocation historically materialized every declared entry. Keep that
+        // compatibility when no application graph or explicit root was supplied; application
+        // manifests deliberately use an empty set to mean "no package assets".
+        // 无 app manifest/显式 root 时保留全量 CLI 语义；有 manifest 后空 imports 才表示不复制库资产。
+        IEnumerable<string>? requestedImports = manifest is null && requiredImports.Count == 0
+            ? null
+            : manifestImports.Concat(requiredImports);
         var materialization = new LibraryMaterializer().Materialize(
             manifests,
             outputRoot,
             mode,
-            requiredImports,
+            requestedImports,
             providedModulePaths);
         await ImportMapWriter.WriteAsync(
             outputRoot,
