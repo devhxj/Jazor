@@ -9,6 +9,7 @@
 - 提供 `createTestingPinia()` 的 C# host binding。
 - 提供 `TestingOptions`、`TestingInitialState`、`PiniaTestingSpyFactory` 与 `TestingStubActions` 契约。
 - 提供 `ProjectPlugin(...)`、`ProjectStubActionPredicate(...)` 与 `ProjectStubActions(...)` 等显式类型投影 helper。
+- `@pinia/testing` 2 已将 writable-computed plugin 设为内部固定行为，`TestingOptions` 不再公开已移除的 `WritableComputed` 选项。
 
 ## 边界
 

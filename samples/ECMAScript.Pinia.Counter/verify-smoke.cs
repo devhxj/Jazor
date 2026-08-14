@@ -17,6 +17,7 @@ var generatedOutputRoot = string.IsNullOrWhiteSpace(options.GeneratedOutputRoot)
 var bundleOutputRoot = string.IsNullOrWhiteSpace(options.BundleOutputRoot)
     ? Path.Combine(repoRoot, ".tmp", "sample-smoke", "ECMAScript.Pinia.Counter", options.Configuration, "bundle")
     : ResolvePath(options.BundleOutputRoot, repoRoot);
+var consumerDistRoot = Path.Combine(repoRoot, ".tmp", "sample-smoke", "ECMAScript.Pinia.Counter", options.Configuration, "consumer-dist");
 
 SetCommonEnvironment(repoRoot);
 var isolationArguments = GetIsolationArguments(options);
@@ -98,7 +99,9 @@ var denoExePath = ResolveDenoHostRuntime(repoRoot, restorePackagesPath, resolved
 var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 {
     ["JAZOR_GENERATED_ROOT"] = generatedOutputRoot,
-    ["JAZOR_BUNDLE_ROOT"] = bundleOutputRoot
+    ["JAZOR_BUNDLE_ROOT"] = bundleOutputRoot,
+    // Deno release assets 保持隔离，避免 smoke 覆盖跟踪的 sample fixture。
+    ["PINIA_DENO_DIST_ROOT"] = consumerDistRoot
 };
 
 RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { "task", "build" });

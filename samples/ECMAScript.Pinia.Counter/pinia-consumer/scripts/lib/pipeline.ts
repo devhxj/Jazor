@@ -165,8 +165,8 @@ async function writeImportMap(importMapPath: string, generatedRoot: string): Pro
   const importMap = {
     imports: {
       vue: "npm:vue@3.5.13",
-      "pinia": "npm:pinia@3.0.3",
-      "@pinia/testing": "npm:@pinia/testing@1.0.3",
+      "pinia": "npm:pinia@4.0.3",
+      "@pinia/testing": "npm:@pinia/testing@2.0.1",
       "jsdom": "npm:jsdom@29.1.1",
       "npm:vue@3": "npm:vue@3.5.13",
       "components/": `${generatedRootUrl}components/`,

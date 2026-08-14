@@ -33,7 +33,6 @@ public static class CounterTestingModule
                 }
             },
             StubActions = ProjectStubActionPredicate<CounterStore>(ShouldStubAction),
-            WritableComputed = true,
             StubPatch = false,
             StubReset = false,
             FakeApp = true,
@@ -56,7 +55,6 @@ public static class CounterTestingModule
                 }
             },
             StubActions = ProjectStubActions<CounterStore>(ShouldStubTypedAction),
-            WritableComputed = true,
             StubPatch = false,
             StubReset = false,
             FakeApp = true,
@@ -79,7 +77,6 @@ public static class CounterTestingModule
                 }
             },
             StubActions = TestingStubActions<CounterStore>.From(ShouldStubFactoryAction),
-            WritableComputed = true,
             StubPatch = false,
             StubReset = false,
             FakeApp = true,
@@ -102,7 +99,6 @@ public static class CounterTestingModule
                 }
             },
             StubActions = new[] { nameof(CounterStore.Increment), nameof(CounterStore.Decrement) },
-            WritableComputed = true,
             StubPatch = true,
             StubReset = true,
             FakeApp = true,

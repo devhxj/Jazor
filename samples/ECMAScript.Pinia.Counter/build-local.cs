@@ -8,7 +8,7 @@ var repoRoot = ScriptHelpers.FindRepositoryRoot(Directory.GetCurrentDirectory())
 var sampleRoot = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter");
 var hostProject = Path.Combine(sampleRoot, "Pinia.Counter.Host", "Pinia.Counter.Host.csproj");
 var packageOutput = Path.Combine(repoRoot, ".tmp", "nupkg-sample");
-var packageProject = Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
+var publishScriptPath = Path.Combine(repoRoot, "scripts", "csharp", "publish-nuget.cs");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 
 ScriptHelpers.SetCommonEnvironment(dotnetCliHome);
@@ -23,16 +23,16 @@ var isolationArguments = ScriptHelpers.GetIsolationArguments(options, repoRoot);
 
 var packArguments = new List<string>
 {
-    "pack",
-    packageProject,
-    "-c",
-    options.Configuration,
-    "-o",
-    packageOutput,
-    "-v",
-    "minimal",
-    "/nr:false",
-    "-p:UseSharedCompilation=false"
+    "run",
+    "--file",
+    publishScriptPath,
+    "--",
+    "--configuration", options.Configuration,
+    "--output-directory", packageOutput,
+    "--skip-push",
+    "--package", "jazor",
+    "--package", "pinia",
+    "--package", "pinia-testing"
 };
 packArguments.AddRange(isolationArguments);
 await ScriptHelpers.RunDotNetAsync(packArguments, repoRoot, dotnetCliHome);

@@ -252,7 +252,15 @@ public sealed class LibraryMaterializerTests
             "3.5.13",
             "dist",
             "devtools-api",
-            "index.js")));
+            "vue-devtools-api.esm-browser.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "dist",
+            "devtools-api",
+            "perfect-debounce.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(
             outputRoot,
             "vendor",
@@ -278,8 +286,66 @@ public sealed class LibraryMaterializerTests
             ["pinia"]);
 
         CollectionAssert.AreEquivalent(
-            new[] { "pinia", "vue", "@vue/devtools-api" },
+            new[] { "pinia", "vue" },
             result.ImportPaths.Keys.ToArray());
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "pinia",
+            "4.0.3",
+            "dist",
+            "pinia.esm-browser.prod.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "pinia",
+            "4.0.3",
+            "dist",
+            "nostics",
+            "index.mjs")));
+        Assert.IsFalse(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "dist",
+            "devtools-api",
+            "vue-devtools-api.esm-browser.js")));
+    }
+
+    [TestMethod]
+    public void Materialize_DevelopmentPiniaEntry_FollowsDeclaredDiagnosticsAndDevtoolsClosure()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.Pinia"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Development,
+            ["pinia"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "pinia", "vue", "nostics", "@vue/devtools-api", "perfect-debounce" },
+            result.ImportPaths.Keys.ToArray());
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "pinia",
+            "4.0.3",
+            "dist",
+            "pinia.esm-browser.js")));
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "pinia",
+            "4.0.3",
+            "dist",
+            "nostics",
+            "index.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(
             outputRoot,
             "vendor",
@@ -287,14 +353,51 @@ public sealed class LibraryMaterializerTests
             "3.5.13",
             "dist",
             "devtools-api",
-            "index.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(
+            "vue-devtools-api.esm-browser.js")));
+        Assert.IsTrue(File.Exists(Path.Combine(
             outputRoot,
             "vendor",
             "vue3",
             "3.5.13",
             "dist",
-            "server-renderer.esm-browser.prod.js")));
+            "devtools-api",
+            "perfect-debounce.mjs")));
+    }
+
+    [TestMethod]
+    public void Materialize_ProductionPiniaTestingEntry_FollowsDeclaredRuntimeClosure()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.Pinia.Testing"),
+                FindLibraryManifest("ECMAScript.Pinia"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Production,
+            ["@pinia/testing"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "@pinia/testing", "pinia", "vue", "nostics" },
+            result.ImportPaths.Keys.ToArray());
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "pinia-testing",
+            "2.0.1",
+            "dist",
+            "index.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "pinia",
+            "4.0.3",
+            "dist",
+            "nostics",
+            "index.mjs")));
     }
 
     [TestMethod]

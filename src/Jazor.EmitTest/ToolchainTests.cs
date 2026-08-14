@@ -216,7 +216,7 @@ public sealed class ToolchainTests
         var vueVendorRoot = Path.Combine(workspace.OutputRoot, "vendor", "vue3", "3.5.13", "dist");
         Assert.IsTrue(File.Exists(Path.Combine(vueVendorRoot, "vue.runtime.esm-browser.prod.js")));
         Assert.IsFalse(File.Exists(Path.Combine(vueVendorRoot, "server-renderer.esm-browser.prod.js")));
-        Assert.IsFalse(File.Exists(Path.Combine(vueVendorRoot, "devtools-api", "index.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(vueVendorRoot, "devtools-api", "vue-devtools-api.esm-browser.js")));
 
         var script = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
         Assert.Contains("NetpackLocalCard", script);

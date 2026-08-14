@@ -280,7 +280,11 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(sampleBuildScript, "BaseOutputPath");
 		StringAssert.Contains(sampleBuildScript, "BaseIntermediateOutputPath");
 		StringAssert.Contains(sampleBuildScript, "var packArguments = new List<string>");
-		StringAssert.Contains(sampleBuildScript, "packageProject");
+		StringAssert.Contains(sampleBuildScript, "publish-nuget.cs");
+		StringAssert.Contains(sampleBuildScript, "--skip-push");
+		StringAssert.Contains(sampleBuildScript, "\"--package\", \"jazor\"");
+		StringAssert.Contains(sampleBuildScript, "\"--package\", \"pinia\"");
+		StringAssert.Contains(sampleBuildScript, "\"--package\", \"pinia-testing\"");
 		StringAssert.Contains(sampleBuildScript, "packageOutput");
 		StringAssert.Contains(sampleBuildScript, "RestoreAdditionalProjectSources={packageOutput}");
 		StringAssert.Contains(sampleBuildScript, "--bundle-out-dir");
@@ -295,6 +299,8 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(sampleVerifyScript, "ResolveDenoHostRuntime(repoRoot, restorePackagesPath, resolvedPackageInfo)");
 		StringAssert.Contains(sampleVerifyScript, "AssertNetpackBundleArtifacts(bundleOutputRoot)");
 		StringAssert.Contains(sampleVerifyScript, "RestoreAdditionalProjectSources={packageOutput}");
+		StringAssert.Contains(sampleVerifyScript, "PINIA_DENO_DIST_ROOT");
+		StringAssert.Contains(sampleVerifyScript, "consumerDistRoot");
 		StringAssert.Contains(sampleVerifyScript, "RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { \"task\", \"build\" })");
 		StringAssert.Contains(sampleVerifyScript, "Path.Combine(consumerRoot, \".deno-build\", \"import-map.generated.json\")");
 		StringAssert.Contains(sampleVerifyScript, "GetIsolatedBuildRoot(options.BaseOutputPath!, repoRoot: null)");

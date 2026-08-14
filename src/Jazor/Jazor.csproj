@@ -36,6 +36,7 @@
     <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\dist\**\*" Pack="true" PackagePath="jazor\vue3\dist\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
     <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\licenses\VUE-DEVTOOLS-API-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\licenses\PERFECT-DEBOUNCE-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
     <None Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue\licenses\VUE-SERVER-RENDERER-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
   </ItemGroup>
 

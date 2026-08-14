@@ -42,6 +42,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 - ASP.NET Core SSR now reuses a bounded generation-aware Deno worker pool instead of starting a process and writing a temporary request file for every render. Artifact changes rotate the ESM generation; cancellation, crash recovery, concurrency limits, and graceful application disposal are covered by real-process tests.
 - Independent RazorVue artifacts now build with bounded concurrency while retaining deterministic module text, source maps, diagnostics, and HMR ordering.
 - Release artifacts now include only the referenced package-runtime closure. Browser output excludes unused Vue SSR/devtools files, SSR explicitly receives its Vue/server-renderer graph, and unreachable Jazor CLR runtime modules are omitted from release output.
+- `ECMAScript.Pinia` now ships Pinia 4.0.3, and `ECMAScript.Pinia.Testing` ships `@pinia/testing` 2.0.1. `app.Use(pinia)` automatically registers Pinia's development panel with Vue Devtools; production Pinia output excludes the Devtools closure. `TestingOptions.WritableComputed` is removed because Testing 2 handles that behavior internally.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

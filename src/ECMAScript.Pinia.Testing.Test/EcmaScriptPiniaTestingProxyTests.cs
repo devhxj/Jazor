@@ -130,7 +130,6 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		var initialState = optionsType.GetProperty(nameof(PiniaTesting.TestingOptions.InitialState), BindingFlags.Public | BindingFlags.Instance);
 		var plugins = optionsType.GetProperty(nameof(PiniaTesting.TestingOptions.Plugins), BindingFlags.Public | BindingFlags.Instance);
 		var stubActions = optionsType.GetProperty(nameof(PiniaTesting.TestingOptions.StubActions), BindingFlags.Public | BindingFlags.Instance);
-		var writableComputed = optionsType.GetProperty(nameof(PiniaTesting.TestingOptions.WritableComputed), BindingFlags.Public | BindingFlags.Instance);
 		var stubPatch = optionsType.GetProperty(nameof(PiniaTesting.TestingOptions.StubPatch), BindingFlags.Public | BindingFlags.Instance);
 		var stubReset = optionsType.GetProperty(nameof(PiniaTesting.TestingOptions.StubReset), BindingFlags.Public | BindingFlags.Instance);
 		var fakeApp = optionsType.GetProperty(nameof(PiniaTesting.TestingOptions.FakeApp), BindingFlags.Public | BindingFlags.Instance);
@@ -139,7 +138,6 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.IsNotNull(initialState);
 		Assert.IsNotNull(plugins);
 		Assert.IsNotNull(stubActions);
-		Assert.IsNotNull(writableComputed);
 		Assert.IsNotNull(stubPatch);
 		Assert.IsNotNull(stubReset);
 		Assert.IsNotNull(fakeApp);
@@ -147,7 +145,6 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.AreEqual(typeof(PiniaTesting.TestingInitialState), initialState!.PropertyType);
 		Assert.AreEqual(typeof(PiniaPlugin[]), plugins!.PropertyType);
 		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions?), stubActions!.PropertyType);
-		Assert.AreEqual(typeof(bool?), writableComputed!.PropertyType);
 		Assert.AreEqual(typeof(bool?), stubPatch!.PropertyType);
 		Assert.AreEqual(typeof(bool?), stubReset!.PropertyType);
 		Assert.AreEqual(typeof(bool?), fakeApp!.PropertyType);
@@ -155,6 +152,7 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.IsTrue(typeof(Vue.VueProps).IsAssignableFrom(typeof(PiniaTesting.TestingOptions)));
 		Assert.IsTrue(typeof(Vue.VueProps).IsAssignableFrom(typeof(PiniaTesting.TestingInitialState)));
 		Assert.IsTrue(typeof(Pinia.PiniaInstance).IsAssignableFrom(typeof(PiniaTesting.TestingPinia)));
+		Assert.IsNull(optionsType.GetProperty("WritableComputed", BindingFlags.Public | BindingFlags.Instance));
 	}
 
 	[TestMethod]

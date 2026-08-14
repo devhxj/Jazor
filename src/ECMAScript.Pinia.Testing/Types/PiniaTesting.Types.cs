@@ -199,13 +199,6 @@ public static partial class PiniaTesting
 		public TestingStubActions? StubActions { get; init; }
 
 		/// <summary>
-		/// 控制测试中 computed/getter 值是否应保持可写。
-		/// Controls whether computed/getter values should stay writable in tests.
-		/// </summary>
-		[Description("@#writableComputed")]
-		public bool? WritableComputed { get; init; }
-
-		/// <summary>
 		/// 控制是否用 spy 替换 <c>$patch()</c> 并阻止其修改状态。
 		/// Controls whether <c>$patch()</c> is replaced with a spy and prevented from
 		/// mutating state.

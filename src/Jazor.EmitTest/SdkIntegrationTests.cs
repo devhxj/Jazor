@@ -121,6 +121,11 @@ public sealed class SdkIntegrationTests
         var piniaNuspec = ReadPackageEntryText(package.PiniaPackagePath, "ECMAScript.Pinia.nuspec");
         CollectionAssert.Contains(piniaEntryNames, "lib/net11.0/ECMAScript.Pinia.dll");
         CollectionAssert.Contains(piniaEntryNames, "ECMAScript.Pinia.nuspec");
+        CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/manifest.json");
+        CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/dist/pinia.esm-browser.js");
+        CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/dist/pinia.esm-browser.prod.js");
+        CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/dist/nostics/index.mjs");
+        CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/licenses/NOSTICS-LICENSE");
         StringAssert.Contains(piniaNuspec, "<dependency id=\"Jazor\"");
 
         using var piniaTestingArchive = ZipFile.OpenRead(package.PiniaTestingPackagePath);
@@ -167,10 +172,11 @@ public sealed class SdkIntegrationTests
             "jazor/vue3/dist/vue.runtime.esm-browser.prod.js",
             "jazor/vue3/dist/server-renderer.esm-browser.js",
             "jazor/vue3/dist/server-renderer.esm-browser.prod.js",
-            "jazor/vue3/dist/devtools-api/index.js",
-            "jazor/vue3/dist/devtools-api/api/index.js",
+            "jazor/vue3/dist/devtools-api/vue-devtools-api.esm-browser.js",
+            "jazor/vue3/dist/devtools-api/perfect-debounce.mjs",
             "jazor/vue3/licenses/LICENSE",
             "jazor/vue3/licenses/VUE-DEVTOOLS-API-LICENSE",
+            "jazor/vue3/licenses/PERFECT-DEBOUNCE-LICENSE",
             "jazor/vue3/licenses/VUE-SERVER-RENDERER-LICENSE",
             "tools/net11.0/tooling/vue/compiler-sfc.esm-browser.js",
             "tools/net11.0/tooling/vue/licenses/LICENSE");
@@ -196,7 +202,10 @@ public sealed class SdkIntegrationTests
             "lib/net11.0/ECMAScript.Pinia.dll",
             "buildTransitive/ECMAScript.Pinia.targets",
             "jazor/pinia/manifest.json",
-            "jazor/pinia/dist/pinia.mjs",
+            "jazor/pinia/dist/pinia.esm-browser.js",
+            "jazor/pinia/dist/pinia.esm-browser.prod.js",
+            "jazor/pinia/dist/nostics/index.mjs",
+            "jazor/pinia/licenses/NOSTICS-LICENSE",
             "jazor/pinia/licenses/LICENSE");
         AssertPackageEntries(
             package.PiniaTestingPackagePath,
@@ -230,8 +239,14 @@ public sealed class SdkIntegrationTests
         using var manifest = JsonDocument.Parse(ReadPackageEntryText(package.PackagePath, "jazor/vue3/manifest.json"));
 
         var devtools = manifest.RootElement.GetProperty("imports").GetProperty("@vue/devtools-api");
-        Assert.AreEqual("dist/devtools-api/index.js", devtools.GetProperty("development").GetString());
-        Assert.AreEqual("dist/devtools-api/index.js", devtools.GetProperty("production").GetString());
+        Assert.AreEqual("dist/devtools-api/vue-devtools-api.esm-browser.js", devtools.GetProperty("development").GetString());
+        Assert.AreEqual("dist/devtools-api/vue-devtools-api.esm-browser.js", devtools.GetProperty("production").GetString());
+        CollectionAssert.AreEquivalent(
+            new[] { "perfect-debounce" },
+            devtools.GetProperty("developmentDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
+        CollectionAssert.AreEquivalent(
+            new[] { "perfect-debounce" },
+            devtools.GetProperty("productionDependencies").EnumerateArray().Select(static value => value.GetString()).ToArray());
         var serverRenderer = manifest.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer");
         Assert.AreEqual("dist/server-renderer.esm-browser.js", serverRenderer.GetProperty("development").GetString());
         Assert.AreEqual("dist/server-renderer.esm-browser.prod.js", serverRenderer.GetProperty("production").GetString());
@@ -239,7 +254,6 @@ public sealed class SdkIntegrationTests
             .EnumerateArray()
             .Select(static value => value.GetString())
             .ToArray();
-        CollectionAssert.Contains(devtoolsFiles, "dist/devtools-api/api/index.js");
         CollectionAssert.Contains(devtoolsFiles, "licenses/VUE-DEVTOOLS-API-LICENSE");
         var serverRendererFiles = serverRenderer.GetProperty("files")
             .EnumerateArray()
@@ -247,15 +261,17 @@ public sealed class SdkIntegrationTests
             .ToArray();
         CollectionAssert.Contains(serverRendererFiles, "licenses/VUE-SERVER-RENDERER-LICENSE");
 
-        var devtoolsApi = ReadPackageEntryText(package.PackagePath, "jazor/vue3/dist/devtools-api/index.js");
-        Assert.IsFalse(
-            Regex.IsMatch(devtoolsApi, "\\b(?:from|import)\\s+[\\\"'](?!\\.)", RegexOptions.CultureInvariant),
-            "The bundled devtools API may only use local relative module imports.");
+        var devtoolsApi = ReadPackageEntryText(package.PackagePath, "jazor/vue3/dist/devtools-api/vue-devtools-api.esm-browser.js");
+        StringAssert.Contains(devtoolsApi, "from 'perfect-debounce'", StringComparison.Ordinal);
 
         var router = ReadPackageEntryText(package.VueRoutePackagePath, "jazor/vue-router/dist/vue-router.esm-browser.js");
-        var pinia = ReadPackageEntryText(package.PiniaPackagePath, "jazor/pinia/dist/pinia.mjs");
+        var piniaDevelopment = ReadPackageEntryText(package.PiniaPackagePath, "jazor/pinia/dist/pinia.esm-browser.js");
+        var piniaProduction = ReadPackageEntryText(package.PiniaPackagePath, "jazor/pinia/dist/pinia.esm-browser.prod.js");
         StringAssert.Contains(router, "from \"@vue/devtools-api\"", StringComparison.Ordinal);
-        StringAssert.Contains(pinia, "from '@vue/devtools-api'", StringComparison.Ordinal);
+        StringAssert.Contains(piniaDevelopment, "from \"@vue/devtools-api\"", StringComparison.Ordinal);
+        StringAssert.Contains(piniaDevelopment, "from \"nostics\"", StringComparison.Ordinal);
+        Assert.IsFalse(piniaProduction.Contains("@vue/devtools-api", StringComparison.Ordinal));
+        Assert.IsFalse(piniaProduction.Contains("nostics", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -471,10 +487,10 @@ public sealed class SdkIntegrationTests
             File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.13", "dist", "server-renderer.esm-browser.prod.js")),
             "Browser release must not carry the SSR-only renderer entry.");
         Assert.IsFalse(
-            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.13", "dist", "devtools-api", "index.js")),
+            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.13", "dist", "devtools-api", "vue-devtools-api.esm-browser.js")),
             "Browser release must not carry unused Vue devtools assets.");
         Assert.IsFalse(
-            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.13", "dist", "devtools-api", "index.js")),
+            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.13", "dist", "devtools-api", "vue-devtools-api.esm-browser.js")),
             "SSR release must not carry browser-only Vue devtools assets.");
 
         var ssrImportMap = await File.ReadAllTextAsync(Path.Combine(ssrRoot, "ssr-importmap.json"));
