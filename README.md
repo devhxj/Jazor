@@ -40,6 +40,8 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 - Fixed authored, named, and scoped slots now use Vue `withCtx` with the stable `_: 1` marker. Conditional, forwarded, and non-stable-scope slots use `createSlots` with `DYNAMIC_SLOTS`; the production gate verifies both parent updates and branch replacement.
 - Proven direct `string`/`bool` DOM binds now bypass the generic event/value adapter while retaining compiler-owned assignment semantics. Parameter lifecycle watches use a shallow declared-prop projection: scalar and reference replacement trigger callbacks, while nested mutation of the same reference does not.
 - ASP.NET Core SSR now reuses a bounded generation-aware Deno worker pool instead of starting a process and writing a temporary request file for every render. Artifact changes rotate the ESM generation; cancellation, crash recovery, concurrency limits, and graceful application disposal are covered by real-process tests.
+- Independent RazorVue artifacts now build with bounded concurrency while retaining deterministic module text, source maps, diagnostics, and HMR ordering.
+- Release artifacts now include only the referenced package-runtime closure. Browser output excludes unused Vue SSR/devtools files, SSR explicitly receives its Vue/server-renderer graph, and unreachable Jazor CLR runtime modules are omitted from release output.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
