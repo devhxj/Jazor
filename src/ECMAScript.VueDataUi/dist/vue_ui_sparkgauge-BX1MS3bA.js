@@ -1,0 +1,90 @@
+import { t as e } from "./rolldown-runtime-Dy4uBu1J.js";
+//#region src/themes/vue_ui_sparkgauge.json
+var t = /* @__PURE__ */ e({
+	celebration: () => a,
+	celebrationNight: () => o,
+	concrete: () => l,
+	dark: () => i,
+	default: () => u,
+	hack: () => s,
+	minimal: () => n,
+	minimalDark: () => r,
+	zen: () => c
+}), n = { style: { colors: {
+	min: "#9D7D92",
+	max: "#678681"
+} } }, r = { style: {
+	background: "#1A1A1A",
+	title: { color: "#CCCCCC" },
+	dataLabel: { color: "#CCCCCC" },
+	colors: {
+		min: "#9D7D92",
+		max: "#678681"
+	},
+	gutter: { color: "#3A3A3A" }
+} }, i = { style: {
+	background: "#1A1A1A",
+	title: { color: "#CCCCCC" },
+	dataLabel: { color: "#CCCCCC" },
+	gutter: { color: "#3A3A3A" }
+} }, a = { style: {
+	background: "#FFF8E1",
+	title: { color: "#424242" },
+	dataLabel: { color: "#424242" },
+	colors: {
+		min: "#F57C00",
+		max: "#D32F2F"
+	},
+	gutter: { color: "#5D403740" }
+} }, o = { style: {
+	background: "#1E1E1E",
+	title: { color: "#BDBDBD" },
+	dataLabel: { color: "#BDBDBD" },
+	colors: {
+		min: "#F57C00",
+		max: "#D32F2F"
+	},
+	gutter: { color: "#5D403740" }
+} }, s = { style: {
+	background: "#1A1A1A",
+	title: { color: "#66CC66" },
+	dataLabel: { color: "#AACCAA" },
+	colors: {
+		min: "#334C33",
+		max: "#33CC33"
+	},
+	track: { color: "#33CC33" },
+	gutter: { color: "#333333" }
+} }, c = { style: {
+	background: "#fbfafa",
+	title: { color: "#8A9892" },
+	dataLabel: { color: "#A0AC94" },
+	colors: {
+		min: "#C09E85",
+		max: "#B9B99D"
+	},
+	track: { color: "#B9B99D" },
+	gutter: { color: "#f5f0eb" }
+} }, l = { style: {
+	background: "#f6f6fb",
+	title: { color: "#50606C" },
+	dataLabel: { color: "#61747E" },
+	colors: {
+		min: "#92B0AB",
+		max: "#4A6A75"
+	},
+	track: { color: "#4A6A75" },
+	gutter: { color: "#e1e5e8" }
+} }, u = {
+	default: {},
+	minimal: n,
+	minimalDark: r,
+	dark: i,
+	celebration: a,
+	celebrationNight: o,
+	hack: s,
+	zen: c,
+	concrete: l
+};
+//#endregion
+export { t as n, u as t };

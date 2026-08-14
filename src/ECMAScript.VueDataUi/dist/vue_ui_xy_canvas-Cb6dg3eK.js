@@ -1,0 +1,408 @@
+import { t as e } from "./rolldown-runtime-Dy4uBu1J.js";
+//#region src/themes/vue_ui_xy_canvas.json
+var t = /* @__PURE__ */ e({
+	celebration: () => a,
+	celebrationNight: () => o,
+	concrete: () => l,
+	dark: () => i,
+	default: () => u,
+	hack: () => s,
+	minimal: () => n,
+	minimalDark: () => r,
+	zen: () => c
+}), n = {
+	userOptions: { show: !1 },
+	style: { chart: {
+		zoom: { minimap: { show: !0 } },
+		legend: { show: !1 },
+		bar: { gradient: { show: !1 } }
+	} }
+}, r = {
+	userOptions: { show: !1 },
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		zoom: {
+			color: "#4A4A4A",
+			highlightColor: "#9A9A9A",
+			minimap: {
+				show: !0,
+				selectedColor: "#8A8A8A",
+				lineColor: "#424242",
+				indicatorColor: "#CCCCCC"
+			}
+		},
+		selector: { color: "#CCCCCC" },
+		legend: {
+			show: !1,
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#CCCCCC"
+			}
+		},
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#1A1A1A",
+			backgroundOpacity: 70,
+			color: "#CCCCCC",
+			borderColor: "#3A3A3A"
+		},
+		grid: {
+			y: {
+				axisColor: "#5A5A5A",
+				axisLabels: { color: "#CCCCCC" },
+				verticalLines: { color: "#4A4A4A" }
+			},
+			x: {
+				axisColor: "#5A5A5A",
+				horizontalLines: { color: "#4A4A4A" },
+				timeLabels: { color: "#CCCCCC" }
+			},
+			zeroLine: { color: "#5A5A5A" }
+		},
+		dataLabels: { color: "#CCCCCC" },
+		bar: { gradient: { show: !1 } }
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, i = {
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		zoom: {
+			color: "#4A4A4A",
+			highlightColor: "#9A9A9A",
+			minimap: {
+				selectedColor: "#8A8A8A",
+				lineColor: "#424242",
+				indicatorColor: "#CCCCCC"
+			}
+		},
+		selector: { color: "#CCCCCC" },
+		legend: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#CCCCCC"
+			}
+		},
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#1A1A1A",
+			backgroundOpacity: 70,
+			color: "#CCCCCC",
+			borderColor: "#5A5A5A"
+		},
+		grid: {
+			y: {
+				axisColor: "#5A5A5A",
+				axisLabels: { color: "#CCCCCC" },
+				verticalLines: { color: "#4A4A4A" }
+			},
+			x: {
+				axisColor: "#5A5A5A",
+				horizontalLines: { color: "#4A4A4A" },
+				timeLabels: { color: "#CCCCCC" }
+			},
+			zeroLine: { color: "#5A5A5A" }
+		},
+		dataLabels: { color: "#CCCCCC" }
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, a = {
+	style: { chart: {
+		backgroundColor: "#FFF8E1",
+		color: "#424242",
+		zoom: {
+			color: "#5D4037",
+			highlightColor: "#FF8A65"
+		},
+		selector: { color: "#5D4037" },
+		legend: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242",
+			selectAllToggle: {
+				backgroundColor: "#5D4037",
+				color: "#FFF8E1"
+			}
+		},
+		title: {
+			color: "#424242",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#FFECB3",
+			backgroundOpacity: 30,
+			color: "#424242",
+			borderColor: "#FF8A65"
+		},
+		grid: {
+			y: {
+				axisColor: "#5D4037",
+				axisLabels: { color: "#424242" },
+				verticalLines: { show: !1 }
+			},
+			x: {
+				axisColor: "#5D4037",
+				horizontalLines: { color: "#9A9A9A" },
+				timeLabels: { color: "#424242" }
+			},
+			zeroLine: { color: "#424242" }
+		},
+		dataLabels: { color: "#424242" }
+	} },
+	table: {
+		th: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		},
+		td: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		}
+	}
+}, o = {
+	style: { chart: {
+		backgroundColor: "#1E1E1E",
+		color: "#BDBDBD",
+		zoom: {
+			color: "#5D4037",
+			highlightColor: "#FF8A65"
+		},
+		selector: { color: "#BDBDBD" },
+		legend: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#BDBDBD"
+			}
+		},
+		title: {
+			color: "#FFF8E1",
+			subtitle: { color: "#BDBDBD" }
+		},
+		tooltip: {
+			backgroundColor: "#1E1E1E",
+			backgroundOpacity: 30,
+			color: "#FFF8E1",
+			borderColor: "#FF8A65"
+		},
+		grid: {
+			y: {
+				axisColor: "#5D4037",
+				axisLabels: { color: "#BDBDBD" },
+				verticalLines: { show: !1 }
+			},
+			x: {
+				axisColor: "#5D4037",
+				horizontalLines: { color: "#3A3A3A" },
+				timeLabels: { color: "#BDBDBD" }
+			},
+			zeroLine: { color: "#5D4037" }
+		},
+		dataLabels: { color: "#BDBDBD" }
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		},
+		td: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		}
+	}
+}, s = {
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#99AA99",
+		zoom: {
+			color: "#5F6A5F",
+			highlightColor: "#66CC66"
+		},
+		selector: { color: "#66CC66" },
+		legend: {
+			backgroundColor: "#1A1A1A",
+			color: "#99AA99",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#99AA99"
+			}
+		},
+		title: {
+			color: "#66CC66",
+			subtitle: { color: "#99AA99" }
+		},
+		tooltip: {
+			backgroundColor: "#2A2F2A",
+			color: "#AACCAA",
+			borderColor: "#66CC66",
+			borderRadius: 0
+		},
+		grid: {
+			y: {
+				axisColor: "#5F6A5F",
+				axisLabels: { color: "#99AA99" },
+				verticalLines: { show: !1 }
+			},
+			x: {
+				axisColor: "#5F6A5F",
+				horizontalLines: { color: "#3A3A3A" },
+				timeLabels: { color: "#99AA99" }
+			},
+			zeroLine: { color: "#444444" }
+		},
+		dataLabels: { color: "#99AA99" }
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#99AA99"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#AACCAA"
+		}
+	}
+}, c = {
+	style: { chart: {
+		backgroundColor: "#fbfafa",
+		color: "#8A9892",
+		zoom: {
+			color: "#E0CFC3",
+			highlightColor: "#8F837A"
+		},
+		selector: { color: "#8F837A" },
+		legend: {
+			backgroundColor: "#fbfafa",
+			color: "#99AA99",
+			selectAllToggle: {
+				backgroundColor: "#E0CFC3",
+				color: "#8F837A"
+			}
+		},
+		title: {
+			color: "#8A9892",
+			subtitle: { color: "#99AA99" }
+		},
+		tooltip: {
+			backgroundColor: "#fbfafa",
+			color: "#8A9892"
+		},
+		grid: {
+			y: {
+				axisColor: "#8F837A",
+				axisLabels: { color: "#8F837A" },
+				verticalLines: { show: !1 }
+			},
+			x: {
+				axisColor: "#8F837A",
+				horizontalLines: {
+					show: !1,
+					alternate: !1
+				},
+				timeLabels: { color: "#8F837A" }
+			},
+			zeroLine: { color: "#444444" }
+		},
+		dataLabels: { color: "#8F837A" }
+	} },
+	table: {
+		th: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		},
+		td: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		}
+	}
+}, l = {
+	style: { chart: {
+		backgroundColor: "#f6f6fb",
+		color: "#50606C",
+		zoom: {
+			color: "#92B0AB",
+			highlightColor: "#50606C"
+		},
+		selector: { color: "#7DA9B5" },
+		legend: {
+			backgroundColor: "#f6f6fb",
+			color: "#61747E",
+			selectAllToggle: {
+				backgroundColor: "#50606C",
+				color: "#f6f6fb"
+			}
+		},
+		title: {
+			color: "#50606C",
+			subtitle: { color: "#718890" }
+		},
+		tooltip: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		},
+		grid: {
+			y: {
+				axisColor: "#829C98",
+				axisLabels: { color: "#50606C" },
+				verticalLines: { show: !1 }
+			},
+			x: {
+				axisColor: "#829C98",
+				timeLabels: { color: "#50606C" }
+			},
+			zeroLine: { color: "#444444" }
+		},
+		dataLabels: { color: "#50606C" }
+	} },
+	table: {
+		th: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		},
+		td: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		}
+	}
+}, u = {
+	default: {},
+	minimal: n,
+	minimalDark: r,
+	dark: i,
+	celebration: a,
+	celebrationNight: o,
+	hack: s,
+	zen: c,
+	concrete: l
+};
+//#endregion
+export { t as n, u as t };

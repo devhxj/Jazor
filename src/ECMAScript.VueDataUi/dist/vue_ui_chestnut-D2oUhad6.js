@@ -1,0 +1,305 @@
+import { t as e } from "./rolldown-runtime-Dy4uBu1J.js";
+//#region src/themes/vue_ui_chestnut.json
+var t = /* @__PURE__ */ e({
+	celebration: () => a,
+	celebrationNight: () => o,
+	concrete: () => l,
+	dark: () => i,
+	default: () => u,
+	hack: () => s,
+	minimal: () => n,
+	minimalDark: () => r,
+	zen: () => c
+}), n = {
+	userOptions: { show: !1 },
+	style: { chart: { layout: {
+		branches: {
+			useGradient: !1,
+			underlayerColor: "#FFFFFF"
+		},
+		nuts: {
+			useGradient: !1,
+			selected: { gradientIntensity: 0 }
+		},
+		roots: { useGradient: !1 }
+	} } }
+}, r = {
+	userOptions: { show: !1 },
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		layout: {
+			grandTotal: { color: "#CCCCCC" },
+			roots: {
+				useGradient: !1,
+				stroke: "#1A1A1A",
+				labels: { name: { color: "#CCCCCC" } }
+			},
+			verticalSeparator: { stroke: "#1A1A1A" },
+			branches: {
+				useGradient: !1,
+				underlayerColor: "#1A1A1A",
+				labels: { color: "#CCCCCC" }
+			},
+			nuts: {
+				useGradient: !1,
+				selected: {
+					gradientIntensity: 0,
+					labels: {
+						dataLabels: { color: "#CCCCCC" },
+						core: {
+							total: { color: "#CCCCCC" },
+							value: { color: "#CCCCCC" }
+						}
+					}
+				}
+			},
+			legend: { color: "#CCCCCC" },
+			title: {
+				color: "#CCCCCC",
+				subtitle: { color: "#757575" }
+			}
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, i = {
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		layout: {
+			grandTotal: { color: "#CCCCCC" },
+			roots: {
+				stroke: "#1A1A1A",
+				labels: { name: { color: "#CCCCCC" } }
+			},
+			verticalSeparator: { stroke: "#1A1A1A" },
+			branches: { labels: { color: "#CCCCCC" } },
+			nuts: { selected: { labels: {
+				dataLabels: { color: "#CCCCCC" },
+				core: {
+					total: { color: "#CCCCCC" },
+					value: { color: "#CCCCCC" }
+				}
+			} } },
+			legend: { color: "#CCCCCC" },
+			title: {
+				color: "#CCCCCC",
+				subtitle: { color: "#757575" }
+			}
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, a = {
+	style: { chart: {
+		backgroundColor: "#FFF8E1",
+		color: "#424242",
+		layout: {
+			grandTotal: { color: "#424242" },
+			roots: {
+				stroke: "#FFF8E1",
+				labels: { name: { color: "#424242" } }
+			},
+			verticalSeparator: { stroke: "#FFF8E1" },
+			branches: {
+				borderRadius: 0,
+				labels: { color: "#424242" }
+			},
+			nuts: { selected: { labels: {
+				dataLabels: { color: "#424242" },
+				core: {
+					total: { color: "#424242" },
+					value: { color: "#424242" }
+				}
+			} } },
+			legend: { color: "#424242" },
+			title: {
+				color: "#424242",
+				subtitle: { color: "#757575" }
+			}
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		},
+		td: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		}
+	}
+}, o = {
+	style: { chart: {
+		backgroundColor: "#1E1E1E",
+		color: "#BDBDBD",
+		layout: {
+			grandTotal: { color: "#BDBDBD" },
+			roots: {
+				stroke: "#1E1E1E",
+				labels: { name: { color: "#BDBDBD" } }
+			},
+			verticalSeparator: { stroke: "#1E1E1E" },
+			branches: {
+				borderRadius: 0,
+				labels: { color: "#BDBDBD" }
+			},
+			nuts: { selected: { labels: {
+				dataLabels: { color: "#BDBDBD" },
+				core: {
+					total: { color: "#BDBDBD" },
+					value: { color: "#BDBDBD" }
+				}
+			} } },
+			legend: { color: "#BDBDBD" },
+			title: {
+				color: "#FFF8E1",
+				subtitle: { color: "#BDBDBD" }
+			}
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		},
+		td: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		}
+	}
+}, s = {
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#99AA99",
+		layout: {
+			grandTotal: { color: "#99CC99" },
+			roots: {
+				stroke: "#1A1A1A",
+				labels: { name: { color: "#AACCAA" } }
+			},
+			verticalSeparator: { stroke: "#1A1A1A" },
+			branches: {
+				borderRadius: 0,
+				labels: { color: "#AACCAA" }
+			},
+			nuts: { selected: { labels: {
+				dataLabels: { color: "#AACCAA" },
+				core: {
+					total: { color: "#99CC99" },
+					value: { color: "#AACCAA" }
+				}
+			} } },
+			legend: { color: "#99AA99" },
+			title: {
+				color: "#66CC66",
+				subtitle: { color: "#99AA99" }
+			}
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#99AA99"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#AACCAA"
+		}
+	}
+}, c = {
+	style: { chart: {
+		backgroundColor: "#fbfafa",
+		color: "#8A9892",
+		layout: {
+			grandTotal: { color: "#A0AC94" },
+			roots: {
+				stroke: "#fbfafa",
+				labels: { name: { color: "#A0AC94" } }
+			},
+			verticalSeparator: { stroke: "#fbfafa" },
+			branches: {
+				borderRadius: 12,
+				labels: { color: "#A0AC94" }
+			},
+			nuts: { selected: { labels: {
+				dataLabels: { color: "#A0AC94" },
+				core: {
+					total: { color: "#8A9892" },
+					value: { color: "#A0AC94" }
+				}
+			} } },
+			legend: { color: "#99AA99" },
+			title: {
+				color: "#8A9892",
+				subtitle: { color: "#99AA99" }
+			}
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		},
+		td: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		}
+	}
+}, l = { style: { chart: {
+	backgroundColor: "#f6f6fb",
+	color: "#50606C",
+	layout: {
+		grandTotal: { color: "#61747E" },
+		roots: {
+			stroke: "#f6f6fb",
+			labels: { name: { color: "#8A9892" } }
+		},
+		verticalSeparator: { stroke: "#f6f6fb" },
+		branches: {
+			borderRadius: 0,
+			labels: { color: "#8A9892" }
+		},
+		nuts: { selected: { labels: {
+			dataLabels: { color: "#8A9892" },
+			core: {
+				total: { color: "#8A9892" },
+				value: { color: "#61747E" }
+			}
+		} } },
+		legend: { color: "#61747E" },
+		title: {
+			color: "#50606C",
+			subtitle: { color: "#61747E" }
+		}
+	}
+} } }, u = {
+	default: {},
+	minimal: n,
+	minimalDark: r,
+	dark: i,
+	celebration: a,
+	celebrationNight: o,
+	hack: s,
+	zen: c,
+	concrete: l
+};
+//#endregion
+export { t as n, u as t };

@@ -1,0 +1,545 @@
+import { t as e } from "./rolldown-runtime-Dy4uBu1J.js";
+//#region src/themes/vue_ui_xy.json
+var t = /* @__PURE__ */ e({
+	celebration: () => a,
+	celebrationNight: () => o,
+	concrete: () => l,
+	dark: () => i,
+	default: () => u,
+	hack: () => s,
+	minimal: () => n,
+	minimalDark: () => r,
+	zen: () => c
+}), n = {
+	chart: {
+		userOptions: { show: !1 },
+		grid: {
+			showVerticalLines: !1,
+			showHorizontalLines: !1
+		},
+		legend: { show: !1 },
+		zoom: { minimap: { show: !0 } }
+	},
+	line: {
+		useGradient: !1,
+		area: { useGradient: !1 }
+	},
+	bar: { useGradient: !1 },
+	plot: { useGradient: !1 }
+}, r = {
+	chart: {
+		userOptions: { show: !1 },
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		zoom: {
+			color: "#4A4A4A",
+			highlightColor: "#9A9A9A",
+			minimap: {
+				show: !0,
+				selectedColor: "#8A8A8A",
+				lineColor: "#424242",
+				indicatorColor: "#CCCCCC"
+			}
+		},
+		highlighter: {
+			color: "#CCCCCC",
+			crosshairs: {
+				stroke: "#CCCCCC",
+				dot: {
+					fill: "#CCCCCC",
+					stroke: "#1A1A1A"
+				}
+			}
+		},
+		timeTag: {
+			backgroundColor: "#2A2A2A",
+			color: "#CCCCCC",
+			circleMarker: { color: "#2A2A2A" }
+		},
+		grid: {
+			stroke: "#5A5A5A",
+			showVerticalLines: !1,
+			labels: {
+				color: "#CCCCCC",
+				xAxisLabels: { color: "#CCCCCC" }
+			}
+		},
+		legend: {
+			show: !1,
+			color: "#CCCCCC",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#CCCCCC"
+			}
+		},
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#1A1A1A",
+			backgroundOpacity: 70,
+			color: "#CCCCCC",
+			borderColor: "#3A3A3A"
+		}
+	},
+	bar: {
+		useGradient: !1,
+		border: { stroke: "#1A1A1A" },
+		labels: { color: "#CCCCCC" },
+		serieName: { color: "#CCCCCC" }
+	},
+	line: {
+		useGradient: !1,
+		labels: { color: "#CCCCCC" },
+		area: { useGradient: !1 }
+	},
+	plot: {
+		useGradient: !1,
+		labels: { color: "#CCCCCC" }
+	},
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, i = {
+	chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		zoom: {
+			color: "#4A4A4A",
+			highlightColor: "#9A9A9A",
+			minimap: {
+				selectedColor: "#8A8A8A",
+				lineColor: "#424242",
+				indicatorColor: "#CCCCCC"
+			}
+		},
+		highlighter: {
+			color: "#CCCCCC",
+			crosshairs: {
+				stroke: "#CCCCCC",
+				dot: {
+					fill: "#CCCCCC",
+					stroke: "#1A1A1A"
+				}
+			}
+		},
+		timeTag: {
+			backgroundColor: "#2A2A2A",
+			color: "#CCCCCC",
+			circleMarker: { color: "#2A2A2A" }
+		},
+		grid: {
+			stroke: "#5A5A5A",
+			showVerticalLines: !1,
+			labels: {
+				color: "#CCCCCC",
+				xAxisLabels: { color: "#CCCCCC" }
+			}
+		},
+		legend: {
+			color: "#CCCCCC",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#CCCCCC"
+			}
+		},
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#1A1A1A",
+			backgroundOpacity: 70,
+			color: "#CCCCCC",
+			borderColor: "#5A5A5A"
+		}
+	},
+	bar: {
+		border: { stroke: "#1A1A1A" },
+		labels: { color: "#CCCCCC" },
+		serieName: { color: "#CCCCCC" }
+	},
+	line: { labels: { color: "#CCCCCC" } },
+	plot: { labels: { color: "#CCCCCC" } },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, a = {
+	chart: {
+		backgroundColor: "#FFF8E1",
+		color: "#424242",
+		zoom: {
+			color: "#5D4037",
+			highlightColor: "#FF8A65",
+			minimap: {
+				selectedColor: "#FF8A65",
+				lineColor: "#424242",
+				indicatorColor: "#FF8A65"
+			}
+		},
+		highlighter: {
+			color: "#424242",
+			crosshairs: {
+				stroke: "#424242",
+				dot: {
+					fill: "#424242",
+					stroke: "#FFF8E1"
+				}
+			}
+		},
+		timeTag: {
+			backgroundColor: "#424242",
+			color: "#FFF8E1",
+			circleMarker: { color: "#424242" }
+		},
+		grid: {
+			stroke: "#5D4037",
+			showVerticalLines: !1,
+			labels: {
+				color: "#424242",
+				xAxisLabels: { color: "#424242" },
+				xAxis: { showBaseline: !1 }
+			}
+		},
+		legend: {
+			color: "#424242",
+			selectAllToggle: {
+				backgroundColor: "#5D4037",
+				color: "#FFF8E1"
+			}
+		},
+		title: {
+			color: "#424242",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#FFECB3",
+			backgroundOpacity: 30,
+			color: "#424242",
+			borderColor: "#FF8A65"
+		}
+	},
+	bar: {
+		borderRadius: 2,
+		border: { stroke: "#FFF8E1" },
+		labels: { color: "#424242" },
+		serieName: { color: "#424242" }
+	},
+	line: { labels: { color: "#424242" } },
+	plot: { labels: { color: "#424242" } },
+	table: {
+		th: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		},
+		td: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		}
+	}
+}, o = {
+	chart: {
+		backgroundColor: "#1E1E1E",
+		color: "#BDBDBD",
+		zoom: {
+			color: "#5D4037",
+			highlightColor: "#FF8A65",
+			minimap: {
+				selectedColor: "#FF8A65",
+				lineColor: "#FF6B6B",
+				indicatorColor: "#FF8A65"
+			}
+		},
+		highlighter: {
+			color: "#FFF8E1",
+			crosshairs: {
+				stroke: "#FFF8E1",
+				dot: {
+					fill: "#FFF8E1",
+					stroke: "#1E1E1E"
+				}
+			}
+		},
+		timeTag: {
+			backgroundColor: "#5D4037",
+			color: "#FFF8E1",
+			circleMarker: { color: "#5D4037" }
+		},
+		grid: {
+			stroke: "#5D4037",
+			showVerticalLines: !1,
+			labels: {
+				color: "#BDBDBD",
+				xAxisLabels: { color: "#BDBDBD" },
+				xAxis: { showBaseline: !1 }
+			}
+		},
+		legend: {
+			color: "#BDBDBD",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#BDBDBD"
+			}
+		},
+		title: {
+			color: "#FFF8E1",
+			subtitle: { color: "#BDBDBD" }
+		},
+		tooltip: {
+			backgroundColor: "#1E1E1E",
+			backgroundOpacity: 30,
+			color: "#FFF8E1",
+			borderColor: "#FF8A65"
+		}
+	},
+	bar: {
+		borderRadius: 2,
+		border: { stroke: "#1E1E1E" },
+		labels: { color: "#BDBDBD" },
+		serieName: { color: "#BDBDBD" }
+	},
+	line: { labels: { color: "#BDBDBD" } },
+	plot: { labels: { color: "#BDBDBD" } },
+	table: {
+		th: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		},
+		td: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		}
+	}
+}, s = {
+	chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#99AA99",
+		zoom: {
+			color: "#5F6A5F",
+			highlightColor: "#66CC66"
+		},
+		highlighter: {
+			color: "#66CC66",
+			crosshairs: {
+				stroke: "#66CC66",
+				dot: {
+					fill: "#66CC66",
+					stroke: "#1A1A1A"
+				}
+			}
+		},
+		timeTag: {
+			backgroundColor: "#1A1A1A",
+			color: "#66CC66",
+			circleMarker: { color: "#66CC66" }
+		},
+		grid: {
+			stroke: "#5F6A5F",
+			showVerticalLines: !1,
+			labels: {
+				color: "#99AA99",
+				xAxisLabels: { color: "#99AA99" },
+				xAxis: { showBaseline: !1 }
+			}
+		},
+		legend: {
+			color: "#99AA99",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#99AA99"
+			}
+		},
+		title: {
+			color: "#66CC66",
+			subtitle: { color: "#99AA99" }
+		},
+		tooltip: {
+			backgroundColor: "#2A2F2A",
+			color: "#AACCAA",
+			borderColor: "#66CC66"
+		}
+	},
+	bar: {
+		borderRadius: 0,
+		border: { stroke: "#66CC66" },
+		labels: { color: "#AACCAA" },
+		serieName: { color: "#99CC99" }
+	},
+	line: { labels: { color: "#AACCAA" } },
+	plot: { labels: { color: "#AACCAA" } },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#99AA99"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#AACCAA"
+		}
+	}
+}, c = {
+	chart: {
+		backgroundColor: "#fbfafa",
+		color: "#8A9892",
+		zoom: {
+			color: "#E0CFC3",
+			highlightColor: "#8F837A"
+		},
+		highlighter: {
+			color: "#8F837A",
+			crosshairs: {
+				stroke: "#8F837A",
+				dot: {
+					fill: "#8F837A",
+					stroke: "#fbfafa"
+				}
+			}
+		},
+		timeTag: {
+			backgroundColor: "#fbfafa",
+			color: "#8A9892",
+			circleMarker: { color: "#8A9892" }
+		},
+		grid: {
+			stroke: "transparent",
+			labels: {
+				show: !1,
+				color: "#99AA99",
+				xAxisLabels: {
+					show: !1,
+					color: "#99AA99"
+				},
+				zeroLine: { show: !1 },
+				yAxis: { showBaseline: !1 }
+			}
+		},
+		legend: {
+			backgroundColor: "#fbfafa",
+			color: "#99AA99",
+			selectAllToggle: {
+				backgroundColor: "#E0CFC3",
+				color: "#8F837A"
+			}
+		},
+		title: {
+			color: "#8A9892",
+			subtitle: { color: "#99AA99" }
+		},
+		tooltip: {
+			backgroundColor: "#fbfafa",
+			color: "#8A9892"
+		}
+	},
+	bar: {
+		borderRadius: 4,
+		border: { stroke: "#D7E0D2" },
+		labels: { color: "#8F837A" },
+		serieName: { color: "#858480" }
+	},
+	line: { labels: { color: "#8F837A" } },
+	plot: { labels: { color: "#8F837A" } },
+	table: {
+		th: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		},
+		td: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		}
+	}
+}, l = {
+	chart: {
+		backgroundColor: "#f6f6fb",
+		color: "#50606C",
+		zoom: {
+			color: "#92B0AB",
+			highlightColor: "#50606C"
+		},
+		highlighter: {
+			color: "#7DA9B5",
+			crosshairs: {
+				stroke: "#7DA9B5",
+				dot: {
+					fill: "#7DA9B5",
+					stroke: "#f6f6fb"
+				}
+			}
+		},
+		timeTag: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C",
+			circleMarker: { color: "#50606C" }
+		},
+		grid: {
+			stroke: "#829C98",
+			showVerticalLines: !0,
+			showHorizontalLines: !0,
+			labels: {
+				color: "#50606C",
+				xAxisLabels: { color: "#50606C" }
+			}
+		},
+		legend: {
+			backgroundColor: "#f6f6fb",
+			color: "#61747E",
+			selectAllToggle: {
+				backgroundColor: "#50606C",
+				color: "#f6f6fb"
+			}
+		},
+		title: {
+			color: "#50606C",
+			subtitle: { color: "#718890" }
+		},
+		tooltip: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		}
+	},
+	bar: {
+		borderRadius: 2,
+		border: { stroke: "#404C4D" },
+		labels: { color: "#50606C" },
+		serieName: { color: "#61747E" }
+	},
+	line: { labels: { color: "#50606C" } },
+	plot: { labels: { color: "#50606C" } },
+	table: {
+		th: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		},
+		td: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		}
+	}
+}, u = {
+	default: {},
+	minimal: n,
+	minimalDark: r,
+	dark: i,
+	celebration: a,
+	celebrationNight: o,
+	hack: s,
+	zen: c,
+	concrete: l
+};
+//#endregion
+export { t as n, u as t };

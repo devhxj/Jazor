@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageId>ECMAScript.VueDataUi</PackageId>
+    <RootNamespace>ECMAScript.VueDataUi</RootNamespace>
+    <Version Condition="'$(Version)' == ''">0.1.0</Version>
+    <Authors>hanxj</Authors>
+    <Description>Vue Data UI chart bindings and RazorVue authoring component stubs for ECMAScript.</Description>
+    <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NuspecFile>ECMAScript.VueDataUi.nuspec</NuspecFile>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <NoWarn>CS0626,CS0824,IDE0130,CA1822,IDE0060,IDE1006</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\Packaging\JazorPackage.targets" />
+</Project>

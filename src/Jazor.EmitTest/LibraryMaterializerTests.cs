@@ -530,6 +530,35 @@ public sealed class LibraryMaterializerTests
             "directives.mjs")));
     }
 
+    [TestMethod]
+    public void Materialize_ProductionVueDataUiDonut_CopiesSelectedChartClosureAndPdfImportOnly()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.VueDataUi"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Production,
+            ["vue-data-ui/vue-ui-donut"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "vue", "jspdf", "vue-data-ui/vue-ui-donut" },
+            result.ImportPaths.Keys.ToArray());
+        CollectionAssert.Contains(
+            result.StylePaths.ToArray(),
+            "vendor/vue-data-ui/3.23.4/dist/style.css");
+
+        var dataUiRoot = Path.Combine(outputRoot, "vendor", "vue-data-ui", "3.23.4", "dist");
+        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "components", "vue-ui-donut.js")));
+        Assert.IsTrue(Directory.GetFiles(dataUiRoot, "vue-ui-donut-*.js", SearchOption.TopDirectoryOnly).Length > 0);
+        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.es.min.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(dataUiRoot, "components", "vue-ui-xy.js")));
+    }
+
     private static string FindRepositoryRoot()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)

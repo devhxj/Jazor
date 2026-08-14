@@ -14,7 +14,7 @@ Jazor 的当前核心是受控 C# -> ECMAScript 转换：Roslyn `IOperation` 进
 
 RazorVue 的生产输出是 direct Vue render-function `.mjs`。当前已接受的 static hoist、精确 static VNode cardinality、按需 raw-markup runtime、child-level block tree（dynamic string text、mixed text 与 nested block）、保守 patch flags、setup-instance handler cache、已证明安全的 `foreach` `renderList` / keyed-unkeyed fragment、stable/dynamic slot 精确 lowering、direct string/boolean DOM bind，以及 shallow parameter lifecycle watch 边界见 [RazorVue Direct Render 性能评审](./razorvue-direct-h-performance.md)。production Vue gate 已确认 keyed reorder identity、slot 分支更新、direct bind patch，以及 scalar/reference parameter replacement；同一 prop 引用内部的 nested mutation 不定义为新参数赋值。artifact generation 在保持 stable discovery/order 的前提下有界并行，release library assets 由 generated `PackageImports` 和 package-declared closure 按需物化；browser 不复制无关 SSR/devtools entry，SSR 则显式保留 `vue` / `@vue/server-renderer`。完整边界、实测口径和未启用的 cache/preload 策略见 [RazorVue 极致性能路线图](./razorvue-extreme-performance.md)。
 
-Vue 3、Vue Router、Pinia、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` 和 ASP.NET Core SSR 都围绕核心平台或当前 RazorVue 集成提供能力；它们不改变 Jazor 的框架无关核心定位。
+Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` 和 ASP.NET Core SSR 都围绕核心平台或当前 RazorVue 集成提供能力；它们不改变 Jazor 的框架无关核心定位。`ECMAScript.VueDataUi` 以单图表 ESM entry 绑定 `vue-data-ui`，保留 typed dataset/config authoring，并由 package manifest 按实际 import 物化 runtime closure。
 
 `Jazor.React`、`Jazor.RazorReact` 等未来方向尚未构成已接受的产品范围或公开 API。任何新框架集成必须遵守 [框架集成层](../02-architecture/framework-integrations.md) 的边界。
 
@@ -31,7 +31,7 @@ Vue 3、Vue Router、Pinia、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` �
 | 核心编译器 | 至少 10,000 个通过场景、98% 行覆盖率、96% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
 | Razor-to-Vue | 至少 4,000 个通过场景、90% 行覆盖率、96% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 绑定 | 每个目标至少 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
-| 全仓库主线 | 当前 compiler、CLR、Devtools、Pinia、VueRoute、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
+| 全仓库主线 | 当前 compiler、CLR、Devtools、Vue Data UI、Pinia、VueRoute、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
 | Windows SPA 发布消费者 | 本地 NuGet 包、Release bundle、`/docs` PathBase 与 Edge 真实浏览器交互 | `dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs` |
 
 门槛描述的是可复现的验收规则。需要引用某一时点的实际结果时，应运行对应命令或查看 [CHANGELOG.md](../../CHANGELOG.md) 的发布记录，而不是依赖已删除的历史报告。

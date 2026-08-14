@@ -1,0 +1,358 @@
+import { t as e } from "./rolldown-runtime-Dy4uBu1J.js";
+//#region src/themes/vue_ui_donut.json
+var t = /* @__PURE__ */ e({
+	celebration: () => a,
+	celebrationNight: () => o,
+	concrete: () => s,
+	dark: () => i,
+	default: () => u,
+	hack: () => c,
+	minimal: () => n,
+	minimalDark: () => r,
+	zen: () => l
+}), n = {
+	userOptions: { show: !1 },
+	style: { chart: {
+		useGradient: !1,
+		legend: { show: !1 }
+	} }
+}, r = {
+	userOptions: { show: !1 },
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		useGradient: !1,
+		layout: { labels: {
+			percentage: { color: "#CCCCCC" },
+			name: { color: "#CCCCCC" },
+			hollow: {
+				total: {
+					color: "#CCCCCC",
+					value: { color: "#CCCCCC" }
+				},
+				average: {
+					color: "#CCCCCC",
+					value: { color: "#CCCCCC" }
+				}
+			}
+		} },
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#1A1A1A",
+			backgroundOpacity: 70,
+			color: "#CCCCCC",
+			borderColor: "#3A3A3A"
+		},
+		legend: {
+			show: !1,
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#CCCCCC"
+			}
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, i = {
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		layout: { labels: {
+			percentage: { color: "#CCCCCC" },
+			name: { color: "#CCCCCC" },
+			hollow: {
+				total: {
+					color: "#CCCCCC",
+					value: { color: "#CCCCCC" }
+				},
+				average: {
+					color: "#CCCCCC",
+					value: { color: "#CCCCCC" }
+				}
+			}
+		} },
+		legend: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#CCCCCC"
+			}
+		},
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#1A1A1A",
+			backgroundOpacity: 70,
+			color: "#CCCCCC",
+			borderColor: "#5A5A5A"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, a = {
+	style: { chart: {
+		backgroundColor: "#FFF8E1",
+		color: "#424242",
+		layout: { labels: {
+			percentage: { color: "#424242" },
+			name: { color: "#424242" },
+			hollow: {
+				total: {
+					color: "#424242",
+					value: { color: "#424242" }
+				},
+				average: {
+					color: "#424242",
+					value: { color: "#424242" }
+				}
+			}
+		} },
+		legend: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242",
+			selectAllToggle: {
+				backgroundColor: "#5D4037",
+				color: "#FFF8E1"
+			}
+		},
+		title: {
+			color: "#424242",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#FFECB3",
+			backgroundOpacity: 30,
+			color: "#424242",
+			borderColor: "#FF8A65"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		},
+		td: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		}
+	}
+}, o = {
+	style: { chart: {
+		backgroundColor: "#1E1E1E",
+		color: "#BDBDBD",
+		layout: { labels: {
+			percentage: { color: "#BDBDBD" },
+			name: { color: "#BDBDBD" },
+			hollow: {
+				total: {
+					color: "#BDBDBD",
+					value: { color: "#BDBDBD" }
+				},
+				average: {
+					color: "#BDBDBD",
+					value: { color: "#BDBDBD" }
+				}
+			}
+		} },
+		legend: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#BDBDBD"
+			}
+		},
+		title: {
+			color: "#FFF8E1",
+			subtitle: { color: "#BDBDBD" }
+		},
+		tooltip: {
+			backgroundColor: "#1E1E1E",
+			backgroundOpacity: 30,
+			color: "#FFF8E1",
+			borderColor: "#FF8A65"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		},
+		td: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		}
+	}
+}, s = {
+	style: { chart: {
+		backgroundColor: "#f6f6fb",
+		color: "#50606C",
+		layout: { labels: {
+			percentage: { color: "#61747E" },
+			name: { color: "#8A9892" },
+			hollow: {
+				total: {
+					color: "#8A9892",
+					value: { color: "#61747E" }
+				},
+				average: {
+					color: "#8A9892",
+					value: { color: "#61747E" }
+				}
+			}
+		} },
+		legend: {
+			backgroundColor: "#f6f6fb",
+			color: "#61747E",
+			selectAllToggle: {
+				backgroundColor: "#50606C",
+				color: "#f6f6fb"
+			}
+		},
+		title: {
+			color: "#50606C",
+			subtitle: { color: "#718890" }
+		},
+		tooltip: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		},
+		td: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		}
+	}
+}, c = {
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#99AA99",
+		layout: { labels: {
+			percentage: { color: "#AACCAA" },
+			name: { color: "#99CC99" },
+			hollow: {
+				total: {
+					color: "#99CC99",
+					value: { color: "#AACCAA" }
+				},
+				average: {
+					color: "#99CC99",
+					value: { color: "#AACCAA" }
+				}
+			}
+		} },
+		legend: {
+			backgroundColor: "#1A1A1A",
+			color: "#99AA99",
+			selectAllToggle: {
+				backgroundColor: "#3A3A3A",
+				color: "#99AA99"
+			}
+		},
+		title: {
+			color: "#66CC66",
+			subtitle: { color: "#99AA99" }
+		},
+		tooltip: {
+			backgroundColor: "#2A2F2A",
+			color: "#AACCAA",
+			borderColor: "#66CC66"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#99AA99"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#AACCAA"
+		}
+	}
+}, l = {
+	style: { chart: {
+		backgroundColor: "#fbfafa",
+		color: "#8A9892",
+		layout: { labels: {
+			percentage: { color: "#A0AC94" },
+			name: { color: "#8A9892" },
+			hollow: {
+				total: {
+					color: "#8A9892",
+					value: { color: "#A0AC94" }
+				},
+				average: {
+					color: "#8A9892",
+					value: { color: "#A0AC94" }
+				}
+			}
+		} },
+		legend: {
+			backgroundColor: "#fbfafa",
+			color: "#99AA99",
+			selectAllToggle: {
+				backgroundColor: "#E0CFC3",
+				color: "#8F837A"
+			}
+		},
+		title: {
+			color: "#8A9892",
+			subtitle: { color: "#99AA99" }
+		},
+		tooltip: {
+			backgroundColor: "#fbfafa",
+			color: "#8A9892"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		},
+		td: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		}
+	}
+}, u = {
+	default: {},
+	minimal: n,
+	minimalDark: r,
+	dark: i,
+	celebration: a,
+	celebrationNight: o,
+	concrete: s,
+	hack: c,
+	zen: l
+};
+//#endregion
+export { t as n, u as t };

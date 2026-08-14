@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "libraryId": "vue-data-ui",
+  "version": "3.23.4",
+  "imports": {
+    "vue-data-ui/vue-ui-xy": {
+      "development": "dist/components/vue-ui-xy.js",
+      "production": "dist/components/vue-ui-xy.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-donut": {
+      "development": "dist/components/vue-ui-donut.js",
+      "production": "dist/components/vue-ui-donut.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-gauge": {
+      "development": "dist/components/vue-ui-gauge.js",
+      "production": "dist/components/vue-ui-gauge.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-vertical-bar": {
+      "development": "dist/components/vue-ui-vertical-bar.js",
+      "production": "dist/components/vue-ui-vertical-bar.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-horizontal-bar": {
+      "development": "dist/components/vue-ui-horizontal-bar.js",
+      "production": "dist/components/vue-ui-horizontal-bar.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-stackbar": {
+      "development": "dist/components/vue-ui-stackbar.js",
+      "production": "dist/components/vue-ui-stackbar.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-stackline": {
+      "development": "dist/components/vue-ui-stackline.js",
+      "production": "dist/components/vue-ui-stackline.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-sparkline": {
+      "development": "dist/components/vue-ui-sparkline.js",
+      "production": "dist/components/vue-ui-sparkline.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-sparkbar": {
+      "development": "dist/components/vue-ui-sparkbar.js",
+      "production": "dist/components/vue-ui-sparkbar.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-sparkhistogram": {
+      "development": "dist/components/vue-ui-sparkhistogram.js",
+      "production": "dist/components/vue-ui-sparkhistogram.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-radar": {
+      "development": "dist/components/vue-ui-radar.js",
+      "production": "dist/components/vue-ui-radar.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-waffle": {
+      "development": "dist/components/vue-ui-waffle.js",
+      "production": "dist/components/vue-ui-waffle.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-treemap": {
+      "development": "dist/components/vue-ui-treemap.js",
+      "production": "dist/components/vue-ui-treemap.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-heatmap": {
+      "development": "dist/components/vue-ui-heatmap.js",
+      "production": "dist/components/vue-ui-heatmap.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-scatter": {
+      "development": "dist/components/vue-ui-scatter.js",
+      "production": "dist/components/vue-ui-scatter.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-funnel": {
+      "development": "dist/components/vue-ui-funnel.js",
+      "production": "dist/components/vue-ui-funnel.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-word-cloud": {
+      "development": "dist/components/vue-ui-word-cloud.js",
+      "production": "dist/components/vue-ui-word-cloud.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-kpi": {
+      "development": "dist/components/vue-ui-kpi.js",
+      "production": "dist/components/vue-ui-kpi.js",
+      "developmentDependencies": ["vue"],
+      "productionDependencies": ["vue"]
+    },
+    "vue-data-ui/vue-ui-table": {
+      "development": "dist/components/vue-ui-table.js",
+      "production": "dist/components/vue-ui-table.js",
+      "developmentDependencies": ["vue"],
+      "productionDependencies": ["vue"]
+    },
+    "vue-data-ui/vue-ui-table-heatmap": {
+      "development": "dist/components/vue-ui-table-heatmap.js",
+      "production": "dist/components/vue-ui-table-heatmap.js",
+      "developmentDependencies": ["vue"],
+      "productionDependencies": ["vue"]
+    },
+    "vue-data-ui/vue-ui-table-sparkline": {
+      "development": "dist/components/vue-ui-table-sparkline.js",
+      "production": "dist/components/vue-ui-table-sparkline.js",
+      "developmentDependencies": ["vue"],
+      "productionDependencies": ["vue"]
+    },
+    "vue-data-ui/vue-ui-quick-chart": {
+      "development": "dist/components/vue-ui-quick-chart.js",
+      "production": "dist/components/vue-ui-quick-chart.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-candlestick": {
+      "development": "dist/components/vue-ui-candlestick.js",
+      "production": "dist/components/vue-ui-candlestick.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-dumbbell": {
+      "development": "dist/components/vue-ui-dumbbell.js",
+      "production": "dist/components/vue-ui-dumbbell.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "vue-data-ui/vue-ui-bullet": {
+      "development": "dist/components/vue-ui-bullet.js",
+      "production": "dist/components/vue-ui-bullet.js",
+      "developmentDependencies": ["vue", "jspdf"],
+      "productionDependencies": ["vue", "jspdf"]
+    },
+    "jspdf": {
+      "development": "dist/jspdf.es.min.js",
+      "production": "dist/jspdf.es.min.js",
+      "files": ["licenses/JSPDF-LICENSE"]
+    }
+  },
+  "requires": {
+    "vue3": "^3.5.0"
+  },
+  "styles": ["dist/style.css"],
+  "files": ["licenses/VUE-DATA-UI-LICENSE"]
+}

@@ -88,7 +88,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "AssertNoBuildPackInputsExist");
 		StringAssert.Contains(source, "GetNoBuildPackInputRoots");
 		StringAssert.Contains(source, "PackageCatalog.ResolveSelectedPackages");
-		StringAssert.Contains(source, "Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+		StringAssert.Contains(source, "Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
 		StringAssert.Contains(source, "Selected packages: ");
 		StringAssert.Contains(source, "case \"--package\"");
 		StringAssert.Contains(source, "case \"--package-version\"");
@@ -99,6 +99,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "[\"style\"] = \"ECMAScript.Style\"");
 		StringAssert.Contains(source, "[\"admin\"] = \"Jazor.Admin\"");
 		StringAssert.Contains(source, "[\"devtools\"] = \"ECMAScript.Vue.Devtools\"");
+		StringAssert.Contains(source, "[\"dataui\"] = \"ECMAScript.VueDataUi\"");
 		StringAssert.Contains(source, "[\"elementplus\"] = \"ECMAScript.ElementPlus\"");
 		StringAssert.Contains(source, "[\"tdesign\"] = \"ECMAScript.TDesign\"");
 		StringAssert.Contains(source, "RequiresJazorEmitPublishOutput: true");
@@ -168,12 +169,15 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "dotnet run --file ./scripts/csharp/test-dotnet.cs -- `");
 		StringAssert.Contains(source, "--project pinia `");
 		StringAssert.Contains(source, "--project pinia-testing `");
+		StringAssert.Contains(source, "--project dataui `");
 		StringAssert.Contains(source, "dotnet run --file ./samples/ECMAScript.Pinia.Counter/verify-smoke.cs");
+		StringAssert.Contains(source, "dotnet run --file ./samples/ECMAScript.VueDataUi.Dashboard/build-local.cs");
 		StringAssert.Contains(source, "dotnet run --file ./scripts/csharp/publish-nuget.cs -- `");
 		StringAssert.Contains(source, "--output-directory artifacts/packages `");
 		StringAssert.Contains(source, "--output-directory artifacts/packages-nobuild `");
 		StringAssert.Contains(source, "--no-build `");
 		StringAssert.Contains(source, "--package jazor `");
+		StringAssert.Contains(source, "--package dataui `");
 		StringAssert.Contains(source, "--package pinia `");
 		StringAssert.Contains(source, "--package pinia-testing `");
 		StringAssert.Contains(source, "--package vueroute `");
@@ -207,6 +211,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "id: release_ref");
 		StringAssert.Contains(source, "$releaseRef = '${{ github.ref_name }}'");
 		StringAssert.Contains(source, "--package jazor `");
+		StringAssert.Contains(source, "--package dataui `");
 		StringAssert.Contains(source, "--package pinia `");
 		StringAssert.Contains(source, "--package pinia-testing `");
 		StringAssert.Contains(source, "--package vueroute `");

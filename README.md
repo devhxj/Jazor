@@ -44,6 +44,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 - Release artifacts now include only the referenced package-runtime closure. Browser output excludes unused Vue SSR/devtools files, SSR explicitly receives its Vue/server-renderer graph, and unreachable Jazor CLR runtime modules are omitted from release output.
 - `ECMAScript.Pinia` now ships Pinia 4.0.3, and `ECMAScript.Pinia.Testing` ships `@pinia/testing` 2.0.1. `app.Use(pinia)` automatically registers Pinia's development panel with Vue Devtools; production Pinia output excludes the Devtools closure. `TestingOptions.WritableComputed` is removed because Testing 2 handles that behavior internally.
 - `ECMAScript.Vue.Devtools` is now available as an independent binding for the public `@vue/devtools-api` 8.1.5 plugin-authoring surface. It provides typed plugin setup/settings, inspectors, timelines, component hooks, custom tabs/commands, and connection callbacks while reusing Jazor's local Vue Devtools runtime closure. Pinia's automatic Devtools panel registration remains unchanged.
+- `ECMAScript.VueDataUi` now binds `vue-data-ui` 3.23.4 for RazorVue chart authoring. Its typed dataset/config models cover the primary chart families, each `VueUi*` component imports its own ESM entry, and Emit materializes only that entry's local closure plus the library stylesheet and local `jspdf` dependency when required.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -90,6 +91,7 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 | `Jazor` | Core compiler, CLR contracts, analyzer, emit tooling, MSBuild and ASP.NET Core integration, and baseline Vue 3 authoring types |
 | `Jazor.Vue` | Explicit Razor-to-Vue opt-in for Razor SDK projects |
 | `ECMAScript.*` | ECMAScript, Vue, Router, Pinia, UI-library, and CSS-in-JS bindings |
+| `ECMAScript.VueDataUi` | Typed `vue-data-ui` RazorVue charts with per-component local ESM materialization |
 | `Jazor.Admin` | UI-library-neutral admin-shell library and RazorVue components |
 
 `samples/JazorAdmin` is an example application that consumes `Jazor.Admin`; it is not part of the library's public contract.

@@ -10,6 +10,7 @@ var compilerTestProject = Path.Combine(repoRoot, "src", "Jazor.CompilerTest", "J
 var clrTestProject = Path.Combine(repoRoot, "src", "Jazor.CLR.Test", "Jazor.CLR.Test.csproj");
 var styleTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Style.Test", "ECMAScript.Style.Test.csproj");
 var devtoolsTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Vue.Devtools.Test", "ECMAScript.Vue.Devtools.Test.csproj");
+var dataUiTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueDataUi.Test", "ECMAScript.VueDataUi.Test.csproj");
 var piniaTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Test", "ECMAScript.Pinia.Test.csproj");
 var piniaTestingTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Pinia.Testing.Test", "ECMAScript.Pinia.Testing.Test.csproj");
 var vueRouteTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute.Test", "ECMAScript.VueRoute.Test.csproj");
@@ -75,6 +76,7 @@ var testTargets = options.Project switch
     "clr" => new[] { clrTestProject },
     "style" => new[] { styleTestProject },
     "devtools" => new[] { devtoolsTestProject },
+    "dataui" => new[] { dataUiTestProject },
     "pinia" => new[] { piniaTestProject },
     "pinia-testing" => new[] { piniaTestingTestProject },
     "vueroute" => new[] { vueRouteTestProject },
@@ -86,6 +88,7 @@ var testTargets = options.Project switch
         clrTestProject,
         styleTestProject,
         devtoolsTestProject,
+        dataUiTestProject,
         piniaTestProject,
         piniaTestingTestProject,
         vueRouteTestProject,
@@ -187,7 +190,7 @@ internal sealed record ScriptArguments
         var normalized = project.Trim().ToLowerInvariant();
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
-            "all", "compiler", "clr", "style", "devtools", "pinia", "pinia-testing", "vueroute", "razor-sg",
+            "all", "compiler", "clr", "style", "devtools", "dataui", "pinia", "pinia-testing", "vueroute", "razor-sg",
             "emit", "style-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
 
@@ -214,7 +217,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|pinia|pinia-testing|vueroute|razor-sg|emit|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|pinia|pinia-testing|vueroute|razor-sg|emit|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");

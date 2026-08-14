@@ -17,10 +17,13 @@
 | `ECMAScript.VueRoute` | Vue Router 类型绑定 |
 | `ECMAScript.Pinia` | Pinia 状态管理绑定 |
 | `ECMAScript.Vue.Devtools` | Vue Devtools Plugin API 绑定：custom inspector、timeline、component hook、tab 与 command |
+| `ECMAScript.VueDataUi` | `vue-data-ui` 3.23.4 图表 binding：强类型 dataset/config、RazorVue `VueUi*` 组件与按图表 ESM entry |
 | `ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | UI 组件库绑定 |
 | `ECMAScript.Style` | 强类型、确定性的 CSS-in-JS |
 
 这些包按需显式引用。浏览器模块、样式、许可证和资源 manifest 由包与 Emit 管线管理，应用不应为了使用这些绑定再引入重复的 CDN、`node_modules` 或远程裸模块 import。
+
+`ECMAScript.VueDataUi` 不暴露上游聚合 `vue-data-ui` root import。组件 descriptor 直接声明 `vue-data-ui/vue-ui-*` entry，`Jazor.Emit` 从实际 generated import 递归物化相对 ESM closure；因此未使用的 chart chunk 不会随发布输出复制。需要 PDF export runtime 的 entry 通过 manifest 解析到同包携带的本地 `jspdf`。
 
 ## 名称与作者契约
 

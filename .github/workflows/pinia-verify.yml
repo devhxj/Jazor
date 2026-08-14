@@ -11,6 +11,8 @@ on:
       - 'src/ECMAScript.Pinia.Testing.Test/**'
       - 'src/ECMAScript.Vue.Devtools/**'
       - 'src/ECMAScript.Vue.Devtools.Test/**'
+      - 'src/ECMAScript.VueDataUi/**'
+      - 'src/ECMAScript.VueDataUi.Test/**'
       - 'src/ECMAScript.Vue/**'
       - 'src/ECMAScript.VueRoute/**'
       - 'src/ECMAScript/**'
@@ -22,6 +24,7 @@ on:
       - 'src/Jazor.RazorVue/**'
       - 'samples/ECMAScript.Pinia.Counter/**'
       - 'samples/ECMAScript.Vue.Devtools.Plugin/**'
+      - 'samples/ECMAScript.VueDataUi.Dashboard/**'
       - 'scripts/csharp/publish-nuget.cs'
       - 'scripts/csharp/test-dotnet.cs'
       - 'scripts/csharp/verify-vue-binding-coverage.cs'
@@ -36,6 +39,8 @@ on:
       - 'src/ECMAScript.Pinia.Testing.Test/**'
       - 'src/ECMAScript.Vue.Devtools/**'
       - 'src/ECMAScript.Vue.Devtools.Test/**'
+      - 'src/ECMAScript.VueDataUi/**'
+      - 'src/ECMAScript.VueDataUi.Test/**'
       - 'src/ECMAScript.Vue/**'
       - 'src/ECMAScript.VueRoute/**'
       - 'src/ECMAScript/**'
@@ -47,6 +52,7 @@ on:
       - 'src/Jazor.RazorVue/**'
       - 'samples/ECMAScript.Pinia.Counter/**'
       - 'samples/ECMAScript.Vue.Devtools.Plugin/**'
+      - 'samples/ECMAScript.VueDataUi.Dashboard/**'
       - 'scripts/csharp/publish-nuget.cs'
       - 'scripts/csharp/test-dotnet.cs'
       - 'scripts/csharp/verify-vue-binding-coverage.cs'
@@ -96,6 +102,15 @@ jobs:
             --base-output-path 'artifacts/out/devtools/' `
             --base-intermediate-output-path 'artifacts/obj/devtools/'
 
+      - name: Verify ECMAScript.VueDataUi
+        shell: pwsh
+        run: |
+          dotnet run --file ./scripts/csharp/test-dotnet.cs -- `
+            --project dataui `
+            --configuration Release `
+            --base-output-path 'artifacts/out/dataui/' `
+            --base-intermediate-output-path 'artifacts/obj/dataui/'
+
   sample-smoke:
     runs-on: windows-latest
     steps:
@@ -121,6 +136,12 @@ jobs:
           dotnet run --file ./samples/ECMAScript.Vue.Devtools.Plugin/build-local.cs -- `
             --configuration Release
 
+      - name: Verify Vue Data UI NuGet consumer smoke
+        shell: pwsh
+        run: |
+          dotnet run --file ./samples/ECMAScript.VueDataUi.Dashboard/build-local.cs -- `
+            --configuration Release
+
   package-dry-run:
     runs-on: windows-latest
     steps:
@@ -141,6 +162,7 @@ jobs:
             --skip-push `
             --package jazor `
             --package devtools `
+            --package dataui `
             --package pinia `
             --package pinia-testing `
             --package vueroute `
@@ -160,6 +182,7 @@ jobs:
             --no-build `
             --package jazor `
             --package devtools `
+            --package dataui `
             --package pinia `
             --package pinia-testing `
             --package vueroute `

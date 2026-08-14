@@ -42,6 +42,7 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 - ASP.NET Core SSR 现在复用有界、generation-aware Deno worker pool，不再为每次 render 启动进程和写临时请求文件。artifact 变化会轮换 ESM generation；真实进程测试覆盖取消、crash recovery、并发限制与应用 graceful disposal。
 - `ECMAScript.Pinia` 已升级到 Pinia 4.0.3，`ECMAScript.Pinia.Testing` 已升级到 `@pinia/testing` 2.0.1。`app.Use(pinia)` 会自动向 Vue Devtools 注册 Pinia 开发面板，production Pinia 输出不携带 Devtools 闭包；Testing 2 已内置 writable-computed 行为，因此移除了 `TestingOptions.WritableComputed`。
 - 新增独立 `ECMAScript.Vue.Devtools` 包，覆盖公开 `@vue/devtools-api` 8.1.5 plugin authoring surface：typed plugin setup/settings、inspector、timeline、component hook、custom tab/command 与连接回调。它复用 Jazor 已携带的本地 Vue Devtools runtime closure，不暴露 Devtools 内部实现；Pinia 的自动 Devtools 面板注册行为保持不变。
+- 新增 `ECMAScript.VueDataUi`，绑定 `vue-data-ui` 3.23.4 的 RazorVue 图表 authoring。typed dataset/config 覆盖主力图表类型，每个 `VueUi*` 组件只导入自己的 ESM entry；Emit 仅物化其 local closure、库样式和按需的本地 `jspdf` 依赖。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -88,6 +89,7 @@ flowchart LR
 | `Jazor` | 核心编译器、CLR 契约、分析器、emit 工具、MSBuild 与 ASP.NET Core 集成，以及基础 Vue 3 authoring 类型 |
 | `Jazor.Vue` | Razor SDK 项目的显式 Razor-to-Vue opt-in |
 | `ECMAScript.*` | ECMAScript、Vue、Router、Pinia、UI 库与 CSS-in-JS 绑定 |
+| `ECMAScript.VueDataUi` | `vue-data-ui` 的强类型 RazorVue 图表与按组件本地 ESM 物化 |
 | `Jazor.Admin` | UI 库无关的管理壳库与 RazorVue 组件 |
 
 `samples/JazorAdmin` 是消费 `Jazor.Admin` 的示例应用，不属于该库的公共契约。

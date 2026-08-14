@@ -91,6 +91,7 @@ jobs:
             --package style `
             --package admin `
             --package devtools `
+            --package dataui `
             --package pinia `
             --package pinia-testing `
             --package vueroute `

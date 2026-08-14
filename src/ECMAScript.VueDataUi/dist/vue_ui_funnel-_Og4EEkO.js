@@ -1,0 +1,234 @@
+import { t as e } from "./rolldown-runtime-Dy4uBu1J.js";
+//#region src/themes/vue_ui_funnel.json
+var t = /* @__PURE__ */ e({
+	celebration: () => a,
+	celebrationNight: () => o,
+	concrete: () => l,
+	dark: () => i,
+	default: () => u,
+	hack: () => s,
+	minimal: () => n,
+	minimalDark: () => r,
+	zen: () => c
+}), n = { userOptions: { show: !1 } }, r = {
+	userOptions: { show: !1 },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	},
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		area: { color: "#3A3A3A" },
+		bars: {
+			stroke: "#1A1A1A",
+			dataLabels: {
+				name: { color: "#CCCCCC" },
+				value: { color: "#CCCCCC" }
+			}
+		},
+		circles: { stroke: "#1A1A1A" },
+		circleLinks: { color: "#3A3A3A" },
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		}
+	} }
+}, i = {
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	},
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		area: { color: "#3A3A3A" },
+		bars: {
+			stroke: "#1A1A1A",
+			dataLabels: {
+				name: { color: "#CCCCCC" },
+				value: { color: "#CCCCCC" }
+			}
+		},
+		circles: { stroke: "#1A1A1A" },
+		circleLinks: { color: "#3A3A3A" },
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		}
+	} }
+}, a = {
+	table: {
+		th: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		},
+		td: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		}
+	},
+	style: { chart: {
+		backgroundColor: "#FFF8E1",
+		color: "#424242",
+		area: { color: "#D32F2F20" },
+		bars: {
+			defaultColor: "#E64A19",
+			stroke: "#FFF8E1",
+			dataLabels: {
+				name: { color: "#424242" },
+				value: { color: "#424242" }
+			}
+		},
+		circles: { stroke: "#FFF8E1" },
+		circleLinks: { color: "#D32F2F40" },
+		title: {
+			color: "#424242",
+			subtitle: { color: "#757575" }
+		}
+	} }
+}, o = {
+	table: {
+		th: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		},
+		td: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		}
+	},
+	style: { chart: {
+		backgroundColor: "#1E1E1E",
+		color: "#BDBDBD",
+		area: { color: "#D32F2F20" },
+		bars: {
+			defaultColor: "#E64A19",
+			stroke: "#1E1E1E",
+			dataLabels: {
+				name: { color: "#BDBDBD" },
+				value: { color: "#BDBDBD" }
+			}
+		},
+		circles: { stroke: "#1E1E1E" },
+		circleLinks: { color: "#D32F2F60" },
+		title: {
+			color: "#FFF8E1",
+			subtitle: { color: "#BDBDBD" }
+		}
+	} }
+}, s = {
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#99AA99"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#AACCAA"
+		}
+	},
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#99AA99",
+		area: { color: "#66CC6620" },
+		bars: {
+			defaultColor: "#66CC66",
+			stroke: "#1A1A1A",
+			dataLabels: {
+				name: { color: "#99AA99" },
+				value: { color: "#99AA99" }
+			}
+		},
+		circles: { stroke: "#1A1A1A" },
+		circleLinks: { color: "#66CC6620" },
+		title: {
+			color: "#66CC66",
+			subtitle: { color: "#99AA99" }
+		}
+	} }
+}, c = {
+	table: {
+		th: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		},
+		td: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		}
+	},
+	style: { chart: {
+		backgroundColor: "#fbfafa",
+		color: "#8A9892",
+		area: { color: "#8F837A20" },
+		bars: {
+			defaultColor: "#8F837A",
+			stroke: "#fbfafa",
+			dataLabels: {
+				name: { color: "#8A9892" },
+				value: { color: "#8A9892" }
+			}
+		},
+		circles: { stroke: "#fbfafa" },
+		circleLinks: { color: "#8F837A20" },
+		title: {
+			color: "#8A9892",
+			subtitle: { color: "#99AA99" }
+		}
+	} }
+}, l = {
+	table: {
+		th: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		},
+		td: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		}
+	},
+	style: { chart: {
+		backgroundColor: "#f6f6fb",
+		color: "#50606C",
+		area: { color: "#8A989230" },
+		bars: {
+			defaultColor: "#61747E",
+			stroke: "#50606C",
+			dataLabels: {
+				name: { color: "#50606C" },
+				value: { color: "#50606C" }
+			}
+		},
+		circles: { stroke: "#50606C" },
+		circleLinks: { color: "#8A989230" },
+		title: {
+			color: "#50606C",
+			subtitle: { color: "#718890" }
+		}
+	} }
+}, u = {
+	default: {},
+	minimal: n,
+	minimalDark: r,
+	dark: i,
+	celebration: a,
+	celebrationNight: o,
+	hack: s,
+	zen: c,
+	concrete: l
+};
+//#endregion
+export { t as n, u as t };

@@ -1,0 +1,308 @@
+import { t as e } from "./rolldown-runtime-Dy4uBu1J.js";
+//#region src/themes/vue_ui_strip_plot.json
+var t = /* @__PURE__ */ e({
+	celebration: () => a,
+	celebrationNight: () => o,
+	concrete: () => l,
+	dark: () => i,
+	default: () => u,
+	hack: () => s,
+	minimal: () => n,
+	minimalDark: () => r,
+	zen: () => c
+}), n = {
+	userOptions: { show: !1 },
+	style: { chart: {
+		grid: {
+			horizontalGrid: { show: !1 },
+			verticalGrid: { show: !1 }
+		},
+		plots: { gradient: { show: !1 } }
+	} }
+}, r = {
+	userOptions: { show: !1 },
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		grid: {
+			stroke: "#5A5A5A",
+			horizontalGrid: {
+				show: !1,
+				stroke: "#4A4A4A"
+			},
+			verticalGrid: {
+				show: !1,
+				stroke: "#4A4A4A"
+			}
+		},
+		plots: {
+			stroke: "#1A1A1A",
+			gradient: { show: !1 }
+		},
+		violin: { boxPlot: { medianCircleFill: "#1A1A1A" } },
+		labels: {
+			bestPlotLabel: { color: "#CCCCCC" },
+			axis: { color: "#CCCCCC" },
+			xAxisLabels: { color: "#CCCCCC" },
+			yAxisLabels: { color: "#CCCCCC" }
+		},
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#1A1A1A",
+			backgroundOpacity: 70,
+			color: "#CCCCCC",
+			borderColor: "#3A3A3A"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, i = {
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		grid: {
+			stroke: "#5A5A5A",
+			horizontalGrid: { stroke: "#4A4A4A" },
+			verticalGrid: { stroke: "#4A4A4A" }
+		},
+		plots: { stroke: "#1A1A1A" },
+		violin: { boxPlot: { medianCircleFill: "#1A1A1A" } },
+		labels: {
+			bestPlotLabel: { color: "#CCCCCC" },
+			axis: { color: "#CCCCCC" },
+			xAxisLabels: { color: "#CCCCCC" },
+			yAxisLabels: { color: "#CCCCCC" }
+		},
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#1A1A1A",
+			backgroundOpacity: 70,
+			color: "#CCCCCC",
+			borderColor: "#5A5A5A"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#CCCCCC"
+		}
+	}
+}, a = {
+	style: { chart: {
+		backgroundColor: "#FFF8E1",
+		color: "#424242",
+		grid: {
+			stroke: "#5D4037",
+			horizontalGrid: { show: !1 },
+			verticalGrid: { show: !1 }
+		},
+		plots: { stroke: "#FFF8E1" },
+		violin: { boxPlot: { medianCircleFill: "#FFF8E1" } },
+		labels: {
+			bestPlotLabel: { color: "#424242" },
+			axis: { color: "#424242" },
+			xAxisLabels: { color: "#424242" },
+			yAxisLabels: { color: "#424242" }
+		},
+		title: {
+			color: "#424242",
+			subtitle: { color: "#757575" }
+		},
+		tooltip: {
+			backgroundColor: "#FFECB3",
+			backgroundOpacity: 30,
+			color: "#424242",
+			borderColor: "#FF8A65"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		},
+		td: {
+			backgroundColor: "#FFF8E1",
+			color: "#424242"
+		}
+	}
+}, o = {
+	style: { chart: {
+		backgroundColor: "#1E1E1E",
+		color: "#BDBDBD",
+		grid: {
+			stroke: "#5D4037",
+			horizontalGrid: { show: !1 },
+			verticalGrid: { show: !1 }
+		},
+		plots: { stroke: "#1E1E1E" },
+		violin: { boxPlot: { medianCircleFill: "#1E1E1E" } },
+		labels: {
+			bestPlotLabel: { color: "#BDBDBD" },
+			axis: { color: "#BDBDBD" },
+			xAxisLabels: { color: "#BDBDBD" },
+			yAxisLabels: { color: "#BDBDBD" }
+		},
+		title: {
+			color: "#FFF8E1",
+			subtitle: { color: "#BDBDBD" }
+		},
+		tooltip: {
+			backgroundColor: "#1E1E1E",
+			backgroundOpacity: 30,
+			color: "#FFF8E1",
+			borderColor: "#FF8A65"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		},
+		td: {
+			backgroundColor: "#1E1E1E",
+			color: "#BDBDBD"
+		}
+	}
+}, s = {
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#99AA99",
+		grid: {
+			stroke: "#5F6A5F",
+			horizontalGrid: { show: !1 },
+			verticalGrid: { show: !1 }
+		},
+		plots: { stroke: "#00FF00" },
+		violin: { boxPlot: { medianCircleFill: "#1A1A1A" } },
+		labels: {
+			bestPlotLabel: { color: "#AACCAA" },
+			axis: { color: "#99CC99" },
+			xAxisLabels: { color: "#99CC99" },
+			yAxisLabels: { color: "#99CC99" }
+		},
+		title: {
+			color: "#66CC66",
+			subtitle: { color: "#99AA99" }
+		},
+		tooltip: {
+			backgroundColor: "#2A2F2A",
+			color: "#AACCAA",
+			borderColor: "#66CC66"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#1A1A1A",
+			color: "#99AA99"
+		},
+		td: {
+			backgroundColor: "#1A1A1A",
+			color: "#AACCAA"
+		}
+	}
+}, c = {
+	style: { chart: {
+		backgroundColor: "#fbfafa",
+		color: "#8A9892",
+		grid: {
+			show: !1,
+			horizontalGrid: { show: !1 },
+			verticalGrid: { show: !1 }
+		},
+		plots: { stroke: "#fbfafa" },
+		violin: { boxPlot: { medianCircleFill: "#fbfafa" } },
+		labels: {
+			bestPlotLabel: { color: "#A0AC94" },
+			axis: { color: "#A0AC94" },
+			xAxisLabels: { color: "#A0AC94" },
+			yAxisLabels: {
+				show: !1,
+				color: "#A0AC94"
+			}
+		},
+		title: {
+			color: "#8A9892",
+			subtitle: { color: "#99AA99" }
+		},
+		tooltip: {
+			backgroundColor: "#fbfafa",
+			color: "#8A9892"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		},
+		td: {
+			backgroundColor: "#fbfafa",
+			color: "#8F837A"
+		}
+	}
+}, l = {
+	style: { chart: {
+		backgroundColor: "#f6f6fb",
+		color: "#50606C",
+		grid: {
+			stroke: "#829C98",
+			horizontalGrid: { stroke: "#829C98" },
+			verticalGrid: { stroke: "#829C98" }
+		},
+		plots: { stroke: "#404C5A" },
+		violin: { boxPlot: { medianCircleFill: "#F6F6FB" } },
+		labels: {
+			bestPlotLabel: { color: "#61747E" },
+			axis: { color: "#61747E" },
+			xAxisLabels: { color: "#61747E" },
+			yAxisLabels: { color: "#61747E" }
+		},
+		title: {
+			color: "#50606C",
+			subtitle: { color: "#718890" }
+		},
+		tooltip: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		}
+	} },
+	table: {
+		th: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		},
+		td: {
+			backgroundColor: "#f6f6fb",
+			color: "#50606C"
+		}
+	}
+}, u = {
+	default: {},
+	minimal: n,
+	minimalDark: r,
+	dark: i,
+	celebration: a,
+	celebrationNight: o,
+	hack: s,
+	zen: c,
+	concrete: l
+};
+//#endregion
+export { t as n, u as t };

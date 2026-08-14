@@ -1,0 +1,258 @@
+import { t as e } from "./rolldown-runtime-Dy4uBu1J.js";
+//#region src/themes/vue_ui_dag.json
+var t = /* @__PURE__ */ e({
+	celebration: () => a,
+	celebrationNight: () => o,
+	concrete: () => l,
+	dark: () => i,
+	default: () => u,
+	hack: () => s,
+	minimal: () => n,
+	minimalDark: () => r,
+	zen: () => c
+}), n = { userOptions: { show: !1 } }, r = {
+	userOptions: { show: !1 },
+	style: { chart: {
+		backgroundColor: "#1A1A1A",
+		color: "#CCCCCC",
+		backgroundPattern: { dotColor: "#3A3A3A" },
+		nodes: {
+			stroke: "#6A6A6A",
+			backgroundColor: "#2A2A2A",
+			labels: { color: "#CCCCCC" },
+			tooltip: {
+				backgroundColor: "#3A3A3A",
+				color: "#CCCCCC"
+			}
+		},
+		edges: { stroke: "#6A6A6A" },
+		midpoints: {
+			stroke: "#6A6A6A",
+			fill: "#1A1A1A",
+			tooltip: {
+				backgroundColor: "#3A3A3A",
+				color: "#CCCCCC"
+			}
+		},
+		controls: {
+			backgroundColor: "#2A2A2A",
+			buttonColor: "#2A2A2A",
+			color: "#CCCCCC",
+			border: "1px solid #4A4A4A"
+		},
+		title: {
+			color: "#CCCCCC",
+			subtitle: { color: "#757575" }
+		}
+	} }
+}, i = { style: { chart: {
+	backgroundColor: "#1A1A1A",
+	color: "#CCCCCC",
+	backgroundPattern: { dotColor: "#3A3A3A" },
+	nodes: {
+		stroke: "#6A6A6A",
+		backgroundColor: "#2A2A2A",
+		labels: { color: "#CCCCCC" },
+		tooltip: {
+			backgroundColor: "#3A3A3A",
+			color: "#CCCCCC"
+		}
+	},
+	edges: { stroke: "#6A6A6A" },
+	midpoints: {
+		stroke: "#6A6A6A",
+		fill: "#1A1A1A",
+		tooltip: {
+			backgroundColor: "#3A3A3A",
+			color: "#CCCCCC"
+		}
+	},
+	controls: {
+		backgroundColor: "#2A2A2A",
+		buttonColor: "#2A2A2A",
+		color: "#CCCCCC",
+		border: "1px solid #4A4A4A"
+	},
+	title: {
+		color: "#CCCCCC",
+		subtitle: { color: "#757575" }
+	}
+} } }, a = { style: { chart: {
+	backgroundColor: "#FFF8E1",
+	color: "#424242",
+	backgroundPattern: { dotColor: "#edc7bb" },
+	nodes: {
+		stroke: "#5D4037",
+		backgroundColor: "#fcf9f0",
+		labels: { color: "#424242" },
+		tooltip: {
+			backgroundColor: "#5D4037",
+			color: "#FFF8E1"
+		}
+	},
+	edges: { stroke: "#5D4037" },
+	midpoints: {
+		stroke: "#5D4037",
+		fill: "#FFF8E1",
+		tooltip: {
+			backgroundColor: "#5D4037",
+			color: "#FFF8E1"
+		}
+	},
+	controls: {
+		backgroundColor: "#FFF8E1",
+		buttonColor: "#FFF8E1",
+		color: "#424242",
+		border: "1px solid #d9bbb2"
+	},
+	title: {
+		color: "#424242",
+		subtitle: { color: "#757575" }
+	}
+} } }, o = { style: { chart: {
+	backgroundColor: "#1E1E1E",
+	color: "#BDBDBD",
+	backgroundPattern: { dotColor: "#3E3E3E" },
+	nodes: {
+		stroke: "#965039",
+		backgroundColor: "#2A2A2A",
+		labels: { color: "#BDBDBD" },
+		tooltip: {
+			backgroundColor: "#3A3A3A",
+			color: "#FFF8E1"
+		}
+	},
+	edges: { stroke: "#965039" },
+	midpoints: {
+		stroke: "#965039",
+		fill: "#1E1E1E",
+		tooltip: {
+			backgroundColor: "#3A3A3A",
+			color: "#FFF8E1"
+		}
+	},
+	controls: {
+		backgroundColor: "#1E1E1E",
+		buttonColor: "#1E1E1E",
+		color: "#BDBDBD",
+		border: "1px solid #3A3A3A"
+	},
+	title: {
+		color: "#FFF8E1",
+		subtitle: { color: "#BDBDBD" }
+	}
+} } }, s = { style: { chart: {
+	backgroundColor: "#1A1A1A",
+	color: "#99AA99",
+	backgroundPattern: { dotColor: "#2f3d2f" },
+	nodes: {
+		stroke: "#66CC66",
+		backgroundColor: "#2A2A2A",
+		labels: { color: "#99AA99" },
+		tooltip: {
+			backgroundColor: "#3A3A3A",
+			color: "#99AA99"
+		}
+	},
+	edges: { stroke: "#66CC66" },
+	midpoints: {
+		stroke: "#66CC66",
+		fill: "#1A1A1A",
+		tooltip: {
+			backgroundColor: "#3A3A3A",
+			color: "#99AA99"
+		}
+	},
+	controls: {
+		backgroundColor: "#1A1A1A",
+		buttonColor: "#1A1A1A",
+		color: "#99AA99",
+		border: "1px solid #1e361e"
+	},
+	title: {
+		color: "#66CC66",
+		subtitle: { color: "#99AA99" }
+	}
+} } }, c = { style: { chart: {
+	backgroundColor: "#fbfafa",
+	color: "#8A9892",
+	backgroundPattern: { dotColor: "#dbcfc5" },
+	nodes: {
+		stroke: "#8F837A",
+		backgroundColor: "#ffffff",
+		labels: { color: "#8A9892" },
+		tooltip: {
+			backgroundColor: "#8F837A",
+			color: "#fbfafa"
+		}
+	},
+	edges: { stroke: "#8F837A" },
+	midpoints: {
+		stroke: "#8F837A",
+		fill: "#fbfafa",
+		tooltip: {
+			backgroundColor: "#8F837A",
+			color: "#fbfafa"
+		}
+	},
+	controls: {
+		backgroundColor: "#fbfafa",
+		buttonColor: "#fbfafa",
+		color: "#99AA99",
+		border: "1px solid #ebded3"
+	},
+	title: {
+		color: "#8A9892",
+		subtitle: { color: "#99AA99" }
+	}
+} } }, l = { style: { chart: {
+	backgroundColor: "#f6f6fb",
+	color: "#50606C",
+	backgroundPattern: { dotColor: "#c3cfd9" },
+	layout: {
+		arrowShape: "normal",
+		curvedEdges: !1
+	},
+	nodes: {
+		stroke: "#50606C",
+		backgroundColor: "#ffffff",
+		borderRadius: 0,
+		labels: { color: "#50606C" },
+		tooltip: {
+			backgroundColor: "#50606C",
+			color: "#f6f6fb"
+		}
+	},
+	edges: { stroke: "#50606C" },
+	midpoints: {
+		stroke: "#50606C",
+		fill: "#fbfafa",
+		tooltip: {
+			backgroundColor: "#50606C",
+			color: "#f6f6fb"
+		}
+	},
+	controls: {
+		backgroundColor: "#f6f6fb",
+		buttonColor: "#f6f6fb",
+		color: "#50606C",
+		border: "1px solid #98aab8",
+		borderRadius: "0"
+	},
+	title: {
+		color: "#50606C",
+		subtitle: { color: "#718890" }
+	}
+} } }, u = {
+	default: {},
+	minimal: n,
+	minimalDark: r,
+	dark: i,
+	celebration: a,
+	celebrationNight: o,
+	hack: s,
+	zen: c,
+	concrete: l
+};
+//#endregion
+export { t as n, u as t };
