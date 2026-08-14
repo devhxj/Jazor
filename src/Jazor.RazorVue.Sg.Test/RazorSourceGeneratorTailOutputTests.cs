@@ -188,4 +188,148 @@ public sealed class RazorTailOutputTests
         StringAssert.Contains(failure, "Demo.Pages.ExpressionBodied", StringComparison.Ordinal);
         StringAssert.Contains(failure, "did not expose a bindable BuildRenderTree body", StringComparison.Ordinal);
     }
+
+    [TestMethod]
+    public void TryBuildFinalCompilationCatalog_ParallelArtifactBuildsRemainByteForByteDeterministic()
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.DeterministicParallel",
+            [CSharpSyntaxTree.ParseText(
+                """
+                global using ECMAScript;
+                global using Microsoft.AspNetCore.Components;
+                global using Microsoft.AspNetCore.Components.Rendering;
+                global using static ECMAScript.Vue;
+
+                namespace Demo.Pages;
+
+                [ECMAScriptModule("./components/alpha")]
+                public sealed class Alpha : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "p");
+                        builder.AddContent(1, "alpha");
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScriptModule("./components/bravo")]
+                public sealed class Bravo : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "p");
+                        builder.AddContent(1, "bravo");
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScriptModule("./components/charlie")]
+                public sealed class Charlie : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "p");
+                        builder.AddContent(1, "charlie");
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScriptModule("./components/delta")]
+                public sealed class Delta : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "p");
+                        builder.AddContent(1, "delta");
+                        builder.CloseElement();
+                    }
+                }
+                """,
+                parseOptions,
+                "Pages/ParallelComponents.razor.g.cs")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
+
+        string? baseline = null;
+        for (var attempt = 0; attempt < 8; attempt++)
+        {
+            var result = RazorTailOutput.TryBuildFinalCompilationCatalog(
+                compilation,
+                CancellationToken.None,
+                out var catalogSource,
+                out var failure);
+
+            Assert.IsTrue(result, failure);
+            Assert.IsNotNull(catalogSource);
+            baseline ??= catalogSource;
+            Assert.AreEqual(baseline, catalogSource, "parallel artifact catalog changed on attempt " + attempt);
+        }
+    }
+
+    [TestMethod]
+    public void TryBuildFinalCompilationCatalog_ParallelArtifactFailuresUseStableComponentOrder()
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.StableParallelFailure",
+            [CSharpSyntaxTree.ParseText(
+                """
+                global using ECMAScript;
+                global using Microsoft.AspNetCore.Components;
+                global using Microsoft.AspNetCore.Components.Rendering;
+                global using static ECMAScript.Vue;
+
+                namespace Demo.Pages;
+
+                [ECMAScriptModule("./components/alpha-invalid")]
+                public sealed class AlphaInvalid : ComponentBase, IVueComponent
+                {
+                    [Parameter] public string TagName { get; set; } = "section";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, TagName);
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScriptModule("./components/zeta-invalid")]
+                public sealed class ZetaInvalid : ComponentBase, IVueComponent
+                {
+                    [Parameter] public string TagName { get; set; } = "section";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, TagName);
+                        builder.CloseElement();
+                    }
+                }
+                """,
+                parseOptions,
+                "Pages/ParallelInvalidComponents.razor.g.cs")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
+
+        for (var attempt = 0; attempt < 8; attempt++)
+        {
+            var result = RazorTailOutput.TryBuildFinalCompilationCatalog(
+                compilation,
+                CancellationToken.None,
+                out var catalogSource,
+                out var failure);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(catalogSource);
+            Assert.IsNotNull(failure);
+            StringAssert.Contains(failure, "Demo.Pages.AlphaInvalid", StringComparison.Ordinal);
+            Assert.IsFalse(failure.Contains("Demo.Pages.ZetaInvalid", StringComparison.Ordinal), failure);
+        }
+    }
 }

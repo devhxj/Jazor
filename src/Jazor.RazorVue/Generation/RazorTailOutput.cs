@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Threading.Tasks;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 
@@ -11,6 +12,11 @@ namespace Jazor.RazorVue.Generation;
 /// </summary>
 internal static class RazorTailOutput
 {
+    // Roslyn lowering is CPU-bound, but unconstrained Task.Run fan-out makes generator hosts
+    // compete with their own compilation work. Keep this deliberately small and deterministic.
+    // 有界 worker 避免 source generator 与宿主编译争抢线程，不能按组件数无限并发。
+    private const int MaximumArtifactBuildWorkers = 4;
+
     internal static bool TryBuildFinalCompilationCatalog(
         Compilation compilation,
         CancellationToken cancellationToken,
@@ -50,10 +56,10 @@ internal static class RazorTailOutput
         artifacts = ImmutableArray<VueModuleArtifact>.Empty;
         failure = null;
 
-        // Process a stable component order so catalog text, module paths, and HMR observations do
-        // not depend on Roslyn symbol traversal order.
-        // 固定组件顺序是 artifact 及 HMR 元数据可复现性的前提。
-        var builder = ImmutableArray.CreateBuilder<VueModuleArtifact>();
+        // Build closures on one stable thread first. Besides preserving the first closure
+        // diagnostic, this separates graph discovery from independent module emission.
+        // closure 仍串行建立，确保失败顺序不受 worker 调度影响；只有模块发射可并行。
+        var inputs = ImmutableArray.CreateBuilder<ArtifactBuildInput>();
         foreach (var component in binding.Components
                      .OrderBy(
                          static component => component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
@@ -71,24 +77,26 @@ internal static class RazorTailOutput
                 return false;
             }
 
-            try
+            inputs.Add(new ArtifactBuildInput(component, closure!));
+        }
+
+        var results = BuildArtifacts(
+            cancellationToken,
+            binding,
+            inputs.ToImmutable());
+        var builder = ImmutableArray.CreateBuilder<VueModuleArtifact>(results.Length);
+        // Workers can finish in any order. Consume the stable input order so observable failure
+        // selection remains identical to the previous serial implementation.
+        // worker 完成顺序不参与诊断；按稳定索引回收才能保持原先首个失败契约。
+        foreach (var result in results)
+        {
+            if (result.Failure is not null)
             {
-                builder.Add(VueModuleBuilder.BuildAsync(
-                        binding,
-                        component,
-                        closure!,
-                        cancellationToken)
-                    .GetAwaiter()
-                    .GetResult());
-            }
-            catch (Exception ex)
-            {
-                failure = "Failed to generate RazorVue render module for '" +
-                          component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
-                          "': " +
-                          ex.Message;
+                failure = result.Failure;
                 return false;
             }
+
+            builder.Add(result.Artifact!);
         }
 
         artifacts = builder
@@ -97,6 +105,101 @@ internal static class RazorTailOutput
             .ToImmutableArray();
         return true;
     }
+
+    private static ArtifactBuildResult[] BuildArtifacts(
+        CancellationToken cancellationToken,
+        GeneratedCSharpBinding binding,
+        ImmutableArray<ArtifactBuildInput> inputs)
+    {
+        var results = new ArtifactBuildResult[inputs.Length];
+        var workerCount = GetArtifactBuildWorkerCount(inputs.Length);
+        if (workerCount <= 1)
+        {
+            for (var index = 0; index < inputs.Length; index++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                results[index] = BuildArtifactAsync(cancellationToken, binding, inputs[index])
+                    .GetAwaiter()
+                    .GetResult();
+            }
+
+            return results;
+        }
+
+        var nextIndex = -1;
+        var workers = new Task[workerCount];
+        for (var workerIndex = 0; workerIndex < workers.Length; workerIndex++)
+        {
+            workers[workerIndex] = Task.Run(
+                async () =>
+                {
+                    while (true)
+                    {
+                        var index = Interlocked.Increment(ref nextIndex);
+                        if (index >= inputs.Length)
+                            return;
+
+                        cancellationToken.ThrowIfCancellationRequested();
+                        results[index] = await BuildArtifactAsync(
+                                cancellationToken,
+                                binding,
+                                inputs[index])
+                            .ConfigureAwait(false);
+                    }
+                },
+                cancellationToken);
+        }
+
+        Task.WhenAll(workers).GetAwaiter().GetResult();
+        return results;
+    }
+
+    private static async Task<ArtifactBuildResult> BuildArtifactAsync(
+        CancellationToken cancellationToken,
+        GeneratedCSharpBinding binding,
+        ArtifactBuildInput input)
+    {
+        try
+        {
+            var artifact = await VueModuleBuilder.BuildAsync(
+                    binding,
+                    input.Component,
+                    input.Closure,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            return new ArtifactBuildResult(artifact, null);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // External cancellation is control flow, not a component conversion diagnostic.
+            throw;
+        }
+        catch (Exception ex)
+        {
+            return new ArtifactBuildResult(
+                null,
+                "Failed to generate RazorVue render module for '" +
+                input.Component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
+                "': " +
+                ex.Message);
+        }
+    }
+
+    private static int GetArtifactBuildWorkerCount(int componentCount)
+    {
+        if (componentCount <= 0)
+            return 0;
+
+        return Math.Min(componentCount, MaximumArtifactBuildWorkers);
+    }
+
+    private sealed record ArtifactBuildInput(
+        BoundComponent Component,
+        MemberClosure Closure);
+
+    private sealed record ArtifactBuildResult(
+        VueModuleArtifact? Artifact,
+        string? Failure);
 
     private static string BuildArtifactCatalogSource(ImmutableArray<VueModuleArtifact> artifacts)
     {
