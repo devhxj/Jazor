@@ -95,15 +95,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.13.0
+dotnet add package Jazor --version 0.14.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.13.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.13.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.14.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.14.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
