@@ -16,6 +16,7 @@
 | `ECMAScript.VueContract` | 组件、props、事件、slot 与注入契约 |
 | `ECMAScript.VueRoute` | Vue Router 类型绑定 |
 | `ECMAScript.Pinia` | Pinia 状态管理绑定 |
+| `ECMAScript.Vue.Devtools` | Vue Devtools Plugin API 绑定：custom inspector、timeline、component hook、tab 与 command |
 | `ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | UI 组件库绑定 |
 | `ECMAScript.Style` | 强类型、确定性的 CSS-in-JS |
 

@@ -90,6 +90,7 @@ jobs:
             --package jazor-vue `
             --package style `
             --package admin `
+            --package devtools `
             --package pinia `
             --package pinia-testing `
             --package vueroute `

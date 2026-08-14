@@ -9,6 +9,8 @@ on:
       - 'src/ECMAScript.Pinia.Test/**'
       - 'src/ECMAScript.Pinia.Testing/**'
       - 'src/ECMAScript.Pinia.Testing.Test/**'
+      - 'src/ECMAScript.Vue.Devtools/**'
+      - 'src/ECMAScript.Vue.Devtools.Test/**'
       - 'src/ECMAScript.Vue/**'
       - 'src/ECMAScript.VueRoute/**'
       - 'src/ECMAScript/**'
@@ -19,8 +21,10 @@ on:
       - 'src/Jazor.Emit/**'
       - 'src/Jazor.RazorVue/**'
       - 'samples/ECMAScript.Pinia.Counter/**'
+      - 'samples/ECMAScript.Vue.Devtools.Plugin/**'
       - 'scripts/csharp/publish-nuget.cs'
       - 'scripts/csharp/test-dotnet.cs'
+      - 'scripts/csharp/verify-vue-binding-coverage.cs'
       - 'Jazor.slnx'
       - 'global.json'
   pull_request:
@@ -30,6 +34,8 @@ on:
       - 'src/ECMAScript.Pinia.Test/**'
       - 'src/ECMAScript.Pinia.Testing/**'
       - 'src/ECMAScript.Pinia.Testing.Test/**'
+      - 'src/ECMAScript.Vue.Devtools/**'
+      - 'src/ECMAScript.Vue.Devtools.Test/**'
       - 'src/ECMAScript.Vue/**'
       - 'src/ECMAScript.VueRoute/**'
       - 'src/ECMAScript/**'
@@ -40,8 +46,10 @@ on:
       - 'src/Jazor.Emit/**'
       - 'src/Jazor.RazorVue/**'
       - 'samples/ECMAScript.Pinia.Counter/**'
+      - 'samples/ECMAScript.Vue.Devtools.Plugin/**'
       - 'scripts/csharp/publish-nuget.cs'
       - 'scripts/csharp/test-dotnet.cs'
+      - 'scripts/csharp/verify-vue-binding-coverage.cs'
       - 'Jazor.slnx'
       - 'global.json'
   workflow_dispatch:
@@ -79,6 +87,15 @@ jobs:
             --base-output-path 'artifacts/out/pinia-testing/' `
             --base-intermediate-output-path 'artifacts/obj/pinia-testing/'
 
+      - name: Verify ECMAScript.Vue.Devtools
+        shell: pwsh
+        run: |
+          dotnet run --file ./scripts/csharp/test-dotnet.cs -- `
+            --project devtools `
+            --configuration Release `
+            --base-output-path 'artifacts/out/devtools/' `
+            --base-intermediate-output-path 'artifacts/obj/devtools/'
+
   sample-smoke:
     runs-on: windows-latest
     steps:
@@ -97,6 +114,12 @@ jobs:
             -Configuration Release `
             -BaseOutputPath 'artifacts/out/pinia-sample/' `
             -BaseIntermediateOutputPath 'artifacts/obj/pinia-sample/'
+
+      - name: Verify Devtools NuGet consumer smoke
+        shell: pwsh
+        run: |
+          dotnet run --file ./samples/ECMAScript.Vue.Devtools.Plugin/build-local.cs -- `
+            --configuration Release
 
   package-dry-run:
     runs-on: windows-latest
@@ -117,6 +140,7 @@ jobs:
             --output-directory artifacts/packages `
             --skip-push `
             --package jazor `
+            --package devtools `
             --package pinia `
             --package pinia-testing `
             --package vueroute `
@@ -135,6 +159,7 @@ jobs:
             --skip-push `
             --no-build `
             --package jazor `
+            --package devtools `
             --package pinia `
             --package pinia-testing `
             --package vueroute `

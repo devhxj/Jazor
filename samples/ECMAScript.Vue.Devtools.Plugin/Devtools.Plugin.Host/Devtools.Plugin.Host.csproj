@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <JazorMode>debug</JazorMode>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Devtools host contracts intentionally map to external JavaScript members. -->
+    <NoWarn>$(NoWarn);CS0626</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.Vue.Devtools" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+</Project>

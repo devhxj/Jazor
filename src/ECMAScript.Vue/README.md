@@ -25,7 +25,7 @@
 
 Vue browser runtime 由 `Jazor` 包内的本地资源与 manifest 提供。应用不需要自行引入 CDN 或将 Vue 安装到项目 `node_modules`；输出模式和实际物化仍由 `Jazor.Emit` 持有。
 
-`@vue/devtools-api` 是供 Vue Router、Pinia 等 development ESM entry 使用的内部 logical import。它与浏览器安装的 Vue Devtools 扩展通过官方插件桥接协作，但当前不构成通用 C# Devtools authoring surface；没有自定义 inspector/timeline 需求时，应用无需直接调用它。
+`@vue/devtools-api` 是 Vue Router、Pinia 和可选 `ECMAScript.Vue.Devtools` 的本地 logical import。它与浏览器安装的 Vue Devtools 扩展通过官方插件桥接协作；仅在需要自定义 inspector、timeline、component hook、custom tab 或 command 时引用 `ECMAScript.Vue.Devtools`，普通应用和 Pinia 自动注册不需要直接调用它。
 
 ## 相关文档
 

@@ -41,6 +41,7 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 - 已证明为直接赋值的 `string` / `bool` DOM bind 现在绕过通用 event/value adapter，同时保留 compiler-owned assignment 语义。参数生命周期改为声明 prop 的 shallow projection watch：scalar/reference replacement 会触发，同一引用内部的 nested mutation 不触发。
 - ASP.NET Core SSR 现在复用有界、generation-aware Deno worker pool，不再为每次 render 启动进程和写临时请求文件。artifact 变化会轮换 ESM generation；真实进程测试覆盖取消、crash recovery、并发限制与应用 graceful disposal。
 - `ECMAScript.Pinia` 已升级到 Pinia 4.0.3，`ECMAScript.Pinia.Testing` 已升级到 `@pinia/testing` 2.0.1。`app.Use(pinia)` 会自动向 Vue Devtools 注册 Pinia 开发面板，production Pinia 输出不携带 Devtools 闭包；Testing 2 已内置 writable-computed 行为，因此移除了 `TestingOptions.WritableComputed`。
+- 新增独立 `ECMAScript.Vue.Devtools` 包，覆盖公开 `@vue/devtools-api` 8.1.5 plugin authoring surface：typed plugin setup/settings、inspector、timeline、component hook、custom tab/command 与连接回调。它复用 Jazor 已携带的本地 Vue Devtools runtime closure，不暴露 Devtools 内部实现；Pinia 的自动 Devtools 面板注册行为保持不变。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 

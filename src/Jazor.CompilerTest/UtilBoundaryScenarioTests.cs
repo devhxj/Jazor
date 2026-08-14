@@ -307,6 +307,7 @@ public sealed class UtilBoundaryScenarioTests
             UtilBooleanKind.RecordProxyIndexer => Util.IsECMAScriptRecordProxyMember(fixture.GetIndexer("RuntimeRecord")),
             UtilBooleanKind.RecordProxyConfiguredMethod => Util.IsECMAScriptRecordProxyMember(fixture.GetMethod("RuntimeRecord", "Configured")),
             UtilBooleanKind.RecordProxyExternMethod => Util.IsECMAScriptRecordProxyMember(fixture.GetMethod("RuntimeRecord", "Imported")),
+            UtilBooleanKind.RecordProxyInlineMethod => Util.IsECMAScriptRecordProxyMember(fixture.GetMethod("RuntimeRecord", "Inline")),
             UtilBooleanKind.RecordProxyNormalMethod => Util.IsECMAScriptRecordProxyMember(fixture.GetMethod("RuntimeRecord", "Normal")),
             UtilBooleanKind.RecordProxyField => Util.IsECMAScriptRecordProxyMember(fixture.GetField("RuntimeRecord", "Field")),
             UtilBooleanKind.RecordProxyBaseMarkedHost => Util.IsECMAScriptRecordProxyMember(fixture.GetProperty("DerivedRuntimeRecord", "Named")),
@@ -445,6 +446,7 @@ public enum UtilBooleanKind
     RecordProxyIndexer,
     RecordProxyConfiguredMethod,
     RecordProxyExternMethod,
+    RecordProxyInlineMethod,
     RecordProxyNormalMethod,
     RecordProxyField,
     RecordProxyBaseMarkedHost,
@@ -610,6 +612,7 @@ internal static class UtilBoundaryScenarioCatalog
             UtilBooleanKind.RecordProxyIndexer,
             UtilBooleanKind.RecordProxyConfiguredMethod,
             UtilBooleanKind.RecordProxyExternMethod,
+            UtilBooleanKind.RecordProxyInlineMethod,
             UtilBooleanKind.RecordProxyBaseMarkedHost,
             UtilBooleanKind.UnionNativePlain,
             UtilBooleanKind.UnionNativeRuntime,
@@ -784,6 +787,9 @@ internal static class UtilBoundaryScenarioCatalog
             }
 
             public extern void Imported();
+
+            [ECMAScriptInline("__arg1")]
+            public static RuntimeRecord Inline(RuntimeRecord value) => value;
 
             public void Normal()
             {

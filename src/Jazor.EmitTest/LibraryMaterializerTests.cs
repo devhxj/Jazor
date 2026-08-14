@@ -271,6 +271,51 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Materialize_DevtoolsApiEntry_UsesVueOwnedRuntimeClosure()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [FindLibraryManifest("ECMAScript.Vue")],
+            outputRoot,
+            BuildMode.Production,
+            ["@vue/devtools-api"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "@vue/devtools-api", "perfect-debounce" },
+            result.ImportPaths.Keys.ToArray());
+        Assert.AreEqual(
+            "vendor/vue3/3.5.13/dist/devtools-api/vue-devtools-api.esm-browser.js",
+            result.ImportPaths["@vue/devtools-api"]);
+        Assert.AreEqual(
+            "vendor/vue3/3.5.13/dist/devtools-api/perfect-debounce.mjs",
+            result.ImportPaths["perfect-debounce"]);
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "dist",
+            "devtools-api",
+            "vue-devtools-api.esm-browser.js")));
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.13",
+            "dist",
+            "devtools-api",
+            "perfect-debounce.mjs")));
+        Assert.IsFalse(File.Exists(Path.Combine(
+            FindRepositoryRoot(),
+            "src",
+            "ECMAScript.Vue.Devtools",
+            "manifest.json")),
+            "The optional C# binding must reuse the Vue-owned @vue/devtools-api provider instead of registering a duplicate runtime manifest.");
+    }
+
+    [TestMethod]
     public void Materialize_ProductionPiniaEntry_FollowsDeclaredRuntimeClosure()
     {
         using var workspace = new LibraryWorkspace();
@@ -439,6 +484,17 @@ public sealed class LibraryMaterializerTests
             "4.1.8",
             "dist",
             "directives.mjs")));
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+                return directory.FullName;
+        }
+
+        throw new FileNotFoundException("Could not locate the Jazor repository root.");
     }
 
     private static string FindLibraryManifest(string projectName)

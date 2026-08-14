@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>$packageId$</id>
+    <version>$version$</version>
+    <authors>$packageAuthors$</authors>
+    <description>$packageDescription$</description>
+    <projectUrl>$repositoryUrl$</projectUrl>
+    <repository type="$repositoryType$" url="$repositoryUrl$" />
+    <readme>$packageReadmeFile$</readme>
+    <dependencies>
+      <group targetFramework="net11.0">
+        <dependency id="Jazor" version="$dependencyVersion$" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="$buildOutputDir$ECMAScript.Vue.Devtools.dll" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.Vue.Devtools.pdb" target="lib/net11.0" />
+    <file src="$projectDir$$packageReadmeFile$" target="" />
+  </files>
+</package>

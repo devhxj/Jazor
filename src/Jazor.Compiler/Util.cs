@@ -24,6 +24,7 @@ public static class Util
 {
     public const string ECMAScriptAttributeMetadataName = "ECMAScript.ECMAScriptAttribute";
     public const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
+    public const string ECMAScriptInlineAttributeMetadataName = "ECMAScript.ECMAScriptInlineAttribute";
     public const string SystemUnionAttributeMetadataName = "System.Runtime.CompilerServices.UnionAttribute";
     public const string SystemIUnionMetadataName = "System.Runtime.CompilerServices.IUnion";
     public const string StringAttributeMetadataName = "ECMAScript.StringAttribute";
@@ -561,7 +562,25 @@ public static class Util
 
     private static bool IsECMAScriptRecordProxyMethod(IMethodSymbol method)
         => method.MethodKind == MethodKind.Ordinary &&
-           (method.IsExtern || GetSymbolConfigName(method) is not null);
+           (method.IsExtern ||
+            GetSymbolConfigName(method) is not null ||
+            HasECMAScriptInlineTemplate(method));
+
+    private static bool HasECMAScriptInlineTemplate(IMethodSymbol method)
+    {
+        foreach (var attribute in method.GetAttributes())
+        {
+            if (attribute.AttributeClass?.ToDisplayString() != ECMAScriptInlineAttributeMetadataName)
+                continue;
+
+            // NuGet metadata does not reliably preserve IsExtern。inline attribute 才是实际的
+            // lowering contract，因此仅为带有效模板的成员保留此 narrow proxy allowance。
+            var template = attribute.ConstructorArguments.FirstOrDefault().Value as string;
+            return !string.IsNullOrWhiteSpace(template);
+        }
+
+        return false;
+    }
 
     public static bool IsSystemUnionMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() == SystemUnionAttributeMetadataName;

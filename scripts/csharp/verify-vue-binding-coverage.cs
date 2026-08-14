@@ -27,6 +27,12 @@ var testLanes = new[]
             new VueBindingTarget("tdesign", "ECMAScript.TDesign", "net11.0")
         ]),
     new VueBindingTestLane(
+        "devtools",
+        "src/ECMAScript.Vue.Devtools.Test/ECMAScript.Vue.Devtools.Test.csproj",
+        "vue-bindings-devtools.trx",
+        MinimumPassedTests: 10,
+        [new VueBindingTarget("devtools", "ECMAScript.Vue.Devtools", "net11.0")]),
+    new VueBindingTestLane(
         "pinia",
         "src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj",
         "vue-bindings-pinia.trx",

@@ -1,0 +1,42 @@
+<Project Sdk="MSTest.Sdk/4.1.0">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseVSTest>true</UseVSTest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
+    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vue.Devtools\ECMAScript.Vue.Devtools.csproj" />
+    <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
+    <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="$(CoverletVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Basic.Reference.Assemblies.Net110" Version="$(Net110AssembliesVersion)" />
+    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
+    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="DenoHost.Runtime.linux-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+    <PackageReference Include="DenoHost.Runtime.osx-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'X64'" />
+    <PackageReference Include="DenoHost.Runtime.osx-arm64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+    <PackageReference Update="MSTest.TestFramework" Version="4.2.1" />
+    <PackageReference Update="MSTest.TestAdapter" Version="4.2.1" />
+  </ItemGroup>
+</Project>
