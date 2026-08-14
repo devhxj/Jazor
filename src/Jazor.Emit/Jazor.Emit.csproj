@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Acornima" Version="$(AcornimaVersion)" />
     <PackageReference Include="NetPack.Core" Version="$(NetPackVersion)" />
   </ItemGroup>
 

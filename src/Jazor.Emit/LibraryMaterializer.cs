@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
+using Acornima;
+using Acornima.Ast;
 using Jazor.Common;
 
 namespace Jazor.Emit;
@@ -76,6 +78,7 @@ internal sealed class LibraryMaterializer
         var importHashes = new Dictionary<string, string>(StringComparer.Ordinal);
         var stylePaths = new List<string>();
         var copiedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var copiedModuleSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var importsBySpecifier = CreateImportIndex(manifests);
         var selectedImports = SelectImports(
             importsBySpecifier,
@@ -127,8 +130,12 @@ internal sealed class LibraryMaterializer
                     continue;
                 }
 
-                var targetPath = GetSafeTargetPath(destinationRoot, targetRelativePath);
-                CopyFile(sourcePath, targetPath, copiedPaths);
+                CopyRelativeModuleClosure(
+                    manifest,
+                    sourcePath,
+                    destinationRoot,
+                    copiedPaths,
+                    copiedModuleSources);
                 importHashes.Add(specifier, hash);
                 importPaths.Add(specifier, targetRelativePath);
 
@@ -322,6 +329,129 @@ internal sealed class LibraryMaterializer
             Directory.CreateDirectory(directory);
 
         File.Copy(sourcePath, targetPath, overwrite: true);
+    }
+
+    // Chunked ESM keeps its relative specifiers unchanged. 只复制相对模块闭包而不改写源文本，
+    // 因此 browser 仍按上游的 relative import 语义解析；bare specifier 继续由 import map 承担。
+    private static void CopyRelativeModuleClosure(
+        LibraryManifest manifest,
+        string entrySourcePath,
+        string destinationRoot,
+        ISet<string> copiedPaths,
+        ISet<string> copiedModuleSources)
+    {
+        var pending = new Stack<string>();
+        pending.Push(entrySourcePath);
+
+        while (pending.Count > 0)
+        {
+            var sourcePath = pending.Pop();
+            if (!copiedModuleSources.Add(sourcePath))
+                continue;
+
+            var packageRelativePath = Path.GetRelativePath(manifest.Directory, sourcePath)
+                .Replace('\\', '/');
+            var targetRelativePath = $"vendor/{manifest.LibraryId}/{manifest.Version}/{packageRelativePath}";
+            var targetPath = GetSafeTargetPath(destinationRoot, targetRelativePath);
+            CopyFile(sourcePath, targetPath, copiedPaths);
+
+            if (!IsJavaScriptModule(sourcePath))
+                continue;
+
+            foreach (var specifier in GetRelativeModuleSpecifiers(sourcePath).OrderBy(static value => value, StringComparer.Ordinal))
+            {
+                var dependencySourcePath = ResolveRelativeModulePath(manifest, sourcePath, specifier);
+                pending.Push(dependencySourcePath);
+            }
+        }
+    }
+
+    private static bool IsJavaScriptModule(string path)
+    {
+        var extension = Path.GetExtension(path);
+        return string.IsNullOrEmpty(extension) ||
+               string.Equals(extension, ".js", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(extension, ".mjs", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(extension, ".cjs", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(extension, ".jsx", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static IEnumerable<string> GetRelativeModuleSpecifiers(string sourcePath)
+    {
+        var module = new Parser().ParseModule(File.ReadAllText(sourcePath));
+        var collector = new RelativeModuleSpecifierCollector();
+        collector.Visit(module);
+        return collector.Specifiers;
+    }
+
+    private static bool IsRelativeModuleSpecifier(string specifier)
+        => specifier.StartsWith("./", StringComparison.Ordinal) ||
+           specifier.StartsWith("../", StringComparison.Ordinal);
+
+    private static string ResolveRelativeModulePath(
+        LibraryManifest manifest,
+        string importingSourcePath,
+        string specifier)
+    {
+        var separatorIndex = specifier.IndexOfAny(['?', '#']);
+        var fileSpecifier = separatorIndex >= 0 ? specifier.Substring(0, separatorIndex) : specifier;
+        var candidate = Path.GetFullPath(Path.Combine(
+            Path.GetDirectoryName(importingSourcePath)!,
+            fileSpecifier.Replace('/', Path.DirectorySeparatorChar)));
+        var packageRoot = Path.EndsInDirectorySeparator(manifest.Directory)
+            ? Path.GetFullPath(manifest.Directory)
+            : Path.GetFullPath(manifest.Directory) + Path.DirectorySeparatorChar;
+        if (!candidate.StartsWith(packageRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new LibraryException(
+                "JAZOR_LIBRARY_MODULE_PATH_INVALID",
+                $"Relative module import '{specifier}' in '{importingSourcePath}' escapes library '{manifest.LibraryId}'.");
+        }
+        if (!File.Exists(candidate))
+            throw new FileNotFoundException($"Library module import was not found: '{specifier}'.", candidate);
+
+        return candidate;
+    }
+
+    private sealed class RelativeModuleSpecifierCollector : AstVisitor
+    {
+        public HashSet<string> Specifiers { get; } = new(StringComparer.Ordinal);
+
+        protected override object VisitImportDeclaration(ImportDeclaration node)
+        {
+            Add(node.Source);
+            base.VisitImportDeclaration(node);
+            return node;
+        }
+
+        protected override object VisitExportNamedDeclaration(ExportNamedDeclaration node)
+        {
+            if (node.Source is not null)
+                Add(node.Source);
+            base.VisitExportNamedDeclaration(node);
+            return node;
+        }
+
+        protected override object VisitExportAllDeclaration(ExportAllDeclaration node)
+        {
+            Add(node.Source);
+            base.VisitExportAllDeclaration(node);
+            return node;
+        }
+
+        protected override object VisitImportExpression(ImportExpression node)
+        {
+            if (node.Source is StringLiteral source)
+                Add(source);
+            base.VisitImportExpression(node);
+            return node;
+        }
+
+        private void Add(StringLiteral source)
+        {
+            if (IsRelativeModuleSpecifier(source.Value))
+                Specifiers.Add(source.Value);
+        }
     }
 
     private static string GetSafeSourcePath(string root, string relativePath)

@@ -31,6 +31,50 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Materialize_FollowsRelativeEsmClosure_WithoutCopyingUnreferencedChunks()
+    {
+        using var workspace = new LibraryWorkspace();
+        var manifestPath = workspace.WriteManifest(
+            "component-library",
+            "1.0.0",
+            "component-library/widget",
+            "dist/components/widget.mjs",
+            "dist/components/widget.mjs");
+        workspace.WriteFile("dist/components/widget.mjs", """
+            import { helper } from "../shared/helper.mjs";
+            export { value } from "../shared/reexport.mjs";
+            export const result = helper;
+            export async function load() { return import("../async/lazy.mjs"); }
+            """);
+        workspace.WriteFile("dist/shared/helper.mjs", """
+            import { cycle } from "../cycle.mjs";
+            export const helper = cycle;
+            """);
+        workspace.WriteFile("dist/cycle.mjs", """
+            import { helper } from "./shared/helper.mjs";
+            export const cycle = helper ? 1 : 0;
+            """);
+        workspace.WriteFile("dist/shared/reexport.mjs", "export const value = 'ready';");
+        workspace.WriteFile("dist/async/lazy.mjs", "export const lazy = true;");
+        workspace.WriteFile("dist/unused.mjs", "export const unused = true;");
+
+        var outputRoot = Path.Combine(workspace.Root, "out");
+        _ = new LibraryMaterializer().Materialize(
+            [manifestPath],
+            outputRoot,
+            BuildMode.Production,
+            ["component-library/widget"]);
+
+        var materializedRoot = Path.Combine(outputRoot, "vendor", "component-library", "1.0.0", "dist");
+        Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "components", "widget.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "shared", "helper.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "shared", "reexport.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "cycle.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "async", "lazy.mjs")));
+        Assert.IsFalse(File.Exists(Path.Combine(materializedRoot, "unused.mjs")));
+    }
+
+    [TestMethod]
     public async Task ImportMapWriter_WritesLocalSsrImportsAlongsideBrowserImports()
     {
         using var workspace = new LibraryWorkspace();
