@@ -1,0 +1,3 @@
+import { createVuIcon } from "../jazor-vu-icon-runtime.mjs";
+
+export const VuTextInitial = createVuIcon("VuTextInitial", "0 0 24 24", '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5h6m-6 7h6M3 19h18M3 12l3.553-7.724a.5.5 0 0 1 .894 0L11 12m-7.08-2h6.16"/>');

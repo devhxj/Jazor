@@ -66,24 +66,6 @@ internal static class AdminNavItemRenderHelper
             : filtered.ToArray();
     }
 
-    private static bool HasRenderableItems(AdminNavItem[]? items)
-    {
-        if (items is not { Length: > 0 })
-        {
-            return false;
-        }
-
-        foreach (var item in items)
-        {
-            if (IsRenderable(item))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private static bool IsRenderable(AdminNavItem? item)
         => item is not null
            && !string.IsNullOrWhiteSpace(item.Title)

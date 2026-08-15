@@ -1,0 +1,3 @@
+import { createVuIcon } from "../jazor-vu-icon-runtime.mjs";
+
+export const VuMicrochip = createVuIcon("VuMicrochip", "0 0 24 24", '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10 12h4m-4 5h4M10 7h4m4 5h2m-2 6h2M18 6h2M4 12h2m-2 6h2M4 6h2"/><rect width="12" height="20" x="6" y="2" rx="2"/></g>');

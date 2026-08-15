@@ -1,0 +1,3 @@
+import { createVuIcon } from "../jazor-vu-icon-runtime.mjs";
+
+export const VuSailboat = createVuIcon("VuSailboat", "0 0 24 24", '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 2v15m-3 5a4 4 0 0 1-4-4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1a4 4 0 0 1-4 4zM9.159 2.46a1 1 0 0 1 1.521-.193l9.977 8.98A1 1 0 0 1 20 13H4a1 1 0 0 1-.824-1.567z"/>');

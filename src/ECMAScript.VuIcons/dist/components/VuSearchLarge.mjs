@@ -1,0 +1,3 @@
+import { createVuIcon } from "../jazor-vu-icon-runtime.mjs";
+
+export const VuSearchLarge = createVuIcon("VuSearchLarge", "0 0 32 32", '<g fill="none"><path clip-rule="evenodd" d="M18.874 19.581a6 6 0 1 1 .707-.707l4.273 4.272l-.708.708zM20 15a5 5 0 1 1-10 0a5 5 0 0 1 10 0z" fill="currentColor" fill-rule="evenodd"/></g>');

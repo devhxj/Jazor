@@ -13,6 +13,8 @@ on:
       - 'src/ECMAScript.Vue.Devtools.Test/**'
       - 'src/ECMAScript.VueDataUi/**'
       - 'src/ECMAScript.VueDataUi.Test/**'
+      - 'src/ECMAScript.VuIcons/**'
+      - 'src/ECMAScript.VuIcons.Test/**'
       - 'src/ECMAScript.Vue/**'
       - 'src/ECMAScript.VueRoute/**'
       - 'src/ECMAScript/**'
@@ -41,6 +43,8 @@ on:
       - 'src/ECMAScript.Vue.Devtools.Test/**'
       - 'src/ECMAScript.VueDataUi/**'
       - 'src/ECMAScript.VueDataUi.Test/**'
+      - 'src/ECMAScript.VuIcons/**'
+      - 'src/ECMAScript.VuIcons.Test/**'
       - 'src/ECMAScript.Vue/**'
       - 'src/ECMAScript.VueRoute/**'
       - 'src/ECMAScript/**'
@@ -111,6 +115,15 @@ jobs:
             --base-output-path 'artifacts/out/dataui/' `
             --base-intermediate-output-path 'artifacts/obj/dataui/'
 
+      - name: Verify ECMAScript.VuIcons
+        shell: pwsh
+        run: |
+          dotnet run --file ./scripts/csharp/test-dotnet.cs -- `
+            --project vu-icons `
+            --configuration Release `
+            --base-output-path 'artifacts/out/vu-icons/' `
+            --base-intermediate-output-path 'artifacts/obj/vu-icons/'
+
   sample-smoke:
     runs-on: windows-latest
     steps:
@@ -163,6 +176,7 @@ jobs:
             --package jazor `
             --package devtools `
             --package dataui `
+            --package vu-icons `
             --package pinia `
             --package pinia-testing `
             --package vueroute `
@@ -183,6 +197,7 @@ jobs:
             --package jazor `
             --package devtools `
             --package dataui `
+            --package vu-icons `
             --package pinia `
             --package pinia-testing `
             --package vueroute `

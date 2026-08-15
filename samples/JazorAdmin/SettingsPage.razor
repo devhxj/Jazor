@@ -4,7 +4,7 @@
 <section class="ja-management ja-settings" data-management-area="settings">
     @if (loading)
     {
-        <p class="ja-management__loading" aria-live="polite">Loading system settings</p>
+        <p class="ja-management__loading" aria-live="polite">@L("Loading system settings", "正在加载系统配置")</p>
     }
     else
     {
@@ -16,18 +16,18 @@
         <div class="ja-management__split ja-management__split--editor">
             <section class="ja-management__panel" aria-labelledby="settings-title">
                 <header class="ja-management__panel-header">
-                    <div><h2 id="settings-title">System settings</h2><p>Typed values grouped for application runtime use</p></div>
-                    <button type="button" data-settings-command="new" @onclick="NewSetting">New</button>
+                    <div><h2 id="settings-title">@L("System settings", "系统配置")</h2><p>@L("Typed values grouped for application runtime use", "按运行时用途分组的强类型配置值")</p></div>
+                    <button type="button" data-settings-command="new" @onclick="NewSetting">@L("New", "新建")</button>
                 </header>
                 @if (settings.Length == 0)
                 {
-                    <p class="ja-management__empty">No system settings are defined.</p>
+                    <p class="ja-management__empty">@L("No system settings are defined.", "尚未定义系统配置。")</p>
                 }
                 else
                 {
                     <div class="ja-management__table-wrap">
                         <table class="ja-management__table">
-                            <thead><tr><th>Setting</th><th>Group</th><th>Type</th><th></th></tr></thead>
+                            <thead><tr><th>@L("Setting", "配置项")</th><th>@L("Group", "分组")</th><th>@L("Type", "类型")</th><th></th></tr></thead>
                             <tbody>
                                 @foreach (var setting in settings)
                                 {
@@ -35,7 +35,7 @@
                                         <td><strong>@setting.Label</strong><span>@setting.Key</span></td>
                                         <td>@setting.Group</td>
                                         <td><code>@setting.Kind</code></td>
-                                        <td><button type="button" class="ja-management__text-button" @onclick="() => Select(setting)">Edit</button></td>
+                                        <td><button type="button" class="ja-management__text-button" @onclick="() => Select(setting)">@L("Edit", "编辑")</button></td>
                                     </tr>
                                 }
                             </tbody>
@@ -45,21 +45,21 @@
             </section>
 
             <section class="ja-management__panel" aria-labelledby="setting-editor-title">
-                <header class="ja-management__panel-header"><div><h2 id="setting-editor-title">@(IsNew ? "Create setting" : "Setting details")</h2><p>Keys are immutable after creation</p></div></header>
+                <header class="ja-management__panel-header"><div><h2 id="setting-editor-title">@(IsNew ? L("Create setting", "创建配置") : L("Setting details", "配置详情"))</h2><p>@L("Keys are immutable after creation", "键名创建后不可修改")</p></div></header>
                 <form class="ja-management__form" @onsubmit="Save" @onsubmit:preventDefault>
                     <div class="ja-management__field-grid">
-                        <label><span>Key</span><input required readonly="@(!IsNew)" autocomplete="off" placeholder="feature.audit.enabled" @bind="key" @bind:event="oninput" /></label>
-                        <label><span>Group</span><input required autocomplete="off" placeholder="feature" @bind="group" @bind:event="oninput" /></label>
-                        <label><span>Label</span><input required autocomplete="off" @bind="label" @bind:event="oninput" /></label>
-                        <label><span>Type</span><select @bind="kind"><option value="text">Text</option><option value="boolean">Boolean</option><option value="number">Number</option><option value="json">JSON</option></select></label>
+                        <label><span>@L("Key", "键名")</span><input required readonly="@(!IsNew)" autocomplete="off" placeholder="feature.audit.enabled" @bind="key" @bind:event="oninput" /></label>
+                        <label><span>@L("Group", "分组")</span><input required autocomplete="off" placeholder="feature" @bind="group" @bind:event="oninput" /></label>
+                        <label><span>@L("Label", "标签")</span><input required autocomplete="off" @bind="label" @bind:event="oninput" /></label>
+                        <label><span>@L("Type", "类型")</span><select @bind="kind"><option value="text">@L("Text", "文本")</option><option value="boolean">@L("Boolean", "布尔")</option><option value="number">@L("Number", "数值")</option><option value="json">JSON</option></select></label>
                     </div>
-                    <label><span>Description</span><input autocomplete="off" @bind="description" @bind:event="oninput" /></label>
-                    <label><span>Value</span><textarea rows="7" required @bind="value" @bind:event="oninput"></textarea></label>
+                    <label><span>@L("Description", "描述")</span><input autocomplete="off" @bind="description" @bind:event="oninput" /></label>
+                    <label><span>@L("Value", "值")</span><textarea rows="7" required @bind="value" @bind:event="oninput"></textarea></label>
                     <div class="ja-management__commands">
-                        <button type="submit" data-settings-command="save">@(IsNew ? "Create" : "Save changes")</button>
+                        <button type="submit" data-settings-command="save">@(IsNew ? L("Create", "创建") : L("Save changes", "保存修改"))</button>
                         @if (!IsNew)
                         {
-                            <button type="button" class="ja-management__danger-button" data-settings-command="delete" @onclick="DeleteSetting">@(deleteArmed ? "Confirm delete" : "Delete")</button>
+                            <button type="button" class="ja-management__danger-button" data-settings-command="delete" @onclick="DeleteSetting">@(deleteArmed ? L("Confirm delete", "确认删除") : L("Delete", "删除"))</button>
                         }
                     </div>
                 </form>

@@ -17,13 +17,16 @@
 | `ECMAScript.VueRoute` | Vue Router 类型绑定 |
 | `ECMAScript.Pinia` | Pinia 状态管理绑定 |
 | `ECMAScript.Vue.Devtools` | Vue Devtools Plugin API 绑定：custom inspector、timeline、component hook、tab 与 command |
-| `ECMAScript.VueDataUi` | `vue-data-ui` 3.23.4 图表 binding：强类型 dataset/config、RazorVue `VueUi*` 组件与按图表 ESM entry |
+| `ECMAScript.VueDataUi` | `vue-data-ui` 3.23.4 binding：完整 71 个公开 `VueUi*` 组件、强类型 dataset/config 与按组件 ESM entry |
+| `ECMAScript.VuIcons` | `vu-icons` 1.5.4 binding：完整 1,821 个 `Vu*` 图标组件与闭合动态 icon enum |
 | `ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | UI 组件库绑定 |
 | `ECMAScript.Style` | 强类型、确定性的 CSS-in-JS |
 
 这些包按需显式引用。浏览器模块、样式、许可证和资源 manifest 由包与 Emit 管线管理，应用不应为了使用这些绑定再引入重复的 CDN、`node_modules` 或远程裸模块 import。
 
-`ECMAScript.VueDataUi` 不暴露上游聚合 `vue-data-ui` root import。组件 descriptor 直接声明 `vue-data-ui/vue-ui-*` entry，`Jazor.Emit` 从实际 generated import 递归物化相对 ESM closure；因此未使用的 chart chunk 不会随发布输出复制。需要 PDF export runtime 的 entry 通过 manifest 解析到同包携带的本地 `jspdf`。
+`ECMAScript.VueDataUi` 不暴露上游聚合 `vue-data-ui` root import。71 个组件 descriptor 与上游 `dist/components/vue-ui-*.js` 一一对应，直接声明 `vue-data-ui/vue-ui-*` entry；`Jazor.Emit` 从实际 generated import 递归物化相对 ESM closure，因此未使用的 chart chunk 不会随发布输出复制。需要 PDF export runtime 的 entry 才通过 manifest 解析到同包携带的本地 `jspdf`。
+
+`ECMAScript.VuIcons` 同时提供静态与动态路径。已知图标应直接使用生成的 `VuUser` 等 component，其 descriptor 指向独立 `vu-icons/VuUser` entry，Emit 仅物化该 SVG module、共享 runtime 和样式；运行时名称选择使用 `VuIcon` 与 `VuIconName`，它需要完整 `icons-data.js` catalog 才能解析任意名称。这是运行时动态性的必要载荷，不是静态路径的回退。
 
 ## 名称与作者契约
 

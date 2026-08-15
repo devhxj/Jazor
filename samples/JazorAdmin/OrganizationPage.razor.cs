@@ -67,7 +67,7 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
         loading = false;
         if (!outcome.Ok || outcome.Data is null)
         {
-            error = outcome.Error ?? "Unable to load the organization.";
+            error = outcome.Error ?? L("Unable to load the organization.", "无法加载该组织。");
             return;
         }
 
@@ -79,7 +79,7 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
         loading = false;
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load organization members.";
+            error = outcome.Error ?? L("Unable to load organization members.", "无法加载组织成员。");
             return;
         }
 
@@ -90,7 +90,7 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
     {
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load organization roles.";
+            error = outcome.Error ?? L("Unable to load organization roles.", "无法加载组织角色。");
             return;
         }
 
@@ -106,7 +106,7 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to create the child organization.";
+                error = outcome.Error ?? L("Unable to create the child organization.", "无法创建下级组织。");
                 return;
             }
 
@@ -126,7 +126,7 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to add the organization member.";
+                error = outcome.Error ?? L("Unable to add the organization member.", "无法添加组织成员。");
                 return;
             }
 
@@ -162,7 +162,7 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to update member roles.";
+                error = outcome.Error ?? L("Unable to update member roles.", "无法更新成员角色。");
                 return;
             }
 
@@ -170,6 +170,6 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
         });
     }
 
-    private static string GetRoleNames(OrganizationRoleResponse[] values)
-        => values.Length == 0 ? "No roles" : string.Join(", ", values.Select(role => role.DisplayName));
+    private string GetRoleNames(OrganizationRoleResponse[] values)
+        => values.Length == 0 ? L("No roles", "暂无角色") : string.Join(", ", values.Select(role => role.DisplayName));
 }

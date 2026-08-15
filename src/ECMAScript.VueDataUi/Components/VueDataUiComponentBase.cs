@@ -50,3 +50,35 @@ public abstract class VueDataUiConfigComponent<TConfig> : ComponentBase
     [ECMAScriptName("config")]
     public TConfig? Config { get; set; }
 }
+
+/// <summary>
+/// 仅接受 dataset 的 visual component 参数基类。Digits、Gizmo 一类组件没有独立 config 时，
+/// 仍通过这个基类保留 Razor required-parameter contract。
+/// </summary>
+/// <typeparam name="TDataset">该组件的输入数据形状。</typeparam>
+public abstract class VueDataUiDatasetComponent<TDataset> : ComponentBase
+{
+    [Parameter]
+    [EditorRequired]
+    [ECMAScriptName("dataset")]
+    public TDataset Dataset { get; set; } = default!;
+}
+
+/// <summary>
+/// 上游允许省略 dataset 的 chart 参数基类。Only the three upstream components whose props
+/// explicitly mark dataset optional use this base; other charts keep the stricter required contract.
+/// </summary>
+/// <typeparam name="TDataset">可选输入数据的形状。</typeparam>
+/// <typeparam name="TConfig">组件配置形状。</typeparam>
+public abstract class VueDataUiOptionalDatasetChartComponent<TDataset, TConfig> : ComponentBase
+    where TDataset : class
+    where TConfig : VueDataUiConfig
+{
+    [Parameter]
+    [ECMAScriptName("dataset")]
+    public TDataset? Dataset { get; set; }
+
+    [Parameter]
+    [ECMAScriptName("config")]
+    public TConfig? Config { get; set; }
+}

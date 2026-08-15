@@ -32,17 +32,14 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-14
+### 2026-08-15
 
-- RazorVue direct render 模块现可为已证明的动态 string 文本、静态/动态混合文本和嵌套稳定元素生成 Vue child block tree 与 `TEXT` patch。条件内容、slot、raw markup 和未证明 child 继续使用普通 Vue diff。
-- production Vue browser/SSR 门禁现在会验证这些 child block 的 mount 与响应式 DOM patch，并继续覆盖 static markup 与 hydration。
-- 已证明安全的简单 Razor `foreach` 现在通过 Vue `renderList` 降低：显式 `@key` 使用 keyed fragment，无 key 使用保守的 unkeyed fragment；production Vue 门禁验证 keyed reorder 的 DOM identity。
-- 固定 authored、named 与 scoped slot 现在使用 Vue `withCtx` 和稳定 `_: 1` marker；conditional、forwarded 与非稳定 scope slot 使用 `createSlots + DYNAMIC_SLOTS`，production 门禁验证父级更新与条件分支替换。
-- 已证明为直接赋值的 `string` / `bool` DOM bind 现在绕过通用 event/value adapter，同时保留 compiler-owned assignment 语义。参数生命周期改为声明 prop 的 shallow projection watch：scalar/reference replacement 会触发，同一引用内部的 nested mutation 不触发。
-- ASP.NET Core SSR 现在复用有界、generation-aware Deno worker pool，不再为每次 render 启动进程和写临时请求文件。artifact 变化会轮换 ESM generation；真实进程测试覆盖取消、crash recovery、并发限制与应用 graceful disposal。
+- RazorVue direct render 现已支持官方 Razor `@for`、`@while`、`@do while`，并保留既有 `@foreach`；循环局部变量闭包、body/condition 顺序及 keyed/unkeyed Vue dynamic Fragment 语义均保持一致。`break` 与 `continue` 在当前 direct-render slice 仍是显式不支持的边界。
 - `ECMAScript.Pinia` 已升级到 Pinia 4.0.3，`ECMAScript.Pinia.Testing` 已升级到 `@pinia/testing` 2.0.1。`app.Use(pinia)` 会自动向 Vue Devtools 注册 Pinia 开发面板，production Pinia 输出不携带 Devtools 闭包；Testing 2 已内置 writable-computed 行为，因此移除了 `TestingOptions.WritableComputed`。
 - 新增独立 `ECMAScript.Vue.Devtools` 包，覆盖公开 `@vue/devtools-api` 8.1.5 plugin authoring surface：typed plugin setup/settings、inspector、timeline、component hook、custom tab/command 与连接回调。它复用 Jazor 已携带的本地 Vue Devtools runtime closure，不暴露 Devtools 内部实现；Pinia 的自动 Devtools 面板注册行为保持不变。
-- 新增 `ECMAScript.VueDataUi`，绑定 `vue-data-ui` 3.23.4 的 RazorVue 图表 authoring。typed dataset/config 覆盖主力图表类型，每个 `VueUi*` 组件只导入自己的 ESM entry；Emit 仅物化其 local closure、库样式和按需的本地 `jspdf` 依赖。
+- 新增 `ECMAScript.VueDataUi`，完整绑定 `vue-data-ui` 3.23.4 的 71 个公开 RazorVue 图表 entry。每个 `VueUi*` 组件只导入自己的 ESM entry；Emit 仅物化其 local closure、库样式和按需的无 bare import 本地 `jspdf` browser ESM runtime。
+- 新增 `ECMAScript.VuIcons`，完整绑定 `vu-icons` 1.5.4 的 1,821 个 Vue 3 `Vu*` wrapper。已知图标按单 SVG module 物化；仅运行时动态选择名称时才物化完整 icon catalog。
+- RazorVue 生成模块现可保持 nested static import 的无冲突 alias 与 conditional branch 的原始 vnode shape。`Jazor.Admin` 与 JazorAdmin sample 增加 overview/notification 模块、改进 scheduling 查询，并刷新管理端主要页面与导航。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -90,6 +87,7 @@ flowchart LR
 | `Jazor.Vue` | Razor SDK 项目的显式 Razor-to-Vue opt-in |
 | `ECMAScript.*` | ECMAScript、Vue、Router、Pinia、UI 库与 CSS-in-JS 绑定 |
 | `ECMAScript.VueDataUi` | `vue-data-ui` 的强类型 RazorVue 图表与按组件本地 ESM 物化 |
+| `ECMAScript.VuIcons` | `vu-icons` 的强类型 RazorVue 图标，支持静态单图标与动态 catalog 路径 |
 | `Jazor.Admin` | UI 库无关的管理壳库与 RazorVue 组件 |
 
 `samples/JazorAdmin` 是消费 `Jazor.Admin` 的示例应用，不属于该库的公共契约。
@@ -99,15 +97,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.14.0
+dotnet add package Jazor --version 0.15.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.14.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.14.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.15.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.15.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

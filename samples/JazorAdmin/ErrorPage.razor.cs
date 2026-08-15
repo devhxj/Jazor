@@ -31,6 +31,17 @@ public partial class ErrorPage : AppComponentBase, IVueComponent
     private string ErrorCode
         => Kind == ErrorKind.InternalServerError ? "500" : "404";
 
+    // 成员位置包装：text.mjs 只导出成员函数，标记内直接限定 Text 会触发 phantom
+    // 类名导入并导致浏览器模块链接失败。
+    private string? NormalizedTitle
+        => Text.Normalize(Title);
+
+    private string? NormalizedDescription
+        => Text.Normalize(Description);
+
+    private string? NormalizedActionText
+        => Text.Normalize(ActionText);
+
     private VueClassValue RootCssClass
         => BuildCssClass("ja-error", GetKindCssClass(Kind));
 

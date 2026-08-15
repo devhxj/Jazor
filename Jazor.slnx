@@ -13,6 +13,7 @@
   <Folder Name="/test/">
     <Project Path="src/ECMAScript.Vue.Devtools.Test/ECMAScript.Vue.Devtools.Test.csproj" />
     <Project Path="src/ECMAScript.VueDataUi.Test/ECMAScript.VueDataUi.Test.csproj" />
+    <Project Path="src/ECMAScript.VuIcons.Test/ECMAScript.VuIcons.Test.csproj" />
     <Project Path="src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj" />
     <Project Path="src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.csproj" />
     <Project Path="src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj" />
@@ -27,6 +28,7 @@
   <Project Path="src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj" />
   <Project Path="src/ECMAScript.Vue.Devtools/ECMAScript.Vue.Devtools.csproj" />
   <Project Path="src/ECMAScript.VueDataUi/ECMAScript.VueDataUi.csproj" />
+  <Project Path="src/ECMAScript.VuIcons/ECMAScript.VuIcons.csproj" />
   <Project Path="src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />
   <Project Path="src/ECMAScript.Pinia/ECMAScript.Pinia.csproj" />
   <Project Path="src/ECMAScript.TDesign/ECMAScript.TDesign.csproj" />

@@ -1276,11 +1276,12 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNotNull(emitterType);
         var constructor = emitterType!
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Single(candidate => candidate.GetParameters().Length == 4);
+            .Single(candidate => candidate.GetParameters().Length == 5);
         return constructor.Invoke(
         [
             fixture.Compilation,
             componentSymbol,
+            null,
             null,
             VueInjectRegistry.ForCompilation(fixture.Compilation)
         ]);
@@ -1429,7 +1430,7 @@ public sealed class RenderEmitterPrivateContractTests
         var constructor = stateType!
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Single();
-        return constructor.Invoke([]);
+        return constructor.Invoke([null]);
     }
 
     private static void PushFrame(object state, object frame)

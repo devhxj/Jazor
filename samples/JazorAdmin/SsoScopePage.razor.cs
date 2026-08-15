@@ -31,7 +31,7 @@ public partial class SsoScopePage : AppComponentBase, IVueContainerComponent
         loading = false;
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load OpenID scopes.";
+            error = outcome.Error ?? L("Unable to load OpenID scopes.", "无法加载 OpenID Scope。");
             return;
         }
 
@@ -87,7 +87,7 @@ public partial class SsoScopePage : AppComponentBase, IVueContainerComponent
     {
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to save the OpenID scope.";
+            error = outcome.Error ?? L("Unable to save the OpenID scope.", "无法保存 OpenID Scope。");
             return;
         }
         Load();
@@ -107,7 +107,7 @@ public partial class SsoScopePage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to delete the OpenID scope.";
+                error = outcome.Error ?? L("Unable to delete the OpenID scope.", "无法删除 OpenID Scope。");
                 return;
             }
             NewScope();

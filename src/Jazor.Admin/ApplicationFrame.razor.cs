@@ -38,17 +38,32 @@ public partial class ApplicationFrame : AdminContentComponentBase, IVueContainer
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        AdminStyleSheet.EnsureLoaded();
+        EnsureStylesRegistered();
 
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", RootCssClass);
         builder.AddAttribute(2, "style", RootStyle);
-        builder.AddAttribute(3, "lang", AdminDisplayTextHelper.Normalize(Language));
+        builder.AddAttribute(3, "lang", LanguageTag);
         builder.AddAttribute(4, "data-theme", Theme);
         builder.AddAttribute(5, "data-grayscale", Grayscale);
         builder.AddMultipleAttributes(6, AdditionalAttributes);
         builder.AddContent(7, ChildContent);
         builder.CloseElement();
+    }
+
+    // Keep the display-text host call in a member position: render-position references
+    // alone make RazorVue import collection emit a phantom class-name binding that the
+    // helper module does not export (components/admin/display-text.mjs exports Normalize only).
+    // 让 display-text 宿主调用保持在成员位置：仅有渲染位引用时，导入收集会额外发出
+    // helper 模块并未导出的类名绑定，导致浏览器模块链接失败。
+    private string? LanguageTag
+        => AdminDisplayTextHelper.Normalize(Language);
+
+    private static void EnsureStylesRegistered()
+    {
+        // styles.mjs 只导出 EnsureLoaded；渲染位的 AdminStyleSheet 限定引用同样会触发
+        // phantom 类名导入，因此经由本方法间接调用。
+        AdminStyleSheet.EnsureLoaded();
     }
 
     private static string GetThemeCssClass(AdminThemeMode theme)

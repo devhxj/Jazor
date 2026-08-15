@@ -19,7 +19,9 @@
 ## 职责
 
 - 提供导航、面包屑、页面操作、布局模式和应用级显示状态等强类型模型。
-- 提供 `ApplicationFrame`、`AdminLayout`、`SidebarMenu`、`HeaderBar` 和 `PageContainer` 等原生 RazorVue 管理壳组件。
+- 提供 `ApplicationFrame`、`AdminLayout`、`SidebarMenu`、`HeaderBar`、`PageContainer` 和 `AdminBreadcrumb` 等原生 RazorVue 管理壳组件。
+- `SidebarMenu` 支持通过 `IconTemplate`（`RenderFragment<AdminNavItem>`）注入应用侧图标渲染；未提供时仅输出带 `data-icon` 的占位 span，不绑定任何第三方图标实现。
+- `AdminLayout` 在窄视口（≤760px）下将侧栏切换为 overlay 抽屉：backdrop 点击与导航选中后关闭，桌面视口维持原折叠列契约。
 - 通过 `IVueContainerComponent` 与 `IVueContainerImplementation<TContainer>` 支持应用在保持公共容器契约的前提下替换具体实现。
 - 以 `Href` 表示普通链接，以 `RouteTarget` 表示强类型 Vue Router 导航；路由目标优先于普通链接。
 

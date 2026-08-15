@@ -1,6 +1,8 @@
 using JazorAdmin.Features.Accounts;
 using JazorAdmin.Features.Identity;
+using JazorAdmin.Features.Notifications;
 using JazorAdmin.Features.Organizations;
+using JazorAdmin.Features.Overview;
 using JazorAdmin.Features.Scheduling;
 using JazorAdmin.Features.Settings;
 using JazorAdmin.Features.Sso;
@@ -185,6 +187,12 @@ public static class ApiClient
 
     public static IPromise<ApiOutcome> GetScheduleRuns(string key)
         => Get("/api/schedules/" + key + "/runs");
+
+    public static IPromise<ApiOutcome> GetNotifications()
+        => Get("/api/notifications/");
+
+    public static IPromise<ApiOutcome> GetOverview()
+        => Get("/api/overview/");
 
     public static SessionResponse ToSession(object data)
         => new(
@@ -432,6 +440,54 @@ public static class ApiClient
         return runs;
     }
 
+    public static NotificationView[] ToNotifications(object? data)
+    {
+        var values = ReadArray(data);
+        var notifications = new NotificationView[values.Length];
+        for (var index = 0; index < values.Length; index++)
+        {
+            var value = values[index]!;
+            notifications[index] = new NotificationView(
+                ReadString(value, "id"),
+                ReadString(value, "source"),
+                ReadString(value, "title"),
+                ReadString(value, "status"),
+                ReadString(value, "startedAt"),
+                ReadOptionalString(Reflect.Get(value, "message")));
+        }
+
+        return notifications;
+    }
+
+    public static OverviewView ToOverview(object data)
+    {
+        var runValues = ReadArray(Reflect.Get(data, "recentRuns"));
+        var recentRuns = new OverviewDailyRunView[runValues.Length];
+        for (var index = 0; index < runValues.Length; index++)
+        {
+            var run = runValues[index]!;
+            recentRuns[index] = new OverviewDailyRunView(
+                ReadString(run, "date"),
+                ReadInt(Reflect.Get(run, "succeeded")),
+                ReadInt(Reflect.Get(run, "failed")));
+        }
+
+        return new OverviewView(
+            ReadInt(Reflect.Get(data, "accounts")),
+            ReadInt(Reflect.Get(data, "enabledAccounts")),
+            ReadInt(Reflect.Get(data, "organizations")),
+            ReadInt(Reflect.Get(data, "organizationRoles")),
+            ReadInt(Reflect.Get(data, "platformRoles")),
+            ReadInt(Reflect.Get(data, "applications")),
+            ReadInt(Reflect.Get(data, "scopes")),
+            ReadInt(Reflect.Get(data, "authorizations")),
+            ReadInt(Reflect.Get(data, "tokens")),
+            ReadInt(Reflect.Get(data, "settings")),
+            ReadInt(Reflect.Get(data, "schedules")),
+            ReadInt(Reflect.Get(data, "enabledSchedules")),
+            recentRuns);
+    }
+
     private static IPromise<ApiOutcome> Get(string path)
         => Send(path, "GET");
 
@@ -541,4 +597,7 @@ public static class ApiClient
 
     private static string? ReadOptionalString(object? value)
         => value is null ? null : StringFn(value);
+
+    private static int ReadInt(object? value)
+        => (int)NumberFn(value);
 }

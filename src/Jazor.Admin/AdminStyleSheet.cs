@@ -184,12 +184,25 @@ internal static class AdminStyleSheet
             width = raw("100%"),
             min_height = raw("40px"),
             padding = raw("8px 12px"),
+            gap = raw("8px"),
             color = raw("#b8c8c1"),
             text_align = raw("left"),
             text_decoration = raw("none"),
             background = raw("transparent"),
             border = raw("0"),
             border_radius = raw("6px")
+        });
+        // The default icon is an empty hook: apps style [data-icon] via icon font or
+        // CSS mask, or replace rendering entirely through SidebarMenu.IconTemplate.
+        global(".ja-sidebar__icon", new CssRule
+        {
+            flex = raw("0 0 20px"),
+            width = raw("20px"),
+            height = raw("20px")
+        });
+        global(".ja-sidebar--collapsed .ja-sidebar__icon", new CssRule
+        {
+            display = raw("none")
         });
         global(".ja-sidebar__link:hover, .ja-sidebar__button:hover, .ja-sidebar__item.is-ancestor-selected > .ja-sidebar__item-content > .ja-sidebar__button", new CssRule
         {
@@ -310,18 +323,85 @@ internal static class AdminStyleSheet
             margin_top = raw("20px")
         });
 
+        global(".ja-breadcrumb", new CssRule
+        {
+            display = raw("flex"),
+            flex_wrap = raw("wrap"),
+            align_items = raw("center"),
+            margin = raw("0 0 6px"),
+            padding = raw("0")
+        });
+        global(".ja-breadcrumb__item", new CssRule
+        {
+            color = raw("var(--text-muted)"),
+            font_size = raw("13px"),
+            line_height = raw("1.5"),
+            text_decoration = raw("none")
+        });
+        global(".ja-breadcrumb__item.is-link", new CssRule
+        {
+            color = raw("var(--accent)")
+        });
+        global(".ja-breadcrumb__item.is-link:hover", new CssRule
+        {
+            text_decoration = raw("underline")
+        });
+        global(".ja-breadcrumb__item.is-disabled", new CssRule
+        {
+            opacity = raw("0.55")
+        });
+        global(".ja-breadcrumb__item + .ja-breadcrumb__item::before", new CssRule
+        {
+            margin = raw("0 7px"),
+            color = raw("var(--text-muted)"),
+            content = raw("\"/\"")
+        });
+
         Media(".ja-shell", "(max-width: 760px)", new CssRule
         {
             display = raw("block"),
             min_width = raw("0")
         });
+        // Mobile drawer: the sidebar slides over the content instead of stacking above it.
+        // The desktop collapsed rules are not media-scoped, so the drawer must restore
+        // display/width at equal specificity inside this query.
         Media(".ja-shell__sidebar", "(max-width: 760px)", new CssRule
         {
-            position = raw("static"),
-            height = raw("auto"),
-            overflow = raw("visible"),
-            border_right = raw("0"),
-            border_bottom = px(1) | solid | hex("293a33")
+            position = raw("fixed"),
+            top = raw("0"),
+            left = raw("0"),
+            height = raw("100vh"),
+            width = raw("min(300px, 84vw)"),
+            z_index = raw("40"),
+            overflow = raw("auto"),
+            transform = raw("translateX(-100%)"),
+            transition = raw("transform 0.2s ease")
+        });
+        Media(".ja-shell--mobile-open .ja-shell__sidebar", "(max-width: 760px)", new CssRule
+        {
+            transform = raw("translateX(0)")
+        });
+        Media(".ja-shell--collapsed .ja-shell__sidebar", "(max-width: 760px)", new CssRule
+        {
+            display = raw("block"),
+            width = raw("min(300px, 84vw)"),
+            border_right = px(1) | solid | hex("293a33")
+        });
+        global(".ja-shell__mobile-backdrop", new CssRule
+        {
+            display = raw("none")
+        });
+        Media(".ja-shell__mobile-backdrop", "(max-width: 760px)", new CssRule
+        {
+            display = raw("block"),
+            position = raw("fixed"),
+            top = raw("0"),
+            right = raw("0"),
+            bottom = raw("0"),
+            left = raw("0"),
+            z_index = raw("35"),
+            border = raw("0"),
+            background = raw("rgb(15 23 20 / 48%)")
         });
         Media(".ja-sidebar", "(max-width: 760px)", new CssRule
         {

@@ -52,6 +52,14 @@ public partial class TDesignSidebarMenu : AdminComponentBase
     private THeadMenuThemeValue HeadMenuTheme
         => Theme == AdminThemeMode.Dark ? THeadMenuThemeValue.Dark : THeadMenuThemeValue.Light;
 
+    // routes.mjs 只导出成员函数；渲染 lambda 内直接限定 TDesignRouteMapper 会触发 phantom
+    // 类名导入（浏览器模块链接失败），因此经成员位置间接映射，与 RouteBreadcrumb 保持同一形态。
+    private static string? MapItemHref(AdminNavItem item)
+        => TDesignRouteMapper.MapHref(item.Href, item.RouteTarget);
+
+    private static TMenuItemToValue? MapItemMenuRoute(AdminNavItem item)
+        => TDesignRouteMapper.MapMenuRoute(item.RouteTarget);
+
     private RenderFragment RenderItem(AdminNavItem item) => builder =>
     {
         RenderFragment? icon = string.IsNullOrWhiteSpace(item.Icon)
@@ -92,8 +100,8 @@ public partial class TDesignSidebarMenu : AdminComponentBase
         }
         else
         {
-            var href = TDesignRouteMapper.MapHref(item.Href, item.RouteTarget);
-            var route = TDesignRouteMapper.MapMenuRoute(item.RouteTarget);
+            var href = MapItemHref(item);
+            var route = MapItemMenuRoute(item);
 
             builder.OpenComponent<TMenuItem>(10);
             builder.AddAttribute(11, nameof(TMenuItem.Value), (TMenuValue)item.Key);

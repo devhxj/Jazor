@@ -33,7 +33,7 @@ public partial class SettingsPage : AppComponentBase, IVueContainerComponent
         loading = false;
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load system settings.";
+            error = outcome.Error ?? L("Unable to load system settings.", "无法加载系统配置。");
             return;
         }
 
@@ -92,7 +92,7 @@ public partial class SettingsPage : AppComponentBase, IVueContainerComponent
     {
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to save the system setting.";
+            error = outcome.Error ?? L("Unable to save the system setting.", "无法保存系统配置。");
             return;
         }
         Load();
@@ -112,7 +112,7 @@ public partial class SettingsPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to delete the system setting.";
+                error = outcome.Error ?? L("Unable to delete the system setting.", "无法删除系统配置。");
                 return;
             }
             NewSetting();

@@ -478,3 +478,4 @@ src/vben/
 dist-prod-optimized/
 
 .playwright-cli/
+.zcode/

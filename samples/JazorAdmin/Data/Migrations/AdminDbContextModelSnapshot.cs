@@ -15,48 +15,12 @@ partial class AdminDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20260806232403_ProductCenters";
+    public override string LastMigrationId => "20260814152032_AddScheduleRunUtcBackfillIndex";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
         modelBuilder.HasAnnotation("ProductVersion", "11.0.0-preview.6.26359.118");
-
-        modelBuilder.Entity("JazorAdmin.Data.AuthorizationOperation", b =>
-            {
-                b.Property<string>("ResourceKey")
-                    .HasMaxLength(64)
-                    .HasColumnType("TEXT");
-
-                b.Property<string>("Key")
-                    .HasMaxLength(64)
-                    .HasColumnType("TEXT");
-
-                b.Property<string>("DisplayName")
-                    .IsRequired()
-                    .HasMaxLength(200)
-                    .HasColumnType("TEXT");
-
-                b.HasKey("ResourceKey", "Key");
-
-                b.ToTable("AuthorizationOperations");
-            });
-
-        modelBuilder.Entity("JazorAdmin.Data.AuthorizationResource", b =>
-            {
-                b.Property<string>("Key")
-                    .HasMaxLength(64)
-                    .HasColumnType("TEXT");
-
-                b.Property<string>("DisplayName")
-                    .IsRequired()
-                    .HasMaxLength(200)
-                    .HasColumnType("TEXT");
-
-                b.HasKey("Key");
-
-                b.ToTable("AuthorizationResources");
-            });
 
         modelBuilder.Entity("JazorAdmin.Data.AdminUser", b =>
             {
@@ -124,6 +88,42 @@ partial class AdminDbContextModelSnapshot : ModelSnapshot
                     .HasDatabaseName("UserNameIndex");
 
                 b.ToTable("AspNetUsers");
+            });
+
+        modelBuilder.Entity("JazorAdmin.Data.AuthorizationOperation", b =>
+            {
+                b.Property<string>("ResourceKey")
+                    .HasMaxLength(64)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Key")
+                    .HasMaxLength(64)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("DisplayName")
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("ResourceKey", "Key");
+
+                b.ToTable("AuthorizationOperations");
+            });
+
+        modelBuilder.Entity("JazorAdmin.Data.AuthorizationResource", b =>
+            {
+                b.Property<string>("Key")
+                    .HasMaxLength(64)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("DisplayName")
+                    .IsRequired()
+                    .HasMaxLength(200)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Key");
+
+                b.ToTable("AuthorizationResources");
             });
 
         modelBuilder.Entity("JazorAdmin.Data.Organization", b =>
@@ -304,6 +304,9 @@ partial class AdminDbContextModelSnapshot : ModelSnapshot
                 b.Property<DateTimeOffset>("StartedAt")
                     .HasColumnType("TEXT");
 
+                b.Property<DateTime?>("StartedAtUtc")
+                    .HasColumnType("TEXT");
+
                 b.Property<string>("Status")
                     .IsRequired()
                     .HasMaxLength(32)
@@ -316,7 +319,11 @@ partial class AdminDbContextModelSnapshot : ModelSnapshot
 
                 b.HasKey("Id");
 
-                b.HasIndex("ScheduleKey", "StartedAt");
+                b.HasIndex("StartedAtUtc");
+
+                b.HasIndex("ScheduleKey", "StartedAtUtc");
+
+                b.HasIndex("Status", "StartedAtUtc");
 
                 b.ToTable("ScheduleRuns");
             });

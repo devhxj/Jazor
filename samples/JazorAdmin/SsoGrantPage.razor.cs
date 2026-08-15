@@ -40,7 +40,7 @@ public partial class SsoGrantPage : AppComponentBase, IVueContainerComponent
         loading = false;
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load OpenID authorizations.";
+            error = outcome.Error ?? L("Unable to load OpenID authorizations.", "无法加载 OpenID 授权记录。");
             return;
         }
         authorizations = ApiClient.ToAuthorizations(outcome.Data);
@@ -51,7 +51,7 @@ public partial class SsoGrantPage : AppComponentBase, IVueContainerComponent
         loading = false;
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load OpenID tokens.";
+            error = outcome.Error ?? L("Unable to load OpenID tokens.", "无法加载 OpenID 令牌。");
             return;
         }
         tokens = ApiClient.ToTokens(outcome.Data);
@@ -63,7 +63,7 @@ public partial class SsoGrantPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to revoke the authorization.";
+                error = outcome.Error ?? L("Unable to revoke the authorization.", "无法撤销该授权。");
                 return;
             }
             Load();
@@ -76,7 +76,7 @@ public partial class SsoGrantPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to revoke the token.";
+                error = outcome.Error ?? L("Unable to revoke the token.", "无法撤销该令牌。");
                 return;
             }
             Load();

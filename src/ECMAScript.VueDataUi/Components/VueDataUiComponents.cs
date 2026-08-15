@@ -1,6 +1,7 @@
 namespace ECMAScript.VueDataUi;
 
-/// <summary>Vue Data UI 主力图表的 Razor component catalog。每个 descriptor 指向单独 ESM entry，
+/// <summary>Vue Data UI 基础 chart 的 Razor component catalog。其余公开组件在
+/// <c>VueDataUiExtendedComponents</c> 中；每个 descriptor 均指向单独 ESM entry，
 /// so an authored chart never imports the package root bundle.</summary>
 [VueLibraryComponent("vue-data-ui/vue-ui-xy", "VueUiXy")]
 public sealed class VueUiXy : VueDataUiChartComponent<VueUiXyDatasetItem[], VueUiXyConfig>

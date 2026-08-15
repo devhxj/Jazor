@@ -1,0 +1,24 @@
+.vu-icon {
+    display: inline-block;
+    vertical-align: middle;
+    width: var(--vu-icon-size, 24px);
+    height: var(--vu-icon-size, 24px);
+    background-color: var(--vu-icon-color, #333333);
+    -webkit-mask-image: var(--vu-icon-mask, none);
+    mask-image: var(--vu-icon-mask, none);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.vu-icon-spin {
+    animation: vu-spin 1s linear infinite;
+}
+
+@keyframes vu-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

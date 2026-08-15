@@ -3,7 +3,9 @@ using JazorAdmin.Authorization;
 using JazorAdmin.Data;
 using JazorAdmin.Features.Accounts;
 using JazorAdmin.Features.Identity;
+using JazorAdmin.Features.Notifications;
 using JazorAdmin.Features.Organizations;
+using JazorAdmin.Features.Overview;
 using JazorAdmin.Features.Scheduling;
 using JazorAdmin.Features.Settings;
 using JazorAdmin.Features.Sso;
@@ -176,6 +178,8 @@ public static class HostExtensions
         app.MapSsoEndpoints();
         app.MapSettingEndpoints();
         app.MapScheduleEndpoints();
+        app.MapNotificationEndpoints();
+        app.MapOverviewEndpoints();
         return app;
     }
 }

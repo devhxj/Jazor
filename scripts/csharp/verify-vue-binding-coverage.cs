@@ -39,6 +39,12 @@ var testLanes = new[]
         MinimumPassedTests: 6,
         [new VueBindingTarget("vue-data-ui", "ECMAScript.VueDataUi", "net11.0")]),
     new VueBindingTestLane(
+        "vu-icons",
+        "src/ECMAScript.VuIcons.Test/ECMAScript.VuIcons.Test.csproj",
+        "vue-bindings-vu-icons.trx",
+        MinimumPassedTests: 4,
+        [new VueBindingTarget("vu-icons", "ECMAScript.VuIcons", "net11.0")]),
+    new VueBindingTestLane(
         "pinia",
         "src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj",
         "vue-bindings-pinia.trx",

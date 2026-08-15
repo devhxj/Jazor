@@ -32,7 +32,7 @@ public partial class SchedulePage : AppComponentBase, IVueContainerComponent
         loading = false;
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load schedules.";
+            error = outcome.Error ?? L("Unable to load schedules.", "无法加载计划任务。");
             return;
         }
 
@@ -75,7 +75,7 @@ public partial class SchedulePage : AppComponentBase, IVueContainerComponent
     {
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to update the schedule.";
+            error = outcome.Error ?? L("Unable to update the schedule.", "无法更新计划任务。");
             return;
         }
         Load();
@@ -90,7 +90,7 @@ public partial class SchedulePage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to trigger the task.";
+                error = outcome.Error ?? L("Unable to trigger the task.", "无法触发该任务。");
                 return;
             }
             LoadRuns();
@@ -106,7 +106,7 @@ public partial class SchedulePage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to load task runs.";
+                error = outcome.Error ?? L("Unable to load task runs.", "无法加载任务执行记录。");
                 return;
             }
             runs = ApiClient.ToScheduleRuns(outcome.Data);

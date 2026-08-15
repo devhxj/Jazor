@@ -110,8 +110,6 @@ public sealed class VueModuleBuilderPrivateContractTests
         InvokeVoid("AddImportLocalNames", imports[0], localNames);
         InvokeVoid("AddImportLocalNames", imports[1], localNames);
         Assert.IsTrue(localNames.SetEquals(new[] { "defaultLocal", "namespaceLocal", "namedLocal" }));
-        Assert.IsTrue(Invoke<bool>("HasAnyImportLocalName", imports[0], localNames));
-        Assert.IsFalse(Invoke<bool>("HasAnyImportLocalName", imports[2], localNames));
         CollectionAssert.AreEquivalent(
             new[] { "defaultLocal", "namespaceLocal", "namedLocal" },
             imports.Take(2)
@@ -348,19 +346,9 @@ public sealed class VueModuleBuilderPrivateContractTests
             .Body
             .OfType<ImportDeclaration>()
             .ToArray();
-        Assert.IsTrue(Invoke<bool>("HasAnyImportLocalName", imports[0], new HashSet<string>(StringComparer.Ordinal) { "defaultLocal" }));
-        Assert.IsTrue(Invoke<bool>("HasAnyImportLocalName", imports[1], new HashSet<string>(StringComparer.Ordinal) { "namespaceLocal" }));
-        Assert.IsTrue(Invoke<bool>("HasAnyImportLocalName", imports[2], new HashSet<string>(StringComparer.Ordinal) { "namedLocal" }));
-        Assert.IsFalse(Invoke<bool>("HasAnyImportLocalName", imports[3], new HashSet<string>(StringComparer.Ordinal)));
-        var emptyLocalImport = new ImportDeclaration(
-            NodeList.From<ImportDeclarationSpecifier>(
-                new ImportSpecifier(new Identifier("source"), new Identifier(string.Empty))),
-            new StringLiteral("empty-local.mjs", "\"empty-local.mjs\""),
-            NodeList.From<ImportAttribute>());
-        Assert.IsFalse(Invoke<bool>(
-            "HasAnyImportLocalName",
-            emptyLocalImport,
-            new HashSet<string>(StringComparer.Ordinal) { string.Empty }));
+        Assert.AreEqual("defaultLocal", Invoke<string>("GetImportLocalName", imports[0].Specifiers[0]));
+        Assert.AreEqual("namespaceLocal", Invoke<string>("GetImportLocalName", imports[1].Specifiers[0]));
+        Assert.AreEqual("namedLocal", Invoke<string>("GetImportLocalName", imports[2].Specifiers[0]));
 
         Assert.AreEqual("pages/host.mjs", Invoke<string>("ResolveImportArtifactPath", "host.mjs", "pages/host.mjs"));
         Assert.AreEqual("./host.mjs", Invoke<string>("RebaseRootRelativeModuleSpecifier", "pages/host.mjs", "pages/host.mjs"));

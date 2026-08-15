@@ -1,0 +1,3 @@
+import { createVuIcon } from "../jazor-vu-icon-runtime.mjs";
+
+export const VuTrendingUpDown = createVuIcon("VuTrendingUpDown", "0 0 24 24", '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14.828 14.828L21 21m0-5v5h-5m5-18l-9 9l-4-4l-6 6"/><path d="M21 8V3h-5"/></g>');

@@ -21,6 +21,13 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
     [Parameter]
     public AdminNavItems? Items { get; set; }
 
+    /// <summary>
+    /// Optional per-item icon renderer. 不提供时仅渲染带 <c>data-icon</c> 的占位 span，
+    /// 库不绑定任何第三方图标实现；应用可通过该模板注入例如 TIcon。
+    /// </summary>
+    [Parameter]
+    public RenderFragment<AdminNavItem>? IconTemplate { get; set; }
+
     [Parameter]
     public RenderFragment? Logo { get; set; }
 
@@ -68,16 +75,6 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         builder.CloseElement();
     }
 
-    private RenderFragment RenderItem(AdminNavItem item) => builder =>
-    {
-        if (!TryResolveEffectiveItem(item, out var effectiveItem))
-        {
-            return;
-        }
-
-        RenderEffectiveItem(effectiveItem)(builder);
-    };
-
     private RenderFragment RenderEffectiveItem(AdminNavItemRenderHelper.EffectiveNavItem item) => builder =>
     {
         var isExpanded = IsExpandedCore(item);
@@ -103,7 +100,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
             builder.AddAttribute(8, "disabled", isDisabled || !hasNavigableChildren);
             builder.AddAttribute(9, "aria-expanded", isExpanded);
             builder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggledCore(item)));
-            builder.AddContent(11, item.Title);
+            builder.AddContent(11, RenderItemContent(item));
             builder.CloseElement();
         }
         else
@@ -166,72 +163,6 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         return expandedKeys;
     }
 
-    private bool IsExpanded(AdminNavItem item)
-    {
-        return TryResolveEffectiveItem(item, out var effectiveItem)
-               && IsExpandedCore(effectiveItem);
-    }
-
-    private bool IsSelected(AdminNavItem item)
-    {
-        return TryResolveEffectiveItem(item, out var effectiveItem)
-               && IsSelectedCore(effectiveItem);
-    }
-
-    private bool HasSelectedDescendant(AdminNavItem item)
-    {
-        return TryResolveEffectiveItem(item, out var effectiveItem)
-               && HasSelectedDescendantCore(effectiveItem);
-    }
-
-    private static bool CanNavigate(AdminNavItem item)
-    {
-        if (item.Disabled ?? false)
-        {
-            return false;
-        }
-
-        if (ResolveNavigationTarget(item).IsNavigable)
-        {
-            return true;
-        }
-
-        return GetChildren(item).Length == 0;
-    }
-
-    private static bool HasNavigableChildren(AdminNavItem item)
-    {
-        if (item.Disabled ?? false)
-        {
-            return false;
-        }
-
-        foreach (var child in GetChildren(item))
-        {
-            if (CanNavigate(child) || HasNavigableChildren(child))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private bool ContainsSelectedItem(AdminNavItem item)
-    {
-        return TryResolveEffectiveItem(item, out var effectiveItem)
-               && ContainsSelectedItemCore(effectiveItem);
-    }
-
-    private bool CollectExpandedKeysForSelection(
-        AdminNavItem item,
-        string selectedKey,
-        HashSet<string> expandedKeys)
-    {
-        return TryResolveEffectiveItem(item, out var effectiveItem)
-               && CollectExpandedKeysForSelectionCore(effectiveItem, selectedKey, expandedKeys);
-    }
-
     private RenderFragment RenderNavigationElement(AdminNavItemRenderHelper.EffectiveNavItem item, bool isDisabled) => builder =>
     {
         var navigationTarget = ResolveNavigationTarget(item);
@@ -242,7 +173,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
             builder.AddAttribute(1, nameof(VueRouterLink.CssClass), (VueClassValue)"ja-sidebar__link");
             builder.AddAttribute(2, nameof(VueRouterLink.To), navigationTarget.Route);
             builder.AddAttribute(3, nameof(VueRouterLink.OnClick), EventCallback.Factory.Create<MouseEvent>(this, _ => OnItemSelectedCore(item)));
-            builder.AddAttribute(4, nameof(VueRouterLink.ChildContent), (RenderFragment)(childBuilder => childBuilder.AddContent(0, item.Title)));
+            builder.AddAttribute(4, nameof(VueRouterLink.ChildContent), RenderItemContent(item));
             builder.CloseComponent();
             return;
         }
@@ -253,7 +184,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
             builder.AddAttribute(11, "class", "ja-sidebar__link");
             builder.AddAttribute(12, "href", navigationTarget.Href);
             builder.AddAttribute(13, "onclick", EventCallback.Factory.Create(this, () => OnItemSelectedCore(item)));
-            builder.AddContent(14, item.Title);
+            builder.AddContent(14, RenderItemContent(item));
             builder.CloseElement();
             return;
         }
@@ -268,28 +199,39 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
             builder.AddAttribute(25, "aria-disabled", true);
         }
 
-        builder.AddContent(26, item.Title);
+        builder.AddContent(26, RenderItemContent(item));
         builder.CloseElement();
     };
 
-    private async Task OnItemSelected(AdminNavItem item)
+    /// <summary>
+    /// Icon plus title shared by every navigation element variant so link, anchor,
+    /// button and branch button cannot drift in icon placement.
+    /// </summary>
+    private RenderFragment RenderItemContent(AdminNavItemRenderHelper.EffectiveNavItem item) => builder =>
     {
-        if (!TryResolveEffectiveItem(item, out var effectiveItem))
+        RenderIcon(builder, item);
+        builder.AddContent(1, item.Title);
+    };
+
+    private void RenderIcon(RenderTreeBuilder builder, AdminNavItemRenderHelper.EffectiveNavItem item)
+    {
+        var icon = AdminDisplayTextHelper.Normalize(item.Source.Icon);
+        if (icon is null)
         {
             return;
         }
 
-        await OnItemSelectedCore(effectiveItem);
-    }
-
-    private async Task OnBranchToggled(AdminNavItem item)
-    {
-        if (!TryResolveEffectiveItem(item, out var effectiveItem))
+        if (IconTemplate is not null)
         {
+            builder.AddContent(0, IconTemplate, item.Source);
             return;
         }
 
-        await OnBranchToggledCore(effectiveItem);
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, "class", "ja-sidebar__icon");
+        builder.AddAttribute(2, "data-icon", icon);
+        builder.AddAttribute(3, "aria-hidden", true);
+        builder.CloseElement();
     }
 
     private async Task OnItemSelectedCore(AdminNavItemRenderHelper.EffectiveNavItem item)
@@ -395,33 +337,6 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
 
         normalized.IntersectWith(expandableKeys);
         return normalized;
-    }
-
-    private static bool CollectExpandableKeys(
-        AdminNavItem item,
-        HashSet<string> expandableKeys)
-    {
-        var itemKey = AdminNavigationKeyHelper.Normalize(item.Key);
-        if (item.Disabled ?? false || itemKey is null)
-        {
-            return false;
-        }
-
-        var hasNavigableDescendant = false;
-        foreach (var child in GetChildren(item))
-        {
-            if (CanNavigate(child) || CollectExpandableKeys(child, expandableKeys))
-            {
-                hasNavigableDescendant = true;
-            }
-        }
-
-        if (hasNavigableDescendant)
-        {
-            expandableKeys.Add(itemKey!);
-        }
-
-        return hasNavigableDescendant;
     }
 
     private bool IsExpandedCore(AdminNavItemRenderHelper.EffectiveNavItem item)
@@ -582,56 +497,6 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         return orderedKeys;
     }
 
-    private static AdminNavItem[] GetChildren(AdminNavItem item)
-        => AdminNavItemRenderHelper.FilterRenderableItems(item.Children?.AsArray);
-
-    private static AdminNavigationTargetResolver.ResolvedNavigationTarget ResolveNavigationTarget(AdminNavItem item)
-        => AdminNavigationTargetResolver.Resolve(item.Href, item.RouteTarget);
-
     private static AdminNavigationTargetResolver.ResolvedNavigationTarget ResolveNavigationTarget(AdminNavItemRenderHelper.EffectiveNavItem item)
         => AdminNavigationTargetResolver.Resolve(item.Source.Href, item.Source.RouteTarget);
-
-    private bool TryResolveEffectiveItem(AdminNavItem item, out AdminNavItemRenderHelper.EffectiveNavItem effectiveItem)
-    {
-        if (TryFindEffectiveItem(EffectiveItems, item, out effectiveItem))
-        {
-            return true;
-        }
-
-        if (Items?.AsArray is not { Length: > 0 })
-        {
-            var standaloneItems = AdminNavItemRenderHelper.BuildEffectiveItems([item]);
-            if (standaloneItems.Length == 1)
-            {
-                effectiveItem = standaloneItems[0];
-                return true;
-            }
-        }
-
-        effectiveItem = null!;
-        return false;
-    }
-
-    private static bool TryFindEffectiveItem(
-        AdminNavItemRenderHelper.EffectiveNavItem[] items,
-        AdminNavItem source,
-        out AdminNavItemRenderHelper.EffectiveNavItem effectiveItem)
-    {
-        foreach (var item in items)
-        {
-            if (ReferenceEquals(item.Source, source))
-            {
-                effectiveItem = item;
-                return true;
-            }
-
-            if (TryFindEffectiveItem(item.Children, source, out effectiveItem))
-            {
-                return true;
-            }
-        }
-
-        effectiveItem = null!;
-        return false;
-    }
 }

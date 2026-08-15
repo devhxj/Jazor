@@ -32,19 +32,14 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### 2026-08-14
+### 2026-08-15
 
-- RazorVue direct render modules now use Vue child block trees and `TEXT` patching for proven dynamic string text, mixed static/dynamic text, and nested stable elements. Conditional content, slots, raw markup, and unproven children retain the normal Vue diff path.
-- The production Vue browser/SSR gate now verifies mount and reactive DOM patching for those child block shapes alongside static markup and hydration.
-- Proven simple Razor `foreach` loops now lower through Vue `renderList`: explicit `@key` uses keyed fragments, unkeyed loops use conservative unkeyed fragments, and the production Vue gate verifies DOM identity across keyed reorders.
-- Fixed authored, named, and scoped slots now use Vue `withCtx` with the stable `_: 1` marker. Conditional, forwarded, and non-stable-scope slots use `createSlots` with `DYNAMIC_SLOTS`; the production gate verifies both parent updates and branch replacement.
-- Proven direct `string`/`bool` DOM binds now bypass the generic event/value adapter while retaining compiler-owned assignment semantics. Parameter lifecycle watches use a shallow declared-prop projection: scalar and reference replacement trigger callbacks, while nested mutation of the same reference does not.
-- ASP.NET Core SSR now reuses a bounded generation-aware Deno worker pool instead of starting a process and writing a temporary request file for every render. Artifact changes rotate the ESM generation; cancellation, crash recovery, concurrency limits, and graceful application disposal are covered by real-process tests.
-- Independent RazorVue artifacts now build with bounded concurrency while retaining deterministic module text, source maps, diagnostics, and HMR ordering.
-- Release artifacts now include only the referenced package-runtime closure. Browser output excludes unused Vue SSR/devtools files, SSR explicitly receives its Vue/server-renderer graph, and unreachable Jazor CLR runtime modules are omitted from release output.
+- RazorVue direct render lowering now supports official Razor `@for`, `@while`, and `@do while` alongside `@foreach`, preserving C# loop-local closure and body/condition order with keyed or unkeyed Vue dynamic Fragments. `break` and `continue` remain explicit unsupported boundaries for this direct-render slice.
 - `ECMAScript.Pinia` now ships Pinia 4.0.3, and `ECMAScript.Pinia.Testing` ships `@pinia/testing` 2.0.1. `app.Use(pinia)` automatically registers Pinia's development panel with Vue Devtools; production Pinia output excludes the Devtools closure. `TestingOptions.WritableComputed` is removed because Testing 2 handles that behavior internally.
 - `ECMAScript.Vue.Devtools` is now available as an independent binding for the public `@vue/devtools-api` 8.1.5 plugin-authoring surface. It provides typed plugin setup/settings, inspectors, timelines, component hooks, custom tabs/commands, and connection callbacks while reusing Jazor's local Vue Devtools runtime closure. Pinia's automatic Devtools panel registration remains unchanged.
-- `ECMAScript.VueDataUi` now binds `vue-data-ui` 3.23.4 for RazorVue chart authoring. Its typed dataset/config models cover the primary chart families, each `VueUi*` component imports its own ESM entry, and Emit materializes only that entry's local closure plus the library stylesheet and local `jspdf` dependency when required.
+- `ECMAScript.VueDataUi` now binds all 71 public `vue-data-ui` 3.23.4 entries for RazorVue chart authoring. Each `VueUi*` component imports its own ESM entry, and Emit materializes only that entry's local closure plus the library stylesheet and a browser-ready local `jspdf` ESM runtime when required.
+- `ECMAScript.VuIcons` now binds all 1,821 Vue 3 wrappers from `vu-icons` 1.5.4. A known icon uses its generated `Vu*` component and materializes one SVG module; the typed dynamic `VuIcon` bridge intentionally materializes the full icon catalog for runtime name selection.
+- RazorVue generated modules now preserve collision-safe nested static imports and conditional branch vnode shapes. `Jazor.Admin` and the JazorAdmin sample add overview/notification modules, scheduling query improvements, and refreshed administration surfaces.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -92,6 +87,7 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 | `Jazor.Vue` | Explicit Razor-to-Vue opt-in for Razor SDK projects |
 | `ECMAScript.*` | ECMAScript, Vue, Router, Pinia, UI-library, and CSS-in-JS bindings |
 | `ECMAScript.VueDataUi` | Typed `vue-data-ui` RazorVue charts with per-component local ESM materialization |
+| `ECMAScript.VuIcons` | Typed `vu-icons` RazorVue icons with static per-icon and dynamic catalog paths |
 | `Jazor.Admin` | UI-library-neutral admin-shell library and RazorVue components |
 
 `samples/JazorAdmin` is an example application that consumes `Jazor.Admin`; it is not part of the library's public contract.
@@ -101,15 +97,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.14.0
+dotnet add package Jazor --version 0.15.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.14.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.14.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.15.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.15.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

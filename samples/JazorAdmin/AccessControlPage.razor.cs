@@ -62,7 +62,7 @@ public partial class AccessControlPage : AppComponentBase, IVueContainerComponen
         loading = false;
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load resource operations.";
+            error = outcome.Error ?? L("Unable to load resource operations.", "无法加载资源操作。");
             return;
         }
 
@@ -92,7 +92,7 @@ public partial class AccessControlPage : AppComponentBase, IVueContainerComponen
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to load role grants.";
+                error = outcome.Error ?? L("Unable to load role grants.", "无法加载角色授权。");
                 return;
             }
 
@@ -109,7 +109,7 @@ public partial class AccessControlPage : AppComponentBase, IVueContainerComponen
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to create the organization role.";
+                error = outcome.Error ?? L("Unable to create the organization role.", "无法创建组织角色。");
                 return;
             }
 
@@ -140,7 +140,7 @@ public partial class AccessControlPage : AppComponentBase, IVueContainerComponen
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to update role grants.";
+                error = outcome.Error ?? L("Unable to update role grants.", "无法更新角色授权。");
                 return;
             }
 

@@ -1,0 +1,3 @@
+import { createVuIcon } from "../jazor-vu-icon-runtime.mjs";
+
+export const VuGitBranchMinus = createVuIcon("VuGitBranchMinus", "0 0 24 24", '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 6a9 9 0 0 0-9 9V3m15 15h-6"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/></g>');

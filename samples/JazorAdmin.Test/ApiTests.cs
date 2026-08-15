@@ -11,6 +11,8 @@ using System.Text.RegularExpressions;
 using JazorAdmin.Authorization;
 using JazorAdmin.Data;
 using JazorAdmin.Features.Accounts;
+using JazorAdmin.Features.Notifications;
+using JazorAdmin.Features.Overview;
 using JazorAdmin.Features.Sso;
 using JazorAdmin.Features.Scheduling;
 using JazorAdmin.Features.Settings;
@@ -18,6 +20,7 @@ using JazorAdmin.Features.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -458,6 +461,101 @@ public sealed class ApiTests
     }
 
     [TestMethod]
+    public async Task ScheduleHistory_UsesUtcSortKeyAndLimitsTheRelationalQuery()
+    {
+        await using var factory = new TestHost();
+        var administrator = await factory.CreateUserAsync("schedule-history@example.test", platformAdministrator: true);
+        using var client = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
+
+        const string scheduleKey = "utc-history";
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var database = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+            database.Schedules.Add(new Schedule
+            {
+                Key = scheduleKey,
+                Name = "UTC history test",
+                Description = "Validates relational task-history ordering.",
+                Cron = "0 0 0 * * ?",
+                Enabled = false
+            });
+
+            var first = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+            for (var index = 0; index < 105; index++)
+            {
+                var utc = first.AddMinutes(index);
+                database.ScheduleRuns.Add(new ScheduleRun
+                {
+                    ScheduleKey = scheduleKey,
+                    Trigger = "test",
+                    Status = "succeeded",
+                    // Local clock values deliberately alternate. Ordering by the original DateTimeOffset
+                    // text would be wrong; the persisted UTC mirror must define the result order.
+                    // 故意交替本地 offset；按原 DateTimeOffset 文本排序会出错，结果必须由 UTC 镜像决定。
+                    StartedAt = utc.ToOffset(index % 2 == 0 ? TimeSpan.FromHours(8) : TimeSpan.FromHours(-6)),
+                    Message = "run-" + index
+                });
+            }
+
+            await database.SaveChangesAsync();
+        }
+
+        var runs = await client.GetFromJsonAsync<ScheduleRunView[]>("/api/schedules/" + scheduleKey + "/runs");
+
+        Assert.IsNotNull(runs);
+        Assert.AreEqual(100, runs.Length);
+        for (var index = 0; index < runs.Length; index++)
+            Assert.AreEqual("run-" + (104 - index), runs[index].Message);
+    }
+
+    [TestMethod]
+    public async Task ScheduleHistory_WhenUpgradingLegacyRows_BackfillsTheUtcQueryKey()
+    {
+        var databasePath = Path.Combine(Path.GetTempPath(), "jazoradmin-legacy-" + Guid.NewGuid() + ".db");
+        const string scheduleKey = "legacy-history";
+        var startedAt = new DateTimeOffset(2026, 1, 1, 9, 30, 0, TimeSpan.FromHours(9));
+        var runId = Guid.NewGuid();
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<AdminDbContext>()
+                .UseSqlite("Data Source=" + databasePath + ";Pooling=False")
+                .Options;
+            await using (var legacyDatabase = new AdminDbContext(options))
+            {
+                await legacyDatabase.Database.MigrateAsync("20260806232403_ProductCenters");
+                await legacyDatabase.Database.ExecuteSqlAsync($"""
+                    INSERT INTO "Schedules" ("Key", "Name", "Description", "Cron", "Enabled")
+                    VALUES ({scheduleKey}, {"Legacy history"}, {"Created before the UTC query key."}, {"0 0 0 * * ?"}, {false});
+                    """);
+                await legacyDatabase.Database.ExecuteSqlAsync($"""
+                    INSERT INTO "ScheduleRuns" ("Id", "ScheduleKey", "Trigger", "Status", "StartedAt")
+                    VALUES ({runId}, {scheduleKey}, {"test"}, {"succeeded"}, {startedAt});
+                    """);
+            }
+
+            await using var factory = new TestHost(existingDatabasePath: databasePath);
+            var administrator = await factory.CreateUserAsync("legacy-history@example.test", platformAdministrator: true);
+            using var client = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
+
+            var runs = await client.GetFromJsonAsync<ScheduleRunView[]>("/api/schedules/" + scheduleKey + "/runs");
+
+            Assert.IsNotNull(runs);
+            Assert.AreEqual(1, runs.Length);
+            Assert.AreEqual(runId.ToString(), runs[0].Id);
+            await using var scope = factory.Services.CreateAsyncScope();
+            var database = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+            var migrated = await database.ScheduleRuns.SingleAsync(run => run.Id == runId);
+            Assert.AreEqual(startedAt.UtcDateTime, migrated.StartedAtUtc);
+        }
+        finally
+        {
+            if (File.Exists(databasePath))
+                File.Delete(databasePath);
+        }
+    }
+
+    [TestMethod]
     public async Task ExplicitConsent_RendersConfirmationAndCreatesPermanentAuthorization()
     {
         await using var factory = new TestHost();
@@ -650,6 +748,123 @@ public sealed class ApiTests
         Assert.AreEqual("revoked", updatedAuthorizations.Single(item => item.Id == authorizationRecord.Id).Status);
     }
 
+    [TestMethod]
+    public async Task Notifications_WhenSignedIn_ReturnRecentFailedScheduleRunsOnly()
+    {
+        await using var factory = new TestHost();
+        var administrator = await factory.CreateUserAsync("notifications@example.test", platformAdministrator: true);
+        using var client = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
+
+        // Seed one in-window failure, one success, and one out-of-window failure.
+        // 只保留窗口内失败记录是通知契约：成功与过期记录不得进入铃铛面板。
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var database = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+            database.ScheduleRuns.AddRange(
+                new ScheduleRun
+                {
+                    ScheduleKey = "openid-prune",
+                    Trigger = "test",
+                    Status = "failed",
+                    StartedAt = DateTimeOffset.UtcNow.AddHours(-2),
+                    FinishedAt = DateTimeOffset.UtcNow.AddHours(-2).AddMinutes(1),
+                    Message = "Simulated failure for notification aggregation."
+                },
+                new ScheduleRun
+                {
+                    ScheduleKey = "openid-prune",
+                    Trigger = "test",
+                    Status = "succeeded",
+                    StartedAt = DateTimeOffset.UtcNow.AddHours(-1)
+                },
+                new ScheduleRun
+                {
+                    ScheduleKey = "openid-prune",
+                    Trigger = "test",
+                    Status = "failed",
+                    StartedAt = DateTimeOffset.UtcNow.AddDays(-30),
+                    Message = "Outside the notification window."
+                });
+            await database.SaveChangesAsync();
+        }
+
+        var notifications = await client.GetFromJsonAsync<NotificationView[]>("/api/notifications/");
+
+        Assert.IsNotNull(notifications);
+        Assert.AreEqual(1, notifications.Length);
+        Assert.AreEqual("schedule", notifications[0].Source);
+        Assert.AreEqual("failed", notifications[0].Status);
+        Assert.AreEqual("Simulated failure for notification aggregation.", notifications[0].Message);
+    }
+
+    [TestMethod]
+    public async Task Notifications_WhenAnonymous_ReturnsUnauthorized()
+    {
+        await using var factory = new TestHost();
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        Assert.AreEqual(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/notifications/")).StatusCode);
+    }
+
+    [TestMethod]
+    public async Task Overview_WhenSignedIn_ReturnsPlatformStatisticsAndSevenDaySeries()
+    {
+        await using var factory = new TestHost();
+        var administrator = await factory.CreateUserAsync("overview@example.test", platformAdministrator: true);
+        using var client = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
+        await CreateOrganizationAsync(client, "overview-org", "Overview organization");
+        await CreateRoleAsync(client, await CreateOrganizationAsync(client, "overview-org-2", "Second organization"), "overview-role", "Overview role");
+        var recentStartedAt = DateTimeOffset.UtcNow.AddDays(-1);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var database = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+            database.ScheduleRuns.AddRange(
+                new ScheduleRun
+                {
+                    ScheduleKey = "openid-prune",
+                    Trigger = "test",
+                    Status = "succeeded",
+                    StartedAt = recentStartedAt
+                },
+                new ScheduleRun
+                {
+                    ScheduleKey = "openid-prune",
+                    Trigger = "test",
+                    Status = "failed",
+                    StartedAt = DateTimeOffset.UtcNow.AddDays(-8)
+                });
+            await database.SaveChangesAsync();
+        }
+
+        var overview = await client.GetFromJsonAsync<OverviewView>("/api/overview/");
+
+        Assert.IsNotNull(overview);
+        Assert.AreEqual(1, overview.Accounts);
+        Assert.AreEqual(1, overview.EnabledAccounts);
+        Assert.AreEqual(2, overview.Organizations);
+        Assert.AreEqual(1, overview.OrganizationRoles);
+        Assert.IsTrue(overview.Schedules >= 1, "The seeded Quartz catalog must be counted.");
+        Assert.AreEqual(7, overview.RecentRuns.Length);
+        var previousDay = overview.RecentRuns.Single(run => run.Date == recentStartedAt.UtcDateTime.ToString("yyyy-MM-dd"));
+        Assert.AreEqual(1, previousDay.Succeeded);
+        Assert.AreEqual(0, previousDay.Failed);
+        for (var index = 1; index < overview.RecentRuns.Length; index++)
+        {
+            Assert.IsTrue(
+                string.CompareOrdinal(overview.RecentRuns[index - 1].Date, overview.RecentRuns[index].Date) < 0,
+                "The 7-day series must be ordered by ascending UTC date.");
+        }
+    }
+
+    [TestMethod]
+    public async Task Overview_WhenAnonymous_ReturnsUnauthorized()
+    {
+        await using var factory = new TestHost();
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        Assert.AreEqual(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/overview/")).StatusCode);
+    }
+
     private static async Task<Guid> CreateOrganizationAsync(HttpClient client, string code, string displayName)
     {
         using var response = await client.PostAsJsonAsync("/api/organizations", new { code, displayName });
@@ -742,12 +957,16 @@ public sealed class ApiTests
 
     private sealed class TestHost : WebApplicationFactory<Program>, IAsyncDisposable
     {
-        private readonly string databasePath = Path.Combine(Path.GetTempPath(), "jazoradmin-test-" + Guid.NewGuid() + ".db");
+        private readonly string databasePath;
         private readonly string? bootstrapEmail;
         private readonly string? bootstrapPassword;
 
-        public TestHost(string? bootstrapEmail = null, string? bootstrapPassword = null)
+        public TestHost(
+            string? bootstrapEmail = null,
+            string? bootstrapPassword = null,
+            string? existingDatabasePath = null)
         {
+            databasePath = existingDatabasePath ?? Path.Combine(Path.GetTempPath(), "jazoradmin-test-" + Guid.NewGuid() + ".db");
             this.bootstrapEmail = bootstrapEmail;
             this.bootstrapPassword = bootstrapPassword;
         }

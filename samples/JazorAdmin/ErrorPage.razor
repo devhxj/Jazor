@@ -8,11 +8,11 @@
       aria-describedby="ja-error-description">
     <section class="ja-error__content">
         <strong class="ja-error__code">@ErrorCode</strong>
-        <h1 id="ja-error-title">@Text.Normalize(Title)</h1>
-        <p id="ja-error-description">@Text.Normalize(Description)</p>
+        <h1 id="ja-error-title">@NormalizedTitle</h1>
+        <p id="ja-error-description">@NormalizedDescription</p>
         <button type="button"
                 class="ja-error__action"
                 data-error-action="home"
-                @onclick="OnAction">@Text.Normalize(ActionText)</button>
+                @onclick="OnAction">@NormalizedActionText</button>
     </section>
 </main>

@@ -24,6 +24,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 | CLR 映射 | `dotnet test src/Jazor.CLR.Test/Jazor.CLR.Test.csproj` |
 | Vue Devtools binding | `dotnet test src/ECMAScript.Vue.Devtools.Test/ECMAScript.Vue.Devtools.Test.csproj` |
 | Vue Data UI binding | `dotnet test src/ECMAScript.VueDataUi.Test/ECMAScript.VueDataUi.Test.csproj` |
+| Vu Icons binding | `dotnet test src/ECMAScript.VuIcons.Test/ECMAScript.VuIcons.Test.csproj` |
 | 单个编译器类别 | `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"` |
 
 并行运行多个 `dotnet test` lane 时，应使用独立 `BaseOutputPath`；聚焦回归构建成功后优先使用 `--no-build`。测试创建的临时目录、端口、管道和进程标识必须隔离并在结束时清理。

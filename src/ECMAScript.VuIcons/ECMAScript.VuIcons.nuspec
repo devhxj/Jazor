@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>$packageId$</id>
+    <version>$version$</version>
+    <authors>$packageAuthors$</authors>
+    <description>$packageDescription$</description>
+    <projectUrl>$repositoryUrl$</projectUrl>
+    <repository type="$repositoryType$" url="$repositoryUrl$" />
+    <readme>$packageReadmeFile$</readme>
+    <dependencies>
+      <group targetFramework="net11.0">
+        <dependency id="Jazor" version="$dependencyVersion$" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net11.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+  <files>
+    <file src="$buildOutputDir$ECMAScript.VuIcons.dll" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.VuIcons.pdb" target="lib/net11.0" />
+    <file src="$projectDir$buildTransitive\ECMAScript.VuIcons.targets" target="buildTransitive\ECMAScript.VuIcons.targets" />
+    <file src="$projectDir$manifest.json" target="jazor\vu-icons" />
+    <file src="$projectDir$dist\**\*" target="jazor\vu-icons\dist" />
+    <file src="$projectDir$licenses\**\*" target="jazor\vu-icons\licenses" />
+    <file src="$projectDir$$packageReadmeFile$" target="" />
+  </files>
+</package>

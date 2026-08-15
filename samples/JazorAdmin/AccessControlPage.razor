@@ -4,11 +4,11 @@
 <section class="ja-management" data-management-area="authorization">
     @if (OrganizationId is null)
     {
-        <p class="ja-management__empty">Select an organization from the header to inspect authorization.</p>
+        <p class="ja-management__empty">@L("Select an organization from the header to inspect authorization.", "请先从页头选择一个组织再查看授权。")</p>
     }
     else if (loading)
     {
-        <p class="ja-management__loading" aria-live="polite">Loading authorization data</p>
+        <p class="ja-management__loading" aria-live="polite">@L("Loading authorization data", "正在加载授权数据")</p>
     }
     else if (error is not null)
     {
@@ -20,14 +20,14 @@
             <section class="ja-management__panel" aria-labelledby="organization-roles-title">
                 <header class="ja-management__panel-header">
                     <div>
-                        <h2 id="organization-roles-title">Organization roles</h2>
-                        <p>Select a role to edit its resource operations</p>
+                        <h2 id="organization-roles-title">@L("Organization roles", "组织角色")</h2>
+                        <p>@L("Select a role to edit its resource operations", "选择一个角色以编辑其资源操作权限")</p>
                     </div>
                 </header>
                 <form class="ja-management__form ja-management__form--inline" @onsubmit="CreateRole" @onsubmit:preventDefault>
-                    <input required placeholder="Role code" autocomplete="off" @bind="roleCode" @bind:event="oninput" />
-                    <input required placeholder="Display name" autocomplete="off" @bind="roleDisplayName" @bind:event="oninput" />
-                    <button type="submit">Add role</button>
+                    <input required placeholder="@L("Role code", "角色编码")" autocomplete="off" @bind="roleCode" @bind:event="oninput" />
+                    <input required placeholder="@L("Display name", "显示名称")" autocomplete="off" @bind="roleDisplayName" @bind:event="oninput" />
+                    <button type="submit">@L("Add role", "添加角色")</button>
                 </form>
                 <ul class="ja-management__role-list">
                     @foreach (var role in roles)
@@ -45,8 +45,8 @@
             <section class="ja-management__panel" aria-labelledby="role-grants-title">
                 <header class="ja-management__panel-header">
                     <div>
-                        <h2 id="role-grants-title">Resource operations</h2>
-                        <p>@(SelectedRole?.DisplayName ?? "Select a role")</p>
+                        <h2 id="role-grants-title">@L("Resource operations", "资源操作")</h2>
+                        <p>@(SelectedRole?.DisplayName ?? L("Select a role", "请选择角色"))</p>
                     </div>
                 </header>
                 @if (SelectedRole is not null)
@@ -61,11 +61,11 @@
                             </label>
                         }
                     </div>
-                    <button type="button" @onclick="SaveRoleGrants">Save grants</button>
+                    <button type="button" @onclick="SaveRoleGrants">@L("Save grants", "保存授权")</button>
                 }
                 else
                 {
-                    <p class="ja-management__empty">No role is selected.</p>
+                    <p class="ja-management__empty">@L("No role is selected.", "尚未选择角色。")</p>
                 }
             </section>
         </div>
@@ -75,13 +75,13 @@
         <section class="ja-management__panel" aria-labelledby="available-operations-title">
             <header class="ja-management__panel-header">
                 <div>
-                    <h2 id="available-operations-title">Available resource operations</h2>
-                    <p>These operations can be assigned to organization roles</p>
+                    <h2 id="available-operations-title">@L("Available resource operations", "可用的资源操作")</h2>
+                    <p>@L("These operations can be assigned to organization roles", "这些操作可以分配给组织角色")</p>
                 </div>
             </header>
             <div class="ja-management__table-wrap">
                 <table class="ja-management__table">
-                    <thead><tr><th>Resource</th><th>Operation</th><th>Display name</th></tr></thead>
+                    <thead><tr><th>@L("Resource", "资源")</th><th>@L("Operation", "操作")</th><th>@L("Display name", "显示名称")</th></tr></thead>
                     <tbody>
                         @foreach (var operation in resourceOperations)
                         {

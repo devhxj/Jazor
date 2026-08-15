@@ -35,6 +35,10 @@ public partial class App
             session = null;
             organizations = [];
             selectedOrganizationId = null;
+            notificationsOpen = false;
+            notificationsLoading = false;
+            notifications = [];
+            notificationRequestVersion++;
             loginPassword = string.Empty;
             loginCaptcha = string.Empty;
             unlockPassword = string.Empty;
@@ -107,6 +111,10 @@ public partial class App
             session = null;
             organizations = [];
             selectedOrganizationId = null;
+            notificationsOpen = false;
+            notificationsLoading = false;
+            notifications = [];
+            notificationRequestVersion++;
             RefreshCaptcha();
             if (!IsLoginPage && currentRoute.Path != "/lock")
                 _ = router.Push("/login");
@@ -118,6 +126,10 @@ public partial class App
         organizations = session.Organizations;
         selectedOrganizationId ??= organizations.FirstOrDefault()?.Id;
         accessError = null;
+        // The bell badge is meaningful before its panel opens, so hydrate it once for the
+        // authenticated session. Opening the panel still refreshes the operational feed.
+        // 会话恢复后先加载一次，铃铛才能在展开前显示未处理通知数量。
+        LoadNotifications();
         if (IsLoginPage || currentRoute.Path == "/lock")
             _ = router.Push("/");
     }

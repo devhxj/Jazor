@@ -4,7 +4,7 @@
 <section class="ja-management" data-management-area="sso" data-sso-view="scopes">
     @if (loading)
     {
-        <p class="ja-management__loading" aria-live="polite">Loading OpenID scopes</p>
+        <p class="ja-management__loading" aria-live="polite">@L("Loading OpenID scopes", "正在加载 OpenID Scope")</p>
     }
     else
     {
@@ -16,19 +16,19 @@
         <div class="ja-management__split">
             <section class="ja-management__panel" aria-labelledby="sso-scopes-title">
                 <header class="ja-management__panel-header">
-                    <div><h2 id="sso-scopes-title">OpenID scopes</h2><p>Claims are issued to the selected API resources</p></div>
-                    <button type="button" data-sso-command="new-scope" @onclick="NewScope">New</button>
+                    <div><h2 id="sso-scopes-title">@L("OpenID scopes", "OpenID Scope")</h2><p>@L("Claims are issued to the selected API resources", "声明会颁发给所选的 API 资源")</p></div>
+                    <button type="button" data-sso-command="new-scope" @onclick="NewScope">@L("New", "新建")</button>
                 </header>
                 <div class="ja-management__table-wrap">
                     <table class="ja-management__table">
-                        <thead><tr><th>Scope</th><th>Resources</th><th></th></tr></thead>
+                        <thead><tr><th>@L("Scope", "Scope")</th><th>@L("Resources", "资源")</th><th></th></tr></thead>
                         <tbody>
                             @foreach (var scope in scopes)
                             {
                                 <tr class="@(scope.Id == selectedId ? "is-selected" : string.Empty)" data-sso-scope="@scope.Name">
                                     <td><strong>@scope.DisplayName</strong><span>@scope.Name</span></td>
                                     <td>@Display(scope.Resources)</td>
-                                    <td><button type="button" class="ja-management__text-button" @onclick="() => Select(scope)">Manage</button></td>
+                                    <td><button type="button" class="ja-management__text-button" @onclick="() => Select(scope)">@L("Manage", "管理")</button></td>
                                 </tr>
                             }
                         </tbody>
@@ -37,17 +37,17 @@
             </section>
 
             <section class="ja-management__panel" aria-labelledby="sso-scope-editor-title">
-                <header class="ja-management__panel-header"><div><h2 id="sso-scope-editor-title">@(IsNew ? "Create scope" : "Scope settings")</h2><p>Name is immutable after creation</p></div></header>
+                <header class="ja-management__panel-header"><div><h2 id="sso-scope-editor-title">@(IsNew ? L("Create scope", "创建 Scope") : L("Scope settings", "Scope 设置"))</h2><p>@L("Name is immutable after creation", "名称创建后不可修改")</p></div></header>
                 <form class="ja-management__form" @onsubmit="Save" @onsubmit:preventDefault>
-                    <label><span>Name</span><input required readonly="@(!IsNew)" autocomplete="off" @bind="name" @bind:event="oninput" /></label>
-                    <label><span>Display name</span><input required autocomplete="off" @bind="displayName" @bind:event="oninput" /></label>
-                    <label><span>Description</span><textarea rows="3" @bind="description"></textarea></label>
-                    <label><span>API resources</span><input autocomplete="off" placeholder="orders-api reporting-api" @bind="resources" @bind:event="oninput" /></label>
+                    <label><span>@L("Name", "名称")</span><input required readonly="@(!IsNew)" autocomplete="off" @bind="name" @bind:event="oninput" /></label>
+                    <label><span>@L("Display name", "显示名称")</span><input required autocomplete="off" @bind="displayName" @bind:event="oninput" /></label>
+                    <label><span>@L("Description", "描述")</span><textarea rows="3" @bind="description"></textarea></label>
+                    <label><span>@L("API resources", "API 资源")</span><input autocomplete="off" placeholder="orders-api reporting-api" @bind="resources" @bind:event="oninput" /></label>
                     <div class="ja-management__commands">
-                        <button type="submit" data-sso-command="save-scope">@(IsNew ? "Create" : "Save changes")</button>
+                        <button type="submit" data-sso-command="save-scope">@(IsNew ? L("Create", "创建") : L("Save changes", "保存修改"))</button>
                         @if (!IsNew)
                         {
-                            <button type="button" class="ja-management__danger-button" data-sso-command="delete-scope" @onclick="DeleteScope">@(deleteArmed ? "Confirm delete" : "Delete")</button>
+                            <button type="button" class="ja-management__danger-button" data-sso-command="delete-scope" @onclick="DeleteScope">@(deleteArmed ? L("Confirm delete", "确认删除") : L("Delete", "删除"))</button>
                         }
                     </div>
                 </form>

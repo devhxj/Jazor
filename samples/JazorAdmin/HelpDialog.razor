@@ -1,0 +1,37 @@
+@* Quick-start guide for the administration shell. 管理壳的快速指引；文案经 L() 双语。 *@
+@inherits AppComponentBase
+
+<TDialog Visible="@Visible"
+         HeaderValue="@L("Help and quick guide", "帮助与快速指引")"
+         FooterValue="false"
+         CloseBtnValue="true"
+         DestroyOnClose="true"
+         Width="560px"
+         OnClose="@(_ => Close())"
+         OnCloseBtnClick="@(_ => Close())">
+    <div class="ja-help" data-help-dialog="">
+        <section>
+            <h3>@L("Getting around", "上手导航")</h3>
+            <ul>
+                <li>@L("Use the header search to jump to any navigation page.", "使用页头搜索可以快速跳转到任意导航页面。")</li>
+                <li>@L("The organization picker scopes organization pages; platform pages ignore it.", "组织选择器决定组织页的数据范围；平台级页面不受其影响。")</li>
+                <li>@L("Open the appearance panel from the floating trigger to switch theme, brand color and layout.", "通过悬浮按钮打开外观面板，可切换主题模式、品牌色与布局。")</li>
+            </ul>
+        </section>
+        <section>
+            <h3>@L("Session", "会话")</h3>
+            <ul>
+                <li>@L("Lock the session from the user menu; unlocking requires your password.", "从用户菜单可以锁定会话；解锁需要重新输入密码。")</li>
+                <li>@L("Failed scheduled tasks appear in the notification bell.", "失败的计划任务会显示在页头通知铃铛中。")</li>
+            </ul>
+        </section>
+        <section>
+            <h3>@L("Resources", "参考资源")</h3>
+            <ul class="ja-help__links">
+                <li><a href="https://github.com/devhxj/Jazor" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                <li><a href="https://github.com/devhxj/Jazor/tree/main/docs" target="_blank" rel="noopener noreferrer">@L("Documentation", "文档")</a></li>
+                <li><a href="https://github.com/devhxj/Jazor/issues" target="_blank" rel="noopener noreferrer">@L("Feedback", "问题反馈")</a></li>
+            </ul>
+        </section>
+    </div>
+</TDialog>

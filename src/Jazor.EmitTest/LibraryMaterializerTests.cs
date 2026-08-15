@@ -1,3 +1,6 @@
+using System.Text.Json;
+using Acornima;
+using Acornima.Ast;
 using Jazor.Emit;
 
 namespace Jazor.EmitTest;
@@ -555,8 +558,153 @@ public sealed class LibraryMaterializerTests
         var dataUiRoot = Path.Combine(outputRoot, "vendor", "vue-data-ui", "3.23.4", "dist");
         Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "components", "vue-ui-donut.js")));
         Assert.IsTrue(Directory.GetFiles(dataUiRoot, "vue-ui-donut-*.js", SearchOption.TopDirectoryOnly).Length > 0);
-        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.es.min.js")));
+        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs")));
         Assert.IsFalse(File.Exists(Path.Combine(dataUiRoot, "components", "vue-ui-xy.js")));
+    }
+
+    [TestMethod]
+    public async Task Materialize_ProductionVueDataUiTable_ProvidesImportMapForCompleteBrowserClosure()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var materialization = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.VueDataUi"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Production,
+            ["vue-data-ui/vue-ui-table"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "vue", "jspdf", "vue-data-ui/vue-ui-table" },
+            materialization.ImportPaths.Keys.ToArray());
+        await ImportMapWriter.WriteAsync(outputRoot, materialization);
+
+        using var browserMap = JsonDocument.Parse(
+            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
+        var providers = browserMap.RootElement
+            .GetProperty("imports")
+            .EnumerateObject()
+            .Select(static entry => entry.Name)
+            .ToArray();
+        var dataUiRoot = Path.Combine(outputRoot, "vendor", "vue-data-ui", "3.23.4", "dist");
+        var unresolved = Directory.EnumerateFiles(dataUiRoot, "*", SearchOption.AllDirectories)
+            .Where(IsJavaScriptModule)
+            .SelectMany(GetBareModuleSpecifiers)
+            .Where(specifier => !providers.Any(provider => ProvidesImport(provider, specifier)))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static specifier => specifier, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.IsEmpty(unresolved, "Browser import map does not provide: " + string.Join(", ", unresolved));
+        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs.LEGAL.txt")));
+
+        var noticesRoot = Path.Combine(outputRoot, "vendor", "vue-data-ui", "3.23.4", "licenses");
+        var expectedNotices = new[]
+        {
+            "JSPDF-LICENSE",
+            "jspdf-browser-bundle/README.md",
+            "jspdf-browser-bundle/babel-runtime-LICENSE",
+            "jspdf-browser-bundle/canvg-LICENSE",
+            "jspdf-browser-bundle/core-js-LICENSE",
+            "jspdf-browser-bundle/dompurify-LICENSE",
+            "jspdf-browser-bundle/fast-png-LICENSE",
+            "jspdf-browser-bundle/fflate-LICENSE",
+            "jspdf-browser-bundle/html2canvas-LICENSE",
+            "jspdf-browser-bundle/iobuffer-LICENSE",
+            "jspdf-browser-bundle/pako-LICENSE",
+            "jspdf-browser-bundle/performance-now-license.txt",
+            "jspdf-browser-bundle/raf-LICENSE",
+            "jspdf-browser-bundle/rgbcolor-LICENSE.md",
+            "jspdf-browser-bundle/rgbcolor-FEEL-FREE.md",
+            "jspdf-browser-bundle/stackblur-canvas-LICENSE-MIT.txt",
+            "jspdf-browser-bundle/svg-pathdata-LICENSE"
+        };
+        foreach (var notice in expectedNotices)
+            Assert.IsTrue(File.Exists(Path.Combine(noticesRoot, notice)), $"Missing bundled dependency notice: {notice}");
+    }
+
+    [TestMethod]
+    public void Materialize_ProductionVueDataUiFlow_CopiesNewCatalogEntryAndPdfImportOnly()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.VueDataUi"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Production,
+            ["vue-data-ui/vue-ui-flow"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "vue", "jspdf", "vue-data-ui/vue-ui-flow" },
+            result.ImportPaths.Keys.ToArray());
+
+        var dataUiRoot = Path.Combine(outputRoot, "vendor", "vue-data-ui", "3.23.4", "dist");
+        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "components", "vue-ui-flow.js")));
+        Assert.IsTrue(Directory.GetFiles(dataUiRoot, "vue-ui-flow-*.js", SearchOption.TopDirectoryOnly).Length > 0);
+        Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs")));
+        Assert.IsFalse(File.Exists(Path.Combine(dataUiRoot, "components", "vue-ui-donut.js")));
+    }
+
+    [TestMethod]
+    public void Materialize_ProductionVuIconsStaticEntry_CopiesOnlyTheSelectedIconClosure()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.VuIcons"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Production,
+            ["vu-icons/VuUser"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "vue", "vu-icons/VuUser" },
+            result.ImportPaths.Keys.ToArray());
+        CollectionAssert.Contains(result.StylePaths.ToArray(), "vendor/vu-icons/1.5.4/dist/jazor-vu-icon.css");
+
+        var iconsRoot = Path.Combine(outputRoot, "vendor", "vu-icons", "1.5.4", "dist");
+        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "components", "VuUser.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "jazor-vu-icon-runtime.mjs")));
+        Assert.IsFalse(File.Exists(Path.Combine(iconsRoot, "icons-data.js")));
+        Assert.IsFalse(File.Exists(Path.Combine(iconsRoot, "components", "VuSearch.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vu-icons", "1.5.4", "licenses", "VU-ICONS-LICENSE")));
+    }
+
+    [TestMethod]
+    public void Materialize_ProductionVuIconsDynamicEntry_CopiesTheRuntimeIconCatalog()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.VuIcons"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Production,
+            ["vu-icons"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "vue", "vu-icons" },
+            result.ImportPaths.Keys.ToArray());
+
+        var iconsRoot = Path.Combine(outputRoot, "vendor", "vu-icons", "1.5.4", "dist");
+        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "jazor-vu-icon.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "jazor-vu-icon-runtime.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(iconsRoot, "icons-data.js")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(iconsRoot, "components")));
     }
 
     private static string FindRepositoryRoot()
@@ -580,6 +728,71 @@ public sealed class LibraryMaterializerTests
         }
 
         throw new FileNotFoundException($"Could not locate the {projectName} library manifest.");
+    }
+
+    private static IEnumerable<string> GetBareModuleSpecifiers(string modulePath)
+    {
+        var module = new Parser().ParseModule(File.ReadAllText(modulePath));
+        var collector = new BareModuleSpecifierCollector();
+        collector.Visit(module);
+        return collector.Specifiers;
+    }
+
+    private static bool IsJavaScriptModule(string path)
+        => Path.GetExtension(path) is ".js" or ".mjs" or ".cjs" or ".jsx";
+
+    private static bool ProvidesImport(string provider, string specifier)
+        => string.Equals(provider, specifier, StringComparison.Ordinal) ||
+           (provider.EndsWith('/', StringComparison.Ordinal) &&
+            specifier.StartsWith(provider, StringComparison.Ordinal));
+
+    private sealed class BareModuleSpecifierCollector : AstVisitor
+    {
+        public HashSet<string> Specifiers { get; } = new(StringComparer.Ordinal);
+
+        protected override object VisitImportDeclaration(ImportDeclaration node)
+        {
+            Add(node.Source);
+            base.VisitImportDeclaration(node);
+            return node;
+        }
+
+        protected override object VisitExportNamedDeclaration(ExportNamedDeclaration node)
+        {
+            if (node.Source is not null)
+                Add(node.Source);
+            base.VisitExportNamedDeclaration(node);
+            return node;
+        }
+
+        protected override object VisitExportAllDeclaration(ExportAllDeclaration node)
+        {
+            Add(node.Source);
+            base.VisitExportAllDeclaration(node);
+            return node;
+        }
+
+        protected override object VisitImportExpression(ImportExpression node)
+        {
+            if (node.Source is StringLiteral source)
+                Add(source);
+            base.VisitImportExpression(node);
+            return node;
+        }
+
+        private void Add(StringLiteral source)
+        {
+            var specifier = source.Value;
+            if (specifier.StartsWith('.', StringComparison.Ordinal) ||
+                specifier.StartsWith('/', StringComparison.Ordinal) ||
+                specifier.StartsWith('#', StringComparison.Ordinal) ||
+                Uri.TryCreate(specifier, UriKind.Absolute, out _))
+            {
+                return;
+            }
+
+            Specifiers.Add(specifier);
+        }
     }
 
     private sealed class LibraryWorkspace : IDisposable

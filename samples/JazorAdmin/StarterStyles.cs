@@ -54,7 +54,7 @@ internal static class StarterStyles
         global(".ja-tdesign-sidebar-only__menu",
             new CssRule { min_height = px(0), overflow_y = auto });
 
-        global(".tdesign-starter-footer",
+        global(".ja-footer",
             new CssRule
             {
                 padding = padding(px(0), px(24), px(80)),
@@ -205,11 +205,193 @@ internal static class StarterStyles
         global(".ja-starter-search",
             new CssRule
             {
+                position = relative,
                 width = px(220),
                 padding = padding(px(0), px(10)),
                 background = hex("f3f3f3"),
                 border_radius = px(3)
             });
+
+        // Navigation-search dropdown. TDesign 色彩变量随主题自动切换，无需单独的 dark 覆盖。
+        global(".ja-starter-search__panel",
+            new CssRule
+            {
+                position = absolute,
+                top = raw("calc(100% + 4px)"),
+                left = px(0),
+                right = px(0),
+                z_index = 1000,
+                display = flex,
+                flex_direction = column,
+                gap = px(2),
+                max_height = px(320),
+                overflow_y = auto,
+                padding = px(4),
+                text_align = left,
+                background = raw("var(--td-bg-color-container)"),
+                border = px(1) | solid | raw("var(--td-component-border)"),
+                border_radius = raw("var(--td-radius-default)"),
+                box_shadow = raw("var(--td-shadow-1)")
+            });
+        global(".ja-starter-search__empty",
+            new CssRule
+            {
+                padding = padding(px(8), px(10)),
+                color = raw("var(--td-text-color-placeholder)"),
+                font_size = px(12),
+                line_height = px(20)
+            });
+        global(".ja-starter-search__item",
+            new CssRule
+            {
+                display = flex,
+                align_items = center,
+                justify_content = space_between,
+                gap = px(8),
+                padding = padding(px(6), px(10)),
+                color = raw("var(--td-text-color-primary)"),
+                text_align = left,
+                background = transparent,
+                border = none,
+                border_radius = px(3)
+            });
+        global(".ja-starter-search__item:hover",
+            new CssRule { background = raw("var(--td-bg-color-container-hover)") });
+        global(".ja-starter-search__item small",
+            new CssRule
+            {
+                overflow = hidden,
+                color = raw("var(--td-text-color-placeholder)"),
+                font_size = px(12),
+                text_overflow = ellipsis,
+                white_space = nowrap
+            });
+
+        // Header icon anchor that matches TDesign text square buttons for external links.
+        global(".ja-starter-link-button",
+            new CssRule
+            {
+                display = inline_flex,
+                align_items = center,
+                justify_content = center,
+                width = px(32),
+                height = px(32),
+                color = raw("var(--td-text-color-primary)"),
+                text_decoration = none,
+                border_radius = px(3)
+            });
+        global(".ja-starter-link-button:hover",
+            new CssRule { background = raw("var(--td-bg-color-container-hover)") });
+
+        // Notification bell panel. 与搜索面板一致：TDesign 变量随主题切换。
+        global(".ja-starter-notifications",
+            new CssRule { position = relative });
+        global(".ja-starter-notifications__badge",
+            new CssRule
+            {
+                position = absolute,
+                top = px(1),
+                right = px(1),
+                min_width = px(16),
+                height = px(16),
+                padding = padding(px(0), px(4)),
+                color = hex("ffffff"),
+                font_size = px(11),
+                line_height = px(16),
+                text_align = center,
+                background = raw("var(--td-error-color)"),
+                border_radius = raw("8px")
+            });
+        global(".ja-starter-notifications__panel",
+            new CssRule
+            {
+                position = absolute,
+                top = raw("calc(100% + 8px)"),
+                right = px(0),
+                z_index = 1000,
+                width = px(320),
+                overflow = hidden,
+                background = raw("var(--td-bg-color-container)"),
+                border = px(1) | solid | raw("var(--td-component-border)"),
+                border_radius = raw("var(--td-radius-default)"),
+                box_shadow = raw("var(--td-shadow-1)")
+            });
+        global(".ja-starter-notifications__panel header",
+            new CssRule
+            {
+                padding = padding(px(10), px(12)),
+                color = raw("var(--td-text-color-primary)"),
+                font_weight = 600,
+                border_bottom = px(1) | solid | raw("var(--td-component-stroke)")
+            });
+        global(".ja-starter-notifications__empty",
+            new CssRule
+            {
+                margin = px(0),
+                padding = padding(px(14), px(12)),
+                color = raw("var(--td-text-color-placeholder)"),
+                font_size = px(12),
+                line_height = px(20)
+            });
+        global(".ja-starter-notifications__panel ul",
+            new CssRule
+            {
+                max_height = px(300),
+                overflow_y = auto,
+                margin = px(0),
+                padding = px(4),
+                list_style = none
+            });
+        global(".ja-starter-notifications__panel li",
+            new CssRule
+            {
+                display = flex,
+                flex_direction = column,
+                gap = px(2),
+                padding = padding(px(8), px(10)),
+                border_radius = px(3)
+            });
+        global(".ja-starter-notifications__panel li:hover",
+            new CssRule { background = raw("var(--td-bg-color-container-hover)") });
+        global(".ja-starter-notifications__panel li strong",
+            new CssRule
+            {
+                color = raw("var(--td-text-color-primary)"),
+                font_size = px(13),
+                font_weight = 600
+            });
+        global(".ja-starter-notifications__panel li small",
+            new CssRule
+            {
+                overflow = hidden,
+                color = raw("var(--td-text-color-placeholder)"),
+                font_size = px(12),
+                line_height = px(18),
+                text_overflow = ellipsis,
+                white_space = nowrap
+            });
+
+        // Help dialog content.
+        global(".ja-help section + section",
+            new CssRule { margin_top = px(18) });
+        global(".ja-help h3",
+            new CssRule
+            {
+                margin = px(0),
+                color = raw("var(--td-text-color-primary)"),
+                font_size = px(14)
+            });
+        global(".ja-help ul",
+            new CssRule
+            {
+                margin = margin(px(8), px(0), px(0)),
+                padding_left = px(18),
+                color = raw("var(--td-text-color-secondary)"),
+                font_size = px(13),
+                line_height = px(22)
+            });
+        global(".ja-help a",
+            new CssRule { color = raw("var(--td-brand-color)") });
 
         global(".ja-starter-search input, .ja-starter-organization select, .ja-starter-select select",
             new CssRule

@@ -1169,7 +1169,7 @@ public sealed class RenderEmitterContractTests
     public void TryEmit_RejectsDirectRenderFrameAndMetadataBoundaryShapes()
     {
         AssertDirectRenderFailure(
-            "while (Enabled) { builder.AddContent(0, \"loop\"); }",
+            "while (Enabled) { builder.AddContent(0, \"loop\"); break; }",
             "only supports straight-line RenderTreeBuilder statements in this slice.",
             "[Parameter] public bool Enabled { get; set; }");
         AssertDirectRenderFailure(

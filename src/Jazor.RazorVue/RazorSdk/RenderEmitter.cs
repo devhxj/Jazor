@@ -31,6 +31,27 @@ internal static class RenderEmitter
         VueInjectRegistry injectRegistry,
         out RenderResult result,
         out string? failure)
+        => TryEmit(
+            compilation,
+            componentSymbol,
+            buildRenderTreeMethod,
+            buildRenderTreeBody,
+            declaredNames,
+            reservedImportNames: null,
+            injectRegistry,
+            out result,
+            out failure);
+
+    public static bool TryEmit(
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
+        IMethodSymbol buildRenderTreeMethod,
+        IBlockOperation buildRenderTreeBody,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames,
+        IEnumerable<string>? reservedImportNames,
+        VueInjectRegistry injectRegistry,
+        out RenderResult result,
+        out string? failure)
     {
         if (compilation is null)
             throw new ArgumentNullException(nameof(compilation));
@@ -54,7 +75,12 @@ internal static class RenderEmitter
                 return false;
             }
 
-            var lowered = new Emitter(compilation, componentSymbol, declaredNames, injectRegistry)
+            var lowered = new Emitter(
+                    compilation,
+                    componentSymbol,
+                    declaredNames,
+                    reservedImportNames,
+                    injectRegistry)
                 .EmitBlock(buildRenderTreeBody, BuilderBinding.ForSymbol(buildRenderTreeMethod.Parameters[0]));
             result = new RenderResult(
                 lowered.RenderExpression,
@@ -115,6 +141,7 @@ internal static class RenderEmitter
             new(ReferenceExpressionComparer.Instance);
         private readonly Dictionary<ILocalSymbol, IOperation> _compileTimeFrameLocalValues = new(SymbolComparer);
         private readonly HashSet<ILocalSymbol> _erasedRenderObjectLocals = new(SymbolComparer);
+        private readonly HashSet<ILocalSymbol> _mutableRenderLocals = new(SymbolComparer);
         private readonly HashSet<string> _renderLocalNames = new(StringComparer.Ordinal);
         private string? _componentAttributeNormalizerName;
         private bool _usesMergeProps;
@@ -137,6 +164,7 @@ internal static class RenderEmitter
             Compilation compilation,
             INamedTypeSymbol componentSymbol,
             IReadOnlyDictionary<ISymbol, string>? declaredNames,
+            IEnumerable<string>? reservedImportNames,
             VueInjectRegistry injectRegistry)
         {
             _compilation = compilation;
@@ -152,13 +180,28 @@ internal static class RenderEmitter
                     propertyReferenceRewriter: RewriteDirectRenderFragmentParameterReference,
                     directBinderHandlerObserver: (handler, valueKind) => _directBinderHandlers[handler] = valueKind)
             };
-            _argument = new SenseArgument(Sense.Any, UseImportAliases: true);
+            var argument = new SenseArgument(Sense.Any, UseImportAliases: true);
+            if (reservedImportNames is not null)
+            {
+                // Direct render is lowered after ordinary component members but uses a separate
+                // SemanticWalker. Seed it with compiler bindings so another module's same export
+                // name receives the regular stable alias before AST references are created.
+                // 不能在模块拼装阶段才改 import 名，否则 AST 已引用旧名字；别名必须在 lowering 时确定。
+                argument = argument.WithImportContext(
+                    new Dictionary<string, string>(StringComparer.Ordinal),
+                    new Dictionary<string, string>(StringComparer.Ordinal),
+                    new HashSet<string>(reservedImportNames, StringComparer.Ordinal),
+                    currentModuleImportPath: null,
+                    currentModuleBindings: new HashSet<string>(StringComparer.Ordinal));
+            }
+            _argument = argument;
             _componentSlotNames = BuildComponentSlotNameMap(componentSymbol);
             _injectRegistry = injectRegistry;
         }
 
         public LoweredRender EmitBlock(IBlockOperation block, BuilderBinding builder)
         {
+            CollectMutableRenderLocals(block);
             var context = new EmitContext(
                 builder,
                 ImmutableDictionary<IParameterSymbol, IOperation>.Empty.WithComparers(SymbolComparer),
@@ -253,6 +296,14 @@ internal static class RenderEmitter
 
                 case IForEachLoopOperation forEachLoop:
                     EmitForEachLoop(forEachLoop, context, state);
+                    return context;
+
+                case IForLoopOperation forLoop:
+                    EmitForLoop(forLoop, context, state);
+                    return context;
+
+                case IWhileLoopOperation whileLoop:
+                    EmitWhileLoop(whileLoop, context, state);
                     return context;
 
                 case IReturnOperation:
@@ -431,7 +482,9 @@ internal static class RenderEmitter
                         ? LowerMarkupStringExpression(declarator.Initializer.Value, declarationContext)
                         : LowerExpression(declarator.Initializer.Value, declarationContext);
                     var runtimeDeclaration = new VariableDeclaration(
-                        VariableDeclarationKind.Const,
+                        _mutableRenderLocals.Contains(declarator.Symbol)
+                            ? VariableDeclarationKind.Let
+                            : VariableDeclarationKind.Const,
                         NodeList.From(new VariableDeclarator(new Identifier(localName), valueExpression)));
                     preludeStatements.Add(runtimeDeclaration);
                     localAliases = localAliases.SetItem(declarator.Symbol, localName);
@@ -512,10 +565,21 @@ internal static class RenderEmitter
                 return;
             }
 
-            var whenTrue = EmitChildContentExpression(conditional.WhenTrue, context);
+            // Vue identifies sibling VNodes by type/key before it considers their static props.
+            // Give each Razor branch a stable internal identity so an adjacent @if cannot reuse
+            // a disappearing sibling's DOM/block with another branch's static shape.
+            // Vue 会先按 type/key 判断 sibling 身份，再处理静态 props；为每个 Razor 分支生成
+            // 稳定内部 key，避免相邻 @if 在前一分支消失、后一分支出现时错误复用 DOM/block。
+            var whenTrue = EmitChildContentExpression(
+                conditional.WhenTrue,
+                context,
+                CreateConditionalBranchKey(conditional, whenTrue: true));
             var whenFalse = conditional.WhenFalse is null
                 ? new DirectRenderFragmentBody(Null(), UsesFragment: false, UsesStaticVNode: false)
-                : EmitChildContentExpression(conditional.WhenFalse, context);
+                : EmitChildContentExpression(
+                    conditional.WhenFalse,
+                    context,
+                    CreateConditionalBranchKey(conditional, whenTrue: false));
             state.AddChild(new ConditionalExpression(condition, whenTrue.RenderExpression, whenFalse.RenderExpression));
             state.UsesFragment = state.UsesFragment || whenTrue.UsesFragment || whenFalse.UsesFragment;
             state.UsesStaticVNode = state.UsesStaticVNode || whenTrue.UsesStaticVNode || whenFalse.UsesStaticVNode;
@@ -666,6 +730,402 @@ internal static class RenderEmitter
             state.UsesStaticVNode = state.UsesStaticVNode || body.UsesStaticVNode;
         }
 
+        private void EmitForLoop(IForLoopOperation forLoop, EmitContext context, RenderState state)
+        {
+            // Razor SG keeps @for as IForLoopOperation instead of rewriting it to foreach.
+            // Keep its control variable outside the JavaScript for initializer: C# closures
+            // capture one loop variable, while `for (let i = ...)` creates one binding per turn.
+            // Razor SG 会保留 @for 的 IForLoopOperation；控制变量放在 JS for initializer 外，
+            // 才能维持 C# closure 捕获同一个循环变量的语义，而不是 JS let 的每轮新绑定。
+            var loopArgument = context.Argument.WithNewScope();
+            var loopAliases = context.LocalAliases;
+            var loopLocalNames = new List<string>();
+            foreach (var local in forLoop.Locals)
+            {
+                var localName = CreateUniqueLocalName(local.Name);
+                loopAliases = loopAliases.SetItem(local, localName);
+                loopLocalNames.Add(localName);
+                _renderLocalNames.Add(localName);
+            }
+
+            var loopContext = context with
+            {
+                LocalAliases = loopAliases,
+                Argument = loopArgument
+            };
+            try
+            {
+                var initializers = LowerForLoopInitializers(forLoop.Before, loopContext);
+                var condition = forLoop.Condition is null
+                    ? null
+                    : LowerExpression(forLoop.Condition, loopContext);
+                var update = LowerForLoopUpdates(forLoop.AtLoopBottom, loopContext);
+                if (loopArgument.HasVarDeclarator)
+                {
+                    throw Unsupported(
+                        forLoop,
+                        "For direct render lowering does not support initializer, condition, or update expressions that require compiler temporary declarations.");
+                }
+
+                var body = EmitLoopIterationBody(forLoop.Body, loopContext);
+                var resultName = CreateUniqueLocalName("__jazor$for");
+                var result = new Identifier(resultName);
+                var append = new NonSpecialExpressionStatement(Call(
+                    new MemberExpression(result, new Identifier("push"), computed: false, optional: false),
+                    body.RenderExpression));
+                var statements = new List<Statement>(initializers.Length + 3);
+                statements.AddRange(initializers);
+                statements.Add(new VariableDeclaration(
+                    VariableDeclarationKind.Const,
+                    NodeList.From(new VariableDeclarator(result, CreateArray([])))));
+                statements.Add(new ForStatement(
+                    init: null,
+                    test: condition,
+                    update: update,
+                    body: new NestedBlockStatement(NodeList.From<Statement>(append))));
+                statements.Add(new ReturnStatement(result));
+                var children = Call(
+                    new ArrowFunctionExpression(
+                        NodeList.From<Node>(),
+                        new FunctionBody(NodeList.From(statements), strict: true),
+                        expression: false,
+                        async: false),
+                    Array.Empty<Expression>());
+
+                _usesBlockTree = true;
+                _usesFragment = true;
+                state.UsesFragment = true;
+                state.AddChild(VNodePlan.Block(CreateForLoopFragmentExpression(
+                    children,
+                    body.DirectRoot is { HasExplicitKey: true }
+                        ? VuePatchFlags.KeyedFragment
+                        : VuePatchFlags.UnkeyedFragment)));
+                state.UsesFragment = state.UsesFragment || body.UsesFragment;
+                state.UsesStaticVNode = state.UsesStaticVNode || body.UsesStaticVNode;
+            }
+            finally
+            {
+                foreach (var localName in loopLocalNames)
+                    _renderLocalNames.Remove(localName);
+            }
+        }
+
+        private ImmutableArray<Statement> LowerForLoopInitializers(
+            ImmutableArray<IOperation> before,
+            EmitContext context)
+        {
+            var statements = ImmutableArray.CreateBuilder<Statement>();
+            foreach (var operation in before)
+            {
+                switch (operation)
+                {
+                    case IVariableDeclarationGroupOperation declarationGroup:
+                    {
+                        var declarations = new List<VariableDeclarator>();
+                        foreach (var declaration in declarationGroup.Declarations)
+                        {
+                            foreach (var declarator in declaration.Declarators)
+                            {
+                                if (declarator.Initializer is null ||
+                                    !context.LocalAliases.TryGetValue(declarator.Symbol, out var localName))
+                                {
+                                    throw Unsupported(
+                                        declarator,
+                                        "For direct render lowering requires initialized local control variables.");
+                                }
+
+                                declarations.Add(new VariableDeclarator(
+                                    new Identifier(localName),
+                                    LowerExpression(declarator.Initializer.Value, context)));
+                            }
+                        }
+
+                        if (declarations.Count > 0)
+                        {
+                            statements.Add(new VariableDeclaration(
+                                VariableDeclarationKind.Let,
+                                NodeList.From(declarations)));
+                        }
+
+                        break;
+                    }
+
+                    case IExpressionStatementOperation expressionStatement:
+                        statements.Add(new NonSpecialExpressionStatement(
+                            LowerExpression(expressionStatement.Operation, context)));
+                        break;
+
+                    default:
+                        throw Unsupported(
+                            operation,
+                            "For direct render lowering only supports local declarations or expressions in the initializer.");
+                }
+            }
+
+            return statements.ToImmutable();
+        }
+
+        private Expression? LowerForLoopUpdates(
+            ImmutableArray<IOperation> updates,
+            EmitContext context)
+        {
+            if (updates.Length == 0)
+                return null;
+
+            var expressions = new List<Expression>(updates.Length);
+            foreach (var update in updates)
+            {
+                var operation = update is IExpressionStatementOperation expressionStatement
+                    ? expressionStatement.Operation
+                    : update;
+                expressions.Add(LowerExpression(operation, context));
+            }
+
+            return expressions.Count == 1
+                ? expressions[0]
+                : new SequenceExpression(NodeList.From(expressions));
+        }
+
+        private void EmitWhileLoop(IWhileLoopOperation whileLoop, EmitContext context, RenderState state)
+        {
+            var loopArgument = context.Argument.WithNewScope();
+            var loopContext = context with { Argument = loopArgument };
+            var condition = LowerExpression(whileLoop.Condition!, loopContext);
+            if (loopArgument.HasVarDeclarator)
+            {
+                throw Unsupported(
+                    whileLoop,
+                    "While direct render lowering does not support conditions that require compiler temporary declarations.");
+            }
+
+            var body = EmitLoopIterationBody(whileLoop.Body, loopContext);
+            var resultName = CreateUniqueLocalName("__jazor$while");
+            var result = new Identifier(resultName);
+            var append = new NonSpecialExpressionStatement(Call(
+                new MemberExpression(result, new Identifier("push"), computed: false, optional: false),
+                body.RenderExpression));
+            var loopBody = new NestedBlockStatement(NodeList.From<Statement>(append));
+            Statement loop = whileLoop.ConditionIsTop
+                ? new WhileStatement(condition, loopBody)
+                : new DoWhileStatement(loopBody, condition);
+            var children = Call(
+                new ArrowFunctionExpression(
+                    NodeList.From<Node>(),
+                    new FunctionBody(NodeList.From<Statement>(
+                    [
+                        new VariableDeclaration(
+                            VariableDeclarationKind.Const,
+                            NodeList.From(new VariableDeclarator(result, CreateArray([])))),
+                        loop,
+                        new ReturnStatement(result)
+                    ]), strict: true),
+                    expression: false,
+                    async: false),
+                Array.Empty<Expression>());
+
+            _usesBlockTree = true;
+            _usesFragment = true;
+            state.UsesFragment = true;
+            state.AddChild(VNodePlan.Block(CreateForLoopFragmentExpression(
+                children,
+                body.DirectRoot is { HasExplicitKey: true }
+                    ? VuePatchFlags.KeyedFragment
+                    : VuePatchFlags.UnkeyedFragment)));
+            state.UsesFragment = state.UsesFragment || body.UsesFragment;
+            state.UsesStaticVNode = state.UsesStaticVNode || body.UsesStaticVNode;
+        }
+
+        private DirectRenderFragmentBody EmitLoopIterationBody(IOperation operation, EmitContext context)
+        {
+            CollectMutableRenderLocals(operation);
+            if (operation is not IBlockOperation block)
+                return EmitNonHoistableChildContentExpression(operation, context);
+
+            var operations = block.Operations;
+            var firstRender = -1;
+            var lastRender = -1;
+            for (var index = 0; index < operations.Length; index++)
+            {
+                if (IsLoopSideEffectOperation(operations[index]))
+                    continue;
+
+                firstRender = firstRender < 0 ? index : firstRender;
+                lastRender = index;
+            }
+
+            if (firstRender < 0)
+            {
+                throw Unsupported(
+                    operation,
+                    "Loop direct render lowering requires RenderTreeBuilder content in the loop body.");
+            }
+
+            for (var index = firstRender; index <= lastRender; index++)
+            {
+                if (IsLoopSideEffectOperation(operations[index]))
+                {
+                    throw Unsupported(
+                        operations[index],
+                        "Loop direct render lowering only supports ordinary statements before or after a complete RenderTreeBuilder content segment.");
+                }
+            }
+
+            if (firstRender == 0 && lastRender == operations.Length - 1)
+                return EmitNonHoistableChildContentExpression(operation, context);
+
+            var iterationArgument = context.Argument.WithNewScope();
+            var iterationContext = context with { Argument = iterationArgument };
+            var leading = LowerLoopSideEffectStatements(
+                operations.Take(firstRender).ToImmutableArray(),
+                iterationContext);
+            var rendered = EmitNonHoistableRenderOperations(
+                operations.Skip(firstRender).Take(lastRender - firstRender + 1).ToImmutableArray(),
+                operation,
+                iterationContext);
+            var trailing = LowerLoopSideEffectStatements(
+                operations.Skip(lastRender + 1).ToImmutableArray(),
+                iterationContext);
+            var vnodeName = CreateUniqueLocalName("__jazor$loopVNode");
+            var statements = new List<Statement>(leading.Length + trailing.Length + 3);
+            if (iterationArgument.HasVarDeclarator)
+            {
+                statements.Add(new VariableDeclaration(
+                    VariableDeclarationKind.Let,
+                    iterationArgument.FlushVarDeclarator()));
+            }
+
+            statements.AddRange(leading);
+            statements.Add(new VariableDeclaration(
+                VariableDeclarationKind.Const,
+                NodeList.From(new VariableDeclarator(
+                    new Identifier(vnodeName),
+                    rendered.RenderExpression))));
+            statements.AddRange(trailing);
+            statements.Add(new ReturnStatement(new Identifier(vnodeName)));
+            return new DirectRenderFragmentBody(
+                Call(
+                    new ArrowFunctionExpression(
+                        NodeList.From<Node>(),
+                        new FunctionBody(NodeList.From(statements), strict: true),
+                        expression: false,
+                        async: false),
+                    Array.Empty<Expression>()),
+                rendered.UsesFragment,
+                rendered.UsesStaticVNode);
+        }
+
+        private DirectRenderFragmentBody EmitNonHoistableRenderOperations(
+            ImmutableArray<IOperation> operations,
+            IOperation sourceOperation,
+            EmitContext context)
+        {
+            _nonHoistableRenderScopeDepth++;
+            try
+            {
+                return WithScopedLocalNames(() =>
+                {
+                    var state = new RenderState();
+                    var preludeStatements = new List<Statement>();
+                    var argument = context.Argument.WithNewScope();
+                    _ = EmitOperations(operations, context with
+                    {
+                        PreludeStatements = preludeStatements,
+                        AllowPreludeDeclarations = true,
+                        Argument = argument
+                    }, state);
+                    if (state.Stack.Count != 0)
+                    {
+                        throw Unsupported(
+                            sourceOperation,
+                            "Loop render content left unclosed " + state.Stack.Peek().Describe() + " frames.");
+                    }
+
+                    var hasDirectRoot = preludeStatements.Count == 0 &&
+                                        !argument.HasVarDeclarator &&
+                                        state.Roots.Count == 1 &&
+                                        state.Roots[0].IsDirectVNodeRoot;
+                    return new DirectRenderFragmentBody(
+                        WrapWithExpressionScope(argument, preludeStatements, state.ToRenderExpression()),
+                        state.UsesFragment || state.Roots.Count > 1,
+                        state.UsesStaticVNode,
+                        hasDirectRoot ? state.Roots[0] : null);
+                });
+            }
+            finally
+            {
+                _nonHoistableRenderScopeDepth--;
+            }
+        }
+
+        private ImmutableArray<Statement> LowerLoopSideEffectStatements(
+            ImmutableArray<IOperation> operations,
+            EmitContext context)
+        {
+            var statements = ImmutableArray.CreateBuilder<Statement>(operations.Length);
+            foreach (var operation in operations)
+            {
+                if (operation is not IExpressionStatementOperation expressionStatement ||
+                    !IsLoopSideEffectOperation(operation))
+                {
+                    throw Unsupported(
+                        operation,
+                        "Loop direct render lowering expected an ordinary expression statement outside RenderTreeBuilder content.");
+                }
+
+                statements.Add(new NonSpecialExpressionStatement(
+                    LowerExpression(expressionStatement.Operation, context)));
+            }
+
+            return statements.ToImmutable();
+        }
+
+        private static bool IsLoopSideEffectOperation(IOperation operation)
+        {
+            if (operation is not IExpressionStatementOperation expressionStatement)
+                return false;
+
+            var expression = expressionStatement.Operation;
+            while (expression is IConversionOperation conversion)
+                expression = conversion.Operand;
+            return expression is not IInvocationOperation;
+        }
+
+        private void CollectMutableRenderLocals(IOperation operation)
+        {
+            TrackMutableRenderLocal(operation);
+            foreach (var descendant in operation.Descendants())
+                TrackMutableRenderLocal(descendant);
+        }
+
+        private void TrackMutableRenderLocal(IOperation operation)
+        {
+            var target = operation switch
+            {
+                ISimpleAssignmentOperation assignment => assignment.Target,
+                ICompoundAssignmentOperation assignment => assignment.Target,
+                ICoalesceAssignmentOperation assignment => assignment.Target,
+                IIncrementOrDecrementOperation increment => increment.Target,
+                _ => null
+            };
+            if (target is not null && TryGetAssignedLocal(target, out var local))
+                _mutableRenderLocals.Add(local);
+        }
+
+        private static bool TryGetAssignedLocal(IOperation operation, out ILocalSymbol local)
+        {
+            while (operation is IConversionOperation conversion)
+                operation = conversion.Operand;
+
+            if (operation is ILocalReferenceOperation localReference)
+            {
+                local = localReference.Local;
+                return true;
+            }
+
+            local = null!;
+            return false;
+        }
+
         private static Expression CreateForEachFragmentExpression(
             Expression collection,
             ArrowFunctionExpression mapper,
@@ -682,6 +1142,26 @@ internal static class RenderEmitter
                     new Identifier("Fragment"),
                     Null(),
                     Call("renderList", collection, mapper),
+                new NumericLiteral(
+                        fragmentFlag,
+                        fragmentFlag.ToString(System.Globalization.CultureInfo.InvariantCulture)))));
+        }
+
+        private static Expression CreateForLoopFragmentExpression(
+            Expression children,
+            int fragmentFlag)
+        {
+            // The loop builds one array per render. Frame it as Vue's dynamic fragment so its
+            // children stay isolated from the parent block just like renderList output.
+            // @for 每次 render 生成一个数组；同样使用 Vue dynamic Fragment 隔离其 children，
+            // 避免被父级 block 错误收集。
+            return new SequenceExpression(NodeList.From<Expression>(
+                Call("openBlock", new BooleanLiteral(true, "true")),
+                Call(
+                    "createElementBlock",
+                    new Identifier("Fragment"),
+                    Null(),
+                    children,
                     new NumericLiteral(
                         fragmentFlag,
                         fragmentFlag.ToString(System.Globalization.CultureInfo.InvariantCulture)))));
@@ -745,11 +1225,14 @@ internal static class RenderEmitter
             return locals.ToImmutable();
         }
 
-        private DirectRenderFragmentBody EmitChildContentExpression(IOperation operation, EmitContext context)
+        private DirectRenderFragmentBody EmitChildContentExpression(
+            IOperation operation,
+            EmitContext context,
+            string? implicitRootKey = null)
         {
             return WithScopedLocalNames(() =>
             {
-                var childState = new RenderState();
+                var childState = new RenderState(implicitRootKey);
                 var preludeStatements = new List<Statement>();
                 var childArgument = context.Argument.WithNewScope();
                 _ = EmitOperation(operation, context with
@@ -3318,9 +3801,9 @@ internal static class RenderEmitter
             return operation;
         }
 
-        private static SourceOrigin CreateDirectRenderSourceOrigin(IOperation operation)
-        {
-            var lineSpan = operation.Syntax.GetLocation().GetMappedLineSpan();
+    private static SourceOrigin CreateDirectRenderSourceOrigin(IOperation operation)
+    {
+        var lineSpan = operation.Syntax.GetLocation().GetMappedLineSpan();
             var sourcePath = !string.IsNullOrWhiteSpace(lineSpan.Path)
                 ? lineSpan.Path
                 : operation.Syntax.SyntaxTree.FilePath;
@@ -3329,8 +3812,51 @@ internal static class RenderEmitter
                 lineSpan.StartLinePosition.Line,
                 lineSpan.StartLinePosition.Character,
                 lineSpan.EndLinePosition.Line,
-                lineSpan.EndLinePosition.Character);
+            lineSpan.EndLinePosition.Character);
+    }
+
+    private static string CreateConditionalBranchKey(IConditionalOperation conditional, bool whenTrue)
+    {
+        var mappedSpan = conditional.Syntax.GetLocation().GetMappedLineSpan();
+        // Do not use an emitter counter here. Inserting an unrelated earlier conditional must not
+        // renumber existing branch identities and force unrelated DOM replacement after HMR.
+        // 不使用 emit counter；前面插入无关条件不能重编号既有分支，否则 HMR 会无故替换 DOM。
+        var identity = string.Concat(
+            mappedSpan.Path,
+            "|",
+            mappedSpan.StartLinePosition.Line.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            "|",
+            mappedSpan.StartLinePosition.Character.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            "|",
+            mappedSpan.EndLinePosition.Line.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            "|",
+            mappedSpan.EndLinePosition.Character.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            "|",
+            conditional.Syntax.SyntaxTree.FilePath,
+            "|",
+            conditional.Syntax.SpanStart.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            "|",
+            conditional.Syntax.Span.Length.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        return "__jazor$if_" + ComputeStableKeyHash(identity) + (whenTrue ? "t" : "f");
+    }
+
+    private static string ComputeStableKeyHash(string value)
+    {
+        // FNV-1a is sufficient for an artifact-local identity and keeps mapped source paths out
+        // of the browser bundle. This is identity metadata, not a security hash.
+        // FNV-1a 足够生成 artifact 内 identity，并且不把 source path 暴露到 browser bundle；
+        // 它只用于稳定标识，不承担安全哈希职责。
+        const ulong OffsetBasis = 14695981039346656037UL;
+        const ulong Prime = 1099511628211UL;
+        var hash = OffsetBasis;
+        foreach (var character in value)
+        {
+            hash ^= character;
+            hash *= Prime;
         }
+
+        return hash.ToString("x16", System.Globalization.CultureInfo.InvariantCulture);
+    }
 
     private static bool IsTerminatingWithoutOutput(IOperation? operation)
     {
@@ -4031,6 +4557,13 @@ internal static class RenderEmitter
     /// </summary>
     private sealed class RenderState
     {
+        private readonly string? _implicitRootKey;
+
+        public RenderState(string? implicitRootKey = null)
+        {
+            _implicitRootKey = implicitRootKey;
+        }
+
         public RenderPlan Plan { get; } = new();
 
         public List<VNodePlan> Roots => Plan.Roots;
@@ -4145,9 +4678,24 @@ internal static class RenderEmitter
                 throw Unsupported(operation, "RenderTreeBuilder frame close order is invalid for direct render lowering.");
 
             var frame = Stack.Pop();
-            if (frame is RegionFrame region && region.Children.Count > 1)
+            if (Stack.Count == 0 && TryGetImplicitRootKey(out var implicitRootKey))
+                _ = frame.TrySetImplicitRootKey(implicitRootKey);
+            if (frame is RegionFrame region && region.CreatesFragment)
                 UsesFragment = true;
             AddChild(frame.ToVNodePlan());
+        }
+
+        private bool TryGetImplicitRootKey(out string key)
+        {
+            if (_implicitRootKey is null)
+            {
+                key = string.Empty;
+                return false;
+            }
+
+            key = _implicitRootKey + "_" +
+                Roots.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return true;
         }
     }
 
@@ -4249,6 +4797,13 @@ internal static class RenderEmitter
 
         public abstract VNodePlan ToVNodePlan();
 
+        // The enclosing Razor conditional calls this only after the frame becomes a branch root.
+        // Returning false lets RenderState preserve non-prop content under a keyed Fragment.
+        // 仅当 frame 成为 Razor 条件分支根时调用；不能承载 props 的 frame 返回 false，
+        // RenderState 会用 keyed Fragment 保留原内容。
+        public virtual bool TrySetImplicitRootKey(string key)
+            => false;
+
         public Expression ToRenderExpression()
             => ToVNodePlan().Expression;
 
@@ -4267,6 +4822,7 @@ internal static class RenderEmitter
         private readonly Func<Expression, bool>? _canCacheStableEventHandler;
         private readonly Func<Expression, bool>? _isStableEventHandler;
         private string? _lastAttributeName;
+        private string? _implicitRootKey;
 
         protected PropFrame(
             Func<ObjectExpression, Expression>? hoistStaticProps = null,
@@ -4311,6 +4867,16 @@ internal static class RenderEmitter
         {
             AddAttribute(new DirectAttribute("key", valueExpression));
             HasExplicitVNodeKey = true;
+        }
+
+        public override bool TrySetImplicitRootKey(string key)
+        {
+            // Razor @key remains the author's explicit identity contract. The compiler only
+            // synthesizes a branch key when the root has no authored key of its own.
+            // Razor @key 是作者显式 identity 契约；只有根节点未声明 @key 时才补条件分支 key。
+            if (!HasExplicitVNodeKey)
+                _implicitRootKey = key;
+            return true;
         }
 
         public bool AddMultipleAttributes(Expression attributesExpression)
@@ -4421,6 +4987,8 @@ internal static class RenderEmitter
 
             if (_referenceCaptures.Count > 0)
                 properties.Add(CreateObjectProperty("ref", FormatReferenceCaptureExpression()));
+            if (_implicitRootKey is not null)
+                properties.Add(CreateObjectProperty("key", StringLiteral(_implicitRootKey)));
             FlushProperties(arguments, properties);
 
             var result = arguments.Count switch
@@ -5062,12 +5630,36 @@ internal static class RenderEmitter
     /// <summary>Groups a RenderTree region without creating an extra DOM element.</summary>
     private sealed class RegionFrame : Frame
     {
+        private string? _implicitRootKey;
+
+        public bool CreatesFragment
+            => Children.Count > 1 || _implicitRootKey is not null && Children.Count > 0;
+
+        public override bool TrySetImplicitRootKey(string key)
+        {
+            if (Children.Count == 1)
+            {
+                // A region is a transparent RenderTreeBuilder transport frame. Wrapping its
+                // sole completed child would change a RenderFragment's public vnode shape;
+                // branch-key synthesis intentionally stops at this opaque fragment boundary.
+                // Region 只是 RenderTreeBuilder 的透明传输 frame；包裹其唯一 child 会改变
+                // RenderFragment 的 vnode 形状，因此 branch key 在这个 opaque 边界停止。
+                return true;
+            }
+
+            _implicitRootKey = key;
+            return true;
+        }
+
         public override VNodePlan ToVNodePlan()
         {
             return Children.Count switch
             {
                 0 => VNodePlan.Static(Null()),
-                1 => Children[0],
+                1 when _implicitRootKey is null => Children[0],
+                _ when _implicitRootKey is not null => VNodePlan.Opaque(CreateFragment(
+                    Children.Select(static child => child.ToNormalArrayItem()),
+                    _implicitRootKey)),
                 _ => Children.All(static child => child.Kind == VNodePlanKind.Static)
                     ? VNodePlan.Static(CreateFragment(Children.Select(static child => child.ToNormalArrayItem())))
                     : VNodePlan.Opaque(CreateFragment(Children.Select(static child => child.ToNormalArrayItem())))
@@ -5269,8 +5861,15 @@ internal static class RenderEmitter
     private static Expression NormalizeSlotRenderExpression(Expression expression)
         => VueSlotAstFactory.NormalizeContent(expression);
 
-    private static Expression CreateFragment(IEnumerable<Expression> children)
-        => Call("h", new Identifier("Fragment"), Null(), CreateArray(children));
+    private static Expression CreateFragment(IEnumerable<Expression> children, string? key = null)
+        => Call(
+            "h",
+            new Identifier("Fragment"),
+            key is null
+                ? Null()
+                : new ObjectExpression(NodeList.From<Node>(
+                    [CreateObjectProperty("key", StringLiteral(key))])),
+            CreateArray(children));
 
     private static ObjectProperty CreateObjectProperty(string name, Expression value)
         => new(

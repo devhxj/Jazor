@@ -1,4 +1,5 @@
 using JazorAdmin.Features.Identity;
+using JazorAdmin.Features.Notifications;
 using static ECMAScript.VueRoute;
 using static JazorAdmin.Routes;
 
@@ -28,6 +29,7 @@ public partial class App : ComponentBase, IVueComponent
     private string? selectedOrganizationId;
     private bool collapsed;
     private bool showSettingPanel;
+    private bool showHelpDialog;
     private bool splitMenu;
     private bool isSidebarFixed = true;
     private bool showHeader = true;
@@ -36,6 +38,14 @@ public partial class App : ComponentBase, IVueComponent
     private bool isUseTabsRouter = true;
     private bool menuAutoCollapsed;
     private string[] expandedKeys = [];
+    private string searchText = string.Empty;
+    private bool notificationsOpen;
+    private bool notificationsLoading;
+    private int notificationRequestVersion;
+    private NotificationView[] notifications = [];
+
+    private const int SearchResultLimit = 8;
+    private static readonly AdminRouteDefinition[] NoSearchResults = Array.Empty<AdminRouteDefinition>();
 
     private static readonly TDropdownMinColumnWidthValue UserMenuWidth = "152px";
     private const string StyleStoragePrefix = "jazoradmin.starter.style.";
@@ -66,6 +76,24 @@ public partial class App : ComponentBase, IVueComponent
            "--td-brand-color-light-hover: color-mix(in srgb, " + brandTheme + " 16%, #ffffff); }";
 
     private AdminRouteDefinition[] LocalizedItems => CreateItems(Language);
+
+    // Keep stylesheet registration behind one setup member so Razor render lowering performs
+    // the side effects in the component lifecycle rather than at module evaluation time.
+    // 样式注册集中在 setup 成员中执行，避免模块加载阶段提前写入 document。
+    private static void EnsureShellStyles()
+    {
+        Styles.EnsureLoaded();
+        StarterStyles.EnsureLoaded();
+    }
+
+    // These derived values are shared by render and navigation state, so retain one named
+    // projection instead of rebuilding the route/catalog lookup at every Razor call site.
+    // 渲染与导航状态共用同一投影，避免 Razor 调用点重复拼装路由和模板查找。
+    private AdminNavItems NavigationItems
+        => AdminRouteCatalog.BuildNavigation(LocalizedItems);
+
+    private string SelectedStarterTemplate
+        => StarterCatalog.GetTemplate(SelectedKey);
 
     private AdminRouteDefinition SelectedRoute
         => AdminRouteCatalog.Resolve(LocalizedItems, currentRoute.Path, DashboardKey);
@@ -131,14 +159,110 @@ public partial class App : ComponentBase, IVueComponent
 
     private bool IsSchedulesPage => SelectedKey == SchedulesKey;
 
-    private bool IsDashboardPage => SelectedKey == DashboardKey;
-
     private bool IsStarterPage => StarterCatalog.IsStarter(SelectedKey);
-
-    private bool IsStarterLoginPage => SelectedKey == "starter.login";
 
     private AdminBreadcrumbItem[] SelectedBreadcrumbItems
         => AdminRouteCatalog.BuildBreadcrumbs(LocalizedItems, SelectedKey);
+
+    private bool HasSearchQuery => searchText.Trim().Length > 0;
+
+    private AdminRouteDefinition[] SearchResults
+    {
+        get
+        {
+            var query = searchText.Trim();
+            return query.Length == 0 ? NoSearchResults : CollectSearchResults(LocalizedItems, query);
+        }
+    }
+
+    // 只匹配带具体 Path 的叶子路由；分支节点通过子级命中。上限 SearchResultLimit，
+    // 递归按声明顺序收集，保证同一输入的结果顺序确定。
+    private static AdminRouteDefinition[] CollectSearchResults(AdminRouteDefinition[] items, string query)
+    {
+        List<AdminRouteDefinition>? matches = null;
+        foreach (var item in items)
+        {
+            if (matches is { Count: >= SearchResultLimit })
+            {
+                break;
+            }
+
+            if (item.Path is not null
+                && (item.Disabled ?? false) == false
+                && item.Title is not null
+                && item.Title.Contains(query, StringComparison.OrdinalIgnoreCase))
+            {
+                matches ??= new List<AdminRouteDefinition>();
+                matches.Add(item);
+            }
+
+            if (item.Children is { Length: > 0 } children)
+            {
+                foreach (var child in CollectSearchResults(children, query))
+                {
+                    if (matches is { Count: >= SearchResultLimit })
+                    {
+                        break;
+                    }
+
+                    matches ??= new List<AdminRouteDefinition>();
+                    matches.Add(child);
+                }
+            }
+        }
+
+        return matches is null ? NoSearchResults : [.. matches];
+    }
+
+    private void SubmitSearch()
+    {
+        if (SearchResults is { Length: > 0 } results)
+        {
+            NavigateToSearchResult(results[0]);
+        }
+    }
+
+    private void NavigateToSearchResult(AdminRouteDefinition item)
+    {
+        searchText = string.Empty;
+        _ = router.Push((RouteLocationRaw)item.Path!);
+    }
+
+    private void OpenAccounts()
+        => _ = router.Push((RouteLocationRaw)"/accounts");
+
+    private void ToggleNotifications()
+    {
+        notificationsOpen = !notificationsOpen;
+        // 每次打开重新拉取：会话恢复只负责初始化徽标，通知不做后台轮询。
+        if (notificationsOpen)
+        {
+            LoadNotifications();
+        }
+    }
+
+    private void LoadNotifications()
+    {
+        notificationsLoading = true;
+        var requestVersion = ++notificationRequestVersion;
+        ApiClient.GetNotifications().Then(outcome =>
+        {
+            // Session changes and a later panel refresh supersede this response. Without this
+            // guard, an older authenticated request could restore a stale badge after sign-out.
+            // 会话切换或后续刷新会使旧请求失效，避免登出后回写旧会话的通知徽标。
+            if (requestVersion != notificationRequestVersion)
+                return;
+
+            notificationsLoading = false;
+            notifications = outcome.Ok
+                ? ApiClient.ToNotifications(outcome.Data)
+                : [];
+        });
+    }
+
+    // ISO "O" 时间仅在展示层截断为可读形式；不做时区换算，管理端以 UTC 为准。
+    private static string FormatNotificationTime(string startedAt)
+        => startedAt.Length <= 16 ? startedAt : startedAt.Substring(0, 16).Replace("T", " ");
 
     private TDropdownOption[] LanguageOptions =>
     [

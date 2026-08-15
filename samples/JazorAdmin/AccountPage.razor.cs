@@ -38,7 +38,7 @@ public partial class AccountPage : AppComponentBase, IVueContainerComponent
         loading = false;
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load accounts.";
+            error = outcome.Error ?? L("Unable to load accounts.", "无法加载账户。");
             return;
         }
 
@@ -54,7 +54,7 @@ public partial class AccountPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to create the account.";
+                error = outcome.Error ?? L("Unable to create the account.", "无法创建账户。");
                 return;
             }
 
@@ -78,7 +78,7 @@ public partial class AccountPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to update the account state.";
+                error = outcome.Error ?? L("Unable to update the account state.", "无法更新账户状态。");
                 return;
             }
 
@@ -95,7 +95,7 @@ public partial class AccountPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to reset the account password.";
+                error = outcome.Error ?? L("Unable to reset the account password.", "无法重置账户密码。");
                 return;
             }
 

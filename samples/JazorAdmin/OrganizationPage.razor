@@ -4,11 +4,11 @@
 <section class="ja-management" data-management-area="organizations">
     @if (OrganizationId is null)
     {
-        <p class="ja-management__empty">Select an organization from the header to manage it.</p>
+        <p class="ja-management__empty">@L("Select an organization from the header to manage it.", "请先从页头选择一个组织再进行管理。")</p>
     }
     else if (loading)
     {
-        <p class="ja-management__loading" aria-live="polite">Loading organization data</p>
+        <p class="ja-management__loading" aria-live="polite">@L("Loading organization data", "正在加载组织数据")</p>
     }
     else if (error is not null)
     {
@@ -20,16 +20,16 @@
             <section class="ja-management__panel" aria-labelledby="organization-detail-title">
                 <header class="ja-management__panel-header">
                     <div>
-                        <h2 id="organization-detail-title">Organization structure</h2>
+                        <h2 id="organization-detail-title">@L("Organization structure", "组织架构")</h2>
                         <p>@organization?.Code</p>
                     </div>
                 </header>
                 <dl class="ja-management__details">
-                    <div><dt>Name</dt><dd>@organization?.DisplayName</dd></div>
-                    <div><dt>Code</dt><dd>@organization?.Code</dd></div>
-                    <div><dt>Parent</dt><dd>@(organization?.ParentId ?? "Root organization")</dd></div>
+                    <div><dt>@L("Name", "名称")</dt><dd>@organization?.DisplayName</dd></div>
+                    <div><dt>@L("Code", "编码")</dt><dd>@organization?.Code</dd></div>
+                    <div><dt>@L("Parent", "上级组织")</dt><dd>@(organization?.ParentId ?? L("Root organization", "根组织"))</dd></div>
                 </dl>
-                <h3>Child organizations</h3>
+                <h3>@L("Child organizations", "下级组织")</h3>
                 @if (organization?.Children is { Length: > 0 } children)
                 {
                     <ul class="ja-management__item-list">
@@ -44,27 +44,27 @@
                 }
                 else
                 {
-                    <p class="ja-management__empty">No child organizations.</p>
+                    <p class="ja-management__empty">@L("No child organizations.", "暂无下级组织。")</p>
                 }
             </section>
 
             <section class="ja-management__panel" aria-labelledby="create-child-title">
                 <header class="ja-management__panel-header">
                     <div>
-                        <h2 id="create-child-title">Add child organization</h2>
-                        <p>Create a direct child under the active organization</p>
+                        <h2 id="create-child-title">@L("Add child organization", "新增下级组织")</h2>
+                        <p>@L("Create a direct child under the active organization", "在当前组织下创建直接下级组织")</p>
                     </div>
                 </header>
                 <form class="ja-management__form" @onsubmit="CreateChild" @onsubmit:preventDefault>
                     <label>
-                        <span>Code</span>
+                        <span>@L("Code", "编码")</span>
                         <input required autocomplete="off" @bind="childCode" @bind:event="oninput" />
                     </label>
                     <label>
-                        <span>Display name</span>
+                        <span>@L("Display name", "显示名称")</span>
                         <input required autocomplete="off" @bind="childDisplayName" @bind:event="oninput" />
                     </label>
-                    <button type="submit">Create organization</button>
+                    <button type="submit">@L("Create organization", "创建组织")</button>
                 </form>
             </section>
         </div>
@@ -75,14 +75,14 @@
             <section class="ja-management__panel" aria-labelledby="organization-members-title">
                 <header class="ja-management__panel-header">
                     <div>
-                        <h2 id="organization-members-title">Members</h2>
-                        <p>Memberships in the active organization</p>
+                        <h2 id="organization-members-title">@L("Members", "成员管理")</h2>
+                        <p>@L("Memberships in the active organization", "当前组织的成员记录")</p>
                     </div>
                 </header>
                 <div class="ja-management__table-wrap">
                     <table class="ja-management__table">
                         <thead>
-                            <tr><th>Member</th><th>Roles</th><th></th></tr>
+                            <tr><th>@L("Member", "成员")</th><th>@L("Roles", "角色")</th><th></th></tr>
                         </thead>
                         <tbody>
                             @foreach (var member in members)
@@ -90,7 +90,7 @@
                                 <tr class="@(member.MembershipId == editingMembershipId ? "is-selected" : string.Empty)">
                                     <td><strong>@member.DisplayName</strong><span>@member.Email</span></td>
                                     <td>@GetRoleNames(member.Roles)</td>
-                                    <td><button type="button" class="ja-management__text-button" @onclick="() => SelectMember(member)">Edit roles</button></td>
+                                    <td><button type="button" class="ja-management__text-button" @onclick="() => SelectMember(member)">@L("Edit roles", "编辑角色")</button></td>
                                 </tr>
                             }
                         </tbody>
@@ -101,32 +101,32 @@
             <section class="ja-management__panel" aria-labelledby="membership-actions-title">
                 <header class="ja-management__panel-header">
                     <div>
-                        <h2 id="membership-actions-title">Membership</h2>
-                        <p>Add a known account or change the selected member's roles</p>
+                        <h2 id="membership-actions-title">@L("Membership", "成员操作")</h2>
+                        <p>@L("Add a known account or change the selected member's roles", "添加已有账号或修改所选成员的角色")</p>
                     </div>
                 </header>
                 <form class="ja-management__form" @onsubmit="CreateMember" @onsubmit:preventDefault>
                     <label>
-                        <span>Account email</span>
+                        <span>@L("Account email", "账号邮箱")</span>
                         <input required type="email" autocomplete="off" @bind="memberEmail" @bind:event="oninput" />
                     </label>
                     <label>
-                        <span>Initial role</span>
+                        <span>@L("Initial role", "初始角色")</span>
                         <select @bind="newMemberRoleId">
-                            <option value="">No role</option>
+                            <option value="">@L("No role", "不分配角色")</option>
                             @foreach (var role in roles)
                             {
                                 <option value="@role.Id">@role.DisplayName</option>
                             }
                         </select>
                     </label>
-                    <button type="submit">Add member</button>
+                    <button type="submit">@L("Add member", "添加成员")</button>
                 </form>
 
                 @if (editingMembershipId is not null)
                 {
                     <div class="ja-management__role-editor">
-                        <h3>Member roles</h3>
+                        <h3>@L("Member roles", "成员角色")</h3>
                         @foreach (var role in roles)
                         {
                             <label class="ja-management__check">
@@ -134,7 +134,7 @@
                                 <span>@role.DisplayName</span>
                             </label>
                         }
-                        <button type="button" @onclick="SaveMemberRoles">Save roles</button>
+                        <button type="button" @onclick="SaveMemberRoles">@L("Save roles", "保存角色")</button>
                     </div>
                 }
             </section>

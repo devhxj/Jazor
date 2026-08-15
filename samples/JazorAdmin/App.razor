@@ -1,6 +1,6 @@
 @inherits ComponentBase
 
-@{ Styles.EnsureLoaded(); StarterStyles.EnsureLoaded(); }
+@{ EnsureShellStyles(); }
 
 <ApplicationFrame Theme="@Theme" Language="@languageTag" CssStyle="@ApplicationStyle">
     <style data-starter-theme="">@BrandThemeCss</style>
@@ -8,7 +8,7 @@
     {
         <main class="ja-session-state" data-session-state="restoring" aria-live="polite">
             <span class="ja-session-state__spinner" aria-hidden="true"></span>
-            <span>Restoring session</span>
+            <span>@Localization.Get(Language, TextKey.RestoringSession)</span>
         </main>
     }
     else if (currentRoute.Path == "/login" || currentRoute.Path == "/lock")
@@ -105,7 +105,7 @@
     else if (!HasSession)
     {
         <main class="ja-session-state" data-session-state="anonymous" aria-live="polite">
-            <span>Redirecting to sign in</span>
+            <span>@Localization.Get(Language, TextKey.RedirectingToSignIn)</span>
         </main>
     }
     else if (IsErrorRoute)
@@ -129,8 +129,8 @@
                           ShowFooter="@showFooter"
                           MenuAutoCollapsed="@menuAutoCollapsed"
                           Title="JazorAdmin"
-                          Subtitle="Identity and access management"
-                          NavItems="@AdminRouteCatalog.BuildNavigation(LocalizedItems)"
+                          Subtitle="@Localization.Get(Language, TextKey.IdentitySubtitle)"
+                          NavItems="@NavigationItems"
                           Collapsed="@collapsed"
                           CollapsedChanged="@(value => collapsed = value)"
                           CollapseLabel="@Localization.Get(Language, TextKey.CollapseSidebar)"
@@ -147,32 +147,32 @@
             </Logo>
             <IconBarActions>
                 <TTooltip ContentValue="@Localization.Get(Language, TextKey.Documentation)" Placement="@TPopupPlacement.Right">
-                    <TButton CssClass="@("ja-iconbar__quick-action")"
-                             Variant="@TButtonVariantValue.Text"
-                             Shape="@TButtonShapeValue.Square"
-                             data-iconbar-action="documentation"
-                             data-iconbar-placeholder="true"
-                             aria-label="@Localization.Get(Language, TextKey.Documentation)">
-                        <IconContent><TIcon Name="file-paste" Size="20px" aria-hidden="true" /></IconContent>
-                    </TButton>
+                    <a class="ja-iconbar__quick-action ja-starter-link-button"
+                       href="https://github.com/devhxj/Jazor/tree/main/docs"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       data-iconbar-action="documentation"
+                       aria-label="@Localization.Get(Language, TextKey.Documentation)">
+                        <TIcon Name="file-paste" Size="20px" aria-hidden="true" />
+                    </a>
                 </TTooltip>
                 <TTooltip ContentValue="@Localization.Get(Language, TextKey.Assistant)" Placement="@TPopupPlacement.Right">
-                    <TButton CssClass="@("ja-iconbar__quick-action")"
-                             Variant="@TButtonVariantValue.Text"
-                             Shape="@TButtonShapeValue.Square"
-                             data-iconbar-action="assistant"
-                             data-iconbar-placeholder="true"
-                             aria-label="@Localization.Get(Language, TextKey.Assistant)">
-                        <IconContent><TIcon Name="chat" Size="20px" aria-hidden="true" /></IconContent>
-                    </TButton>
+                    <a class="ja-iconbar__quick-action ja-starter-link-button"
+                       href="https://github.com/devhxj/Jazor/issues"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       data-iconbar-action="assistant"
+                       aria-label="@Localization.Get(Language, TextKey.Assistant)">
+                        <TIcon Name="chat" Size="20px" aria-hidden="true" />
+                    </a>
                 </TTooltip>
                 <TTooltip ContentValue="@Localization.Get(Language, TextKey.Account)" Placement="@TPopupPlacement.Right">
                     <TButton CssClass="@("ja-iconbar__quick-action")"
                              Variant="@TButtonVariantValue.Text"
                              Shape="@TButtonShapeValue.Square"
                              data-iconbar-action="account"
-                             data-iconbar-placeholder="true"
-                             aria-label="@Localization.Get(Language, TextKey.Account)">
+                             aria-label="@Localization.Get(Language, TextKey.Account)"
+                             OnClick="@(_ => OpenAccounts())">
                         <IconContent><TIcon Name="user-circle" Size="20px" aria-hidden="true" /></IconContent>
                     </TButton>
                 </TTooltip>
@@ -189,12 +189,43 @@
             </IconBarActions>
             <HeaderActions>
                 <div class="ja-starter-operations">
-                    <label class="ja-starter-search" title="@Localization.Get(Language, TextKey.Search)">
+                    <form class="ja-starter-search"
+                          data-search-active="@(HasSearchQuery ? "true" : "false")"
+                          title="@Localization.Get(Language, TextKey.Search)"
+                          @onsubmit="SubmitSearch"
+                          @onsubmit:preventDefault>
                         <TIcon Name="search" Size="18px" aria-hidden="true" />
                         <input type="search"
                                placeholder="@Localization.Get(Language, TextKey.SearchPlaceholder)"
-                               aria-label="@Localization.Get(Language, TextKey.Search)" />
-                    </label>
+                               aria-label="@Localization.Get(Language, TextKey.Search)"
+                               data-search-input=""
+                               @bind="searchText"
+                               @bind:event="oninput" />
+                        @if (HasSearchQuery)
+                        {
+                            <div class="ja-starter-search__panel" role="listbox" data-search-panel="">
+                                @if (SearchResults.Length == 0)
+                                {
+                                    <p class="ja-starter-search__empty">@Localization.Get(Language, TextKey.SearchNoResults)</p>
+                                }
+                                else
+                                {
+                                    @foreach (var result in SearchResults)
+                                    {
+                                        <button type="button"
+                                                class="ja-starter-search__item"
+                                                role="option"
+                                                aria-selected="false"
+                                                data-search-key="@result.Key"
+                                                @onclick="() => NavigateToSearchResult(result)">
+                                            <span>@result.Title</span>
+                                            <small>@result.Path</small>
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        }
+                    </form>
                     @if (organizations.Length > 0)
                     {
                         <label class="ja-starter-organization">
@@ -209,20 +240,58 @@
                             </select>
                         </label>
                     }
-                    <TTooltip ContentValue="@Localization.Get(Language, TextKey.Notifications)">
+                    <div class="ja-starter-notifications" data-notifications-open="@(notificationsOpen ? "true" : "false")">
                         <TButton Variant="@TButtonVariantValue.Text" Shape="@TButtonShapeValue.Square"
-                                 aria-label="@Localization.Get(Language, TextKey.Notifications)">
+                                 aria-label="@Localization.Get(Language, TextKey.Notifications)"
+                                 data-notification-command="toggle"
+                                 OnClick="@(_ => ToggleNotifications())">
                             <IconContent><TIcon Name="notification" Size="20px" /></IconContent>
                         </TButton>
-                    </TTooltip>
-                    <TTooltip ContentValue="TDesign Vue Next">
-                        <TButton Variant="@TButtonVariantValue.Text" Shape="@TButtonShapeValue.Square" aria-label="TDesign Vue Next">
-                            <IconContent><TIcon Name="logo-github" Size="20px" /></IconContent>
-                        </TButton>
-                    </TTooltip>
+                        @if (notifications.Length > 0)
+                        {
+                            <span class="ja-starter-notifications__badge" data-notification-count="@notifications.Length">@notifications.Length</span>
+                        }
+                        @if (notificationsOpen)
+                        {
+                            <div class="ja-starter-notifications__panel" role="dialog" aria-label="@Localization.Get(Language, TextKey.Notifications)" data-notifications-panel="">
+                                <header>@Localization.Get(Language, TextKey.Notifications)</header>
+                                @if (notificationsLoading)
+                                {
+                                    <p class="ja-starter-notifications__empty">@Localization.Get(Language, TextKey.NotificationsLoading)</p>
+                                }
+                                else if (notifications.Length == 0)
+                                {
+                                    <p class="ja-starter-notifications__empty">@Localization.Get(Language, TextKey.NotificationsEmpty)</p>
+                                }
+                                else
+                                {
+                                    <ul>
+                                        @foreach (var notification in notifications)
+                                        {
+                                            <li data-notification-source="@notification.Source">
+                                                <strong>@notification.Title</strong>
+                                                <small>@FormatNotificationTime(notification.StartedAt)@(notification.Message is null ? string.Empty : " · " + notification.Message)</small>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <a class="ja-starter-link-button"
+                       href="https://github.com/devhxj/Jazor"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="GitHub"
+                       title="GitHub"
+                       data-header-link="github">
+                        <TIcon Name="logo-github" Size="20px" aria-hidden="true" />
+                    </a>
                     <TTooltip ContentValue="@Localization.Get(Language, TextKey.Help)">
                         <TButton Variant="@TButtonVariantValue.Text" Shape="@TButtonShapeValue.Square"
-                                 aria-label="@Localization.Get(Language, TextKey.Help)">
+                                 aria-label="@Localization.Get(Language, TextKey.Help)"
+                                 data-header-command="help"
+                                 OnClick="@(_ => showHelpDialog = true)">
                             <IconContent><TIcon Name="help-circle" Size="20px" /></IconContent>
                         </TButton>
                     </TTooltip>
@@ -306,7 +375,7 @@
                         else
                         {
                             <StarterPage Language="@Language"
-                                         Template="@StarterCatalog.GetTemplate(SelectedKey)"
+                                         Template="@SelectedStarterTemplate"
                                          Session="@session" />
                         }
                     }
@@ -319,9 +388,13 @@
                 </TDesignPageContainer>
             </ChildContent>
             <Footer>
-                <div class="tdesign-starter-footer">Copyright © 2021-2026 Tencent. All Rights Reserved</div>
+                <div class="ja-footer">@Localization.Get(Language, TextKey.Copyright)</div>
             </Footer>
         </TDesignLayout>
+
+        <HelpDialog Visible="@showHelpDialog"
+                    VisibleChanged="@(value => showHelpDialog = value)"
+                    Language="@Language" />
 
         @if (CanConfigureAppearance)
         {

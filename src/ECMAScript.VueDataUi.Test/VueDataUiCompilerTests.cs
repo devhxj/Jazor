@@ -152,4 +152,54 @@ public sealed class VueDataUiCompilerTests
         StringAssert.Contains(script, "values: [12, null, 29]", StringComparison.Ordinal);
         StringAssert.Contains(script, "return [[\"2026-08-14\", 12, 18, 10, 16, 4200]];", StringComparison.Ordinal);
     }
+
+    [TestMethod]
+    public async Task Convert_ExtendedCatalogDataShapes_PreservesPositionalAndDictionaryInputs()
+    {
+        var script = await VueDataUiTestCompiler.ConvertModuleAsync(
+            """
+            using ECMAScript;
+            using ECMAScript.VueDataUi;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("charts/extended-data.mjs")]
+                public static class ExtendedDataModule
+                {
+                    public static VueDataUiCellValue[][] AgePyramid()
+                        => [VueUiAgePyramidData.Row("2026", 1, 42, null)];
+
+                    public static VueDataUiCellValue[][] Flow()
+                        => [VueUiFlowData.Link("Source", "Target", 12)];
+
+                    public static VueUiWorldDataset World()
+                        => new()
+                        {
+                            ["CN"] = new VueUiWorldDatasetItem
+                            {
+                                Value = 42,
+                                Category = "Active",
+                                Color = "#0f766e"
+                            }
+                        };
+
+                    public static VueUiRatingDataset Rating()
+                        => new()
+                        {
+                            Rating = new VueUiRatingDatasetDetailed { ["quality"] = 4.5 }
+                        };
+                }
+            }
+            """,
+            "ExtendedDataModule");
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "return [[\"2026\", 1, 42, null]];", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return [[\"Source\", \"Target\", 12]];", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return { CN:", StringComparison.Ordinal);
+        StringAssert.Contains(script, "value: 42", StringComparison.Ordinal);
+        StringAssert.Contains(script, "category: \"Active\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "color: \"#0f766e\"", StringComparison.Ordinal);
+        StringAssert.Contains(script, "rating: { quality: 4.5 }", StringComparison.Ordinal);
+    }
 }

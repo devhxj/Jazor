@@ -1,0 +1,3 @@
+import { createVuIcon } from "../jazor-vu-icon-runtime.mjs";
+
+export const VuBirdhouse = createVuIcon("VuBirdhouse", "0 0 24 24", '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 18v4m5-4l1.956-11.468M3 8l7.82-5.615a2 2 0 0 1 2.36 0L21 8M4 18h16M7 18L5.044 6.532"/><circle cx="12" cy="10" r="2"/></g>');

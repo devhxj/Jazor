@@ -222,9 +222,11 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(iconBarModule, "data-iconbar", "IconBar root marker in JazorAdmin IconBar module");
     AssertContains(iconBarModule, "data-iconbar-key", "IconBar item marker in JazorAdmin IconBar module");
     AssertContains(iconBarModule, "Button, HeadMenu, Icon, Menu, MenuItem, Popup", "TDesign IconBar control imports in JazorAdmin IconBar module");
-    AssertContains(iconBarModule, "h(Menu,", "TDesign collapsed menu in JazorAdmin IconBar module");
-    AssertContains(iconBarModule, "h(HeadMenu,", "TDesign head menu in JazorAdmin IconBar module");
-    AssertContains(iconBarModule, "h(MenuItem,", "TDesign menu item in JazorAdmin IconBar module");
+    // Direct render lowering now emits Vue block calls (openBlock + createBlock) for proven
+    // child shapes instead of plain h(...) calls; assert the current block emission contract.
+    AssertContains(iconBarModule, "createBlock(Menu,", "TDesign collapsed menu in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "createBlock(HeadMenu,", "TDesign head menu in JazorAdmin IconBar module");
+    AssertContains(iconBarModule, "createBlock(MenuItem,", "TDesign menu item in JazorAdmin IconBar module");
     AssertContains(iconBarModule, "operations:", "TDesign IconBar operations slot in JazorAdmin IconBar module");
     AssertContains(iconBarModule, "ja-iconbar__quick-actions", "IconBar floating action group in JazorAdmin IconBar module");
     AssertContains(iconBarModule, "toggle-quick-actions", "IconBar floating action trigger in JazorAdmin IconBar module");
@@ -267,7 +269,12 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(schedulesModule, "GetScheduleRuns", "task scheduling history query");
     foreach (var (relativePath, description) in componentModules)
         AssertContains(manifest, "\"" + relativePath + "\"", description + " manifest entry");
-    AssertDoesNotContain(manifest, ".vue", "legacy SFC artifact in JazorAdmin manifest");
+    // The manifest legitimately carries the "jazor.vue" runtime provider id; the retired-SFC
+    // contract is about generated module paths, so exclude the provider id before checking.
+    AssertDoesNotContain(
+        manifest.Replace("\"jazor.vue\"", string.Empty, StringComparison.Ordinal),
+        ".vue",
+        "legacy SFC artifact in JazorAdmin manifest");
     AssertDoesNotContain(manifest, "release-table", "retired release table artifact in JazorAdmin manifest");
     AssertDoesNotContain(manifest, "settings-form", "retired settings form artifact in JazorAdmin manifest");
 }
@@ -404,7 +411,8 @@ static async Task VerifyBrowserSmokeAsync(
                     "tdesign-vue-next": "/vendor/tdesign-vue-next.bundle.mjs",
                     "style.mjs": "/style.mjs",
                     "components/": "/components/",
-                    "System/": "/System/"
+                    "System/": "/System/",
+                    "@jazor/vue-runtime/": "/@jazor/vue-runtime/"
                   }
                 }
                 </script>
@@ -535,6 +543,39 @@ static async Task VerifyBrowserSmokeAsync(
                       roles: ["platform-administrator"],
                       organizations: [organization]
                     });
+                    if (url.pathname === "/api/overview/") {
+                      const recentRuns = Array.from({ length: 7 }, (_, index) => {
+                        const day = new Date(Date.now() - (6 - index) * 86400000);
+                        return {
+                          date: day.toISOString().slice(0, 10),
+                          succeeded: index + 1,
+                          failed: index % 2
+                        };
+                      });
+                      return json({
+                        accounts: 12,
+                        enabledAccounts: 11,
+                        organizations: 3,
+                        organizationRoles: 5,
+                        platformRoles: 1,
+                        applications: 4,
+                        scopes: 3,
+                        authorizations: 2,
+                        tokens: 6,
+                        settings: 8,
+                        schedules: 2,
+                        enabledSchedules: 2,
+                        recentRuns
+                      });
+                    }
+                    if (url.pathname === "/api/notifications/") return json([{
+                      id: "notification-smoke",
+                      source: "schedule",
+                      title: "OpenID prune",
+                      status: "failed",
+                      startedAt: "2026-08-14T08:30:00.0000000Z",
+                      message: "Simulated failure"
+                    }]);
                     if (url.pathname === "/api/organizations/") return json([organization]);
                     if (url.pathname.endsWith("/members")) return json([{
                       membershipId: "5e7e599d-c9a3-40d6-bd1d-5ce2d3e976d8",
@@ -849,8 +890,9 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitFor(
                         () => document.querySelector('[data-iconbar-quick-actions]') !== null,
                         "IconBar floating action group");
-                      const quickActionNames = Array.from(document.querySelectorAll('[data-iconbar-quick-actions] button'))
-                        .map((button) => button.getAttribute("aria-label") ?? "");
+                      // Documentation/Assistant quick actions are external-link anchors; Account/Sign-out stay buttons.
+                      const quickActionNames = Array.from(document.querySelectorAll('[data-iconbar-quick-actions] button, [data-iconbar-quick-actions] a'))
+                        .map((action) => action.getAttribute("aria-label") ?? "");
                       quickActionsToggle.click();
                       await nextTick();
                       const userText = document.querySelector(".ja-starter-user")?.textContent ?? "";
@@ -873,6 +915,33 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitFor(
                         () => document.querySelector('[data-shell-region="layout"]')?.getAttribute("data-shell-collapsed") === "false",
                         "expanded shell");
+
+                      // Navigation search: type a Chinese query, pick the first result, and land on the page.
+                      const searchInput = document.querySelector('[data-search-input]');
+                      if (!(searchInput instanceof HTMLInputElement)) throw new Error("Header search input is missing.");
+                      searchInput.value = "账户";
+                      searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+                      await waitFor(() => document.querySelector('[data-search-panel]') !== null, "navigation search panel");
+                      await waitFor(
+                        () => document.querySelectorAll('[data-search-panel] [data-search-key]').length > 0,
+                        "navigation search results");
+                      const searchResultKeys = Array.from(document.querySelectorAll('[data-search-panel] [data-search-key]'))
+                        .map((button) => button.getAttribute("data-search-key") ?? "");
+                      await click('[data-search-panel] [data-search-key]', "navigation search result");
+                      await waitFor(() => location.pathname === "/accounts", "navigation search navigation");
+                      const searchSelectedTitle = document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "";
+                      const searchPanelClosedAfterNavigation = document.querySelector('[data-search-panel]') === null;
+
+                      // Notification bell: the mocked failed run must appear with its badge.
+                      const notificationBadgeBeforeOpen = document.querySelector('[data-notification-count]')?.textContent ?? "";
+                      await click('[data-notification-command="toggle"]', "notification bell");
+                      await waitFor(() => document.querySelector('[data-notifications-panel]') !== null, "notification panel");
+                      await waitFor(
+                        () => document.querySelector('[data-notifications-panel] li')?.textContent?.includes("OpenID prune") === true,
+                        "notification failed run entry");
+                      const notificationEntryText = document.querySelector('[data-notifications-panel] li')?.textContent ?? "";
+                      await click('[data-notification-command="toggle"]', "notification bell close");
+                      const notificationPanelClosed = document.querySelector('[data-notifications-panel]') === null;
 
                       await click('[data-iconbar-key="organizations"]', "organizations IconBar item");
                       await waitForTitle("组织架构");
@@ -926,6 +995,9 @@ static async Task VerifyBrowserSmokeAsync(
                       const machineSecret = document.querySelector('[data-issued-secret] code')?.textContent ?? "";
 
                       await click('[data-sso-command="new-application"]', "new API application command");
+                      // The profiles group only re-renders after the reset click flushes; wait for it
+                      // explicitly instead of assuming the single click-helper tick is enough.
+                      await waitFor(() => document.querySelector('.ja-management__profiles') !== null, "API application profile group");
                       await click('.ja-management__profiles button:nth-child(3)', "API application profile");
                       await setInput('.ja-management__field-grid label:nth-child(1) input', "audit-api");
                       await setInput('.ja-management__field-grid label:nth-child(2) input', "Audit API");
@@ -1047,6 +1119,12 @@ static async Task VerifyBrowserSmokeAsync(
                         starterNavigationSelectedKey,
                         starterNavigationGroups,
                         dashboardReturnPathname,
+                        searchResultKeys,
+                        searchSelectedTitle,
+                        searchPanelClosedAfterNavigation,
+                        notificationBadgeBeforeOpen,
+                        notificationEntryText,
+                        notificationPanelClosed,
                         injectSmoke,
                         hasLegacyVueReference: Array.from(document.scripts)
                           .some((script) => script.getAttribute("src")?.endsWith(".vue"))
@@ -1104,6 +1182,16 @@ static async Task VerifyBrowserSmokeAsync(
         foreach (var action in new[] { "文档", "助手", "账号", "退出登录" })
             AssertJsonStringArrayContains(root, "quickActionNames", action, "JazorAdmin IconBar floating action", root.GetRawText());
         AssertContains(root.GetProperty("userText").GetString() ?? string.Empty, "Smoke operator", "JazorAdmin browser session account", root.GetRawText());
+        AssertContains(
+            string.Join(",", root.GetProperty("searchResultKeys").EnumerateArray().Select(value => value.GetString() ?? "")),
+            "accounts",
+            "JazorAdmin navigation search results",
+            root.GetRawText());
+        AssertContains(root.GetProperty("searchSelectedTitle").GetString() ?? string.Empty, "账户管理", "JazorAdmin navigation search destination", root.GetRawText());
+        AssertJsonBoolean(root, "searchPanelClosedAfterNavigation", true, "JazorAdmin navigation search panel closes after navigation", root.GetRawText());
+        AssertContains(root.GetProperty("notificationBadgeBeforeOpen").GetString() ?? string.Empty, "1", "JazorAdmin notification badge count", root.GetRawText());
+        AssertContains(root.GetProperty("notificationEntryText").GetString() ?? string.Empty, "OpenID prune", "JazorAdmin notification failed run", root.GetRawText());
+        AssertJsonBoolean(root, "notificationPanelClosed", true, "JazorAdmin notification panel closes on toggle", root.GetRawText());
         AssertContains(root.GetProperty("organizationPickerValue").GetString() ?? string.Empty, "5e1246c9", "JazorAdmin browser organization selection", root.GetRawText());
         AssertContains(root.GetProperty("initialSidebarExpanded").GetString() ?? string.Empty, "true", "JazorAdmin initial sidebar state", root.GetRawText());
         AssertContains(root.GetProperty("collapsedSidebarWidth").GetString() ?? string.Empty, "64px", "JazorAdmin collapsed IconBar width", root.GetRawText());
@@ -1125,7 +1213,7 @@ static async Task VerifyBrowserSmokeAsync(
         AssertJsonInt(root, "resourceOperationCount", 4, "JazorAdmin resource operation count", root.GetRawText());
         AssertDoesNotContain(root.GetProperty("resourceText").GetString() ?? string.Empty, "Recruitment", "JazorAdmin removed recruitment resource");
         AssertContains(root.GetProperty("accountsPathname").GetString() ?? string.Empty, "/accounts", "JazorAdmin account navigation", root.GetRawText());
-        AssertContains(root.GetProperty("accountRowText").GetString() ?? string.Empty, "Platform administrator", "JazorAdmin account row", root.GetRawText());
+        AssertContains(root.GetProperty("accountRowText").GetString() ?? string.Empty, "平台管理员", "JazorAdmin account row", root.GetRawText());
         AssertContains(root.GetProperty("applicationsPathname").GetString() ?? string.Empty, "/sso/applications", "JazorAdmin OpenIddict application navigation", root.GetRawText());
         AssertContains(root.GetProperty("applicationRowText").GetString() ?? string.Empty, "JazorAdmin SPA", "JazorAdmin OpenIddict application row", root.GetRawText());
         AssertJsonInt(root, "applicationCount", 3, "JazorAdmin created Machine and API applications", root.GetRawText());

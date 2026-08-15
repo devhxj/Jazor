@@ -4,7 +4,7 @@
 <section class="ja-management" data-management-area="sso" data-sso-view="@(View == GrantView.Authorizations ? "authorizations" : "tokens")">
     @if (loading)
     {
-        <p class="ja-management__loading" aria-live="polite">Loading @(View == GrantView.Authorizations ? "authorizations" : "tokens")</p>
+        <p class="ja-management__loading" aria-live="polite">@(View == GrantView.Authorizations ? L("Loading authorizations", "正在加载授权记录") : L("Loading tokens", "正在加载令牌"))</p>
     }
     else if (error is not null)
     {
@@ -13,16 +13,16 @@
     else if (View == GrantView.Authorizations)
     {
         <section class="ja-management__panel" aria-labelledby="sso-authorizations-title">
-            <header class="ja-management__panel-header"><div><h2 id="sso-authorizations-title">Authorizations</h2><p>Persistent grants created by OpenIddict protocol flows</p></div></header>
+            <header class="ja-management__panel-header"><div><h2 id="sso-authorizations-title">@L("Authorizations", "授权记录")</h2><p>@L("Persistent grants created by OpenIddict protocol flows", "由 OpenIddict 协议流程创建的持久授权")</p></div></header>
             <div class="ja-management__table-wrap">
                 <table class="ja-management__table">
-                    <thead><tr><th>Application</th><th>Subject</th><th>Type</th><th>Status</th><th>Scopes</th><th></th></tr></thead>
+                    <thead><tr><th>@L("Application", "应用")</th><th>@L("Subject", "主体")</th><th>@L("Type", "类型")</th><th>@L("Status", "状态")</th><th>@L("Scopes", "Scope")</th><th></th></tr></thead>
                     <tbody>
                         @foreach (var authorization in authorizations)
                         {
                             <tr data-sso-authorization="@authorization.Id">
                                 <td>@(authorization.ClientId ?? "-")</td><td>@(authorization.Subject ?? "-")</td><td>@authorization.Type</td><td>@authorization.Status</td><td>@Join(authorization.Scopes)</td>
-                                <td><button type="button" class="ja-management__text-button" disabled="@(authorization.Status == "revoked")" @onclick="() => RevokeAuthorization(authorization.Id)">Revoke</button></td>
+                                <td><button type="button" class="ja-management__text-button" disabled="@(authorization.Status == "revoked")" @onclick="() => RevokeAuthorization(authorization.Id)">@L("Revoke", "撤销")</button></td>
                             </tr>
                         }
                     </tbody>
@@ -33,16 +33,16 @@
     else
     {
         <section class="ja-management__panel" aria-labelledby="sso-tokens-title">
-            <header class="ja-management__panel-header"><div><h2 id="sso-tokens-title">Tokens</h2><p>Latest 200 tokens stored by OpenIddict</p></div></header>
+            <header class="ja-management__panel-header"><div><h2 id="sso-tokens-title">@L("Tokens", "令牌")</h2><p>@L("Latest 200 tokens stored by OpenIddict", "OpenIddict 存储的最新 200 条令牌")</p></div></header>
             <div class="ja-management__table-wrap">
                 <table class="ja-management__table">
-                    <thead><tr><th>Application</th><th>Subject</th><th>Type</th><th>Status</th><th>Expires</th><th></th></tr></thead>
+                    <thead><tr><th>@L("Application", "应用")</th><th>@L("Subject", "主体")</th><th>@L("Type", "类型")</th><th>@L("Status", "状态")</th><th>@L("Expires", "过期时间")</th><th></th></tr></thead>
                     <tbody>
                         @foreach (var token in tokens)
                         {
                             <tr data-sso-token="@token.Id">
                                 <td>@(token.ClientId ?? "-")</td><td>@(token.Subject ?? "-")</td><td>@token.Type</td><td>@token.Status</td><td>@(token.ExpiresAt ?? "-")</td>
-                                <td><button type="button" class="ja-management__text-button" disabled="@(token.Status == "revoked")" @onclick="() => RevokeToken(token.Id)">Revoke</button></td>
+                                <td><button type="button" class="ja-management__text-button" disabled="@(token.Status == "revoked")" @onclick="() => RevokeToken(token.Id)">@L("Revoke", "撤销")</button></td>
                             </tr>
                         }
                     </tbody>

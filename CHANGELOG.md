@@ -2,13 +2,22 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-15
+
+### Jazor 0.15.0
+
+- `ECMAScript.Pinia` now ships Pinia 4.0.3 and `ECMAScript.Pinia.Testing` ships `@pinia/testing` 2.0.1. Installing a Pinia root with `app.Use(pinia)` automatically registers its development panel with the Vue Devtools browser extension; production Pinia output omits that Devtools dependency closure. The retired `TestingOptions.WritableComputed` option has been removed because Testing 2 applies its writable-computed behavior internally.
+- `ECMAScript.Vue.Devtools` is now an independent NuGet binding for the public `@vue/devtools-api` 8.1.5 plugin-authoring API. It covers typed plugin descriptors and settings, custom inspectors, timelines, component hooks, custom tabs/commands, and Devtools connection callbacks. The package reuses Jazor's local Vue Devtools runtime closure without exposing `@vue/devtools-kit` or altering Pinia 4's automatic Devtools registration.
+- `ECMAScript.VueDataUi` now exposes all 71 public `vue-data-ui` 3.23.4 entries as typed RazorVue components. Components keep per-entry ESM imports, and PDF-capable entries use a browser-ready local `jspdf` ESM runtime instead of a bare dependency import.
+- `ECMAScript.VuIcons` is a new binding for all 1,821 Vue 3 wrappers in `vu-icons` 1.5.4. Known `Vu*` components materialize only their own SVG module; the typed `VuIcon` dynamic-name bridge intentionally brings the full catalog when runtime selection requires it.
+- RazorVue direct render lowering now supports official Razor `@for`, `@while`, and `@do while` alongside `@foreach`. It preserves C# loop-local closure behavior, body/condition evaluation order, and keyed/unkeyed dynamic Fragment metadata. `break` and `continue` remain explicit unsupported control-flow boundaries in this direct-render slice.
+- RazorVue generated modules now retain collision-safe aliases for nested static member imports and preserve conditional branch vnode shapes without synthetic wrappers around opaque roots.
+- `Jazor.Admin` and the JazorAdmin sample add overview and notification modules, improve scheduling query support, and refresh the administration shell, navigation, account, access-control, organization, settings, and SSO surfaces.
+
 ## 2026-08-14
 
 ### Jazor 0.14.0
 
-- `ECMAScript.Pinia` now ships Pinia 4.0.3 and `ECMAScript.Pinia.Testing` ships `@pinia/testing` 2.0.1. Installing a Pinia root with `app.Use(pinia)` automatically registers its development panel with the Vue Devtools browser extension; production Pinia output omits that Devtools dependency closure. The retired `TestingOptions.WritableComputed` option has been removed because Testing 2 applies its writable-computed behavior internally.
-- `ECMAScript.Vue.Devtools` is now an independent NuGet binding for the public `@vue/devtools-api` 8.1.5 plugin-authoring API. It covers typed plugin descriptors and settings, custom inspectors, timelines, component hooks, custom tabs/commands, and Devtools connection callbacks. The package reuses Jazor's local Vue Devtools runtime closure without exposing `@vue/devtools-kit` or altering Pinia 4's automatic Devtools registration.
-- `ECMAScript.VueDataUi` now packages the current `vue-data-ui` 3.23.4 runtime and a typed RazorVue component catalog for the primary chart families. Chart components resolve to per-component entries such as `vue-data-ui/vue-ui-donut`, never the aggregate root; Emit follows their relative ESM closure and includes the local stylesheet plus `jspdf` only when the selected chart entry requires it. The package includes a local NuGet-consumer dashboard sample, binding coverage, Razor SG, and materialization regressions.
 - RazorVue direct render modules now generate Vue child block trees for a single dynamic string child, static-plus-dynamic text, and nested stable elements. These artifacts use Vue `TEXT` patch flags and `createTextVNode` only where the generated Razor C# proves the text surface, reducing ordinary child traversal during updates without changing C# evaluation, formatting, slot, loop, or raw-markup behavior.
 - Conditional content, slots, render sequences, dynamic raw markup, and ordinary component children intentionally retain Vue's full `h(...)` children diff until their own stability and closure contracts are proven. Production Vue browser and SSR verification now exercises the new child block and text patch shapes alongside static markup and hydration coverage.
 - Proven simple Razor `foreach` loops now lower to Vue `renderList` inside `openBlock(true)` fragments. Explicit `@key` emits `KEYED_FRAGMENT (128)`, unkeyed loops emit `UNKEYED_FRAGMENT (256)`, and the path deliberately retains Vue's original collection protocol instead of converting object/iterable/range sources through `Array.from(source ?? [])`. Production Vue verification confirms keyed DOM identity during reorder and rejects an accidental stable-fragment flag for unkeyed lists.

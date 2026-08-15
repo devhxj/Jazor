@@ -135,7 +135,10 @@ public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options)
             entity.Property(run => run.Trigger).HasMaxLength(16);
             entity.Property(run => run.Status).HasMaxLength(32);
             entity.Property(run => run.Message).HasMaxLength(1_000);
-            entity.HasIndex(run => new { run.ScheduleKey, run.StartedAt });
+            entity.Property(run => run.StartedAtUtc).HasColumnType("TEXT");
+            entity.HasIndex(run => run.StartedAtUtc);
+            entity.HasIndex(run => new { run.ScheduleKey, run.StartedAtUtc });
+            entity.HasIndex(run => new { run.Status, run.StartedAtUtc });
             entity.HasOne(run => run.Schedule)
                 .WithMany(schedule => schedule.Runs)
                 .HasForeignKey(run => run.ScheduleKey)

@@ -1,6 +1,6 @@
 # ECMAScript.VueDataUi
 
-> `vue-data-ui` 3.23.4 的 RazorVue 强类型图表 binding。每个 Razor component 指向单独的 upstream ESM entry，因此不会因为使用一个图表而导入整个 chart bundle。
+> `vue-data-ui` 3.23.4 的 RazorVue 强类型 binding，完整覆盖上游 71 个公开 `vue-ui-*` entry。每个 Razor component 指向单独的 upstream ESM entry，因此不会因为使用一个图表而导入整个 chart bundle。
 
 ## 安装
 
@@ -43,20 +43,26 @@
 
 Dataset 与稳定 config 字段都有具体 C# 类型。对于 upstream 仍在演进的 nested option，可从 `VueDataUiConfig` / `VueDataUiDatasetItem` 派生强类型 record，或使用其 `VueDictionary<VueValue>` collection initializer；不要退回到 `object` / `object[]`。
 
-`VueUiCandlestick` 的上游 dataset row 是位置数组，而 C# tuple 在 Jazor 中故意保留为命名 object。请通过 `VueUiCandlestickData.Ohlc(timestamp, open, high, low, close, volume)` 创建每一行，它会直接 lower 为所需的六项 JavaScript array。`VueUiTableSparkline` 的 `Config` 依照上游 contract 为 required Razor parameter。
+`VueUiCandlestick` 的上游 dataset row 是位置数组，而 C# tuple 在 Jazor 中故意保留为命名 object。请通过 `VueUiCandlestickData.Ohlc(timestamp, open, high, low, close, volume)` 创建每一行，它会直接 lower 为所需的六项 JavaScript array。相同原因下，`VueUiAgePyramidData.Row(year, rank, left, right)` 和 `VueUiFlowData.Link(from, to, value)` 分别产生上游要求的 4/3 项 array。`VueUiTableSparkline` 的 `Config` 依照上游 contract 为 required Razor parameter。
 
 ## 按需运行时
 
 - `VueUiDonut` emits `import { VueUiDonut } from "vue-data-ui/vue-ui-donut"`。
 - Emit 会从这个 entry 递归物化相对 ESM closure；无关的 chart chunk 不会被复制到应用输出。
-- 需要导出能力的图表会使用本包 manifest 中本地的 `jspdf` entry。`jspdf` 和 `vue-data-ui` license 随所需运行时一同交付。
+- 需要导出能力的图表会使用本包 manifest 中本地、无 bare import 的 `jspdf` browser ESM entry。该 entry 已包含 jsPDF 的浏览器依赖闭包；`jspdf`、其 bundled notices 与 `vue-data-ui` license 随所需运行时一同交付。
 - package root `vue-data-ui` 是聚合入口，binding 故意不使用它。
 
-## 当前组件目录
+## 完整组件目录
 
-`VueUiXy`、`VueUiDonut`、`VueUiGauge`、`VueUiVerticalBar`、`VueUiHorizontalBar`、`VueUiStackbar`、`VueUiStackline`、`VueUiSparkline`、`VueUiSparkbar`、`VueUiSparkHistogram`、`VueUiRadar`、`VueUiWaffle`、`VueUiTreemap`、`VueUiHeatmap`、`VueUiScatter`、`VueUiFunnel`、`VueUiWordCloud`、`VueUiKpi`、`VueUiTable`、`VueUiTableHeatmap`、`VueUiTableSparkline`、`VueUiQuickChart`、`VueUiCandlestick`、`VueUiDumbbell`、`VueUiBullet`。
+当前包与 `dist/components/vue-ui-*.js` 一一对应，共 71 个公开 Razor component：
 
-常用 dataset/config 已被强类型建模，包含 XY coordinate/series、table cell、gauge range、stack、spark、scatter、word cloud、quick chart、candlestick 和 bullet 数据形状。未列入目录的上游 visual component 尚未成为公开 binding surface；不要直接用 root bundle 绕过该边界。
+- 基础与 Cartesian：`VueUiXy`、`VueUiXyCanvas`、`VueUiVerticalBar`、`VueUiHorizontalBar`、`VueUi3dBar`、`VueUiBump`、`VueUiCandlestick`、`VueUiDumbbell`、`VueUiHeatmap`、`VueUiHistoryPlot`、`VueUiRidgeline`、`VueUiScatter`、`VueUiSparkline`、`VueUiSparkTrend`、`VueUiStackbar`、`VueUiStackline`、`VueUiStripPlot`。
+- 比例、层级与关系：`VueUiBullet`、`VueUiChestnut`、`VueUiChord`、`VueUiCirclePack`、`VueUiDonut`、`VueUiDonutEvolution`、`VueUiFunnel`、`VueUiGalaxy`、`VueUiGauge`、`VueUiNestedDonuts`、`VueUiOnion`、`VueUiRings`、`VueUiTreemap`、`VueUiWaffle`、`VueUiWheel`、`VueUiWordCloud`。
+- 专项图表：`VueUiAgePyramid`、`VueUiDag`、`VueUiFlow`、`VueUiGeo`、`VueUiHill`、`VueUiMoodRadar`、`VueUiMolecule`、`VueUiParallelCoordinatePlot`、`VueUiQuadrant`、`VueUiRadar`、`VueUiRelationCircle`、`VueUiWorld`。
+- 指标、表格与 compact visual：`VueUiCarouselTable`、`VueUiDigits`、`VueUiGizmo`、`VueUiKpi`、`VueUiQuickChart`、`VueUiRating`、`VueUiSmiley`、`VueUiSparkgauge`、`VueUiSparkbar`、`VueUiSparkHistogram`、`VueUiSparkStackbar`、`VueUiTable`、`VueUiTableHeatmap`、`VueUiTableSparkline`、`VueUiThermometer`、`VueUiTiremarks`。
+- Layout、overlay 与 SVG utility：`VueUiAccordion`、`VueUiAnnotator`、`VueUiCursor`、`VueUiDashboard`、`VueUiIcon`、`VueUiMiniLoader`、`VueUiPattern`、`VueUiPatternSeed`、`VueUiSkeleton`、`VueUiTimer`。
+
+每个 chart 都有专用 dataset/config 根类型；稳定字段使用具体 C# properties，图表仍在迭代的 nested options 使用 `VueDataUiConfig` / `VueDataUiDatasetItem` 的 `VueDictionary<VueValue>` 扩展。`VueUiAnnotator`、`VueUiGeo` 和 `VueUiWorld` 是上游明确允许省略 dataset 的少数例外；其余 dataset 均保持 Razor required parameter。不要使用 package root `vue-data-ui` 绕过按需加载边界。
 
 ## 验证与示例
 

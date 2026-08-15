@@ -2231,7 +2231,7 @@ public partial class SemanticWalker
 
 		if (propertyReference.Property.IsStatic && propertyReference.Property.ContainingType is not null)
 		{
-			if (TryBuildPreferredRuntimeStaticMemberAccess(propertyReference.Property, propertyReference.Syntax, propertyReference.SemanticModel!, propertyName!, out var preferredStaticProperty) &&
+			if (TryBuildPreferredRuntimeStaticMemberAccess(propertyReference.Property, propertyReference.Syntax, propertyReference.SemanticModel!, propertyName!, argument, out var preferredStaticProperty) &&
 				preferredStaticProperty is not null)
 				return preferredStaticProperty;
 

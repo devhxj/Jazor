@@ -15,6 +15,9 @@ public enum AdminLanguage
 public enum TextKey
 {
     ShellSubtitle,
+    IdentitySubtitle,
+    RestoringSession,
+    RedirectingToSignIn,
     Dashboard,
     DashboardSubtitle,
     Organizations,
@@ -47,7 +50,10 @@ public enum TextKey
     Organization,
     Search,
     SearchPlaceholder,
+    SearchNoResults,
     Notifications,
+    NotificationsEmpty,
+    NotificationsLoading,
     Help,
     Documentation,
     Assistant,
@@ -78,7 +84,8 @@ public enum TextKey
     NotFoundDescription,
     InternalErrorTitle,
     InternalErrorDescription,
-    ReturnHome
+    ReturnHome,
+    Copyright
 }
 
 [ECMAScriptModule("components/i18n.mjs")]
@@ -96,6 +103,9 @@ public static class Localization
         => key switch
         {
             TextKey.ShellSubtitle => "RazorVue admin foundation",
+            TextKey.IdentitySubtitle => "Identity and access management",
+            TextKey.RestoringSession => "Restoring session",
+            TextKey.RedirectingToSignIn => "Redirecting to sign in",
             TextKey.Dashboard => "Dashboard",
             TextKey.DashboardSubtitle => "Session and administration access overview",
             TextKey.Organizations => "Organizations",
@@ -128,7 +138,10 @@ public static class Localization
             TextKey.Organization => "Organization",
             TextKey.Search => "Search",
             TextKey.SearchPlaceholder => "Search navigation and records",
+            TextKey.SearchNoResults => "No matching pages",
             TextKey.Notifications => "Notifications",
+            TextKey.NotificationsEmpty => "No recent notifications",
+            TextKey.NotificationsLoading => "Loading notifications",
             TextKey.Help => "Help",
             TextKey.Documentation => "Documentation",
             TextKey.Assistant => "Assistant",
@@ -159,6 +172,7 @@ public static class Localization
             TextKey.InternalErrorTitle => "Something went wrong",
             TextKey.InternalErrorDescription => "The administration workspace could not complete this request.",
             TextKey.ReturnHome => "Return to dashboard",
+            TextKey.Copyright => "Copyright © JazorAdmin",
             _ => "Enter your password."
         };
 
@@ -166,6 +180,9 @@ public static class Localization
         => key switch
         {
             TextKey.ShellSubtitle => "RazorVue 管理后台基础框架",
+            TextKey.IdentitySubtitle => "身份与访问管理",
+            TextKey.RestoringSession => "正在恢复会话",
+            TextKey.RedirectingToSignIn => "即将跳转到登录页",
             TextKey.Dashboard => "工作台",
             TextKey.DashboardSubtitle => "当前会话与管理权限概览",
             TextKey.Organizations => "组织机构",
@@ -198,7 +215,10 @@ public static class Localization
             TextKey.Organization => "组织",
             TextKey.Search => "搜索",
             TextKey.SearchPlaceholder => "搜索导航和记录",
+            TextKey.SearchNoResults => "没有匹配的页面",
             TextKey.Notifications => "通知",
+            TextKey.NotificationsEmpty => "近期暂无通知",
+            TextKey.NotificationsLoading => "正在加载通知",
             TextKey.Help => "帮助",
             TextKey.Documentation => "文档",
             TextKey.Assistant => "助手",
@@ -229,6 +249,7 @@ public static class Localization
             TextKey.InternalErrorTitle => "系统暂时无法处理请求",
             TextKey.InternalErrorDescription => "管理工作台未能完成本次操作。",
             TextKey.ReturnHome => "返回仪表盘",
+            TextKey.Copyright => "版权所有 © JazorAdmin",
             _ => "请输入密码。"
         };
 }

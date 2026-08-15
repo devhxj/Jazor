@@ -21,6 +21,7 @@ public sealed class DatabaseInitializer(
         await using var scope = scopeFactory.CreateAsyncScope();
         var database = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
         await database.Database.MigrateAsync(cancellationToken);
+        await BackfillScheduleRunUtcValuesAsync(database, cancellationToken);
         var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         await SeedPlatformRoleAsync(roles);
         var bootstrapAdministrator = await SeedBootstrapAdministratorAsync(
@@ -35,6 +36,35 @@ public sealed class DatabaseInitializer(
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    private static async Task BackfillScheduleRunUtcValuesAsync(
+        AdminDbContext database,
+        CancellationToken cancellationToken)
+    {
+        const int BatchSize = 512;
+        while (true)
+        {
+            var legacyRuns = await database.ScheduleRuns
+                .Where(run => run.StartedAtUtc == null)
+                .Take(BatchSize)
+                .ToArrayAsync(cancellationToken);
+            if (legacyRuns.Length == 0)
+                return;
+
+            // Materialize in bounded batches. The exact DateTimeOffset -> UTC conversion belongs to
+            // .NET; SQLite's date helpers would round fractional seconds during a migration backfill.
+            // 有界批次在 .NET 中完成精确 DateTimeOffset -> UTC 转换；SQLite 日期函数会在迁移回填
+            // 时舍入小数秒，不能承担这个语义。
+            foreach (var run in legacyRuns)
+                run.NormalizeStartedAtUtc();
+            await database.SaveChangesAsync(cancellationToken);
+            // SaveChanges keeps accepted entities tracked. Clear completed batches so a long-lived
+            // legacy history remains bounded in memory throughout the one-time startup backfill.
+            // SaveChanges 后实体仍被跟踪；清理已完成批次，保证一次性历史回填在长任务历史下也保持
+            // 有界内存。
+            database.ChangeTracker.Clear();
+        }
+    }
 
     private static async Task SeedPlatformRoleAsync(RoleManager<IdentityRole> roles)
     {

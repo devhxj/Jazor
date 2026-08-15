@@ -5032,6 +5032,41 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Invocation_ModuleStaticMember_ImportsMemberWithoutContainingType()
+	{
+		var block = GetBlockOperation(@"
+            [ECMAScriptModule(""./helpers/static-message"")]
+            public static class StaticMessageModule
+            {
+                public static string Get(string value) => value;
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var message = StaticMessageModule.Get(""source"");
+                }
+            }
+        ");
+
+		var argument = new SenseArgument(UseImportAliases: true);
+		var script = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let message = Get(""source"");
+}", script);
+		var imports = argument.FlushImportSpecifiers().ToDictionary(static pair => pair.Key, static pair => pair.Value);
+		Assert.HasCount(1, imports, script);
+		var moduleImport = imports.Single();
+		StringAssert.Contains(moduleImport.Key, "helpers/static-message", StringComparison.Ordinal);
+		var moduleImports = moduleImport.Value;
+		Assert.HasCount(1, moduleImports, script);
+		Assert.AreEqual("Get", moduleImports[0].ToECMAScript());
+		Assert.IsFalse(script!.Contains("StaticMessageModule", StringComparison.Ordinal));
+	}
+
+	[TestMethod]
 	public void Visit_Invocation_FakeSupportMarkerOnExternalHost_Throws()
 	{
 		var block = GetBlockOperation(@"

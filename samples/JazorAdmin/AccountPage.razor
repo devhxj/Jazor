@@ -4,7 +4,7 @@
 <section class="ja-management" data-management-area="accounts">
     @if (loading)
     {
-        <p class="ja-management__loading" aria-live="polite">Loading accounts</p>
+        <p class="ja-management__loading" aria-live="polite">@L("Loading accounts", "正在加载账户")</p>
     }
     else if (error is not null)
     {
@@ -16,23 +16,23 @@
             <section class="ja-management__panel" aria-labelledby="accounts-title">
                 <header class="ja-management__panel-header">
                     <div>
-                        <h2 id="accounts-title">Accounts</h2>
-                        <p>Identity accounts accepted by the single sign-on center</p>
+                        <h2 id="accounts-title">@L("Accounts", "账户管理")</h2>
+                        <p>@L("Identity accounts accepted by the single sign-on center", "单点登录中心接受的 Identity 账户")</p>
                     </div>
                 </header>
                 <div class="ja-management__table-wrap">
                     <table class="ja-management__table">
-                        <thead><tr><th>Account</th><th>Platform role</th><th>State</th><th></th></tr></thead>
+                        <thead><tr><th>@L("Account", "账户")</th><th>@L("Platform role", "平台角色")</th><th>@L("State", "状态")</th><th></th></tr></thead>
                         <tbody>
                             @foreach (var account in accounts)
                             {
                                 <tr class="@(account.Id == selectedAccountId ? "is-selected" : string.Empty)">
                                     <td><strong>@account.DisplayName</strong><span>@account.Email</span></td>
-                                    <td>@(account.PlatformAdministrator ? "Platform administrator" : "Organization account")</td>
-                                    <td>@(account.Enabled ? "Enabled" : "Disabled")</td>
+                                    <td>@(account.PlatformAdministrator ? L("Platform administrator", "平台管理员") : L("Organization account", "组织账户"))</td>
+                                    <td>@(account.Enabled ? L("Enabled", "已启用") : L("Disabled", "已禁用"))</td>
                                     <td>
-                                        <button type="button" class="ja-management__text-button" @onclick="() => SelectAccount(account)">Manage</button>
-                                        <button type="button" class="ja-management__text-button" @onclick="() => SetEnabled(account)">@(account.Enabled ? "Disable" : "Enable")</button>
+                                        <button type="button" class="ja-management__text-button" @onclick="() => SelectAccount(account)">@L("Manage", "管理")</button>
+                                        <button type="button" class="ja-management__text-button" @onclick="() => SetEnabled(account)">@(account.Enabled ? L("Disable", "禁用") : L("Enable", "启用"))</button>
                                     </td>
                                 </tr>
                             }
@@ -44,26 +44,26 @@
             <section class="ja-management__panel" aria-labelledby="create-account-title">
                 <header class="ja-management__panel-header">
                     <div>
-                        <h2 id="create-account-title">Create account</h2>
-                        <p>New accounts can then be assigned to organizations and roles</p>
+                        <h2 id="create-account-title">@L("Create account", "创建账户")</h2>
+                        <p>@L("New accounts can then be assigned to organizations and roles", "创建后可将账户分配到组织和角色")</p>
                     </div>
                 </header>
                 <form class="ja-management__form" @onsubmit="CreateAccount" @onsubmit:preventDefault>
-                    <label><span>Email</span><input required type="email" autocomplete="off" @bind="email" @bind:event="oninput" /></label>
-                    <label><span>Display name</span><input required autocomplete="off" @bind="displayName" @bind:event="oninput" /></label>
-                    <label><span>Initial password</span><input required type="password" autocomplete="new-password" @bind="password" @bind:event="oninput" /></label>
-                    <label class="ja-management__check"><input type="checkbox" @bind="platformAdministrator" /><span>Platform administrator</span></label>
-                    <button type="submit">Create account</button>
+                    <label><span>@L("Email", "邮箱")</span><input required type="email" autocomplete="off" @bind="email" @bind:event="oninput" /></label>
+                    <label><span>@L("Display name", "显示名称")</span><input required autocomplete="off" @bind="displayName" @bind:event="oninput" /></label>
+                    <label><span>@L("Initial password", "初始密码")</span><input required type="password" autocomplete="new-password" @bind="password" @bind:event="oninput" /></label>
+                    <label class="ja-management__check"><input type="checkbox" @bind="platformAdministrator" /><span>@L("Platform administrator", "平台管理员")</span></label>
+                    <button type="submit">@L("Create account", "创建账户")</button>
                 </form>
 
                 @if (SelectedAccount is not null)
                 {
                     <div class="ja-management__role-editor">
-                        <h3>Reset password</h3>
+                        <h3>@L("Reset password", "重置密码")</h3>
                         <p>@SelectedAccount.Email</p>
                         <form class="ja-management__form ja-management__form--inline" @onsubmit="ResetPassword" @onsubmit:preventDefault>
-                            <input required type="password" autocomplete="new-password" placeholder="New password" @bind="newPassword" @bind:event="oninput" />
-                            <button type="submit">Update password</button>
+                            <input required type="password" autocomplete="new-password" placeholder="@L("New password", "新密码")" @bind="newPassword" @bind:event="oninput" />
+                            <button type="submit">@L("Update password", "更新密码")</button>
                         </form>
                     </div>
                 }

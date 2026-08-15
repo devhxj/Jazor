@@ -54,17 +54,42 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
     [Parameter]
     public RenderFragment? UserRegion { get; set; }
 
+    // 与 AdminStyleSheet 的 mobile media query 断点保持一致；在此宽度以下侧栏是
+    // overlay drawer，不再是可折叠的 grid 列。类效果被 media query 限定，桌面布局忽略该状态。
+    private const string MobileBreakpointQuery = "(max-width: 760px)";
+
+    private bool mobileSidebarOpen;
+
     private bool IsSidebarLayout => Mode != AdminLayoutMode.Top;
 
+    // nav-item.mjs 只导出成员函数；渲染位直接引用 AdminNavItemRenderHelper 会触发 phantom
+    // 类名导入，因此经成员位置间接判定导航存在性。
+    private bool HasNavigationItems
+        => AdminNavItemRenderHelper.BuildEffectiveItems(NavItems?.AsArray).Length > 0;
+
+    private bool IsMobileViewport => Global.Window.MatchMedia(MobileBreakpointQuery).Matches;
+
     private VueClassValue RootCssClass
-        => Mode switch
+    {
+        get
         {
-            AdminLayoutMode.Top => BuildCssClass("ja-shell", "ja-shell--top"),
-            AdminLayoutMode.Mixed when Collapsed => BuildCssClass("ja-shell", "ja-shell--mixed", "ja-shell--collapsed"),
-            AdminLayoutMode.Mixed => BuildCssClass("ja-shell", "ja-shell--mixed"),
-            _ when Collapsed => BuildCssClass("ja-shell", "ja-shell--sidebar", "ja-shell--collapsed"),
-            _ => BuildCssClass("ja-shell", "ja-shell--sidebar")
-        };
+            var classes = Mode switch
+            {
+                AdminLayoutMode.Top => new[] { "ja-shell", "ja-shell--top" },
+                AdminLayoutMode.Mixed when Collapsed => new[] { "ja-shell", "ja-shell--mixed", "ja-shell--collapsed" },
+                AdminLayoutMode.Mixed => new[] { "ja-shell", "ja-shell--mixed" },
+                _ when Collapsed => new[] { "ja-shell", "ja-shell--sidebar", "ja-shell--collapsed" },
+                _ => new[] { "ja-shell", "ja-shell--sidebar" }
+            };
+
+            if (mobileSidebarOpen)
+            {
+                return BuildCssClass([.. classes, "ja-shell--mobile-open"]);
+            }
+
+            return BuildCssClass(classes);
+        }
+    }
 
     private string SidebarToggleLabel
         => Collapsed
@@ -78,7 +103,7 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
         var sidebar = Sidebar;
         var headerActions = HeaderActions;
         var userRegion = UserRegion;
-        var hasNavigationItems = AdminNavItemRenderHelper.BuildEffectiveItems(NavItems?.AsArray).Length > 0;
+        var hasNavigationItems = HasNavigationItems;
         var hasDefaultSidebarContent = logo is not null || hasNavigationItems;
         var hasSidebarRegion = IsSidebarLayout && (sidebar is not null || hasDefaultSidebarContent);
         var defaultHeaderLogo = IsSidebarLayout ? null : logo;
@@ -98,6 +123,16 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
 
         if (hasSidebarRegion)
         {
+            if (mobileSidebarOpen)
+            {
+                // Backdrop 仅在 mobile media query 内可见；桌面视口下保持 display:none。
+                builder.OpenElement(44, "div");
+                builder.AddAttribute(45, "class", "ja-shell__mobile-backdrop");
+                builder.AddAttribute(46, "aria-hidden", true);
+                builder.AddAttribute(47, "onclick", EventCallback.Factory.Create(this, CloseMobileSidebar));
+                builder.CloseElement();
+            }
+
             builder.OpenElement(4, "aside");
             builder.AddAttribute(5, "class", "ja-shell__sidebar");
             if (sidebar is not null)
@@ -111,7 +146,8 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
                 builder.AddComponentParameter(9, nameof(SidebarMenu.Collapsed), Collapsed);
                 builder.AddComponentParameter(10, nameof(SidebarMenu.SelectedKey), SelectedKey);
                 builder.AddComponentParameter(11, nameof(SidebarMenu.ExpandedKeys), ExpandedKeys);
-                builder.AddComponentParameter(12, nameof(SidebarMenu.SelectedKeyChanged), SelectedKeyChanged);
+                // 导航选中后关闭移动端抽屉，同时保持对外 SelectedKeyChanged 契约不变。
+                builder.AddComponentParameter(12, nameof(SidebarMenu.SelectedKeyChanged), EventCallback.Factory.Create<string>(this, OnNavigationSelected));
                 builder.AddComponentParameter(13, nameof(SidebarMenu.ExpandedKeysChanged), ExpandedKeysChanged);
                 builder.AddComponentParameter(14, nameof(SidebarMenu.Logo), logo);
                 builder.CloseComponent();
@@ -140,7 +176,7 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
                     builder.AddAttribute(23, "data-shell-command", "toggle-sidebar");
                     builder.AddAttribute(24, "aria-label", SidebarToggleLabel);
                     builder.AddAttribute(25, "title", SidebarToggleLabel);
-                    builder.AddAttribute(26, "aria-expanded", !Collapsed);
+                    builder.AddAttribute(26, "aria-expanded", mobileSidebarOpen || !Collapsed);
                     builder.AddAttribute(27, "onclick", EventCallback.Factory.Create(this, ToggleSidebar));
                     builder.CloseElement();
                 }
@@ -192,6 +228,27 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
     }
 
     private Task ToggleSidebar()
-        => CollapsedChanged.InvokeAsync(!Collapsed);
+    {
+        // 窄视口下同一个按钮驱动 overlay drawer；桌面视口维持原折叠列契约。
+        if (IsMobileViewport)
+        {
+            mobileSidebarOpen = !mobileSidebarOpen;
+            return Task.CompletedTask;
+        }
+
+        return CollapsedChanged.InvokeAsync(!Collapsed);
+    }
+
+    private Task CloseMobileSidebar()
+    {
+        mobileSidebarOpen = false;
+        return Task.CompletedTask;
+    }
+
+    private async Task OnNavigationSelected(string key)
+    {
+        mobileSidebarOpen = false;
+        await SelectedKeyChanged.InvokeAsync(key);
+    }
 
 }

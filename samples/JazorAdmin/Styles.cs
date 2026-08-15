@@ -1235,7 +1235,7 @@ internal static class Styles
                 min_width = raw("0")
             });
 
-        global(".ja-page__breadcrumb",
+        global(".ja-breadcrumb",
             new CssRule
             {
                 display = raw("flex"),
@@ -1246,7 +1246,7 @@ internal static class Styles
                 font_size = raw("13px")
             });
 
-        global(".ja-page__breadcrumb-item + .ja-page__breadcrumb-item::before",
+        global(".ja-breadcrumb__item + .ja-breadcrumb__item::before",
             new CssRule
             {
                 margin_right = raw("6px"),

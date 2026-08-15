@@ -94,7 +94,12 @@ internal static class VueModuleBuilder
             relativePath,
             declaredNames,
             cancellationToken).ConfigureAwait(false);
-        var directRender = BuildOperationDirectRender(binding, component, declaredNames, injectRegistry);
+        var directRender = BuildOperationDirectRender(
+            binding,
+            component,
+            declaredNames,
+            CollectCompilerImportLocalNames(compilerOutput.Module),
+            injectRegistry);
 
         // Compiler and component imports are discovered after lowering. Re-run only when an
         // authored member would shadow one of those bindings inside the setup scope.
@@ -110,7 +115,12 @@ internal static class VueModuleBuilder
                 relativePath,
                 declaredNames,
                 cancellationToken).ConfigureAwait(false);
-            directRender = BuildOperationDirectRender(binding, component, declaredNames, injectRegistry);
+            directRender = BuildOperationDirectRender(
+                binding,
+                component,
+                declaredNames,
+                CollectCompilerImportLocalNames(compilerOutput.Module),
+                injectRegistry);
         }
 
         var hmr = BuildHmrMetadata(component, closure, relativePath);
@@ -273,12 +283,14 @@ internal static class VueModuleBuilder
         GeneratedCSharpBinding binding,
         BoundComponent component,
         IReadOnlyDictionary<ISymbol, string> declaredNames,
+        IEnumerable<string> reservedImportNames,
         VueInjectRegistry injectRegistry)
     {
         if (TryBuildOperationDirectRender(
                 binding,
                 component,
                 declaredNames,
+                reservedImportNames,
                 injectRegistry,
                 out var directRender,
                 out var directRenderFailure))
@@ -406,6 +418,17 @@ internal static class VueModuleBuilder
         return names;
     }
 
+    private static HashSet<string> CollectCompilerImportLocalNames(Module? compilerModule)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        if (compilerModule is null)
+            return names;
+
+        foreach (var import in compilerModule.Body.OfType<ImportDeclaration>())
+            AddImportLocalNames(import, names);
+        return names;
+    }
+
     private static bool HasImportNameCollision(
         IReadOnlyDictionary<ISymbol, string> declaredNames,
         HashSet<string> importLocalNames)
@@ -484,11 +507,10 @@ internal static class VueModuleBuilder
             usesInvokeAsync);
         var moduleStatements = new List<Statement>();
         var assets = ImmutableArray.CreateBuilder<VueAsset>();
-        // Every production import is created by ImportDeclarationFactory and therefore owns at
-        // least one local binding. Local bindings are the module-scope uniqueness contract: the
-        // same declaration repeats the same locals, while a conflicting declaration must not
-        // shadow an already emitted compiler binding.
-        var emittedImportLocals = new HashSet<string>(StringComparer.Ordinal);
+        // Local bindings are the module-scope uniqueness contract. Compiler lowering and direct
+        // render lowering can contribute different specifiers for one module, so dedupe must be
+        // performed per specifier instead of dropping the whole import declaration on one match.
+        var emittedImportBindings = new Dictionary<string, ImportBinding>(StringComparer.Ordinal);
 
         moduleStatements.Add(BuildVueImportDeclaration(
             features.UsesMounted,
@@ -522,25 +544,25 @@ internal static class VueModuleBuilder
                 continue;
 
             var rebasedImport = RebaseImportDeclaration(importDeclaration, relativePath);
-            if (HasAnyImportLocalName(rebasedImport, emittedImportLocals))
+            var importToEmit = FilterEmittedImportSpecifiers(rebasedImport, emittedImportBindings);
+            if (importToEmit is null)
                 continue;
-            moduleStatements.Add(rebasedImport);
-            AddImportLocalNames(rebasedImport, emittedImportLocals);
-            if (TryCreateVueSfcAsset(rebasedImport, relativePath, out var asset))
+            moduleStatements.Add(importToEmit);
+            if (TryCreateVueSfcAsset(importToEmit, relativePath, out var asset))
                 assets.Add(asset);
         }
 
         foreach (var importDeclaration in directRender.ImportDeclarations)
         {
             var rebasedImport = RebaseImportDeclaration(importDeclaration, relativePath);
-            if (HasAnyImportLocalName(rebasedImport, emittedImportLocals))
+            var importToEmit = FilterEmittedImportSpecifiers(rebasedImport, emittedImportBindings);
+            if (importToEmit is null)
                 continue;
-            moduleStatements.Add(rebasedImport);
-            AddImportLocalNames(rebasedImport, emittedImportLocals);
+            moduleStatements.Add(importToEmit);
             // Component references discovered by RenderEmitter bypass compiler module
             // statements, but their .vue source still has to reach the artifact catalog.
             // direct render import 也必须登记 asset，否则 SFC 只会出现在 import 而不会被 Emit 复制。
-            if (TryCreateVueSfcAsset(rebasedImport, relativePath, out var asset))
+            if (TryCreateVueSfcAsset(importToEmit, relativePath, out var asset))
                 assets.Add(asset);
         }
 
@@ -1306,6 +1328,7 @@ internal static class VueModuleBuilder
         GeneratedCSharpBinding binding,
         BoundComponent component,
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
+        IEnumerable<string>? reservedImportNames,
         VueInjectRegistry injectRegistry,
         out DirectRenderBuildResult result,
         out string? failure)
@@ -1318,6 +1341,7 @@ internal static class VueModuleBuilder
                 component.BuildRenderTreeMethod,
                 component.BuildRenderTreeBody,
                 declaredNames,
+                reservedImportNames,
                 injectRegistry,
                 out var operationResult,
                 out failure))
@@ -1657,25 +1681,79 @@ internal static class VueModuleBuilder
         }
     }
 
-    private static bool HasAnyImportLocalName(
+    private static ImportDeclaration? FilterEmittedImportSpecifiers(
         ImportDeclaration declaration,
-        HashSet<string> localNames)
+        Dictionary<string, ImportBinding> emittedBindings)
     {
+        // A bare import has module-evaluation semantics. It has no local binding to dedupe and
+        // therefore must remain intact even when another declaration uses the same source.
+        if (declaration.Specifiers.Count == 0)
+            return declaration;
+
+        var retainedSpecifiers = new List<ImportDeclarationSpecifier>(declaration.Specifiers.Count);
+        var newBindings = new List<KeyValuePair<string, ImportBinding>>(declaration.Specifiers.Count);
         foreach (var specifier in declaration.Specifiers)
         {
-            var localName = specifier switch
+            var localName = GetImportLocalName(specifier);
+            if (string.IsNullOrWhiteSpace(localName))
             {
-                ImportSpecifier named => named.Local.Name,
-                ImportDefaultSpecifier defaultSpecifier => defaultSpecifier.Local.Name,
-                ImportNamespaceSpecifier namespaceSpecifier => namespaceSpecifier.Local.Name,
-                _ => string.Empty
-            };
-            if (!string.IsNullOrWhiteSpace(localName) && localNames.Contains(localName))
-                return true;
+                retainedSpecifiers.Add(specifier);
+                continue;
+            }
+
+            var binding = GetImportBinding(declaration, specifier);
+            if (emittedBindings.TryGetValue(localName, out var emittedBinding))
+            {
+                if (emittedBinding == binding)
+                    continue;
+
+                throw new InvalidOperationException(
+                    "RazorVue generated import local '" + localName + "' resolves to both " +
+                    DescribeImportBinding(emittedBinding) + " and " + DescribeImportBinding(binding) +
+                    ". Import aliases must be unique within one generated Vue module.");
+            }
+
+            retainedSpecifiers.Add(specifier);
+            newBindings.Add(new KeyValuePair<string, ImportBinding>(localName, binding));
         }
 
-        return false;
+        foreach (var pair in newBindings)
+            emittedBindings.Add(pair.Key, pair.Value);
+
+        if (retainedSpecifiers.Count == 0)
+            return null;
+
+        return new ImportDeclaration(
+            NodeList.From<ImportDeclarationSpecifier>(retainedSpecifiers),
+            declaration.Source,
+            declaration.Attributes,
+            declaration.Phase);
     }
+
+    private static ImportBinding GetImportBinding(
+        ImportDeclaration declaration,
+        ImportDeclarationSpecifier specifier)
+        => specifier switch
+        {
+            ImportSpecifier named => new(
+                declaration.Source.Value,
+                "named",
+                GetImportedName(named.Imported)),
+            ImportDefaultSpecifier => new(declaration.Source.Value, "default", "default"),
+            ImportNamespaceSpecifier => new(declaration.Source.Value, "namespace", "*"),
+            _ => throw new NotSupportedException("Unsupported ECMAScript import specifier: " + specifier.Type)
+        };
+
+    private static string GetImportedName(Expression imported)
+        => imported switch
+        {
+            Identifier identifier => identifier.Name,
+            StringLiteral literal => literal.Value,
+            _ => throw new NotSupportedException("Unsupported ECMAScript named import key: " + imported.Type)
+        };
+
+    private static string DescribeImportBinding(ImportBinding binding)
+        => binding.Kind + " import '" + binding.ImportedName + "' from '" + binding.ModulePath + "'";
 
     private static bool IsCompilerImportReferenced(
         ImportDeclaration declaration,
@@ -2952,6 +3030,12 @@ internal static class VueModuleBuilder
         int CompiledLine,
         int CompiledColumn,
         bool IsDirectRenderOrigin = false);
+
+    /// <summary>Captures the identity of one module-scope local import binding.</summary>
+    private readonly record struct ImportBinding(
+        string ModulePath,
+        string Kind,
+        string ImportedName);
 
     /// <summary>Pairs one compiler statement with its source position for source-map merging.</summary>
     private sealed record CompilerStatement(

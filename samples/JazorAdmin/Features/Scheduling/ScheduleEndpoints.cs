@@ -46,15 +46,16 @@ public static class ScheduleEndpoints
         var items = await database.ScheduleRuns
             .AsNoTracking()
             .Where(run => run.ScheduleKey == key)
+            .OrderByDescending(run => run.StartedAtUtc)
+            .ThenByDescending(run => run.Id)
+            .Take(100)
             .ToArrayAsync(cancellationToken);
 
-        // SQLite cannot translate ORDER BY DateTimeOffset. Keep the persisted UTC offset in the model and
-        // order the bounded administration history after materialization instead of weakening the timestamp type.
-        // SQLite 无法翻译 DateTimeOffset 的排序；保留模型中的 UTC 偏移时间，在物化后排序管理历史，
-        // 不因测试/默认数据库限制而削弱时间类型。
+        // StartedAt remains the API timestamp. StartedAtUtc is its normalized query key, so SQLite can
+        // select the true latest 100 rows without materializing an unbounded task history.
+        // StartedAt 仍是 API 的原始时间；StartedAtUtc 是归一化查询键，SQLite 可直接选出真正最新的
+        // 100 条，避免把无界任务历史全部物化到应用进程。
         var runs = items
-            .OrderByDescending(run => run.StartedAt)
-            .Take(100)
             .Select(run => new ScheduleRunView(
                 run.Id.ToString(),
                 run.Trigger,

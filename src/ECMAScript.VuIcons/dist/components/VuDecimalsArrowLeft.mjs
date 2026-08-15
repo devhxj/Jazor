@@ -1,0 +1,3 @@
+import { createVuIcon } from "../jazor-vu-icon-runtime.mjs";
+
+export const VuDecimalsArrowLeft = createVuIcon("VuDecimalsArrowLeft", "0 0 24 24", '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="m13 21l-3-3l3-3m7 3H10m-7-7h.01"/><rect width="5" height="8" x="6" y="3" rx="2.5"/></g>');

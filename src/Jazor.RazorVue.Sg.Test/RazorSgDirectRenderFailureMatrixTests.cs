@@ -184,24 +184,24 @@ internal static partial class DirectRenderFailureCaseCatalog
                 "private string ReadValue() => " + Literal(marker) + ";",
                 "Runtime local declarations in direct render lowering are only supported outside open RenderTreeBuilder frames"),
             9 => (
-                "for_loop",
+                "for_branch_loop",
                 variant switch
                 {
-                    0 => "for (var index = 0; index < 1; index++) { builder.AddContent(index, " + Literal(marker) + "); }",
-                    1 => "builder.OpenElement(0, \"div\"); for (var index = 0; index < 2; index++) { builder.AddContent(index + 1, " + Literal(marker) + "); } builder.CloseElement();",
-                    2 => "for (var index = 3; index > 0; index--) { builder.OpenElement(index, \"span\"); builder.CloseElement(); }",
-                    _ => "for (var index = 0; index < Items.Length; index++) { builder.AddContent(index, Items[index]); }"
+                    0 => "for (var index = 0; index < 1; index++) { builder.AddContent(index, " + Literal(marker) + "); break; }",
+                    1 => "builder.OpenElement(0, \"div\"); for (var index = 0; index < 2; index++) { builder.AddContent(index + 1, " + Literal(marker) + "); continue; } builder.CloseElement();",
+                    2 => "for (var index = 3; index > 0; index--) { builder.OpenElement(index, \"span\"); builder.CloseElement(); break; }",
+                    _ => "for (var index = 0; index < Items.Length; index++) { builder.AddContent(index, Items[index]); continue; }"
                 },
                 variant == 3 ? "[Parameter] public string[] Items { get; set; } = [];" : "",
                 "only supports straight-line RenderTreeBuilder statements"),
             10 => (
-                "while_loop",
+                "while_branch_loop",
                 variant switch
                 {
-                    0 => "var index = 0; while (index < 1) { builder.AddContent(index, " + Literal(marker) + "); index++; }",
-                    1 => "var index = 0; do { builder.AddContent(index, " + Literal(marker) + "); index++; } while (index < 1);",
-                    2 => "builder.OpenElement(0, \"div\"); while (Count < 1) { builder.AddContent(1, " + Literal(marker) + "); } builder.CloseElement();",
-                    _ => "var index = Items.Length; while (index > 0) { builder.AddContent(index, Items[--index]); }"
+                    0 => "var index = 0; while (index < 1) { builder.AddContent(index, " + Literal(marker) + "); break; }",
+                    1 => "var index = 0; do { builder.AddContent(index, " + Literal(marker) + "); continue; } while (index < 1);",
+                    2 => "builder.OpenElement(0, \"div\"); while (Count < 1) { builder.AddContent(1, " + Literal(marker) + "); break; } builder.CloseElement();",
+                    _ => "var index = Items.Length; while (index > 0) { builder.AddContent(index, Items[--index]); continue; }"
                 },
                 variant switch
                 {

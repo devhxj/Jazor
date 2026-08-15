@@ -48,13 +48,11 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
 
                 if (header.BreadcrumbItems.Length > 0)
                 {
-                    builder.OpenElement(8, "nav");
-                    builder.AddAttribute(9, "class", "ja-page__breadcrumb");
-                    foreach (var item in header.BreadcrumbItems)
-                    {
-                        builder.AddContent(10, RenderBreadcrumbItem(item));
-                    }
-                    builder.CloseElement();
+                    // 面包屑渲染委托给 AdminBreadcrumb，保持库内单一实现；
+                    // 这里只保留布局槽位与可渲染性判断。
+                    builder.OpenComponent<AdminBreadcrumb>(8);
+                    builder.AddComponentParameter(9, nameof(AdminBreadcrumb.Items), header.BreadcrumbItems);
+                    builder.CloseComponent();
                 }
 
                 if (NormalizedTitle is not null)
@@ -118,48 +116,10 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
             hasActions);
     }
 
-    private RenderFragment RenderBreadcrumbItem(AdminBreadcrumbItem item) => builder =>
-    {
-        var title = AdminDisplayTextHelper.Normalize(item.Title);
-        if (title is null)
-        {
-            return;
-        }
-
-        var isDisabled = item.Disabled ?? false;
-        var navigationTarget = AdminNavigationTargetResolver.Resolve(item.Href, item.RouteTarget);
-        var cssClass = BuildBreadcrumbItemCssClass(item, isDisabled, navigationTarget.IsNavigable);
-
-        if (!isDisabled && navigationTarget.HasRoute)
-        {
-            builder.OpenComponent<VueRouterLink>(0);
-            builder.AddAttribute(1, nameof(VueRouterLink.CssClass), (VueClassValue)cssClass);
-            builder.AddAttribute(2, nameof(VueRouterLink.To), navigationTarget.Route);
-            builder.AddAttribute(3, nameof(VueRouterLink.ChildContent), (RenderFragment)(childBuilder => childBuilder.AddContent(0, title)));
-            builder.CloseComponent();
-            return;
-        }
-
-        if (!isDisabled && navigationTarget.HasHref)
-        {
-            builder.OpenElement(10, "a");
-            builder.AddAttribute(11, "class", cssClass);
-            builder.AddAttribute(12, "href", navigationTarget.Href);
-            builder.AddContent(13, title);
-            builder.CloseElement();
-            return;
-        }
-
-        builder.OpenElement(20, "span");
-        builder.AddAttribute(21, "class", cssClass);
-        if (isDisabled)
-        {
-            builder.AddAttribute(22, "aria-disabled", true);
-        }
-
-        builder.AddContent(23, title);
-        builder.CloseElement();
-    };
+    // Member-position wrapper: navigation-target.mjs only exports its members, and a direct
+    // render-lambda qualification would emit a phantom class-name import that breaks linking.
+    private static AdminNavigationTargetResolver.ResolvedNavigationTarget ResolveActionTarget(AdminPageAction action)
+        => AdminNavigationTargetResolver.Resolve(action.Href, action.RouteTarget);
 
     private RenderFragment RenderAction(AdminPageAction action) => builder =>
     {
@@ -170,7 +130,7 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
         }
 
         var isDisabled = action.Disabled ?? false;
-        var navigationTarget = AdminNavigationTargetResolver.Resolve(action.Href, action.RouteTarget);
+        var navigationTarget = ResolveActionTarget(action);
         var cssClass = BuildActionCssClass(action);
 
         if (!isDisabled && navigationTarget.HasRoute)
@@ -209,34 +169,6 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
         builder.AddContent(27, text);
         builder.CloseElement();
     };
-
-    private static string BuildBreadcrumbItemCssClass(
-        AdminBreadcrumbItem item,
-        bool isDisabled,
-        bool hasHref)
-    {
-        var classes = new List<string>(4)
-        {
-            "ja-page__breadcrumb-item"
-        };
-
-        if (hasHref)
-        {
-            classes.Add("is-link");
-        }
-
-        if (isDisabled)
-        {
-            classes.Add("is-disabled");
-        }
-
-        if (string.IsNullOrWhiteSpace(item.Title))
-        {
-            classes.Add("is-empty");
-        }
-
-        return string.Join(" ", classes);
-    }
 
     private static string BuildActionCssClass(AdminPageAction action)
     {

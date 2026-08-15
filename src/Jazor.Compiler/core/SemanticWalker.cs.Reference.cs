@@ -387,7 +387,13 @@ public partial class SemanticWalker
 	/// 3. 只有当调用点宿主与声明宿主在继承/接口/泛型原型定义上兼容时，才允许覆盖。
 	/// 4. 语义宿主无法恢复时不猜测源码标识符，交给后续 symbol-based 路径处理。
 	/// </summary>
-	private bool TryBuildPreferredRuntimeStaticMemberAccess(ISymbol symbol, SyntaxNode syntax, SemanticModel semanticModel, string memberName, out Expression? expression)
+	private bool TryBuildPreferredRuntimeStaticMemberAccess(
+		ISymbol symbol,
+		SyntaxNode syntax,
+		SemanticModel semanticModel,
+		string memberName,
+		SenseArgument? context,
+		out Expression? expression)
 	{
 		expression = null;
 		var isRuntime = Util.IsECMAScriptRuntimeSymbol(symbol);
@@ -400,7 +406,7 @@ public partial class SemanticWalker
 			_ => symbol.ContainingType!
 		};
 
-		var runtimeHost = TryBuildRuntimeHostExpression(hostType);
+		var runtimeHost = TryBuildRuntimeHostExpression(hostType, context);
 		if (runtimeHost is null)
 			return false;
 
@@ -410,7 +416,7 @@ public partial class SemanticWalker
 		if (sourceHostType is not null &&
 			IsStaticHostOverrideCompatible(sourceHostType, hostType))
 		{
-			var sourceRuntimeHost = TryBuildRuntimeHostExpression(sourceHostType);
+			var sourceRuntimeHost = TryBuildRuntimeHostExpression(sourceHostType, context);
 			if (sourceRuntimeHost is not null)
 			{
 				expression = BuildAliasedPropertyAccess(sourceRuntimeHost, memberName, optional: false);
@@ -2223,7 +2229,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 				importedProperty is not null)
 				return WithOriginIfMissing(importedProperty, operation);
 
-			if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Property, operation.Syntax, operation.SemanticModel!, propertyName!, out var preferredStaticProperty) &&
+			if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Property, operation.Syntax, operation.SemanticModel!, propertyName!, argument, out var preferredStaticProperty) &&
 				preferredStaticProperty is not null)
 				return WithOriginIfMissing(preferredStaticProperty, operation);
 
@@ -2442,7 +2448,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			return importedMethod;
 		}
 
-		if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Method, operation.Syntax, operation.SemanticModel!, methodName, out var preferredStaticCallee) &&
+		if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Method, operation.Syntax, operation.SemanticModel!, methodName, argument, out var preferredStaticCallee) &&
 			preferredStaticCallee is not null)
 		{
 			return preferredStaticCallee;
@@ -2720,7 +2726,6 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(targetMethod) : alias;
 		var property = new Identifier(methodName!);
 		Expression callee = property;
-		var extensionHost = TryBuildExtensionHostTarget(targetMethod, argument);
 		if (instance is null)
 		{
 			if (targetMethod.IsStatic)
@@ -2729,26 +2734,44 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 					TryBuildImportedModuleMember(namedRuntimeHost, methodName!, argument, out var importedMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;
-				else if (TryBuildPreferredRuntimeStaticMemberAccess(targetMethod, syntax, semanticModel!, methodName!, out var preferredStaticCallee) &&
+				else if (TryBuildPreferredRuntimeStaticMemberAccess(targetMethod, syntax, semanticModel!, methodName!, argument, out var preferredStaticCallee) &&
 					preferredStaticCallee is not null)
 					callee = preferredStaticCallee;
-				else if (extensionHost is not null)
-					callee = BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false);
 				else
 				{
-					var containing = BuildFullTypeName(hostType, argument);
-					if (containing is not null)
-						callee = BuildAliasedPropertyAccess(containing, methodName!, optional: false);
+					// Building an extension host can register an import. Defer it until member-level
+					// module dispatch has failed, otherwise `Module.Get()` also imports the phantom
+					// `Module` class even though the emitted call only needs `Get`.
+					// extension host 的构造会登记 import，必须在按成员导入失败后才触发。
+					var extensionHost = TryBuildExtensionHostTarget(targetMethod, argument);
+					if (extensionHost is not null)
+					{
+						callee = BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false);
+					}
+					else
+					{
+						var containing = BuildFullTypeName(hostType, argument);
+						if (containing is not null)
+							callee = BuildAliasedPropertyAccess(containing, methodName!, optional: false);
+					}
 				}
 			}
 		}
 		else
 		{
-			callee = targetMethod.IsStatic && extensionHost is not null
-				? BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false)
-				: targetMethod.MethodKind != MethodKind.DelegateInvoke
-				? BuildAliasedPropertyAccess(instance, methodName!, optional: false)
-				: instance;
+			if (targetMethod.IsStatic)
+			{
+				var extensionHost = TryBuildExtensionHostTarget(targetMethod, argument);
+				callee = extensionHost is not null
+					? BuildAliasedPropertyAccess(extensionHost, methodName!, optional: false)
+					: BuildAliasedPropertyAccess(instance, methodName!, optional: false);
+			}
+			else
+			{
+				callee = targetMethod.MethodKind != MethodKind.DelegateInvoke
+					? BuildAliasedPropertyAccess(instance, methodName!, optional: false)
+					: instance;
+			}
 		}
 
 		callee = NormalizeRuntimeReceiverHostCallee(callee, targetMethod);

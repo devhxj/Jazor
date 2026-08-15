@@ -31,6 +31,7 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
     private bool responseCode = true;
     private string? issuedSecret;
     private bool deleteArmed;
+    private int loadVersion;
 
     private bool IsNew => selectedId is null;
 
@@ -42,10 +43,14 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
 
     private void Reload(string? secret)
     {
+        var requestVersion = ++loadVersion;
         loading = true;
         error = null;
         ApiClient.GetApps().Then(outcome =>
         {
+            if (requestVersion != loadVersion)
+                return;
+
             ApplyApps(outcome);
             issuedSecret = secret;
         });
@@ -56,7 +61,7 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
         loading = false;
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to load OpenID applications.";
+            error = outcome.Error ?? L("Unable to load OpenID applications.", "无法加载 OpenID 应用。");
             return;
         }
 
@@ -138,6 +143,10 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
 
     private void Reset(string value)
     {
+        // A new preset is explicit user intent. Invalidate an older reload so its completion cannot
+        // select an existing application again and replace the editor the user just opened.
+        // 新建预设是明确的用户意图；失效旧的 reload，避免其完成后重新选中已有应用并覆盖刚打开的编辑器。
+        loadVersion++;
         selectedId = null;
         profile = value;
         clientId = string.Empty;
@@ -210,7 +219,7 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
     {
         if (!outcome.Ok)
         {
-            error = outcome.Error ?? "Unable to save the OpenID application.";
+            error = outcome.Error ?? L("Unable to save the OpenID application.", "无法保存 OpenID 应用。");
             return;
         }
 
@@ -229,7 +238,7 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to rotate the client secret.";
+                error = outcome.Error ?? L("Unable to rotate the client secret.", "无法轮换客户端密钥。");
                 return;
             }
             issuedSecret = ApiClient.ReadSecret(outcome.Data!);
@@ -250,7 +259,7 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
         {
             if (!outcome.Ok)
             {
-                error = outcome.Error ?? "Unable to delete the OpenID application.";
+                error = outcome.Error ?? L("Unable to delete the OpenID application.", "无法删除 OpenID 应用。");
                 return;
             }
             NewInteractive();

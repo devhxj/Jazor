@@ -18,6 +18,7 @@
 | Pinia | `Jazor`、`ECMAScript.Pinia` | `ECMAScript.Pinia.Testing` |
 | Vue Devtools 自定义插件 | `Jazor`、`ECMAScript.Vue.Devtools` | `ECMAScript.Vue` 已由 `Jazor` 提供 runtime 闭包 |
 | Vue Data UI 图表 | `Jazor`、`Jazor.Vue`、`ECMAScript.VueDataUi` | 无 |
+| Vu Icons 图标 | `Jazor`、`Jazor.Vue`、`ECMAScript.VuIcons` | 无 |
 | UI 组件库 | `Jazor`、对应 `ECMAScript.*` 包 | `ECMAScript.Style` |
 | 管理壳 | `Jazor`、`Jazor.Vue`、`Jazor.Admin` | 路由、样式和应用选择的 UI 绑定 |
 
@@ -25,7 +26,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.14.0" />
+  <PackageReference Include="Jazor" Version="0.15.0" />
 </ItemGroup>
 ```
 
@@ -38,8 +39,8 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.14.0" />
-    <PackageReference Include="Jazor.Vue" Version="0.14.0" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="0.15.0" />
+    <PackageReference Include="Jazor.Vue" Version="0.15.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -48,12 +49,13 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="0.14.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.14.0" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="0.14.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.14.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.14.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.14.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.15.0" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.15.0" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="0.15.0" />
+  <PackageReference Include="ECMAScript.VuIcons" Version="0.15.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.15.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.15.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.15.0" />
 </ItemGroup>
 ```
 
