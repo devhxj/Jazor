@@ -7,13 +7,16 @@
     <RazorLangVersion>11.0</RazorLangVersion>
     <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
     <NoWarn>$(NoWarn);CS0626;CS0824;IDE0130;CA1822;IDE0060;IDE1006</NoWarn>
+    <!-- Source references stay the default for repository development. Set TodoUsePackages=true
+         to verify the same library as an isolated NuGet consumer. -->
+    <TodoUsePackages Condition="'$(TodoUsePackages)' == ''">false</TodoUsePackages>
   </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TodoUsePackages)' != 'true'">
     <ProjectReference Include="..\..\..\src\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\..\..\src\ECMAScript.Vue\ECMAScript.Vue.csproj" />
     <ProjectReference Include="..\..\..\src\ECMAScript.Style\ECMAScript.Style.csproj" />
@@ -22,7 +25,16 @@
                       PrivateAssets="all" />
   </ItemGroup>
 
-  <Target Name="AddLocalRazorVueAnalyzerDependencies" BeforeTargets="CoreCompile">
+  <!-- The Jazor package carries the ECMAScript contract assemblies; Jazor.Vue supplies the
+       RazorVue analyzer/generator that a package consumer loses with the source references. -->
+  <ItemGroup Condition="'$(TodoUsePackages)' == 'true'">
+    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+
+  <Target Name="AddLocalRazorVueAnalyzerDependencies"
+          BeforeTargets="CoreCompile"
+          Condition="'$(TodoUsePackages)' != 'true'">
     <ItemGroup>
       <Analyzer Include="$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll"
                 Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />

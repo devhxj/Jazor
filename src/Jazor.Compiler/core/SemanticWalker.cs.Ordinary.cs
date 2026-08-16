@@ -184,11 +184,11 @@ public partial class SemanticWalker
 		// internal "break"/"continue" label rather than the authored label. The current package
 		// does not expose the authored label structurally, so never silently emit an unlabeled jump.
 		// Preview 语法仍复用 IBranchOperation；当前 Roslyn API 未暴露作者 label，必须明确拒绝。
-		if (HasUnmodeledLabeledBranchSyntax(operation.Syntax))
+		if (HasUnmodeledLabeledBranchSyntax(operation))
 		{
 			return HandleTransformationFailure<Node>(
 				operation,
-				"Labeled break/continue requires a Roslyn operation/syntax API that exposes the authored label. The current compiler package only exposes an internal branch target, so Razor-to-JavaScript lowering cannot preserve the target safely.");
+				LabeledBranchUnsupportedMessage);
 		}
 
 		if (operation.BranchKind == BranchKind.Break)
@@ -202,10 +202,39 @@ public partial class SemanticWalker
 		return HandleTransformationFailure<Node>(operation, "Goto statements are not supported in JavaScript.");
 	}
 
+	private static bool HasUnmodeledLabeledBranchSyntax(IBranchOperation operation)
+	{
+		if (operation.BranchKind != BranchKind.Break &&
+			operation.BranchKind != BranchKind.Continue)
+		{
+			return false;
+		}
+
+		// A future SDK may introduce a dedicated syntax node instead of extending the current
+		// BreakStatementSyntax/ContinueStatementSyntax shape. Treat that as unmodeled until the
+		// authored target is bound end-to-end, while leaving goto on its own explicit boundary.
+		return operation.Syntax is not BreakStatementSyntax and not ContinueStatementSyntax ||
+			HasUnmodeledLabeledBranchSyntax(operation.Syntax);
+	}
+
 	private static bool HasUnmodeledLabeledBranchSyntax(SyntaxNode syntax)
 	{
 		if (syntax is not BreakStatementSyntax and not ContinueStatementSyntax)
 			return false;
+
+		// Reject both today's incomplete projection and a future projection that starts exposing
+		// an identifier token before the lowering has an authored-label target contract.
+		// 不能因为 SDK 新增 token 就静默发射无标签跳转；先保持显式 Reject，再单独实现语义 lowering。
+		var tokens = syntax.DescendantTokens(descendIntoTrivia: false).ToArray();
+		var expectedKeyword = syntax is BreakStatementSyntax
+			? Microsoft.CodeAnalysis.CSharp.SyntaxKind.BreakKeyword
+			: Microsoft.CodeAnalysis.CSharp.SyntaxKind.ContinueKeyword;
+		if (tokens.Length != 2 ||
+			!tokens[0].IsKind(expectedKeyword) ||
+			!tokens[1].IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SemicolonToken))
+		{
+			return true;
+		}
 
 		// In this preview Roslyn package the branch node's child tokens contain only the keyword
 		// and semicolon, while Syntax.ToFullString still contains the source label. This detects that
@@ -214,6 +243,9 @@ public partial class SemanticWalker
 		var modeledText = string.Concat(syntax.ChildTokens().Select(static token => token.ToFullString()));
 		return !string.Equals(syntax.ToFullString(), modeledText, StringComparison.Ordinal);
 	}
+
+	private const string LabeledBranchUnsupportedMessage =
+		"Labeled break/continue requires a Roslyn operation/syntax API that exposes the authored label. The current compiler package only exposes an internal branch target, so Razor-to-JavaScript lowering cannot preserve the target safely.";
 
 	/// <summary>
 	/// 处理空语句操作
@@ -2265,17 +2297,23 @@ public partial class SemanticWalker
 		// A bodyless init accessor is an auto-property by Roslyn's symbol contract. Inside the
 		// declaring constructor C# permits assignment only to the containing instance, which is
 		// exactly the private-field shape emitted for current-module member classes.
-		_ = propertyReference.Property.ContainingType
+		var backingField = propertyReference.Property.ContainingType
 			.GetMembers($"<{propertyReference.Property.Name}>k__BackingField")
 			.OfType<IFieldSymbol>()
 			.Single();
 
-		var backingFieldName = Format.HashName(propertyReference.Property.OriginalDefinition.ToDisplayString(Format.NameFormat));
+		var backingFieldName = RuntimeClassPrivateStorageNames.GetFieldStorageName(
+			_runtimeClassPrivateStorage,
+			backingField,
+			Format.HashName(propertyReference.Property.OriginalDefinition.ToDisplayString(Format.NameFormat)));
+		Expression backingFieldKey = _runtimeClassPrivateStorage == RuntimeClassPrivateStorage.ProxySafeMangledProperties
+			? new Identifier(backingFieldName)
+			: new PrivateIdentifier(backingFieldName);
 		assignment = new AssignmentExpression(
 			Operator.Assignment,
 			new MemberExpression(
 				new ThisExpression(),
-				new PrivateIdentifier(backingFieldName),
+				backingFieldKey,
 				computed: false,
 				optional: false),
 			value);

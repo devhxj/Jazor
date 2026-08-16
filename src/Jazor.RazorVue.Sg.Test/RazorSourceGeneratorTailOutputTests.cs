@@ -63,9 +63,10 @@ public sealed class RazorTailOutputTests
             compilation,
             CancellationToken.None,
             out var catalogSource,
-            out var failure);
+            out var diagnostics);
 
-        Assert.IsTrue(result, failure);
+        Assert.IsTrue(result, DescribeDiagnostics(diagnostics));
+        Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
         Assert.IsNotNull(catalogSource);
         StringAssert.Contains(catalogSource, "components/razor-counter.mjs");
         StringAssert.Contains(catalogSource, "components/handwritten-status.mjs");
@@ -94,9 +95,10 @@ public sealed class RazorTailOutputTests
             compilation,
             CancellationToken.None,
             out var catalogSource,
-            out var failure);
+            out var diagnostics);
 
-        Assert.IsTrue(result, failure);
+        Assert.IsTrue(result, DescribeDiagnostics(diagnostics));
+        Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
         Assert.IsNull(catalogSource);
     }
 
@@ -138,13 +140,16 @@ public sealed class RazorTailOutputTests
             compilation,
             CancellationToken.None,
             out var catalogSource,
-            out var failure);
+            out var diagnostics);
 
         Assert.IsFalse(result);
         Assert.IsNull(catalogSource);
-        Assert.IsNotNull(failure);
-        StringAssert.Contains(failure, "Demo.Pages.DynamicTag", StringComparison.Ordinal);
-        StringAssert.Contains(failure, "OpenElement tag names must be compile-time strings", StringComparison.Ordinal);
+        Assert.HasCount(1, diagnostics, DescribeDiagnostics(diagnostics));
+        var diagnostic = diagnostics.Single();
+        Assert.AreEqual(RazorVueDiagnosticCategory.DirectRender, diagnostic.Category);
+        Assert.AreEqual("global::Demo.Pages.DynamicTag", diagnostic.ComponentId);
+        Assert.AreEqual(RazorVueDiagnosticSourceKind.AuthoredCSharp, diagnostic.SourceKind);
+        StringAssert.Contains(diagnostic.Message, "OpenElement tag names must be compile-time strings", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -180,13 +185,15 @@ public sealed class RazorTailOutputTests
             compilation,
             CancellationToken.None,
             out var catalogSource,
-            out var failure);
+            out var diagnostics);
 
         Assert.IsFalse(result);
         Assert.IsNull(catalogSource);
-        Assert.IsNotNull(failure);
-        StringAssert.Contains(failure, "Demo.Pages.ExpressionBodied", StringComparison.Ordinal);
-        StringAssert.Contains(failure, "did not expose a bindable BuildRenderTree body", StringComparison.Ordinal);
+        Assert.HasCount(1, diagnostics, DescribeDiagnostics(diagnostics));
+        var diagnostic = diagnostics.Single();
+        Assert.AreEqual(RazorVueDiagnosticCategory.ComponentBinding, diagnostic.Category);
+        Assert.AreEqual("global::Demo.Pages.ExpressionBodied", diagnostic.ComponentId);
+        StringAssert.Contains(diagnostic.Message, "did not expose a bindable BuildRenderTree body", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -262,9 +269,10 @@ public sealed class RazorTailOutputTests
                 compilation,
                 CancellationToken.None,
                 out var catalogSource,
-                out var failure);
+                out var diagnostics);
 
-            Assert.IsTrue(result, failure);
+            Assert.IsTrue(result, DescribeDiagnostics(diagnostics));
+            Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
             Assert.IsNotNull(catalogSource);
             baseline ??= catalogSource;
             Assert.AreEqual(baseline, catalogSource, "parallel artifact catalog changed on attempt " + attempt);
@@ -323,13 +331,22 @@ public sealed class RazorTailOutputTests
                 compilation,
                 CancellationToken.None,
                 out var catalogSource,
-                out var failure);
+                out var diagnostics);
 
             Assert.IsFalse(result);
             Assert.IsNull(catalogSource);
-            Assert.IsNotNull(failure);
-            StringAssert.Contains(failure, "Demo.Pages.AlphaInvalid", StringComparison.Ordinal);
-            Assert.IsFalse(failure.Contains("Demo.Pages.ZetaInvalid", StringComparison.Ordinal), failure);
+            Assert.HasCount(2, diagnostics, DescribeDiagnostics(diagnostics));
+            CollectionAssert.AreEqual(
+                new[] { "global::Demo.Pages.AlphaInvalid", "global::Demo.Pages.ZetaInvalid" },
+                diagnostics.Select(static diagnostic => diagnostic.ComponentId).ToArray());
+            Assert.IsTrue(diagnostics.All(static diagnostic => diagnostic.Category == RazorVueDiagnosticCategory.DirectRender));
+            Assert.IsTrue(diagnostics.All(static diagnostic => diagnostic.PrimaryLocation != Location.None));
         }
     }
+
+    private static string DescribeDiagnostics(IEnumerable<RazorVueDiagnosticInfo> diagnostics)
+        => string.Join(
+            Environment.NewLine,
+            diagnostics.Select(static diagnostic =>
+                Diagnostics.GetDescriptor(diagnostic.Category).Id + ": " + diagnostic.Message));
 }

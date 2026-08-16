@@ -72,6 +72,113 @@ public sealed class BootstrapPatchTests
         Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs"));
     }
 
+    [TestMethod]
+    public void DriverCompletionHook_UnsupportedRazorControlFlow_ReportsMappedAuthorDiagnostic()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TryContent.razor";
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.DriverCompletion.TryContent",
+            [CSharpSyntaxTree.ParseText(
+                """
+                using ECMAScript;
+                using static ECMAScript.Vue;
+                using Microsoft.AspNetCore.Components;
+
+                namespace Demo.Pages;
+
+                [ECMAScriptModule("./components/try-content")]
+                public partial class TryContent : ComponentBase, IVueComponent
+                {
+                }
+                """,
+                parseOptions,
+                "Pages/TryContent.razor.cs")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var razor = """
+            @try
+            {
+                <p>ready</p>
+            }
+            catch
+            {
+                <p>failed</p>
+            }
+            """;
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [new RazorVueGenerator().AsSourceGenerator(), new RazorSourceGenerator().AsSourceGenerator()],
+            [new InMemoryAdditionalText(documentPath, razor)],
+            parseOptions,
+            CreateOptions(documentPath, "Pages/TryContent.razor"));
+
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
+
+        var finalDiagnostics = diagnostics
+            .Concat(outputCompilation.GetDiagnostics())
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA021")
+            .ToArray();
+        Assert.HasCount(1, finalDiagnostics, string.Join(Environment.NewLine, diagnostics));
+        var diagnostic = finalDiagnostics[0];
+        Assert.AreEqual(DiagnosticSeverity.Error, diagnostic.Severity);
+        Assert.AreEqual(
+            documentPath,
+            diagnostic.Location.GetLineSpan().Path,
+            string.Join(Environment.NewLine, outputCompilation.GetDiagnostics()));
+        Assert.IsGreaterThan(0, diagnostic.Location.GetLineSpan().StartLinePosition.Line + 1);
+        Assert.IsTrue(
+            diagnostic.Descriptor.HelpLinkUri.EndsWith("#direct-render", StringComparison.Ordinal),
+            diagnostic.Descriptor.HelpLinkUri);
+        Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree =>
+            tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs"));
+    }
+
+    [TestMethod]
+    public void DriverCompletionHook_CompilerBridgeFailure_ReportsMappedAuthorDiagnostic()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\UnsupportedExpression.razor";
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.DriverCompletion.UnsupportedExpression",
+            [CSharpSyntaxTree.ParseText(
+                """
+                using ECMAScript;
+                using static ECMAScript.Vue;
+                using Microsoft.AspNetCore.Components;
+
+                namespace Demo.Pages;
+
+                [ECMAScriptModule("./components/unsupported-expression")]
+                public partial class UnsupportedExpression : ComponentBase, IVueComponent
+                {
+                }
+                """,
+                parseOptions,
+                "Pages/UnsupportedExpression.razor.cs")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [new RazorVueGenerator().AsSourceGenerator(), new RazorSourceGenerator().AsSourceGenerator()],
+            [new InMemoryAdditionalText(documentPath, "<p>@(new System.Random().Next())</p>")],
+            parseOptions,
+            CreateOptions(documentPath, "Pages/UnsupportedExpression.razor"));
+
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
+
+        var finalDiagnostics = diagnostics
+            .Concat(outputCompilation.GetDiagnostics())
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA022")
+            .ToArray();
+        Assert.HasCount(1, finalDiagnostics, string.Join(Environment.NewLine, diagnostics));
+        var diagnostic = finalDiagnostics[0];
+        Assert.AreEqual(documentPath, diagnostic.Location.GetLineSpan().Path);
+        Assert.IsGreaterThan(0, diagnostic.Location.GetLineSpan().StartLinePosition.Line + 1);
+        Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree =>
+            tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs"));
+    }
+
     private static void AssertDriverCompletionCatalog()
     {
         const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";

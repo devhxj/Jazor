@@ -1788,6 +1788,14 @@ public partial class SemanticWalker
 			var operation = operations[index];
 			if (operation is IBranchOperation branchOperation)
 			{
+				// Pattern switches lower through an IIFE, where an unlabeled `return` represents only
+				// an ordinary switch break. A labeled branch must use the shared explicit rejection
+				// until Roslyn exposes a target that can be preserved across this boundary.
+				if (HasUnmodeledLabeledBranchSyntax(branchOperation))
+				{
+					HandleTransformationFailure<Node>(branchOperation, LabeledBranchUnsupportedMessage);
+				}
+
 				switch (branchOperation.BranchKind)
 				{
 					case BranchKind.Break:

@@ -47,7 +47,7 @@ public sealed class RazorSgOfficialBooleanAttributeRuntimeTests
 
                 const deploying = component.setup({ IsDeploying: true }, { slots: {} })();
                 assert.equal(deploying.props.disabled, true);
-                assert.deepEqual(deploying.children, ["Deploy"]);
+                assert.deepEqual(deploying.children, [{ name: "__text", children: "Deploy", patchFlag: undefined }]);
             });
             """);
     }

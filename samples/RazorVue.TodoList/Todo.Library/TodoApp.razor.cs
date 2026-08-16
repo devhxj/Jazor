@@ -37,10 +37,20 @@ public partial class TodoApp : ComponentBase, IVueComponent
         draftTitle = string.Empty;
     }
 
-    private sealed class TodoTask(string title, bool isDone)
+    // A record lowers to plain object literals (no runtime class), keeping Vue's deep
+    // reactive() proxy functional for the checkbox bind. A class with auto-properties would
+    // lower to private backing fields, and JS proxies cannot dispatch private field brands.
+    // record 降级为普通对象字面量；deep reactive 代理可正常跟踪 IsDone 变更。
+    private sealed record TodoTask
     {
-        public string Title { get; } = title;
+        public TodoTask(string title, bool isDone)
+        {
+            Title = title;
+            IsDone = isDone;
+        }
 
-        public bool IsDone { get; set; } = isDone;
+        public string Title { get; }
+
+        public bool IsDone { get; set; }
     }
 }

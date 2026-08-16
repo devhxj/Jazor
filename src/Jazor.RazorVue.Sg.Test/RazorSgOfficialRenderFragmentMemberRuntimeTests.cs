@@ -100,7 +100,7 @@ public sealed class RazorSgOfficialRenderFragmentMemberRuntimeTests
                 const footer = panel.children.footer()[0];
                 assert.equal(footer.name, "small");
                 assert.equal(footer.props["data-summary-part"], "footer");
-                assert.deepEqual(footer.children, ["Ready"]);
+                assert.deepEqual(footer.children, [{ name: "__text", children: "Ready", patchFlag: undefined }]);
             });
             """,
             new Dictionary<string, string>

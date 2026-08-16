@@ -94,6 +94,178 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public void ConvertRuntimeClass_ProxySafeAutoPropertyStorageCollision_RejectsAliasedMember()
+    {
+        const string scenarioId = "ast-converter-runtime-class.proxy-safe-auto-property-storage-collision";
+        var nameFixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public int Value { get; set; }
+                    public int Read() => Value;
+                }
+            }
+            """,
+            scenarioId + ".name");
+        var property = nameFixture.GetType("Widget")
+            .GetMembers("Value")
+            .OfType<IPropertySymbol>()
+            .Single();
+        var storageName = "$jazor$private$" + Jazor.Common.Format.HashName(
+            property.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat));
+        var fixture = CompileModule(
+            $$"""
+            using ECMAScript;
+
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public int Value { get; set; }
+
+                    [ECMAScriptName("{{storageName}}")]
+                    public int Read() => Value;
+                }
+            }
+            """,
+            scenarioId,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location));
+        var options = new AstConverterOptions(
+            AstConverterProfile.Standard,
+            RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel, options);
+
+        var exception = Assert.ThrowsExactly<NotSupportedException>(
+            () => converter.ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+
+        StringAssert.Contains(exception.Message, "duplicate JavaScript member name", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, storageName, StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, "Read", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
+    public void ConvertRuntimeClass_ProxySafePrimaryConstructorStorageCollision_RejectsAliasedMember()
+    {
+        const string scenarioId = "ast-converter-runtime-class.proxy-safe-primary-constructor-storage-collision";
+        var nameFixture = CompileModule(
+            """
+            using ECMAScript;
+
+            public static class TestModule
+            {
+                public sealed class Widget(int value)
+                {
+                    [ECMAScriptName("placeholder")]
+                    public int Read() => value;
+                }
+            }
+            """,
+            scenarioId + ".name",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location));
+        var parameter = nameFixture.GetType("Widget")
+            .InstanceConstructors
+            .Single(static constructor => !constructor.IsImplicitlyDeclared)
+            .Parameters
+            .Single();
+        var storageName = "$jazor$private$$jazorPrimary_" +
+            Jazor.Common.Format.HashName(
+                parameter.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)).TrimStart('_');
+        var fixture = CompileModule(
+            $$"""
+            using ECMAScript;
+
+            public static class TestModule
+            {
+                public sealed class Widget(int value)
+                {
+                    [ECMAScriptName("{{storageName}}")]
+                    public int Read() => value;
+                }
+            }
+            """,
+            scenarioId,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location));
+        var options = new AstConverterOptions(
+            AstConverterProfile.Standard,
+            RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+
+        var exception = Assert.ThrowsExactly<NotSupportedException>(
+            () => new AstConverter(fixture.Module, fixture.SemanticModel, options)
+                .ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+
+        StringAssert.Contains(exception.Message, "duplicate JavaScript member name", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, storageName, StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, "Read", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
+    public void ConvertRuntimeClass_ProxySafeEventStorageCollision_RejectsAliasedMember()
+    {
+        const string scenarioId = "ast-converter-runtime-class.proxy-safe-event-storage-collision";
+        var nameFixture = CompileModule(
+            """
+            using System;
+            using ECMAScript;
+
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public event Action? Changed;
+
+                    [ECMAScriptName("placeholder")]
+                    public void Read()
+                    {
+                    }
+                }
+            }
+            """,
+            scenarioId + ".name",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location));
+        var eventSymbol = nameFixture.GetType("Widget")
+            .GetMembers("Changed")
+            .OfType<IEventSymbol>()
+            .Single();
+        var storageName = "$jazor$private$" + EventLowering.GetStorageName(eventSymbol);
+        var fixture = CompileModule(
+            $$"""
+            using System;
+            using ECMAScript;
+
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public event Action? Changed;
+
+                    [ECMAScriptName("{{storageName}}")]
+                    public void Read()
+                    {
+                    }
+                }
+            }
+            """,
+            scenarioId,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location));
+        var options = new AstConverterOptions(
+            AstConverterProfile.Standard,
+            RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+
+        var exception = Assert.ThrowsExactly<NotSupportedException>(
+            () => new AstConverter(fixture.Module, fixture.SemanticModel, options)
+                .ConvertRuntimeClass(fixture.GetType("Widget")),
+            scenarioId);
+
+        StringAssert.Contains(exception.Message, "duplicate JavaScript member name", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, storageName, StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(exception.Message, "Read", StringComparison.Ordinal, scenarioId);
+    }
+
+    [TestMethod]
     public async Task ConvertModule_IteratorMethods_DeclareSyncAndAsyncGeneratorArtifacts()
     {
         const string scenarioId = "ast-converter.iterator-method-generator-artifact";

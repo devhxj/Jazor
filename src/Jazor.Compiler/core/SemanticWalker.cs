@@ -975,6 +975,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private readonly IReadOnlyDictionary<ISymbol, string>? _moduleDeclaredNames;
 
+    // Runtime-class private storage is normally a JavaScript #field. RazorVue may place an
+    // instance behind Vue's Proxy, where that receiver fails the #field brand check; the option
+    // changes only compiler-emitted storage names, never authored member visibility rules.
+    private readonly RuntimeClassPrivateStorage _runtimeClassPrivateStorage;
+
     private readonly Dictionary<string, Func<ISymbol, SenseArgument, Expression?, Expression?[], IOperation?, Expression?>> _whiteListCompiles;
 
     private readonly CancellationToken _cancellationToken;
@@ -1001,10 +1006,15 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         _moduleDeclaredNames = moduleDeclaredNames;
     }
 
-    public SemanticWalker(ITypeSymbol moduleRootType, IReadOnlyDictionary<ISymbol, string> moduleDeclaredNames, CancellationToken cancellationToken) : this(cancellationToken)
+    public SemanticWalker(
+        ITypeSymbol moduleRootType,
+        IReadOnlyDictionary<ISymbol, string> moduleDeclaredNames,
+        CancellationToken cancellationToken,
+        RuntimeClassPrivateStorage runtimeClassPrivateStorage = RuntimeClassPrivateStorage.JavaScriptPrivateFields) : this(cancellationToken)
     {
         _moduleRootType = moduleRootType;
         _moduleDeclaredNames = moduleDeclaredNames;
+        _runtimeClassPrivateStorage = runtimeClassPrivateStorage;
     }
 
     public SemanticWalker(bool test) : this() => _test = test;
@@ -1508,34 +1518,10 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     }
 
     private static OperationTransformationException CreateOperationTransformationException(IOperation operation, string? message)
-    {
-        var exception = new OperationTransformationException(operation.Kind, message);
-        AttachLocationMetadata(exception, operation.Syntax.GetLocation());
-        return exception;
-    }
+        => new(operation, message);
 
     private static SyntaxNodeTransformationException CreateSyntaxNodeTransformationException(SyntaxNode node, string? message)
-    {
-        var exception = new SyntaxNodeTransformationException(node.Kind(), message);
-        AttachLocationMetadata(exception, node.GetLocation());
-        return exception;
-    }
-
-    private static void AttachLocationMetadata(Exception exception, Location location)
-    {
-        var lineSpan = location.GetLineSpan();
-        var path = !string.IsNullOrWhiteSpace(lineSpan.Path)
-            ? lineSpan.Path
-            : location.SourceTree?.FilePath;
-        if (string.IsNullOrWhiteSpace(path))
-            path = "<unknown>";
-
-        exception.Data["location.path"] = path;
-        exception.Data["location.startLine"] = lineSpan.StartLinePosition.Line + 1;
-        exception.Data["location.startColumn"] = lineSpan.StartLinePosition.Character + 1;
-        exception.Data["location.endLine"] = lineSpan.EndLinePosition.Line + 1;
-        exception.Data["location.endColumn"] = lineSpan.EndLinePosition.Character + 1;
-    }
+        => new(node.Kind(), message, node.GetLocation());
 
     private void ReportTransformationFailure(Location location, string? message)
         => _report?.Invoke(location, message);

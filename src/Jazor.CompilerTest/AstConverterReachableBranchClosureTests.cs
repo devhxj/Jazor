@@ -396,7 +396,7 @@ public sealed class AstConverterReachableBranchClosureTests
             }
             """);
 
-        var module = await new AstConverter(fixture.Module, fixture.SemanticModel).Convert();
+        var module = (await new AstConverter(fixture.Module, fixture.SemanticModel).Convert())!;
         var declaration = module.Body.OfType<ImportDeclaration>().Single();
         var specifier = declaration.Specifiers.OfType<ImportDefaultSpecifier>().Single();
         var namedSpecifier = declaration.Specifiers.OfType<ImportSpecifier>().Single();
@@ -970,6 +970,53 @@ public sealed class AstConverterReachableBranchClosureTests
         StringAssert.Contains(script, "super(\"$ctor_", StringComparison.Ordinal);
         StringAssert.Contains(script, ", 7)", StringComparison.Ordinal);
         StringAssert.Contains(script, "class ImplicitRelease extends ReleaseBase", StringComparison.Ordinal);
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ProxySafeRuntimeClassStorage_CoversInheritanceAutoPropertiesPrimaryCaptureAndEvents()
+    {
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public class ReleaseBase(string prefix)
+                {
+                    private string Prefix { get; } = prefix;
+
+                    public string ReadPrefix() => Prefix;
+                }
+
+                public sealed class ReleaseState : ReleaseBase
+                {
+                    public ReleaseState(string prefix) : base(prefix) { }
+
+                    private string Value { get; set; } = "ready";
+
+                    public string ReadValue() => Value;
+
+                    public event Action? Changed;
+                }
+            }
+            """);
+        var options = new AstConverterOptions(
+            AstConverterProfile.Standard,
+            RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+
+        var module = await new AstConverter(fixture.Module, fixture.SemanticModel, options).Convert();
+        Assert.IsNotNull(module);
+        var script = module.ToKnRECMAScript();
+
+        StringAssert.Contains(script, "class ReleaseBase", StringComparison.Ordinal);
+        StringAssert.Contains(script, "class ReleaseState extends ReleaseBase", StringComparison.Ordinal);
+        StringAssert.Contains(script, "$jazor$private$", StringComparison.Ordinal);
+        StringAssert.Contains(script, "$jazor$private$$jazorPrimary_", StringComparison.Ordinal);
+        StringAssert.Contains(script, "$jazor$private$$event_store_", StringComparison.Ordinal);
+        StringAssert.Contains(script, "get Value()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "set Value(value)", StringComparison.Ordinal);
+        Assert.DoesNotContain("#", script, StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);
     }
 

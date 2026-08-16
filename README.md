@@ -97,15 +97,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.15.0
+dotnet add package Jazor --version 0.16.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.15.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.15.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.16.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.16.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

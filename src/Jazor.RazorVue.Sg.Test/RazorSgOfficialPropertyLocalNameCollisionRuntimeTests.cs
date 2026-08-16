@@ -48,7 +48,7 @@ public sealed class RazorSgOfficialPropertyLocalNameCollisionRuntimeTests
                 assert.equal(section.props["data-kind"], "release-status");
                 assert.deepEqual(section.children, [
                     { name: "__text", children: "local", patchFlag: 1 },
-                    "|",
+                    { name: "__text", children: "|", patchFlag: undefined },
                     { name: "__text", children: "state", patchFlag: 1 }
                 ]);
             });

@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <JazorMode>debug</JazorMode>
+    <!-- Source references stay the default for repository development. Set TodoUsePackages=true
+         to verify the same host as an isolated NuGet consumer (SSR release gate). -->
+    <TodoUsePackages Condition="'$(TodoUsePackages)' == ''">false</TodoUsePackages>
     <TargetFramework>net11.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -8,7 +11,8 @@
     <NoWarn>$(NoWarn);CS0626</NoWarn>
   </PropertyGroup>
 
-  <Import Project="..\..\..\src\Jazor\buildTransitive\Jazor.props" />
+  <Import Project="..\..\..\src\Jazor\buildTransitive\Jazor.props"
+          Condition="'$(TodoUsePackages)' != 'true'" />
 
   <ItemGroup>
     <Compile Remove="jazor\**" />
@@ -17,7 +21,8 @@
     <None Remove="jazor\**" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TodoUsePackages)' != 'true'">
+    <!-- Source builds do not import ECMAScript.Vue's packaged buildTransitive target. -->
     <JazorLibraryManifest Include="..\..\..\src\ECMAScript.Vue\manifest.json" />
     <ProjectReference Include="..\Todo.Library\Todo.Library.csproj" />
     <ProjectReference Include="..\..\..\src\ECMAScript\ECMAScript.csproj" />
@@ -31,7 +36,16 @@
     <ProjectReference Include="..\..\..\src\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <Target Name="AddLocalJazorAnalyzerDependencies" BeforeTargets="CoreCompile">
+  <ItemGroup Condition="'$(TodoUsePackages)' == 'true'">
+    <ProjectReference Include="..\Todo.Library\Todo.Library.csproj" />
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+
+  <Target Name="AddLocalJazorAnalyzerDependencies"
+          BeforeTargets="CoreCompile"
+          Condition="'$(TodoUsePackages)' != 'true'">
     <ItemGroup>
       <!-- Source builds register analyzers as separate files. Keep their dependency closure
            beside the analyzer, matching the packaged analyzer layout. -->
@@ -46,12 +60,15 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="RegisterLocalRazorVueArtifactProvider" BeforeTargets="JazorDebug;JazorRelease">
+  <Target Name="RegisterLocalRazorVueArtifactProvider"
+          BeforeTargets="JazorDebug;JazorRelease"
+          Condition="'$(TodoUsePackages)' != 'true'">
     <ItemGroup>
       <JazorArtifactProviderAssembly Include="$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll"
                                      Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
     </ItemGroup>
   </Target>
 
-  <Import Project="..\..\..\src\Jazor\buildTransitive\Jazor.targets" />
+  <Import Project="..\..\..\src\Jazor\buildTransitive\Jazor.targets"
+          Condition="'$(TodoUsePackages)' != 'true'" />
 </Project>

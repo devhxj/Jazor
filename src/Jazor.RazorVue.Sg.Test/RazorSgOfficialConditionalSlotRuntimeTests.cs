@@ -92,7 +92,7 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
                 assert.equal(status.props["data-state"], "history");
                 assert.deepEqual(status.children, [
                     { name: "__text", children: "Orders API", patchFlag: 1 },
-                    " history available"
+                    { name: "__text", children: " history available", patchFlag: undefined }
                 ]);
 
                 const hiddenPanel = component.setup({
@@ -103,7 +103,7 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
                 assert.equal(hidden.length, 1);
                 assert.equal(hidden[0].name, "span");
                 assert.equal(hidden[0].props["data-release"], "Orders API");
-                assert.deepEqual(hidden[0].children, ["History hidden"]);
+                assert.deepEqual(hidden[0].children, [{ name: "__text", children: "History hidden", patchFlag: undefined }]);
             });
             """,
             new Dictionary<string, string>

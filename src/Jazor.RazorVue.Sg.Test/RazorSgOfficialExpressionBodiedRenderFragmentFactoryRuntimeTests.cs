@@ -74,7 +74,7 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "strong");
                 assert.equal(nodes[0].props["data-release-header"], "expression-bodied");
-                assert.deepEqual(nodes[0].children, ["Deployment ready"]);
+                assert.deepEqual(nodes[0].children, [{ name: "__text", children: "Deployment ready", patchFlag: undefined }]);
             });
             """,
             new Dictionary<string, string>

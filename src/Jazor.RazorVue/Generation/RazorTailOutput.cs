@@ -21,24 +21,49 @@ internal static class RazorTailOutput
         Compilation compilation,
         CancellationToken cancellationToken,
         out string? catalogSource,
-        out string? failure)
+        out ImmutableArray<RazorVueDiagnosticInfo> diagnostics)
     {
         catalogSource = null;
-        failure = null;
+        diagnostics = ImmutableArray<RazorVueDiagnosticInfo>.Empty;
 
         // Only components with a bindable render body produce artifacts. Module-marked
         // container contracts and library implementations participate through imports, while
         // handwritten BuildRenderTree components remain valid tail output roots.
-        var components = ComponentSelector.DiscoverTailOutputComponents(compilation);
+        ImmutableArray<INamedTypeSymbol> components;
+        try
+        {
+            components = ComponentSelector.DiscoverTailOutputComponents(compilation);
+        }
+        catch (Exception exception)
+        {
+            diagnostics = ImmutableArray.Create(RazorVueDiagnosticFactory.FromException(
+                exception,
+                RazorVueDiagnosticCategory.Internal));
+            return false;
+        }
+
         if (components.IsDefaultOrEmpty)
             return true;
 
-        if (!GeneratedCSharpBinder.TryBindFinalCompilation(
+        if (!GeneratedCSharpBinder.TryBindFinalCompilationWithDiagnostics(
                 compilation,
                 components,
                 out var binding,
-                out failure) ||
-            !TryBuildVueRenderArtifacts(cancellationToken, binding!, out var artifacts, out failure))
+                out diagnostics))
+        {
+            if (diagnostics.IsDefaultOrEmpty)
+            {
+                diagnostics = ImmutableArray.Create(RazorVueDiagnosticFactory.Create(
+                    RazorVueDiagnosticCategory.ComponentBinding,
+                    "No component binding detail was provided.",
+                    GetFirstComponentLocation(components),
+                    components.FirstOrDefault(),
+                    isAuthorReachable: true));
+            }
+            return false;
+        }
+
+        if (!TryBuildVueRenderArtifacts(cancellationToken, binding!, out var artifacts, out diagnostics))
         {
             return false;
         }
@@ -51,15 +76,16 @@ internal static class RazorTailOutput
         CancellationToken cancellationToken,
         GeneratedCSharpBinding binding,
         out ImmutableArray<VueModuleArtifact> artifacts,
-        out string? failure)
+        out ImmutableArray<RazorVueDiagnosticInfo> diagnostics)
     {
         artifacts = ImmutableArray<VueModuleArtifact>.Empty;
-        failure = null;
+        diagnostics = ImmutableArray<RazorVueDiagnosticInfo>.Empty;
 
         // Build closures on one stable thread first. Besides preserving the first closure
         // diagnostic, this separates graph discovery from independent module emission.
         // closure 仍串行建立，确保失败顺序不受 worker 调度影响；只有模块发射可并行。
         var inputs = ImmutableArray.CreateBuilder<ArtifactBuildInput>();
+        var diagnosticBuilder = ImmutableArray.CreateBuilder<RazorVueDiagnosticInfo>();
         foreach (var component in binding.Components
                      .OrderBy(
                          static component => component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
@@ -67,17 +93,44 @@ internal static class RazorTailOutput
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!MemberClosureBuilder.TryBuild(
+            if (!MemberClosureBuilder.TryBuildWithDiagnostic(
                     binding,
                     component,
                     out var closure,
-                    out var closureFailure))
+                    out var closureDiagnostic))
             {
-                failure = closureFailure;
-                return false;
+                diagnosticBuilder.Add(closureDiagnostic ?? RazorVueDiagnosticFactory.Create(
+                    RazorVueDiagnosticCategory.MemberClosure,
+                    "No component member closure detail was provided.",
+                    RazorVueDiagnosticFactory.GetSymbolLocation(component.BuildRenderTreeMethod),
+                    component.ComponentSymbol,
+                    isAuthorReachable: true));
+                continue;
             }
 
             inputs.Add(new ArtifactBuildInput(component, closure!));
+        }
+
+        if (diagnosticBuilder.Count > 0)
+        {
+            diagnostics = OrderDiagnostics(diagnosticBuilder);
+            return false;
+        }
+
+        try
+        {
+            // VueInject is compilation-wide metadata. Validate it once before worker fan-out so
+            // one invalid assembly declaration produces one precise error instead of an error per
+            // component that happened to reach module framing first.
+            // 注入注册表是 compilation 级契约，必须在并行 artifact 前单次验证。
+            _ = VueInjectRegistry.ForCompilation(binding.Compilation);
+        }
+        catch (Exception exception)
+        {
+            diagnostics = ImmutableArray.Create(RazorVueDiagnosticFactory.FromException(
+                exception,
+                RazorVueDiagnosticCategory.VueInject));
+            return false;
         }
 
         var results = BuildArtifacts(
@@ -85,18 +138,24 @@ internal static class RazorTailOutput
             binding,
             inputs.ToImmutable());
         var builder = ImmutableArray.CreateBuilder<VueModuleArtifact>(results.Length);
-        // Workers can finish in any order. Consume the stable input order so observable failure
-        // selection remains identical to the previous serial implementation.
-        // worker 完成顺序不参与诊断；按稳定索引回收才能保持原先首个失败契约。
+        // Workers can finish in any order. Consume the stable input order so diagnostics remain
+        // deterministic while every independent component still contributes its first failure.
+        // worker 完成顺序不参与诊断；按稳定索引回收并聚合独立组件失败。
         foreach (var result in results)
         {
-            if (result.Failure is not null)
+            if (result.Diagnostic is not null)
             {
-                failure = result.Failure;
-                return false;
+                diagnosticBuilder.Add(result.Diagnostic);
+                continue;
             }
 
             builder.Add(result.Artifact!);
+        }
+
+        if (diagnosticBuilder.Count > 0)
+        {
+            diagnostics = OrderDiagnostics(diagnosticBuilder);
+            return false;
         }
 
         artifacts = builder
@@ -178,10 +237,11 @@ internal static class RazorTailOutput
         {
             return new ArtifactBuildResult(
                 null,
-                "Failed to generate RazorVue render module for '" +
-                input.Component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
-                "': " +
-                ex.Message);
+                RazorVueDiagnosticFactory.FromException(
+                    ex,
+                    RazorVueDiagnosticCategory.VueModule,
+                    input.Component.ComponentSymbol,
+                    input.Component.BuildRenderTreeMethod));
         }
     }
 
@@ -199,7 +259,22 @@ internal static class RazorTailOutput
 
     private sealed record ArtifactBuildResult(
         VueModuleArtifact? Artifact,
-        string? Failure);
+        RazorVueDiagnosticInfo? Diagnostic);
+
+    private static Location GetFirstComponentLocation(ImmutableArray<INamedTypeSymbol> components)
+        => components
+            .Select(RazorVueDiagnosticFactory.GetSymbolLocation)
+            .FirstOrDefault(static location => location != Location.None) ?? Location.None;
+
+    private static ImmutableArray<RazorVueDiagnosticInfo> OrderDiagnostics(
+        ImmutableArray<RazorVueDiagnosticInfo>.Builder diagnostics)
+        => diagnostics
+            .OrderBy(static diagnostic => diagnostic.ComponentId ?? string.Empty, StringComparer.Ordinal)
+            .ThenBy(static diagnostic => diagnostic.PrimaryLocation.GetLineSpan().Path ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static diagnostic => diagnostic.PrimaryLocation.GetLineSpan().StartLinePosition.Line)
+            .ThenBy(static diagnostic => diagnostic.PrimaryLocation.GetLineSpan().StartLinePosition.Character)
+            .ThenBy(static diagnostic => Diagnostics.GetDescriptor(diagnostic.Category).Id, StringComparer.Ordinal)
+            .ToImmutableArray();
 
     private static string BuildArtifactCatalogSource(ImmutableArray<VueModuleArtifact> artifacts)
     {

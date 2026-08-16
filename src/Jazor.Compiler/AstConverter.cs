@@ -63,7 +63,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// methods need an explicit carrier after the generated JavaScript constructor returns.
     /// </summary>
     private sealed class PrimaryConstructorParameterSemanticWalkerHost(
-        IReadOnlyDictionary<string, string> storage) : SemanticWalkerHost
+        IReadOnlyDictionary<string, string> storage,
+        RuntimeClassPrivateStorage privateStorage) : SemanticWalkerHost
     {
         public override Expression? RewriteParameterReference(
             IParameterReferenceOperation operation,
@@ -73,10 +74,15 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     out var fieldName)
                 ? new MemberExpression(
                     new ThisExpression(),
-                    new PrivateIdentifier(fieldName),
+                    CreatePrivateStorageKey(fieldName),
                     computed: false,
                     optional: false)
                 : null;
+
+        private Expression CreatePrivateStorageKey(string fieldName)
+            => privateStorage == RuntimeClassPrivateStorage.ProxySafeMangledProperties
+                ? new Identifier(RuntimeClassPrivateStorageNames.GetSyntheticStorageName(privateStorage, fieldName))
+                : new PrivateIdentifier(fieldName);
     }
 
     private readonly INamedTypeSymbol _classSymbol = classSymbol;
@@ -291,12 +297,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     parameterStorage.ToDictionary(
                         static storage => storage.Parameter.OriginalDefinition.ToDisplayString(Format.NameFormat),
                         static storage => storage.FieldName,
-                        StringComparer.Ordinal));
+                        StringComparer.Ordinal),
+                    _options.RuntimeClassPrivateStorage);
             }
         }
 
         var effectiveHost = CombineSemanticWalkerHosts(primaryConstructorHost, host, _semanticWalkerHost);
-        return new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken)
+        return new SemanticWalker(
+            _classSymbol,
+            ModuleDeclaredNames,
+            cancellationToken,
+            _options.RuntimeClassPrivateStorage)
         {
             Host = effectiveHost
         };
@@ -651,7 +662,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             : GetMemberFieldInitializer(symbol);
 
         Expression identifier = ShouldBePrivate(symbol.DeclaredAccessibility)
-            ? new PrivateIdentifier(name)
+            ? CreatePrivateStorageKey(symbol, name)
             : new Identifier(name);
         return new PropertyDefinition(
             key: identifier,
@@ -799,8 +810,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         // Body-less property accessors only map to auto-properties.
         else if (isProperty)
         {
-            var backName = GetMemberBackingFieldName((IPropertySymbol)symbol.AssociatedSymbol!);
-            var backField = new PrivateIdentifier(backName);
+            var backingField = GetMemberBackingFieldSymbol((IPropertySymbol)symbol.AssociatedSymbol!);
+            var backName = backingField is null
+                ? GetMemberBackingFieldName((IPropertySymbol)symbol.AssociatedSymbol!)
+                : GetMemberFieldDeclaredName(backingField);
+            var backField = CreatePrivateStorageKey(backingField, backName);
 
             if (symbol.MethodKind == MethodKind.PropertyGet)
                 body = new FunctionBody(
@@ -917,7 +931,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         var invokeMethod = EventLowering.GetInvokeMethod(symbol);
         yield return new PropertyDefinition(
-            key: new PrivateIdentifier(EventLowering.GetStorageName(symbol)),
+            key: CreateSyntheticPrivateStorageKey(EventLowering.GetStorageName(symbol)),
             value: new ArrayExpression(NodeList.Empty<Expression?>()),
             computed: false,
             isStatic: false,
@@ -927,7 +941,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         yield return CreateEventSnapshotMethod(symbol, invokeMethod);
     }
 
-    private static MethodDefinition CreateEventAddMethod(IEventSymbol symbol)
+    private MethodDefinition CreateEventAddMethod(IEventSymbol symbol)
     {
         var handler = new Identifier("$eventHandler");
         var receiver = new Identifier("$eventReceiver");
@@ -955,7 +969,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             body);
     }
 
-    private static MethodDefinition CreateEventRemoveMethod(IEventSymbol symbol)
+    private MethodDefinition CreateEventRemoveMethod(IEventSymbol symbol)
     {
         var handler = new Identifier("$eventHandler");
         var receiver = new Identifier("$eventReceiver");
@@ -1020,7 +1034,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             body);
     }
 
-    private static MethodDefinition CreateEventSnapshotMethod(IEventSymbol symbol, IMethodSymbol invokeMethod)
+    private MethodDefinition CreateEventSnapshotMethod(IEventSymbol symbol, IMethodSymbol invokeMethod)
     {
         var snapshot = new Identifier("$eventSnapshot");
         var entry = new Identifier("$eventEntry");
@@ -1108,14 +1122,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             isStatic: false,
             decorators: NodeList.Empty<Decorator>());
 
-    private static MemberExpression CreateEventStorageAccess(IEventSymbol symbol)
+    private MemberExpression CreateEventStorageAccess(IEventSymbol symbol)
         => new(
             new ThisExpression(),
-            new PrivateIdentifier(EventLowering.GetStorageName(symbol)),
+            CreateSyntheticPrivateStorageKey(EventLowering.GetStorageName(symbol)),
             computed: false,
             optional: false);
 
-    private static MemberExpression CreateEventStorageIndexAccess(IEventSymbol symbol, Expression index)
+    private MemberExpression CreateEventStorageIndexAccess(IEventSymbol symbol, Expression index)
         => new(
             CreateEventStorageAccess(symbol),
             index,
@@ -1339,7 +1353,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                                      .Select(static group => group.First()))
                         {
                             nodes.Add(new PropertyDefinition(
-                                key: new PrivateIdentifier(parameterStorage.FieldName),
+                                key: CreateSyntheticPrivateStorageKey(parameterStorage.FieldName),
                                 value: GetImplicitMemberFieldDefaultValue(parameterStorage.Parameter),
                                 computed: false,
                                 isStatic: false,
@@ -1435,8 +1449,36 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var instanceNames = new Dictionary<string, ISymbol>(System.StringComparer.Ordinal);
         var staticNames = new Dictionary<string, ISymbol>(System.StringComparer.Ordinal);
 
+        // `constructor` remains an ES class structural slot even when C# has no explicit
+        // constructor. An ECMAScriptName alias must never redefine instance construction.
+        instanceNames.Add("constructor", runtimeType);
+
         foreach (var member in runtimeType.GetMembers())
         {
+            // Auto-property backing fields are emitted from the property branch instead of the
+            // normal field branch. They still become ordinary `$jazor$private$...` properties
+            // in the Proxy-safe profile and therefore participate in the class name scope.
+            // auto-property backing field 虽是隐式 symbol，但实际会发射，不能跳过冲突检查。
+            if (member is IFieldSymbol
+                {
+                    IsImplicitlyDeclared: true,
+                    AssociatedSymbol: IPropertySymbol associatedProperty
+                } implicitBackingField)
+            {
+                if (ShouldIncludeMemberClassMember(associatedProperty))
+                {
+                    AddRuntimeClassJavaScriptName(
+                        implicitBackingField.IsStatic ? staticNames : instanceNames,
+                        implicitBackingField,
+                        GetRuntimeClassPrivateStorageName(
+                            implicitBackingField,
+                            GetMemberFieldDeclaredName(implicitBackingField)),
+                        runtimeType);
+                }
+
+                continue;
+            }
+
             if (!ShouldIncludeMemberClassMember(member))
                 continue;
 
@@ -1445,11 +1487,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 if (field.IsImplicitlyDeclared || field.AssociatedSymbol is IEventSymbol)
                     continue;
 
-                var name = Util.GetConfigOrSymbolName(field);
-                // Class fields use #name for private storage. Keep that namespace distinct from
-                // ordinary methods/properties, while still rejecting duplicate private slots.
-                if (field.DeclaredAccessibility is Accessibility.Private or Accessibility.Protected or Accessibility.ProtectedAndInternal or Accessibility.ProtectedOrInternal)
-                    name = "#" + name;
+                var name = GetMemberFieldDeclaredName(field);
+                if (ShouldBePrivate(field.DeclaredAccessibility))
+                    name = GetRuntimeClassPrivateStorageName(field, name);
 
                 AddRuntimeClassJavaScriptName(
                     field.IsStatic ? staticNames : instanceNames,
@@ -1473,6 +1513,37 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 continue;
             }
 
+            if (member is IEventSymbol eventSymbol)
+            {
+                if (EventLowering.IsSupportedFieldLikeInstanceEvent(eventSymbol, out _))
+                {
+                    AddRuntimeClassJavaScriptName(
+                        instanceNames,
+                        eventSymbol,
+                        GetRuntimeClassPrivateStorageName(
+                            field: null,
+                            EventLowering.GetStorageName(eventSymbol)),
+                        runtimeType);
+                    AddRuntimeClassJavaScriptName(
+                        instanceNames,
+                        eventSymbol,
+                        EventLowering.GetAddMethodName(eventSymbol),
+                        runtimeType);
+                    AddRuntimeClassJavaScriptName(
+                        instanceNames,
+                        eventSymbol,
+                        EventLowering.GetRemoveMethodName(eventSymbol),
+                        runtimeType);
+                    AddRuntimeClassJavaScriptName(
+                        instanceNames,
+                        eventSymbol,
+                        EventLowering.GetSnapshotMethodName(eventSymbol),
+                        runtimeType);
+                }
+
+                continue;
+            }
+
             if (member is IMethodSymbol method &&
                 method.MethodKind == MethodKind.Ordinary &&
                 method.AssociatedSymbol is not IEventSymbol)
@@ -1484,6 +1555,48 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     runtimeType);
             }
         }
+
+        var explicitConstructors = runtimeType.InstanceConstructors
+            .Where(static constructor => !constructor.IsImplicitlyDeclared)
+            .ToImmutableArray();
+        if (explicitConstructors.Any(ShouldIncludeMemberClassMember))
+        {
+            foreach (var storage in GetPrimaryConstructorParameterStorage(runtimeType))
+            {
+                AddRuntimeClassJavaScriptName(
+                    instanceNames,
+                    storage.Parameter,
+                    GetRuntimeClassPrivateStorageName(field: null, storage.FieldName),
+                    runtimeType);
+            }
+
+            if (explicitConstructors.Length > 1)
+            {
+                foreach (var constructor in explicitConstructors)
+                {
+                    AddRuntimeClassJavaScriptName(
+                        instanceNames,
+                        constructor,
+                        GetMemberConstructorHelperName(constructor),
+                        runtimeType);
+                }
+            }
+        }
+    }
+
+    private string GetRuntimeClassPrivateStorageName(IFieldSymbol? field, string fallbackName)
+    {
+        if (_options.RuntimeClassPrivateStorage != RuntimeClassPrivateStorage.ProxySafeMangledProperties)
+            return "#" + fallbackName;
+
+        return field is null
+            ? RuntimeClassPrivateStorageNames.GetSyntheticStorageName(
+                _options.RuntimeClassPrivateStorage,
+                fallbackName)
+            : RuntimeClassPrivateStorageNames.GetFieldStorageName(
+                _options.RuntimeClassPrivateStorage,
+                field,
+                fallbackName);
     }
 
     private static void AddRuntimeClassJavaScriptName(
@@ -1605,7 +1718,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             static storage => storage.Parameter.OriginalDefinition.ToDisplayString(Format.NameFormat),
             static storage => storage.FieldName,
             StringComparer.Ordinal);
-        var parameterHost = new PrimaryConstructorParameterSemanticWalkerHost(storageByParameter);
+        var parameterHost = new PrimaryConstructorParameterSemanticWalkerHost(
+            storageByParameter,
+            _options.RuntimeClassPrivateStorage);
         var statements = new List<Statement>();
 
         // Primary constructor syntax has no IConstructorBodyOperation. Rebuild only the source
@@ -1619,7 +1734,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     Operator.Assignment,
                     new MemberExpression(
                         new ThisExpression(),
-                        new PrivateIdentifier(storage.FieldName),
+                        CreateSyntheticPrivateStorageKey(storage.FieldName),
                         computed: false,
                         optional: false),
                     new Identifier(storage.Parameter.Name))));
@@ -1714,7 +1829,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return new MemberExpression(
             new ThisExpression(),
             ShouldBePrivate(field.DeclaredAccessibility)
-                ? new PrivateIdentifier(fieldName)
+                ? CreatePrivateStorageKey(field, fieldName)
                 : new Identifier(fieldName),
             computed: false,
             optional: false);
@@ -1786,10 +1901,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private string GetMemberBackingFieldName(IPropertySymbol property)
     {
-        var backingField = property.ContainingType
-            .GetMembers($"<{property.Name}>k__BackingField")
-            .OfType<IFieldSymbol>()
-            .FirstOrDefault();
+        var backingField = GetMemberBackingFieldSymbol(property);
 
         if (backingField is not null)
             return GetMemberFieldDeclaredName(backingField);
@@ -1804,6 +1916,35 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         return Util.GetConfigOrSymbolName(symbol);
     }
+
+    private IFieldSymbol? GetMemberBackingFieldSymbol(IPropertySymbol property)
+        => property.ContainingType
+            .GetMembers($"<{property.Name}>k__BackingField")
+            .OfType<IFieldSymbol>()
+            .FirstOrDefault();
+
+    private Expression CreatePrivateStorageKey(IFieldSymbol? field, string fieldName)
+    {
+        if (_options.RuntimeClassPrivateStorage != RuntimeClassPrivateStorage.ProxySafeMangledProperties)
+            return new PrivateIdentifier(fieldName);
+
+        var storageName = field is null
+            ? RuntimeClassPrivateStorageNames.GetSyntheticStorageName(
+                _options.RuntimeClassPrivateStorage,
+                fieldName)
+            : RuntimeClassPrivateStorageNames.GetFieldStorageName(
+                _options.RuntimeClassPrivateStorage,
+                field,
+                fieldName);
+        return new Identifier(storageName);
+    }
+
+    private Expression CreateSyntheticPrivateStorageKey(string fieldName)
+        => _options.RuntimeClassPrivateStorage == RuntimeClassPrivateStorage.ProxySafeMangledProperties
+            ? new Identifier(RuntimeClassPrivateStorageNames.GetSyntheticStorageName(
+                _options.RuntimeClassPrivateStorage,
+                fieldName))
+            : new PrivateIdentifier(fieldName);
 
     private IEnumerable<Statement> ConvertModuleClass(
         INamedTypeSymbol symbol,

@@ -75,7 +75,10 @@ public sealed class RazorTailOutputPrivateContractTests
 
         Assert.IsFalse(built);
         Assert.IsTrue(((ImmutableArray<VueModuleArtifact>)arguments[2]!).IsDefaultOrEmpty);
-        StringAssert.Contains(arguments[3] as string, "not BuildRenderTree(RenderTreeBuilder)", StringComparison.Ordinal);
+        var diagnostics = (ImmutableArray<RazorVueDiagnosticInfo>)arguments[3]!;
+        Assert.HasCount(1, diagnostics);
+        Assert.AreEqual(RazorVueDiagnosticCategory.MemberClosure, diagnostics[0].Category);
+        StringAssert.Contains(diagnostics[0].Message, "not BuildRenderTree(RenderTreeBuilder)", StringComparison.Ordinal);
     }
 
     private static string InvokeEscape(string value)

@@ -34,7 +34,20 @@ async function render(request) {
   }
 
   const app = createSSRApp(module.default, request.props);
-  return await renderToString(app);
+  // renderToString swallows render-hook errors and emits "<!---->" placeholders. Capture them
+  // so a broken component fails the request explicitly instead of serving an empty page.
+  // renderToString 会吞掉渲染期错误并输出 "<!---->"；捕获后显式失败，避免静默空页面。
+  const renderErrors = [];
+  app.config.errorHandler = (error) => {
+    renderErrors.push(error instanceof Error ? error.stack ?? error.message : String(error));
+  };
+  const html = await renderToString(app);
+  if (renderErrors.length > 0) {
+    throw new Error(
+      "Jazor SSR render failed while rendering '" + modulePath + "':\n" + renderErrors.join("\n"));
+  }
+
+  return html;
 }
 
 async function handleLine(line) {

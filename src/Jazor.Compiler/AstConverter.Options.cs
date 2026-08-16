@@ -1,6 +1,7 @@
 // File: AstConverter.Options.cs
 // Purpose: Defines immutable configuration for AstConverter module conversion.
 // 集中表达 profile、成员筛选和 host policy，避免把产品特例写入核心转换流程。
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.Compiler;
@@ -17,9 +18,50 @@ public sealed record AstConverterOptions(
     Func<ISymbol, bool>? MemberFilter = null,
     IReadOnlyDictionary<ISymbol, string>? DeclaredNames = null,
     SemanticWalkerHost? Host = null,
-    AstConverterModulePolicy? ModulePolicy = null)
+    AstConverterModulePolicy? ModulePolicy = null,
+    RuntimeClassPrivateStorage RuntimeClassPrivateStorage = RuntimeClassPrivateStorage.JavaScriptPrivateFields)
 {
     public static AstConverterOptions Default { get; } = new(AstConverterProfile.Standard);
+}
+
+/// <summary>
+/// Selects the JavaScript storage representation for non-public runtime-class fields.
+/// <see cref="JavaScriptPrivateFields"/> preserves normal module semantics. Products that place
+/// runtime-class instances inside an ES Proxy can opt into a mangled ordinary property because
+/// proxy receivers cannot satisfy JavaScript private-field brand checks.
+/// </summary>
+public enum RuntimeClassPrivateStorage
+{
+    JavaScriptPrivateFields = 0,
+    ProxySafeMangledProperties = 1
+}
+
+/// <summary>Shared names for proxy-safe storage. The prefix is outside C# identifier syntax.</summary>
+internal static class RuntimeClassPrivateStorageNames
+{
+    private const string ProxySafePrefix = "$jazor$private$";
+
+    internal static string GetFieldStorageName(
+        RuntimeClassPrivateStorage storage,
+        IFieldSymbol field,
+        string fallbackName)
+    {
+        if (storage != RuntimeClassPrivateStorage.ProxySafeMangledProperties)
+            return fallbackName;
+
+        // Implicit auto-property backing fields have no source declaration. Their compiler
+        // lowering already uses the property hash, so recreate that canonical name here rather
+        // than depend on a module-name-plan implementation detail.
+        var canonicalName = field.AssociatedSymbol is IPropertySymbol property && field.IsImplicitlyDeclared
+            ? Format.HashName(property.OriginalDefinition.ToDisplayString(Format.NameFormat))
+            : fallbackName;
+        return ProxySafePrefix + canonicalName;
+    }
+
+    internal static string GetSyntheticStorageName(RuntimeClassPrivateStorage storage, string fallbackName)
+        => storage == RuntimeClassPrivateStorage.ProxySafeMangledProperties
+            ? ProxySafePrefix + fallbackName
+            : fallbackName;
 }
 
 /// <summary>

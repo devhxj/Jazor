@@ -70,7 +70,7 @@ public sealed class RazorSgOfficialConditionalAttributeBagRuntimeTests
                 assert.equal(deploying.props["aria-busy"], true);
                 assert.equal(deploying.props["data-mode"], "deploying");
                 assert.equal(deploying.props["data-phase"], "deploying");
-                assert.deepEqual(deploying.children, ["Deploy"]);
+                assert.deepEqual(deploying.children, [{ name: "__text", children: "Deploy", patchFlag: undefined }]);
 
                 const ready = component.setup({
                     IsDeploying: false,
@@ -92,7 +92,7 @@ public sealed class RazorSgOfficialConditionalAttributeBagRuntimeTests
                 assert.equal(ready.props["aria-busy"], false);
                 assert.equal(ready.props["data-mode"], "ready");
                 assert.equal(ready.props["data-phase"], "ready");
-                assert.deepEqual(ready.children, ["Deploy"]);
+                assert.deepEqual(ready.children, [{ name: "__text", children: "Deploy", patchFlag: undefined }]);
             });
             """);
     }

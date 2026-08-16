@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.IO;
+using Jazor.RazorVue.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -19,46 +20,9 @@ internal static class GeneratedCSharpBinder
         out GeneratedCSharpBinding? binding,
         out string? failure)
     {
-        if (compilation is null)
-            throw new ArgumentNullException(nameof(compilation));
-
-        binding = null;
-        failure = null;
-        var documents = ImmutableArray.CreateBuilder<GeneratedDocument>();
-        var boundComponents = ImmutableArray.CreateBuilder<BoundComponent>();
-        var documentByTree = new Dictionary<SyntaxTree, GeneratedDocument>();
-        foreach (var componentSymbol in components.OrderBy(
-                     static component => component.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                     StringComparer.Ordinal))
-        {
-            var buildRenderTree = ComponentSelector.FindHandwrittenBuildRenderTreeMethod(componentSymbol);
-            if (buildRenderTree is null ||
-                !TryBindBuildRenderTreeBody(
-                    compilation,
-                    componentSymbol,
-                    buildRenderTree,
-                    documentByTree,
-                    documents,
-                    out var boundComponent,
-                    out failure))
-            {
-                failure ??= "RazorVue component '" +
-                            componentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
-                            "' did not declare a handwritten BuildRenderTree(RenderTreeBuilder).";
-                return false;
-            }
-
-            boundComponents.Add(boundComponent!);
-        }
-
-        binding = new GeneratedCSharpBinding(
-            compilation,
-            CompilationBindingMode.ReusedHookCompilation,
-            documents.ToImmutable(),
-            boundComponents.ToImmutable(),
-            ReusedGeneratedTreeCount: documents.Count,
-            DerivedGeneratedTreeCount: 0);
-        return true;
+        var bound = TryBindHandwrittenWithDiagnostics(compilation, components, out binding, out var diagnostics);
+        failure = diagnostics.IsDefaultOrEmpty ? null : diagnostics[0].Message;
+        return bound;
     }
 
     public static bool TryBindFinalCompilation(
@@ -67,36 +31,107 @@ internal static class GeneratedCSharpBinder
         out GeneratedCSharpBinding? binding,
         out string? failure)
     {
+        var bound = TryBindFinalCompilationWithDiagnostics(compilation, components, out binding, out var diagnostics);
+        failure = diagnostics.IsDefaultOrEmpty ? null : diagnostics[0].Message;
+        return bound;
+    }
+
+    /// <summary>
+    /// Binds every final Compilation component before deciding success, so independent generated
+    /// render roots can report their own author-facing failures in one generator pass.
+    /// </summary>
+    internal static bool TryBindFinalCompilationWithDiagnostics(
+        Compilation compilation,
+        ImmutableArray<INamedTypeSymbol> components,
+        out GeneratedCSharpBinding? binding,
+        out ImmutableArray<RazorVueDiagnosticInfo> diagnostics)
+        => TryBindCompilation(
+            compilation,
+            components,
+            ComponentSelector.FindBuildRenderTreeMethod,
+            "BuildRenderTree(RenderTreeBuilder)",
+            out binding,
+            out diagnostics);
+
+    /// <summary>Typed variant for the handwritten BuildRenderTree test/host path.</summary>
+    internal static bool TryBindHandwrittenWithDiagnostics(
+        Compilation compilation,
+        ImmutableArray<INamedTypeSymbol> components,
+        out GeneratedCSharpBinding? binding,
+        out ImmutableArray<RazorVueDiagnosticInfo> diagnostics)
+        => TryBindCompilation(
+            compilation,
+            components,
+            ComponentSelector.FindHandwrittenBuildRenderTreeMethod,
+            "a handwritten BuildRenderTree(RenderTreeBuilder)",
+            out binding,
+            out diagnostics);
+
+    private static bool TryBindCompilation(
+        Compilation compilation,
+        ImmutableArray<INamedTypeSymbol> components,
+        Func<INamedTypeSymbol, IMethodSymbol?> findBuildRenderTree,
+        string expectedRenderMethod,
+        out GeneratedCSharpBinding? binding,
+        out ImmutableArray<RazorVueDiagnosticInfo> diagnostics)
+    {
         if (compilation is null)
             throw new ArgumentNullException(nameof(compilation));
 
         binding = null;
-        failure = null;
+        diagnostics = ImmutableArray<RazorVueDiagnosticInfo>.Empty;
         var documents = ImmutableArray.CreateBuilder<GeneratedDocument>();
         var boundComponents = ImmutableArray.CreateBuilder<BoundComponent>();
+        var diagnosticBuilder = ImmutableArray.CreateBuilder<RazorVueDiagnosticInfo>();
         var documentByTree = new Dictionary<SyntaxTree, GeneratedDocument>();
         foreach (var componentSymbol in components.OrderBy(
                      static component => component.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                      StringComparer.Ordinal))
         {
-            var buildRenderTree = ComponentSelector.FindBuildRenderTreeMethod(componentSymbol);
-            if (buildRenderTree is null ||
-                !TryBindBuildRenderTreeBody(
+            var buildRenderTree = findBuildRenderTree(componentSymbol);
+            if (buildRenderTree is null)
+            {
+                diagnosticBuilder.Add(RazorVueDiagnosticFactory.Create(
+                    RazorVueDiagnosticCategory.ComponentBinding,
+                    "RazorVue component '" +
+                    componentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
+                    "' did not declare " + expectedRenderMethod + ".",
+                    RazorVueDiagnosticFactory.GetSymbolLocation(componentSymbol),
+                    componentSymbol));
+                continue;
+            }
+
+            if (!TryBindBuildRenderTreeBody(
                     compilation,
                     componentSymbol,
                     buildRenderTree,
                     documentByTree,
                     documents,
                     out var boundComponent,
-                    out failure))
+                    out var failure))
             {
-                failure ??= "RazorVue component '" +
-                            componentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
-                            "' did not declare BuildRenderTree(RenderTreeBuilder).";
-                return false;
+                diagnosticBuilder.Add(RazorVueDiagnosticFactory.Create(
+                    RazorVueDiagnosticCategory.ComponentBinding,
+                    failure ?? "RazorVue component '" +
+                    componentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
+                    "' did not declare " + expectedRenderMethod + ".",
+                    RazorVueDiagnosticFactory.GetSymbolLocation(buildRenderTree),
+                    componentSymbol));
+                continue;
             }
 
             boundComponents.Add(boundComponent!);
+        }
+
+        if (diagnosticBuilder.Count > 0)
+        {
+            diagnostics = diagnosticBuilder
+                .OrderBy(static diagnostic => diagnostic.ComponentId ?? string.Empty, StringComparer.Ordinal)
+                .ThenBy(static diagnostic => diagnostic.PrimaryLocation.GetLineSpan().Path ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static diagnostic => diagnostic.PrimaryLocation.GetLineSpan().StartLinePosition.Line)
+                .ThenBy(static diagnostic => diagnostic.PrimaryLocation.GetLineSpan().StartLinePosition.Character)
+                .ToImmutableArray();
+            return false;
         }
 
         binding = new GeneratedCSharpBinding(

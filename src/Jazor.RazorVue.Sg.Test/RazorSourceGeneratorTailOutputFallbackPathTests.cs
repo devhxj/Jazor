@@ -55,9 +55,10 @@ public sealed class RazorTailOutputFallbackPathTests
             compilation,
             CancellationToken.None,
             out var catalogSource,
-            out var failure);
+            out var diagnostics);
 
-        Assert.IsTrue(result, failure);
+        Assert.IsTrue(result, DescribeDiagnostics(diagnostics));
+        Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
         Assert.IsNotNull(catalogSource);
         StringAssert.Contains(catalogSource, "ReleaseConsole/ReleaseShell.mjs", StringComparison.Ordinal);
         StringAssert.Contains(catalogSource, "ReleaseConsole/Demo/Pages/ReleaseStatus.mjs", StringComparison.Ordinal);
@@ -132,9 +133,9 @@ public sealed class RazorTailOutputFallbackPathTests
             compilation,
             CancellationToken.None,
             out var catalogSource,
-            out var failure);
+            out var diagnostics);
 
-        Assert.IsTrue(result, failure);
+        Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
         Assert.IsNotNull(catalogSource);
         StringAssert.Contains(catalogSource, "components/pages/release-dashboard.mjs", StringComparison.Ordinal);
         StringAssert.Contains(catalogSource, "components/pages/release-history.mjs", StringComparison.Ordinal);
@@ -168,4 +169,9 @@ public sealed class RazorTailOutputFallbackPathTests
 
         return count;
     }
+
+    private static string DescribeDiagnostics(IEnumerable<RazorVueDiagnosticInfo> diagnostics)
+        => string.Join(
+            Environment.NewLine,
+            diagnostics.Select(static diagnostic => diagnostic.Message));
 }

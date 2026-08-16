@@ -2,6 +2,15 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-16
+
+### Jazor 0.16.0
+
+- RazorVue now reports final-compilation failures through stable `JAZORVGA020`-`026` diagnostics. Direct-render, compiler bridge, component binding, member closure, VueInject, and Vue module failures point back to mapped `.razor` or authored C# locations where available, include actionable documentation links, and suppress partial artifact catalogs when a component generation fails.
+- Runtime member classes captured by RazorVue components are now safe to use through Vue deep Proxies. Private fields, auto-property backing storage, primary-constructor capture, and field-like event storage use collision-checked internal properties while preserving class, inheritance, and event behavior.
+- RazorVue explicitly rejects labeled `break` and `continue` shapes that have no verified lowering contract, including future Roslyn branch representations, instead of silently changing control flow.
+- Release validation now publishes an isolated `JazorSSR=true` RazorVue TodoList consumer from the generated NuGet packages, verifies packaged SSR output and PathBase resource resolution, then confirms Edge hydration restores interaction.
+
 ## 2026-08-15
 
 ### Jazor 0.15.0

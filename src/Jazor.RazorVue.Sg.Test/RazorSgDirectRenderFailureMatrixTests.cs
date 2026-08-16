@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using ECMAScript;
+using Jazor.RazorVue.Generation;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -20,10 +21,26 @@ public sealed class RazorSgDirectRenderFailureMatrixTests
     [DynamicData(nameof(Cases))]
     public void TryEmit_RejectsUnsupportedShapeWithActionableDiagnostic(DirectRenderFailureCase testCase)
     {
-        var failure = RazorSgDirectRenderFailureMatrixTestHost.EmitFailure(testCase);
+        var diagnostic = RazorSgDirectRenderFailureMatrixTestHost.EmitFailureWithDiagnostic(testCase);
+        var descriptor = Diagnostics.GetDescriptor(diagnostic.Category);
 
-        StringAssert.Contains(failure, testCase.ExpectedFailureFragment, StringComparison.Ordinal);
-        Assert.IsFalse(failure.Contains(".vue", StringComparison.Ordinal));
+        StringAssert.Contains(diagnostic.Message, testCase.ExpectedFailureFragment, StringComparison.Ordinal);
+        Assert.IsTrue(
+            diagnostic.Category is RazorVueDiagnosticCategory.DirectRender or RazorVueDiagnosticCategory.CompilerBridge,
+            "Unexpected final diagnostic category: " + diagnostic.Category + " for " + testCase.Id);
+        Assert.IsTrue(diagnostic.IsAuthorReachable, testCase.Id);
+        Assert.AreEqual(RazorVueDiagnosticSourceKind.AuthoredCSharp, diagnostic.SourceKind, testCase.Id);
+        Assert.IsTrue(
+            descriptor.Id is "JAZORVGA021" or "JAZORVGA022",
+            "Unexpected descriptor: " + descriptor.Id + " for " + testCase.Id);
+        Assert.IsTrue(
+            descriptor.HelpLinkUri.EndsWith(
+                diagnostic.Category == RazorVueDiagnosticCategory.DirectRender
+                    ? "#direct-render"
+                    : "#compiler-boundary",
+                StringComparison.Ordinal),
+            descriptor.HelpLinkUri);
+        Assert.IsFalse(diagnostic.Message.Contains(".vue", StringComparison.Ordinal));
     }
 }
 
@@ -303,6 +320,32 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         Assert.IsNull(result);
         Assert.IsNotNull(failure);
         return failure;
+    }
+
+    public static RazorVueDiagnosticInfo EmitFailureWithDiagnostic(DirectRenderFailureCase testCase)
+    {
+        var fixture = SharedFixture.Value;
+        var component = fixture.Components[testCase.TypeName];
+        Assert.IsTrue(
+            MemberClosureBuilder.TryBuild(fixture.Binding, component, out var closure, out var closureFailure),
+            closureFailure);
+        Assert.IsNotNull(closure);
+
+        var emitted = RenderEmitter.TryEmitWithDiagnostic(
+            fixture.Binding.Compilation,
+            component.ComponentSymbol,
+            component.BuildRenderTreeMethod,
+            component.BuildRenderTreeBody,
+            declaredNames: null,
+            reservedImportNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Binding.Compilation),
+            out var result,
+            out var diagnostic);
+
+        Assert.IsFalse(emitted, "Failure case unexpectedly emitted: " + testCase.Id);
+        Assert.IsNull(result);
+        Assert.IsNotNull(diagnostic);
+        return diagnostic!;
     }
 
     private static Fixture CreateFixture()

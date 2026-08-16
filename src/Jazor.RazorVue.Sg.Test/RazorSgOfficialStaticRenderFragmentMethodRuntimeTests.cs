@@ -74,7 +74,10 @@ public sealed class RazorSgOfficialStaticRenderFragmentMethodRuntimeTests
                 const terms = host.children.content()[0];
                 assert.equal(terms.name, "small");
                 assert.equal(terms.props["data-terms"], "release");
-                assert.deepEqual(terms.children, ["Deployment requires approval."]);
+                // Block-array static text lowers to createTextVNode like the Vue compiler:
+                // hydration receives block children verbatim and cannot normalize bare strings.
+                // block 数组中的静态文本必须包成 text vnode，否则 hydration 崩溃。
+                assert.deepEqual(terms.children, [{ name: "__text", children: "Deployment requires approval.", patchFlag: undefined }]);
             });
             """,
             new Dictionary<string, string>

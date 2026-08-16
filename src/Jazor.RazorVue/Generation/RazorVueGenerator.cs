@@ -48,9 +48,10 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(
             context.CompilationProvider,
-            (output, _) => output.ReportDiagnostic(Diagnostic.Create(
-                Diagnostics.TailOutputFailed,
-                Location.None,
-                failure)));
+            (output, _) => output.ReportDiagnostic(Diagnostics.Create(
+                RazorVueDiagnosticFactory.Create(
+                    RazorVueDiagnosticCategory.Internal,
+                    failure!,
+                    isAuthorReachable: false))));
     }
 }

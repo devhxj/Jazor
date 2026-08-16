@@ -293,16 +293,17 @@ internal static class VueModuleBuilder
                 reservedImportNames,
                 injectRegistry,
                 out var directRender,
-                out var directRenderFailure))
+                out var directRenderDiagnostic))
         {
             return directRender;
         }
 
-        throw new InvalidOperationException(
-            "RazorVue direct render lowering failed for '" +
-            component.ComponentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
-            "': " +
-            (string.IsNullOrWhiteSpace(directRenderFailure) ? "No failure detail was provided." : directRenderFailure));
+        throw new RazorVueDiagnosticException(
+            directRenderDiagnostic ?? RazorVueDiagnosticFactory.Create(
+                RazorVueDiagnosticCategory.DirectRender,
+                "No direct render lowering detail was provided.",
+                RazorVueDiagnosticFactory.GetSymbolLocation(component.BuildRenderTreeMethod),
+                component.ComponentSymbol));
     }
 
     private static VueHmrMetadata BuildHmrMetadata(
@@ -1331,11 +1332,11 @@ internal static class VueModuleBuilder
         IEnumerable<string>? reservedImportNames,
         VueInjectRegistry injectRegistry,
         out DirectRenderBuildResult result,
-        out string? failure)
+        out RazorVueDiagnosticInfo? diagnostic)
     {
         result = default!;
-        failure = null;
-        if (!RenderEmitter.TryEmit(
+        diagnostic = null;
+        if (!RenderEmitter.TryEmitWithDiagnostic(
                 binding.Compilation,
                 component.ComponentSymbol,
                 component.BuildRenderTreeMethod,
@@ -1344,7 +1345,7 @@ internal static class VueModuleBuilder
                 reservedImportNames,
                 injectRegistry,
                 out var operationResult,
-                out failure))
+                out diagnostic))
         {
             return false;
         }

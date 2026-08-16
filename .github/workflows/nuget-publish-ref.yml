@@ -111,6 +111,16 @@ jobs:
             --startup-timeout-seconds 60 `
             --browser-startup-timeout-seconds 20
 
+      - name: Verify packaged Windows SSR release consumer
+        shell: pwsh
+        run: |
+          dotnet run --file ./scripts/csharp/verify-windows-ssr-release.cs -- `
+            --package-source 'artifacts/packages' `
+            --skip-pack `
+            --path-base /todo `
+            --startup-timeout-seconds 90 `
+            --browser-startup-timeout-seconds 20
+
       - name: Discover package version
         id: package
         shell: pwsh

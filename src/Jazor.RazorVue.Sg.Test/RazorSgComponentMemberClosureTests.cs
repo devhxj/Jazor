@@ -206,7 +206,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "import { Compose } from \"../format.mjs\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "return new HeaderState(\"ready\");", StringComparison.Ordinal);
         StringAssert.Contains(script, "new PrefixFormatter(\"header:\")", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return Compose(this.#prefix, suffix);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return Compose(this.$jazor$private$prefix, suffix);", StringComparison.Ordinal);
         var importIndex = script.IndexOf("import { Compose } from \"../format.mjs\";", StringComparison.Ordinal);
         var formatterIndex = script.IndexOf("class PrefixFormatter", StringComparison.Ordinal);
         var headerIndex = script.IndexOf("class HeaderState", StringComparison.Ordinal);
@@ -327,6 +327,7 @@ public sealed class MemberClosureTests
         Assert.IsNotNull(options.MemberFilter);
         Assert.IsInstanceOfType(options.Host, typeof(VueSemanticWalkerHost));
         Assert.AreSame(VueModulePolicy.Instance, options.ModulePolicy);
+        Assert.AreEqual(RuntimeClassPrivateStorage.ProxySafeMangledProperties, options.RuntimeClassPrivateStorage);
 
         var converter = new AstConverter(fixture.Component.ComponentSymbol, semanticModel, options);
         var module = await converter.Convert();
@@ -2166,7 +2167,7 @@ public sealed class MemberClosureTests
 
                     assert.equal(vnode.name, "div");
                     assert.deepEqual(rendered.map((child) => child.name), ["router-link", "a", "span"]);
-                    assert.deepEqual(rendered.map((child) => child.children[0]), ["route", "href", "plain"]);
+                    assert.deepEqual(rendered.map((child) => child.children[0]), [{ name: "__text", children: "route", patchFlag: undefined }, { name: "__text", children: "href", patchFlag: undefined }, { name: "__text", children: "plain", patchFlag: undefined }]);
                 });
                 """);
 
@@ -2405,7 +2406,7 @@ public sealed class MemberClosureTests
                     assert.equal(form.name, "form");
                     assert.equal(form.props.class, "checkout");
                     assert.equal(form.props.key, "form-key");
-                    assert.equal(form.children[0], "region");
+                    assert.deepEqual(form.children[0], { name: "__text", children: "region", patchFlag: undefined });
 
                     let prevented = false;
                     let stopped = false;
@@ -2624,7 +2625,7 @@ public sealed class MemberClosureTests
 
                     assert.equal(typeof vnode.name, "symbol");
                     assert.equal(vnode.children[0].name, "strong");
-                    assert.deepEqual(vnode.children[0].children, ["release page"]);
+                    assert.deepEqual(vnode.children[0].children, [{ name: "__text", children: "release page", patchFlag: undefined }]);
                 });
                 """);
 
@@ -5186,7 +5187,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("builder.addComponentSlot(\"Header\", header);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ Header: withCtx(() => [].concat(h(\"h1\", null, [\"Named header\"]) ?? [])), _: 1 }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ Header: withCtx(() => [].concat(h(\"h1\", null, [createTextVNode(\"Named header\")]) ?? [])), _: 1 }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -5269,7 +5270,7 @@ public sealed class MemberClosureTests
                     assert.equal(rendered.name, "section");
                     assert.deepEqual(rendered.children[0], "before");
                     assert.equal(rendered.children[1][0].name, "h1");
-                    assert.deepEqual(rendered.children[1][0].children, ["Named header"]);
+                    assert.deepEqual(rendered.children[1][0].children, [{ name: "__text", children: "Named header", patchFlag: undefined }]);
                 });
                 """);
 
@@ -5517,7 +5518,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("\"Header\": \"title\"", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentSlot(\"Header\", title);", StringComparison.Ordinal), parentScript);
         Assert.IsFalse(parentScript.Contains("builder.addComponentParameter(\"Header\"", StringComparison.Ordinal), parentScript);
-        StringAssert.Contains(parentScript, "{ title: withCtx(() => [].concat(h(\"h1\", null, [\"Descriptor title\"]) ?? [])), _: 1 }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ title: withCtx(() => [].concat(h(\"h1\", null, [createTextVNode(\"Descriptor title\")]) ?? [])), _: 1 }", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -6517,7 +6518,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(parentScript, "modelValue: state.text", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "\"onUpdate:modelValue\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.text = __value)", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "onAction: HandleAction", StringComparison.Ordinal);
-        StringAssert.Contains(parentScript, "{ title: withCtx(value => [].concat((openBlock(), createElementBlock(\"h1\", null, [\"slot:\", createTextVNode(value, 1)])) ?? [])), _: 1 }", StringComparison.Ordinal);
+        StringAssert.Contains(parentScript, "{ title: withCtx(value => [].concat((openBlock(), createElementBlock(\"h1\", null, [createTextVNode(\"slot:\"), createTextVNode(value, 1)])) ?? [])), _: 1 }", StringComparison.Ordinal);
 
         var tempRoot = Path.Combine(
             Path.GetTempPath(),
@@ -6588,7 +6589,7 @@ public sealed class MemberClosureTests
                     assert.equal(firstChild.name, "section");
                     assert.deepEqual(firstChild.children[0], "initial");
                     assert.equal(firstChild.children[1].name, "h1");
-                    assert.deepEqual(firstChild.children[1].children, ["slot:", { name: "__text", children: "initial", patchFlag: 1 }]);
+                    assert.deepEqual(firstChild.children[1].children, [{ name: "__text", children: "slot:", patchFlag: undefined }, { name: "__text", children: "initial", patchFlag: 1 }]);
                     assert.equal(firstChild.children[2].name, "button");
                     assert.equal(typeof firstChild.children[2].props.onClick, "function");
 
@@ -6604,7 +6605,7 @@ public sealed class MemberClosureTests
                     const renderSecondChild = secondChildVNode.name.setup(secondChildVNode.props, { slots: secondChildVNode.children });
                     const secondChild = renderSecondChild();
                     assert.deepEqual(secondChild.children[0], "updated");
-                    assert.deepEqual(secondChild.children[1].children, ["slot:", { name: "__text", children: "updated", patchFlag: 1 }]);
+                    assert.deepEqual(secondChild.children[1].children, [{ name: "__text", children: "slot:", patchFlag: undefined }, { name: "__text", children: "updated", patchFlag: 1 }]);
                 });
                 """);
 

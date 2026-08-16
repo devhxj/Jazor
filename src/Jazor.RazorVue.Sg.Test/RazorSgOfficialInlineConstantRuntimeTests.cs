@@ -59,7 +59,7 @@ public sealed class RazorSgOfficialInlineConstantRuntimeTests
                 const span = section.children[0];
                 assert.equal(span.name, "span");
                 assert.equal(span.props["data-approval"], "manual");
-                assert.deepEqual(span.children, ["Retries: ", 2]);
+                assert.deepEqual(span.children, [{ name: "__text", children: "Retries: ", patchFlag: undefined }, { name: "__text", children: 2, patchFlag: undefined }]);
             });
             """);
     }

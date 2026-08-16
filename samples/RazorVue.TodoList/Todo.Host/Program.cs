@@ -10,6 +10,13 @@ internal static class Program
         var builder = JazorWebApplication.CreateBuilder(args);
         builder.Services.AddJazorReload();
 
+        // SSR is an explicit deployment mode. The release publish must be built with
+        // JazorSSR=true so the jazor/ssr graph exists; Todo:Ssr only switches the fallback
+        // from the CSR shell to server rendering plus browser hydration.
+        var useSsr = string.Equals(builder.Configuration["Todo:Ssr"], "true", StringComparison.OrdinalIgnoreCase);
+        if (useSsr)
+            builder.Services.AddJazorSsr();
+
         var app = builder.Build();
         var pathBase = builder.Configuration["Todo:PathBase"];
         if (!string.IsNullOrWhiteSpace(pathBase))
@@ -24,7 +31,17 @@ internal static class Program
 
         app.UseJazorHost();
         app.UseJazorReload();
-        app.UseJazorSpaFallback(TodoHostShell.WriteAsync);
+        if (useSsr)
+        {
+            // The module path mirrors TodoApp's [ECMAScriptModule("./components/todo-app")];
+            // TodoApp declares no parameters, so the SSR request stays prop-less.
+            app.UseJazorSsr(new JazorSsrRequest("components/todo-app.mjs"));
+        }
+        else
+        {
+            app.UseJazorSpaFallback(TodoHostShell.WriteAsync);
+        }
+
         app.Run();
     }
 }

@@ -224,7 +224,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
                 assert.equal(detailedHeader.children[0].name, "h2");
                 assert.equal(detailedHeader.children[0].children, "Orders API");
                 assert.equal(detailedHeader.children[1].name, "p");
-                assert.deepEqual(detailedHeader.children[1].children, ["Ready for deployment"]);
+                assert.deepEqual(detailedHeader.children[1].children, [{ name: "__text", children: "Ready for deployment", patchFlag: undefined }]);
             });
             """,
             new Dictionary<string, string>

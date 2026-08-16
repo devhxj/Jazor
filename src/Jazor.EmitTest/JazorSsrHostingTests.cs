@@ -103,6 +103,33 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
+    public async Task JazorSsrRenderer_RenderHookErrorFailsExplicitlyInsteadOfEmptyHtml()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        await workspace.WriteRenderErrorComponentAsync();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = workspace.RootPath,
+            WebRootPath = Path.Combine(workspace.RootPath, "wwwroot"),
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddJazorSsr(options => options.ArtifactRootPath = artifactRoot);
+
+        await using var app = builder.Build();
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+
+        // renderToString swallows render-hook errors into "<!---->" placeholders; the runner's
+        // errorHandler capture must turn them into an explicit failure with the original stack.
+        // 渲染期错误必须显式失败并携带原始栈，而不是静默输出空占位 HTML。
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => renderer.RenderAsync(new JazorSsrRequest("components/render-error.mjs")));
+
+        StringAssert.Contains(error.Message, "render-boom");
+        StringAssert.Contains(error.Message, "components/render-error.mjs");
+    }
+
+    [TestMethod]
     public async Task JazorSsrRenderer_ReusesWarmWorkerForSameGeneration()
     {
         using var workspace = new SsrHostWorkspace();
@@ -483,6 +510,21 @@ public sealed class JazorSsrHostingTests
                 export default defineComponent({
                   setup() {
                     Deno.exit(73);
+                  }
+                });
+                """);
+
+        public Task WriteRenderErrorComponentAsync()
+            => File.WriteAllTextAsync(
+                Path.Combine(RootPath, "jazor", "components", "render-error.mjs"),
+                """
+                import { defineComponent, h } from "vue";
+
+                export default defineComponent({
+                  setup() {
+                    return () => {
+                      throw new Error("render-boom");
+                    };
                   }
                 });
                 """);

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Jazor.Compiler;
+using Jazor.RazorVue.Generation;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -73,6 +74,28 @@ internal static class MemberClosureBuilder
             compilerClosure,
             lifecycleRoots);
         return true;
+    }
+
+    /// <summary>
+    /// Final-pipeline variant that keeps the component/member source identity with a closure
+    /// failure. The legacy string overload remains for focused closure tests only.
+    /// </summary>
+    internal static bool TryBuildWithDiagnostic(
+        GeneratedCSharpBinding binding,
+        BoundComponent component,
+        out MemberClosure? closure,
+        out RazorVueDiagnosticInfo? diagnostic)
+    {
+        var built = TryBuild(binding, component, out closure, out var failure);
+        diagnostic = built
+            ? null
+            : RazorVueDiagnosticFactory.Create(
+                RazorVueDiagnosticCategory.MemberClosure,
+                failure ?? "No component member closure detail was provided.",
+                RazorVueDiagnosticFactory.GetSymbolLocation(component.BuildRenderTreeMethod),
+                component.ComponentSymbol,
+                isAuthorReachable: true);
+        return built;
     }
 
     private static bool IsRenderTreeBuilderMethod(IMethodSymbol method)
@@ -286,7 +309,8 @@ internal sealed record MemberClosure(
                 BuildParameterRuntimeNameMap(ComponentSymbol),
                 declaredNames,
                 propertyReferenceRewriter: propertyReferenceRewriter),
-            ModulePolicy: VueModulePolicy.Instance);
+            ModulePolicy: VueModulePolicy.Instance,
+            RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties);
 
     private bool ShouldIncludeCompilerMember(ISymbol symbol)
     {

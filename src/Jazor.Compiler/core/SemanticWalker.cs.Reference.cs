@@ -844,9 +844,17 @@ public partial class SemanticWalker
 
 	private Expression BuildFieldAccess(Expression instance, IFieldSymbol field, string fieldName, bool optional)
 	{
-		return IsPrivateRuntimeClassField(field)
-			? new MemberExpression(instance, new PrivateIdentifier(fieldName), computed: false, optional: optional)
-			: BuildAliasedPropertyAccess(instance, fieldName, optional);
+		if (!IsPrivateRuntimeClassField(field))
+			return BuildAliasedPropertyAccess(instance, fieldName, optional);
+
+		var storageName = RuntimeClassPrivateStorageNames.GetFieldStorageName(
+			_runtimeClassPrivateStorage,
+			field,
+			fieldName);
+		Expression storage = _runtimeClassPrivateStorage == RuntimeClassPrivateStorage.ProxySafeMangledProperties
+			? new Identifier(storageName)
+			: new PrivateIdentifier(storageName);
+		return new MemberExpression(instance, storage, computed: false, optional: optional);
 	}
 
 	private static bool TryBuildComputedAliasProperty(string propertyName, out Expression property)

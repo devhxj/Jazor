@@ -50,7 +50,7 @@ public sealed class RazorSgOfficialNestedLocalRuntimeTests
                 assert.equal(root.children.length, 1);
                 assert.equal(root.children[0].name, "span");
                 assert.equal(root.children[0].props["data-label"], "Release details");
-                assert.deepEqual(root.children[0].children, ["Release details"]);
+                assert.deepEqual(root.children[0].children, [{ name: "__text", children: "Release details", patchFlag: undefined }]);
             });
             """);
     }

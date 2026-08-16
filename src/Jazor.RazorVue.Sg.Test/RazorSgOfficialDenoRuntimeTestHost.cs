@@ -25,7 +25,8 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         string moduleText,
         string testFileName,
         string testSource,
-        IReadOnlyDictionary<string, string>? supportingModules = null)
+        IReadOnlyDictionary<string, string>? supportingModules = null,
+        string? vueRuntimeSource = null)
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -52,7 +53,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 """{"type":"module","exports":"./index.mjs"}""");
             WriteFile(
                 Path.Combine(root, "node_modules", "vue", "index.mjs"),
-                """
+                vueRuntimeSource ?? """
                 export function defineComponent(options) {
                     return options;
                 }

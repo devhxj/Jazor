@@ -206,7 +206,7 @@ public sealed class SemanticWalkerOrdinaryTest
                         Console.WriteLine(x);
                     }
                 }
-            }
+    }
             ");
 
     var walker = new SemanticWalker(true);
@@ -256,7 +256,7 @@ public sealed class SemanticWalkerOrdinaryTest
             {
                 int TestMethod(string input)
                     => int.TryParse(input, out var value) ? value : 0;
-            }
+    }
             ");
 
     var walker = new SemanticWalker(true);
@@ -419,6 +419,10 @@ public sealed class SemanticWalkerOrdinaryTest
             }
             ");
 
+    var branches = block.Descendants().OfType<IBranchOperation>().ToArray();
+    Assert.HasCount(1, branches);
+    Assert.AreEqual(BranchKind.Break, branches[0].BranchKind);
+
     var walker = new SemanticWalker(true);
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
@@ -451,6 +455,10 @@ public sealed class SemanticWalkerOrdinaryTest
                 }
             }
             ");
+
+    var branches = block.Descendants().OfType<IBranchOperation>().ToArray();
+    Assert.HasCount(1, branches);
+    Assert.AreEqual(BranchKind.Continue, branches[0].BranchKind);
 
     var walker = new SemanticWalker(true);
     var node = walker.Visit(block, new());
@@ -492,9 +500,59 @@ public sealed class SemanticWalkerOrdinaryTest
             }
             ");
 
+    // The upgrade gate intentionally inspects the operation contract before lowering. If a
+    // future Roslyn build stops exposing the authored label in Syntax, lowering must remain a
+    // visible rejection rather than silently changing the target to an ordinary jump.
+    // 先锁定 BranchKind 与 authored syntax 的可见性，再验证 SemanticWalker 的拒绝策略。
+    var branches = block.Descendants().OfType<IBranchOperation>().ToArray();
+    Assert.HasCount(2, branches);
+    Assert.IsTrue(
+        branches.Any(static branch =>
+            branch.BranchKind == BranchKind.Continue &&
+            branch.Syntax.ToString().Contains("continue outer", StringComparison.Ordinal)));
+    Assert.IsTrue(
+        branches.Any(static branch =>
+            branch.BranchKind == BranchKind.Break &&
+            branch.Syntax.ToString().Contains("break outer", StringComparison.Ordinal)));
+
     var exception = Assert.Throws<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new()));
     Assert.AreEqual(OperationKind.Branch, exception.Kind);
     StringAssert.Contains(exception.Message, "Labeled break/continue requires a Roslyn operation/syntax API");
+  }
+
+  /// <summary>
+  /// Pattern switch uses an IIFE internally, so a labeled break must not accidentally become
+  /// the IIFE-local return used for an ordinary switch break.
+  /// </summary>
+  [TestMethod]
+  public void Visit_PatternSwitch_LabeledBreakAcrossIifeBoundary_RejectsWithoutDroppingTarget()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                outer:
+                    while (true)
+                    {
+                        switch (value)
+                        {
+                            case int:
+                                break outer;
+                        }
+                    }
+                }
+            }
+            ");
+
+    var exception = Assert.Throws<OperationTransformationException>(
+      () => new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+    Assert.AreEqual(OperationKind.Branch, exception.Kind);
+    StringAssert.Contains(
+      exception.Message,
+      "Labeled break/continue requires a Roslyn operation/syntax API",
+      StringComparison.Ordinal);
   }
 
   /// <summary>

@@ -276,13 +276,13 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 const detailedNodes = detailed.children.header();
                 assert.equal(detailedNodes[0].name, "strong");
                 assert.equal(detailedNodes[0].props["data-variant"], "detailed");
-                assert.deepEqual(detailedNodes[0].children, ["Detailed release"]);
+                assert.deepEqual(detailedNodes[0].children, [{ name: "__text", children: "Detailed release", patchFlag: undefined }]);
 
                 const compact = component.setup({ Detailed: false }, { slots: {} })();
                 const compactNodes = compact.children.header();
                 assert.equal(compactNodes[0].name, "span");
                 assert.equal(compactNodes[0].props["data-variant"], "compact");
-                assert.deepEqual(compactNodes[0].children, ["Compact release"]);
+                assert.deepEqual(compactNodes[0].children, [{ name: "__text", children: "Compact release", patchFlag: undefined }]);
             });
             """,
             new Dictionary<string, string>
@@ -379,13 +379,13 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
                 const detailedNodes = detailed.children.header();
                 assert.equal(detailedNodes[0].name, "strong");
                 assert.equal(detailedNodes[0].props["data-variant"], "detailed");
-                assert.deepEqual(detailedNodes[0].children, ["Detailed release"]);
+                assert.deepEqual(detailedNodes[0].children, [{ name: "__text", children: "Detailed release", patchFlag: undefined }]);
 
                 const compact = component.setup({ Detailed: false }, { slots: {} })();
                 const compactNodes = compact.children.header();
                 assert.equal(compactNodes[0].name, "span");
                 assert.equal(compactNodes[0].props["data-variant"], "compact");
-                assert.deepEqual(compactNodes[0].children, ["Compact release"]);
+                assert.deepEqual(compactNodes[0].children, [{ name: "__text", children: "Compact release", patchFlag: undefined }]);
             });
             """,
             new Dictionary<string, string>

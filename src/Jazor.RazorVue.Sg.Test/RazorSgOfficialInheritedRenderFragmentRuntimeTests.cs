@@ -94,14 +94,14 @@ public sealed class RazorSgOfficialInheritedRenderFragmentRuntimeTests
                 assert.equal(nodes.length, 1);
                 assert.equal(nodes[0].name, "strong");
                 assert.equal(nodes[0].props["data-origin"], "base");
-                assert.deepEqual(nodes[0].children, ["Inherited release template"]);
+                assert.deepEqual(nodes[0].children, [{ name: "__text", children: "Inherited release template", patchFlag: undefined }]);
 
                 assert.equal(typeof panel.children.footer, "function");
                 const footerNodes = panel.children.footer();
                 assert.equal(footerNodes.length, 1);
                 assert.equal(footerNodes[0].name, "small");
                 assert.equal(footerNodes[0].props["data-origin"], "base-factory");
-                assert.deepEqual(footerNodes[0].children, ["Inherited release footer"]);
+                assert.deepEqual(footerNodes[0].children, [{ name: "__text", children: "Inherited release footer", patchFlag: undefined }]);
             });
             """,
             new Dictionary<string, string>

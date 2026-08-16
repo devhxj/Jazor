@@ -42,7 +42,7 @@ public sealed class RazorSgOfficialNullAttributeBagRuntimeTests
                 const output = component.setup({}, { slots: {} })();
                 assert.equal(output.name, "button");
                 assert.deepEqual(output.props, { "data-action": "deploy" });
-                assert.deepEqual(output.children, ["Deploy"]);
+                assert.deepEqual(output.children, [{ name: "__text", children: "Deploy", patchFlag: undefined }]);
             });
             """);
     }

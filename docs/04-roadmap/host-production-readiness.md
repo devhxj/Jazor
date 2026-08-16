@@ -46,9 +46,17 @@ dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /d
 
 ### 第三阶段：SSR 与 Hydration
 
-- 建立一个使用 `JazorSSR=true` 的真实页面，验证 release `jazor/ssr/` 模块图、服务端 HTML、hydration 和交互恢复。
-- 将 SSR 发布验证加入独立 NuGet 消费者，覆盖 Windows x64 DenoHost runtime 与部署根目录解析。
-- 对 hydration mismatch、SSR 模块缺失和服务器渲染错误提供可操作诊断，而不回退为静默 CSR。
+状态：已实施。`Jazor.EmitTest` 覆盖服务器渲染、hydration、worker 生命周期与真实浏览器；`verify-windows-ssr-release.cs` 以隔离 NuGet 消费者覆盖发布链路。
+
+```bash
+dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo
+```
+
+发布工作流传入 `--package-source artifacts/packages --skip-pack`，确保验证的是工作流刚生成的准确 nupkg。
+
+- 建立一个使用 `JazorSSR=true` 的真实页面，验证 release `jazor/ssr/` 模块图、服务端 HTML、hydration 和交互恢复。已由 `JazorSsrHostingTests` 的真实 Deno/浏览器集成测试与本门禁共同覆盖。
+- 将 SSR 发布验证加入独立 NuGet 消费者，覆盖 Windows x64 DenoHost runtime 与部署根目录解析。已由 `verify-windows-ssr-release.cs` 覆盖：它打包本地 `Jazor` / `Jazor.Vue` / `ECMAScript.Style`，以 `TodoUsePackages=true` 隔离复制 RazorVue TodoList，用 `JazorMode=release` + `JazorSSR=true` 发布，验证发布布局（浏览器 bundle 不含 server-renderer、`jazor/ssr` 图含 `@vue/server-renderer` 闭包）、packaged DenoHost 渲染的服务端 HTML、PathBase 下的部署资源解析（import map 目标、hydration 模块、404 不被 SPA fallback 吞噬），以及 Edge 中的 hydration 交互恢复。
+- 对 hydration mismatch、SSR 模块缺失和服务器渲染错误提供可操作诊断，而不回退为静默 CSR。SSR 渲染失败保持显式异常传播，缺失 artifact graph 有显式错误消息。
 
 ### 第四阶段：运行与发布质量
 

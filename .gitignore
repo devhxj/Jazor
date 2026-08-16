@@ -470,6 +470,9 @@ samples/RazorVue.TodoList/**
 !samples/RazorVue.TodoList/Todo.Host/
 !samples/RazorVue.TodoList/Todo.Host/*.csproj
 !samples/RazorVue.TodoList/Todo.Host/*.cs
+# The SSR release consumer gate ships with its own Edge/CDP browser driver, mirroring Wiki's
+# sample-owned verify-browser.mjs contract.
+!samples/RazorVue.TodoList/verify-ssr-browser.mjs
 # Browser gates clone this source fixture under samples/ so its ../../../src project
 # references remain valid. The disposable clones must never appear as untracked work.
 samples/.todolist-hmr-*/

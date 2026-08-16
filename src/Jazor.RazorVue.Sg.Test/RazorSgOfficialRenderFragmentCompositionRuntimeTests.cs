@@ -102,7 +102,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
                 const status = summary.children[1];
                 assert.equal(status.name, "span");
                 assert.equal(status.props["data-summary-part"], "status");
-                assert.deepEqual(status.children, ["Ready"]);
+                assert.deepEqual(status.children, [{ name: "__text", children: "Ready", patchFlag: undefined }]);
             });
             """,
             new Dictionary<string, string>

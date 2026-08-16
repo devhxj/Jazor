@@ -223,7 +223,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
                 const hidden = render();
                 assert.equal(hidden.name, "span");
                 assert.equal(hidden.props["data-release"], "Accounts API");
-                assert.deepEqual(hidden.children, ["Details hidden"]);
+                assert.deepEqual(hidden.children, [{ name: "__text", children: "Details hidden", patchFlag: undefined }]);
             });
             """);
     }

@@ -17,14 +17,38 @@ public sealed class SymbolTransformationException : Exception
 {
     public SymbolKind Kind { get; }
 
-    public SymbolTransformationException(SymbolKind kind, string? message) : base(message)
+    /// <summary>
+    /// Original Roslyn source location when the failing symbol has one.
+    /// 保留 typed location 供上层产品直接传递，不能依赖异常 <see cref="Exception.Data"/> 还原位置。
+    /// </summary>
+    public Location SourceLocation { get; }
+
+    public SymbolTransformationException(SymbolKind kind, string? message)
+        : this(kind, message, Location.None)
     {
-        Kind = kind;
     }
 
-    public SymbolTransformationException(SymbolKind kind, string? message, Exception innerException) : base(message, innerException)
+    public SymbolTransformationException(SymbolKind kind, string? message, Exception innerException)
+        : this(kind, message, Location.None, innerException)
+    {
+    }
+
+    public SymbolTransformationException(SymbolKind kind, string? message, Location sourceLocation)
+        : base(message)
     {
         Kind = kind;
+        SourceLocation = sourceLocation ?? Location.None;
+    }
+
+    public SymbolTransformationException(
+        SymbolKind kind,
+        string? message,
+        Location sourceLocation,
+        Exception innerException)
+        : base(message, innerException)
+    {
+        Kind = kind;
+        SourceLocation = sourceLocation ?? Location.None;
     }
 }
 
@@ -39,24 +63,56 @@ public sealed class OperationTransformationException : Exception
 {
     public OperationKind Kind { get; }
 
-    public OperationTransformationException(OperationKind kind, string? message) : base(message)
+    /// <summary>
+    /// Original Roslyn operation location. Product boundaries can map this directly to authored
+    /// source; <see cref="Exception.Data"/> remains only as a legacy diagnostic compatibility surface.
+    /// 原始 operation 位置是正式契约，Data 中的行列信息不再作为跨层协议。
+    /// </summary>
+    public Location SourceLocation { get; }
+
+    public OperationTransformationException(OperationKind kind, string? message)
+        : this(kind, message, Location.None)
     {
-        Kind = kind;
     }
 
-    public OperationTransformationException(OperationKind kind, string? message, Exception innerException) : base(message, innerException)
+    public OperationTransformationException(OperationKind kind, string? message, Exception innerException)
+        : this(kind, message, Location.None, innerException)
+    {
+    }
+
+    public OperationTransformationException(OperationKind kind, string? message, Location sourceLocation)
+        : base(message)
     {
         Kind = kind;
+        SourceLocation = sourceLocation ?? Location.None;
+        AttachLocationMetadata(this, SourceLocation);
+    }
+
+    public OperationTransformationException(
+        OperationKind kind,
+        string? message,
+        Location sourceLocation,
+        Exception innerException)
+        : base(message, innerException)
+    {
+        Kind = kind;
+        SourceLocation = sourceLocation ?? Location.None;
+        AttachLocationMetadata(this, SourceLocation);
     }
 
     public OperationTransformationException(IOperation operation, string? message)
-        : this((operation ?? throw new ArgumentNullException(nameof(operation))).Kind, message)
+        : this(
+            (operation ?? throw new ArgumentNullException(nameof(operation))).Kind,
+            message,
+            operation.Syntax.GetLocation())
     {
-        AttachLocationMetadata(this, operation.Syntax.GetLocation());
     }
 
     private static void AttachLocationMetadata(Exception exception, Location location)
     {
+        if (location == Location.None)
+            return;
+
         var lineSpan = location.GetLineSpan();
         var path = !string.IsNullOrWhiteSpace(lineSpan.Path)
             ? lineSpan.Path
@@ -83,13 +139,57 @@ public sealed class SyntaxNodeTransformationException : Exception
 {
     public SyntaxKind Kind { get; }
 
-    public SyntaxNodeTransformationException(SyntaxKind kind, string? message) : base(message)
+    /// <summary>
+    /// Original Roslyn syntax location when the failure is source-bound.
+    /// </summary>
+    public Location SourceLocation { get; }
+
+    public SyntaxNodeTransformationException(SyntaxKind kind, string? message)
+        : this(kind, message, Location.None)
     {
-        Kind = kind;
     }
 
-    public SyntaxNodeTransformationException(SyntaxKind kind, string? message, Exception innerException) : base(message, innerException)
+    public SyntaxNodeTransformationException(SyntaxKind kind, string? message, Exception innerException)
+        : this(kind, message, Location.None, innerException)
+    {
+    }
+
+    public SyntaxNodeTransformationException(SyntaxKind kind, string? message, Location sourceLocation)
+        : base(message)
     {
         Kind = kind;
+        SourceLocation = sourceLocation ?? Location.None;
+        AttachLocationMetadata(this, SourceLocation);
+    }
+
+    public SyntaxNodeTransformationException(
+        SyntaxKind kind,
+        string? message,
+        Location sourceLocation,
+        Exception innerException)
+        : base(message, innerException)
+    {
+        Kind = kind;
+        SourceLocation = sourceLocation ?? Location.None;
+        AttachLocationMetadata(this, SourceLocation);
+    }
+
+    private static void AttachLocationMetadata(Exception exception, Location location)
+    {
+        if (location == Location.None)
+            return;
+
+        var lineSpan = location.GetLineSpan();
+        var path = !string.IsNullOrWhiteSpace(lineSpan.Path)
+            ? lineSpan.Path
+            : location.SourceTree?.FilePath;
+        if (string.IsNullOrWhiteSpace(path))
+            path = "<unknown>";
+
+        exception.Data["location.path"] = path;
+        exception.Data["location.startLine"] = lineSpan.StartLinePosition.Line + 1;
+        exception.Data["location.startColumn"] = lineSpan.StartLinePosition.Character + 1;
+        exception.Data["location.endLine"] = lineSpan.EndLinePosition.Line + 1;
+        exception.Data["location.endColumn"] = lineSpan.EndLinePosition.Character + 1;
     }
 }

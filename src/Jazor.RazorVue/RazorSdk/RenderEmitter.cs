@@ -3,6 +3,7 @@ using Acornima;
 using Acornima.Ast;
 using Jazor.Common;
 using Jazor.Compiler;
+using Jazor.RazorVue.Generation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -53,6 +54,94 @@ internal static class RenderEmitter
         out RenderResult result,
         out string? failure)
     {
+        var emitted = TryEmitCore(
+            compilation,
+            componentSymbol,
+            buildRenderTreeMethod,
+            buildRenderTreeBody,
+            declaredNames,
+            reservedImportNames,
+            injectRegistry,
+            out result,
+            out var exception);
+        failure = exception?.Message;
+        return emitted;
+    }
+
+    /// <summary>
+    /// Production diagnostic seam for direct RenderTree lowering. It preserves the source-aware
+    /// failure until the final compilation boundary reports it; the string overload remains a
+    /// narrow compatibility seam for existing compiler-facing tests.
+    /// 这里不能把异常先格式化成 string，否则 mapped Razor span 与 compiler/direct 类别都会丢失。
+    /// </summary>
+    internal static bool TryEmitWithDiagnostic(
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
+        IMethodSymbol buildRenderTreeMethod,
+        IBlockOperation buildRenderTreeBody,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames,
+        IEnumerable<string>? reservedImportNames,
+        VueInjectRegistry injectRegistry,
+        out RenderResult result,
+        out RazorVueDiagnosticInfo? diagnostic)
+    {
+        var emitted = TryEmitCore(
+            compilation,
+            componentSymbol,
+            buildRenderTreeMethod,
+            buildRenderTreeBody,
+            declaredNames,
+            reservedImportNames,
+            injectRegistry,
+            out result,
+            out var exception);
+        if (emitted)
+        {
+            diagnostic = null;
+            return true;
+        }
+
+        diagnostic = exception switch
+        {
+            RazorVueDiagnosticException typed => typed.Diagnostic.WithComponent(componentSymbol),
+            OperationTransformationException operation => RazorVueDiagnosticFactory.Create(
+                // Unwrapped operation failures originate from RenderEmitter's RenderTreeBuilder
+                // protocol checks. SemanticWalker failures are wrapped above as CompilerBridge.
+                // 这里保留 direct-render owner，不能把 builder 协议错误误标为 compiler failure。
+                RazorVueDiagnosticCategory.DirectRender,
+                operation.Message ?? "No direct render lowering detail was provided.",
+                operation.SourceLocation,
+                componentSymbol,
+                isAuthorReachable: true),
+            SyntaxNodeTransformationException syntax => RazorVueDiagnosticFactory.FromException(
+                syntax,
+                RazorVueDiagnosticCategory.CompilerBridge,
+                componentSymbol),
+            SymbolTransformationException symbol => RazorVueDiagnosticFactory.FromException(
+                symbol,
+                RazorVueDiagnosticCategory.CompilerBridge,
+                componentSymbol),
+            _ => RazorVueDiagnosticFactory.Create(
+                RazorVueDiagnosticCategory.DirectRender,
+                exception?.Message ?? "No direct render lowering detail was provided.",
+                RazorVueDiagnosticFactory.GetSymbolLocation(buildRenderTreeMethod),
+                componentSymbol,
+                isAuthorReachable: true)
+        };
+        return false;
+    }
+
+    private static bool TryEmitCore(
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
+        IMethodSymbol buildRenderTreeMethod,
+        IBlockOperation buildRenderTreeBody,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames,
+        IEnumerable<string>? reservedImportNames,
+        VueInjectRegistry injectRegistry,
+        out RenderResult result,
+        out Exception? failure)
+    {
         if (compilation is null)
             throw new ArgumentNullException(nameof(compilation));
         if (componentSymbol is null)
@@ -71,7 +160,8 @@ internal static class RenderEmitter
             if (buildRenderTreeMethod.Parameters.Length != 1 ||
                 !IsRenderTreeBuilder(buildRenderTreeMethod.Parameters[0].Type))
             {
-                failure = "RazorVue direct render operation lowering requires BuildRenderTree(RenderTreeBuilder).";
+                failure = new InvalidOperationException(
+                    "RazorVue direct render operation lowering requires BuildRenderTree(RenderTreeBuilder).");
                 return false;
             }
 
@@ -102,14 +192,29 @@ internal static class RenderEmitter
                 lowered.ReferenceCaptureStateMembers);
             return true;
         }
+        catch (RazorVueDiagnosticException exception)
+        {
+            failure = exception;
+            return false;
+        }
         catch (OperationTransformationException exception)
         {
-            failure = exception.Message;
+            failure = exception;
+            return false;
+        }
+        catch (SyntaxNodeTransformationException exception)
+        {
+            failure = exception;
+            return false;
+        }
+        catch (SymbolTransformationException exception)
+        {
+            failure = exception;
             return false;
         }
         catch (InvalidOperationException exception)
         {
-            failure = exception.Message;
+            failure = exception;
             return false;
         }
     }
@@ -2357,10 +2462,32 @@ internal static class RenderEmitter
             _activeExpressionContext = context;
             try
             {
-                var node = _walker.Visit(operation, context.Argument)
-                    ?? throw Unsupported(operation, "Expression did not produce a JavaScript node.");
+                Node? node;
+                try
+                {
+                    node = _walker.Visit(operation, context.Argument);
+                }
+                catch (OperationTransformationException exception)
+                {
+                    // RenderTree protocol errors are owned by this emitter, but expression
+                    // failures from SemanticWalker retain the compiler bridge category and its
+                    // exact Roslyn location. Do not reclassify them from message text upstream.
+                    throw new RazorVueDiagnosticException(
+                        RazorVueDiagnosticFactory.FromException(
+                            exception,
+                            RazorVueDiagnosticCategory.CompilerBridge,
+                            _componentSymbol),
+                        exception);
+                }
+
+                if (node is null)
+                    throw CreateCompilerBridgeFailure(
+                        operation,
+                        "Expression did not produce a JavaScript node.");
                 if (node is not Expression expression)
-                    throw Unsupported(operation, "Expression did not lower to a JavaScript expression.");
+                    throw CreateCompilerBridgeFailure(
+                        operation,
+                        "Expression did not lower to a JavaScript expression.");
 
                 return expression;
             }
@@ -2369,6 +2496,18 @@ internal static class RenderEmitter
                 _activeExpressionContext = previousContext;
             }
         }
+
+        private RazorVueDiagnosticException CreateCompilerBridgeFailure(
+            IOperation operation,
+            string message)
+            => new(
+                RazorVueDiagnosticFactory.Create(
+                    RazorVueDiagnosticCategory.CompilerBridge,
+                    message,
+                    operation.Syntax.GetLocation(),
+                    _componentSymbol,
+                    isAuthorReachable: true),
+                new InvalidOperationException(message));
 
         private Expression? RewriteDirectParameterReference(
             IParameterReferenceOperation operation,
@@ -4785,7 +4924,14 @@ internal static class RenderEmitter
                     "createTextVNode",
                     Expression,
                     new NumericLiteral(VuePatchFlags.Text, VuePatchFlags.Text.ToString(System.Globalization.CultureInfo.InvariantCulture)))
-                : Expression;
+                : Kind == VNodePlanKind.Static && Expression is Acornima.Ast.StringLiteral or Acornima.Ast.NumericLiteral or Acornima.Ast.BooleanLiteral
+                    // Vue's hydration walks block children verbatim; a bare primitive is not a
+                    // vnode and crashes hydrateNode. The Vue compiler always wraps block-array
+                    // text in createTextVNode, and static text needs no TEXT patch flag because
+                    // it never updates. Mount-time normalizeVNode used to mask this, hydration
+                    // does not. block children 数组中的静态原始值必须包成 text vnode。
+                    ? Call("createTextVNode", Expression)
+                    : Expression;
     }
 
     /// <summary>Base stack frame for an open Razor render region. 子类决定关闭后的 Vue vnode 形状。</summary>
@@ -5360,7 +5506,12 @@ internal static class RenderEmitter
             if (Children.Count == 1 && Children[0].Kind == VNodePlanKind.DynamicText)
                 return Children[0].Expression;
 
-            if (Children.Any(static child => child.Kind == VNodePlanKind.DynamicText))
+            if (Children.Any(static child => child.Kind == VNodePlanKind.DynamicText ||
+                    // Bare static primitives in block arrays now emit createTextVNode too, so
+                    // the import must be registered for exactly the same child set. The AST
+                    // literal types are qualified because this frame owns a StringLiteral helper.
+                    (child.Kind == VNodePlanKind.Static &&
+                        child.Expression is Acornima.Ast.StringLiteral or Acornima.Ast.NumericLiteral or Acornima.Ast.BooleanLiteral)))
                 _useTextVNode?.Invoke();
 
             return CreateArray(Children.Select(static child => child.ToBlockArrayItem()));

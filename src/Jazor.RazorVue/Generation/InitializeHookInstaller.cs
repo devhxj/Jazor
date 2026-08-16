@@ -145,12 +145,22 @@ internal static class InitializeHookInstaller
                 outputCompilation,
                 cancellationToken,
                 out var catalogSource,
-                out var failure))
+                out var tailDiagnostics))
         {
-            diagnostics = diagnostics.Add(Diagnostic.Create(
-                Diagnostics.TailOutputFailed,
-                Location.None,
-                failure ?? "Unknown final Compilation render catalog generation failure."));
+            if (tailDiagnostics.IsDefaultOrEmpty)
+            {
+                tailDiagnostics = ImmutableArray.Create(RazorVueDiagnosticFactory.Create(
+                    RazorVueDiagnosticCategory.Internal,
+                    "Unknown final Compilation render catalog generation failure.",
+                    isAuthorReachable: false));
+            }
+
+            // Do not collapse independent component failures into one generic generator error.
+            // Each typed carrier owns its descriptor and mapped author location; catalog output
+            // remains absent for the entire failed final Compilation.
+            // 独立组件错误必须分别报告，不能退化为 Location.None 的单条字符串。
+            foreach (var tailDiagnostic in tailDiagnostics)
+                diagnostics = diagnostics.Add(Diagnostics.Create(tailDiagnostic));
             return result;
         }
 

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using Jazor.RazorVue.Generation;
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.RazorVue.RazorSdk;
@@ -91,8 +92,12 @@ internal sealed class VueInjectRegistry
             attribute.ConstructorArguments[index].Kind != TypedConstantKind.Type ||
             attribute.ConstructorArguments[index].Value is not INamedTypeSymbol componentType)
         {
-            throw new InvalidOperationException(
-                "RazorVue [VueInject] " + role + " argument must be a named component type.");
+            var location = attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation();
+            throw new RazorVueDiagnosticException(RazorVueDiagnosticFactory.Create(
+                RazorVueDiagnosticCategory.VueInject,
+                "RazorVue [VueInject] " + role + " argument must be a named component type.",
+                location,
+                isAuthorReachable: true));
         }
 
         return componentType;
@@ -227,10 +232,14 @@ internal sealed class VueInjectRegistry
         => type.AllInterfaces.Any(candidate =>
             SymbolComparer.Equals(candidate.OriginalDefinition, interfaceType.OriginalDefinition));
 
-    private static InvalidOperationException InvalidDeclaration(INamedTypeSymbol contract, string detail)
-        => new(
+    private static RazorVueDiagnosticException InvalidDeclaration(INamedTypeSymbol contract, string detail)
+        => new(RazorVueDiagnosticFactory.Create(
+            RazorVueDiagnosticCategory.VueInject,
             "Invalid RazorVue [VueInject] declaration for container contract '" +
-            Display(contract) + "': " + detail);
+            Display(contract) + "': " + detail,
+            RazorVueDiagnosticFactory.GetSymbolLocation(contract),
+            subject: contract,
+            isAuthorReachable: true));
 
     private static string Display(ITypeSymbol symbol)
         => symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
