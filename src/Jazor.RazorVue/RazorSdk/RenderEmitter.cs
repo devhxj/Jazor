@@ -764,7 +764,7 @@ internal static class RenderEmitter
             // Array.from maps lazily at render time and supplies each iteration its own alias
             // scope. Building children once outside the mapper would duplicate/collapse loop effects.
             // 循环体必须留在 mapper 内运行，不能在 lowering 时预先展开或共享局部变量。
-            var collection = LowerExpression(forEachLoop.Collection, context);
+            var collection = LowerForEachLoopCollection(forEachLoop, context);
             Node mapperParameter;
             EmitContext loopContext;
             var hasSimpleLoopVariable = TryResolveLoopControlVariable(forEachLoop.LoopControlVariable, out var loopVariable);
@@ -782,6 +782,47 @@ internal static class RenderEmitter
             {
                 loopContext = CreateForEachDeconstructionContext(forEachLoop, context);
                 mapperParameter = LowerForEachLoopBinding(forEachLoop, loopContext);
+            }
+
+            if (HasBranchTargetingLoop(forEachLoop.Body, forEachLoop))
+            {
+                if (forEachLoop.IsAsynchronous)
+                {
+                    throw Unsupported(
+                        forEachLoop,
+                        "Async foreach cannot execute inside Razor's synchronous BuildRenderTree contract.");
+                }
+
+                try
+                {
+                    var resultName = CreateUniqueLocalName("__jazor$foreach");
+                    var result = new Identifier(resultName);
+                    var branchingBody = EmitBranchingLoopBody(forEachLoop, loopContext, result);
+                    var left = new VariableDeclaration(
+                        VariableDeclarationKind.Let,
+                        NodeList.From(new VariableDeclarator(mapperParameter, null)));
+                    var loop = new ForOfStatement(
+                        left,
+                        new LogicalExpression(Operator.NullishCoalescing, collection, CreateArray([])),
+                        new NestedBlockStatement(NodeList.From(branchingBody.Statements)),
+                        @await: false);
+                    var children = BuildImperativeLoopChildren(result, loop);
+
+                    _usesBlockTree = true;
+                    _usesFragment = true;
+                    state.UsesFragment = true;
+                    state.AddChild(VNodePlan.Block(CreateForLoopFragmentExpression(
+                        children,
+                        branchingBody.HasExplicitRootKey
+                            ? VuePatchFlags.KeyedFragment
+                            : VuePatchFlags.UnkeyedFragment)));
+                    return;
+                }
+                finally
+                {
+                    foreach (var name in loopContext.LocalAliases.Values.Except(context.LocalAliases.Values, StringComparer.Ordinal))
+                        _renderLocalNames.Remove(name);
+                }
             }
 
             DirectRenderFragmentBody body;
@@ -866,40 +907,44 @@ internal static class RenderEmitter
                         "For direct render lowering does not support initializer, condition, or update expressions that require compiler temporary declarations.");
                 }
 
-                var body = EmitLoopIterationBody(forLoop.Body, loopContext);
                 var resultName = CreateUniqueLocalName("__jazor$for");
                 var result = new Identifier(resultName);
-                var append = new NonSpecialExpressionStatement(Call(
-                    new MemberExpression(result, new Identifier("push"), computed: false, optional: false),
-                    body.RenderExpression));
-                var statements = new List<Statement>(initializers.Length + 3);
-                statements.AddRange(initializers);
-                statements.Add(new VariableDeclaration(
-                    VariableDeclarationKind.Const,
-                    NodeList.From(new VariableDeclarator(result, CreateArray([])))));
-                statements.Add(new ForStatement(
-                    init: null,
-                    test: condition,
-                    update: update,
-                    body: new NestedBlockStatement(NodeList.From<Statement>(append))));
-                statements.Add(new ReturnStatement(result));
-                var children = Call(
-                    new ArrowFunctionExpression(
-                        NodeList.From<Node>(),
-                        new FunctionBody(NodeList.From(statements), strict: true),
-                        expression: false,
-                        async: false),
-                    Array.Empty<Expression>());
+                Expression children;
+                bool hasExplicitRootKey;
+                if (HasBranchTargetingLoop(forLoop.Body, forLoop))
+                {
+                    var body = EmitBranchingLoopBody(forLoop, loopContext, result);
+                    var loop = new ForStatement(
+                        init: null,
+                        test: condition,
+                        update: update,
+                        body: new NestedBlockStatement(NodeList.From(body.Statements)));
+                    children = BuildImperativeLoopChildren(result, loop, initializers);
+                    hasExplicitRootKey = body.HasExplicitRootKey;
+                }
+                else
+                {
+                    var body = EmitLoopIterationBody(forLoop.Body, loopContext);
+                    var append = new NonSpecialExpressionStatement(Call(
+                        new MemberExpression(result, new Identifier("push"), computed: false, optional: false),
+                        body.RenderExpression));
+                    var loop = new ForStatement(
+                        init: null,
+                        test: condition,
+                        update: update,
+                        body: new NestedBlockStatement(NodeList.From<Statement>(append)));
+                    children = BuildImperativeLoopChildren(result, loop, initializers);
+                    hasExplicitRootKey = body.HasExplicitRootKey;
+                }
 
                 _usesBlockTree = true;
                 _usesFragment = true;
                 state.UsesFragment = true;
                 state.AddChild(VNodePlan.Block(CreateForLoopFragmentExpression(
                     children,
-                    body.HasExplicitRootKey
+                    hasExplicitRootKey
                         ? VuePatchFlags.KeyedFragment
                         : VuePatchFlags.UnkeyedFragment)));
-                state.UsesFragment = state.UsesFragment || body.UsesFragment;
             }
             finally
             {
@@ -996,41 +1041,297 @@ internal static class RenderEmitter
                     "While direct render lowering does not support conditions that require compiler temporary declarations.");
             }
 
-            var body = EmitLoopIterationBody(whileLoop.Body, loopContext);
             var resultName = CreateUniqueLocalName("__jazor$while");
             var result = new Identifier(resultName);
-            var append = new NonSpecialExpressionStatement(Call(
-                new MemberExpression(result, new Identifier("push"), computed: false, optional: false),
-                body.RenderExpression));
-            var loopBody = new NestedBlockStatement(NodeList.From<Statement>(append));
+            bool hasExplicitRootKey;
+            NestedBlockStatement loopBody;
+            if (HasBranchTargetingLoop(whileLoop.Body, whileLoop))
+            {
+                var body = EmitBranchingLoopBody(whileLoop, loopContext, result);
+                loopBody = new NestedBlockStatement(NodeList.From(body.Statements));
+                hasExplicitRootKey = body.HasExplicitRootKey;
+            }
+            else
+            {
+                var body = EmitLoopIterationBody(whileLoop.Body, loopContext);
+                var append = new NonSpecialExpressionStatement(Call(
+                    new MemberExpression(result, new Identifier("push"), computed: false, optional: false),
+                    body.RenderExpression));
+                loopBody = new NestedBlockStatement(NodeList.From<Statement>(append));
+                hasExplicitRootKey = body.HasExplicitRootKey;
+            }
             Statement loop = whileLoop.ConditionIsTop
                 ? new WhileStatement(condition, loopBody)
                 : new DoWhileStatement(loopBody, condition);
-            var children = Call(
-                new ArrowFunctionExpression(
-                    NodeList.From<Node>(),
-                    new FunctionBody(NodeList.From<Statement>(
-                    [
-                        new VariableDeclaration(
-                            VariableDeclarationKind.Const,
-                            NodeList.From(new VariableDeclarator(result, CreateArray([])))),
-                        loop,
-                        new ReturnStatement(result)
-                    ]), strict: true),
-                    expression: false,
-                    async: false),
-                Array.Empty<Expression>());
+            var children = BuildImperativeLoopChildren(result, loop);
 
             _usesBlockTree = true;
             _usesFragment = true;
             state.UsesFragment = true;
             state.AddChild(VNodePlan.Block(CreateForLoopFragmentExpression(
                 children,
-                body.HasExplicitRootKey
+                hasExplicitRootKey
                     ? VuePatchFlags.KeyedFragment
                     : VuePatchFlags.UnkeyedFragment)));
-            state.UsesFragment = state.UsesFragment || body.UsesFragment;
         }
+
+        private static Expression BuildImperativeLoopChildren(
+            Identifier result,
+            Statement loop,
+            IEnumerable<Statement>? leadingStatements = null)
+        {
+            var statements = new List<Statement>();
+            if (leadingStatements is not null)
+                statements.AddRange(leadingStatements);
+            statements.Add(new VariableDeclaration(
+                VariableDeclarationKind.Const,
+                NodeList.From(new VariableDeclarator(result, CreateArray([])))));
+            statements.Add(loop);
+            statements.Add(new ReturnStatement(result));
+            return Call(
+                new ArrowFunctionExpression(
+                    NodeList.From<Node>(),
+                    new FunctionBody(NodeList.From(statements), strict: true),
+                    expression: false,
+                    async: false),
+                Array.Empty<Expression>());
+        }
+
+        private BranchingLoopBody EmitBranchingLoopBody(
+            ILoopOperation loop,
+            EmitContext context,
+            Identifier result)
+        {
+            // A branch must be a child of the real JavaScript loop it controls. Materialize
+            // completed builder segments into the result array between structured statements;
+            // putting break/continue inside a vnode IIFE would target the wrong function scope.
+            // 普通 branch 必须与真实 loop 同层，不能藏在 iteration expression/IIFE 内。
+            CollectMutableRenderLocals(loop.Body);
+            var statements = new List<Statement>();
+            var argument = context.Argument.WithNewScope();
+            var bodyContext = context with
+            {
+                PreludeStatements = statements,
+                AllowPreludeDeclarations = true,
+                Argument = argument,
+                IsTerminated = false
+            };
+            var state = new RenderState();
+            var facts = new BranchingLoopFacts();
+            _ = EmitBranchingLoopOperation(
+                loop.Body,
+                loop,
+                bodyContext,
+                state,
+                result,
+                statements,
+                facts);
+            FlushBranchingLoopRenderState(loop.Body, state, result, statements, facts);
+
+            if (argument.HasVarDeclarator)
+            {
+                statements.Insert(0, new VariableDeclaration(
+                    VariableDeclarationKind.Let,
+                    argument.FlushVarDeclarator()));
+            }
+
+            return new BranchingLoopBody(
+                statements.ToImmutableArray(),
+                facts.SawRenderedRoot && facts.AllRenderedRootsExplicitlyKeyed);
+        }
+
+        private EmitContext EmitBranchingLoopOperation(
+            IOperation operation,
+            ILoopOperation ownerLoop,
+            EmitContext context,
+            RenderState state,
+            Identifier result,
+            List<Statement> statements,
+            BranchingLoopFacts facts)
+        {
+            if (context.IsTerminated)
+                return context;
+
+            if (operation is IBlockOperation block)
+            {
+                foreach (var child in block.Operations)
+                {
+                    context = EmitBranchingLoopOperation(
+                        child,
+                        ownerLoop,
+                        context,
+                        state,
+                        result,
+                        statements,
+                        facts);
+                    if (context.IsTerminated)
+                        break;
+                }
+
+                return context;
+            }
+
+            if (operation is IBranchOperation branch && IsBranchTargetingLoop(branch, ownerLoop))
+            {
+                FlushBranchingLoopRenderState(operation, state, result, statements, facts);
+                statements.Add(LowerLoopBranch(branch, context));
+                return context with { IsTerminated = true };
+            }
+
+            if (operation is IConditionalOperation conditional &&
+                HasBranchTargetingLoop(conditional, ownerLoop))
+            {
+                if (state.Stack.Count != 0)
+                {
+                    throw Unsupported(
+                        conditional,
+                        "Loop break/continue cannot leave an open RenderTreeBuilder frame. Close the element, component, or region before branching.");
+                }
+
+                FlushBranchingLoopRenderState(operation, state, result, statements, facts);
+                var condition = LowerExpression(conditional.Condition, context);
+                var whenTrue = EmitBranchingLoopBranch(
+                    conditional.WhenTrue,
+                    ownerLoop,
+                    context,
+                    result,
+                    facts);
+                NestedBlockStatement? whenFalse = null;
+                if (conditional.WhenFalse is not null)
+                {
+                    whenFalse = EmitBranchingLoopBranch(
+                        conditional.WhenFalse,
+                        ownerLoop,
+                        context,
+                        result,
+                        facts);
+                }
+
+                statements.Add(new IfStatement(condition, whenTrue, whenFalse));
+                return context;
+            }
+
+            if (operation is IExpressionStatementOperation expressionStatement &&
+                IsLoopSideEffectOperation(operation))
+            {
+                if (state.Stack.Count != 0)
+                {
+                    throw Unsupported(
+                        operation,
+                        "An ordinary loop side effect cannot be moved across an open RenderTreeBuilder frame. Complete the frame before the statement.");
+                }
+
+                FlushBranchingLoopRenderState(operation, state, result, statements, facts);
+                statements.Add(new NonSpecialExpressionStatement(
+                    LowerExpression(expressionStatement.Operation, context)));
+                return context;
+            }
+
+            // Once a root is complete, evaluate it before the next ordinary statement. This lets
+            // helper calls and assignments stay in source order without delaying their effects
+            // until a later vnode expression happens to run.
+            if (state.Stack.Count == 0 && state.Roots.Count > 0)
+                FlushBranchingLoopRenderState(operation, state, result, statements, facts);
+
+            return EmitOperation(operation, context, state);
+        }
+
+        private NestedBlockStatement EmitBranchingLoopBranch(
+            IOperation operation,
+            ILoopOperation ownerLoop,
+            EmitContext context,
+            Identifier result,
+            BranchingLoopFacts facts)
+        {
+            var statements = new List<Statement>();
+            var state = new RenderState();
+            var branchContext = context with
+            {
+                PreludeStatements = statements,
+                AllowPreludeDeclarations = true,
+                IsTerminated = false
+            };
+            _ = EmitBranchingLoopOperation(
+                operation,
+                ownerLoop,
+                branchContext,
+                state,
+                result,
+                statements,
+                facts);
+            FlushBranchingLoopRenderState(operation, state, result, statements, facts);
+            return new NestedBlockStatement(NodeList.From(statements));
+        }
+
+        private static void FlushBranchingLoopRenderState(
+            IOperation operation,
+            RenderState state,
+            Identifier result,
+            List<Statement> statements,
+            BranchingLoopFacts facts)
+        {
+            if (state.Stack.Count != 0)
+            {
+                throw Unsupported(
+                    operation,
+                    "Loop control flow left an open " + state.Stack.Peek().Describe() + " frame.");
+            }
+
+            if (state.Roots.Count > 0)
+            {
+                facts.SawRenderedRoot = true;
+                facts.AllRenderedRootsExplicitlyKeyed =
+                    facts.AllRenderedRootsExplicitlyKeyed &&
+                    state.Roots.Count == 1 &&
+                    state.Roots[0].HasExplicitKey;
+                var content = VueSlotAstFactory.NormalizeContent(state.ToRenderExpression());
+                statements.Add(new NonSpecialExpressionStatement(Call(
+                    new MemberExpression(result, new Identifier("push"), computed: false, optional: false),
+                    new SpreadElement(content))));
+            }
+            else if (state.PendingPreludeStatements.Count > 0)
+            {
+                statements.AddRange(state.PendingPreludeStatements);
+            }
+
+            state.Clear();
+        }
+
+        private Statement LowerLoopBranch(IBranchOperation operation, EmitContext context)
+        {
+            var previousContext = _activeExpressionContext;
+            _activeExpressionContext = context;
+            try
+            {
+                var statement = _walker.Visit(operation, context.Argument);
+                if (statement is BreakStatement or ContinueStatement)
+                    return (Statement)statement;
+
+                throw Unsupported(operation, "Only ordinary break/continue can target a direct-render loop.");
+            }
+            finally
+            {
+                _activeExpressionContext = previousContext;
+            }
+        }
+
+        private static bool HasBranchTargetingLoop(IOperation operation, ILoopOperation loop)
+        {
+            if (operation is IBranchOperation branch && IsBranchTargetingLoop(branch, loop))
+                return true;
+
+            return operation.Descendants()
+                .OfType<IBranchOperation>()
+                .Any(branchOperation => IsBranchTargetingLoop(branchOperation, loop));
+        }
+
+        private static bool IsBranchTargetingLoop(IBranchOperation branch, ILoopOperation loop)
+            => branch.BranchKind switch
+            {
+                BranchKind.Break => SymbolComparer.Equals(branch.Target, loop.ExitLabel),
+                BranchKind.Continue => SymbolComparer.Equals(branch.Target, loop.ContinueLabel),
+                _ => false
+            };
 
         private DirectRenderFragmentBody EmitLoopIterationBody(IOperation operation, EmitContext context)
         {
@@ -1306,6 +1607,20 @@ internal static class RenderEmitter
                     return declaration.Declarations[0].Id;
 
                 throw Unsupported(operation, "Compiler foreach binding did not produce one mapper parameter.");
+            }
+            finally
+            {
+                _activeExpressionContext = previousContext;
+            }
+        }
+
+        private Expression LowerForEachLoopCollection(IForEachLoopOperation operation, EmitContext context)
+        {
+            var previousContext = _activeExpressionContext;
+            _activeExpressionContext = context;
+            try
+            {
+                return _walker.BuildForEachLoopCollection(operation, context.Argument);
             }
             finally
             {
@@ -5937,6 +6252,17 @@ internal static class RenderEmitter
         bool UsesFragment,
         VNodePlan? DirectRoot = null,
         bool HasExplicitRootKey = false);
+
+    private readonly record struct BranchingLoopBody(
+        ImmutableArray<Statement> Statements,
+        bool HasExplicitRootKey);
+
+    private sealed class BranchingLoopFacts
+    {
+        public bool SawRenderedRoot { get; set; }
+
+        public bool AllRenderedRootsExplicitlyKeyed { get; set; } = true;
+    }
 
     private readonly record struct DirectEventModifier(
         Expression? PreventDefaultCondition,

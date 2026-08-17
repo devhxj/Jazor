@@ -228,6 +228,51 @@ public sealed class AstConverterExportPolicyScenarioTests
     }
 
     [TestMethod]
+    public async Task Convert_ModulePolicyCanKeepInheritedDeclarationsLocalWhileExportingDerivedSurface()
+    {
+        const string scenarioId = "ast-converter-export-policy.inherited-declaration-local-derived-exported";
+        const string source = """
+            using ECMAScript;
+
+            public class BaseModule
+            {
+                [ECMAScriptName("shared")]
+                public static int BaseValue = 1;
+            }
+
+            [ECMAScriptModule("./module")]
+            public sealed class TestModule : BaseModule
+            {
+                [ECMAScriptName("shared")]
+                public static int DerivedValue = BaseValue + 1;
+            }
+            """;
+        var fixture = CompileModule(source, scenarioId);
+        var module = await new AstConverter(
+            fixture.Module,
+            fixture.SemanticModel,
+            new AstConverterOptions(
+                AstConverterProfile.Standard,
+                ModulePolicy: DerivedOnlyInheritedModuleExportPolicy.Instance)).Convert();
+
+        Assert.IsNotNull(module, scenarioId);
+        var exports = module!.Body.OfType<ExportNamedDeclaration>().ToArray();
+        Assert.HasCount(1, exports, scenarioId);
+        Assert.IsNull(exports[0].Declaration, scenarioId);
+        var exportSpecifier = exports[0].Specifiers.Single();
+        Assert.AreEqual("DerivedValue", ((Identifier)exportSpecifier.Local).Name, scenarioId);
+        Assert.AreEqual("shared", ((Identifier)exportSpecifier.Exported).Name, scenarioId);
+
+        var localDeclarations = module.Body
+            .OfType<VariableDeclaration>()
+            .SelectMany(static declaration => declaration.Declarations)
+            .Select(static declarator => ((Identifier)declarator.Id).Name)
+            .ToArray();
+        CollectionAssert.AreEquivalent(new[] { "shared", "DerivedValue" }, localDeclarations, scenarioId);
+        _ = new Acornima.Parser().ParseModule(module.ToKnRECMAScript());
+    }
+
+    [TestMethod]
     public async Task Convert_MixedNestedTypePolicies_ExportsRuntimeSurfaceWithoutLeakingPrivateOrStructuralTypes()
     {
         const string scenarioId = "ast-converter-export-policy.mixed-nested-type-policies";

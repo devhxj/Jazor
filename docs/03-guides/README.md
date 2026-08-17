@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | [安装与配置](./installation-and-configuration.md) | 应用开发者 | 包选择、MSBuild 输出、SSR 和可选绑定 |
 | [快速开始](./quick-start.md) | 初次使用者 | 从 C# 模块到本地 `.mjs` 产物的最小路径 |
-| [RazorVue 作者指南](./razorvue-authoring.md) | RazorVue 应用开发者 | 支持切片、direct-render 限制、JAZORVGA 诊断、Proxy-safe class 与升级门禁 |
+| [RazorVue 作者指南](./razorvue-authoring.md) | RazorVue 应用开发者 | 完整组件 C# 边界、`@code`/`.razor.cs`、direct-render 限制、JAZORVGA 诊断、Proxy-safe class 与升级门禁 |
 | [开发与测试](./development-and-testing.md) | 仓库维护者 | 构建、测试、覆盖率门槛与脚本约定 |
 | [示例](./examples.md) | 应用开发者与维护者 | 示例项目的用途和验证范围 |
 | [文档规范](./documentation-style.md) | 文档维护者 | 目录、命名、写作和历史资料规则 |

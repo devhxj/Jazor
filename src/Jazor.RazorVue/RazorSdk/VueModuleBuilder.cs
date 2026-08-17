@@ -98,12 +98,17 @@ internal static class VueModuleBuilder
             binding,
             component,
             declaredNames,
-            CollectCompilerImportLocalNames(compilerOutput.Module),
+            CollectCompilerImportLocalNames(
+                compilerOutput.Module,
+                compilerOutput.Initialization.ImportDeclarations),
             injectRegistry);
 
         // Compiler and component imports are discovered after lowering. Re-run only when an
         // authored member would shadow one of those bindings inside the setup scope.
-        var importLocalNames = CollectImportLocalNames(compilerOutput.Module, directRender);
+        var importLocalNames = CollectImportLocalNames(
+            compilerOutput.Module,
+            directRender,
+            compilerOutput.Initialization.ImportDeclarations);
         if (HasImportNameCollision(declaredNames, importLocalNames))
         {
             declaredNames = BuildDirectRenderDeclaredNames(component, closure, importLocalNames);
@@ -119,7 +124,9 @@ internal static class VueModuleBuilder
                 binding,
                 component,
                 declaredNames,
-                CollectCompilerImportLocalNames(compilerOutput.Module),
+                CollectCompilerImportLocalNames(
+                    compilerOutput.Module,
+                    compilerOutput.Initialization.ImportDeclarations),
                 injectRegistry);
         }
 
@@ -130,6 +137,7 @@ internal static class VueModuleBuilder
             directRender,
             compilerOutput.Module,
             compilerOutput.Layout?.NodePositions,
+            compilerOutput.Initialization,
             relativePath,
             declaredNames,
             hmr.ModuleId);
@@ -175,6 +183,13 @@ internal static class VueModuleBuilder
                 propertyReferenceRewriter: CreateDirectRenderSlotParameterPropertyReferenceRewriter(closure)));
         var module = await converter.Convert(cancellationToken).ConfigureAwait(false);
         module = AppendFlattenedRuntimeClasses(module, converter, component, closure, cancellationToken);
+        var initialization = ComponentInitializationLowerer.Build(
+            binding.Compilation,
+            closure,
+            declaredNames,
+            module?.Body.OfType<ImportDeclaration>() ?? Enumerable.Empty<ImportDeclaration>(),
+            FramingReservedNames,
+            cancellationToken);
         var layout = module is null
             ? null
             : module.ToKnRECMAScriptWithSourceMapAndNodePositions(
@@ -182,7 +197,7 @@ internal static class VueModuleBuilder
                 includeSourcesContent: false,
                 sourceRootPath: TryGetCompilationSourceRoot(binding.Compilation, component.Document),
                 readSourceContent: null);
-        return new CompilerOutput(module, layout);
+        return new CompilerOutput(module, layout, initialization);
     }
 
     private static Module? AppendFlattenedRuntimeClasses(
@@ -299,11 +314,7 @@ internal static class VueModuleBuilder
         }
 
         throw new RazorVueDiagnosticException(
-            directRenderDiagnostic ?? RazorVueDiagnosticFactory.Create(
-                RazorVueDiagnosticCategory.DirectRender,
-                "No direct render lowering detail was provided.",
-                RazorVueDiagnosticFactory.GetSymbolLocation(component.BuildRenderTreeMethod),
-                component.ComponentSymbol));
+            directRenderDiagnostic!);
     }
 
     private static VueHmrMetadata BuildHmrMetadata(
@@ -405,7 +416,8 @@ internal static class VueModuleBuilder
 
     private static HashSet<string> CollectImportLocalNames(
         Module? compilerModule,
-        DirectRenderBuildResult directRender)
+        DirectRenderBuildResult directRender,
+        IEnumerable<ImportDeclaration>? initializationImports = null)
     {
         var names = new HashSet<string>(StringComparer.Ordinal);
         if (compilerModule is not null)
@@ -416,17 +428,29 @@ internal static class VueModuleBuilder
 
         foreach (var import in directRender.ImportDeclarations)
             AddImportLocalNames(import, names);
+        if (initializationImports is not null)
+        {
+            foreach (var import in initializationImports)
+                AddImportLocalNames(import, names);
+        }
         return names;
     }
 
-    private static HashSet<string> CollectCompilerImportLocalNames(Module? compilerModule)
+    private static HashSet<string> CollectCompilerImportLocalNames(
+        Module? compilerModule,
+        IEnumerable<ImportDeclaration>? initializationImports = null)
     {
         var names = new HashSet<string>(StringComparer.Ordinal);
-        if (compilerModule is null)
-            return names;
-
-        foreach (var import in compilerModule.Body.OfType<ImportDeclaration>())
-            AddImportLocalNames(import, names);
+        if (compilerModule is not null)
+        {
+            foreach (var import in compilerModule.Body.OfType<ImportDeclaration>())
+                AddImportLocalNames(import, names);
+        }
+        if (initializationImports is not null)
+        {
+            foreach (var import in initializationImports)
+                AddImportLocalNames(import, names);
+        }
         return names;
     }
 
@@ -441,6 +465,7 @@ internal static class VueModuleBuilder
         DirectRenderBuildResult directRender,
         Module? compilerModule,
         IReadOnlyDictionary<Node, GeneratedNodePosition>? compilerNodePositions,
+        ComponentInitializationBuildResult initialization,
         string relativePath,
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
         string hmrModuleId)
@@ -448,7 +473,12 @@ internal static class VueModuleBuilder
         // Partition compiler output before adding Vue framing. Imports/declarations/setup state
         // have different ordering and source-map responsibilities in the final artifact.
         // 先拆分 compiler 输出，保证 import、state、setup 以确定顺序进入 artifact。
-        var parts = BuildCompilerModuleParts(compilerModule, compilerNodePositions, closure);
+        var parts = BuildCompilerModuleParts(compilerModule, compilerNodePositions, closure, declaredNames);
+        parts = parts with
+        {
+            ImportDeclarations = parts.ImportDeclarations.AddRange(initialization.ImportDeclarations),
+            InitializationPhases = initialization.Phases
+        };
         var componentSymbol = component.ComponentSymbol;
         var buildRenderTreeMemberName = GetRuntimeMemberName(
             component.BuildRenderTreeMethod,
@@ -465,38 +495,50 @@ internal static class VueModuleBuilder
                 directRender.ReferenceCaptureStateMembers)
         };
 
+        // BuildCompilerModuleParts has already separated component/module lifetime from setup
+        // lifetime. Static initializers must see their static helpers and runtime classes before
+        // any Vue instance exists, while instance members keep closing over props/state here.
+        // module/setup 生命周期在 compiler AST 分区时一次确定，不能在最终文本阶段再猜声明归属。
+        var setupParts = parts;
+
         var setupFactoryName = "create" + SanitizeJavaScriptIdentifierPart(componentSymbol.Name, "Component") + "SetupScope";
         var returnedMembers = GetReturnedMembers(closure, declaredNames);
         var lifecycleMembers = ComponentLifecycleRuntimeMembers.Create(closure, declaredNames);
         returnedMembers = returnedMembers
             .RemoveAll(member => string.Equals(member, buildRenderTreeMemberName, StringComparison.Ordinal))
             .Add(directRender.MemberName);
-        parts = parts with
+        setupParts = setupParts with
         {
             SetupStatements = RemoveDirectRenderOnlyFunctions(
-                parts.SetupStatements,
+                setupParts.SetupStatements,
                 directRender,
-                parts.StateSlots,
+                setupParts.StateSlots,
+                setupParts.InitializationPhases,
                 returnedMembers)
         };
 
-        var usesInvokeAsync = ReferencesIdentifier(parts.SetupStatements, "invokeAsync");
+        var usesInvokeAsync = ReferencesIdentifier(setupParts.SetupStatements, "invokeAsync") ||
+                              ReferencesIdentifier(setupParts.InitializationPhases, "invokeAsync");
 
         var usesFactorySlots = directRender.UsesSlots ||
-                               ReferencesIdentifier(parts.SetupStatements, "slots") ||
-                               parts.StateSlots.Any(static slot =>
-                                   slot.Initializer is not null &&
-                                   AstReferenceAnalysis.ReferencesIdentifier(slot.Initializer, "slots"));
+                                ReferencesIdentifier(setupParts.SetupStatements, "slots") ||
+                                ReferencesIdentifier(setupParts.InitializationPhases, "slots") ||
+                                setupParts.StateSlots.Any(static slot =>
+                                    slot.Initializer is not null &&
+                                    AstReferenceAnalysis.ReferencesIdentifier(slot.Initializer, "slots"));
         var usesSlots = usesFactorySlots;
-        var usesFactoryProps = ReferencesIdentifier(parts.SetupStatements, "props") || directRender.UsesProps;
+        var usesFactoryProps = ReferencesIdentifier(setupParts.SetupStatements, "props") ||
+                               ReferencesIdentifier(setupParts.InitializationPhases, "props") ||
+                               directRender.UsesProps;
         var usesSetupProps = usesFactoryProps ||
                              usesSlots ||
                              lifecycleMembers.HasOnParametersSet ||
                              lifecycleMembers.HasOnParametersSetAsync;
-        var usesState = parts.StateSlots.Length > 0;
+        var usesState = setupParts.StateSlots.Length > 0;
         var usesStateHasChanged = lifecycleMembers.HasOnInitializedAsync ||
-                                  lifecycleMembers.HasOnParametersSetAsync ||
-                                  ReferencesIdentifier(parts.SetupStatements, "stateHasChanged");
+                                   lifecycleMembers.HasOnParametersSetAsync ||
+                                   ReferencesIdentifier(setupParts.SetupStatements, "stateHasChanged") ||
+                                   ReferencesIdentifier(setupParts.InitializationPhases, "stateHasChanged");
         var features = new VueModuleFeatures(
             lifecycleMembers,
             usesSlots,
@@ -567,16 +609,28 @@ internal static class VueModuleBuilder
                 assets.Add(asset);
         }
 
+        // Runtime classes precede every eager module initializer: JavaScript class declarations
+        // have a temporal dead zone, unlike function declarations. Preserve compiler order within
+        // each partition so base-before-derived class ordering remains deterministic.
+        // runtime class 必须先于 static field initializer，避免 `new Nested()` 命中 TDZ。
+        moduleStatements.AddRange(parts.ModuleStatements
+            .Where(static statement => statement.Statement is ClassDeclaration)
+            .Select(static statement => statement.Statement));
+
         // Vue helper imports must precede hoist initializers. Hoists themselves remain module
         // constants, while handler caches stay in setup so component instances never share one.
         // 静态 props/VNode 可跨实例复用；事件闭包只能由 setup instance 持有。
         moduleStatements.AddRange(directRender.ModuleHoists.Select(static hoist =>
             CreateVariableDeclaration(VariableDeclarationKind.Const, hoist.Name, hoist.Initializer)));
 
+        moduleStatements.AddRange(parts.ModuleStatements
+            .Where(static statement => statement.Statement is not ClassDeclaration)
+            .Select(static statement => statement.Statement));
+
         moduleStatements.Add(BuildSetupFactoryDeclaration(
             setupFactoryName,
             returnedMembers,
-            parts,
+            setupParts,
             directRender,
             features));
         moduleStatements.Add(BuildVueComponentDeclaration(
@@ -627,7 +681,19 @@ internal static class VueModuleBuilder
             .Where(static item => item.Statement is ClassDeclaration)
             .Select(static item => item.Statement));
         if (features.UsesState)
-            statements.Add(BuildStateDeclaration(parts.StateSlots));
+        {
+            statements.Add(parts.InitializationPhases.Any(static phase => phase.ConstructorStatement is not null)
+                ? BuildStateDefaultsDeclaration(parts.StateSlots)
+                : BuildStateDeclaration(parts.StateSlots));
+        }
+
+        // Component construction occurs after every instance slot has its CLR default, then
+        // applies source initializers and constructor bodies base-to-derived. This is the closest
+        // setup-time analogue of CLR allocation without materializing a ComponentBase instance.
+        // 所有 slot 先获得 CLR default，再按基类到派生类执行 initializer/constructor。
+        statements.AddRange(BuildComponentInitializationStatements(
+            parts.StateSlots,
+            parts.InitializationPhases));
 
         statements.AddRange(parts.SetupStatements
             .Where(static item => item.Statement is not ClassDeclaration)
@@ -669,6 +735,60 @@ internal static class VueModuleBuilder
             "reactive",
             new ObjectExpression(NodeList.From(properties)));
         return CreateVariableDeclaration(VariableDeclarationKind.Const, "state", state);
+    }
+
+    private static VariableDeclaration BuildStateDefaultsDeclaration(ImmutableArray<StateSlot> stateSlots)
+    {
+        var properties = stateSlots.Select(slot => (Node)CreateObjectProperty(
+            slot.RuntimeName,
+            CurrentComponentStateDefaultInitializer.CreateExpression(slot.Type)));
+        var state = CreateCall(
+            "reactive",
+            new ObjectExpression(NodeList.From(properties)));
+        return CreateVariableDeclaration(VariableDeclarationKind.Const, "state", state);
+    }
+
+    private static IEnumerable<Statement> BuildComponentInitializationStatements(
+        ImmutableArray<StateSlot> stateSlots,
+        ImmutableArray<ComponentInitializationPhaseBuild> phases)
+    {
+        foreach (var phase in phases)
+        {
+            foreach (var slot in stateSlots
+                         .Where(slot =>
+                             SymbolComparer.Equals(
+                                 slot.Member.ContainingType?.OriginalDefinition,
+                                 phase.ComponentType.OriginalDefinition) &&
+                             slot.HasExplicitInitializer)
+                         .OrderBy(static slot => GetStableSourceOrder(slot.Member), StringComparer.Ordinal))
+            {
+                var initializer = slot.Initializer ??
+                    CurrentComponentStateDefaultInitializer.CreateExpression(slot.Type);
+                yield return CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    CreateMemberAccess(new Identifier("state"), slot.RuntimeName),
+                    initializer));
+            }
+
+            if (phase.ConstructorStatement is not null)
+                yield return phase.ConstructorStatement;
+        }
+    }
+
+    private static string GetStableSourceOrder(ISymbol symbol)
+    {
+        foreach (var location in symbol.Locations)
+        {
+            if (!location.IsInSource)
+                continue;
+
+            var lineSpan = location.GetLineSpan();
+            return (lineSpan.Path ?? string.Empty).Replace('\\', '/') + "|" +
+                   location.SourceSpan.Start.ToString("D10", System.Globalization.CultureInfo.InvariantCulture) + "|" +
+                   symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        }
+
+        return "~|" + symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
 
     private static ObjectExpression BuildReturnedMembersExpression(ImmutableArray<string> returnedMembers)
@@ -1193,7 +1313,7 @@ internal static class VueModuleBuilder
                 IsDirectRenderOrigin: !hasCompilerPosition));
         }
 
-        foreach (var statement in parts.SetupStatements)
+        foreach (var statement in parts.ModuleStatements.Concat(parts.SetupStatements))
         {
             if (generatedNodePositions.TryGetValue(statement.Statement, out var generatedPosition))
             {
@@ -1392,6 +1512,13 @@ internal static class VueModuleBuilder
 
             switch (member)
             {
+                case IFieldSymbol field when field.IsStatic &&
+                                             field.AssociatedSymbol is null:
+                    declaredNames[field.OriginalDefinition] = ChooseModuleDeclaredName(
+                        field,
+                        usedDeclaredNames,
+                        directLocalNames);
+                    break;
                 case IMethodSymbol method when ShouldReserveModuleMethodName(method) &&
                                                !IsParameterProperty(method.AssociatedSymbol as IPropertySymbol):
                     declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, directLocalNames);
@@ -1406,6 +1533,20 @@ internal static class VueModuleBuilder
 
                     if (property.SetMethod is not null && ShouldReserveModuleMethodName(property.SetMethod))
                         declaredNames[property.SetMethod.OriginalDefinition] = ChooseModuleDeclaredName(property.SetMethod, usedDeclaredNames, directLocalNames);
+
+                    // Auto-property accessors are intentionally erased by the Vue state
+                    // projection. Static auto-properties still need their compiler backing
+                    // field name so direct expressions can bind to the module lexical slot.
+                    // 静态 auto-property 不进入 reactive state，必须把隐式 backing field 纳入同一命名表。
+                    if (property.IsStatic && IsAutoProperty(property) &&
+                        GetBackingField(property) is { } backingField &&
+                        !declaredNames.ContainsKey(backingField.OriginalDefinition))
+                    {
+                        declaredNames[backingField.OriginalDefinition] = ChooseModuleDeclaredName(
+                            backingField,
+                            usedDeclaredNames,
+                            directLocalNames);
+                    }
                     break;
                 case INamedTypeSymbol type when IsRuntimeMemberClass(type):
                     declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, directLocalNames);
@@ -1414,6 +1555,70 @@ internal static class VueModuleBuilder
         }
 
         return declaredNames;
+    }
+
+    private static Dictionary<string, ITypeSymbol> BuildStaticFieldTypeMap(
+        MemberClosure closure,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames)
+    {
+        var staticTypes = new Dictionary<string, ITypeSymbol>(StringComparer.Ordinal);
+        foreach (var field in closure.StaticFields)
+            staticTypes[GetRuntimeMemberName(field, declaredNames)] = field.Type;
+
+        foreach (var property in closure.StaticAutoProperties)
+        {
+            if (GetBackingField(property) is { } backingField)
+                staticTypes[GetRuntimeMemberName(backingField, declaredNames)] = property.Type;
+        }
+
+        return staticTypes;
+    }
+
+    private static HashSet<string> BuildModuleLifetimeFunctionNames(
+        MemberClosure closure,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var method in closure.OrderedMembers.OfType<IMethodSymbol>().Where(static method => method.IsStatic))
+            names.Add(GetRuntimeMemberName(method, declaredNames));
+
+        foreach (var property in closure.ComputedProperties.Where(static property => property.IsStatic))
+        {
+            if (property.GetMethod is { } getter)
+                names.Add(GetRuntimeMemberName(getter, declaredNames));
+            if (property.SetMethod is { } setter)
+                names.Add(GetRuntimeMemberName(setter, declaredNames));
+        }
+
+        return names;
+    }
+
+    private static HashSet<string> BuildRuntimeClassNames(
+        MemberClosure closure,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames)
+        => new(
+            closure.OrderedMembers
+                .OfType<INamedTypeSymbol>()
+                .Where(IsRuntimeMemberClass)
+                .Select(type => GetRuntimeMemberName(type, declaredNames)),
+            StringComparer.Ordinal);
+
+    private static VariableDeclarator ProjectStaticFieldDeclarator(
+        VariableDeclarator declarator,
+        ITypeSymbol type)
+    {
+        if (declarator.Init is not null)
+            return declarator;
+
+        // Module fields still obey CLR allocation defaults. JavaScript `undefined` is not
+        // a valid substitute for value-type zero/false and would corrupt the first update.
+        // 模块 static slot 与实例 state 使用同一 CLR default 契约。
+        return new VariableDeclarator(
+            declarator.Id,
+            CurrentComponentStateDefaultInitializer.CreateExpression(type))
+        {
+            UserData = declarator.UserData
+        };
     }
 
     private static HashSet<string> CollectDirectRenderLocalNames(IBlockOperation buildRenderTreeBody)
@@ -1584,6 +1789,7 @@ internal static class VueModuleBuilder
         ImmutableArray<CompilerStatement> setupStatements,
         DirectRenderBuildResult directRender,
         ImmutableArray<StateSlot> stateSlots,
+        ImmutableArray<ComponentInitializationPhaseBuild> initializationPhases,
         ImmutableArray<string> returnedMembers)
     {
         // Direct lowering may inline a BuildRenderTree helper entirely. Only remove function
@@ -1595,6 +1801,9 @@ internal static class VueModuleBuilder
         roots.AddRange(stateSlots
             .Where(static slot => slot.Initializer is not null)
             .Select(static slot => slot.Initializer!));
+        roots.AddRange(initializationPhases
+            .Where(static phase => phase.ConstructorStatement is not null)
+            .Select(static phase => (Node)phase.ConstructorStatement!));
 
         var referencedNames = AstReferenceAnalysis.CollectIdentifiers(roots);
         foreach (var returnedMember in returnedMembers)
@@ -1770,7 +1979,9 @@ internal static class VueModuleBuilder
             if (AstReferenceAnalysis.ReferencesIdentifier(directRender.RenderExpression, localName) ||
                 directRender.PreludeStatements.Any(statement => AstReferenceAnalysis.ReferencesIdentifier(statement, localName)) ||
                 directRender.ModuleHoists.Any(hoist => AstReferenceAnalysis.ReferencesIdentifier(hoist.Initializer, localName)) ||
+                ReferencesIdentifier(parts.ModuleStatements, localName) ||
                 ReferencesIdentifier(parts.SetupStatements, localName) ||
+                ReferencesIdentifier(parts.InitializationPhases, localName) ||
                 parts.StateSlots.Any(slot =>
                     slot.Initializer is not null &&
                     AstReferenceAnalysis.ReferencesIdentifier(slot.Initializer, localName)))
@@ -1786,6 +1997,13 @@ internal static class VueModuleBuilder
         ImmutableArray<CompilerStatement> statements,
         string name)
         => statements.Any(item => AstReferenceAnalysis.ReferencesIdentifier(item.Statement, name));
+
+    private static bool ReferencesIdentifier(
+        ImmutableArray<ComponentInitializationPhaseBuild> phases,
+        string name)
+        => phases.Any(phase =>
+            phase.ConstructorStatement is not null &&
+            AstReferenceAnalysis.ReferencesIdentifier(phase.ConstructorStatement, name));
 
     private static Func<IPropertyReferenceOperation, SenseArgument, Expression?>
         CreateDirectRenderSlotParameterPropertyReferenceRewriter(MemberClosure closure)
@@ -1937,10 +2155,21 @@ internal static class VueModuleBuilder
         Module? module,
         IReadOnlyDictionary<Node, GeneratedNodePosition>? nodePositions,
         MemberClosure closure)
+        => BuildCompilerModuleParts(module, nodePositions, closure, declaredNames: null);
+
+    private static CompilerModuleParts BuildCompilerModuleParts(
+        Module? module,
+        IReadOnlyDictionary<Node, GeneratedNodePosition>? nodePositions,
+        MemberClosure closure,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames)
     {
         var imports = ImmutableArray.CreateBuilder<ImportDeclaration>();
+        var moduleStatements = ImmutableArray.CreateBuilder<CompilerStatement>();
         var setupStatements = ImmutableArray.CreateBuilder<CompilerStatement>();
         var stateSlots = BuildStateSlots(closure);
+        var staticFieldTypes = BuildStaticFieldTypeMap(closure, declaredNames);
+        var moduleFunctionNames = BuildModuleLifetimeFunctionNames(closure, declaredNames);
+        var runtimeClassNames = BuildRuntimeClassNames(closure, declaredNames);
         var stateSlotByDeclarationName = new Dictionary<string, int>(StringComparer.Ordinal);
         var discardedDeclarationNames = new HashSet<string>(
             GetDiscardedPropertyBackingFieldNames(closure),
@@ -1996,25 +2225,37 @@ internal static class VueModuleBuilder
 
         return new CompilerModuleParts(
             imports.ToImmutable(),
+            moduleStatements.ToImmutable(),
             setupStatements.ToImmutable(),
             stateSlots.ToImmutableArray(),
+            ImmutableArray<ComponentInitializationPhaseBuild>.Empty,
             compilerOriginPositions);
 
         void AddDeclaration(Declaration declaration)
         {
             var declarationPosition = GetPosition(declaration);
+            if (declaration is FunctionDeclaration { Id: Identifier functionName } &&
+                moduleFunctionNames.Contains(functionName.Name) ||
+                declaration is ClassDeclaration { Id: Identifier className } &&
+                runtimeClassNames.Contains(className.Name))
+            {
+                AddModuleStatement(declaration, declarationPosition);
+                return;
+            }
+
             if (declaration is not VariableDeclaration variableDeclaration)
             {
                 AddSetupStatement(declaration, declarationPosition);
                 return;
             }
 
-            var retainedDeclarators = ImmutableArray.CreateBuilder<VariableDeclarator>();
+            var moduleDeclarators = ImmutableArray.CreateBuilder<VariableDeclarator>();
+            var setupDeclarators = ImmutableArray.CreateBuilder<VariableDeclarator>();
             foreach (var declarator in variableDeclaration.Declarations)
             {
                 if (declarator.Id is not Identifier identifier)
                 {
-                    retainedDeclarators.Add(declarator);
+                    setupDeclarators.Add(declarator);
                     continue;
                 }
 
@@ -2033,21 +2274,44 @@ internal static class VueModuleBuilder
                     continue;
                 }
 
+                if (staticFieldTypes.TryGetValue(identifier.Name, out var staticFieldType))
+                {
+                    moduleDeclarators.Add(ProjectStaticFieldDeclarator(declarator, staticFieldType));
+                    continue;
+                }
+
                 if (!discardedDeclarationNames.Contains(identifier.Name))
-                    retainedDeclarators.Add(declarator);
+                    setupDeclarators.Add(declarator);
             }
 
-            if (retainedDeclarators.Count > 0)
+            if (moduleDeclarators.Count > 0)
             {
-                var retainedDeclaration = retainedDeclarators.Count == variableDeclaration.Declarations.Count
-                    ? variableDeclaration
-                    : new VariableDeclaration(variableDeclaration.Kind, NodeList.From(retainedDeclarators));
-                AddSetupStatement(retainedDeclaration, declarationPosition);
+                AddModuleStatement(
+                    CopyVariableDeclaration(variableDeclaration, moduleDeclarators),
+                    declarationPosition);
+            }
+
+            if (setupDeclarators.Count > 0)
+            {
+                AddSetupStatement(
+                    CopyVariableDeclaration(variableDeclaration, setupDeclarators),
+                    declarationPosition);
             }
         }
 
+        void AddModuleStatement(Statement statement, GeneratedNodePosition position)
+            => moduleStatements.Add(new CompilerStatement(statement, position.Line, position.Column));
+
         void AddSetupStatement(Statement statement, GeneratedNodePosition position)
             => setupStatements.Add(new CompilerStatement(statement, position.Line, position.Column));
+
+        static VariableDeclaration CopyVariableDeclaration(
+            VariableDeclaration declaration,
+            IEnumerable<VariableDeclarator> declarators)
+            => new(declaration.Kind, NodeList.From(declarators))
+            {
+                UserData = declaration.UserData
+            };
 
         GeneratedNodePosition GetPosition(Node node)
         {
@@ -2065,7 +2329,13 @@ internal static class VueModuleBuilder
         foreach (var field in closure.StateFields)
         {
             var name = Util.GetConfigOrSymbolName(field);
-            slots.Add(new StateSlot(field, name, name, field.Type, null));
+            slots.Add(new StateSlot(
+                field,
+                name,
+                name,
+                field.Type,
+                null,
+                HasExplicitStateInitializer(field)));
         }
 
         foreach (var property in closure.StateProperties)
@@ -2075,11 +2345,49 @@ internal static class VueModuleBuilder
                 Util.GetConfigOrSymbolName(property),
                 GetPropertyBackingFieldName(closure.ComponentSymbol, property),
                 property.Type,
-                null));
+                null,
+                HasExplicitStateInitializer(property)));
         }
 
         return slots;
     }
+
+    private static IFieldSymbol? GetBackingField(IPropertySymbol property)
+        => property.ContainingType?
+            .GetMembers($"<{property.Name}>k__BackingField")
+            .OfType<IFieldSymbol>()
+            .FirstOrDefault();
+
+    private static bool IsAutoProperty(IPropertySymbol property)
+    {
+        foreach (var reference in property.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is not Microsoft.CodeAnalysis.CSharp.Syntax.PropertyDeclarationSyntax declaration)
+                continue;
+
+            if (declaration.ExpressionBody is not null || declaration.AccessorList is null)
+                return false;
+
+            if (declaration.AccessorList.Accessors.Any(accessor =>
+                    accessor.Body is not null || accessor.ExpressionBody is not null))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasExplicitStateInitializer(ISymbol member)
+        => member.DeclaringSyntaxReferences.Any(reference =>
+            reference.GetSyntax() switch
+            {
+                Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax { Initializer: not null } => true,
+                Microsoft.CodeAnalysis.CSharp.Syntax.PropertyDeclarationSyntax { Initializer: not null } => true,
+                _ => false
+            });
 
     private static ImmutableArray<StateSlot> ApplyReferenceCaptureStateInitializers(
         ImmutableArray<StateSlot> stateSlots,
@@ -2111,7 +2419,12 @@ internal static class VueModuleBuilder
         INamedTypeSymbol componentSymbol,
         IPropertySymbol property)
     {
-        foreach (var field in componentSymbol.GetMembers().OfType<IFieldSymbol>())
+        // Auto-property storage belongs to the declaring source type. Looking only at the most
+        // derived component loses base-class properties and leaves their backing declaration in
+        // setup instead of reactive state.
+        // 属性后备字段应从声明类型查找，不能只查最派生 component。
+        var declaringType = property.ContainingType ?? componentSymbol;
+        foreach (var field in declaringType.GetMembers().OfType<IFieldSymbol>())
         {
             if (field.AssociatedSymbol is IPropertySymbol associatedProperty &&
                 SymbolComparer.Equals(associatedProperty.OriginalDefinition, property.OriginalDefinition))
@@ -2233,7 +2546,7 @@ internal static class VueModuleBuilder
     }
 
     private static string GetRuntimeMemberName(
-        IMethodSymbol method,
+        ISymbol method,
         IReadOnlyDictionary<ISymbol, string>? declaredNames)
         => declaredNames is not null &&
            declaredNames.TryGetValue(method.OriginalDefinition, out var declaredName) &&
@@ -3049,13 +3362,16 @@ internal static class VueModuleBuilder
     /// <summary>Bundles compiler output and optional layout metadata for one component pass.</summary>
     private sealed record CompilerOutput(
         Module? Module,
-        GeneratedJavaScriptLayout? Layout);
+        GeneratedJavaScriptLayout? Layout,
+        ComponentInitializationBuildResult Initialization);
 
     /// <summary>Separates imports, declarations, and executable statements for deterministic framing.</summary>
     private sealed record CompilerModuleParts(
         ImmutableArray<ImportDeclaration> ImportDeclarations,
+        ImmutableArray<CompilerStatement> ModuleStatements,
         ImmutableArray<CompilerStatement> SetupStatements,
         ImmutableArray<StateSlot> StateSlots,
+        ImmutableArray<ComponentInitializationPhaseBuild> InitializationPhases,
         IReadOnlyDictionary<SourceOrigin, GeneratedNodePosition> CompilerOriginPositions);
 
     /// <summary>Stores direct RenderTree lowering plus the Vue helper features it requires.</summary>
@@ -3085,6 +3401,7 @@ internal static class VueModuleBuilder
         string? DeclarationName,
         ITypeSymbol Type,
         Expression? Initializer,
+        bool HasExplicitInitializer,
         int? InitializerCompiledLine = null,
         int? InitializerCompiledColumn = null);
 }

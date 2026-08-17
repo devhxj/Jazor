@@ -34,6 +34,8 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ### 2026-08-17
 
+- Jazor 0.16.2 扩展 RazorVue component logic：按基类到派生类顺序 replay source initializer 与无参 constructor，支持 source-base lifecycle/dispose dispatch、模块生命周期 static member，以及继承场景下无重复 export 的模块输出。
+- RazorVue direct render 现可在已验证的 `for`、`foreach`、`while`、`do while` content segment 中保留普通 `break`/`continue`；labeled branch、`goto` 与跨未关闭 render frame 的 branch 仍会得到可定位诊断。
 - Jazor 0.16.1 修复 RazorVue direct lowering：dynamic slot 保留父组件上下文，scope 输出无法使用 `renderList` 时仍保留显式循环项 key，retained static vnode helper 可正确导入，支持的 C# collection initializer 也会保留 `Add` 调用。
 - RazorVue 最终 Compilation 失败现使用稳定的 `JAZORVGA020`-`026` 诊断，映射回 Razor/C# 源位置并给出可操作指引；组件生成失败不会再留下部分 artifact catalog。
 - 被 RazorVue 组件捕获的 runtime member class 现可安全穿过 Vue deep Proxy，包括 private storage、自动属性 backing field、primary-constructor capture 与 field-like event。

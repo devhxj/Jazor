@@ -45,6 +45,53 @@ internal sealed class VueModulePolicy : AstConverterModulePolicy
             ? Util.GetConfigOrSymbolName(property)
             : null;
 
+    public override bool ShouldExportModuleMember(
+        INamedTypeSymbol moduleType,
+        ISymbol member)
+    {
+        if (member.ContainingType is null ||
+            SymbolEqualityComparer.Default.Equals(
+                member.ContainingType.OriginalDefinition,
+                moduleType.OriginalDefinition) ||
+            !ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(moduleType, member.ContainingType))
+        {
+            return true;
+        }
+
+        var exportName = GetModuleExportName(member);
+        // The preceding hierarchy predicate establishes that member.ContainingType occurs in
+        // this chain, so the loop reaches it before BaseType can become null.
+        for (var current = moduleType;
+             !SymbolEqualityComparer.Default.Equals(
+                 current.OriginalDefinition,
+                 member.ContainingType.OriginalDefinition);
+             current = current.BaseType!)
+        {
+            if (current.GetMembers().Any(candidate =>
+                    IsPublicModuleSurfaceMember(candidate) &&
+                    string.Equals(GetModuleExportName(candidate), exportName, StringComparison.Ordinal)))
+            {
+                // Keep the inherited declaration local so base.Method() can still bind to it,
+                // while the most-derived declaration owns the single ES module export name.
+                // 继承链中的同名成员共享 CLR 槽位时，只导出最派生版本，避免 ES export 冲突。
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public override bool IsAdditionalTopLevelAccessibilityAllowed(Accessibility accessibility)
         => accessibility == Accessibility.Internal;
+
+    private static bool IsPublicModuleSurfaceMember(ISymbol symbol)
+        => symbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
+
+    private static string GetModuleExportName(ISymbol symbol)
+        => symbol switch
+        {
+            IMethodSymbol { AssociatedSymbol: IPropertySymbol property } =>
+                Util.GetConfigOrSymbolName(property),
+            _ => Util.GetConfigOrSymbolName(symbol)
+        };
 }

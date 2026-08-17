@@ -16,9 +16,10 @@
 
 - Razor 参数、必填参数和参数类型由 Razor/C# compiler 验证，本项目不重复实现这些检查。
 - C# 表达式、成员和函数语义必须经 `Jazor.Compiler` translation hook 处理；RazorVue 只可为 compiler 不拥有的 Vue artifact framing 直接构造 AST。
+- Razor 标记与手写 `BuildRenderTree` 都属于受约束的 direct-render 协议；`@code`/`.razor.cs` 的可达 helper、事件和生命周期成员属于 component logic。两者的完整 Support/constraint/reject 矩阵见 [RazorVue 作者指南](../../docs/03-guides/razorvue-authoring.md)。
 - `Jazor.Analyzer` 提供 Razor SG hook/bootstrap；本项目不拥有 authoring analyzer、SFC frontend 或宿主 RPC。
 - `VueLibraryComponentAttribute` 是中性 `LibraryComponentAttribute` 的 Vue 专属派生特性。RazorVue 只接受该 Vue 特性并解释其 import，不把 React 或其他框架包装器纳入 Vue render-function lowering。
-- DOM `@bind`、`EventCallback`、slot 和 lifecycle 的支持范围以当前 official SG 输入与回归测试为准；不支持的协议必须给出可定位诊断。
+- DOM `@bind`、`EventCallback`、slot、source-base lifecycle/Dispose、parameterless constructor replay 和 direct-render imperative loop 的支持范围以当前 official SG 输入与回归测试为准；不支持的协议必须给出可定位诊断。
 
 ## 代码结构
 

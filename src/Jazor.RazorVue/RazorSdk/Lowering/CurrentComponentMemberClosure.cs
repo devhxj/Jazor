@@ -58,7 +58,7 @@ internal sealed class CurrentComponentMemberClosure
     public static CurrentComponentMemberClosure Create(
         INamedTypeSymbol componentType,
         Compilation compilation,
-        IEnumerable<IMethodSymbol> roots,
+        IEnumerable<ISymbol> roots,
         IEnumerable<IOperation> rootOperations,
         CancellationToken cancellationToken = default)
     {

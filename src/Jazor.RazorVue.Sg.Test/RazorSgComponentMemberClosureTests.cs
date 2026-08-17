@@ -3615,6 +3615,85 @@ public sealed class MemberClosureTests
     }
 
     [TestMethod]
+    public async Task BuildVueComponentModule_HandwrittenRenderTreeLoopBranches_ExecuteOnDenoHost()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using static ECMAScript.Vue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/handwritten-loop-branches")]
+                public sealed class HandwrittenLoopBranches : ComponentBase, IVueComponent
+                {
+                    private readonly int[] values = [-1, 1, 3, 9];
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "ul");
+                        foreach (var value in values)
+                        {
+                            if (value < 0)
+                                continue;
+
+                            builder.OpenElement(1, "li");
+                            builder.AddContent(2, value);
+                            builder.CloseElement();
+                            if (value >= 3)
+                                break;
+                        }
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+
+        var artifact = await VueModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+
+        StringAssert.Contains(artifact.ModuleText, "for (let value of", StringComparison.Ordinal);
+        StringAssert.Contains(artifact.ModuleText, "continue;", StringComparison.Ordinal);
+        StringAssert.Contains(artifact.ModuleText, "break;", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/handwritten-loop-branches.mjs",
+            artifact.ModuleText,
+            "handwritten-loop-branches-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/handwritten-loop-branches.mjs";
+
+            function collectItems(node, values = []) {
+                if (Array.isArray(node)) {
+                    for (const child of node)
+                        collectItems(child, values);
+                    return values;
+                }
+                if (node === null || typeof node !== "object")
+                    return values;
+                if (node.name === "li")
+                    values.push(node.children);
+                collectItems(node.children, values);
+                return values;
+            }
+
+            test("handwritten RenderTreeBuilder keeps ordinary loop control flow", () => {
+                const root = component.setup({}, { slots: {} })();
+                assert.deepEqual(collectItems(root), [[1], [3]]);
+            });
+            """);
+    }
+
+    [TestMethod]
     public async Task BuildVueComponentModule_HmrMetadata_SeparatesDescriptorTemplateAndLogicFingerprints()
     {
         const string baselineSource = """

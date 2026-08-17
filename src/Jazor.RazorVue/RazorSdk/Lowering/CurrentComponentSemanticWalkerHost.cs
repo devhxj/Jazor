@@ -163,7 +163,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         SenseArgument argument,
         Expression? instance)
         => IsCurrentComponentField(operation.Field, operation.Instance)
-            ? BuildStateAccess(operation.Field)
+            ? operation.Field.IsStatic
+                ? new Identifier(GetMemberName(operation.Field))
+                : BuildStateAccess(operation.Field)
             : null;
 
     public override Expression? RewritePropertyReference(
@@ -185,17 +187,36 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                 $"Current-component indexed property '{operation.Property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported by RazorVue current-component rewrite v1.");
         }
 
-        // Parameters live on props; ordinary auto-properties live in reactive state. Current
-        // component methods use separate module declarations and therefore never become state.
-        // [Parameter] 与普通属性的运行时载体不同，不能都投影为同一个对象成员。
-        return IsParameterProperty(operation.Property)
-            ? BuildPropsAccess(operation.Property)
-            : IsAutoProperty(operation.Property)
-                ? BuildStateAccess(operation.Property)
-                : new CallExpression(
-                    new Identifier(GetMemberName(operation.Property)),
-                    NodeList.Empty<Expression>(),
-                    optional: false);
+        // Parameters live on props; instance auto-properties live in reactive state. Static
+        // properties have module lifetime and must stay lexical, even when the setup factory is
+        // invoked for more than one component instance.
+        // [Parameter]、实例 auto-property 与 static property 的生命周期载体必须分开。
+        if (IsParameterProperty(operation.Property))
+            return BuildPropsAccess(operation.Property);
+
+        if (operation.Property.IsStatic)
+        {
+            if (IsAutoProperty(operation.Property) &&
+                GetBackingField(operation.Property) is { } backingField)
+            {
+                return new Identifier(GetMemberName(backingField));
+            }
+
+            ISymbol accessor = operation.Property.GetMethod is { } getter
+                ? getter
+                : operation.Property;
+            return new CallExpression(
+                new Identifier(GetMemberName(accessor)),
+                NodeList.Empty<Expression>(),
+                optional: false);
+        }
+
+        return IsAutoProperty(operation.Property)
+            ? BuildStateAccess(operation.Property)
+            : new CallExpression(
+                new Identifier(GetMemberName(operation.Property)),
+                NodeList.Empty<Expression>(),
+                optional: false);
     }
 
     public override Expression? RewriteSimpleAssignmentPreorder(ISimpleAssignmentOperation operation, SenseArgument argument)
@@ -220,19 +241,36 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         Expression value)
     {
         if (operation.Target is not IPropertyReferenceOperation propertyReference ||
-            propertyReference.Property.IsStatic ||
             propertyReference.Property.SetMethod is null ||
             propertyReference.Property.IsIndexer ||
             propertyReference.Arguments.Length != 0 ||
             !IsCurrentComponentProperty(propertyReference.Property, propertyReference.Instance) ||
             IsParameterProperty(propertyReference.Property) ||
-            !IsAutoProperty(propertyReference.Property))
+            (!propertyReference.Property.IsStatic && !IsAutoProperty(propertyReference.Property)))
         {
             return null;
         }
 
-        // Auto-properties are state storage in RazorVue. The RHS was lowered by SemanticWalker
-        // before this hook, so this projection preserves its original evaluation semantics.
+        // The RHS was lowered by SemanticWalker before this hook, so the projection preserves
+        // its original evaluation semantics. Static auto-properties assign their module lexical
+        // backing binding; computed static properties call their lowered setter.
+        if (propertyReference.Property.IsStatic)
+        {
+            if (IsAutoProperty(propertyReference.Property) &&
+                GetBackingField(propertyReference.Property) is { } backingField)
+            {
+                return new AssignmentExpression(
+                    Operator.Assignment,
+                    new Identifier(GetMemberName(backingField)),
+                    value);
+            }
+
+            return new CallExpression(
+                new Identifier(GetMemberName(propertyReference.Property.SetMethod)),
+                NodeList.From<Expression>(value),
+                optional: false);
+        }
+
         return new AssignmentExpression(Operator.Assignment, BuildStateAccess(propertyReference.Property), value);
     }
 
@@ -1003,6 +1041,12 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 
         return false;
     }
+
+    private static IFieldSymbol? GetBackingField(IPropertySymbol property)
+        => property.ContainingType?
+            .GetMembers($"<{property.Name}>k__BackingField")
+            .OfType<IFieldSymbol>()
+            .FirstOrDefault();
 
     private Expression BuildStateAccess(ISymbol symbol)
         => BuildRuntimeAccess(_stateIdentifier, symbol);

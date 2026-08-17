@@ -29,6 +29,37 @@ internal sealed class InheritedModuleProjectionPolicy : AstConverterModulePolicy
         => accessibility == Accessibility.Internal;
 }
 
+internal sealed class DerivedOnlyInheritedModuleExportPolicy : AstConverterModulePolicy
+{
+    public static DerivedOnlyInheritedModuleExportPolicy Instance { get; } = new();
+
+    private DerivedOnlyInheritedModuleExportPolicy()
+    {
+    }
+
+    public override IEnumerable<INamedTypeSymbol> EnumerateModuleTypes(INamedTypeSymbol moduleType)
+    {
+        var hierarchy = new Stack<INamedTypeSymbol>();
+        for (var current = moduleType;
+             current is { SpecialType: not SpecialType.System_Object };
+             current = current.BaseType)
+        {
+            hierarchy.Push(current);
+        }
+
+        while (hierarchy.Count > 0)
+            yield return hierarchy.Pop();
+    }
+
+    public override bool ShouldExportModuleMember(
+        INamedTypeSymbol moduleType,
+        ISymbol member)
+        => member.ContainingType is null ||
+           SymbolEqualityComparer.Default.Equals(
+               member.ContainingType.OriginalDefinition,
+               moduleType.OriginalDefinition);
+}
+
 internal sealed class ConfiguredPropertyGetterModulePolicy : AstConverterModulePolicy
 {
     public static ConfiguredPropertyGetterModulePolicy Instance { get; } = new();

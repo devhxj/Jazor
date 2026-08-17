@@ -42,6 +42,17 @@ public abstract class AstConverterModulePolicy
         => null;
 
     /// <summary>
+    /// Returns whether a projected module member should receive a named ES module export.
+    /// The declaration itself is still emitted when it participates in the module; this hook
+    /// only controls the public export surface. The default preserves the historical behavior
+    /// of exporting every non-private projected member.
+    /// </summary>
+    public virtual bool ShouldExportModuleMember(
+        INamedTypeSymbol moduleType,
+        ISymbol member)
+        => true;
+
+    /// <summary>
     /// Allows a host to include an additional top-level accessibility in its projected module.
     /// </summary>
     public virtual bool IsAdditionalTopLevelAccessibilityAllowed(Accessibility accessibility)

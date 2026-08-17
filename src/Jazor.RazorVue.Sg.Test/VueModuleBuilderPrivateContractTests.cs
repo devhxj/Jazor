@@ -40,6 +40,14 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("Auto", Invoke<string>("GetPreferredModuleDeclaredName", autoProperty));
         Assert.AreEqual("Ordinary", Invoke<string>("GetSourceDeclaredNameCandidate", ordinaryMethod));
         Assert.AreEqual("Nested", Invoke<string>("GetSourceDeclaredNameCandidate", nested));
+        var backingPreferredName = Invoke<string>("GetPreferredModuleDeclaredName", backingField);
+        var backingAlias = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            backingField,
+            new HashSet<string>(StringComparer.Ordinal),
+            new HashSet<string>(StringComparer.Ordinal) { backingPreferredName });
+        Assert.IsTrue(backingAlias.StartsWith("m$", StringComparison.Ordinal));
+        Assert.AreNotEqual(backingPreferredName, backingAlias);
         Assert.IsTrue(Invoke<string>("GetPreferredModuleDeclaredName", explicitMethod).StartsWith("m$", StringComparison.Ordinal));
         Assert.AreEqual(
             "PrivateContracts",
@@ -67,6 +75,26 @@ public sealed class VueModuleBuilderPrivateContractTests
         var lookalikeEventCallback = lookalikeCompilation.GetTypeByMetadataName("Lookalike.EventCallback");
         Assert.IsNotNull(lookalikeEventCallback);
         Assert.IsFalse(Invoke<bool>("IsEventCallbackType", lookalikeEventCallback!));
+
+        var propertyVariants = CreateStandaloneCompilation(
+            """
+            public sealed class PropertyVariants
+            {
+                public int ExpressionOnly => 1;
+
+                public int BodyOnly
+                {
+                    get
+                    {
+                        return 1;
+                    }
+                }
+            }
+            """,
+            "PropertyVariants.cs");
+        var propertyVariantType = GetNamedType(propertyVariants, "PropertyVariants");
+        Assert.IsFalse(Invoke<bool>("IsAutoProperty", GetProperty(propertyVariantType, "ExpressionOnly")));
+        Assert.IsFalse(Invoke<bool>("IsAutoProperty", GetProperty(propertyVariantType, "BodyOnly")));
     }
 
     [TestMethod]
@@ -142,6 +170,101 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual(
             "../../components/card.mjs",
             Invoke<string>("RebaseRootRelativeModuleSpecifier", "components/card.mjs", "pages/nested/host.mjs"));
+    }
+
+    [TestMethod]
+    public void ImportHelpers_IncludeConstructorInitializationImportsInCollisionReservations()
+    {
+        var imports = new Parser().ParseModule(
+            """
+            import compilerLocal from "./compiler.mjs";
+            import renderLocal from "./render.mjs";
+            import initializerLocal from "./initializer.mjs";
+            """)
+            .Body
+            .OfType<ImportDeclaration>()
+            .ToArray();
+        var directRender = CreatePrivateRecord(
+            "DirectRenderBuildResult",
+            new Identifier("render"),
+            "$renderDirect",
+            CreateImmutableArray(typeof(Statement)),
+            CreateImmutableArray(typeof(RenderModuleHoist)),
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            CreateImmutableArray(typeof(ImportDeclaration), imports[1]),
+            CreateImmutableArray(typeof(ISymbol)));
+
+        var names = Invoke<HashSet<string>>(
+            "CollectImportLocalNames",
+            null,
+            directRender,
+            new[] { imports[2] });
+        Assert.IsTrue(names.SetEquals(new[] { "renderLocal", "initializerLocal" }));
+
+        var compilerNames = Invoke<HashSet<string>>(
+            "CollectCompilerImportLocalNames",
+            null,
+            new[] { imports[2] });
+        Assert.IsTrue(compilerNames.SetEquals(new[] { "initializerLocal" }));
+
+        var compilerModule = new Parser().ParseModule(
+            "import compilerLocal from \"./compiler.mjs\";");
+        var combinedNames = Invoke<HashSet<string>>(
+            "CollectImportLocalNames",
+            compilerModule,
+            directRender,
+            new[] { imports[2] });
+        Assert.IsTrue(combinedNames.SetEquals(new[] { "compilerLocal", "renderLocal", "initializerLocal" }));
+
+        var directOnlyNames = Invoke<HashSet<string>>(
+            "CollectImportLocalNames",
+            null,
+            directRender,
+            null);
+        Assert.IsTrue(directOnlyNames.SetEquals(new[] { "renderLocal" }));
+        Assert.IsEmpty(Invoke<HashSet<string>>(
+            "CollectCompilerImportLocalNames",
+            null,
+            null));
+    }
+
+    [TestMethod]
+    public void RenderFunctionPruningHelper_RemovesOnlyTheBoundBuildRenderTreeDeclaration()
+    {
+        var module = new Parser().ParseModule(
+            """
+            function BuildRenderTree() { }
+            function retainedHelper() { }
+            const retainedValue = 1;
+            """);
+        var compilerStatements = module.Body
+            .OfType<Statement>()
+            .Select(statement => CreatePrivateRecord("CompilerStatement", statement, 0, 0))
+            .ToArray();
+
+        var retained = Invoke<object>(
+            "RemoveBuildRenderTreeFunction",
+            CreateImmutableArray(compilerStatements[0].GetType(), compilerStatements),
+            "BuildRenderTree");
+        var statements = ((System.Collections.IEnumerable)retained)
+            .Cast<object>()
+            .Select(item => (Statement)item.GetType().GetProperty("Statement")!.GetValue(item)!)
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+
+        Assert.IsFalse(statements.Any(static statement => statement.Contains("function BuildRenderTree", StringComparison.Ordinal)));
+        Assert.IsTrue(statements.Any(static statement => statement.Contains("function retainedHelper", StringComparison.Ordinal)));
+        Assert.IsTrue(statements.Any(static statement => statement.Contains("const retainedValue", StringComparison.Ordinal)));
     }
 
     [TestMethod]
@@ -690,9 +813,11 @@ public sealed class VueModuleBuilderPrivateContractTests
 
         var parts = Invoke<object>("BuildCompilerModuleParts", module, positions, fixture.Closure);
         var importDeclarations = GetRecordItems(parts, "ImportDeclarations");
+        var moduleStatements = GetRecordItems(parts, "ModuleStatements");
         var setupStatements = GetRecordItems(parts, "SetupStatements");
         var stateSlots = GetRecordItems(parts, "StateSlots");
         Assert.HasCount(1, importDeclarations);
+        Assert.IsEmpty(moduleStatements);
         Assert.HasCount(3, setupStatements);
         Assert.AreEqual(
             2,
@@ -715,6 +840,297 @@ public sealed class VueModuleBuilderPrivateContractTests
                 if (declarator.Init is not null)
                     AddNodePosition(declarator.Init);
             }
+        }
+    }
+
+    [TestMethod]
+    public void StaticComponentProjection_UsesModuleLifetimeNamesAndClrDefaultSlots()
+    {
+        var fixture = CreateStaticRuntimeComponentFixture();
+        var componentType = fixture.Component.ComponentSymbol;
+        var staticField = componentType.GetMembers("staticField").OfType<IFieldSymbol>().Single();
+        var staticAuto = GetProperty(componentType, "StaticAuto");
+        var staticWriteOnly = GetProperty(componentType, "StaticWriteOnly");
+        var staticComputed = GetProperty(componentType, "StaticComputed");
+        var staticMethod = GetMethod(componentType, "Touch");
+        var autoBackingField = componentType
+            .GetMembers("<StaticAuto>k__BackingField")
+            .OfType<IFieldSymbol>()
+            .Single();
+        Assert.IsNotNull(staticAuto.GetMethod);
+        Assert.IsNotNull(staticAuto.SetMethod);
+        Assert.IsNull(staticWriteOnly.GetMethod);
+        Assert.IsNotNull(staticWriteOnly.SetMethod);
+        Assert.IsNotNull(staticComputed.GetMethod);
+        Assert.IsNotNull(staticComputed.SetMethod);
+
+        var declaredNames = Invoke<IReadOnlyDictionary<ISymbol, string>>(
+            "BuildDirectRenderDeclaredNames",
+            fixture.Component,
+            fixture.Closure,
+            new[] { "StaticAuto" });
+        Assert.IsTrue(declaredNames.ContainsKey(staticField.OriginalDefinition));
+        Assert.IsTrue(declaredNames.ContainsKey(autoBackingField.OriginalDefinition));
+        Assert.IsTrue(declaredNames.ContainsKey(staticAuto.GetMethod!.OriginalDefinition));
+        Assert.IsTrue(declaredNames.ContainsKey(staticAuto.SetMethod!.OriginalDefinition));
+        Assert.IsTrue(declaredNames.ContainsKey(staticWriteOnly.SetMethod!.OriginalDefinition));
+        Assert.IsTrue(declaredNames.ContainsKey(staticComputed.GetMethod!.OriginalDefinition));
+        Assert.IsTrue(declaredNames.ContainsKey(staticComputed.SetMethod!.OriginalDefinition));
+        Assert.IsTrue(declaredNames.ContainsKey(staticMethod.OriginalDefinition));
+        Assert.AreNotEqual("StaticAuto", declaredNames[staticAuto.GetMethod.OriginalDefinition]);
+
+        var staticTypes = Invoke<Dictionary<string, ITypeSymbol>>(
+            "BuildStaticFieldTypeMap",
+            fixture.Closure,
+            declaredNames);
+        Assert.AreEqual(staticField.Type, staticTypes[declaredNames[staticField.OriginalDefinition]]);
+        Assert.AreEqual(staticAuto.Type, staticTypes[declaredNames[autoBackingField.OriginalDefinition]]);
+
+        var moduleLifetimeFunctions = Invoke<HashSet<string>>(
+            "BuildModuleLifetimeFunctionNames",
+            fixture.Closure,
+            declaredNames);
+        Assert.Contains(declaredNames[staticMethod.OriginalDefinition], moduleLifetimeFunctions);
+        Assert.Contains(declaredNames[staticComputed.GetMethod.OriginalDefinition], moduleLifetimeFunctions);
+        Assert.Contains(declaredNames[staticComputed.SetMethod.OriginalDefinition], moduleLifetimeFunctions);
+
+        var initialized = new VariableDeclarator(
+            new Identifier("initialized"),
+            new NumericLiteral(1, "1"));
+        Assert.AreSame(
+            initialized,
+            Invoke<VariableDeclarator>(
+                "ProjectStaticFieldDeclarator",
+                initialized,
+                staticField.Type));
+
+        var uninitialized = new VariableDeclarator(new Identifier("uninitialized"), null);
+        var projected = Invoke<VariableDeclarator>(
+            "ProjectStaticFieldDeclarator",
+            uninitialized,
+            staticField.Type);
+        Assert.AreNotSame(uninitialized, projected);
+        Assert.IsNotNull(projected.Init);
+    }
+
+    [TestMethod]
+    public void InitializationAndReferenceCaptureHelpers_PreserveSetupOrderingAndDefaultStateSlots()
+    {
+        var compilation = CreateStandaloneCompilation(
+            """
+            namespace PrivateContracts;
+
+            public class InitializationBase
+            {
+                public int baseField = 4;
+            }
+
+            public sealed class InitializationComponent : InitializationBase
+            {
+                public int counter = 1;
+                public int secondary;
+            }
+            """,
+            "InitializationComponent.razor.g.cs");
+        var componentBase = GetNamedType(compilation, "PrivateContracts.InitializationBase");
+        var component = GetNamedType(compilation, "PrivateContracts.InitializationComponent");
+        var baseField = componentBase.GetMembers("baseField").OfType<IFieldSymbol>().Single();
+        var counter = component.GetMembers("counter").OfType<IFieldSymbol>().Single();
+        var secondary = component.GetMembers("secondary").OfType<IFieldSymbol>().Single();
+
+        var baseSlot = CreatePrivateRecord(
+            "StateSlot",
+            baseField,
+            "baseField",
+            "baseField",
+            baseField.Type,
+            new NumericLiteral(4, "4"),
+            true,
+            null,
+            null);
+
+        var initializedSlot = CreatePrivateRecord(
+            "StateSlot",
+            counter,
+            "counter",
+            "counter",
+            counter.Type,
+            new NumericLiteral(5, "5"),
+            true,
+            null,
+            null);
+        var defaultedSlot = CreatePrivateRecord(
+            "StateSlot",
+            secondary,
+            "secondary",
+            "secondary",
+            secondary.Type,
+            null,
+            true,
+            null,
+            null);
+        var skippedSlot = CreatePrivateRecord(
+            "StateSlot",
+            counter,
+            "skipped",
+            "skipped",
+            counter.Type,
+            null,
+            false,
+            null,
+            null);
+        var stateSlots = CreateImmutableArray(
+            initializedSlot.GetType(),
+            baseSlot,
+            initializedSlot,
+            defaultedSlot,
+            skippedSlot);
+        var constructorStatement = new Parser().ParseModule("runConstructor();").Body.Single();
+        var phases = ImmutableArray.Create(
+            new ComponentInitializationPhaseBuild(componentBase!, null),
+            new ComponentInitializationPhaseBuild(component, constructorStatement));
+
+        var statements = Invoke<IEnumerable<Statement>>(
+                "BuildComponentInitializationStatements",
+                stateSlots,
+                phases)
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "state.baseField = 4",
+                "state.counter = 5",
+                "state.secondary = 0",
+                "runConstructor()"
+            },
+            statements,
+            string.Join(Environment.NewLine, statements));
+        Assert.IsTrue(
+            Invoke<string>("GetStableSourceOrder", counter)
+                .Contains("InitializationComponent.razor.g.cs", StringComparison.Ordinal));
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var metadataEmpty = stringType.GetMembers("Empty")
+            .OfType<IFieldSymbol>()
+            .Single();
+        Assert.IsTrue(
+            Invoke<string>("GetStableSourceOrder", metadataEmpty)
+                .StartsWith("~|", StringComparison.Ordinal));
+        var metadataLength = stringType
+            .GetMembers("Length")
+            .OfType<IPropertySymbol>()
+            .Single();
+        Assert.IsFalse(Invoke<bool>("IsAutoProperty", metadataLength));
+
+        var capturedSlots = Invoke<object>(
+            "ApplyReferenceCaptureStateInitializers",
+            stateSlots,
+            ImmutableArray.Create<ISymbol>(secondary));
+        var captured = ((System.Collections.IEnumerable)capturedSlots).Cast<object>().ToArray();
+        Assert.IsInstanceOfType<NumericLiteral>(
+            captured[0].GetType().GetProperty("Initializer")!.GetValue(captured[0]));
+        Assert.IsInstanceOfType<NumericLiteral>(
+            captured[1].GetType().GetProperty("Initializer")!.GetValue(captured[1]));
+        Assert.IsInstanceOfType<NullLiteral>(
+            captured[2].GetType().GetProperty("Initializer")!.GetValue(captured[2]));
+        Assert.IsNull(captured[3].GetType().GetProperty("Initializer")!.GetValue(captured[3]));
+
+        var unchangedSlots = Invoke<object>(
+            "ApplyReferenceCaptureStateInitializers",
+            stateSlots,
+            ImmutableArray<ISymbol>.Empty);
+        var unchanged = ((System.Collections.IEnumerable)unchangedSlots).Cast<object>().ToArray();
+        Assert.IsNull(unchanged[2].GetType().GetProperty("Initializer")!.GetValue(unchanged[2]));
+    }
+
+    [TestMethod]
+    public void DirectRenderFunctionPruning_KeepsConstructorAndStateReachableHelpers()
+    {
+        var fixture = CreateRuntimeComponentFixture();
+        var component = fixture.Component.ComponentSymbol;
+        var counter = component.GetMembers("counter").OfType<IFieldSymbol>().Single();
+        var module = new Parser().ParseModule(
+            """
+            function dropped() { }
+            function retainedByRender() { renderDependency(); }
+            function renderDependency() { }
+            function retainedByState() { }
+            function retainedByConstructor() { }
+            function returnedMember() { }
+            const sideEffect = sideEffectDependency;
+            function sideEffectDependency() { }
+            """);
+        var statements = module.Body.OfType<Statement>().ToArray();
+        var compilerStatements = statements
+            .Select(statement => CreatePrivateRecord("CompilerStatement", statement, 0, 0))
+            .ToArray();
+        var stateSlot = CreatePrivateRecord(
+            "StateSlot",
+            counter,
+            "counter",
+            "counter",
+            counter.Type,
+            new Identifier("retainedByState"),
+            true,
+            null,
+            null);
+        var directRender = CreatePrivateRecord(
+            "DirectRenderBuildResult",
+            new CallExpression(
+                new Identifier("retainedByRender"),
+                NodeList.Empty<Expression>(),
+                optional: false),
+            "$renderDirect",
+            CreateImmutableArray(typeof(Statement)),
+            CreateImmutableArray(typeof(RenderModuleHoist)),
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            CreateImmutableArray(typeof(ImportDeclaration)),
+            CreateImmutableArray(typeof(ISymbol)));
+        var initializationPhases = ImmutableArray.Create(
+            new ComponentInitializationPhaseBuild(component.BaseType!, null),
+            new ComponentInitializationPhaseBuild(
+                component,
+                new Parser().ParseModule("retainedByConstructor();").Body.Single()));
+
+        var retained = Invoke<object>(
+            "RemoveDirectRenderOnlyFunctions",
+            CreateImmutableArray(compilerStatements[0].GetType(), compilerStatements),
+            directRender,
+            CreateImmutableArray(stateSlot.GetType(), stateSlot),
+            initializationPhases,
+            ImmutableArray.Create("returnedMember"));
+        var output = ((System.Collections.IEnumerable)retained)
+            .Cast<object>()
+            .Select(item => (Statement)item.GetType().GetProperty("Statement")!.GetValue(item)!)
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+
+        Assert.IsFalse(
+            output.Any(static statement => statement.Contains("function dropped", StringComparison.Ordinal)),
+            string.Join(Environment.NewLine, output));
+        foreach (var functionName in new[]
+                 {
+                     "retainedByRender",
+                     "renderDependency",
+                     "retainedByState",
+                     "retainedByConstructor",
+                     "returnedMember",
+                     "sideEffectDependency"
+                 })
+        {
+            Assert.IsTrue(
+                output.Any(statement => statement.Contains("function " + functionName, StringComparison.Ordinal)),
+                string.Join(Environment.NewLine, output));
         }
     }
 
@@ -844,14 +1260,18 @@ public sealed class VueModuleBuilderPrivateContractTests
             "stateReference",
             compilation.GetSpecialType(SpecialType.System_String),
             new Identifier("stateReference"),
+            true,
             null,
             null);
+        var compilerPartsConstructor = GetPrivateRecordConstructor("CompilerModuleParts", 6);
         var compilerParts = CreatePrivateRecord(
             "CompilerModuleParts",
             CreateImmutableArray(typeof(ImportDeclaration)),
             CreateImmutableArray(compilerStatement.GetType(), compilerStatement),
+            CreateImmutableArray(compilerStatement.GetType(), compilerStatement),
             CreateImmutableArray(stateSlot.GetType(), stateSlot),
-            CreateEmptyReadOnlyDictionary(GetPrivateRecordConstructor("CompilerModuleParts", 4).GetParameters()[3].ParameterType));
+            CreateImmutableArray(typeof(ComponentInitializationPhaseBuild)),
+            CreateEmptyReadOnlyDictionary(compilerPartsConstructor.GetParameters()[5].ParameterType));
 
         Assert.IsTrue(Invoke<bool>("IsCompilerImportReferenced", imports[0], directRender, compilerParts));
         Assert.IsTrue(Invoke<bool>("IsCompilerImportReferenced", imports[1], directRender, compilerParts));
@@ -867,14 +1287,17 @@ public sealed class VueModuleBuilderPrivateContractTests
             "uninitializedStateReference",
             compilation.GetSpecialType(SpecialType.System_String),
             null,
+            false,
             null,
             null);
         var uninitializedStateParts = CreatePrivateRecord(
             "CompilerModuleParts",
             CreateImmutableArray(typeof(ImportDeclaration)),
             CreateImmutableArray(compilerStatement.GetType(), compilerStatement),
+            CreateImmutableArray(compilerStatement.GetType(), compilerStatement),
             CreateImmutableArray(uninitializedStateSlot.GetType(), uninitializedStateSlot),
-            CreateEmptyReadOnlyDictionary(GetPrivateRecordConstructor("CompilerModuleParts", 4).GetParameters()[3].ParameterType));
+            CreateImmutableArray(typeof(ComponentInitializationPhaseBuild)),
+            CreateEmptyReadOnlyDictionary(compilerPartsConstructor.GetParameters()[5].ParameterType));
         Assert.IsFalse(Invoke<bool>("IsCompilerImportReferenced", imports[3], directRender, uninitializedStateParts));
 
         var fixture = CreateRuntimeComponentFixture();
@@ -960,6 +1383,34 @@ public sealed class VueModuleBuilderPrivateContractTests
         addDistinct.Invoke(null, [names, "dispose"]);
         addDistinct.Invoke(null, [names, "disposeAsync"]);
         CollectionAssert.AreEqual(new[] { "dispose", "disposeAsync" }, names.ToArray());
+
+        var runtimeDispose = fixture.Component.ComponentSymbol.GetMembers("Dispose")
+            .OfType<IMethodSymbol>()
+            .Single();
+        var runtimeDisposeAsync = fixture.Component.ComponentSymbol.GetMembers("DisposeAsync")
+            .OfType<IMethodSymbol>()
+            .Single();
+        var create = lifecycleMembers.GetMethod("Create", BindingFlags.Public | BindingFlags.Static);
+        Assert.IsNotNull(create);
+        var runtimeLifecycle = create!.Invoke(null, [fixture.Closure, null]);
+        Assert.IsNotNull(runtimeLifecycle);
+        CollectionAssert.AreEqual(
+            new[] { "Dispose" },
+            GetRecordItems(runtimeLifecycle!, "DisposeMemberNames").Cast<string>().ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "DisposeAsync" },
+            GetRecordItems(runtimeLifecycle!, "DisposeAsyncMemberNames").Cast<string>().ToArray());
+        Assert.AreEqual("Dispose", Invoke<string>("GetRuntimeMemberName", runtimeDispose, null));
+        Assert.AreEqual("DisposeAsync", Invoke<string>("GetRuntimeMemberName", runtimeDisposeAsync, null));
+
+        var ignoredRootClosure = fixture.Closure with
+        {
+            LifecycleRoots = ImmutableArray.Create(fixture.Component.BuildRenderTreeMethod)
+        };
+        var ignoredRootLifecycle = create.Invoke(null, [ignoredRootClosure, null]);
+        Assert.IsNotNull(ignoredRootLifecycle);
+        Assert.IsEmpty(GetRecordItems(ignoredRootLifecycle!, "DisposeMemberNames"));
+        Assert.IsEmpty(GetRecordItems(ignoredRootLifecycle!, "DisposeAsyncMemberNames"));
     }
 
     [TestMethod]
@@ -1229,16 +1680,90 @@ public sealed class VueModuleBuilderPrivateContractTests
         return compilation;
     }
 
-    private static RuntimeComponentFixture CreateRuntimeComponentFixture()
+    private static RuntimeComponentFixture CreateStaticRuntimeComponentFixture()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
             """
+            using ECMAScript;
+            using static ECMAScript.Vue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace PrivateContracts;
 
-            public sealed class RuntimeComponent : ComponentBase
+            [ECMAScriptModule("./components/static-runtime")]
+            public sealed class StaticRuntimeComponent : ComponentBase, IVueComponent
+            {
+                private static int staticField;
+
+                public static int StaticAuto { get; set; }
+
+                public static int StaticWriteOnly
+                {
+                    set => staticField = value;
+                }
+
+                public static int StaticComputed
+                {
+                    get => staticField;
+                    set => staticField = value;
+                }
+
+                public static void Touch()
+                {
+                    staticField++;
+                }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    Touch();
+                    StaticAuto = StaticComputed;
+                    StaticWriteOnly = StaticAuto;
+                    builder.AddContent(0, StaticAuto + StaticComputed + staticField);
+                }
+            }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "StaticRuntimeComponent.razor.g.cs");
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.StaticRuntimeComponent.PrivateContracts",
+            [syntaxTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
+
+        var componentSymbol = compilation.GetTypeByMetadataName("PrivateContracts.StaticRuntimeComponent");
+        Assert.IsNotNull(componentSymbol);
+        Assert.IsTrue(
+            GeneratedCSharpBinder.TryBindFinalCompilation(
+                compilation,
+                ImmutableArray.Create(componentSymbol!),
+                out var binding,
+                out var bindingFailure),
+            bindingFailure);
+        Assert.IsNotNull(binding);
+
+        var component = binding!.Components.Single();
+        Assert.IsTrue(
+            MemberClosureBuilder.TryBuild(binding, component, out var closure, out var closureFailure),
+            closureFailure);
+        Assert.IsNotNull(closure);
+        return new RuntimeComponentFixture(component, closure!);
+    }
+
+    private static RuntimeComponentFixture CreateRuntimeComponentFixture()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace PrivateContracts;
+
+            public sealed class RuntimeComponent : ComponentBase, IDisposable, IAsyncDisposable
             {
                 private int counter = 1;
                 private int secondary = 2;
@@ -1260,6 +1785,12 @@ public sealed class VueModuleBuilderPrivateContractTests
                     var leaf = new RuntimeOuter.RuntimeInner.RuntimeLeaf();
                     builder.AddContent(0, counter + secondary + outer.GetHashCode() + instance.GetHashCode() + leaf.GetHashCode());
                 }
+
+                public void Dispose()
+                {
+                }
+
+                public ValueTask DisposeAsync() => ValueTask.CompletedTask;
             }
             """,
             new CSharpParseOptions(LanguageVersion.Preview),

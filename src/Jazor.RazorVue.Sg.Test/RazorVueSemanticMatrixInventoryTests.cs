@@ -69,15 +69,16 @@ public sealed class RazorVueSemanticMatrixInventoryTests
         Assert.HasCount(32, SlotExpressionCase.All);
         Assert.HasCount(40, ComponentCandidateCase.All);
         Assert.HasCount(30, VueInjectCase.All);
-        Assert.HasCount(636, DirectRenderFailureCaseCatalog.All);
+        Assert.HasCount(628, DirectRenderFailureCaseCatalog.All);
+        Assert.HasCount(8, DirectRenderFailureCaseCatalog.SupportedLoopBranches);
         var baselineFailureCases = DirectRenderFailureCaseCatalog.All
             .Where(static testCase => testCase.Scenario is null)
             .ToArray();
-        Assert.HasCount(124, baselineFailureCases);
+        Assert.HasCount(116, baselineFailureCases);
         var failureFamilies = baselineFailureCases
             .GroupBy(static item => item.Id[..item.Id.LastIndexOf('_')], StringComparer.Ordinal)
             .ToArray();
-        Assert.HasCount(31, failureFamilies);
+        Assert.HasCount(29, failureFamilies);
         Assert.IsTrue(failureFamilies.All(static family => family.Count() == 4));
         Assert.HasCount(
             512,
@@ -88,6 +89,7 @@ public sealed class RazorVueSemanticMatrixInventoryTests
             .Concat(ComponentCandidateCase.All.Select(static item => "candidate:" + item.Id))
             .Concat(VueInjectCase.All.Select(static item => "inject:" + item.Id))
             .Concat(DirectRenderFailureCaseCatalog.All.Select(static item => "failure:" + item.Id))
+            .Concat(DirectRenderFailureCaseCatalog.SupportedLoopBranches.Select(static item => "support:" + item.Id))
             .ToArray();
         Assert.HasCount(4062, ids);
         Assert.HasCount(ids.Length, ids.Distinct(StringComparer.Ordinal));
@@ -106,6 +108,16 @@ public sealed class RazorVueSemanticMatrixInventoryTests
         Assert.HasCount(
             DirectRenderFailureCaseCatalog.All.Count,
             DirectRenderFailureCaseCatalog.All
+                .Select(static item => item.Body + "\n" + item.Members)
+                .Distinct(StringComparer.Ordinal));
+        Assert.HasCount(
+            DirectRenderFailureCaseCatalog.SupportedLoopBranches.Count,
+            DirectRenderFailureCaseCatalog.SupportedLoopBranches
+                .Select(static item => item.TypeName)
+                .Distinct(StringComparer.Ordinal));
+        Assert.HasCount(
+            DirectRenderFailureCaseCatalog.SupportedLoopBranches.Count,
+            DirectRenderFailureCaseCatalog.SupportedLoopBranches
                 .Select(static item => item.Body + "\n" + item.Members)
                 .Distinct(StringComparer.Ordinal));
 

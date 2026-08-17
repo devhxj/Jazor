@@ -1,6 +1,6 @@
 # RazorVue 作者面诊断与支持决策路线图
 
-> 状态：D0-D5 已实现并通过当前主线回归（2026-08-16）。范围是 official Razor Source Generator 生成的 C# -> RazorVue direct-render `.mjs`，以及把最终 Compilation 失败报告给作者的完整生成管线。
+> 状态：D0-D5 已实现并通过当前主线回归（2026-08-17）。范围是 official Razor Source Generator 生成的 C# -> RazorVue direct-render `.mjs`，以及把最终 Compilation 失败报告给作者的完整生成管线。
 
 ## 目标与契约
 
@@ -70,22 +70,25 @@ RazorVue 的 member-closure profile 现在使用 `RuntimeClassPrivateStorage.Pro
 
 ## D2：作者可达失败分类 ledger
 
-下表把 `RenderEmitter.cs` 的 59 个历史 `throw Unsupported` call-site（其中 `2463/2465` 已升级为 typed compiler-bridge sentinel）分成可维护的失败族。行号是审计索引，不是对外协议；对外协议是 category、ID、source location 和 HelpLink。
+下表保留 `RenderEmitter.cs` 的 59 个历史 `throw Unsupported` call-site 审计索引（其中 `2463/2465` 已升级为 typed compiler-bridge sentinel）。行号是审计索引，不是对外协议；对外协议是 category、ID、source location 和 HelpLink。普通 `break`/`continue` 在可识别 loop 中已经升级为 Support，不再属于“direct-render 一律拒绝”的旧结论；表中的 control-flow Reject 只描述仍未形成稳定 lowering 协议的形状。
 
 | 失败族与 call-site | 决策 | ID / HelpLink | owner | source kind | early analyzer | 作者替代与最小回归 |
 | --- | --- | --- | --- | --- | --- | --- |
-| operation/control-flow shape：`397,430,453,506,529,849,916,943,980,1042,1051,1154,1260,1281` | `Reject` | `JAZORVGA021` / `#direct-render` | final Compilation / RenderEmitter | authored 或 mapped | No；依赖最终 operation/frame 状态 | 把计算移到 frame 外，使用已支持 loop/content segment；failure matrix + official loop tests |
+| ordinary loop `break`/`continue`，目标绑定到当前 `for`/`foreach`/`while`/`do while` 且 branch 前 frame 已关闭 | `Support` | 无诊断；imperative loop path | final Compilation / RenderEmitter | authored 或 mapped | No；需要最终 operation/frame 状态 | 保持 render segment 完整；`RazorSgOfficialLoopBranches` 与 handwritten builder runtime 回归 |
+| remaining operation/control-flow shape：`397,430,453,506,529,849,916,943,980,1042,1051,1154,1260,1281` | `Reject` | `JAZORVGA021` / `#direct-render` | final Compilation / RenderEmitter | authored 或 mapped | No；依赖最终 operation/frame 状态 | 把计算移到 frame 外，使用已支持 loop/content segment；failure matrix + official loop tests |
 | frame stack、close order、属性/children 和 metadata timing：`304,1122,1330,1399,1711,1745,1789,1793,1803,2037,2041,2048,2057,2060,2078,2083,2095,2102,2209,2295,4780` | `Reject` | `JAZORVGA021` / `#direct-render` | final Compilation / RenderEmitter | authored 或 mapped | No；需要完整协议状态 | 调整 builder 顺序、frame target 和 fragment source；coverage/boundary matrix |
 | compile-time names、overload 和 component resolution：`719,725,1441,1581,1715,1748,2316,4082,4617,4648` | `Reject` | `JAZORVGA021` / `#direct-render` | final Compilation / RenderEmitter | authored 或 mapped | No；避免与 Razor SDK 规则漂移 | 静态名称、generic component 或 `typeof(T)`；direct-render matrix |
 | RenderFragment/slot source、递归和 helper closure：`732,1692,2115,2130,2157,2504,2821,2842,2885,3004,3281,3361` | `Reject` | `JAZORVGA021` / `#direct-render`；compiler access failure 另为 `022` | final Compilation + compiler bridge | authored 或 mapped | No；来源解析依赖最终 closure | 使用 inline/local/helper/component-slot source；fragment boundary matrix |
 | AST/compiler bridge sentinel：`2463,2465` 以及 `SemanticWalker` typed transformation failures | `Reject` | `JAZORVGA022` / `#compiler-boundary` | `Jazor.Compiler` + RazorVue wrapper | authored、mapped 或 generated fallback | No；不在 RazorVue 重复 whitelist/host 语义 | 使用受支持 CLR/host API；compiler bridge and mapped-location tests |
 
-上述五行合计覆盖 59 个历史 direct-render guard。其它作者可达边界按 pipeline owner 分类：
+上述条目继续覆盖历史 59 个 direct-render guard 的审计范围；Support 行明确标出已经升级的普通 loop branch。其它作者可达边界按 pipeline owner 分类：
 
 | 边界 | 决策 | ID | 位置/替代 |
 | --- | --- | --- | --- |
 | final component binding、缺失/不可绑定 `BuildRenderTree` | `Reject` | `JAZORVGA023` | component symbol 或 generated declaration location；修正组件形状和模块声明 |
 | member closure、导出名或可达成员冲突 | `Reject` | `JAZORVGA024` | member/symbol location；缩小可达成员或使用受支持类型 |
+| source component/base parameterless constructor replay、static module lifetime | `Support` | 无诊断；artifact/setup contract | constructors 与 state initializer 走 base-to-derived；static storage 不进入 setup state |
+| primary-constructor 参数、参数化 activation、`this(...)`、`base(args)`、`SetParametersAsync` | `Reject` | `JAZORVGA024` | 改用 `[Parameter]`/VueInject、无参 constructor/lifecycle 或 `OnParametersSet*` |
 | `[VueInject]` container/implementation/重复声明 | `Reject` | `JAZORVGA025` | attribute/contract location；修正声明，不加 runtime fallback |
 | Vue module/import/helper/framing | `Reject` | `JAZORVGA026` | module/import location；使用稳定 module/package contract |
 | bootstrap、未知、未分类内部不变量 | `Reject`（内部） | `JAZORVGA020` | 可能为 `Location.None`；提交最小复现，不把它当作新的作者规则 |
@@ -123,16 +126,17 @@ spike 结论是 final Compilation 已经能在同一次 GeneratorDriver completi
 
 ## D5：作者指南与 SDK 升级门禁
 
-作者指南已落在 [`docs/03-guides/razorvue-authoring.md`](../03-guides/razorvue-authoring.md)，并包含所有 descriptor HelpLink 锚点：`final-compilation`、`direct-render`、`compiler-boundary`、`component-binding`、`member-closure`、`vue-inject`、`vue-module`。指南覆盖 direct-render 替代写法、ordinary/labeled branch、Proxy-safe class、Vue shallow props 和 native union 参数。
+作者指南已落在 [`docs/03-guides/razorvue-authoring.md`](../03-guides/razorvue-authoring.md)，并包含所有 descriptor HelpLink 锚点：`final-compilation`、`direct-render`、`compiler-boundary`、`component-binding`、`member-closure`、`vue-inject`、`vue-module`。指南覆盖 direct-render imperative loop、ordinary/labeled branch 边界、source constructor replay、static module lifetime、Proxy-safe class、Vue shallow props 和 native union 参数。
 
 每次 .NET/Roslyn/Razor SDK preview 升级必须重新运行以下 gates，不能只依赖旧 snapshot：
 
 1. `SemanticWalkerOrdinaryTest`：ordinary/labeled `IBranchOperation`、`BranchKind`、labeled syntax 可见性和显式拒绝；
-2. `RazorSgOfficialForLoopRuntimeTests`：official `for`、`while`、`do while` 的生成与运行时行为；
+2. `RazorSgOfficialForLoopRuntimeTests`：official `for`、`while`、`do while` 的生成与运行时行为，以及普通 branch 的 imperative loop path；
 3. `RazorSgOfficialNativeUnionParameterAuthoringTests`：native union component parameter 经 official Razor SG 编译、绑定并进入最终模块；
 4. `RazorSourceGeneratorBootstrapPatchTests`：mapped diagnostic、HelpLink 和错误时无 catalog；
 5. `RazorSgOfficialNestedRuntimeClassClosureRuntimeTests`：deep Proxy 下 member-class 的更新和 storage 语义；
-6. `dotnet test` 的 Razor SG、Compiler、Emit 主线，以及 Windows SSR consumer gate 的 packaged DenoHost/Edge hydration 验证。
+6. `RazorSgOfficialRuntimeAuthoringTests`：source base lifecycle/dispose、parameterless constructor replay、static module lifetime 和复杂 `@code` control flow；
+7. `dotnet test` 的 Razor SG、Compiler、Emit 主线，以及 Windows SSR consumer gate 的 packaged DenoHost/Edge hydration 验证。
 
 新作者可达边界的合入门禁是同一组交付物：Support 需要语义/运行时回归，Reject 需要 category/ID、作者位置、HelpLink、稳定参数和本指南条目；任何生成成功但行为未知的形状都不能合入。
 

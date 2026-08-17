@@ -1275,12 +1275,358 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
-    public void TryEmit_RejectsDirectRenderFrameAndMetadataBoundaryShapes()
+    public void TryEmit_LowersLoopBranchesAfterCompletedRenderSegments()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "while (Enabled) { builder.AddContent(0, \"loop\"); break; }",
+            "[Parameter] public bool Enabled { get; set; }");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "while (", StringComparison.Ordinal);
+        StringAssert.Contains(output, "break;", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersBranchingLoopSideEffectsAndConditionalAlternativesInSourceOrder()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            var total = 0;
+            foreach (var item in Items)
+            {
+                if (item == "skip")
+                {
+                    total++;
+                    continue;
+                }
+
+                builder.AddContent(0, "before:" + item);
+                total += item.Length;
+                if (item == "stop")
+                {
+                    builder.AddContent(1, "stop:" + item);
+                    break;
+                }
+                else
+                {
+                    builder.AddContent(2, "after:" + item);
+                }
+            }
+
+            builder.AddContent(3, total);
+            """,
+            "[Parameter] public string[] Items { get; set; } = []; ");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "continue;", StringComparison.Ordinal);
+        StringAssert.Contains(output, "break;", StringComparison.Ordinal);
+        StringAssert.Contains(output, "before:", StringComparison.Ordinal);
+        StringAssert.Contains(output, "after:", StringComparison.Ordinal);
+        StringAssert.Contains(output, "total", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersBranchingLoopsWithIterationLocalsAndCompoundUpdates()
+    {
+        var forFixture = CreateDirectRenderFixture(
+            """
+            for (var index = 0; index < 4; index += 1)
+            {
+                var current = index;
+                if (current == 0)
+                {
+                    continue;
+                }
+
+                builder.AddContent(0, current);
+                if (current == 2)
+                {
+                    break;
+                }
+            }
+            """,
+            string.Empty);
+        var forEachFixture = CreateDirectRenderFixture(
+            """
+            foreach (var item in Items)
+            {
+                var current = item;
+                if (current == "skip")
+                {
+                    continue;
+                }
+
+                builder.AddContent(0, current);
+                break;
+            }
+            """,
+            "[Parameter] public string[] Items { get; set; } = []; ");
+
+        AssertBranchingLoopWithIterationLocal(forFixture, "for");
+        AssertBranchingLoopWithIterationLocal(forEachFixture, "for");
+
+        static void AssertBranchingLoopWithIterationLocal(Fixture fixture, string loopToken)
+        {
+            var emitted = RenderEmitter.TryEmit(
+                fixture.Compilation,
+                fixture.Component,
+                fixture.Method,
+                fixture.Body,
+                declaredNames: null,
+                VueInjectRegistry.ForCompilation(fixture.Compilation),
+                out var result,
+                out var failure);
+
+            Assert.IsTrue(emitted, failure);
+            Assert.IsNotNull(result);
+            var output = result.RenderExpression.ToKnRECMAScript();
+            StringAssert.Contains(output, loopToken, StringComparison.Ordinal);
+            StringAssert.Contains(output, "const current", StringComparison.Ordinal);
+            StringAssert.Contains(output, "continue;", StringComparison.Ordinal);
+            StringAssert.Contains(output, "break;", StringComparison.Ordinal);
+        }
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersKeyedForAndWhileLoopsWithOrdinaryBranchTargets()
+    {
+        var forFixture = CreateDirectRenderFixture(
+            """
+            for (var index = 0; index < 3; index++)
+            {
+                builder.OpenElement(0, "li");
+                builder.SetKey(index);
+                builder.AddContent(1, index);
+                builder.CloseElement();
+                if (index == 1)
+                {
+                    break;
+                }
+            }
+            """,
+            string.Empty);
+        var whileFixture = CreateDirectRenderFixture(
+            """
+            var index = 0;
+            while (index < 3)
+            {
+                index++;
+                builder.OpenElement(0, "li");
+                builder.SetKey(index);
+                builder.AddContent(1, index);
+                builder.CloseElement();
+                if (index == 1)
+                {
+                    continue;
+                }
+                break;
+            }
+            """,
+            string.Empty);
+
+        AssertBranchingKeyedLoop(forFixture, "for", expectsContinue: false);
+        AssertBranchingKeyedLoop(whileFixture, "while", expectsContinue: true);
+
+        static void AssertBranchingKeyedLoop(Fixture fixture, string loopKind, bool expectsContinue)
+        {
+            var emitted = RenderEmitter.TryEmit(
+                fixture.Compilation,
+                fixture.Component,
+                fixture.Method,
+                fixture.Body,
+                declaredNames: null,
+                VueInjectRegistry.ForCompilation(fixture.Compilation),
+                out var result,
+                out var failure);
+
+            Assert.IsTrue(emitted, failure);
+            Assert.IsNotNull(result);
+            var output = result.RenderExpression.ToKnRECMAScript();
+            StringAssert.Contains(output, loopKind, StringComparison.Ordinal);
+            if (expectsContinue)
+                StringAssert.Contains(output, "continue;", StringComparison.Ordinal);
+            StringAssert.Contains(output, "break;", StringComparison.Ordinal);
+            StringAssert.Contains(output, "128", StringComparison.Ordinal);
+        }
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsAsyncForeachBeforeEnteringTheSynchronousRenderProtocol()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            await foreach (var item in Items)
+            {
+                if (item == "stop")
+                {
+                    break;
+                }
+                builder.AddContent(0, item);
+            }
+            """,
+            "[Parameter] public System.Collections.Generic.IAsyncEnumerable<string> Items { get; set; } = default!;",
+            isAsync: true);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsFalse(emitted);
+        Assert.IsNull(result);
+        StringAssert.Contains(
+            failure,
+            "Async foreach cannot execute inside Razor's synchronous BuildRenderTree contract.",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersKeyedAndDeconstructedBranchingForeachLoops()
+    {
+        var keyedFixture = CreateDirectRenderFixture(
+            """
+            foreach (var item in Items)
+            {
+                builder.OpenElement(0, "li");
+                builder.SetKey(item);
+                builder.AddContent(1, item);
+                builder.CloseElement();
+                if (item == "stop")
+                {
+                    break;
+                }
+            }
+            """,
+            "[Parameter] public string[] Items { get; set; } = []; ");
+        var deconstructedFixture = CreateDirectRenderFixture(
+            """
+            foreach (var (label, value) in Items)
+            {
+                if (value == 0)
+                {
+                    continue;
+                }
+                builder.OpenElement(0, "li");
+                builder.SetKey(label);
+                builder.AddContent(1, value);
+                builder.CloseElement();
+            }
+            """,
+            "[Parameter] public (string Label, int Value)[] Items { get; set; } = []; ");
+
+        AssertBranchingForeach(keyedFixture, "break;");
+        AssertBranchingForeach(deconstructedFixture, "continue;");
+
+        static void AssertBranchingForeach(Fixture fixture, string branch)
+        {
+            var emitted = RenderEmitter.TryEmit(
+                fixture.Compilation,
+                fixture.Component,
+                fixture.Method,
+                fixture.Body,
+                declaredNames: null,
+                VueInjectRegistry.ForCompilation(fixture.Compilation),
+                out var result,
+                out var failure);
+
+            Assert.IsTrue(emitted, failure);
+            Assert.IsNotNull(result);
+            var output = result.RenderExpression.ToKnRECMAScript();
+            StringAssert.Contains(output, "for", StringComparison.Ordinal);
+            StringAssert.Contains(output, branch, StringComparison.Ordinal);
+            StringAssert.Contains(output, "128", StringComparison.Ordinal);
+        }
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsNormalLoopBodiesThatLeaveBuilderFramesOpen()
     {
         AssertDirectRenderFailure(
-            "while (Enabled) { builder.AddContent(0, \"loop\"); break; }",
-            "only supports straight-line RenderTreeBuilder statements in this slice.",
-            "[Parameter] public bool Enabled { get; set; }");
+            """
+            var index = 0;
+            while (index < 1)
+            {
+                builder.OpenElement(0, "div");
+                index++;
+            }
+            """,
+            "Loop render content left unclosed ElementFrame(");
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsBranchingLoopStatementsThatCrossOpenBuilderFrames()
+    {
+        AssertDirectRenderFailure(
+            """
+            foreach (var item in Items)
+            {
+                builder.OpenElement(0, "div");
+                if (item == "stop")
+                {
+                    break;
+                }
+                builder.CloseElement();
+            }
+            """,
+            "Loop break/continue cannot leave an open RenderTreeBuilder frame.",
+            "[Parameter] public string[] Items { get; set; } = []; ");
+        AssertDirectRenderFailure(
+            """
+            foreach (var item in Items)
+            {
+                builder.OpenElement(0, "div");
+                break;
+            }
+            """,
+            "Loop control flow left an open ElementFrame(",
+            "[Parameter] public string[] Items { get; set; } = []; ");
+        AssertDirectRenderFailure(
+            """
+            var count = 0;
+            foreach (var item in Items)
+            {
+                builder.OpenElement(0, "div");
+                count++;
+                builder.CloseElement();
+                break;
+            }
+            """,
+            "ordinary loop side effect cannot be moved across an open RenderTreeBuilder frame.",
+            "[Parameter] public string[] Items { get; set; } = []; ");
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsDirectRenderFrameAndMetadataBoundaryShapes()
+    {
         AssertDirectRenderFailure(
             "builder.OpenElement(0, Tag); builder.CloseElement();",
             "OpenElement tag names must be compile-time strings for direct render lowering.",
@@ -2062,7 +2408,7 @@ public sealed class RenderEmitterContractTests
         return new Fixture(compilation, component!, method!, body!);
     }
 
-    private static Fixture CreateDirectRenderFixture(string body, string members)
+    private static Fixture CreateDirectRenderFixture(string body, string members, bool isAsync = false)
     {
         var sourceTree = CSharpSyntaxTree.ParseText(
             $$"""
@@ -2074,7 +2420,7 @@ public sealed class RenderEmitterContractTests
 
             public sealed class ContractComponent : ComponentBase
             {
-                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                protected override {{(isAsync ? "async " : string.Empty)}}void BuildRenderTree(RenderTreeBuilder builder)
                 {
                     {{body}}
                 }

@@ -374,4 +374,139 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
             });
             """);
     }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorLoopBranches_PreserveForeachForAndWhileControlFlowOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\LoopBranchesRuntime.razor",
+            documentText:
+            """
+            <section data-loop="foreach">
+                @foreach (var value in Values)
+                {
+                    if (value < 0)
+                    {
+                        continue;
+                    }
+
+                    <span>@value</span>
+                    if (value >= 3)
+                    {
+                        break;
+                    }
+                }
+            </section>
+
+            <section data-loop="for">
+                @for (var index = 0; index < Values.Length; index++)
+                {
+                    if (Values[index] < 0)
+                    {
+                        continue;
+                    }
+
+                    <em>@Values[index]</em>
+                    if (Values[index] >= 3)
+                    {
+                        break;
+                    }
+                }
+            </section>
+
+            @{
+                var whileIndex = 0;
+            }
+            <section data-loop="while">
+                @while (whileIndex < Values.Length)
+                {
+                    var current = Values[whileIndex];
+                    whileIndex++;
+                    if (current < 0)
+                    {
+                        continue;
+                    }
+
+                    <strong>@current</strong>
+                    if (current >= 3)
+                    {
+                        break;
+                    }
+                }
+            </section>
+
+            @{
+                var doIndex = 0;
+            }
+            <section data-loop="do">
+                @do
+                {
+                    var current = Values[doIndex];
+                    doIndex++;
+                    if (current < 0)
+                    {
+                        continue;
+                    }
+
+                    <i>@current</i>
+                    if (current >= 3)
+                    {
+                        break;
+                    }
+                }
+                while (doIndex < Values.Length);
+            </section>
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/loop-branches-runtime")]
+            public partial class LoopBranchesRuntime : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int[] Values { get; set; } = [];
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.LoopBranchesRuntime");
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "continue;", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "break;", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "for (let value of", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/loop-branches-runtime.mjs",
+            observation.ModuleText,
+            "official-loop-branches-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/loop-branches-runtime.mjs";
+
+            function collectText(node, name, values = []) {
+                if (Array.isArray(node)) {
+                    for (const child of node)
+                        collectText(child, name, values);
+                    return values;
+                }
+                if (node === null || typeof node !== "object")
+                    return values;
+                if (node.name === name)
+                    values.push(node.children);
+                collectText(node.children, name, values);
+                return values;
+            }
+
+            test("ordinary loop branches target the generated JavaScript loop", () => {
+                const root = component.setup({ Values: [-1, 1, 3, 9] }, { slots: {} })();
+                assert.deepEqual(collectText(root, "span"), [[1], [3]]);
+                assert.deepEqual(collectText(root, "em"), [[1], [3]]);
+                assert.deepEqual(collectText(root, "strong"), [[1], [3]]);
+                assert.deepEqual(collectText(root, "i"), [[1], [3]]);
+            });
+            """);
+    }
 }

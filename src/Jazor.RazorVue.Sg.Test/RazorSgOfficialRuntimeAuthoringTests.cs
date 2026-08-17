@@ -1279,6 +1279,109 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     }
 
     [TestMethod]
+    public async Task BuildComponent_OfficialRazorSourceBaseConstructorsAndVirtualDisposal_RunInClrOrderOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\SourceConstructorRuntime.razor",
+            documentText:
+            """
+            @inherits Demo.Pages.SourceConstructorBase
+
+            <p>@Log</p>
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/source-constructor-runtime")]
+            public partial class SourceConstructorRuntime : IVueComponent
+            {
+                private string derivedMarker = "derived-field|";
+
+                public SourceConstructorRuntime()
+                {
+                    LogState += derivedMarker;
+                    LogState += "derived-ctor|";
+                }
+
+                protected override void OnInitialized()
+                {
+                    LogState += "derived-init|";
+                    base.OnInitialized();
+                }
+
+                public override void Dispose()
+                {
+                    LogState += "derived-dispose|";
+                    base.Dispose();
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.SourceConstructorRuntime",
+            supportingSources: new Dictionary<string, string>
+            {
+                [@"D:\repo\Demo\Pages\SourceConstructorBase.cs"] =
+                """
+                using System;
+
+                namespace Demo.Pages;
+
+                public abstract class SourceConstructorBase : ComponentBase, IDisposable
+                {
+                    protected string LogState = "base-field|";
+
+                    protected SourceConstructorBase()
+                    {
+                        LogState += "base-ctor|";
+                    }
+
+                    protected string Log => LogState;
+
+                    protected override void OnInitialized()
+                    {
+                        LogState += "base-init|";
+                    }
+
+                    public virtual void Dispose()
+                    {
+                        LogState += "base-dispose|";
+                    }
+                }
+                """
+            });
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "base-ctor", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/source-constructor-runtime.mjs",
+            observation.ModuleText,
+            "official-source-constructor-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+            import { __runUnmounted } from "vue";
+
+            import component from "./components/source-constructor-runtime.mjs";
+
+            test("source component constructors and virtual disposal preserve CLR ordering", () => {
+                const render = component.setup({}, { slots: {} });
+                assert.equal(
+                    render().children,
+                    "base-field|base-ctor|derived-field|derived-ctor|derived-init|base-init|"
+                );
+
+                __runUnmounted();
+                assert.equal(
+                    render().children,
+                    "base-field|base-ctor|derived-field|derived-ctor|derived-init|base-init|derived-dispose|base-dispose|"
+                );
+            });
+            """);
+    }
+
+    [TestMethod]
     public async Task BuildComponent_OfficialRazorComponentReference_UpdatesStateUsedByNextRenderOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
@@ -1348,6 +1451,170 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             {
                 ["components/reference-child-runtime.mjs"] = "export default { name: \"reference-child-runtime\" };"
             });
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorCodeBlock_ExecutesComplexComponentLogicOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\ComplexCodeRuntime.razor",
+            documentText:
+            """
+            @using Microsoft.AspNetCore.Components.Web
+
+            <button type="button" @onclick="Process">@Status</button>
+
+            @code {
+                private int[] Samples { get; } = [2, -1, 3, 99];
+                private string Status { get; set; } = "idle";
+
+                private void Process()
+                {
+                    var total = 0;
+                    foreach (var value in Samples)
+                    {
+                        if (value < 0)
+                            continue;
+                        if (value > 10)
+                            break;
+
+                        total += Normalize(value);
+                    }
+
+                    Status = total switch
+                    {
+                        0 => "empty",
+                        > 4 => "large",
+                        _ => "small"
+                    };
+                }
+
+                private static int Normalize(int value) => value;
+            }
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/complex-code-runtime")]
+            public partial class ComplexCodeRuntime : ComponentBase, IVueComponent
+            {
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ComplexCodeRuntime");
+
+        StringAssert.Contains(observation.GeneratedCSharp, "private void Process", StringComparison.Ordinal);
+        StringAssert.Contains(observation.GeneratedCSharp, "continue;", StringComparison.Ordinal);
+        StringAssert.Contains(observation.GeneratedCSharp, "break;", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/complex-code-runtime.mjs",
+            observation.ModuleText,
+            "official-complex-code-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/complex-code-runtime.mjs";
+
+            test("official Razor @code keeps ordinary C# loop control flow outside direct render", () => {
+                const render = component.setup({}, { slots: {} });
+                const initial = render();
+                assert.equal(initial.name, "button");
+                assert.equal(initial.children, "idle");
+                assert.equal(typeof initial.props.onClick, "function");
+
+                initial.props.onClick();
+
+                assert.equal(render().children, "large");
+            });
+            """);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorStaticMembers_KeepModuleLifetimeAcrossSetupInstancesOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\StaticMembersRuntime.razor",
+            documentText:
+            """
+            @using Microsoft.AspNetCore.Components.Web
+
+            <button type="button" @onclick="Increment">@Label</button>
+
+            @code {
+                private static int Count = Seed();
+                private static LabelBox InitialLabel = new(Count);
+                private static string Label { get; set; } = InitialLabel.Text;
+
+                private static int Seed() => 2;
+
+                private static void Increment()
+                {
+                    Count++;
+                    Label = "static-" + Count;
+                }
+
+                private sealed class LabelBox
+                {
+                    public LabelBox(int count)
+                    {
+                        Text = "static-" + count;
+                    }
+
+                    public string Text { get; }
+                }
+            }
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/static-members-runtime")]
+            public partial class StaticMembersRuntime : ComponentBase, IVueComponent
+            {
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.StaticMembersRuntime");
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "let Count", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "class LabelBox", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "function Seed()", StringComparison.Ordinal);
+        Assert.DoesNotContain("reactive({ Count", observation.ModuleText, StringComparison.Ordinal);
+        Assert.IsLessThan(
+            observation.ModuleText.IndexOf("let Count", StringComparison.Ordinal),
+            observation.ModuleText.IndexOf("class LabelBox", StringComparison.Ordinal));
+        Assert.IsLessThan(
+            observation.ModuleText.IndexOf("function createStaticMembersRuntimeSetupScope", StringComparison.Ordinal),
+            observation.ModuleText.IndexOf("function Seed()", StringComparison.Ordinal));
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/static-members-runtime.mjs",
+            observation.ModuleText,
+            "official-static-members-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/static-members-runtime.mjs";
+
+            test("static component members are shared by module lifetime", () => {
+                const first = component.setup({}, { slots: {} });
+                const second = component.setup({}, { slots: {} });
+
+                assert.equal(first().children, "static-2");
+                assert.equal(second().children, "static-2");
+
+                first().props.onClick();
+
+                assert.equal(first().children, "static-3");
+                assert.equal(second().children, "static-3");
+            });
+            """);
     }
 
     [TestMethod]

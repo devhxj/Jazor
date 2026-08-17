@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using ECMAScript;
+using Jazor.Compiler;
 using Jazor.RazorVue.Generation;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
@@ -44,6 +45,23 @@ public sealed class RazorSgDirectRenderFailureMatrixTests
             descriptor.HelpLinkUri);
         Assert.IsFalse(diagnostic.Message.Contains(".vue", StringComparison.Ordinal));
     }
+
+    public static IEnumerable<TestDataRow<DirectRenderSupportedLoopCase>> SupportedLoopBranches
+        => DirectRenderFailureCaseCatalog.SupportedLoopBranches.Select(static testCase =>
+            new TestDataRow<DirectRenderSupportedLoopCase>(testCase)
+            {
+                DisplayName = "DirectRenderSupport_" + testCase.Id
+            });
+
+    [TestMethod]
+    [DynamicData(nameof(SupportedLoopBranches))]
+    public void TryEmit_LowersFormerLoopRejectionShapesToRealJavaScriptLoops(DirectRenderSupportedLoopCase testCase)
+    {
+        var emitted = RazorSgDirectRenderFailureMatrixTestHost.EmitSuccess(testCase);
+
+        StringAssert.Contains(emitted, testCase.ExpectedLoopFragment, StringComparison.Ordinal);
+        StringAssert.Contains(emitted, testCase.ExpectedBranchFragment, StringComparison.Ordinal);
+    }
 }
 
 public sealed record DirectRenderFailureCase(
@@ -54,15 +72,31 @@ public sealed record DirectRenderFailureCase(
     string ExpectedFailureFragment,
     RazorVueUsageScenarioId? Scenario);
 
+public sealed record DirectRenderSupportedLoopCase(
+    string Id,
+    string TypeName,
+    string Body,
+    string Members,
+    string ExpectedLoopFragment,
+    string ExpectedBranchFragment);
+
 internal static partial class DirectRenderFailureCaseCatalog
 {
     public static IReadOnlyList<DirectRenderFailureCase> All { get; } = CreateCases();
+
+    // These originated in the rejection matrix before imperative loop lowering existed.
+    // Keep their source diversity, but make the support contract explicit so the catalog
+    // continues to describe only shapes that must produce diagnostics.
+    public static IReadOnlyList<DirectRenderSupportedLoopCase> SupportedLoopBranches { get; } = CreateSupportedLoopBranches();
 
     private static IReadOnlyList<DirectRenderFailureCase> CreateCases()
     {
         var cases = new List<DirectRenderFailureCase>(576);
         for (var shape = 0; shape < 16; shape++)
         {
+            if (shape is 9 or 10)
+                continue;
+
             for (var variant = 0; variant < 4; variant++)
             {
                 var suffix = shape.ToString("D2", System.Globalization.CultureInfo.InvariantCulture) + "_" +
@@ -84,6 +118,68 @@ internal static partial class DirectRenderFailureCaseCatalog
 
         return cases;
     }
+
+    private static IReadOnlyList<DirectRenderSupportedLoopCase> CreateSupportedLoopBranches()
+    {
+        var cases = new List<DirectRenderSupportedLoopCase>(8);
+        foreach (var shape in new[] { 9, 10 })
+        {
+            for (var variant = 0; variant < 4; variant++)
+            {
+                var suffix = shape.ToString("D2", System.Globalization.CultureInfo.InvariantCulture) + "_" +
+                             variant.ToString("D2", System.Globalization.CultureInfo.InvariantCulture);
+                var marker = "supported-loop-" + suffix;
+                var (id, body, members, expectedLoop, expectedBranch) = CreateSupportedLoopCase(shape, variant, marker);
+                cases.Add(new DirectRenderSupportedLoopCase(
+                    id + "_" + variant.ToString("D2", System.Globalization.CultureInfo.InvariantCulture),
+                    "DirectRenderSupportedLoop" + cases.Count.ToString("D2", System.Globalization.CultureInfo.InvariantCulture),
+                    body,
+                    members,
+                    expectedLoop,
+                    expectedBranch));
+            }
+        }
+
+        return cases;
+    }
+
+    private static (string Id, string Body, string Members, string ExpectedLoop, string ExpectedBranch) CreateSupportedLoopCase(
+        int shape,
+        int variant,
+        string marker)
+        => shape switch
+        {
+            9 => (
+                "for_branch_loop",
+                variant switch
+                {
+                    0 => "for (var index = 0; index < 1; index++) { builder.AddContent(index, " + Literal(marker) + "); break; }",
+                    1 => "builder.OpenElement(0, \"div\"); for (var index = 0; index < 2; index++) { builder.AddContent(index + 1, " + Literal(marker) + "); continue; } builder.CloseElement();",
+                    2 => "for (var index = 3; index > 0; index--) { builder.OpenElement(index, \"span\"); builder.CloseElement(); break; }",
+                    _ => "for (var index = 0; index < Items.Length; index++) { builder.AddContent(index, Items[index]); continue; }"
+                },
+                variant == 3 ? "[Parameter] public string[] Items { get; set; } = [];" : "",
+                "for (",
+                variant is 0 or 2 ? "break;" : "continue;"),
+            10 => (
+                "while_branch_loop",
+                variant switch
+                {
+                    0 => "var index = 0; while (index < 1) { builder.AddContent(index, " + Literal(marker) + "); break; }",
+                    1 => "var index = 0; do { builder.AddContent(index, " + Literal(marker) + "); continue; } while (index < 1);",
+                    2 => "builder.OpenElement(0, \"div\"); while (Count < 1) { builder.AddContent(1, " + Literal(marker) + "); break; } builder.CloseElement();",
+                    _ => "var index = Items.Length; while (index > 0) { builder.AddContent(index, Items[--index]); continue; }"
+                },
+                variant switch
+                {
+                    2 => "[Parameter] public int Count { get; set; }",
+                    3 => "[Parameter] public string[] Items { get; set; } = [];",
+                    _ => ""
+                },
+                variant == 1 ? "do" : "while (",
+                variant is 0 or 2 ? "break;" : "continue;"),
+            _ => throw new ArgumentOutOfRangeException(nameof(shape), shape, "Only supported loop shapes belong in this catalog.")
+        };
 
     private static (string Id, string Body, string Members, string ExpectedFailure) CreateCase(
         int shape,
@@ -202,33 +298,6 @@ internal static partial class DirectRenderFailureCaseCatalog
                 },
                 "private string ReadValue() => " + Literal(marker) + ";",
                 "Runtime local declarations in direct render lowering are only supported outside open RenderTreeBuilder frames"),
-            9 => (
-                "for_branch_loop",
-                variant switch
-                {
-                    0 => "for (var index = 0; index < 1; index++) { builder.AddContent(index, " + Literal(marker) + "); break; }",
-                    1 => "builder.OpenElement(0, \"div\"); for (var index = 0; index < 2; index++) { builder.AddContent(index + 1, " + Literal(marker) + "); continue; } builder.CloseElement();",
-                    2 => "for (var index = 3; index > 0; index--) { builder.OpenElement(index, \"span\"); builder.CloseElement(); break; }",
-                    _ => "for (var index = 0; index < Items.Length; index++) { builder.AddContent(index, Items[index]); continue; }"
-                },
-                variant == 3 ? "[Parameter] public string[] Items { get; set; } = [];" : "",
-                "only supports straight-line RenderTreeBuilder statements"),
-            10 => (
-                "while_branch_loop",
-                variant switch
-                {
-                    0 => "var index = 0; while (index < 1) { builder.AddContent(index, " + Literal(marker) + "); break; }",
-                    1 => "var index = 0; do { builder.AddContent(index, " + Literal(marker) + "); continue; } while (index < 1);",
-                    2 => "builder.OpenElement(0, \"div\"); while (Count < 1) { builder.AddContent(1, " + Literal(marker) + "); break; } builder.CloseElement();",
-                    _ => "var index = Items.Length; while (index > 0) { builder.AddContent(index, Items[--index]); continue; }"
-                },
-                variant switch
-                {
-                    2 => "[Parameter] public int Count { get; set; }",
-                    3 => "[Parameter] public string[] Items { get; set; } = [];",
-                    _ => ""
-                },
-                "only supports straight-line RenderTreeBuilder statements"),
             11 => (
                 "dynamic_component_type",
                 variant switch
@@ -350,6 +419,30 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         return diagnostic!;
     }
 
+    public static string EmitSuccess(DirectRenderSupportedLoopCase testCase)
+    {
+        var fixture = SharedFixture.Value;
+        var component = fixture.Components[testCase.TypeName];
+        Assert.IsTrue(
+            MemberClosureBuilder.TryBuild(fixture.Binding, component, out var closure, out var closureFailure),
+            closureFailure);
+        Assert.IsNotNull(closure);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Binding.Compilation,
+            component.ComponentSymbol,
+            component.BuildRenderTreeMethod,
+            component.BuildRenderTreeBody,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Binding.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, "Supported loop case did not emit: " + testCase.Id + "\n" + failure);
+        Assert.IsNotNull(result);
+        return result.RenderExpression.ToKnRECMAScript();
+    }
+
     private static Fixture CreateFixture()
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
@@ -362,7 +455,12 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
         };
         syntaxTrees.AddRange(DirectRenderFailureCaseCatalog.All.Select(testCase =>
             CSharpSyntaxTree.ParseText(
-                BuildComponentSource(testCase),
+                BuildComponentSource(testCase.Id, testCase.TypeName, testCase.Body, testCase.Members),
+                parseOptions,
+                path: "FailureMatrix/" + testCase.TypeName + ".cs")));
+        syntaxTrees.AddRange(DirectRenderFailureCaseCatalog.SupportedLoopBranches.Select(testCase =>
+            CSharpSyntaxTree.ParseText(
+                BuildComponentSource(testCase.Id, testCase.TypeName, testCase.Body, testCase.Members),
                 parseOptions,
                 path: "FailureMatrix/" + testCase.TypeName + ".cs")));
 
@@ -376,6 +474,8 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
 
         var componentSymbols = DirectRenderFailureCaseCatalog.All
             .Select(testCase => compilation.GetTypeByMetadataName("RazorVue.FailureMatrix." + testCase.TypeName))
+            .Concat(DirectRenderFailureCaseCatalog.SupportedLoopBranches
+                .Select(testCase => compilation.GetTypeByMetadataName("RazorVue.FailureMatrix." + testCase.TypeName)))
             .ToArray();
         Assert.IsFalse(componentSymbols.Any(static symbol => symbol is null));
         Assert.IsTrue(
@@ -394,7 +494,7 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
                 StringComparer.Ordinal));
     }
 
-    private static string BuildComponentSource(DirectRenderFailureCase testCase)
+    private static string BuildComponentSource(string id, string typeName, string body, string members)
         => $$"""
             #nullable enable
             using System.Collections.Generic;
@@ -406,15 +506,15 @@ internal static class RazorSgDirectRenderFailureMatrixTestHost
 
             namespace RazorVue.FailureMatrix;
 
-            [ECMAScriptModule("./failure-matrix/{{testCase.Id}}")]
-            public sealed class {{testCase.TypeName}} : ComponentBase, IVueComponent
+            [ECMAScriptModule("./failure-matrix/{{id}}")]
+            public sealed class {{typeName}} : ComponentBase, IVueComponent
             {
                 protected override void BuildRenderTree(RenderTreeBuilder builder)
                 {
-                    {{testCase.Body}}
+                    {{body}}
                 }
 
-                {{testCase.Members}}
+                {{members}}
             }
             """;
 

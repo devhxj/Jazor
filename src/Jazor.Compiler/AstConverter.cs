@@ -384,7 +384,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         cancellationToken.ThrowIfCancellationRequested();
 
         var (declaration, localName) = await ConvertVariableField(symbol, cancellationToken);
-        if (ShouldBePrivate(symbol.DeclaredAccessibility))
+        if (ShouldBePrivate(symbol.DeclaredAccessibility) ||
+            !ShouldExportModuleMember(symbol))
             statements.Add(declaration);
         else if (string.Equals(localName, GetModuleNamedExportName(symbol), System.StringComparison.Ordinal))
         {
@@ -536,7 +537,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             generator: functionOperation is not null && OperationTree.ContainsYieldOperation(functionOperation),
             async: symbol.IsAsync);
 
-        if (ShouldBePrivate(symbol.DeclaredAccessibility))
+        if (ShouldBePrivate(symbol.DeclaredAccessibility) ||
+            !ShouldExportModuleMember(symbol))
             AddModuleMethodDeclaration(statements, declaration, symbol);
         else if (string.Equals(localName, GetModuleNamedExportName(symbol), System.StringComparison.Ordinal))
         {
@@ -1958,7 +1960,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             
         var declaration = ConvertMemberClass(symbol, baseType, cancellationToken);
 
-        if (ShouldBePrivate(symbol.DeclaredAccessibility))
+        if (ShouldBePrivate(symbol.DeclaredAccessibility) ||
+            !ShouldExportModuleMember(symbol))
         {
             yield return declaration;
             yield break;
@@ -2320,7 +2323,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         ISymbol symbol,
         Dictionary<string, ISymbol> exportedNames)
     {
-        if (ShouldBePrivate(symbol.DeclaredAccessibility))
+        if (ShouldBePrivate(symbol.DeclaredAccessibility) ||
+            !ShouldExportModuleMember(symbol))
             return;
 
         var exportName = GetModuleNamedExportName(symbol);
@@ -2644,4 +2648,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// <returns></returns>
     private bool ShouldBePrivate(Accessibility accessibility)
         => accessibility != Accessibility.Public && accessibility != Accessibility.Internal;
+
+    private bool ShouldExportModuleMember(ISymbol symbol)
+        => _modulePolicy.ShouldExportModuleMember(_classSymbol, symbol);
 }

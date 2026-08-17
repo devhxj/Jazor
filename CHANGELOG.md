@@ -4,6 +4,12 @@
 
 ## 2026-08-17
 
+### Jazor 0.16.2
+
+- RazorVue components now replay field/property initialization and parameterless source constructors from base to derived setup order, keep static component members at module lifetime, and route supported source-base lifecycle/dispose dispatch through the established Vue hooks.
+- Direct RazorVue render lowering now preserves ordinary `break` and `continue` in verified `for`, `foreach`, `while`, and `do while` content segments. Labeled branches, branches across open RenderTreeBuilder frames, and `goto` remain explicit diagnostic boundaries.
+- RazorVue component inheritance now retains required base declarations locally while the most-derived declaration owns a conflicting public ES module export name, avoiding invalid duplicate exports without changing source-level dispatch.
+
 ### Jazor 0.16.1
 
 - RazorVue direct lowering now preserves the parent instance context for dynamic slot descriptors, retains explicit loop-item keys when scoped lowering cannot use `renderList`, and imports `createStaticVNode` only when retained module hoists require it.

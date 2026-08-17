@@ -62,6 +62,11 @@ internal static class RazorSgDirectRenderMatrixAssertions
 
             if (emitted.Contains("renderList(" + collection + ",", StringComparison.Ordinal))
                 return;
+
+            // C# string enumeration is character enumeration. The compiler-owned foreach
+            // lowering therefore selects split("") rather than the generic iterable path.
+            if (emitted.Contains("renderList(" + collection + ".split(\"\"),", StringComparison.Ordinal))
+                return;
         }
 
         if (expected.StartsWith("h(\"", StringComparison.Ordinal) &&

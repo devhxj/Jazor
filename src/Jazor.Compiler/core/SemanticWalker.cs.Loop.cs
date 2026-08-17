@@ -40,7 +40,11 @@ public partial class SemanticWalker
 		return new ForOfStatement(left, right, body, @await: operation.IsAsynchronous);
 	}
 
-	private Expression BuildForEachLoopCollection(IForEachLoopOperation operation, SenseArgument argument)
+	/// <summary>
+	/// Lowers only the collection side of a foreach loop. Product hosts that own the surrounding
+	/// artifact can reuse the compiler's string/iterable semantics without translating the body.
+	/// </summary>
+	public Expression BuildForEachLoopCollection(IForEachLoopOperation operation, SenseArgument argument)
 	{
 		var collection = Translate<Expression>(operation.Collection, argument);
 		if (operation.Collection.Type is not INamedTypeSymbol

@@ -897,7 +897,7 @@ public sealed class RenderEmitterPrivateContractTests
     }
 
     [TestMethod]
-    public void EmitterResidualOperationContracts_KeepUnsupportedAndMetadataBranchesExplicit()
+    public void EmitterResidualOperationContracts_KeepSupportedLoopAndUnsupportedMetadataBranchesExplicit()
     {
         var fixture = CreateFixture();
         var host = GetNamedType(fixture, "EmitterHost");
@@ -947,12 +947,16 @@ public sealed class RenderEmitterPrivateContractTests
                 true,
                 false));
 
-        var unsupportedLoop = GetMethodBody(fixture, "EmitterHost", "UnsupportedLoop")
+        var supportedLoop = GetMethodBody(fixture, "EmitterHost", "SupportedLoop")
             .Operations
             .OfType<IWhileLoopOperation>()
             .Single();
-        Assert.Throws<TargetInvocationException>(() =>
-            InvokeEmitterInstance<object>(emitter, "EmitOperation", unsupportedLoop, metadataContext, CreateRenderState()));
+        Assert.IsNotNull(InvokeEmitterInstance<object>(
+            emitter,
+            "EmitOperation",
+            supportedLoop,
+            metadataContext,
+            CreateRenderState()));
 
         var storageReferences = GetMethod(fixture, "EmitterHost", "StorageReferences");
         var foreignStorage = new object?[] { GetVariableInitializer(fixture, storageReferences, "foreign"), null };
@@ -2609,7 +2613,7 @@ public sealed class RenderEmitterPrivateContractTests
                     var runtime = GetRuntimeValue();
                 }
 
-                public void UnsupportedLoop(RenderTreeBuilder builder, bool enabled)
+                public void SupportedLoop(RenderTreeBuilder builder, bool enabled)
                 {
                     while (enabled)
                         break;
