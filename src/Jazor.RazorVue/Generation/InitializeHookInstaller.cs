@@ -151,8 +151,7 @@ internal static class InitializeHookInstaller
             {
                 tailDiagnostics = ImmutableArray.Create(RazorVueDiagnosticFactory.Create(
                     RazorVueDiagnosticCategory.Internal,
-                    "Unknown final Compilation render catalog generation failure.",
-                    isAuthorReachable: false));
+                    "Unknown final Compilation render catalog generation failure."));
             }
 
             // Do not collapse independent component failures into one generic generator error.

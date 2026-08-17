@@ -148,7 +148,7 @@ public sealed class RazorTailOutputTests
         var diagnostic = diagnostics.Single();
         Assert.AreEqual(RazorVueDiagnosticCategory.DirectRender, diagnostic.Category);
         Assert.AreEqual("global::Demo.Pages.DynamicTag", diagnostic.ComponentId);
-        Assert.AreEqual(RazorVueDiagnosticSourceKind.AuthoredCSharp, diagnostic.SourceKind);
+        Assert.AreEqual("Pages/DynamicTag.razor.cs", diagnostic.PrimaryLocation.GetLineSpan().Path);
         StringAssert.Contains(diagnostic.Message, "OpenElement tag names must be compile-time strings", StringComparison.Ordinal);
     }
 

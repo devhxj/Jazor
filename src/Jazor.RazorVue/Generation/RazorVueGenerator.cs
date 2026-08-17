@@ -51,7 +51,6 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             (output, _) => output.ReportDiagnostic(Diagnostics.Create(
                 RazorVueDiagnosticFactory.Create(
                     RazorVueDiagnosticCategory.Internal,
-                    failure!,
-                    isAuthorReachable: false))));
+                    failure!))));
     }
 }

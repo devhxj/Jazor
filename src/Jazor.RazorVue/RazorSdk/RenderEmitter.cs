@@ -111,8 +111,7 @@ internal static class RenderEmitter
                 RazorVueDiagnosticCategory.DirectRender,
                 operation.Message ?? "No direct render lowering detail was provided.",
                 operation.SourceLocation,
-                componentSymbol,
-                isAuthorReachable: true),
+                componentSymbol),
             SyntaxNodeTransformationException syntax => RazorVueDiagnosticFactory.FromException(
                 syntax,
                 RazorVueDiagnosticCategory.CompilerBridge,
@@ -125,8 +124,7 @@ internal static class RenderEmitter
                 RazorVueDiagnosticCategory.DirectRender,
                 exception?.Message ?? "No direct render lowering detail was provided.",
                 RazorVueDiagnosticFactory.GetSymbolLocation(buildRenderTreeMethod),
-                componentSymbol,
-                isAuthorReachable: true)
+                componentSymbol)
         };
         return false;
     }
@@ -2512,8 +2510,7 @@ internal static class RenderEmitter
                     RazorVueDiagnosticCategory.CompilerBridge,
                     message,
                     operation.Syntax.GetLocation(),
-                    _componentSymbol,
-                    isAuthorReachable: true),
+                    _componentSymbol),
                 new InvalidOperationException(message));
 
         private Expression? RewriteDirectParameterReference(

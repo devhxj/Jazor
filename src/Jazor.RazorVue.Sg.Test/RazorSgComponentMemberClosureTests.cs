@@ -7453,11 +7453,8 @@ public sealed class MemberClosureTests
             ?? components.Single();
         var binding = new GeneratedCSharpBinding(
             compilation,
-            CompilationBindingMode.ReusedHookCompilation,
             ImmutableArray.Create(document),
-            components,
-            ReusedGeneratedTreeCount: 1,
-            DerivedGeneratedTreeCount: 0);
+            components);
 
         return new ClosureFixture(binding, component);
     }

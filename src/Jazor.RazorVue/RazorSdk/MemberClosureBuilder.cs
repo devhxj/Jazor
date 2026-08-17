@@ -93,8 +93,7 @@ internal static class MemberClosureBuilder
                 RazorVueDiagnosticCategory.MemberClosure,
                 failure ?? "No component member closure detail was provided.",
                 RazorVueDiagnosticFactory.GetSymbolLocation(component.BuildRenderTreeMethod),
-                component.ComponentSymbol,
-                isAuthorReachable: true);
+                component.ComponentSymbol);
         return built;
     }
 

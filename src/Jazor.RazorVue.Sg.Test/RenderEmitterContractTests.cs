@@ -91,7 +91,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsNull(result);
         Assert.IsNotNull(diagnostic);
         Assert.AreEqual(RazorVueDiagnosticCategory.DirectRender, diagnostic.Category);
-        Assert.IsTrue(diagnostic.IsAuthorReachable);
+        Assert.AreNotEqual(Microsoft.CodeAnalysis.Location.None, diagnostic.PrimaryLocation);
 
         var signatureFailure = CreateFixture();
         emitted = RenderEmitter.TryEmitWithDiagnostic(

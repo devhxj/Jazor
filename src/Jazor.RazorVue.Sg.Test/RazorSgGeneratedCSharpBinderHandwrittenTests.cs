@@ -49,13 +49,10 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         Assert.IsTrue(result, failure);
         Assert.IsNotNull(binding);
         Assert.AreSame(compilation, binding!.Compilation);
-        Assert.AreEqual(CompilationBindingMode.ReusedHookCompilation, binding.BindingMode);
         Assert.AreEqual(1, binding.Documents.Length);
         Assert.AreSame(sourceTree, binding.Components.Single().BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree);
         Assert.AreSame(binding.Documents.Single(), binding.Components.Single().Document);
         Assert.AreEqual(3, binding.Components.Single().BuildRenderTreeBody.Operations.Length);
-        Assert.AreEqual(1, binding.ReusedGeneratedTreeCount);
-        Assert.AreEqual(0, binding.DerivedGeneratedTreeCount);
     }
 
     [TestMethod]
@@ -114,7 +111,6 @@ public sealed class GeneratedCSharpBinderHandwrittenTests
         Assert.AreSame(binding.Documents[0], binding.Components[0].Document);
         Assert.AreSame(binding.Documents[0], binding.Components[1].Document);
         Assert.AreEqual("Pages/Components.razor.cs", binding.Documents[0].SourcePath);
-        Assert.AreEqual(1, binding.ReusedGeneratedTreeCount);
     }
 
     [TestMethod]

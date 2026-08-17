@@ -57,8 +57,7 @@ internal static class RazorTailOutput
                     RazorVueDiagnosticCategory.ComponentBinding,
                     "No component binding detail was provided.",
                     GetFirstComponentLocation(components),
-                    components.FirstOrDefault(),
-                    isAuthorReachable: true));
+                    components.FirstOrDefault()));
             }
             return false;
         }
@@ -103,8 +102,7 @@ internal static class RazorTailOutput
                     RazorVueDiagnosticCategory.MemberClosure,
                     "No component member closure detail was provided.",
                     RazorVueDiagnosticFactory.GetSymbolLocation(component.BuildRenderTreeMethod),
-                    component.ComponentSymbol,
-                    isAuthorReachable: true));
+                    component.ComponentSymbol));
                 continue;
             }
 

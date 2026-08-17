@@ -28,8 +28,10 @@ public sealed class RazorSgDirectRenderFailureMatrixTests
         Assert.IsTrue(
             diagnostic.Category is RazorVueDiagnosticCategory.DirectRender or RazorVueDiagnosticCategory.CompilerBridge,
             "Unexpected final diagnostic category: " + diagnostic.Category + " for " + testCase.Id);
-        Assert.IsTrue(diagnostic.IsAuthorReachable, testCase.Id);
-        Assert.AreEqual(RazorVueDiagnosticSourceKind.AuthoredCSharp, diagnostic.SourceKind, testCase.Id);
+        Assert.AreNotEqual(Microsoft.CodeAnalysis.Location.None, diagnostic.PrimaryLocation, testCase.Id);
+        Assert.IsTrue(
+            diagnostic.PrimaryLocation.GetLineSpan().Path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase),
+            testCase.Id);
         Assert.IsTrue(
             descriptor.Id is "JAZORVGA021" or "JAZORVGA022",
             "Unexpected descriptor: " + descriptor.Id + " for " + testCase.Id);

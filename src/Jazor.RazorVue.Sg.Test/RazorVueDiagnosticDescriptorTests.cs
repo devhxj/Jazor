@@ -41,7 +41,7 @@ public sealed class RazorVueDiagnosticDescriptorTests
     }
 
     [TestMethod]
-    public void DiagnosticFactory_UsesGeneratedSourceKindOnlyForUnmappedGeneratedTrees()
+    public void DiagnosticFactory_PreservesUnmappedGeneratedTreeLocation()
     {
         var tree = CSharpSyntaxTree.ParseText(
             "class GeneratedComponent { }",
@@ -54,13 +54,12 @@ public sealed class RazorVueDiagnosticDescriptorTests
             "generated-detail",
             location);
 
-        Assert.AreEqual(RazorVueDiagnosticSourceKind.GeneratedCSharp, info.SourceKind);
         Assert.AreEqual(location.GetLineSpan().Path, info.PrimaryLocation.GetLineSpan().Path);
         Assert.AreNotEqual(Location.None, info.PrimaryLocation);
     }
 
     [TestMethod]
-    public void DiagnosticInfo_WithComponent_ReclassifiesResolvedComponentLocation()
+    public void DiagnosticInfo_WithComponent_UsesComponentFallbackLocation()
     {
         var tree = CSharpSyntaxTree.ParseText(
             "namespace Demo; public sealed class GeneratedComponent { }",
@@ -80,9 +79,6 @@ public sealed class RazorVueDiagnosticDescriptorTests
         var resolved = unresolved.WithComponent(component);
 
         Assert.AreNotEqual(Location.None, resolved.PrimaryLocation);
-        Assert.AreEqual(
-            RazorVueDiagnosticSourceKind.GeneratedCSharp,
-            resolved.SourceKind);
         Assert.AreEqual(
             "Pages/GeneratedComponent.razor.g.cs",
             resolved.PrimaryLocation.GetLineSpan().Path);
@@ -109,21 +105,14 @@ public sealed class RazorVueDiagnosticDescriptorTests
             new LinePositionSpan(new LinePosition(2, 3), new LinePosition(2, 4)));
         var diagnostic = new RazorVueDiagnosticInfo(
             RazorVueDiagnosticCategory.ComponentBinding,
-            "RazorVue.ComponentBinding",
-            ImmutableArray.Create("component-detail"),
-            DiagnosticSeverity.Error,
+            "component-detail",
             mappedLocation,
             ImmutableArray<Location>.Empty,
-            RazorVueDiagnosticSourceKind.MappedRazor,
-            ComponentId: null,
-            Subject: null,
-            HelpLinkKey: "component-binding",
-            IsAuthorReachable: true);
+            ComponentId: null);
 
         var resolved = diagnostic.WithComponent(component);
 
         Assert.AreEqual("Pages/GeneratedComponent.razor", resolved.PrimaryLocation.GetLineSpan().Path);
-        Assert.AreEqual(RazorVueDiagnosticSourceKind.MappedRazor, resolved.SourceKind);
     }
 
     [TestMethod]
@@ -148,7 +137,6 @@ public sealed class RazorVueDiagnosticDescriptorTests
                 RazorVueDiagnosticCategory.DirectRender);
 
             Assert.AreEqual(RazorVueDiagnosticCategory.CompilerBridge, info.Category);
-            Assert.AreEqual(RazorVueDiagnosticSourceKind.GeneratedCSharp, info.SourceKind);
             Assert.AreEqual(location.GetLineSpan().Path, info.PrimaryLocation.GetLineSpan().Path);
         }
     }
@@ -184,7 +172,6 @@ public sealed class RazorVueDiagnosticDescriptorTests
             primaryLocation: mapped,
             additionalLocations: ImmutableArray.Create(primary, duplicate, mapped, Location.None));
 
-        Assert.AreEqual(RazorVueDiagnosticSourceKind.MappedRazor, info.SourceKind);
         Assert.AreEqual("Pages/Mapped.razor", info.PrimaryLocation.GetLineSpan().Path);
         Assert.HasCount(2, info.AdditionalLocations);
         Assert.AreEqual("Pages/First.cs", info.AdditionalLocations[0].GetLineSpan().Path);
@@ -201,13 +188,10 @@ public sealed class RazorVueDiagnosticDescriptorTests
         Assert.AreEqual(RazorVueDiagnosticCategory.Internal, fallback.Category);
         Assert.AreEqual("No diagnostic detail was provided.", fallback.Message);
         Assert.AreEqual(Location.None, fallback.PrimaryLocation);
-        Assert.IsFalse(fallback.IsAuthorReachable);
 
         var typed = RazorVueDiagnosticFactory.Create(
             RazorVueDiagnosticCategory.VueModule,
             "typed diagnostic");
-        var emptyMessageArguments = typed with { MessageArguments = default };
-        Assert.AreEqual(string.Empty, emptyMessageArguments.Message);
         var preserved = RazorVueDiagnosticFactory.FromException(
             new RazorVueDiagnosticException(typed),
             RazorVueDiagnosticCategory.Internal);
@@ -216,7 +200,7 @@ public sealed class RazorVueDiagnosticDescriptorTests
     }
 
     [TestMethod]
-    public void DiagnosticFactory_UsesStableSourceKindsAndSymbolFallbackLocation()
+    public void DiagnosticFactory_UsesDeterministicSymbolFallbackLocation()
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var first = CSharpSyntaxTree.ParseText(
@@ -241,44 +225,6 @@ public sealed class RazorVueDiagnosticDescriptorTests
             component: component);
 
         Assert.AreEqual("A/Component.cs", info.PrimaryLocation.GetLineSpan().Path);
-        Assert.AreEqual(RazorVueDiagnosticSourceKind.AuthoredCSharp, info.SourceKind);
-        Assert.AreEqual(RazorVueDiagnosticSourceKind.None, RazorVueDiagnosticFactory.GetSourceKind(Location.None));
-        Assert.AreEqual(
-            RazorVueDiagnosticSourceKind.GeneratedCSharp,
-            RazorVueDiagnosticFactory.GetSourceKind(Location.Create(
-                "Pages/Generated.g.cs",
-                new TextSpan(0, 1),
-                new LinePositionSpan(new LinePosition(0, 0), new LinePosition(0, 1)))));
-        Assert.AreEqual(
-            RazorVueDiagnosticSourceKind.MappedRazor,
-            RazorVueDiagnosticFactory.GetSourceKind(Location.Create(
-                "Pages/Counter.RAZOR",
-                new TextSpan(0, 1),
-                new LinePositionSpan(new LinePosition(0, 0), new LinePosition(0, 1)))));
-        Assert.AreEqual(
-            RazorVueDiagnosticSourceKind.GeneratedCSharp,
-            RazorVueDiagnosticFactory.GetSourceKind(Location.Create(
-                "Pages/Counter.razor.g.cs",
-                new TextSpan(0, 1),
-                new LinePositionSpan(new LinePosition(0, 0), new LinePosition(0, 1)))));
-        Assert.AreEqual(
-            RazorVueDiagnosticSourceKind.GeneratedCSharp,
-            RazorVueDiagnosticFactory.GetSourceKind(Location.Create(
-                "Pages/Counter.generated.cs",
-                new TextSpan(0, 1),
-                new LinePositionSpan(new LinePosition(0, 0), new LinePosition(0, 1)))));
-        Assert.AreEqual(
-            RazorVueDiagnosticSourceKind.GeneratedCSharp,
-            RazorVueDiagnosticFactory.GetSourceKind(Location.Create(
-                "Pages/Counter.designer.cs",
-                new TextSpan(0, 1),
-                new LinePositionSpan(new LinePosition(0, 0), new LinePosition(0, 1)))));
-        Assert.AreEqual(
-            RazorVueDiagnosticSourceKind.AuthoredCSharp,
-            RazorVueDiagnosticFactory.GetSourceKind(Location.Create(
-                "Pages/Authored.cs",
-                new TextSpan(0, 1),
-                new LinePositionSpan(new LinePosition(0, 0), new LinePosition(0, 1)))));
         Assert.AreEqual(Location.None, RazorVueDiagnosticFactory.GetSymbolLocation(null));
     }
 
@@ -319,7 +265,6 @@ public sealed class RazorVueDiagnosticDescriptorTests
             primaryLocation: external,
             subject: component);
         Assert.AreEqual("Pages/Component.cs", subjectFallback.PrimaryLocation.GetLineSpan().Path);
-        Assert.AreEqual(RazorVueDiagnosticSourceKind.AuthoredCSharp, subjectFallback.SourceKind);
 
         var primaryWins = RazorVueDiagnosticFactory.Create(
             RazorVueDiagnosticCategory.DirectRender,
@@ -342,7 +287,6 @@ public sealed class RazorVueDiagnosticDescriptorTests
             new InvalidOperationException("   "),
             RazorVueDiagnosticCategory.DirectRender);
         Assert.AreEqual("No diagnostic detail was provided.", whitespaceMessage.Message);
-        Assert.IsTrue(whitespaceMessage.IsAuthorReachable);
     }
 
     [TestMethod]
@@ -409,7 +353,7 @@ public sealed class RazorVueDiagnosticDescriptorTests
     }
 
     [TestMethod]
-    public void DiagnosticFactory_PreservesExplicitHelpLinkAndIgnoresMetadataOnlySymbols()
+    public void DiagnosticFactory_IgnoresMetadataOnlySymbolsForLocationFallback()
     {
         var compilation = CSharpCompilation.Create(
             "RazorVueDiagnosticMetadata_" + Guid.NewGuid().ToString("N"),
@@ -421,16 +365,12 @@ public sealed class RazorVueDiagnosticDescriptorTests
 
         var diagnostic = RazorVueDiagnosticFactory.Create(
             RazorVueDiagnosticCategory.VueModule,
-            "explicit-help-link",
-            subject: metadataString,
-            isAuthorReachable: false,
-            helpLinkKey: "custom-module-boundary");
+            "metadata-only symbol",
+            subject: metadataString);
 
         Assert.AreEqual(Location.None, diagnostic.PrimaryLocation);
-        Assert.AreEqual(RazorVueDiagnosticSourceKind.None, diagnostic.SourceKind);
-        Assert.AreEqual("custom-module-boundary", diagnostic.HelpLinkKey);
-        Assert.IsFalse(diagnostic.IsAuthorReachable);
-        Assert.IsNotNull(diagnostic.Subject);
+        Assert.AreEqual(RazorVueDiagnosticCategory.VueModule, diagnostic.Category);
+        Assert.AreEqual("metadata-only symbol", diagnostic.Message);
     }
 
 }

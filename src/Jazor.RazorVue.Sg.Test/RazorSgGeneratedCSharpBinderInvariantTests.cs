@@ -59,10 +59,9 @@ public sealed class GeneratedCSharpBinderInvariantTests
         Assert.IsTrue(result, failure);
         Assert.IsNotNull(binding);
         Assert.AreSame(compilation, binding!.Compilation);
-        Assert.AreEqual(CompilationBindingMode.ReusedHookCompilation, binding.BindingMode);
+        Assert.AreEqual(1, binding.Documents.Length);
         Assert.AreEqual(1, binding.Components.Length);
         Assert.AreSame(generatedTree, binding.Components[0].BuildRenderTreeMethod.DeclaringSyntaxReferences.Single().SyntaxTree);
-        Assert.AreEqual(0, binding.DerivedGeneratedTreeCount);
     }
 
     [TestMethod]
@@ -144,7 +143,6 @@ public sealed class GeneratedCSharpBinderInvariantTests
         CollectionAssert.AreEqual(
             new[] { "Alpha.razor.g.cs", "Zebra.razor.g.cs" },
             binding.Documents.Select(static document => document.HintName).ToArray());
-        Assert.AreEqual(2, binding.ReusedGeneratedTreeCount);
         Assert.IsTrue(binding.Components.All(static component =>
             string.Equals(
                 component.Document.SourcePath,

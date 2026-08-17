@@ -20,7 +20,7 @@
 
 RazorVue 的最终管线顺序是：组件发现 -> final Compilation binding -> member closure -> VueInject registry -> direct RenderTree lowering/compiler bridge -> Vue module framing -> artifact catalog -> source-generator reporting。任何阶段失败都会停止受影响组件；存在错误时不会生成部分 catalog 或部分模块声明。
 
-诊断不是从异常文本猜出来的。内部使用 typed `RazorVueDiagnosticInfo` 传递 category、message arguments、primary/additional locations、component identity 和 source kind；mapped `.razor` span 优先于 generated `.razor.g.cs` span。独立组件的错误按稳定组件身份和位置排序，因此同一输入在并行构建中仍有相同输出。
+诊断不是从异常文本猜出来的。内部使用 typed `RazorVueDiagnosticInfo` 传递 category、已渲染 detail、primary/additional locations 和 component identity；descriptor 集中拥有 ID、severity 和 HelpLink。mapped `.razor` span 优先于 generated `.razor.g.cs` span。独立组件的错误按稳定组件身份和位置排序，因此同一输入在并行构建中仍有相同输出。
 
 ### Diagnostic ID
 

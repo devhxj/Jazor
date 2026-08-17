@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Jazor.RazorVue.Generation;
@@ -21,47 +20,25 @@ internal enum RazorVueDiagnosticCategory
     VueModule
 }
 
-/// <summary>Describes which source identity a final diagnostic can safely expose to the author.</summary>
-internal enum RazorVueDiagnosticSourceKind
-{
-    None = 0,
-    MappedRazor,
-    AuthoredCSharp,
-    GeneratedCSharp
-}
-
 /// <summary>
 /// Typed diagnostic carrier used between RazorVue final-compilation stages.
-/// It deliberately preserves category, source and component identity before Roslyn reporting
-/// turns it into a <see cref="Diagnostic"/>.
+/// It deliberately preserves category, rendered detail, locations, and component identity
+/// before Roslyn reporting turns it into a <see cref="Diagnostic"/>.
 /// 在 hook 之前不能压缩为 string；否则多个组件和 mapped Razor 位置都会丢失。
 /// </summary>
 internal sealed record RazorVueDiagnosticInfo(
     RazorVueDiagnosticCategory Category,
-    string MessageKey,
-    ImmutableArray<string> MessageArguments,
-    DiagnosticSeverity Severity,
+    string Message,
     Location PrimaryLocation,
     ImmutableArray<Location> AdditionalLocations,
-    RazorVueDiagnosticSourceKind SourceKind,
-    string? ComponentId,
-    string? Subject,
-    string? HelpLinkKey,
-    bool IsAuthorReachable)
+    string? ComponentId)
 {
-    /// <summary>Current descriptors carry one stable detail argument; keep formatting outside transport.</summary>
-    public string Message => MessageArguments.IsDefaultOrEmpty
-        ? string.Empty
-        : MessageArguments[0];
-
     public RazorVueDiagnosticInfo WithComponent(INamedTypeSymbol? component)
     {
         if (component is null)
             return this;
 
         // Component fallback can turn Location.None into a generated or mapped Razor location.
-        // SourceKind must describe the resolved location, not the pre-enrichment record value.
-        // 补齐 component 位置后必须同步重算来源类型，否则诊断导航和分类会发生漂移。
         // A mapped Razor location is an external Location carrier (`IsInSource == false`). It is
         // already author-facing, so only resolve a component fallback when the diagnostic truly
         // has no location. Re-normalizing it would discard the mapped path.
@@ -75,8 +52,7 @@ internal sealed record RazorVueDiagnosticInfo(
             ComponentId = string.IsNullOrEmpty(ComponentId)
                 ? component.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
                 : ComponentId,
-            PrimaryLocation = resolvedLocation,
-            SourceKind = RazorVueDiagnosticFactory.GetSourceKind(resolvedLocation)
+            PrimaryLocation = resolvedLocation
         };
     }
 }
@@ -94,9 +70,7 @@ internal static class RazorVueDiagnosticFactory
         Location? primaryLocation = null,
         INamedTypeSymbol? component = null,
         ISymbol? subject = null,
-        ImmutableArray<Location> additionalLocations = default,
-        bool isAuthorReachable = true,
-        string? helpLinkKey = null)
+        ImmutableArray<Location> additionalLocations = default)
     {
         var normalizedPrimary = ToAuthorLocation(primaryLocation);
         var normalizedAdditional = NormalizeLocations(additionalLocations);
@@ -106,17 +80,11 @@ internal static class RazorVueDiagnosticFactory
             normalizedPrimary = GetSymbolLocation(component);
 
         return new RazorVueDiagnosticInfo(
-            category,
-            MessageKey: GetMessageKey(category),
-            MessageArguments: ImmutableArray.Create(message),
-            Severity: DiagnosticSeverity.Error,
+            Category: category,
+            Message: message,
             PrimaryLocation: normalizedPrimary,
             AdditionalLocations: normalizedAdditional,
-            SourceKind: GetSourceKind(normalizedPrimary),
-            ComponentId: component?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-            Subject: subject?.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-            HelpLinkKey: helpLinkKey ?? GetHelpLinkKey(category),
-            IsAuthorReachable: isAuthorReachable);
+            ComponentId: component?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
     }
 
     internal static RazorVueDiagnosticInfo FromException(
@@ -148,8 +116,7 @@ internal static class RazorVueDiagnosticFactory
             message,
             location,
             component,
-            subject,
-            isAuthorReachable: category != RazorVueDiagnosticCategory.Internal);
+            subject);
     }
 
     internal static Location GetSymbolLocation(ISymbol? symbol)
@@ -203,40 +170,6 @@ internal static class RazorVueDiagnosticFactory
             .Distinct(LocationComparer.Instance)
             .ToImmutableArray();
     }
-
-    internal static RazorVueDiagnosticSourceKind GetSourceKind(Location location)
-    {
-        if (location == Location.None)
-            return RazorVueDiagnosticSourceKind.None;
-
-        var path = location.GetLineSpan().Path ?? location.SourceTree?.FilePath ?? string.Empty;
-        if (path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
-            return RazorVueDiagnosticSourceKind.MappedRazor;
-        if (path.EndsWith(".razor.g.cs", StringComparison.OrdinalIgnoreCase) ||
-            path.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
-            path.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase) ||
-            path.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase))
-        {
-            return RazorVueDiagnosticSourceKind.GeneratedCSharp;
-        }
-
-        return RazorVueDiagnosticSourceKind.AuthoredCSharp;
-    }
-
-    private static string GetMessageKey(RazorVueDiagnosticCategory category)
-        => "RazorVue." + category;
-
-    private static string GetHelpLinkKey(RazorVueDiagnosticCategory category)
-        => category switch
-        {
-            RazorVueDiagnosticCategory.DirectRender => "direct-render",
-            RazorVueDiagnosticCategory.CompilerBridge => "compiler-boundary",
-            RazorVueDiagnosticCategory.ComponentBinding => "component-binding",
-            RazorVueDiagnosticCategory.MemberClosure => "member-closure",
-            RazorVueDiagnosticCategory.VueInject => "vue-inject",
-            RazorVueDiagnosticCategory.VueModule => "vue-module",
-            _ => "final-compilation"
-        };
 
     private sealed class LocationComparer : IEqualityComparer<Location>
     {

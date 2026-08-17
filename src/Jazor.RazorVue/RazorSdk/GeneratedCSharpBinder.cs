@@ -136,11 +136,8 @@ internal static class GeneratedCSharpBinder
 
         binding = new GeneratedCSharpBinding(
             compilation,
-            CompilationBindingMode.ReusedHookCompilation,
             documents.ToImmutable(),
-            boundComponents.ToImmutable(),
-            ReusedGeneratedTreeCount: documents.Count,
-            DerivedGeneratedTreeCount: 0);
+            boundComponents.ToImmutable());
         return true;
     }
 
@@ -253,20 +250,11 @@ internal static class GeneratedCSharpBinder
             path.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase));
 }
 
-/// <summary>Records how a generated compilation was obtained for a binding. 区分 Razor SG 与手写 BuildRenderTree 输入。</summary>
-internal enum CompilationBindingMode
-{
-    ReusedHookCompilation
-}
-
 /// <summary>Bound source documents and render methods from one final compilation. 是后续 module build 的统一输入快照。</summary>
 internal sealed record GeneratedCSharpBinding(
     Compilation Compilation,
-    CompilationBindingMode BindingMode,
     ImmutableArray<GeneratedDocument> Documents,
-    ImmutableArray<BoundComponent> Components,
-    int ReusedGeneratedTreeCount,
-    int DerivedGeneratedTreeCount);
+    ImmutableArray<BoundComponent> Components);
 
 /// <summary>One component render method after Roslyn operation binding. 保留符号、operation body 与 source document 的对应关系。</summary>
 internal sealed record BoundComponent(

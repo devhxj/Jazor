@@ -31,7 +31,7 @@ Razor SDK/Roslyn 负责 Razor 绑定、C# 类型和语法语义；RazorVue 只�
 
 ## D0：Final-pipeline diagnostic transport
 
-`src/Jazor.RazorVue/Generation/RazorVueDiagnosticInfo.cs` 提供 typed `RazorVueDiagnosticInfo`、category、source kind、primary/additional locations、component identity 和稳定 message arguments。`RazorVueDiagnosticException` 只负责跨现有 exception-shaped API 搬运该 carrier；生产 reporting 不解析异常文本，也不读取 `Exception.Data`。
+`src/Jazor.RazorVue/Generation/RazorVueDiagnosticInfo.cs` 提供 typed `RazorVueDiagnosticInfo`、category、已渲染 detail、primary/additional locations 和 component identity。ID、severity 与 HelpLink 由 `Diagnostics` 的 descriptor 集中定义。`RazorVueDiagnosticException` 只负责跨现有 exception-shaped API 搬运该 carrier；生产 reporting 不解析异常文本，也不读取 `Exception.Data`。
 
 来自 `Jazor.Compiler` 的 `OperationTransformationException`、`SyntaxNodeTransformationException` 与 `SymbolTransformationException` 统一归为 `CompilerBridge` 并保留其 typed source location；未包装的 `RenderEmitter` `OperationTransformationException` 则仍归属于 `DirectRender`，因为它表示 `RenderTreeBuilder` 协议而非 C# 语义桥接失败。
 
@@ -106,7 +106,7 @@ RazorVue 的 member-closure profile 现在使用 `RuntimeClassPrivateStorage.Pro
 | VueInject | `JAZORVGA025` | VueInject declaration / `#vue-inject` |
 | VueModule | `JAZORVGA026` | Vue module / `#vue-module` |
 
-预期作者失败只能由 typed category 创建 descriptor；不存在依据 message text 选择 ID 的逻辑。`RazorVueDiagnosticDescriptorTests` 锁定每个 category 的 ID、severity 和 HelpLink；`RazorSgDirectRenderFailureMatrixTests` 对全量失败族断言 category、source kind、稳定 message 参数和替代锚点；bootstrap/tail-output tests 断言 mapped path、line/column、fallback 类型和 no-partial-catalog。
+预期作者失败只能由 typed category 创建 descriptor；不存在依据 message text 选择 ID 的逻辑。`RazorVueDiagnosticDescriptorTests` 锁定每个 category 的 ID、severity 和 HelpLink；`RazorSgDirectRenderFailureMatrixTests` 对全量失败族断言 category、作者位置、detail 和替代锚点；bootstrap/tail-output tests 断言 mapped path、line/column、fallback 类型和 no-partial-catalog。
 
 ## D4：early analyzer 决策
 

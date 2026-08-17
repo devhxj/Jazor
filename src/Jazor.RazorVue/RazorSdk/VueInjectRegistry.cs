@@ -96,8 +96,7 @@ internal sealed class VueInjectRegistry
             throw new RazorVueDiagnosticException(RazorVueDiagnosticFactory.Create(
                 RazorVueDiagnosticCategory.VueInject,
                 "RazorVue [VueInject] " + role + " argument must be a named component type.",
-                location,
-                isAuthorReachable: true));
+                location));
         }
 
         return componentType;
@@ -238,8 +237,7 @@ internal sealed class VueInjectRegistry
             "Invalid RazorVue [VueInject] declaration for container contract '" +
             Display(contract) + "': " + detail,
             RazorVueDiagnosticFactory.GetSymbolLocation(contract),
-            subject: contract,
-            isAuthorReachable: true));
+            subject: contract));
 
     private static string Display(ITypeSymbol symbol)
         => symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
