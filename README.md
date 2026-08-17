@@ -34,10 +34,10 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ### 2026-08-17
 
+- Jazor 0.16.1 preserves the parent context for RazorVue dynamic slots, retains explicit loop-item keys when scoped lowering cannot use `renderList`, imports retained static-vnode helpers correctly, and keeps supported C# collection-initializer `Add` calls intact.
 - RazorVue final-compilation failures now use stable `JAZORVGA020`-`026` diagnostics with mapped Razor/C# source locations and actionable guidance; failed component generation no longer leaves partial artifact catalogs.
 - Runtime member classes captured by RazorVue components remain safe through Vue deep Proxies, including private storage, auto-property backing fields, primary-constructor capture, and field-like events.
-- RazorVue rejects unverified labeled `break`/`continue` lowering shapes, preserves parent context for dynamic slots, and retains explicit loop-item keys when scoped output cannot use `renderList`.
-- Supported C# collection initializers preserve their declared or configured `Add` runtime name instead of emitting an empty JavaScript member call.
+- RazorVue 0.16.0 rejects unverified labeled `break`/`continue` lowering shapes.
 - Release validation publishes an isolated `JazorSSR=true` RazorVue TodoList consumer from generated NuGet packages and verifies packaged SSR, PathBase resolution, and Edge hydration.
 
 See the [changelog](CHANGELOG.md) for the full release history.

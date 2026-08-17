@@ -34,10 +34,10 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ### 2026-08-17
 
+- Jazor 0.16.1 修复 RazorVue direct lowering：dynamic slot 保留父组件上下文，scope 输出无法使用 `renderList` 时仍保留显式循环项 key，retained static vnode helper 可正确导入，支持的 C# collection initializer 也会保留 `Add` 调用。
 - RazorVue 最终 Compilation 失败现使用稳定的 `JAZORVGA020`-`026` 诊断，映射回 Razor/C# 源位置并给出可操作指引；组件生成失败不会再留下部分 artifact catalog。
 - 被 RazorVue 组件捕获的 runtime member class 现可安全穿过 Vue deep Proxy，包括 private storage、自动属性 backing field、primary-constructor capture 与 field-like event。
-- RazorVue 会拒绝未验证的 labeled `break`/`continue` lowering 形状；dynamic slot 保留父组件上下文，scope 输出无法使用 `renderList` 时仍会保留显式循环项 key。
-- 支持的 C# collection initializer 会保留声明或配置的 `Add` runtime name，不再生成空的 JavaScript 成员调用。
+- RazorVue 0.16.0 会拒绝未验证的 labeled `break`/`continue` lowering 形状。
 - 发布验证会从生成的 NuGet 包发布隔离的 `JazorSSR=true` RazorVue TodoList consumer，并验证 packaged SSR、PathBase 资源解析与 Edge hydration。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
