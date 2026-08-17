@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Collections.Immutable;
+using Acornima;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.RazorVue.RazorSdk;
@@ -47,6 +48,18 @@ public sealed class RenderEmitterPrivateContractTests
         var nonConstantArguments = new object?[] { dynamicText, null };
         Assert.IsFalse(Invoke<bool>("TryGetConstantString", nonConstantArguments));
         Assert.AreEqual(string.Empty, nonConstantArguments[1]);
+        var nonStringConstantArguments = new object?[] { GetVariableInitializer(fixture, inputs, "staticInt"), null };
+        Assert.IsFalse(Invoke<bool>("TryGetConstantString", nonStringConstantArguments));
+        Assert.AreEqual(string.Empty, nonStringConstantArguments[1]);
+
+        var assignedLocalArguments = new object?[] { loopLocalConversion, null };
+        Assert.IsTrue(InvokeEmitter<bool>("TryGetAssignedLocal", assignedLocalArguments));
+        Assert.IsTrue(SymbolEqualityComparer.Default.Equals(loopLocal, assignedLocalArguments[1] as ILocalSymbol));
+        var deduplicatedLoopLocals = InvokeEmitter<ImmutableArray<ILocalSymbol>>(
+            "GetLoopControlLocals",
+            GetVariableInitializer(fixture, inputs, "repeatedLoopLocal"));
+        Assert.HasCount(1, deduplicatedLoopLocals);
+        Assert.IsTrue(SymbolEqualityComparer.Default.Equals(loopLocal, deduplicatedLoopLocals[0]));
 
         Assert.IsTrue(Invoke<bool>("CanOmit", literal));
         Assert.IsTrue(Invoke<bool>("CanOmit", GetVariableInitializer(fixture, inputs, "omitParameter")));
@@ -145,6 +158,11 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoImportComponent")));
         AssertComponentImport(GetNamedType(fixture, "ModuleComponent"), "./components/module.mjs", "default");
         AssertComponentImport(GetNamedType(fixture, "LibraryComponent"), "tdesign-vue-next", "Button");
+        var slotMapComponent = GetNamedType(fixture, "SlotMapComponent");
+        var slotNames = Invoke<ImmutableDictionary<IPropertySymbol, string>>(
+            "BuildComponentSlotNameMap",
+            slotMapComponent);
+        Assert.AreEqual("header-slot", slotNames[GetProperty(slotMapComponent, "Header")]);
         var reactLibraryImport = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "ReactLibraryComponent")));
         StringAssert.Contains(reactLibraryImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
@@ -256,6 +274,197 @@ public sealed class RenderEmitterPrivateContractTests
     }
 
     [TestMethod]
+    public void StaticTextEligibility_AcceptsOnlyConstantScalarPayloads()
+    {
+        var fixture = CreateFixture();
+        var inputs = GetMethod(fixture, "OperationShapes", "Inputs");
+        var allowedConstants = new[]
+        {
+            "staticNull",
+            "staticString",
+            "staticBoolean",
+            "staticChar",
+            "staticSByte",
+            "staticByte",
+            "staticShort",
+            "staticUShort",
+            "staticInt",
+            "staticUInt",
+            "staticLong",
+            "staticULong",
+            "staticFloat",
+            "staticDouble",
+            "staticDecimal",
+            "constantSByte",
+            "constantByte",
+            "constantShort",
+            "constantUShort",
+            "constantUInt",
+            "constantLong",
+            "constantULong",
+            "constantFloat",
+            "constantDouble",
+            "constantDecimal"
+        };
+
+        foreach (var name in allowedConstants)
+            Assert.IsTrue(Invoke<bool>("IsStaticTextContent", GetVariableInitializer(fixture, inputs, name)), name);
+
+        // Conversion is transparent for literal staticness; this also guards the unwrap loop.
+        Assert.IsTrue(Invoke<bool>("IsStaticTextContent", GetVariableInitializer(fixture, inputs, "convertedLiteral")));
+        var dynamicText = GetVariableInitializer(fixture, inputs, "dynamicTextValue");
+        Assert.IsFalse(Invoke<bool>("IsStaticTextContent", dynamicText));
+        Assert.IsTrue(Invoke<bool>("IsGuaranteedStringTextContent", GetVariableInitializer(fixture, inputs, "staticString")));
+        Assert.IsFalse(Invoke<bool>("IsGuaranteedStringTextContent", GetVariableInitializer(fixture, inputs, "staticInt")));
+        Assert.IsFalse(Invoke<bool>("IsGuaranteedStringTextContent", GetMethodBody(fixture, "OperationShapes", "Empty")));
+    }
+
+    [TestMethod]
+    public void EventModifierAndSignatureHelpers_PreserveImmediateAndConditionalProtocols()
+    {
+        var fixture = CreateFixture();
+        var inputs = GetMethod(fixture, "OperationShapes", "Inputs");
+        var immediate = new List<Statement>();
+        var conditional = new List<Statement>();
+        var skipped = new List<Statement>();
+        var absent = new List<Statement>();
+
+        Invoke<object?>(
+            "AddDirectEventModifierStatement",
+            immediate,
+            new Identifier("event"),
+            new BooleanLiteral(true, "true"),
+            "preventDefault");
+        Invoke<object?>(
+            "AddDirectEventModifierStatement",
+            conditional,
+            new Identifier("event"),
+            new Identifier("enabled"),
+            "stopPropagation");
+        Invoke<object?>(
+            "AddDirectEventModifierStatement",
+            skipped,
+            new Identifier("event"),
+            new BooleanLiteral(false, "false"),
+            "preventDefault");
+        Invoke<object?>(
+            "AddDirectEventModifierStatement",
+            absent,
+            new Identifier("event"),
+            null,
+            "preventDefault");
+        Invoke<object?>(
+            "EnsureSignature",
+            GetVariableInitializer(fixture, inputs, "literal"),
+            true);
+
+        Assert.HasCount(1, immediate);
+        Assert.IsInstanceOfType<NonSpecialExpressionStatement>(immediate[0]);
+        Assert.HasCount(1, conditional);
+        Assert.IsInstanceOfType<IfStatement>(conditional[0]);
+        Assert.IsEmpty(skipped);
+        Assert.IsEmpty(absent);
+    }
+
+    [TestMethod]
+    public void StaticMarkupProbe_SeparatesRawStringsMarkupObjectsAndDynamicPayloads()
+    {
+        var fixture = CreateFixture();
+        var inputs = GetMethod(fixture, "OperationShapes", "Inputs");
+
+        AssertStaticMarkup(
+            GetVariableInitializer(fixture, inputs, "rawStaticMarkup"),
+            allowRawStringLiteral: true,
+            expected: true,
+            "<strong>raw</strong>");
+        AssertStaticMarkup(
+            GetVariableInitializer(fixture, inputs, "rawStaticMarkup"),
+            allowRawStringLiteral: false,
+            expected: false,
+            string.Empty);
+        AssertStaticMarkup(
+            GetVariableInitializer(fixture, inputs, "markupStatic"),
+            allowRawStringLiteral: false,
+            expected: true,
+            "<em>markup</em>");
+        AssertStaticMarkup(
+            GetVariableInitializer(fixture, inputs, "markupDynamic"),
+            allowRawStringLiteral: true,
+            expected: false,
+            string.Empty);
+
+        static void AssertStaticMarkup(
+            IOperation operation,
+            bool allowRawStringLiteral,
+            bool expected,
+            string expectedMarkup)
+        {
+            var arguments = new object?[] { operation, allowRawStringLiteral, null };
+            Assert.AreEqual(expected, Invoke<bool>("TryGetStaticMarkupText", arguments));
+            Assert.AreEqual(expectedMarkup, arguments[2]);
+        }
+    }
+
+    [TestMethod]
+    public void StaticPropHoisting_RejectsDynamicIdentityAndRenderScopedProps()
+    {
+        var fixture = CreateFixture();
+        var emitter = CreateEmitter(fixture, GetNamedType(fixture, "ModuleComponent"));
+
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "CanHoistStaticProps",
+            Props(
+                Property("title", new StringLiteral("fixed", "\"fixed\"")),
+                Property("enabled", new BooleanLiteral(true, "true")),
+                Property("count", new NumericLiteral(1, "1")),
+                Property("empty", new NullLiteral("null")))));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "CanHoistStaticProps",
+            Props(Property("data-id", new StringLiteral("fixed", "\"fixed\"")))));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "CanHoistStaticProps", Props()));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "CanHoistStaticProps",
+            Props(Property("title", new Identifier("runtimeValue")))));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "CanHoistStaticProps",
+            Props(Property("title", new StringLiteral("fixed", "\"fixed\""), computed: true))));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "CanHoistStaticProps",
+            Props(Property("key", new StringLiteral("fixed", "\"fixed\"")))));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "CanHoistStaticProps",
+            Props(Property("ref", new StringLiteral("fixed", "\"fixed\"")))));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "CanHoistStaticProps",
+            Props(Property("onClick", new StringLiteral("fixed", "\"fixed\"")))));
+
+        SetNestedPrivateField(emitter, "_nonHoistableRenderScopeDepth", 1);
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "CanHoistStaticProps",
+            Props(Property("title", new StringLiteral("fixed", "\"fixed\"")))));
+
+        static ObjectExpression Props(params Node[] members)
+            => new(NodeList.From<Node>(members));
+
+        static ObjectProperty Property(string name, Expression value, bool computed = false)
+            => new(
+                PropertyKind.Init,
+                new Identifier(name),
+                value,
+                computed,
+                shorthand: false,
+                method: false);
+    }
+
+    [TestMethod]
     public void EmitterStaticHelpers_ClassifyBoundOperationsWithoutSyntheticRoslynNodes()
     {
         var fixture = CreateFixture();
@@ -315,6 +524,11 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNull(InvokeEmitter<object?>("TryGetSingleReturnValue", GetMethodBody(fixture, "OperationShapes", "VoidReturn")));
         Assert.IsNull(InvokeEmitter<object?>("TryGetSingleReturnValue", GetMethodBody(fixture, "OperationShapes", "LastReturn")));
         Assert.IsNull(InvokeEmitter<object?>("TryGetSingleReturnValue", GetVariableInitializer(fixture, inputs, "literal")));
+        Assert.IsNotNull(Invoke<IOperation?>("TryGetSingleReturnedValue", GetMethodBody(fixture, "OperationShapes", "SingleReturnValue")));
+        Assert.IsNull(Invoke<IOperation?>("TryGetSingleReturnedValue", GetMethodBody(fixture, "OperationShapes", "VoidReturn")));
+        Assert.IsNull(Invoke<IOperation?>("TryGetSingleReturnedValue", GetMethodBody(fixture, "OperationShapes", "LastReturn")));
+        Assert.IsNull(Invoke<IOperation?>("TryGetSingleReturnedValue", GetMethodBody(fixture, "OperationShapes", "SingleStatementWithoutReturn")));
+        Assert.IsNull(Invoke<IOperation?>("TryGetSingleReturnedValue", GetVariableInitializer(fixture, inputs, "literal")));
 
         var factoryArguments = new object?[]
         {
@@ -571,7 +785,6 @@ public sealed class RenderEmitterPrivateContractTests
             markupMethod,
             markupBody[1],
             context);
-        Assert.IsFalse(GetRecordProperty<bool>(markupFunction, "UsesStaticVNode"));
 
         var trailingMethod = GetMethodSymbol(fixture, "EmitterHost", "ExpressionFactory");
         var trailingBody = new object?[] { trailingMethod, null };
@@ -582,7 +795,6 @@ public sealed class RenderEmitterPrivateContractTests
             trailingMethod,
             trailingBody[1],
             context);
-        Assert.IsFalse(GetRecordProperty<bool>(trailingFunction, "UsesStaticVNode"));
 
         var genericContentMethod = GetMethod(fixture, "EmitterHost", "GenericContentInvocation");
         var genericContentSymbol = GetMethodSymbol(fixture, "EmitterHost", "GenericContentInvocation");
@@ -600,7 +812,6 @@ public sealed class RenderEmitterPrivateContractTests
             CreateEmitContext(genericContentSymbol.Parameters[0]),
             genericContentState);
         Assert.IsTrue(GetRecordProperty<bool>(genericContentState, "UsesFragment"));
-        Assert.IsFalse(GetRecordProperty<bool>(genericContentState, "UsesStaticVNode"));
     }
 
     [TestMethod]
@@ -934,6 +1145,101 @@ public sealed class RenderEmitterPrivateContractTests
     }
 
     [TestMethod]
+    public void PropFramePatchMetadata_PreservesElementComponentAndFullPropsUpdateContracts()
+    {
+        var staticFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            staticFrame,
+            "AddAttribute",
+            CreateDirectAttribute("title", new StringLiteral("static", "\"static\"")));
+        var staticPatch = InvokeNestedInstance<object>(staticFrame, "BuildPatchMetadata", false, false, 0);
+        Assert.IsFalse(GetRecordProperty<bool>(staticPatch, "RequiresBlock"));
+        Assert.AreEqual(0, GetRecordProperty<int>(staticPatch, "Flag"));
+        Assert.IsNull(GetRecordProperty<object?>(staticPatch, "DynamicProps"));
+
+        var elementFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            elementFrame,
+            "AddAttribute",
+            CreateDirectAttribute("class", new Identifier("className")));
+        InvokeNestedInstance<object?>(
+            elementFrame,
+            "AddAttribute",
+            CreateDirectAttribute("style", new Identifier("styleValue")));
+        InvokeNestedInstance<object?>(
+            elementFrame,
+            "AddAttribute",
+            CreateDirectAttribute("id", new Identifier("idValue")));
+        var elementPatch = InvokeNestedInstance<object>(elementFrame, "BuildPatchMetadata", false, false, 0);
+        Assert.IsTrue(GetRecordProperty<bool>(elementPatch, "RequiresBlock"));
+        var elementDynamicProps = Assert.IsInstanceOfType<ImmutableArray<string>>(
+            GetRecordProperty<object?>(elementPatch, "DynamicProps"));
+        CollectionAssert.AreEqual(new[] { "id" }, elementDynamicProps.ToArray());
+
+        var componentFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            componentFrame,
+            "AddAttribute",
+            CreateDirectAttribute("class", new Identifier("className")));
+        InvokeNestedInstance<object?>(
+            componentFrame,
+            "AddAttribute",
+            CreateDirectAttribute("style", new Identifier("styleValue")));
+        var componentPatch = InvokeNestedInstance<object>(componentFrame, "BuildPatchMetadata", false, true, 0);
+        var componentDynamicProps = Assert.IsInstanceOfType<ImmutableArray<string>>(
+            GetRecordProperty<object?>(componentPatch, "DynamicProps"));
+        CollectionAssert.AreEqual(new[] { "class", "style" }, componentDynamicProps.ToArray());
+
+        var keyedFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            keyedFrame,
+            "AddAttribute",
+            CreateDirectAttribute("key", new Identifier("itemKey")));
+        var keyedPatch = InvokeNestedInstance<object>(keyedFrame, "BuildPatchMetadata", false, false, 0);
+        Assert.IsTrue(GetRecordProperty<bool>(keyedPatch, "RequiresBlock"));
+        Assert.IsNull(GetRecordProperty<object?>(keyedPatch, "DynamicProps"));
+
+        var splatAndRefFrame = CreateElementFrame();
+        Assert.IsTrue(InvokeNestedInstance<bool>(splatAndRefFrame, "AddMultipleAttributes", new Identifier("attrs")));
+        InvokeNestedInstance<object?>(splatAndRefFrame, "AddReferenceCapture", new Identifier("capture"));
+        var splatAndRefPatch = InvokeNestedInstance<object>(splatAndRefFrame, "BuildPatchMetadata", false, false, 0);
+        Assert.IsTrue(GetRecordProperty<bool>(splatAndRefPatch, "RequiresBlock"));
+        Assert.IsNull(GetRecordProperty<object?>(splatAndRefPatch, "DynamicProps"));
+    }
+
+    [TestMethod]
+    public void PropFrame_SeparatesRenderListEligibilityFromEmptyAndReferenceProps()
+    {
+        var bareFrame = CreateElementFrame();
+        Assert.IsTrue(InvokeNestedInstance<bool>(bareFrame, "get_CanUseRenderList"));
+        InvokeNestedInstance<object?>(
+            bareFrame,
+            "AddConditionalAttributes",
+            new Identifier("enabled"),
+            CreateDirectAttributeArray(),
+            CreateDirectAttributeArray());
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(bareFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "h(\"div\", null, null)",
+            StringComparison.Ordinal);
+
+        var eventFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            eventFrame,
+            "AddAttribute",
+            CreateDirectAttribute("onClick", new Identifier("handler")));
+        Assert.IsFalse(InvokeNestedInstance<bool>(eventFrame, "get_CanUseRenderList"));
+
+        var referenceFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(referenceFrame, "AddReferenceCapture", new Identifier("capture"));
+        Assert.IsFalse(InvokeNestedInstance<bool>(referenceFrame, "get_CanUseRenderList"));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(referenceFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "ref: capture",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void EmitterMemberAndComponentFrameHelpers_ResolveBoundaryShapesDeterministically()
     {
         var fixture = CreateFixture();
@@ -979,6 +1285,22 @@ public sealed class RenderEmitterPrivateContractTests
         StringAssert.Contains(stableSlots, "_: 1", StringComparison.Ordinal);
         StringAssert.Contains(stableSlots, "createBlock", StringComparison.Ordinal);
         Assert.IsFalse(stableSlots.Contains("createSlots", StringComparison.Ordinal), stableSlots);
+
+        var withCtxCalls = 0;
+        var createSlotsCalls = 0;
+        var unstableSlotFrame = CreateConfiguredComponentFrame(
+            ImmutableDictionary<string, string>.Empty,
+            useWithCtx: () => withCtxCalls++,
+            useCreateSlots: () => createSlotsCalls++,
+            slotsAreInStableScope: false);
+        AddComponentSlot(
+            unstableSlotFrame,
+            "header",
+            CreateDirectRenderFragment(new Identifier("headerContent"), parameterName: null));
+        var unstableSlots = InvokeNestedInstance<Expression>(unstableSlotFrame, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(unstableSlots, "createSlots", StringComparison.Ordinal);
+        Assert.AreEqual(1, withCtxCalls);
+        Assert.AreEqual(1, createSlotsCalls);
     }
 
     [TestMethod]
@@ -1227,6 +1549,356 @@ public sealed class RenderEmitterPrivateContractTests
             lateAttributeFailure.InnerException!.Message,
             "Attributes must be added before children",
             StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void InstrumentedFrames_ApplyHoistHandlerCacheBindAndRegionProtocols()
+    {
+        var hoistCount = 0;
+        var cacheCount = 0;
+        var blockCount = 0;
+        var textVNodeCount = 0;
+        var frame = CreateConfiguredElementFrame(
+            _ =>
+            {
+                hoistCount++;
+                return new Identifier("hoistedProps");
+            },
+            _ => true,
+            handler =>
+            {
+                cacheCount++;
+                return new Identifier("cachedHandler");
+            },
+            static handler => handler is Identifier { Name: "stableHandler" },
+            static handler => handler is Identifier { Name: "stableHandler" },
+            () => blockCount++,
+            () => textVNodeCount++);
+        InvokeNestedInstance<object?>(
+            frame,
+            "AddAttribute",
+            CreateDirectAttribute("title", new StringLiteral("fixed", "\"fixed\"")));
+        var hoisted = InvokeNestedInstance<Expression>(frame, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(hoisted, "hoistedProps", StringComparison.Ordinal);
+        Assert.AreEqual(1, hoistCount);
+
+        var cachedFrame = CreateConfiguredElementFrame(
+            static value => value,
+            static _ => false,
+            handler =>
+            {
+                cacheCount++;
+                return new Identifier("cachedHandler");
+            },
+            static handler => handler is Identifier { Name: "stableHandler" },
+            static handler => handler is Identifier { Name: "stableHandler" },
+            () => blockCount++,
+            () => textVNodeCount++);
+        InvokeNestedInstance<object?>(
+            cachedFrame,
+            "AddAttribute",
+            CreateDirectAttribute("onClick", new Identifier("stableHandler")));
+        InvokeNestedInstance<object?>(
+            cachedFrame,
+            "AddAttribute",
+            CreateDirectAttribute("id", new Identifier("dynamicId")));
+        var cached = InvokeNestedInstance<Expression>(cachedFrame, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(cached, "cachedHandler", StringComparison.Ordinal);
+        StringAssert.Contains(cached, "createElementBlock", StringComparison.Ordinal);
+        Assert.AreEqual(1, cacheCount);
+        Assert.AreEqual(1, blockCount);
+
+        var bindFrame = CreateConfiguredElementFrame(
+            static value => value,
+            static _ => false,
+            static handler => handler,
+            static _ => true,
+            static _ => true,
+            null,
+            null);
+        var binderValue = new Identifier("value");
+        var binder = new ArrowFunctionExpression(
+            NodeList.From<Node>(binderValue),
+            new AssignmentExpression(
+                Operator.Assignment,
+                new MemberExpression(new Identifier("state"), new Identifier("text"), computed: false, optional: false),
+                binderValue),
+            expression: true,
+            async: false);
+        InvokeNestedInstance<object?>(
+            bindFrame,
+            "AddAttribute",
+            CreateDirectAttribute("onInput", binder, "String"));
+        InvokeNestedInstance<object?>(bindFrame, "SetUpdatesAttributeName", "value");
+        var fusedBind = InvokeNestedInstance<Expression>(bindFrame, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(fusedBind, "target[\"value\"]", StringComparison.Ordinal);
+
+        var checkedFrame = CreateConfiguredElementFrame(
+            static value => value,
+            static _ => false,
+            static handler => handler,
+            static _ => true,
+            static _ => true,
+            null,
+            null);
+        var checkedValue = new Identifier("checked");
+        var checkedBinder = new ArrowFunctionExpression(
+            NodeList.From<Node>(checkedValue),
+            new AssignmentExpression(
+                Operator.Assignment,
+                new MemberExpression(new Identifier("state"), new Identifier("enabled"), computed: false, optional: false),
+                checkedValue),
+            expression: true,
+            async: false);
+        InvokeNestedInstance<object?>(
+            checkedFrame,
+            "AddAttribute",
+            CreateDirectAttribute("onChange", checkedBinder, "Boolean"));
+        InvokeNestedInstance<object?>(checkedFrame, "SetUpdatesAttributeName", "checked");
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(checkedFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "target[\"checked\"]",
+            StringComparison.Ordinal);
+
+        var directiveFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            directiveFrame,
+            "AddAttribute",
+            CreateDirectAttribute("@custom", new Identifier("directiveValue")));
+        Assert.IsFalse(InvokeNestedInstance<bool>(directiveFrame, "get_CanUseRenderList"));
+
+        var inlineValueFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            inlineValueFrame,
+            "AddAttribute",
+            CreateDirectAttribute(
+                "data-handler",
+                new ArrowFunctionExpression(
+                    NodeList.Empty<Node>(),
+                    new Identifier("value"),
+                    expression: true,
+                    async: false)));
+        Assert.IsFalse(InvokeNestedInstance<bool>(inlineValueFrame, "get_CanUseRenderList"));
+
+        var modifierFrame = CreateConfiguredElementFrame(
+            static value => value,
+            static _ => false,
+            static handler => handler,
+            static _ => true,
+            static _ => true,
+            null,
+            null);
+        InvokeNestedInstance<object?>(
+            modifierFrame,
+            "AddAttribute",
+            CreateDirectAttribute("onClick", new Identifier("stableHandler")));
+        InvokeNestedInstance<object?>(
+            modifierFrame,
+            "SetEventModifier",
+            "onclick",
+            new BooleanLiteral(true, "true"),
+            true,
+            false);
+        var modified = InvokeNestedInstance<Expression>(modifierFrame, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(modified, "preventDefault", StringComparison.Ordinal);
+
+        var textFrame = CreateConfiguredElementFrame(
+            static value => value,
+            static _ => false,
+            null,
+            null,
+            null,
+            null,
+            () => textVNodeCount++);
+        AddFramePlan(textFrame, "DynamicText", new Identifier("dynamicText"));
+        AddFramePlan(textFrame, "Static", new StringLiteral("suffix", "\"suffix\""), false, false);
+        var dynamicText = InvokeNestedInstance<Expression>(textFrame, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(dynamicText, "createElementBlock", StringComparison.Ordinal);
+        StringAssert.Contains(dynamicText, "createTextVNode", StringComparison.Ordinal);
+        Assert.AreEqual(1, textVNodeCount);
+
+        var emptyRegion = CreateRegionFrame();
+        Assert.IsFalse(InvokeNestedInstance<bool>(emptyRegion, "get_CreatesFragment"));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(emptyRegion, "ToRenderExpression").ToKnRECMAScript(),
+            "null",
+            StringComparison.Ordinal);
+
+        var singleRegion = CreateRegionFrame();
+        AddFramePlan(singleRegion, "Static", new Identifier("single"), false, true);
+        Assert.IsTrue(InvokeNestedInstance<bool>(singleRegion, "TrySetImplicitRootKey", "branch"));
+        Assert.IsFalse(InvokeNestedInstance<bool>(singleRegion, "get_CreatesFragment"));
+        Assert.AreEqual(
+            "single",
+            InvokeNestedInstance<Expression>(singleRegion, "ToRenderExpression").ToKnRECMAScript());
+
+        var multiRegion = CreateRegionFrame();
+        AddFramePlan(multiRegion, "Static", new Identifier("first"), false, true);
+        AddFramePlan(multiRegion, "Static", new Identifier("second"), false, true);
+        Assert.IsTrue(InvokeNestedInstance<bool>(multiRegion, "TrySetImplicitRootKey", "branch"));
+        Assert.IsTrue(InvokeNestedInstance<bool>(multiRegion, "get_CreatesFragment"));
+        var fragment = InvokeNestedInstance<Expression>(multiRegion, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(fragment, "key: \"branch\"", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void FrameFallbackProtocols_KeepConservativeBindAndBlockPaths()
+    {
+        var noCacheFrame = CreateElementFrame();
+        Assert.IsFalse(InvokeNestedInstance<bool>(
+            noCacheFrame,
+            "CanCacheStableEventHandler",
+            new Identifier("handler")));
+        Assert.IsFalse(InvokeNestedInstance<bool>(
+            noCacheFrame,
+            "IsStableEventHandler",
+            new Identifier("handler")));
+
+        var value = new Identifier("value");
+        var assignment = new AssignmentExpression(
+            Operator.Assignment,
+            new MemberExpression(new Identifier("state"), new Identifier("text"), computed: false, optional: false),
+            value);
+        var directBinder = new ArrowFunctionExpression(
+            NodeList.From<Node>(value),
+            assignment,
+            expression: true,
+            async: false);
+
+        var genericBindFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            genericBindFrame,
+            "AddAttribute",
+            CreateDirectAttribute("onInput", directBinder, "None"));
+        InvokeNestedInstance<object?>(genericBindFrame, "SetUpdatesAttributeName", "value");
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(genericBindFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "eventOrValue",
+            StringComparison.Ordinal);
+
+        var invalidBinderFrame = CreateElementFrame();
+        var invalidBinder = new ArrowFunctionExpression(
+            NodeList.Empty<Node>(),
+            new AssignmentExpression(
+                Operator.Assignment,
+                new MemberExpression(new Identifier("state"), new Identifier("text"), computed: false, optional: false),
+                new Identifier("unbound")),
+            expression: true,
+            async: false);
+        InvokeNestedInstance<object?>(
+            invalidBinderFrame,
+            "AddAttribute",
+            CreateDirectAttribute("onInput", invalidBinder, "String"));
+        InvokeNestedInstance<object?>(invalidBinderFrame, "SetUpdatesAttributeName", "value");
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(invalidBinderFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "eventOrValue",
+            StringComparison.Ordinal);
+
+        var textVNodeCount = 0;
+        var dynamicTextFrame = CreateConfiguredElementFrame(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            () => textVNodeCount++);
+        InvokeNestedInstance<object?>(
+            dynamicTextFrame,
+            "AddAttribute",
+            CreateDirectAttribute("id", new Identifier("dynamicId")));
+        AddFramePlan(dynamicTextFrame, "DynamicText", new Identifier("dynamicText"));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(dynamicTextFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "dynamicText",
+            StringComparison.Ordinal);
+
+        var staticPrimitiveFrame = CreateConfiguredElementFrame(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            () => textVNodeCount++);
+        InvokeNestedInstance<object?>(
+            staticPrimitiveFrame,
+            "AddAttribute",
+            CreateDirectAttribute("id", new Identifier("dynamicId")));
+        AddFramePlan(staticPrimitiveFrame, "Static", new NumericLiteral(1, "1"), false, false);
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(staticPrimitiveFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "createTextVNode(1)",
+            StringComparison.Ordinal);
+        // A single dynamic text child uses Vue's direct TEXT patch path. Only the static
+        // primitive inside a block needs an explicit createTextVNode wrapper.
+        Assert.AreEqual(1, textVNodeCount);
+
+        var emptyKeyedRegion = CreateRegionFrame();
+        Assert.IsTrue(InvokeNestedInstance<bool>(emptyKeyedRegion, "TrySetImplicitRootKey", "empty"));
+        Assert.IsFalse(InvokeNestedInstance<bool>(emptyKeyedRegion, "get_CreatesFragment"));
+
+        var dynamicRegion = CreateRegionFrame();
+        AddFrameChild(dynamicRegion, new Identifier("first"));
+        AddFrameChild(dynamicRegion, new Identifier("second"));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(dynamicRegion, "ToRenderExpression").ToKnRECMAScript(),
+            "Fragment",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void DirectRenderLoopAndDispatcherEdges_KeepOperationProtocolsExplicit()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, component);
+        var unsupportedBranch = GetOperation<IBranchOperation>(
+            fixture,
+            GetMethod(fixture, "EmitterHost", "UnsupportedBranch")
+                .DescendantNodes()
+                .OfType<BreakStatementSyntax>()
+                .Single());
+        var unsupportedBranchContext = CreateEmitContext(
+            GetMethodSymbol(fixture, "EmitterHost", "UnsupportedBranch").Parameters[0]);
+
+        var unsupported = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "EmitOperation",
+                unsupportedBranch,
+                unsupportedBranchContext,
+                CreateRenderState()));
+        StringAssert.Contains(
+            unsupported.InnerException!.Message,
+            "only supports straight-line RenderTreeBuilder statements",
+            StringComparison.Ordinal);
+
+        foreach (var methodName in new[] { "ForLoopWithExpressionUpdate", "ForLoopWithIncrementUpdate" })
+        {
+            var method = GetMethod(fixture, "EmitterHost", methodName);
+            var loop = GetOperation<IForLoopOperation>(
+                fixture,
+                method.DescendantNodes().OfType<ForStatementSyntax>().Single());
+            Assert.IsNotNull(InvokeEmitterInstance<object>(
+                emitter,
+                "EmitOperation",
+                loop,
+                CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", methodName).Parameters[0]),
+                CreateRenderState()));
+        }
+
+        var whileMethod = GetMethod(fixture, "EmitterHost", "WhileLoopStaticContent");
+        var whileLoop = GetOperation<IWhileLoopOperation>(
+            fixture,
+            whileMethod.DescendantNodes().OfType<WhileStatementSyntax>().Single());
+        Assert.IsNotNull(InvokeEmitterInstance<object>(
+            emitter,
+            "EmitOperation",
+            whileLoop,
+            CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", "WhileLoopStaticContent").Parameters[0]),
+            CreateRenderState()));
     }
 
     private static void AssertResolvedLoopVariable(IOperation operation, ILocalSymbol expected)
@@ -1481,6 +2153,44 @@ public sealed class RenderEmitterPrivateContractTests
         return constructor.Invoke([new StringLiteral("div", "\"div\""), "div"]);
     }
 
+    private static object CreateConfiguredElementFrame(
+        Func<ObjectExpression, Expression>? hoistStaticProps,
+        Func<ObjectExpression, bool>? canHoistStaticProps,
+        Func<Expression, Expression>? cacheStableEventHandler,
+        Func<Expression, bool>? canCacheStableEventHandler,
+        Func<Expression, bool>? isStableEventHandler,
+        Action? useBlockTree,
+        Action? useTextVNode)
+    {
+        var elementFrameType = typeof(RenderEmitter).GetNestedType("ElementFrame", BindingFlags.NonPublic);
+        Assert.IsNotNull(elementFrameType);
+        var constructor = elementFrameType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 9);
+        return constructor.Invoke(
+        [
+            new StringLiteral("input", "\"input\""),
+            "input",
+            hoistStaticProps,
+            canHoistStaticProps,
+            cacheStableEventHandler,
+            canCacheStableEventHandler,
+            isStableEventHandler,
+            useBlockTree,
+            useTextVNode
+        ]);
+    }
+
+    private static object CreateRegionFrame()
+    {
+        var regionFrameType = typeof(RenderEmitter).GetNestedType("RegionFrame", BindingFlags.NonPublic);
+        Assert.IsNotNull(regionFrameType);
+        var constructor = regionFrameType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 0);
+        return constructor.Invoke(null)!;
+    }
+
     private static object CreateComponentFrame(ImmutableDictionary<string, string> parameterNames)
     {
         var componentFrameType = typeof(RenderEmitter).GetNestedType("ComponentFrame", BindingFlags.NonPublic);
@@ -1491,6 +2201,34 @@ public sealed class RenderEmitterPrivateContractTests
         return constructor.Invoke([new Identifier("component"), parameterNames]);
     }
 
+    private static object CreateConfiguredComponentFrame(
+        ImmutableDictionary<string, string> parameterNames,
+        Action? useWithCtx,
+        Action? useCreateSlots,
+        bool slotsAreInStableScope)
+    {
+        var componentFrameType = typeof(RenderEmitter).GetNestedType("ComponentFrame", BindingFlags.NonPublic);
+        Assert.IsNotNull(componentFrameType);
+        var constructor = componentFrameType!
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 12);
+        return constructor.Invoke(
+        [
+            new Identifier("component"),
+            parameterNames,
+            ImmutableDictionary<string, string>.Empty,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            useWithCtx,
+            useCreateSlots,
+            slotsAreInStableScope
+        ]);
+    }
+
     private static void AddFrameChild(object frame, Expression child)
     {
         var children = frame.GetType().GetProperty("Children", BindingFlags.Instance | BindingFlags.Public);
@@ -1499,9 +2237,25 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNotNull(values);
         var vnodePlanType = typeof(RenderEmitter).GetNestedType("VNodePlan", BindingFlags.NonPublic);
         Assert.IsNotNull(vnodePlanType);
-        var opaque = vnodePlanType!.GetMethod("Opaque", BindingFlags.Public | BindingFlags.Static);
+        var opaque = vnodePlanType!
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(candidate => candidate.Name == "Opaque" && candidate.GetParameters().Length == 2);
         Assert.IsNotNull(opaque);
-        _ = values!.Add(opaque!.Invoke(null, [child]));
+        _ = values!.Add(opaque!.Invoke(null, [child, false]));
+    }
+
+    private static void AddFramePlan(object frame, string factoryName, params object[] arguments)
+    {
+        var children = frame.GetType().GetProperty("Children", BindingFlags.Instance | BindingFlags.Public);
+        Assert.IsNotNull(children);
+        var values = children!.GetValue(frame) as System.Collections.IList;
+        Assert.IsNotNull(values);
+        var vnodePlanType = typeof(RenderEmitter).GetNestedType("VNodePlan", BindingFlags.NonPublic);
+        Assert.IsNotNull(vnodePlanType);
+        var factory = vnodePlanType!
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(candidate => candidate.Name == factoryName && candidate.GetParameters().Length == arguments.Length);
+        _ = values!.Add(factory.Invoke(null, arguments));
     }
 
     private static void AddComponentSlot(object componentFrame, string name, object fragment)
@@ -1518,16 +2272,19 @@ public sealed class RenderEmitterPrivateContractTests
         _ = values!.Add(constructor.Invoke([name, fragment]));
     }
 
-    private static object CreateDirectAttribute(string name, Expression value)
+    private static object CreateDirectAttribute(
+        string name,
+        Expression value,
+        string directBinderValueKind = "None")
     {
         var attributeType = typeof(RenderEmitter).GetNestedType("DirectAttribute", BindingFlags.NonPublic);
         Assert.IsNotNull(attributeType);
         var constructor = attributeType!
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Single(candidate => candidate.GetParameters().Length == 3);
-        var directBinderValueKind = typeof(RenderEmitter).Assembly
+        var directBinderValueKindType = typeof(RenderEmitter).Assembly
             .GetType("Jazor.RazorVue.RazorSdk.DirectBinderValueKind", throwOnError: true)!;
-        return constructor.Invoke([name, value, Enum.Parse(directBinderValueKind, "None")]);
+        return constructor.Invoke([name, value, Enum.Parse(directBinderValueKindType, directBinderValueKind)]);
     }
 
     private static object CreateDirectAttributeArray(params object[] attributes)
@@ -1592,12 +2349,11 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNotNull(fragmentType);
         var constructor = fragmentType!
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Single(candidate => candidate.GetParameters().Length == 8);
+            .Single(candidate => candidate.GetParameters().Length == 7);
         return constructor.Invoke(new object?[]
         {
             renderExpression,
             parameterName,
-            false,
             false,
             availabilityCondition,
             null,
@@ -1656,6 +2412,15 @@ public sealed class RenderEmitterPrivateContractTests
 
             [VueLibraryComponent(" ", "Button")]
             public sealed class InvalidLibraryComponent;
+
+            public sealed class SlotMapComponent : ComponentBase
+            {
+                [Parameter, ECMAScriptName("header-slot")]
+                public RenderFragment Header { get; set; } = default!;
+
+                [Parameter]
+                public string? Title { get; set; }
+            }
 
             [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
             public sealed class ReactLibraryComponentAttribute(string importSpecifier, string exportName)
@@ -1848,6 +2613,36 @@ public sealed class RenderEmitterPrivateContractTests
                 {
                     while (enabled)
                         break;
+                }
+
+                public void UnsupportedBranch(RenderTreeBuilder builder)
+                {
+                    while (true)
+                    {
+                        break;
+                    }
+                }
+
+                public void ForLoopWithExpressionUpdate(RenderTreeBuilder builder)
+                {
+                    for (var index = 0; index < 2; index = index + 1)
+                        builder.AddContent(0, index);
+                }
+
+                public void ForLoopWithIncrementUpdate(RenderTreeBuilder builder)
+                {
+                    for (var index = 0; index < 2; index++)
+                        builder.AddContent(0, index);
+                }
+
+                public void WhileLoopStaticContent(RenderTreeBuilder builder, bool enabled)
+                {
+                    while (enabled)
+                    {
+                        builder.OpenElement(0, "span");
+                        builder.AddContent(1, "static");
+                        builder.CloseElement();
+                    }
                 }
 
                 public void StorageReferences()
@@ -2172,6 +2967,17 @@ public sealed class RenderEmitterPrivateContractTests
 
             public sealed class OperationShapes
             {
+                private const sbyte ConstantSByte = 1;
+                private const byte ConstantByte = 1;
+                private const short ConstantShort = 1;
+                private const ushort ConstantUShort = 1;
+                private const uint ConstantUInt = 1;
+                private const long ConstantLong = 1;
+                private const ulong ConstantULong = 1;
+                private const float ConstantFloat = 1f;
+                private const double ConstantDouble = 1d;
+                private const decimal ConstantDecimal = 1m;
+
                 public int Field;
                 public int Property { get; set; }
 
@@ -2181,6 +2987,7 @@ public sealed class RenderEmitterPrivateContractTests
                 public int ValueReturn() { return 1; }
                 public int SingleReturnValue() { return 7; }
                 public void Empty() { }
+                public void SingleStatementWithoutReturn() { var ignored = 0; }
                 public void LastReturn() { var intermediate = 0; return; }
                 public void ConditionalBoth(bool condition) { if (condition) { return; } else { return; } }
                 public void ConditionalOne(bool condition) { if (condition) { return; } else { var intermediate = 0; } }
@@ -2197,6 +3004,35 @@ public sealed class RenderEmitterPrivateContractTests
                     object convertedLoopLocal = (object)loopLocal;
                     var literal = "constant";
                     object convertedLiteral = (object)"converted";
+                    string? staticNull = null;
+                    var staticString = "static";
+                    var staticBoolean = true;
+                    var staticChar = 'c';
+                    sbyte staticSByte = 1;
+                    byte staticByte = 1;
+                    short staticShort = 1;
+                    ushort staticUShort = 1;
+                    var staticInt = 1;
+                    var repeatedLoopLocal = loopLocal + loopLocal;
+                    uint staticUInt = 1;
+                    long staticLong = 1;
+                    ulong staticULong = 1;
+                    float staticFloat = 1;
+                    double staticDouble = 1;
+                    decimal staticDecimal = 1;
+                    var constantSByte = ConstantSByte;
+                    var constantByte = ConstantByte;
+                    var constantShort = ConstantShort;
+                    var constantUShort = ConstantUShort;
+                    var constantUInt = ConstantUInt;
+                    var constantLong = ConstantLong;
+                    var constantULong = ConstantULong;
+                    var constantFloat = ConstantFloat;
+                    var constantDouble = ConstantDouble;
+                    var constantDecimal = ConstantDecimal;
+                    var rawStaticMarkup = "<strong>raw</strong>";
+                    var markupStatic = new MarkupString("<em>markup</em>");
+                    var markupDynamic = new MarkupString(dynamicText);
                     var dynamicTextValue = dynamicText;
                     var omitParameter = parameter;
                     var omitLocal = loopLocal;

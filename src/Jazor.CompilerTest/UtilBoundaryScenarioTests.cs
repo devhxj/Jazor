@@ -64,6 +64,24 @@ public sealed class UtilBoundaryScenarioTests
     }
 
     [TestMethod]
+    public void JavaScriptNameMetadata_ReportsOnlyDistinctNonEmptyExplicitNamesAsConflicts()
+    {
+        var cases = new (Util.JavaScriptNameMetadata Metadata, bool Expected)[]
+        {
+            (new(false, "ecma", "description", false), false),
+            (new(true, null, "description", false), false),
+            (new(true, string.Empty, "description", false), false),
+            (new(true, "ecma", null, false), false),
+            (new(true, "ecma", string.Empty, false), false),
+            (new(true, "same", "same", false), false),
+            (new(true, "ecma", "description", false), true)
+        };
+
+        foreach (var (metadata, expected) in cases)
+            Assert.AreEqual(expected, metadata.HasConflictingExplicitNames);
+    }
+
+    [TestMethod]
     [DynamicData(nameof(LineEndingCases))]
     public void NormalizeLineEndingsToLf_UsesPlatformIndependentContract(UtilLineEndingScenario scenario)
     {

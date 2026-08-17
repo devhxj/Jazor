@@ -251,7 +251,6 @@ internal static class RenderEmitter
         private string? _componentAttributeNormalizerName;
         private bool _usesMergeProps;
         private bool _usesFragment;
-        private bool _usesStaticVNode;
         private bool _usesRawMarkupRuntime;
         private bool _usesSlots;
         private bool _usesBlockTree;
@@ -337,9 +336,8 @@ internal static class RenderEmitter
             // import contract must reflect only retained output, otherwise Vue gets an unused
             // helper import and callers observe a false static-vnode capability.
             // 只从最终保留的 hoist 推导 helper；不能让已剪枝的分支污染 import/feature metadata。
-            var usesStaticVNode = state.UsesStaticVNode ||
-                                  moduleHoists.Any(static hoist =>
-                                      AstReferenceAnalysis.ReferencesIdentifier(hoist.Initializer, "createStaticVNode"));
+            var usesStaticVNode = moduleHoists.Any(static hoist =>
+                AstReferenceAnalysis.ReferencesIdentifier(hoist.Initializer, "createStaticVNode"));
             return new LoweredRender(
                 renderExpression,
                 _preludeStatements.ToImmutableArray(),
@@ -680,14 +678,13 @@ internal static class RenderEmitter
                 context,
                 CreateConditionalBranchKey(conditional, whenTrue: true));
             var whenFalse = conditional.WhenFalse is null
-                ? new DirectRenderFragmentBody(Null(), UsesFragment: false, UsesStaticVNode: false)
+                ? new DirectRenderFragmentBody(Null(), UsesFragment: false)
                 : EmitChildContentExpression(
                     conditional.WhenFalse,
                     context,
                     CreateConditionalBranchKey(conditional, whenTrue: false));
             state.AddChild(new ConditionalExpression(condition, whenTrue.RenderExpression, whenFalse.RenderExpression));
             state.UsesFragment = state.UsesFragment || whenTrue.UsesFragment || whenFalse.UsesFragment;
-            state.UsesStaticVNode = state.UsesStaticVNode || whenTrue.UsesStaticVNode || whenFalse.UsesStaticVNode;
 
             if (state.Stack.Count == 0 && IsTerminatingOperation(conditional.WhenTrue) && !IsTerminatingOperation(conditional.WhenFalse))
                 state.AddGuard(new NonUpdateUnaryExpression(Operator.LogicalNot, condition));
@@ -832,7 +829,6 @@ internal static class RenderEmitter
                     mapper));
             }
             state.UsesFragment = state.UsesFragment || body.UsesFragment;
-            state.UsesStaticVNode = state.UsesStaticVNode || body.UsesStaticVNode;
         }
 
         private void EmitForLoop(IForLoopOperation forLoop, EmitContext context, RenderState state)
@@ -902,11 +898,10 @@ internal static class RenderEmitter
                 state.UsesFragment = true;
                 state.AddChild(VNodePlan.Block(CreateForLoopFragmentExpression(
                     children,
-                    body.DirectRoot is { HasExplicitKey: true }
+                    body.HasExplicitRootKey
                         ? VuePatchFlags.KeyedFragment
                         : VuePatchFlags.UnkeyedFragment)));
                 state.UsesFragment = state.UsesFragment || body.UsesFragment;
-                state.UsesStaticVNode = state.UsesStaticVNode || body.UsesStaticVNode;
             }
             finally
             {
@@ -1033,15 +1028,17 @@ internal static class RenderEmitter
             state.UsesFragment = true;
             state.AddChild(VNodePlan.Block(CreateForLoopFragmentExpression(
                 children,
-                body.DirectRoot is { HasExplicitKey: true }
+                body.HasExplicitRootKey
                     ? VuePatchFlags.KeyedFragment
                     : VuePatchFlags.UnkeyedFragment)));
             state.UsesFragment = state.UsesFragment || body.UsesFragment;
-            state.UsesStaticVNode = state.UsesStaticVNode || body.UsesStaticVNode;
         }
 
         private DirectRenderFragmentBody EmitLoopIterationBody(IOperation operation, EmitContext context)
         {
+            // Iteration content is non-hoistable by contract, so it can never introduce a
+            // module-static VNode. Only its fragment/key facts need to return to the parent.
+            // 循环体禁止 module hoist，因此只回传 Fragment/key，不传播 static-vnode 状态。
             CollectMutableRenderLocals(operation);
             if (operation is not IBlockOperation block)
                 return EmitNonHoistableChildContentExpression(operation, context);
@@ -1107,6 +1104,10 @@ internal static class RenderEmitter
                     rendered.RenderExpression))));
             statements.AddRange(trailing);
             statements.Add(new ReturnStatement(new Identifier(vnodeName)));
+            // The IIFE keeps iteration side effects ordered, but it does not change the VNode
+            // returned to Vue. Preserve only the root-key fact for Fragment diff selection;
+            // DirectRoot remains null so this wrapper never becomes eligible for renderList.
+            // IIFE 只负责副作用顺序；保留 key 事实用于 Fragment diff，但不能借此误开 renderList。
             return new DirectRenderFragmentBody(
                 Call(
                     new ArrowFunctionExpression(
@@ -1116,7 +1117,8 @@ internal static class RenderEmitter
                         async: false),
                     Array.Empty<Expression>()),
                 rendered.UsesFragment,
-                rendered.UsesStaticVNode);
+                DirectRoot: null,
+                HasExplicitRootKey: rendered.HasExplicitRootKey);
         }
 
         private DirectRenderFragmentBody EmitNonHoistableRenderOperations(
@@ -1149,11 +1151,17 @@ internal static class RenderEmitter
                                         !argument.HasVarDeclarator &&
                                         state.Roots.Count == 1 &&
                                         state.Roots[0].IsDirectVNodeRoot;
+                    // renderList needs the stricter direct-root proof, while Fragment diffing
+                    // only needs to know whether the single produced VNode carries a user key.
+                    // IIFE/opaque lowering may intentionally lose the former without losing the latter.
+                    // renderList 与 Fragment keyed diff 的证据不同，不能让 IIFE 包装抹掉根 key 事实。
+                    var hasSingleExplicitlyKeyedVNode = state.Roots.Count == 1 &&
+                                                         state.Roots[0].HasExplicitKey;
                     return new DirectRenderFragmentBody(
                         WrapWithExpressionScope(argument, preludeStatements, state.ToRenderExpression()),
                         state.UsesFragment || state.Roots.Count > 1,
-                        state.UsesStaticVNode,
-                        hasDirectRoot ? state.Roots[0] : null);
+                        hasDirectRoot ? state.Roots[0] : null,
+                        HasExplicitRootKey: hasSingleExplicitlyKeyedVNode);
                 });
             }
             finally
@@ -1362,11 +1370,16 @@ internal static class RenderEmitter
                                     !childArgument.HasVarDeclarator &&
                                     childState.Roots.Count == 1 &&
                                     childState.Roots[0].IsDirectVNodeRoot;
+                // A loop body can be an opaque h() result when local side effects prevent
+                // block collection. Its explicit key still defines Fragment identity.
+                // loop body 即使因局部副作用降级为 opaque h()，显式 key 仍决定 Fragment identity。
+                var hasSingleExplicitlyKeyedVNode = childState.Roots.Count == 1 &&
+                                                     childState.Roots[0].HasExplicitKey;
                 return new DirectRenderFragmentBody(
                     WrapWithExpressionScope(childArgument, preludeStatements, childState.ToRenderExpression()),
                     childState.UsesFragment,
-                    childState.UsesStaticVNode,
-                    hasDirectRoot ? childState.Roots[0] : null);
+                    hasDirectRoot ? childState.Roots[0] : null,
+                    HasExplicitRootKey: hasSingleExplicitlyKeyedVNode);
             });
         }
 
@@ -1428,8 +1441,7 @@ internal static class RenderEmitter
                     var usesFragment = slotState.UsesFragment || slotState.Roots.Count > 1;
                     return new DirectRenderFragmentBody(
                         WrapWithExpressionScope(slotArgument, preludeStatements, slotState.ToRenderExpression()),
-                        usesFragment,
-                        slotState.UsesStaticVNode);
+                        usesFragment);
                 });
             }
             finally
@@ -1657,7 +1669,7 @@ internal static class RenderEmitter
             }
 
             var method = invocation.TargetMethod;
-            if (!SymbolComparer.Equals(method.ContainingType?.OriginalDefinition, _componentSymbol.OriginalDefinition) &&
+            if (!SymbolComparer.Equals(method.ContainingType!.OriginalDefinition, _componentSymbol.OriginalDefinition) &&
                 !method.IsStatic)
             {
                 return false;
@@ -1717,7 +1729,6 @@ internal static class RenderEmitter
             else
                 state.AddChild(expression.RenderExpression);
             state.UsesFragment = state.UsesFragment || expression.UsesFragment;
-            state.UsesStaticVNode = state.UsesStaticVNode || expression.UsesStaticVNode;
             return true;
         }
 
@@ -1797,7 +1808,6 @@ internal static class RenderEmitter
                     isDeclaredSlot ? slotName : frame.NormalizeSlotName(name),
                     forwardedSlotExpression));
                 state.UsesFragment = state.UsesFragment || forwardedSlotExpression.UsesFragment;
-                state.UsesStaticVNode = state.UsesStaticVNode || forwardedSlotExpression.UsesStaticVNode;
                 return true;
             }
 
@@ -2011,7 +2021,6 @@ internal static class RenderEmitter
             var name = "__jazor$hoistedStatic" +
                 _staticVNodeHoistCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
             _staticVNodeHoistCount++;
-            _usesStaticVNode = true;
             _moduleHoists.Add(new RenderModuleHoist(
                 name,
                 Call(
@@ -2157,7 +2166,6 @@ internal static class RenderEmitter
                 else
                     state.AddChild(scopedContent);
                 state.UsesFragment = state.UsesFragment || scopedFragment.UsesFragment;
-                state.UsesStaticVNode = state.UsesStaticVNode || scopedFragment.UsesStaticVNode;
                 return;
             }
 
@@ -2168,7 +2176,6 @@ internal static class RenderEmitter
                 else
                     state.AddChild(slotExpression.RenderExpression);
                 state.UsesFragment = state.UsesFragment || slotExpression.UsesFragment;
-                state.UsesStaticVNode = state.UsesStaticVNode || slotExpression.UsesStaticVNode;
                 return;
             }
 
@@ -2300,7 +2307,7 @@ internal static class RenderEmitter
 
             return member is not null &&
                    !member.IsStatic &&
-                   SymbolComparer.Equals(member.ContainingType?.OriginalDefinition, _componentSymbol.OriginalDefinition);
+                   SymbolComparer.Equals(member.ContainingType!.OriginalDefinition, _componentSymbol.OriginalDefinition);
         }
 
         private void EmitComponentRenderMode(
@@ -2373,7 +2380,7 @@ internal static class RenderEmitter
                string.Equals(method.Name, "TypeCheck", StringComparison.Ordinal) &&
                method.ContainingType is { Name: "RuntimeHelpers" } containingType &&
                string.Equals(
-                   containingType.ContainingNamespace?.ToDisplayString(),
+                   containingType.ContainingNamespace!.ToDisplayString(),
                    "Microsoft.AspNetCore.Components.CompilerServices",
                    StringComparison.Ordinal);
 
@@ -2601,8 +2608,7 @@ internal static class RenderEmitter
                 renderFragment = new DirectRenderFragment(
                     lowered.RenderExpression,
                     null,
-                    lowered.UsesFragment,
-                    lowered.UsesStaticVNode);
+                    lowered.UsesFragment);
                 return true;
             }
 
@@ -2621,8 +2627,7 @@ internal static class RenderEmitter
                 renderFragment = new DirectRenderFragment(
                     lowered.RenderExpression,
                     parameterName,
-                    lowered.UsesFragment,
-                    lowered.UsesStaticVNode);
+                    lowered.UsesFragment);
                 return true;
             }
 
@@ -2657,7 +2662,6 @@ internal static class RenderEmitter
                     new ConditionalExpression(condition, whenTrueExpression, whenFalseExpression),
                     parameterName,
                     whenTrue.UsesFragment || whenFalse.UsesFragment,
-                    whenTrue.UsesStaticVNode || whenFalse.UsesStaticVNode,
                     Selection: new ConditionalRenderFragmentSelection(
                         condition,
                         whenTrue,
@@ -2799,7 +2803,6 @@ internal static class RenderEmitter
             renderFragment = new DirectRenderFragment(
                 expression,
                 UsesFragment: localRenderFragment.UsesFragment,
-                UsesStaticVNode: localRenderFragment.UsesStaticVNode,
                 ReturnsVueSlotContent: localRenderFragment.ReturnsVueSlotContent);
             return true;
         }
@@ -2890,8 +2893,7 @@ internal static class RenderEmitter
                     "RenderFragment method group");
                 renderFragment = new DirectRenderFragment(
                     lowered.RenderExpression,
-                    UsesFragment: lowered.UsesFragment,
-                    UsesStaticVNode: lowered.UsesStaticVNode);
+                    UsesFragment: lowered.UsesFragment);
                 return true;
             }
             finally
@@ -2910,7 +2912,7 @@ internal static class RenderEmitter
             if (!IsAnyRenderFragmentType(property.Type) ||
                 property.DeclaringSyntaxReferences.Length != 1 ||
                 !SymbolComparer.Equals(
-                    property.ContainingType?.OriginalDefinition,
+                    property.ContainingType!.OriginalDefinition,
                     _componentSymbol.OriginalDefinition) ||
                 !property.IsStatic && propertyReference.Instance is not IInstanceReferenceOperation)
             {
@@ -3267,8 +3269,7 @@ internal static class RenderEmitter
                 renderFragment = new DirectRenderFragment(
                     Call(new Identifier(helper.FunctionName), arguments.ToArray()),
                     ParameterName: parameterName,
-                    UsesFragment: helper.UsesFragment,
-                    UsesStaticVNode: helper.UsesStaticVNode);
+                    UsesFragment: helper.UsesFragment);
                 return true;
             }
 
@@ -3320,8 +3321,7 @@ internal static class RenderEmitter
                     return new DirectRenderFragment(
                         WrapWithExpressionScope(fragmentArgument, preludeStatements, fragmentState.ToRenderExpression()),
                         ParameterName: parameterName,
-                        UsesFragment: fragmentState.UsesFragment || fragmentState.Roots.Count > 1,
-                        UsesStaticVNode: fragmentState.UsesStaticVNode);
+                        UsesFragment: fragmentState.UsesFragment || fragmentState.Roots.Count > 1);
                 });
                 return true;
             }
@@ -3338,13 +3338,13 @@ internal static class RenderEmitter
         {
             var originalMethod = method.OriginalDefinition;
             if (_renderFragmentHelperFunctionNames.TryGetValue(originalMethod, out var existingName))
-                return new DirectRenderFunction(existingName, UsesFragment: false, UsesStaticVNode: false);
+                return new DirectRenderFunction(existingName, UsesFragment: false);
 
             var functionName = CreateRenderFragmentHelperFunctionName(method);
             _renderFragmentHelperFunctionNames.Add(originalMethod, functionName);
 
             if (!_emittingRenderFragmentHelperFunctions.Add(originalMethod))
-                return new DirectRenderFunction(functionName, UsesFragment: false, UsesStaticVNode: false);
+                return new DirectRenderFunction(functionName, UsesFragment: false);
 
             try
             {
@@ -3399,12 +3399,10 @@ internal static class RenderEmitter
 
                     return new DirectRenderFragmentBody(
                         WrapWithExpressionScope(functionArgument, preludeStatements, functionState.ToRenderExpression()),
-                        functionState.UsesFragment || functionState.Roots.Count > 1,
-                        functionState.UsesStaticVNode);
+                        functionState.UsesFragment || functionState.Roots.Count > 1);
                 });
 
                 _usesFragment = _usesFragment || lowered.UsesFragment;
-                _usesStaticVNode = _usesStaticVNode || lowered.UsesStaticVNode;
                 var functionBody = new FunctionBody(
                     NodeList.From<Statement>(new ReturnStatement(lowered.RenderExpression)),
                     strict: true);
@@ -3414,7 +3412,7 @@ internal static class RenderEmitter
                     functionBody,
                     generator: false,
                     async: false));
-                return new DirectRenderFunction(functionName, lowered.UsesFragment, lowered.UsesStaticVNode);
+                return new DirectRenderFunction(functionName, lowered.UsesFragment);
             }
             finally
             {
@@ -3853,7 +3851,7 @@ internal static class RenderEmitter
                named.OriginalDefinition.TypeParameters.Length == 1 &&
                string.Equals(named.Name, "RenderFragment", StringComparison.Ordinal) &&
                string.Equals(
-                   named.ContainingNamespace?.ToDisplayString(),
+                   named.ContainingNamespace!.ToDisplayString(),
                    "Microsoft.AspNetCore.Components",
                    StringComparison.Ordinal);
     }
@@ -3876,7 +3874,7 @@ internal static class RenderEmitter
            named.OriginalDefinition.TypeParameters.Length == 1 &&
            string.Equals(named.Name, "RenderFragment", StringComparison.Ordinal) &&
            string.Equals(
-               named.ContainingNamespace?.ToDisplayString(),
+               named.ContainingNamespace!.ToDisplayString(),
                "Microsoft.AspNetCore.Components",
                StringComparison.Ordinal);
 
@@ -3924,9 +3922,6 @@ internal static class RenderEmitter
             {
                 return true;
             }
-
-            if (TryGetConstantString(operation, out markup) && IsMarkupString(operation.Type))
-                return true;
 
             markup = string.Empty;
             return false;
@@ -4082,9 +4077,10 @@ internal static class RenderEmitter
         if (operation is IExpressionStatementOperation statement)
             operation = statement.Operation;
 
-        while (operation is IConversionOperation conversion)
-            operation = conversion.Operand;
-
+        // The supported RenderTreeBuilder attribute APIs are instance void methods. After
+        // unwrapping the expression statement, C# cannot legally place a conversion around
+        // that invocation, so accepting one here would only describe an impossible IR shape.
+        // 支持的 attribute builder 均为 instance void；这里不保留虚假的 conversion fallback。
         if (operation is not IInvocationOperation candidate || !IsRenderTreeBuilderMethod(candidate.TargetMethod))
             return false;
 
@@ -4147,9 +4143,10 @@ internal static class RenderEmitter
         IInvocationOperation invocation,
         EmitContext context)
     {
+        // RenderTreeBuilder members recognized by this lowering are instance methods. An
+        // extension-style static call has another containing type and is not this protocol.
+        // RenderTreeBuilder 约定只接受 instance receiver，不能把首个参数误当 builder。
         IOperation? receiver = invocation.Instance;
-        if (receiver is null && invocation.Arguments.Length > 0 && IsRenderTreeBuilderMethod(invocation.TargetMethod))
-            receiver = invocation.Arguments[0].Value;
 
         while (receiver is IConversionOperation conversion)
             receiver = conversion.Operand;
@@ -4205,7 +4202,7 @@ internal static class RenderEmitter
             builder.Append(valid ? ch : '_');
         }
 
-        return builder.Length == 0 ? fallback : builder.ToString();
+        return builder.ToString();
     }
 
     private static ComponentImportDescriptor ResolveComponentImport(INamedTypeSymbol componentType)
@@ -4669,7 +4666,7 @@ internal static class RenderEmitter
 
     private static bool IsRenderTreeBuilderMethod(IMethodSymbol method)
         => string.Equals(
-            method.ContainingType?.OriginalDefinition.ToDisplayString(Format.NameFormat),
+            method.ContainingType!.OriginalDefinition.ToDisplayString(Format.NameFormat),
             RenderTreeBuilderMetadataName,
             StringComparison.Ordinal);
 
@@ -4714,8 +4711,6 @@ internal static class RenderEmitter
         private List<Expression> Guards { get; } = new();
 
         public bool UsesFragment { get; set; }
-
-        public bool UsesStaticVNode { get; set; }
 
         public Expression ToRenderExpression()
             => Plan.ToRenderExpression();
@@ -4796,7 +4791,6 @@ internal static class RenderEmitter
             PendingPreludeStatements.Clear();
             Guards.Clear();
             UsesFragment = false;
-            UsesStaticVNode = false;
         }
 
         private Expression ApplyGuards(Expression expression)
@@ -4909,8 +4903,8 @@ internal static class RenderEmitter
             bool canUseRenderList = false)
             => new(expression, VNodePlanKind.Block, hasExplicitKey, canUseRenderList);
 
-        public static VNodePlan Opaque(Expression expression)
-            => new(expression, VNodePlanKind.Opaque);
+        public static VNodePlan Opaque(Expression expression, bool hasExplicitKey = false)
+            => new(expression, VNodePlanKind.Opaque, hasExplicitKey);
 
         public static VNodePlan Sequence(Expression expression)
             => new(expression, VNodePlanKind.Sequence);
@@ -5362,7 +5356,7 @@ internal static class RenderEmitter
                 var expression = Call("h", _tagExpression, props, children);
                 return !patch.RequiresBlock && Children.All(static child => child.Kind == VNodePlanKind.Static)
                     ? VNodePlan.Static(expression, HasExplicitVNodeKey, CanUseRenderList)
-                    : VNodePlan.Opaque(expression);
+                    : VNodePlan.Opaque(expression, HasExplicitVNodeKey);
             }
 
             _useBlockTree?.Invoke();
@@ -5616,7 +5610,7 @@ internal static class RenderEmitter
                     // 固定 slot 使用 withCtx 保持实例上下文，_: 1 只声明对象稳定性。
                     _useWithCtx?.Invoke();
                     var stableMembers = new List<Node>(Slots.Count + 1);
-                    stableMembers.AddRange(Slots.Select(static slot => (Node)CreateSlotProperty(slot, slot.Fragment, wrapWithCtx: true)));
+                    stableMembers.AddRange(Slots.Select(static slot => (Node)CreateSlotProperty(slot, slot.Fragment)));
                     stableMembers.Add(CreateObjectProperty("_", new NumericLiteral(1, "1")));
                     children = new ObjectExpression(NodeList.From(stableMembers));
                 }
@@ -5649,9 +5643,7 @@ internal static class RenderEmitter
             else if (Children.Count > 0)
             {
                 children = Children.Count == 1
-                    ? Children[0].Kind == VNodePlanKind.Sequence
-                        ? Children[0].Expression
-                        : Children[0].Expression
+                    ? Children[0].Expression
                     : CreateArray(Children.Select(static child => child.ToNormalArrayItem()));
             }
 
@@ -5672,7 +5664,7 @@ internal static class RenderEmitter
                     : Call("h", _componentExpression, props, children);
                 return Children.Count == 0 && !patch.RequiresBlock
                     ? VNodePlan.Static(expression, HasExplicitVNodeKey, CanUseRenderList)
-                    : VNodePlan.Opaque(expression);
+                    : VNodePlan.Opaque(expression, HasExplicitVNodeKey);
             }
 
             _useBlockTree?.Invoke();
@@ -5727,24 +5719,17 @@ internal static class RenderEmitter
             string branchKey)
             => new(NodeList.From<Node>(
                 CreateObjectProperty("name", StringLiteral(slot.Name)),
-                CreateObjectProperty("fn", CreateSlotFunction(slot, fragment, wrapWithCtx: true)),
+                CreateObjectProperty("fn", CreateSlotFunction(slot, fragment)),
                 CreateObjectProperty("key", StringLiteral(branchKey))));
 
         private static Property CreateSlotProperty(
             DirectSlot slot,
             DirectRenderFragment fragment)
-            => CreateSlotProperty(slot, fragment, wrapWithCtx: false);
-
-        private static Property CreateSlotProperty(
-            DirectSlot slot,
-            DirectRenderFragment fragment,
-            bool wrapWithCtx)
-            => CreateObjectProperty(slot.Name, CreateSlotFunction(slot, fragment, wrapWithCtx));
+            => CreateObjectProperty(slot.Name, CreateSlotFunction(slot, fragment));
 
         private static Expression CreateSlotFunction(
             DirectSlot slot,
-            DirectRenderFragment fragment,
-            bool wrapWithCtx)
+            DirectRenderFragment fragment)
         {
             var slotFunction = new ArrowFunctionExpression(
                 slot.Fragment.ParameterName is null
@@ -5754,7 +5739,10 @@ internal static class RenderEmitter
                     BindSlotRenderExpression(slot.Fragment.ParameterName, fragment)),
                 expression: true,
                 async: false);
-            return wrapWithCtx ? Call("withCtx", slotFunction) : slotFunction;
+            // Every component slot can run after its parent render returns. Preserve the
+            // originating component instance for both stable and dynamic slot protocols.
+            // 所有 slot 都可能延后执行，统一 withCtx 才能恢复父组件渲染上下文。
+            return Call("withCtx", slotFunction);
         }
 
         private static Expression BindSlotRenderExpression(
@@ -5928,7 +5916,6 @@ internal static class RenderEmitter
         Expression RenderExpression,
         string? ParameterName = null,
         bool UsesFragment = false,
-        bool UsesStaticVNode = false,
         Expression? AvailabilityCondition = null,
         Expression? RenderExpressionWhenAvailable = null,
         ConditionalRenderFragmentSelection? Selection = null,
@@ -5942,8 +5929,7 @@ internal static class RenderEmitter
 
     private readonly record struct DirectRenderFunction(
         string FunctionName,
-        bool UsesFragment,
-        bool UsesStaticVNode);
+        bool UsesFragment);
 
     /// <summary>Tracks a compile-time render-object local erased after direct lowering.</summary>
     private sealed record DirectRenderObject(
@@ -5952,8 +5938,8 @@ internal static class RenderEmitter
     private readonly record struct DirectRenderFragmentBody(
         Expression RenderExpression,
         bool UsesFragment,
-        bool UsesStaticVNode,
-        VNodePlan? DirectRoot = null);
+        VNodePlan? DirectRoot = null,
+        bool HasExplicitRootKey = false);
 
     private readonly record struct DirectEventModifier(
         Expression? PreventDefaultCondition,

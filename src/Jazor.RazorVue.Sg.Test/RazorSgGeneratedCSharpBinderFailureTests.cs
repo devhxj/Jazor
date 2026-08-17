@@ -215,6 +215,51 @@ public sealed class GeneratedCSharpBinderFailureTests
         StringAssert.Contains(failure, "did not declare a handwritten BuildRenderTree", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void TryBindFinalCompilation_AggregatesAndOrdersIndependentBindingFailures()
+    {
+        var sourceTree = CSharpSyntaxTree.ParseText(
+            """
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages;
+
+            public sealed class MissingRender
+            {
+            }
+
+            public sealed class ExpressionRender : ComponentBase
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "content");
+            }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "Pages/Failures.razor.g.cs");
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.GeneratedCSharpBinder.AggregatedFailures",
+            [sourceTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var expression = compilation.GetTypeByMetadataName("Demo.Pages.ExpressionRender");
+        var missing = compilation.GetTypeByMetadataName("Demo.Pages.MissingRender");
+        Assert.IsNotNull(expression);
+        Assert.IsNotNull(missing);
+
+        Assert.IsFalse(GeneratedCSharpBinder.TryBindFinalCompilationWithDiagnostics(
+            compilation,
+            ImmutableArray.Create(missing!, expression!),
+            out var binding,
+            out var diagnostics));
+
+        Assert.IsNull(binding);
+        Assert.HasCount(2, diagnostics);
+        StringAssert.Contains(diagnostics[0].Message, "ExpressionRender", StringComparison.Ordinal);
+        StringAssert.Contains(diagnostics[1].Message, "MissingRender", StringComparison.Ordinal);
+        StringAssert.Contains(diagnostics[0].Message, "did not expose a bindable BuildRenderTree body", StringComparison.Ordinal);
+        StringAssert.Contains(diagnostics[1].Message, "did not declare BuildRenderTree(RenderTreeBuilder)", StringComparison.Ordinal);
+    }
+
     private static CSharpCompilation CreateCompilation(string source, string path)
         => CSharpCompilation.Create(
             "RazorVue.GeneratedCSharpBinder.FailureTests",

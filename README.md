@@ -32,14 +32,13 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### 2026-08-15
+### 2026-08-17
 
-- RazorVue direct render lowering now supports official Razor `@for`, `@while`, and `@do while` alongside `@foreach`, preserving C# loop-local closure and body/condition order with keyed or unkeyed Vue dynamic Fragments. `break` and `continue` remain explicit unsupported boundaries for this direct-render slice.
-- `ECMAScript.Pinia` now ships Pinia 4.0.3, and `ECMAScript.Pinia.Testing` ships `@pinia/testing` 2.0.1. `app.Use(pinia)` automatically registers Pinia's development panel with Vue Devtools; production Pinia output excludes the Devtools closure. `TestingOptions.WritableComputed` is removed because Testing 2 handles that behavior internally.
-- `ECMAScript.Vue.Devtools` is now available as an independent binding for the public `@vue/devtools-api` 8.1.5 plugin-authoring surface. It provides typed plugin setup/settings, inspectors, timelines, component hooks, custom tabs/commands, and connection callbacks while reusing Jazor's local Vue Devtools runtime closure. Pinia's automatic Devtools panel registration remains unchanged.
-- `ECMAScript.VueDataUi` now binds all 71 public `vue-data-ui` 3.23.4 entries for RazorVue chart authoring. Each `VueUi*` component imports its own ESM entry, and Emit materializes only that entry's local closure plus the library stylesheet and a browser-ready local `jspdf` ESM runtime when required.
-- `ECMAScript.VuIcons` now binds all 1,821 Vue 3 wrappers from `vu-icons` 1.5.4. A known icon uses its generated `Vu*` component and materializes one SVG module; the typed dynamic `VuIcon` bridge intentionally materializes the full icon catalog for runtime name selection.
-- RazorVue generated modules now preserve collision-safe nested static imports and conditional branch vnode shapes. `Jazor.Admin` and the JazorAdmin sample add overview/notification modules, scheduling query improvements, and refreshed administration surfaces.
+- RazorVue final-compilation failures now use stable `JAZORVGA020`-`026` diagnostics with mapped Razor/C# source locations and actionable guidance; failed component generation no longer leaves partial artifact catalogs.
+- Runtime member classes captured by RazorVue components remain safe through Vue deep Proxies, including private storage, auto-property backing fields, primary-constructor capture, and field-like events.
+- RazorVue rejects unverified labeled `break`/`continue` lowering shapes, preserves parent context for dynamic slots, and retains explicit loop-item keys when scoped output cannot use `renderList`.
+- Supported C# collection initializers preserve their declared or configured `Add` runtime name instead of emitting an empty JavaScript member call.
+- Release validation publishes an isolated `JazorSSR=true` RazorVue TodoList consumer from generated NuGet packages and verifies packaged SSR, PathBase resolution, and Edge hydration.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

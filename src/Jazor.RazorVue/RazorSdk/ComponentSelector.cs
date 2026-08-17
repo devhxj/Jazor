@@ -201,8 +201,10 @@ internal static class ComponentSelector
     {
         foreach (var nodeOrToken in methodSyntax.DescendantNodesAndTokensAndSelf())
         {
-            var location = nodeOrToken.GetLocation();
-            if (location is null || !location.IsInSource)
+            var location = nodeOrToken.GetLocation()!;
+            // Every Roslyn syntax node/token has a concrete Location. Only external/metadata
+            // locations must be skipped here. Syntax 位置不会为 null，只需排除非源码位置。
+            if (!location.IsInSource)
                 continue;
 
             var mappedSpan = location.GetMappedLineSpan();

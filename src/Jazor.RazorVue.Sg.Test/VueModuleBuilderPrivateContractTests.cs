@@ -208,6 +208,12 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("mappedOrdinary", Invoke<string>("GetRuntimeMemberName", ordinary, declaredNames));
         declaredNames[ordinary.OriginalDefinition] = string.Empty;
         Assert.AreEqual("Ordinary", Invoke<string>("GetRuntimeMemberName", ordinary, declaredNames));
+        Assert.AreEqual(
+            "Ordinary",
+            Invoke<string>(
+                "GetRuntimeMemberName",
+                ordinary,
+                new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default)));
         Assert.IsNotNull(Invoke<string?>("GetPropertyBackingFieldName", shapes, auto));
         StringAssert.Contains(Invoke<string>("GetStableSymbolSortKey", ordinary), "PrivateContracts.cs", StringComparison.Ordinal);
         Assert.IsFalse(string.IsNullOrWhiteSpace(Invoke<string>("GetStableSymbolSortKey", compilation.GetSpecialType(SpecialType.System_String))));
@@ -355,6 +361,101 @@ public sealed class VueModuleBuilderPrivateContractTests
     }
 
     [TestMethod]
+    public void ImportBindingFilter_DeduplicatesEquivalentBindingsAndRejectsCollisions()
+    {
+        var imports = new Parser().ParseModule(
+            """
+            import { source as namedLocal } from "./named.mjs";
+            import defaultLocal from "./default.mjs";
+            import * as namespaceLocal from "./namespace.mjs";
+            import { "wire-name" as stringLocal } from "./wire.mjs";
+            import "./side-effect.mjs";
+            """)
+            .Body
+            .OfType<ImportDeclaration>()
+            .ToArray();
+        var duplicate = new Parser().ParseModule(
+            "import { source as namedLocal } from \"./named.mjs\";")
+            .Body
+            .OfType<ImportDeclaration>()
+            .Single();
+        var collision = new Parser().ParseModule(
+            "import { other as namedLocal } from \"./other.mjs\";")
+            .Body
+            .OfType<ImportDeclaration>()
+            .Single();
+        var bindingType = typeof(VueModuleBuilder).GetNestedType("ImportBinding", BindingFlags.NonPublic);
+        Assert.IsNotNull(bindingType);
+        var bindings = Activator.CreateInstance(
+            typeof(Dictionary<,>).MakeGenericType(typeof(string), bindingType!));
+        Assert.IsNotNull(bindings);
+
+        foreach (var index in new[] { 0, 1, 2, 3 })
+        {
+            var retained = Invoke<ImportDeclaration?>(
+                "FilterEmittedImportSpecifiers",
+                imports[index],
+                bindings);
+            Assert.IsNotNull(retained);
+            Assert.HasCount(1, retained.Specifiers);
+        }
+
+        Assert.IsNull(Invoke<ImportDeclaration?>(
+            "FilterEmittedImportSpecifiers",
+            duplicate,
+            bindings));
+        Assert.AreSame(
+            imports[4],
+            Invoke<ImportDeclaration?>("FilterEmittedImportSpecifiers", imports[4], bindings));
+
+        var collisionException = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<ImportDeclaration?>("FilterEmittedImportSpecifiers", collision, bindings));
+        StringAssert.Contains(collisionException.InnerException!.Message, "namedLocal", StringComparison.Ordinal);
+        StringAssert.Contains(collisionException.InnerException!.Message, "Import aliases must be unique", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void DirectRenderNamingAndSlotHelpers_RespectImportsReservedNamesAndBracketAccess()
+    {
+        var fixture = CreateRuntimeComponentFixture();
+        var names = Invoke<IReadOnlyDictionary<ISymbol, string>>(
+            "BuildDirectRenderDeclaredNames",
+            fixture.Component,
+            fixture.Closure,
+            new[] { "counter", "RuntimeOuter", "RuntimeInner", "RuntimeLeaf" });
+
+        Assert.IsNotEmpty(names);
+        Assert.IsFalse(names.Values.Contains("counter", StringComparer.Ordinal));
+        Assert.IsFalse(names.Values.Contains("RuntimeOuter", StringComparer.Ordinal));
+        Assert.AreEqual(names.Count, names.Values.Distinct(StringComparer.Ordinal).Count());
+
+        var identifierSlot = Invoke<ConditionalExpression>("BuildDirectRenderSlotValueExpression", "header");
+        var identifierAccess = (MemberExpression)identifierSlot.Consequent;
+        Assert.IsFalse(identifierAccess.Computed);
+        Assert.AreEqual("header", ((Identifier)identifierAccess.Property).Name);
+
+        var bracketSlot = Invoke<ConditionalExpression>("BuildDirectRenderSlotValueExpression", "item-value");
+        var bracketAccess = (MemberExpression)bracketSlot.Consequent;
+        Assert.IsTrue(bracketAccess.Computed);
+        Assert.AreEqual("item-value", ((StringLiteral)bracketAccess.Property).Value);
+
+        var imports = new Parser().ParseModule(
+            """
+            import local from "./local.mjs";
+            import packageLocal from "package";
+            """)
+            .Body
+            .OfType<ImportDeclaration>()
+            .ToArray();
+        Assert.AreEqual(
+            "../local.mjs",
+            Invoke<ImportDeclaration>("RebaseImportDeclaration", imports[0], "pages/host.mjs").Source.Value);
+        Assert.AreSame(
+            imports[1],
+            Invoke<ImportDeclaration>("RebaseImportDeclaration", imports[1], "pages/host.mjs"));
+    }
+
+    [TestMethod]
     public void PathAndIdentifierEdgeCases_PreserveArtifactAndSourceMapContracts()
     {
         var compilation = CreateCompilation();
@@ -439,6 +540,30 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsFalse(Invoke<bool>(
             "TryResolveOriginalSourcePosition",
             new object?[] { document, mappings, 99, 0, null }));
+
+        var beforeFirstMapping = ImmutableArray.Create(new RazorSourceMap(
+            new RazorSourceSpan("Pages/Before.razor", 0, 1, 0, 0),
+            new RazorSourceSpan("Generated/Before.razor.g.cs", 6, 1, 1, 0)));
+        var beforeDocument = new GeneratedDocument(
+            "Generated/Before.razor.g.cs",
+            "Pages/Before.razor",
+            SourceText.From("alpha\nbeta"),
+            beforeFirstMapping);
+        Assert.IsFalse(Invoke<bool>(
+            "TryResolveOriginalSourcePosition",
+            new object?[] { beforeDocument, beforeFirstMapping, 0, 0, null }));
+
+        var zeroLengthOriginal = ImmutableArray.Create(new RazorSourceMap(
+            new RazorSourceSpan("Pages/Zero.razor", 0, 0, 4, 2),
+            new RazorSourceSpan("Generated/Zero.razor.g.cs", 0, 1, 0, 0)));
+        var zeroLengthDocument = new GeneratedDocument(
+            "Generated/Zero.razor.g.cs",
+            "Pages/Zero.razor",
+            SourceText.From("x"),
+            zeroLengthOriginal);
+        var zeroLengthArguments = new object?[] { zeroLengthDocument, zeroLengthOriginal, 0, 0, null };
+        Assert.IsTrue(Invoke<bool>("TryResolveOriginalSourcePosition", zeroLengthArguments));
+        Assert.IsNotNull(zeroLengthArguments[4]);
 
         var pruned = Invoke<SourceMapDocument>(
             "PruneIntermediateSources",
@@ -766,6 +891,75 @@ public sealed class VueModuleBuilderPrivateContractTests
             "generated position",
             StringComparison.Ordinal);
 
+    }
+
+    [TestMethod]
+    public void ReturnedMemberAndDisposeHelpers_PreserveNameFallbackAndExplicitInterfaceContracts()
+    {
+        var fixture = CreateRuntimeComponentFixture();
+        var renderMethod = fixture.Component.BuildRenderTreeMethod;
+        var returnedClosure = fixture.Closure with
+        {
+            LifecycleRoots = ImmutableArray.Create(renderMethod)
+        };
+        var returned = Invoke<ImmutableArray<string>>(
+            "GetReturnedMembers",
+            returnedClosure,
+            new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default)
+            {
+                [renderMethod.OriginalDefinition] = "renderFromMap"
+            });
+        CollectionAssert.AreEqual(new[] { "renderFromMap" }, returned.ToArray());
+        Assert.AreEqual("BuildRenderTree", Invoke<string>("GetRuntimeMemberName", renderMethod, null));
+
+        var compilation = CreateStandaloneCompilation(
+            """
+            using System;
+            using System.Threading.Tasks;
+
+            public sealed class DisposalShape : IDisposable, IAsyncDisposable
+            {
+                public void Dispose() { }
+                public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+                public void Cleanup() { }
+            }
+
+            public sealed class ExplicitDisposalShape : IDisposable, IAsyncDisposable
+            {
+                void IDisposable.Dispose() { }
+                ValueTask IAsyncDisposable.DisposeAsync() => ValueTask.CompletedTask;
+            }
+            """,
+            "DisposalShape.cs");
+        var disposalShape = GetNamedType(compilation, "DisposalShape");
+        var explicitShape = GetNamedType(compilation, "ExplicitDisposalShape");
+        var dispose = GetMethod(disposalShape, "Dispose");
+        var disposeAsync = GetMethod(disposalShape, "DisposeAsync");
+        var cleanup = GetMethod(disposalShape, "Cleanup");
+        var explicitDispose = explicitShape.GetMembers().OfType<IMethodSymbol>()
+            .Single(static method => method.MethodKind == MethodKind.ExplicitInterfaceImplementation && method.Name == "System.IDisposable.Dispose");
+        var explicitDisposeAsync = explicitShape.GetMembers().OfType<IMethodSymbol>()
+            .Single(static method => method.MethodKind == MethodKind.ExplicitInterfaceImplementation && method.Name == "System.IAsyncDisposable.DisposeAsync");
+
+        Assert.IsTrue(Invoke<bool>("IsSynchronousDisposeMethod", dispose));
+        Assert.IsTrue(Invoke<bool>("IsSynchronousDisposeMethod", explicitDispose));
+        Assert.IsFalse(Invoke<bool>("IsSynchronousDisposeMethod", cleanup));
+        Assert.IsTrue(Invoke<bool>("IsAsynchronousDisposeMethod", disposeAsync));
+        Assert.IsTrue(Invoke<bool>("IsAsynchronousDisposeMethod", explicitDisposeAsync));
+        Assert.IsFalse(Invoke<bool>("IsAsynchronousDisposeMethod", cleanup));
+
+        var lifecycleMembers = typeof(VueModuleBuilder).GetNestedType(
+            "ComponentLifecycleRuntimeMembers",
+            BindingFlags.NonPublic);
+        Assert.IsNotNull(lifecycleMembers);
+        var addDistinct = lifecycleMembers!
+            .GetMethod("AddDistinct", BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.IsNotNull(addDistinct);
+        var names = ImmutableArray.CreateBuilder<string>();
+        addDistinct!.Invoke(null, [names, "dispose"]);
+        addDistinct.Invoke(null, [names, "dispose"]);
+        addDistinct.Invoke(null, [names, "disposeAsync"]);
+        CollectionAssert.AreEqual(new[] { "dispose", "disposeAsync" }, names.ToArray());
     }
 
     [TestMethod]

@@ -52,8 +52,10 @@ internal static class ChildrenToSlotIntrinsic
 		// invocations to SemanticWalker; a recognized invalid slot contract gets an actionable error.
 		// 只认领精确的 Razor children 传输形状，避免把普通 h 调用误当作 slot protocol。
 		expression = null;
-		if (method.ContainingType is not { } containingType ||
-			!IsRenderFactoryMethod(method, containingType, context))
+		// The caller supplies a bound invocation target, which Roslyn always owns by a named type.
+		// 此 intrinsic 不接受手工拼接的 method symbol，避免把不存在的 host 伪装为普通未匹配调用。
+		var containingType = method.ContainingType!;
+		if (!IsRenderFactoryMethod(method, containingType, context))
 			return false;
 
 		if (!TryClassifyDefaultSlotInvocation(method, context, out var defaultSlotKind, out var hostContracts))
@@ -141,8 +143,7 @@ internal static class ChildrenToSlotIntrinsic
 	private static bool TryResolveHostContracts(IMethodSymbol method, out HostContracts contracts)
 	{
 		contracts = null!;
-		if (method.ContainingType?.OriginalDefinition is not INamedTypeSymbol hostType)
-			return false;
+		var hostType = method.ContainingType!.OriginalDefinition;
 
 		var node = GetHostTypeMember(hostType, "IVNode", 0);
 		if (node is null)
@@ -368,11 +369,11 @@ internal static class ChildrenToSlotIntrinsic
 		HostContracts hostContracts,
 		out INamedTypeSymbol slotType)
 	{
-		slotType = null!;
-		if (method.Parameters[0].Type is not INamedTypeSymbol { IsGenericType: true } parameterType)
-		{
-			return false;
-		}
+        // Only a validated Typed* invocation reaches here. TryClassifyReceiver already proved
+        // parameter[0] is one of the generic typed-slot host contracts.
+        // 此处入口只来自 Typed* 分类，receiver 已确定为 generic named slot contract。
+        slotType = null!;
+        var parameterType = (INamedTypeSymbol)method.Parameters[0].Type;
 
 		if (parameterType.TypeArguments.Length == 1 &&
 			IsSameOriginalDefinition(parameterType, hostContracts.SlotComponent) &&

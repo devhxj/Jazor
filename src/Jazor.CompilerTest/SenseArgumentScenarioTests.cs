@@ -297,6 +297,24 @@ public sealed class SenseArgumentScenarioTests
         }
     }
 
+    [TestMethod]
+    public void BindImportSpecifier_GeneratedAliasSkipsReservedAndOccupiedHashCandidates()
+    {
+        const string modulePath = "vue";
+        const string importedName = "watch";
+        var key = ImportBindingKey(modulePath, importedName);
+        var prefix = $"i${Format.HashName(key).TrimStart('_')}";
+
+        var reservedState = CreateImportBindingState(reservedNames: [importedName, prefix]);
+        var reservedAlias = reservedState.Argument.BindImportSpecifier(modulePath, importedName);
+        Assert.AreEqual(prefix + "1", reservedAlias.Name);
+
+        var occupiedState = CreateImportBindingState(reservedNames: [importedName]);
+        occupiedState.LocalBindings.Add(prefix, "existing-module\0existing-import");
+        var occupiedAlias = occupiedState.Argument.BindImportSpecifier(modulePath, importedName);
+        Assert.AreEqual(prefix + "1", occupiedAlias.Name);
+    }
+
     private static void AssertInitializedDefault(SenseArgument argument, string scenarioId)
     {
         AssertContext(

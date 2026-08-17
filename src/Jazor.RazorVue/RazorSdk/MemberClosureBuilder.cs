@@ -134,7 +134,7 @@ internal static class MemberClosureBuilder
         if (!SupportedLifecycleMethods.Contains(method.Name) ||
             method.IsStatic ||
             method.MethodKind != MethodKind.Ordinary ||
-            !Comparer.Equals(method.ContainingType?.OriginalDefinition, componentSymbol.OriginalDefinition))
+            !Comparer.Equals(method.ContainingType!.OriginalDefinition, componentSymbol.OriginalDefinition))
         {
             return false;
         }

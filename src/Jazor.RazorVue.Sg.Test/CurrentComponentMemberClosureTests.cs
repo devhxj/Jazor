@@ -1,3 +1,4 @@
+using System.Reflection;
 using Jazor.Compiler;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.AspNetCore.Components;
@@ -100,6 +101,85 @@ public sealed class CurrentComponentMemberClosureTests
     }
 
     [TestMethod]
+    public void Build_TraversesPropertyGetterFormsFieldInitializersAndNestedRuntimeClasses()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class CounterComponent : ComponentBase
+            {
+                private int _initialized = FieldSeed();
+                private int _withoutInitializer;
+
+                private int InitializedProperty { get; set; } = PropertySeed();
+                private int ExpressionProperty => ExpressionSeed();
+                private int BlockProperty
+                {
+                    get
+                    {
+                        return BlockSeed();
+                    }
+                }
+
+                private int AccessorExpressionProperty
+                {
+                    get => AccessorSeed();
+                }
+
+                public sealed class RuntimeHelper
+                {
+                    public RuntimeHelper()
+                    {
+                        Value = ConstructorSeed();
+                    }
+
+                    public int Value { get; }
+
+                    public int Read() => Value;
+
+                    private static int ConstructorSeed() => 7;
+                }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    var helper = new RuntimeHelper();
+                    builder.AddContent(
+                        0,
+                        helper.Read() + _initialized + InitializedProperty + ExpressionProperty + BlockProperty + AccessorExpressionProperty + _withoutInitializer);
+                }
+
+                private static int FieldSeed() => 1;
+                private static int PropertySeed() => 2;
+                private static int ExpressionSeed() => 3;
+                private static int BlockSeed() => 4;
+                private static int AccessorSeed() => 5;
+            }
+            """);
+
+        var closure = CurrentComponentMemberClosure.Build(
+            fixture.ComponentType,
+            fixture.SemanticModel,
+            [fixture.GetMethod("BuildRenderTree")]);
+
+        Assert.IsTrue(closure.Contains(fixture.GetField("_initialized")));
+        Assert.IsTrue(closure.Contains(fixture.GetField("_withoutInitializer")));
+        Assert.IsTrue(closure.Contains(fixture.GetProperty("InitializedProperty")));
+        Assert.IsTrue(closure.Contains(fixture.GetProperty("ExpressionProperty")));
+        Assert.IsTrue(closure.Contains(fixture.GetProperty("BlockProperty")));
+        Assert.IsTrue(closure.Contains(fixture.GetProperty("AccessorExpressionProperty")));
+        Assert.IsTrue(closure.Contains(fixture.GetMethod("FieldSeed")));
+        Assert.IsTrue(closure.Contains(fixture.GetMethod("PropertySeed")));
+        Assert.IsTrue(closure.Contains(fixture.GetMethod("ExpressionSeed")));
+        Assert.IsTrue(closure.Contains(fixture.GetMethod("BlockSeed")));
+        Assert.IsTrue(closure.Contains(fixture.GetMethod("AccessorSeed")));
+
+        var runtimeHelper = fixture.ComponentType.GetTypeMembers("RuntimeHelper").Single();
+        Assert.IsTrue(closure.Contains(runtimeHelper));
+        Assert.IsTrue(closure.Contains(runtimeHelper.InstanceConstructors.Single()));
+        Assert.IsTrue(closure.Contains(runtimeHelper.GetMembers("Read").OfType<IMethodSymbol>().Single()));
+        Assert.IsTrue(closure.Contains(runtimeHelper.GetMembers("Value").OfType<IPropertySymbol>().Single()));
+    }
+
+    [TestMethod]
     public async Task Build_MemberFilter_EmitsOnlyReachableComponentMembers()
     {
         var fixture = CompileComponent(
@@ -151,6 +231,42 @@ public sealed class CurrentComponentMemberClosureTests
         StringAssert.Contains(script!, "builder.OpenElement(0, \"button\");", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("unusedSeed", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("_unused", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void InventoryFilterAndStableKey_HandleCompilerGeneratedAndMetadataSymbols()
+    {
+        var fixture = CompileComponent(
+            """
+            public sealed class CounterComponent : ComponentBase
+            {
+                private int Value { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    => builder.AddContent(0, Value);
+            }
+            """);
+        var property = fixture.GetProperty("Value");
+        var backingField = fixture.ComponentType.GetMembers()
+            .OfType<IFieldSymbol>()
+            .Single(field => SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol, property));
+
+        Assert.IsTrue(InvokePrivateStatic<bool>("IsUserDeclaredInventoryMember", property));
+        Assert.IsFalse(InvokePrivateStatic<bool>("IsUserDeclaredInventoryMember", property.GetMethod!));
+        Assert.IsFalse(InvokePrivateStatic<bool>("IsUserDeclaredInventoryMember", backingField));
+
+        var metadataKey = InvokePrivateStatic<string>(
+            "GetStableMemberKey",
+            fixture.SemanticModel.Compilation.GetSpecialType(SpecialType.System_String));
+        StringAssert.StartsWith(metadataKey, "~|NamedType|string", StringComparison.Ordinal);
+    }
+
+    private static T InvokePrivateStatic<T>(string methodName, params object?[] arguments)
+    {
+        var method = typeof(CurrentComponentMemberClosure)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
+        return (T)method.Invoke(null, arguments)!;
     }
 
     private static ComponentClosureFixture CompileComponent(string componentSource)

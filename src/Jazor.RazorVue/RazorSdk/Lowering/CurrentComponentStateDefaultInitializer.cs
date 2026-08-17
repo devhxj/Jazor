@@ -64,8 +64,10 @@ internal static class CurrentComponentStateDefaultInitializer
         if (Util.IsStringEnumType(type))
             throw CreateUnsupportedException(type);
 
-        if (type is INamedTypeSymbol { EnumUnderlyingType: { } underlyingType } &&
-            underlyingType.SpecialType is SpecialType.System_Int64 or SpecialType.System_UInt64)
+        // Roslyn represents every TypeKind.Enum as an INamedTypeSymbol with an underlying type.
+        // 枚举分支已由 TypeKind 收窄，不再重复保留不可能的 non-named fallback。
+        var underlyingType = ((INamedTypeSymbol)type).EnumUnderlyingType!;
+        if (underlyingType.SpecialType is SpecialType.System_Int64 or SpecialType.System_UInt64)
         {
             return new BigIntLiteral(BigInteger.Zero, "0n");
         }
@@ -74,8 +76,7 @@ internal static class CurrentComponentStateDefaultInitializer
     }
 
     private static bool IsSystemHalfType(ITypeSymbol type)
-        => type.OriginalDefinition is { Name: "Half" } original &&
-           original.ContainingNamespace?.ToDisplayString() == "System";
+        => string.Equals(type.OriginalDefinition.ToDisplayString(), "System.Half", StringComparison.Ordinal);
 
     private static bool IsBigIntMappedValueType(ITypeSymbol type)
     {

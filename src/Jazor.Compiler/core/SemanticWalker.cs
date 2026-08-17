@@ -415,8 +415,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private static ITypeSymbol UnwrapNullableValueType(ITypeSymbol typeSymbol)
         => typeSymbol is INamedTypeSymbol
         {
-            OriginalDefinition.SpecialType: SpecialType.System_Nullable_T,
-            TypeArguments.Length: 1
+            OriginalDefinition.SpecialType: SpecialType.System_Nullable_T
         } nullableType
             ? nullableType.TypeArguments[0]
             : typeSymbol;

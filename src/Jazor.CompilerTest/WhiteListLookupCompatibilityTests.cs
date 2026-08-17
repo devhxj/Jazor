@@ -327,6 +327,49 @@ public sealed class WhiteListLookupCompatibilityTests
     }
 
     [TestMethod]
+    public void WhiteListLookup_ReducedExternExtensionInvocation_ResolvesSynthesizedModifierOrder()
+    {
+        const string source = """
+            namespace LookupTests;
+
+            public static class TextExtensions
+            {
+                public static extern int Measure(this string value, in int offset);
+            }
+
+            public sealed class Consumer
+            {
+                public int Read(string value)
+                {
+                    var offset = 2;
+                    return value.Measure(in offset);
+                }
+            }
+            """;
+        var compilation = CreateCompilation(source, "WhiteListLookup.ReducedExternExtensionSynthetic");
+        var syntaxTree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(syntaxTree);
+        var invocation = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Single();
+        var reducedMethod = Assert.IsInstanceOfType<IMethodSymbol>(model.GetSymbolInfo(invocation).Symbol);
+        var extensionDefinition = reducedMethod.ReducedFrom!.OriginalDefinition;
+        var staticExtensionKey = extensionDefinition.ToDisplayString(Format.StaticExtensionNameFormat);
+        var synthesizedStaticKey = staticExtensionKey.Replace("static extern ", "extern static ", StringComparison.Ordinal);
+        Assert.AreNotEqual(staticExtensionKey, synthesizedStaticKey);
+        var mappings = new Dictionary<string, string> { [synthesizedStaticKey] = "measure" };
+
+        Assert.IsTrue(WhiteListLookup.TryGetValue(
+            mappings,
+            reducedMethod,
+            out var matchedKey,
+            out var matchedValue));
+        Assert.AreEqual(synthesizedStaticKey, matchedKey);
+        Assert.AreEqual("measure", matchedValue);
+    }
+
+    [TestMethod]
     public void WhiteListLookup_FallbackSymbols_FollowRoslynDefinitionRelationships()
     {
         const string source = """

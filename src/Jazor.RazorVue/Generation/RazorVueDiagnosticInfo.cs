@@ -214,7 +214,8 @@ internal static class RazorVueDiagnosticFactory
             return RazorVueDiagnosticSourceKind.MappedRazor;
         if (path.EndsWith(".razor.g.cs", StringComparison.OrdinalIgnoreCase) ||
             path.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
-            path.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase))
+            path.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase))
         {
             return RazorVueDiagnosticSourceKind.GeneratedCSharp;
         }

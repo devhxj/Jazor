@@ -637,14 +637,13 @@ public partial class SemanticWalker
 
 		if (operation.Patterns.IsEmpty)
 		{
+			// 空模式没有 slice，前面的长度访问不可能被缓存。
 			var lengthCheck = new NonLogicalBinaryExpression(
 				Operator.StrictEquality,
 				lengthExpr,
 				new NumericLiteral(0, "0")
 			);
-			result = lengthInitialization is null
-				? new LogicalExpression(Operator.LogicalAnd, carrierCheck, lengthCheck)
-				: lengthCheck;
+			result = new LogicalExpression(Operator.LogicalAnd, carrierCheck, lengthCheck);
 		}
 		else
 		{
@@ -690,7 +689,7 @@ public partial class SemanticWalker
 					}
 
 					var indexAccess = BuildListPatternIndexerAccess(operation, obj, indexExpr, argument, isIntrinsicArrayCarrier, hostType);
-					Expression? expr;
+					Expression expr;
 					if (pattern is IDeclarationPatternOperation declarationPatternOp)
 						expr = BuildDeclarationPattern(declarationPatternOp, indexAccess, argument);
 					else
@@ -700,8 +699,7 @@ public partial class SemanticWalker
 						expr = Translate<Expression>(pattern, patternArg);
 					}
 
-					if (expr is not null)
-						result = new LogicalExpression(Operator.LogicalAnd, result, expr);
+					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 				}
 				else if (pattern is ISlicePatternOperation slicePattern)
 				{
@@ -725,7 +723,7 @@ public partial class SemanticWalker
 						hostType);
 
 					// 处理切片模式的子模式（通常是声明模式）
-					Expression? expr;
+					Expression expr;
 					if (slicePattern.Pattern is IDeclarationPatternOperation declarationPatternOp)
 					{
 						expr = BuildDeclarationPattern(declarationPatternOp, sliceExpr, argument);
@@ -737,8 +735,7 @@ public partial class SemanticWalker
 						expr = Translate<Expression>(slicePattern.Pattern, patternArg);
 					}
 
-					if (expr is not null)
-						result = new LogicalExpression(Operator.LogicalAnd, result, expr);
+					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 				}
 				else
 				{
@@ -755,8 +752,7 @@ public partial class SemanticWalker
 					var indexAccess = BuildListPatternIndexerAccess(operation, obj, indexExpr, argument, isIntrinsicArrayCarrier, hostType);
 					var patternArg = argument.WithPatternInput(indexAccess);
 					var expr = Translate<Expression>(pattern, patternArg);
-					if (expr is not null)
-						result = new LogicalExpression(Operator.LogicalAnd, result, expr);
+					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 				}
 			}
 		}
@@ -1299,7 +1295,7 @@ public partial class SemanticWalker
 			: ResolveSingleAssignmentValueSource(sourceOperation, operation);
 
 		if (resolvedSource is not null &&
-			TryResolveDeterministicRuntimeValue(resolvedSource, out var runtimeType, out var definitelyNonNull))
+			TryResolveDeterministicRuntimeValue(resolvedSource, out var runtimeType, out _))
 		{
 			// null is never an instance of interface types.
 			if (runtimeType is null)
@@ -1309,14 +1305,12 @@ public partial class SemanticWalker
 			}
 
 			var assignable = IsRuntimeTypeAssignableToInterface(runtimeType, interfaceType);
-			if (assignable)
-				result = definitelyNonNull
-					? InterfaceTypeCheckFold.AlwaysTrue
-					: InterfaceTypeCheckFold.NonNullOnly;
-			else if (definitelyNonNull)
-				result = InterfaceTypeCheckFold.AlwaysFalse;
-			else
-				return false;
+			// TryResolveDeterministicRuntimeValue only returns a concrete runtime type for
+			// definitely non-null values. Nullable/reference defaults take the null branch above,
+			// so this fold must not keep an unreachable non-null guard.
+			result = assignable
+				? InterfaceTypeCheckFold.AlwaysTrue
+				: InterfaceTypeCheckFold.AlwaysFalse;
 
 			return true;
 		}

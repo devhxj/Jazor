@@ -115,4 +115,26 @@ public sealed class SemanticWalkerInlineTemplateTest
         StringAssert.Contains(exception.Message, "expects at least 3 arguments");
         StringAssert.Contains(exception.Message, "received 2");
     }
+
+    [TestMethod]
+    public void InstantiateInlineTemplate_RewritesOnlyTheExactImportedBindingIdentifier()
+    {
+        var instantiateMethod = GetInlineMethod(
+            "InstantiateInlineTemplate",
+            typeof(string),
+            typeof(string),
+            typeof(IReadOnlyList<Expression>),
+            typeof(string),
+            typeof(Identifier));
+        var args = new List<Expression> { new Identifier("value") };
+        var result = (Expression)instantiateMethod.Invoke(
+            null,
+            [NewSignature(), "runtime + runtimeSuffix + __arg1", args, "runtime", new Identifier("runtime$0")])!;
+        var whitespaceResult = (Expression)instantiateMethod.Invoke(
+            null,
+            [NewSignature(), "runtime + __arg1", args, " ", new Identifier("runtime$0")])!;
+
+        Assert.AreEqual("runtime$0 + runtimeSuffix + value", result.ToKnRECMAScript());
+        Assert.AreEqual("runtime + value", whitespaceResult.ToKnRECMAScript());
+    }
 }

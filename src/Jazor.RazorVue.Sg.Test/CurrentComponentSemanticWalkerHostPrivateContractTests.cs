@@ -383,6 +383,103 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
     }
 
     [TestMethod]
+    public void DirectBinderFastPaths_RequireSimpleStringOrBooleanAssignments()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "ComponentUnderTest");
+        var observed = new List<DirectBinderValueKind>();
+        var host = new CurrentComponentSemanticWalkerHost(
+            component,
+            directBinderHandlerObserver: (_, valueKind) => observed.Add(valueKind));
+        var stringBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "StringBinderFactory");
+        var booleanBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "BooleanBinderFactory");
+        var cultureBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactoryWithCulture");
+        var fieldBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactoryWithField");
+
+        AssertDirectBinderKind(stringBinder, DirectBinderValueKind.String);
+        AssertDirectBinderKind(booleanBinder, DirectBinderValueKind.Boolean);
+        Assert.IsTrue(InvokeStatic<bool>("HasOnlyDefaultBinderOptions", stringBinder));
+        Assert.IsTrue(InvokeStatic<bool>("HasOnlyDefaultBinderOptions", fieldBinder));
+        Assert.IsFalse(InvokeStatic<bool>("HasOnlyDefaultBinderOptions", cultureBinder));
+
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(host.RewriteInvocationPreorder(
+            stringBinder,
+            new SenseArgument()));
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(host.RewriteInvocationPreorder(
+            booleanBinder,
+            new SenseArgument()));
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(host.RewriteInvocationPreorder(
+            cultureBinder,
+            new SenseArgument()));
+        CollectionAssert.AreEqual(
+            new[] { DirectBinderValueKind.String, DirectBinderValueKind.Boolean },
+            observed);
+
+        var callbackProperty = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "CallbackProperty"),
+            "callback");
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(callbackProperty);
+        Assert.IsInstanceOfType<MemberExpression>(InvokeInstance<Expression?>(
+            host,
+            "RewriteEventCallbackHandler",
+            callbackProperty,
+            new SenseArgument()));
+
+        static void AssertDirectBinderKind(
+            IInvocationOperation invocation,
+            DirectBinderValueKind expected)
+        {
+            var handlerArguments = new object?[] { invocation, null, null };
+            Assert.IsTrue(InvokeStatic<bool>("TryGetCreateBinderReceiverAndHandler", handlerArguments));
+            var valueKindArguments = new object?[] { handlerArguments[2], null };
+            var classifier = typeof(CurrentComponentSemanticWalkerHost)
+                .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+                .Single(method => method.Name == "TryGetDirectBinderValueKind" &&
+                                  method.GetParameters() is [var parameter, _] &&
+                                  parameter.ParameterType == typeof(IOperation));
+            Assert.IsTrue((bool)classifier.Invoke(null, valueKindArguments)!);
+            Assert.AreEqual(expected, (DirectBinderValueKind)valueKindArguments[1]!);
+        }
+    }
+
+    [TestMethod]
+    public void DirectBinderFastPaths_LeaveNumericBindersOnTheGenericAdapter()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "ComponentUnderTest");
+        var observed = new List<DirectBinderValueKind>();
+        var host = new CurrentComponentSemanticWalkerHost(
+            component,
+            directBinderHandlerObserver: (_, valueKind) => observed.Add(valueKind));
+        var numericBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactory");
+        var handlerArguments = new object?[] { numericBinder, null, null };
+        Assert.IsTrue(InvokeStatic<bool>("TryGetCreateBinderReceiverAndHandler", handlerArguments));
+
+        var classifier = typeof(CurrentComponentSemanticWalkerHost)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .Single(method => method.Name == "TryGetDirectBinderValueKind" &&
+                              method.GetParameters() is [var parameter, _] &&
+                              parameter.ParameterType == typeof(IOperation));
+        var valueKindArguments = new object?[] { handlerArguments[2], null };
+        Assert.IsFalse((bool)classifier.Invoke(null, valueKindArguments)!);
+        Assert.AreEqual(DirectBinderValueKind.None, (DirectBinderValueKind)valueKindArguments[1]!);
+
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(host.RewriteInvocationPreorder(
+            numericBinder,
+            new SenseArgument()));
+        Assert.IsEmpty(observed);
+
+        var literal = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "Operations"),
+            "literal");
+        var literalArguments = new object?[] { literal, null };
+        Assert.IsFalse((bool)classifier.Invoke(null, literalArguments)!);
+        Assert.AreEqual(DirectBinderValueKind.None, (DirectBinderValueKind)literalArguments[1]!);
+    }
+
+    [TestMethod]
     public void FrameworkCallbackBoundaryEdges_KeepCurrentComponentDispatchExplicit()
     {
         var fixture = CreateFixture();
@@ -565,6 +662,110 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             new SenseArgument()));
     }
 
+    [TestMethod]
+    public void DirectBinderClassification_RejectsNonCanonicalLambdaAndCallbackBranches()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "ComponentUnderTest");
+        var host = new CurrentComponentSemanticWalkerHost(component);
+        var fieldBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactoryWithField");
+        var twoParameterHandler = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "TwoParameterBinderShape"),
+            "handler");
+        var transformedValueHandler = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "TransformedBinderValueShape"),
+            "handler");
+        var conditionalHandler = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "ConditionalHandlerWithUnsupportedAlternative"),
+            "handler");
+
+        Assert.IsTrue(InvokeStatic<bool>("HasOnlyDefaultBinderOptions", fieldBinder));
+        AssertDirectBinderKind(twoParameterHandler, DirectBinderValueKind.None);
+        AssertDirectBinderKind(transformedValueHandler, DirectBinderValueKind.None);
+        Assert.IsNull(InvokeInstance<Expression?>(
+            host,
+            "RewriteEventCallbackHandler",
+            conditionalHandler,
+            new SenseArgument()));
+
+        var currentMethod = GetMethodSymbol(fixture, "ComponentUnderTest", "CurrentMethod");
+        var whitespaceNameHost = new CurrentComponentSemanticWalkerHost(
+            component,
+            memberRuntimeNames: new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default)
+            {
+                [currentMethod.OriginalDefinition] = " "
+            });
+        Assert.AreEqual(
+            "CurrentMethod",
+            InvokeInstance<string>(whitespaceNameHost, "GetMemberName", currentMethod));
+
+        static void AssertDirectBinderKind(IOperation handler, DirectBinderValueKind expected)
+        {
+            var classifier = typeof(CurrentComponentSemanticWalkerHost)
+                .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+                .Single(method => method.Name == "TryGetDirectBinderValueKind" &&
+                                  method.GetParameters() is [var parameter, _] &&
+                                  parameter.ParameterType == typeof(IOperation));
+            var arguments = new object?[] { handler, null };
+            Assert.IsFalse((bool)classifier.Invoke(null, arguments)!);
+            Assert.AreEqual(expected, (DirectBinderValueKind)arguments[1]!);
+        }
+    }
+
+    [TestMethod]
+    public void BinderCallbackResidualShapes_KeepFastPathAndFrameworkIdentityBoundariesExplicit()
+    {
+        var fixture = CreateFixture();
+        var component = GetNamedType(fixture, "ComponentUnderTest");
+        var hostWithoutObserver = new CurrentComponentSemanticWalkerHost(component);
+        var stringBinder = GetSingleInvocation(fixture, "ComponentUnderTest", "StringBinderFactory");
+        var fieldFirstBinderShape = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderShapeWithoutCurrentValue");
+        var directLambda = GetOperation<IAnonymousFunctionOperation>(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "TwoParameterBinderShape")
+                .DescendantNodes()
+                .OfType<AnonymousFunctionExpressionSyntax>()
+                .Single());
+        var unsupportedConditional = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "ConditionalHandlerWithUnsupportedConsequent"),
+            "handler");
+        var foreignBindConverter = GetNamedType(fixture, "OtherNamespace+BindConverter")
+            .GetMembers("FormatValue")
+            .OfType<IMethodSymbol>()
+            .Single();
+
+        // A direct DOM bind remains valid without an observer. The optional observer only enables
+        // frame-level fusion and must not be required for the generic handler lowering path.
+        Assert.IsInstanceOfType<ArrowFunctionExpression>(hostWithoutObserver.RewriteInvocationPreorder(
+            stringBinder,
+            new SenseArgument()));
+
+        Assert.IsFalse(InvokeStatic<bool>("HasOnlyDefaultBinderOptions", fieldFirstBinderShape));
+        var binderArguments = new object?[] { fieldFirstBinderShape, null, null };
+        Assert.IsTrue(InvokeStatic<bool>("TryGetCreateBinderReceiverAndHandler", binderArguments));
+        Assert.IsInstanceOfType<IFieldReferenceOperation>(fieldFirstBinderShape.Arguments[0].Value);
+
+        var classifier = typeof(CurrentComponentSemanticWalkerHost)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .Single(method => method.Name == "TryGetDirectBinderValueKind" &&
+                              method.GetParameters() is [var parameter, _] &&
+                              parameter.ParameterType == typeof(IOperation));
+        var valueKindArguments = new object?[] { directLambda, null };
+        Assert.IsFalse((bool)classifier.Invoke(null, valueKindArguments)!);
+        Assert.AreEqual(DirectBinderValueKind.None, (DirectBinderValueKind)valueKindArguments[1]!);
+
+        Assert.IsNull(InvokeInstance<Expression?>(
+            hostWithoutObserver,
+            "RewriteEventCallbackHandler",
+            unsupportedConditional,
+            new SenseArgument()));
+        Assert.IsFalse(InvokeStatic<bool>("IsBindConverterFormatValue", foreignBindConverter));
+    }
+
     private static T InvokeStatic<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(CurrentComponentSemanticWalkerHost)
@@ -598,6 +799,8 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                 [Parameter] public EventCallback<int> GenericChanged { get; set; }
                 [Parameter] public string? Title { get; set; }
                 public int Count { get; set; }
+                public string Text { get; set; } = string.Empty;
+                public bool IsEnabled { get; set; }
                 public int Computed => Count;
                 [Obsolete] public int Noisy { get; set; }
                 public static int StaticValue => 1;
@@ -695,13 +898,46 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                     var binder = Factory.CreateBinder(this, (int value) => Count = value, Count);
                 }
 
+                public void StringBinderFactory()
+                {
+                    var binder = EventCallback.Factory.CreateBinder(this, (string value) => Text = value, Text);
+                }
+
+                public void BooleanBinderFactory()
+                {
+                    var binder = EventCallback.Factory.CreateBinder(this, (bool value) => IsEnabled = value, IsEnabled);
+                }
+
+                public void BinderFactoryWithCulture()
+                {
+                    var binder = EventCallback.Factory.CreateBinder(
+                        this,
+                        (string value) => Text = value,
+                        Text,
+                        System.Globalization.CultureInfo.InvariantCulture);
+                }
+
+                public void CallbackProperty()
+                {
+                    var callback = Changed;
+                }
+
                 private static void ConsumeBinderArguments(EventCallbackFactory factory, int value)
+                {
+                }
+
+                private static void ConsumeBinderShape(EventCallbackFactory factory, object receiver, Action<int> handler)
                 {
                 }
 
                 public void BinderFactoryWithMissingHandlerArgument()
                 {
                     ConsumeBinderArguments(_factory, Count);
+                }
+
+                public void BinderShapeWithoutCurrentValue()
+                {
+                    ConsumeBinderShape(_factory, this, (int value) => Count = value);
                 }
 
                 public void BinderFactoryWithForeignReceiver()
@@ -775,6 +1011,26 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
                     if (enabled)
                         CurrentMethod();
                 }
+
+                public void TwoParameterBinderShape()
+                {
+                    Action<int, int> handler = (first, second) => Count = first;
+                }
+
+                public void TransformedBinderValueShape()
+                {
+                    Action<int> handler = value => Count = value + 1;
+                }
+
+                public void ConditionalHandlerWithUnsupportedAlternative(bool enabled)
+                {
+                    Action handler = enabled ? CurrentMethod : OtherHandlers.NoOp;
+                }
+
+                public void ConditionalHandlerWithUnsupportedConsequent(bool enabled)
+                {
+                    Action handler = enabled ? OtherHandlers.NoOp : CurrentMethod;
+                }
             }
 
             public sealed class GenericHolder<T>;
@@ -787,6 +1043,7 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             public static class OtherHandlers
             {
                 public static void Set(int value) { }
+                public static void NoOp() { }
             }
 
             public static class OtherFactory
@@ -803,6 +1060,14 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             public sealed class OtherInstanceBindConverter
             {
                 public void FormatValue() { }
+            }
+
+            public static class OtherNamespace
+            {
+                public static class BindConverter
+                {
+                    public static void FormatValue() { }
+                }
             }
 
             public static class OtherRuntimeHelpers

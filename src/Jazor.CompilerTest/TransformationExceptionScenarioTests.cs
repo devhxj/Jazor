@@ -140,6 +140,81 @@ public sealed class TransformationExceptionScenarioTests
         Assert.AreEqual(25, ReadData<int>(exception, "location.endColumn", testCase.Id));
     }
 
+    [TestMethod]
+    public void ExplicitSourceLocationConstructors_PreserveMetadataAndNormalizeMissingLocations()
+    {
+        var fileTree = CSharpSyntaxTree.ParseText(
+            "class Sample { int Value; }",
+            TestMetadataReferences.PreviewParseOptions,
+            path: "src/ExceptionContracts.cs");
+        var memoryTree = CSharpSyntaxTree.ParseText(
+            "class Sample { int Value; }",
+            TestMetadataReferences.PreviewParseOptions,
+            path: string.Empty);
+        var fileLocation = fileTree.GetRoot().DescendantNodes().OfType<FieldDeclarationSyntax>().Single().GetLocation();
+        var memoryLocation = memoryTree.GetRoot().DescendantNodes().OfType<FieldDeclarationSyntax>().Single().GetLocation();
+        var inner = new InvalidOperationException("inner");
+
+        var operation = new OperationTransformationException(
+            OperationKind.FieldReference,
+            "operation location",
+            fileLocation,
+            inner);
+        var syntax = new SyntaxNodeTransformationException(
+            SyntaxKind.FieldDeclaration,
+            "syntax location",
+            fileLocation);
+        var inMemorySyntax = new SyntaxNodeTransformationException(
+            SyntaxKind.FieldDeclaration,
+            "memory syntax location",
+            memoryLocation,
+            inner);
+        var missingSymbol = new SymbolTransformationException(SymbolKind.Field, "missing symbol", (Location)null!);
+        var missingOperation = new OperationTransformationException(OperationKind.FieldReference, "missing operation", (Location)null!);
+        var missingSyntax = new SyntaxNodeTransformationException(SyntaxKind.FieldDeclaration, "missing syntax", (Location)null!);
+
+        Assert.AreSame(inner, operation.InnerException);
+        Assert.AreEqual("src/ExceptionContracts.cs", ReadData<string>(operation, "location.path", "operation"));
+        Assert.AreEqual("src/ExceptionContracts.cs", ReadData<string>(syntax, "location.path", "syntax"));
+        Assert.AreEqual("<unknown>", ReadData<string>(inMemorySyntax, "location.path", "memory syntax"));
+        Assert.AreSame(inner, inMemorySyntax.InnerException);
+        Assert.AreEqual(Location.None, missingSymbol.SourceLocation);
+        Assert.AreEqual(Location.None, missingOperation.SourceLocation);
+        Assert.AreEqual(Location.None, missingSyntax.SourceLocation);
+        Assert.HasCount(0, missingOperation.Data);
+        Assert.HasCount(0, missingSyntax.Data);
+    }
+
+    [TestMethod]
+    public void InnerExceptionLocationConstructors_NormalizeNullLocationsWithoutMetadata()
+    {
+        var inner = new InvalidOperationException("inner");
+        var symbol = new SymbolTransformationException(
+            SymbolKind.Field,
+            "symbol",
+            (Location)null!,
+            inner);
+        var operation = new OperationTransformationException(
+            OperationKind.FieldReference,
+            "operation",
+            (Location)null!,
+            inner);
+        var syntax = new SyntaxNodeTransformationException(
+            SyntaxKind.FieldDeclaration,
+            "syntax",
+            (Location)null!,
+            inner);
+
+        Assert.AreSame(inner, symbol.InnerException);
+        Assert.AreSame(inner, operation.InnerException);
+        Assert.AreSame(inner, syntax.InnerException);
+        Assert.AreEqual(Location.None, symbol.SourceLocation);
+        Assert.AreEqual(Location.None, operation.SourceLocation);
+        Assert.AreEqual(Location.None, syntax.SourceLocation);
+        Assert.HasCount(0, operation.Data);
+        Assert.HasCount(0, syntax.Data);
+    }
+
     private static T ReadData<T>(Exception exception, string key, string scenarioId)
     {
         var value = exception.Data[key];

@@ -234,6 +234,47 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
     }
 
     [TestMethod]
+    public void Visit_RuntimeAliasedInitializers_UseDeclaredPropertyAndCollectionMemberNames()
+    {
+        var block = GetBlockOperation(
+            """
+            var holder = new RuntimeHolder
+            {
+                Value = 1,
+                Child = { Score = 2 }
+            };
+            var bag = new RuntimeBag { 3, 4 };
+            """);
+
+        var script = VisitBlock(block);
+
+        StringAssert.Contains(script, "v$0.value = 1", StringComparison.Ordinal);
+        StringAssert.Contains(script, "v$0.child.score = 2", StringComparison.Ordinal);
+        StringAssert.Contains(script, "v$0.push(3)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "v$0.push(4)", StringComparison.Ordinal);
+        ParseScript(script);
+    }
+
+    [TestMethod]
+    public void Visit_RuntimeAliasedFieldInitializers_UseDeclaredFieldNamesAtBothLevels()
+    {
+        var block = GetBlockOperation(
+            """
+            var holder = new RuntimeFieldHolder
+            {
+                Count = 1,
+                Child = { Score = 2 }
+            };
+            """);
+
+        var script = VisitBlock(block);
+
+        StringAssert.Contains(script, "v$0.count = 1", StringComparison.Ordinal);
+        StringAssert.Contains(script, "v$0.child.score = 2", StringComparison.Ordinal);
+        ParseScript(script);
+    }
+
+    [TestMethod]
     public void Visit_StructuralRecordPrimaryConstructorSpreadLiteral_FlattensMembersInOrder()
     {
         var block = GetBlockOperation(
@@ -616,6 +657,46 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
                     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
                         => GetEnumerator();
+                }
+
+                [global::ECMAScript.ECMAScript]
+                public sealed class RuntimeChild
+                {
+                    [global::ECMAScript.ECMAScriptName("score")]
+                    public int Score { get; set; }
+                }
+
+                [global::ECMAScript.ECMAScript]
+                public sealed class RuntimeHolder
+                {
+                    [global::ECMAScript.ECMAScriptName("value")]
+                    public int Value { get; set; }
+
+                    [global::ECMAScript.ECMAScriptName("child")]
+                    public RuntimeChild Child { get; } = new();
+                }
+
+                [global::ECMAScript.ECMAScript]
+                public sealed class RuntimeBag : IEnumerable<int>
+                {
+                    [global::ECMAScript.ECMAScriptName("push")]
+                    public void Add(int value) { }
+
+                    public IEnumerator<int> GetEnumerator()
+                        => ((IEnumerable<int>)Array.Empty<int>()).GetEnumerator();
+
+                    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+                        => GetEnumerator();
+                }
+
+                [global::ECMAScript.ECMAScript]
+                public sealed class RuntimeFieldHolder
+                {
+                    [global::ECMAScript.ECMAScriptName("count")]
+                    public int Count;
+
+                    [global::ECMAScript.ECMAScriptName("child")]
+                    public RuntimeChild Child = new();
                 }
 
                 public sealed record ChildProps

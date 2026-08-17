@@ -2249,8 +2249,10 @@ public partial class SemanticWalker
 	{
 		if (instance is not null &&
 			arguments.Count > 0 &&
-			(propertyReference.Property.IsIndexer || propertyReference.Property.Parameters.Length > 0))
+			propertyReference.Property.IsIndexer)
 		{
+			// Roslyn C# binding guarantees argument-bearing property references are indexers.
+			// Parameters.Length would duplicate the same source-bound invariant here.
 			if (arguments.Count != 1)
 				return HandleTransformationFailure<Expression>(propertyReference, "JavaScript fallback for indexers only supports a single translated index argument.");
 
@@ -2261,13 +2263,13 @@ public partial class SemanticWalker
 		if (instance is not null)
 			return BuildAliasedPropertyAccess(instance, propertyName!, optional: false);
 
-		if (propertyReference.Property.IsStatic && propertyReference.Property.ContainingType is not null)
+		if (propertyReference.Property.IsStatic)
 		{
 			if (TryBuildPreferredRuntimeStaticMemberAccess(propertyReference.Property, propertyReference.Syntax, propertyReference.SemanticModel!, propertyName!, argument, out var preferredStaticProperty) &&
 				preferredStaticProperty is not null)
 				return preferredStaticProperty;
 
-			var containing = BuildFullTypeName(propertyReference.Property.ContainingType, argument);
+			var containing = BuildFullTypeName(propertyReference.Property.ContainingType!, argument);
 			if (containing is not null)
 				return BuildAliasedPropertyAccess(containing, propertyName!, optional: false);
 		}

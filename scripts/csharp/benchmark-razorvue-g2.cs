@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var options = BenchmarkOptions.Parse(args);
 if (options.DryRun)
@@ -18,12 +19,16 @@ Directory.CreateDirectory(outputDirectory);
 
 var protocol = BenchmarkProtocol.Create(options);
 WriteText(Path.Combine(outputDirectory, "razorvue-g2-benchmark-protocol.md"), protocol.ToMarkdown());
-WriteText(Path.Combine(outputDirectory, "razorvue-g2-benchmark-protocol.json"), JsonSerializer.Serialize(protocol, new JsonSerializerOptions { WriteIndented = true }));
+WriteText(
+    Path.Combine(outputDirectory, "razorvue-g2-benchmark-protocol.json"),
+    JsonSerializer.Serialize(protocol, BenchmarkJsonContext.Default.BenchmarkProtocol));
 
 if (options.MeasureRuntime)
 {
     var report = await RunNodeBenchmarkAsync(repoRoot, options);
-    WriteText(Path.Combine(outputDirectory, "razorvue-g2-direct-runtime-report.json"), JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
+    WriteText(
+        Path.Combine(outputDirectory, "razorvue-g2-direct-runtime-report.json"),
+        JsonSerializer.Serialize(report, BenchmarkJsonContext.Default.DirectRuntimeReport));
     WriteText(Path.Combine(outputDirectory, "razorvue-g2-direct-runtime-report.md"), report.ToMarkdown());
     Console.WriteLine(report.ToMarkdown());
 }
@@ -35,7 +40,9 @@ else
 if (options.MeasureBrowser)
 {
     var browserReport = await RunBrowserProbeAsync(repoRoot, options);
-    WriteText(Path.Combine(outputDirectory, "razorvue-g2-direct-browser-report.json"), JsonSerializer.Serialize(browserReport, new JsonSerializerOptions { WriteIndented = true }));
+    WriteText(
+        Path.Combine(outputDirectory, "razorvue-g2-direct-browser-report.json"),
+        JsonSerializer.Serialize(browserReport, BenchmarkJsonContext.Default.BrowserProbeReport));
     WriteText(Path.Combine(outputDirectory, "razorvue-g2-direct-browser-report.md"), browserReport.ToMarkdown());
     Console.WriteLine(browserReport.ToMarkdown());
 }
@@ -45,7 +52,7 @@ if (options.VerifyVueRuntime)
     var verification = await RunProductionVueRuntimeVerificationAsync(repoRoot);
     WriteText(
         Path.Combine(outputDirectory, "razorvue-production-vue-runtime-verification.json"),
-        JsonSerializer.Serialize(verification, new JsonSerializerOptions { WriteIndented = true }));
+        JsonSerializer.Serialize(verification, BenchmarkJsonContext.Default.ProductionVueRuntimeVerification));
     WriteText(
         Path.Combine(outputDirectory, "razorvue-production-vue-runtime-verification.md"),
         verification.ToMarkdown());
@@ -86,9 +93,9 @@ static async Task<DirectRuntimeReport> RunNodeBenchmarkAsync(string repoRoot, Be
 
     // Node emits camelCase JSON while the C# report keeps PascalCase record members.
     // Keep this boundary explicit so protocol naming does not affect benchmark parsing.
-    return JsonSerializer.Deserialize<DirectRuntimeReport>(
+    return JsonSerializer.Deserialize(
         result.StandardOutput,
-        new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+        BenchmarkJsonContext.Default.DirectRuntimeReport)
         ?? throw new InvalidOperationException("Node benchmark returned no report.");
 }
 
@@ -812,3 +819,13 @@ internal sealed record ProductionVueRuntimeVerification(
 {Details}
 """;
 }
+
+// Benchmark artifacts are invoked as a standalone tool and can be trimmed/AOT analyzed by the
+// current SDK. Keep the JSON contract source-generated so baseline collection itself is warning-free.
+// 基准报告是长期可复现的交付物，不能依赖 reflection serializer 才能在预览 SDK 下运行。
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNameCaseInsensitive = true)]
+[JsonSerializable(typeof(BenchmarkProtocol))]
+[JsonSerializable(typeof(DirectRuntimeReport))]
+[JsonSerializable(typeof(BrowserProbeReport))]
+[JsonSerializable(typeof(ProductionVueRuntimeVerification))]
+internal sealed partial class BenchmarkJsonContext : JsonSerializerContext;

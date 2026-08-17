@@ -42,6 +42,36 @@ public sealed class MemberClosureBuilderContractTests
     }
 
     [TestMethod]
+    public void TryBuildWithDiagnostic_PreservesSuccessfulAndRejectedClosureContracts()
+    {
+        var fixture = CreateFixture();
+
+        Assert.IsTrue(MemberClosureBuilder.TryBuildWithDiagnostic(
+            fixture.Binding,
+            fixture.Component,
+            out var validClosure,
+            out var validDiagnostic));
+        Assert.IsNotNull(validClosure);
+        Assert.IsNull(validDiagnostic);
+
+        var invalidRoot = fixture.Component with { BuildRenderTreeMethod = fixture.NonRenderTreeMethod };
+        Assert.IsFalse(MemberClosureBuilder.TryBuildWithDiagnostic(
+            fixture.Binding,
+            invalidRoot,
+            out var invalidClosure,
+            out var invalidDiagnostic));
+        Assert.IsNull(invalidClosure);
+        Assert.IsNotNull(invalidDiagnostic);
+        StringAssert.Contains(
+            invalidDiagnostic.Message,
+            "not BuildRenderTree(RenderTreeBuilder)",
+            StringComparison.Ordinal);
+        Assert.AreEqual(
+            fixture.NonRenderTreeMethod.Locations.Single(static location => location.IsInSource).SourceSpan,
+            invalidDiagnostic.PrimaryLocation.SourceSpan);
+    }
+
+    [TestMethod]
     public void TryBuild_CollectsSupportedLifecycleAndDisposeRootsWithoutUnrelatedOverloads()
     {
         var fixture = CreateFixture();

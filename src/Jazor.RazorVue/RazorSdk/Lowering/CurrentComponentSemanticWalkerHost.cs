@@ -283,8 +283,8 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         //   [EventCallback.Factory, receiver, handler, currentValue, culture]
         var receiverIndex = operation.Arguments[0].Value is IFieldReferenceOperation ? 1 : 0;
         var handlerIndex = receiverIndex + 1;
-        if (operation.Arguments.Length <= handlerIndex)
-            return false;
+        // The minimum arity check above covers both layouts: handlerIndex is always 1 or 2.
+        // 不要在这里再保留等价长度判断，否则会掩盖 Razor SG binder protocol 的真实变化。
 
         receiver = operation.Arguments[receiverIndex].Value;
         handler = operation.Arguments[handlerIndex].Value;
@@ -636,7 +636,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private static bool IsEventCallbackFactoryCreate(IMethodSymbol method)
         => string.Equals(method.Name, "Create", StringComparison.Ordinal) &&
            string.Equals(
-               method.ContainingType?.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                method.ContainingType!.OriginalDefinition.ToDisplayString(Format.NameFormat),
                EventCallbackFactoryMetadataName,
                StringComparison.Ordinal);
 
@@ -645,7 +645,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
            string.Equals(method.Name, "FormatValue", StringComparison.Ordinal) &&
            method.ContainingType is { Name: "BindConverter" } containingType &&
            string.Equals(
-               containingType.ContainingNamespace?.ToDisplayString(),
+                containingType.ContainingNamespace!.ToDisplayString(),
                "Microsoft.AspNetCore.Components",
                StringComparison.Ordinal);
 
@@ -658,7 +658,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private static bool IsEventCallbackFactoryCreateBinder(IMethodSymbol method)
         => string.Equals(method.Name, "CreateBinder", StringComparison.Ordinal) &&
            string.Equals(
-               method.ContainingNamespace?.ToDisplayString(),
+                method.ContainingNamespace!.ToDisplayString(),
                "Microsoft.AspNetCore.Components",
                StringComparison.Ordinal);
 
@@ -761,7 +761,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                string.Equals(display, "Microsoft.AspNetCore.Components.EventCallback<TValue>", StringComparison.Ordinal) ||
                (string.Equals(original.Name, "EventCallback", StringComparison.Ordinal) &&
                 string.Equals(
-                    original.ContainingNamespace?.ToDisplayString(),
+                    original.ContainingNamespace!.ToDisplayString(),
                     "Microsoft.AspNetCore.Components",
                     StringComparison.Ordinal));
     }
@@ -792,9 +792,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (!IsCurrentComponentReceiver(instance) && instance is not null)
             return false;
 
-        var containingType = method.ContainingType?.OriginalDefinition;
-        if (containingType is null)
-            return false;
+        // Invocation targets in a bound C# operation are always owned by a named type.
+        // Roslyn 已完成绑定；这里不应把不可能的 symbol ownership 缺失当作普通 false。
+        var containingType = method.ContainingType!.OriginalDefinition;
 
         return SymbolEqualityComparer.Default.Equals(containingType, _componentType.OriginalDefinition) ||
                string.Equals(
@@ -834,7 +834,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         // current-component method path; only the ComponentBase dispatcher maps
         // to the setup-scoped invokeAsync helper.
         return string.Equals(
-            method.ContainingType?.OriginalDefinition.ToDisplayString(Format.NameFormat),
+            method.ContainingType!.OriginalDefinition.ToDisplayString(Format.NameFormat),
             ComponentBaseMetadataName,
             StringComparison.Ordinal);
     }
@@ -906,7 +906,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
            string.Equals(method.Name, methodName, StringComparison.Ordinal) &&
            method.ContainingType is { Name: "RuntimeHelpers" } containingType &&
            string.Equals(
-               containingType.ContainingNamespace?.ToDisplayString(),
+                containingType.ContainingNamespace!.ToDisplayString(),
                "Microsoft.AspNetCore.Components.CompilerServices",
                StringComparison.Ordinal);
 

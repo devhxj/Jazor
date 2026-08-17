@@ -1,3 +1,4 @@
+using System.Reflection;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.RazorVue.RazorSdk;
@@ -184,6 +185,80 @@ public sealed class ChildrenToSlotIntrinsicScenarioTests
             StringAssert.Contains(exception.Message, expected, StringComparison.Ordinal, scenario.Id);
     }
 
+    [TestMethod]
+    public void TryBuild_RejectsImplicitUntypedAndAmbiguousDefaultSlotContracts()
+    {
+        AssertAuthoringFailure(
+            """
+            public static class ScenarioModule
+            {
+                public static SlotHost.IVNode Invoke(SlotHost.IVueComponent component, SlotHost.IVNode child)
+                    => SlotHost.h(component, child);
+            }
+            """,
+            "implicit-untyped-default-slot",
+            "Implicit component child content has no explicit slot contract");
+        AssertAuthoringFailure(
+            """
+            public sealed class MultipleDefaultSlots
+            {
+                [System.ComponentModel.Description("@#default")]
+                public SlotHost.Slot First => null!;
+
+                [System.ComponentModel.Description("@#default")]
+                public SlotHost.Slot Second => null!;
+            }
+
+            public static class ScenarioModule
+            {
+                public static SlotHost.IVNode Invoke(
+                    SlotHost.IVueSlotComponent<MultipleDefaultSlots> component,
+                    SlotHost.IVNode child)
+                    => SlotHost.h(component, child);
+            }
+            """,
+            "multiple-default-slots",
+            "declares more than one explicit default slot");
+        AssertAuthoringFailure(
+            """
+            public delegate SlotHost.IVNode ScopedSlot(int value);
+
+            public sealed class ScopedDefaultSlots
+            {
+                [System.ComponentModel.Description("@#default")]
+                public ScopedSlot Content => null!;
+            }
+
+            public static class ScenarioModule
+            {
+                public static SlotHost.IVNode Invoke(
+                    SlotHost.IVueSlotComponent<ScopedDefaultSlots> component,
+                    SlotHost.IVNode child)
+                    => SlotHost.h(component, child);
+            }
+            """,
+            "scoped-default-slot",
+            "expects slot scope");
+    }
+
+    [TestMethod]
+    public void BuildDefaultSlotObject_UsesStringKeyWhenSlotNameIsNotIdentifier()
+    {
+        var method = typeof(ChildrenToSlotIntrinsic).GetMethod(
+            "BuildDefaultSlotObject",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.IsNotNull(method);
+
+        var child = new Identifier("content");
+        var slotObject = (ObjectExpression)method!.Invoke(null, [child, "item-value"])!;
+        var property = (ObjectProperty)slotObject.Properties.Single();
+
+        Assert.IsInstanceOfType<StringLiteral>(property.Key);
+        Assert.AreEqual("item-value", ((StringLiteral)property.Key).Value);
+        var callback = (ArrowFunctionExpression)property.Value;
+        Assert.AreSame(child, callback.Body);
+    }
+
     private static IReadOnlyList<Expression> CreateArguments(
         int count,
         ChildrenToSlotChildExpressionKind childExpressionKind)
@@ -194,6 +269,28 @@ public sealed class ChildrenToSlotIntrinsicScenarioTests
         if (arguments.Length > 0 && childExpressionKind == ChildrenToSlotChildExpressionKind.NullLiteral)
             arguments[^1] = new NullLiteral("null");
         return arguments;
+    }
+
+    private static void AssertAuthoringFailure(string source, string scenarioId, string expectedMessage)
+    {
+        var fixture = Compile(source, scenarioId);
+        var arguments = CreateArguments(
+            fixture.Operation.TargetMethod.Parameters.Length,
+            ChildrenToSlotChildExpressionKind.Identifier);
+        var probe = new ChildrenToSlotServiceProbe(
+            "runtime",
+            ChildrenToSlotImportBehavior.ReturnFactory);
+
+        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
+            ChildrenToSlotIntrinsic.TryBuild(
+                fixture.Operation,
+                fixture.Operation.TargetMethod,
+                arguments,
+                probe.CreateServices(),
+                out _));
+
+        Assert.AreEqual(0, probe.ImportAttempts, scenarioId);
+        StringAssert.Contains(exception.Message, expectedMessage, StringComparison.Ordinal, scenarioId);
     }
 
     private static void AssertDefaultSlotAst(

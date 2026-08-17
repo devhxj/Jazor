@@ -922,6 +922,68 @@ Assert.AreEqual(
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithNestedPrimaryConstructorBase_InitializesOnlyInstanceMembersAfterSuper()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass(int seed)
+                {
+                    public int Seed = seed;
+                }
+
+                public class NestedClass(string title, int count) : BaseClass(count + 1)
+                {
+                    public string Title = title;
+
+                    public int Count { get; } = count;
+
+                    public int Plain { get; set; }
+
+                    public static int Version = 1;
+
+                    public int Uninitialized;
+
+                    public int Computed => count;
+                }
+
+                public static NestedClass Create()
+                {
+                    return new NestedClass("todo", 3);
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var countBackingField = PropertyBackingFieldName(nestedClass, "Count");
+        var plainBackingField = PropertyBackingFieldName(nestedClass, "Plain");
+        var countParameter = nestedClass.InstanceConstructors.Single().Parameters[1];
+        var countStorage = "$jazorPrimary_" + Format.HashName(
+            countParameter.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_');
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "export class BaseClass", StringComparison.Ordinal);
+        StringAssert.Contains(script, "export class NestedClass extends BaseClass", StringComparison.Ordinal);
+        StringAssert.Contains(script, "super(count + 1);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "this.Title =", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"#{countBackingField} = 0;", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"#{plainBackingField} = 0;", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"this.#{countBackingField} = this.#{countStorage};", StringComparison.Ordinal);
+        StringAssert.Contains(script, "static Version = 1;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Uninitialized = 0;", StringComparison.Ordinal);
+        Assert.IsLessThan(
+            script.IndexOf("this.Title =", StringComparison.Ordinal),
+            script.IndexOf("super(count + 1);", StringComparison.Ordinal),
+            "Derived member initialization must happen after the base constructor call.");
+        _ = new Parser().ParseModule(script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithNestedClassMultipleInstanceConstructors_GeneratesDispatcher()
     {
         var code = """

@@ -14,6 +14,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var options = BenchmarkOptions.Parse(args);
+if (options.ShowHelp)
+    return;
+
 var repoRoot = RequireRepositoryRoot();
 var outputRoot = Path.GetFullPath(
     options.OutputDirectory ?? Path.Combine(repoRoot, ".tmp", "razorvue-ssr-benchmark"));
@@ -236,6 +239,7 @@ static void WriteText(string path, string content)
 }
 
 internal sealed record BenchmarkOptions(
+    bool ShowHelp,
     string? OutputDirectory,
     int Samples,
     int Iterations,
@@ -244,7 +248,7 @@ internal sealed record BenchmarkOptions(
 {
     public static BenchmarkOptions Parse(string[] args)
     {
-        var result = new BenchmarkOptions(null, 5, 50, 20, Math.Clamp(Environment.ProcessorCount, 1, 4));
+        var result = new BenchmarkOptions(false, null, 5, 50, 20, Math.Clamp(Environment.ProcessorCount, 1, 4));
         for (var index = 0; index < args.Length; index++)
         {
             switch (args[index])
@@ -256,7 +260,7 @@ internal sealed record BenchmarkOptions(
                 case "--workers": result = result with { WorkerCount = PositiveInt(Next(args, ref index, "--workers"), "--workers") }; break;
                 case "--help":
                     Console.WriteLine("Usage: dotnet run --file scripts/csharp/benchmark-razorvue-ssr.cs -- [--out DIR] [--samples N] [--iterations N] [--concurrent-requests N] [--workers N]");
-                    return result;
+                    return result with { ShowHelp = true };
                 default: throw new InvalidOperationException("Unknown benchmark argument: " + args[index]);
             }
         }

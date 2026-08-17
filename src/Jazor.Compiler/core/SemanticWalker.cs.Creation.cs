@@ -1416,8 +1416,11 @@ public partial class SemanticWalker
 				if (string.IsNullOrEmpty(alias))
 					RejectUnsupportedRuntimeFallback(invocationOp, invocationOp.TargetMethod, "initializer method invocation", invocationOp.Instance?.Type ?? invocationOp.TargetMethod.ContainingType);
 
-				// 普通方法调用
-				var methodName = alias ?? GetMethodConfigOrWhiteListName(invocationOp.TargetMethod);
+				// 普通方法调用。当前模块声明成员本来就没有 whitelist alias，
+				// so retain its emitted/configured name after the runtime-boundary validation returns.
+				var methodName = string.IsNullOrEmpty(alias)
+					? GetCurrentModuleDeclaredOrConfigName(invocationOp.TargetMethod)
+					: alias!;
 				var callee = new MemberExpression(
 					obj,
 					new Identifier(methodName),

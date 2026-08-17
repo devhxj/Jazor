@@ -258,6 +258,108 @@ public sealed class UtilSymbolNamingScenarioTests
         }
     }
 
+    [TestMethod]
+    public void RuntimeRecordProxy_UsesMappedMembersAndInheritsTheRuntimeMarkerBoundary()
+    {
+        var fixture = Compile(
+            """
+            using ECMAScript;
+
+            [ECMAScript]
+            public record DirectRuntimeProxy
+            {
+                [ECMAScriptName("title")]
+                public string Title { get; set; } = "";
+
+                public string Plain { get; set; } = "";
+            }
+
+            [ECMAScript]
+            public record RuntimeProxyBase;
+
+            public record InheritedRuntimeProxy : RuntimeProxyBase
+            {
+                [ECMAScriptName("code")]
+                public int Code { get; set; }
+            }
+            """);
+        var directRuntimeProxy = fixture.GetType("DirectRuntimeProxy");
+        var inheritedRuntimeProxy = fixture.GetType("InheritedRuntimeProxy");
+        var title = directRuntimeProxy.GetMembers("Title").OfType<IPropertySymbol>().Single();
+        var plain = directRuntimeProxy.GetMembers("Plain").OfType<IPropertySymbol>().Single();
+        var code = inheritedRuntimeProxy.GetMembers("Code").OfType<IPropertySymbol>().Single();
+
+        Assert.IsTrue(Util.IsECMAScriptRecordProxyMember(title));
+        Assert.IsTrue(Util.IsECMAScriptRecordProxyMember(title.GetMethod!));
+        Assert.IsFalse(Util.IsECMAScriptRecordProxyMember(plain));
+        Assert.IsTrue(Util.IsECMAScriptRecordProxyMember(code));
+    }
+
+    [TestMethod]
+    public void SymbolNaming_ModuleOverloads_PreserveOneRawEntryAlongsideAnExplicitAlias()
+    {
+        var fixture = Compile(
+            """
+            using ECMAScript;
+
+            [ECMAScriptModule("./runtime.mjs")]
+            public static class ModuleOverloadHost
+            {
+                public static void Style() { }
+
+                [ECMAScriptName("styleIn")]
+                public static void Style(int value) { }
+
+                public static void Configure() { }
+
+                public static void Configure(int value) { }
+            }
+            """);
+        var host = fixture.GetType("ModuleOverloadHost");
+        var style = host.GetMembers("Style").OfType<IMethodSymbol>()
+            .OrderBy(static method => method.Parameters.Length)
+            .ToArray();
+        var configure = host.GetMembers("Configure").OfType<IMethodSymbol>()
+            .OrderBy(static method => method.Parameters.Length)
+            .ToArray();
+
+        CollectionAssert.AreEqual(
+            new[] { "Style", "styleIn" },
+            style.Select(Util.GetConfigOrSymbolName).ToArray());
+        var configureNames = configure.Select(Util.GetConfigOrSymbolName).ToArray();
+        Assert.HasCount(2, configureNames.Distinct(StringComparer.Ordinal));
+        Assert.IsTrue(configureNames.All(static name => name.StartsWith("Configure_", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void JavaScriptNameMetadata_RecoveredDuplicateExplicitNames_UsesTheFirstSourceValue()
+    {
+        const string source = """
+            using ECMAScript;
+
+            [ECMAScriptName("first")]
+            [ECMAScriptName("second")]
+            public sealed class RecoveredNameHost
+            {
+            }
+            """;
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
+        var compilation = CSharpCompilation.Create(
+            "RecoveredNameMetadata",
+            [syntaxTree],
+            TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScriptAttribute).Assembly.Location)),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var host = compilation.GetTypeByMetadataName("RecoveredNameHost")!;
+
+        Assert.IsTrue(compilation.GetDiagnostics().Any(static diagnostic => diagnostic.Id == "CS0579"));
+        var metadata = Util.GetJavaScriptNameMetadata(host);
+        Assert.IsTrue(metadata.HasECMAScriptNameAttribute);
+        Assert.AreEqual("first", metadata.ECMAScriptName);
+        Assert.HasCount(2, host.GetAttributes().Where(static attribute =>
+            attribute.AttributeClass?.Name == "ECMAScriptNameAttribute"));
+        Assert.IsFalse(metadata.HasConflictingExplicitNames);
+    }
+
     private static SymbolFixture Compile(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(

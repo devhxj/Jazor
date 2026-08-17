@@ -166,4 +166,212 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
             });
             """);
     }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorForLoopWithoutUpdateList_PreservesTrailingBodyMutationOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\ForLoopWithoutUpdateRuntime.razor",
+            documentText:
+            """
+            @for (var index = 0; index < Items.Length;)
+            {
+                <li data-index="@index">@Items[index]</li>
+                index++;
+            }
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/for-loop-without-update-runtime")]
+            public partial class ForLoopWithoutUpdateRuntime : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string[] Items { get; set; } = [];
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ForLoopWithoutUpdateRuntime");
+
+        StringAssert.Contains(observation.GeneratedCSharp, "for (var index", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "for (;", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/for-loop-without-update-runtime.mjs",
+            observation.ModuleText,
+            "official-for-loop-without-update-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/for-loop-without-update-runtime.mjs";
+
+            test("official Razor @for accepts a body-owned counter update", () => {
+                const fragment = component.setup({ Items: ["Audit", "Deploy"] }, { slots: {} })();
+                const items = fragment.children.filter(node => node.name === "li");
+                assert.deepEqual(items.map(node => node.props["data-index"]), [0, 1]);
+                assert.deepEqual(items.map(node => node.children), ["Audit", "Deploy"]);
+            });
+            """);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorForLoopWithMultipleUpdates_PreservesUpdateOrderOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\ForLoopMultipleUpdatesRuntime.razor",
+            documentText:
+            """
+            @for (int index = 0, ordinal = 10; index < Items.Length; index++, ordinal += 10)
+            {
+                <li data-index="@index" data-ordinal="@ordinal">@Items[index]</li>
+            }
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/for-loop-multiple-updates-runtime")]
+            public partial class ForLoopMultipleUpdatesRuntime : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string[] Items { get; set; } = [];
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ForLoopMultipleUpdatesRuntime");
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "ordinal += 10", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/for-loop-multiple-updates-runtime.mjs",
+            observation.ModuleText,
+            "official-for-loop-multiple-updates-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/for-loop-multiple-updates-runtime.mjs";
+
+            test("official Razor @for emits all update expressions in source order", () => {
+                const fragment = component.setup({ Items: ["Audit", "Deploy", "Ship"] }, { slots: {} })();
+                const items = fragment.children.filter(node => node.name === "li");
+                assert.deepEqual(items.map(node => node.props["data-index"]), [0, 1, 2]);
+                assert.deepEqual(items.map(node => node.props["data-ordinal"]), [10, 20, 30]);
+                assert.deepEqual(items.map(node => node.children), ["Audit", "Deploy", "Ship"]);
+            });
+            """);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorWhileLoopWithKey_PreservesKeyedIterationIdentityOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\KeyedWhileLoopRuntime.razor",
+            documentText:
+            """
+            @{
+                var index = 0;
+            }
+            @while (index < Items.Length)
+            {
+                <li @key="Items[index]" data-index="@index">@Items[index]</li>
+                index++;
+            }
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/keyed-while-loop-runtime")]
+            public partial class KeyedWhileLoopRuntime : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string[] Items { get; set; } = [];
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.KeyedWhileLoopRuntime");
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "key: props.Items[index]", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/keyed-while-loop-runtime.mjs",
+            observation.ModuleText,
+            "official-keyed-while-loop-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/keyed-while-loop-runtime.mjs";
+
+            test("official Razor @while retains authored keys", () => {
+                const fragment = component.setup({ Items: ["Audit", "Deploy"] }, { slots: {} })();
+                const items = fragment.children.filter(node => node.name === "li");
+                assert.deepEqual(items.map(node => node.props.key), ["Audit", "Deploy"]);
+                assert.deepEqual(items.map(node => node.children), ["Audit", "Deploy"]);
+            });
+            """);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorDoWhileWithMultipleRoots_PreservesIterationFragmentsOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: @"D:\repo\Demo\Pages\DoWhileMultipleRootsRuntime.razor",
+            documentText:
+            """
+            @{
+                var index = 0;
+            }
+            @do
+            {
+                <span data-index="@index">first:@index</span>
+                <em data-index="@index">second:@index</em>
+                index++;
+            }
+            while (index < Count);
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/do-while-multiple-roots-runtime")]
+            public partial class DoWhileMultipleRootsRuntime : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Count { get; set; }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.DoWhileMultipleRootsRuntime");
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "createElementBlock(Fragment", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/do-while-multiple-roots-runtime.mjs",
+            observation.ModuleText,
+            "official-do-while-multiple-roots-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/do-while-multiple-roots-runtime.mjs";
+
+            test("official Razor @do retains every root in each rendered iteration", () => {
+                const fragment = component.setup({ Count: 2 }, { slots: {} })();
+                const spans = fragment.children.map(iteration =>
+                    iteration.children.find(node => node.name === "span").children);
+                const ems = fragment.children.map(iteration =>
+                    iteration.children.find(node => node.name === "em").children);
+                assert.deepEqual(spans, [["first:", 0], ["first:", 1]]);
+                assert.deepEqual(ems, [["second:", 0], ["second:", 1]]);
+            });
+            """);
+    }
 }

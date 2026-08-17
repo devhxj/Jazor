@@ -2135,7 +2135,7 @@ internal static class VueModuleBuilder
                string.Equals(display, "Microsoft.AspNetCore.Components.EventCallback<TValue>", StringComparison.Ordinal) ||
                (string.Equals(original.Name, "EventCallback", StringComparison.Ordinal) &&
                 string.Equals(
-                    original.ContainingNamespace?.ToDisplayString(),
+                    original.ContainingNamespace!.ToDisplayString(),
                     "Microsoft.AspNetCore.Components",
                     StringComparison.Ordinal));
     }
@@ -2280,8 +2280,10 @@ internal static class VueModuleBuilder
             }
         }
 
-        var assemblyName = componentSymbol.ContainingAssembly?.Name ?? "Jazor.Assembly";
-        var namespaceName = componentSymbol.ContainingNamespace?.IsGlobalNamespace == true
+        // BoundComponent is created from the active compilation, so both owners are present.
+        // Keep this path deterministic instead of inventing a fallback assembly for invalid symbols.
+        var assemblyName = componentSymbol.ContainingAssembly!.Name;
+        var namespaceName = componentSymbol.ContainingNamespace!.IsGlobalNamespace
             ? string.Empty
             : componentSymbol.ContainingNamespace!.ToDisplayString().Replace('.', '/');
         var fileName = componentSymbol.Name + ".mjs";
@@ -2305,7 +2307,7 @@ internal static class VueModuleBuilder
             builder.Append(IsJavaScriptIdentifierPart(character) ? character : '_');
         }
 
-        if (builder.Length == 0 || !IsJavaScriptIdentifierStart(builder[0]))
+        if (!IsJavaScriptIdentifierStart(builder[0]))
             builder.Insert(0, fallback);
 
         return builder.ToString();

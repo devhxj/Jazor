@@ -101,6 +101,7 @@ public sealed class SemanticWalkerReferenceTest
 				yield return nested;
 		}
 	}
+
 	
 	#region VisitLocalReference - 局部变量引用
 

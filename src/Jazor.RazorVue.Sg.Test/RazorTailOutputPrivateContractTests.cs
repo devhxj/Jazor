@@ -19,6 +19,14 @@ public sealed class RazorTailOutputPrivateContractTests
     }
 
     [TestMethod]
+    public void EscapeJsonString_EncodesHmrPayloadControlAndDelimiterCharacters()
+    {
+        var escaped = InvokeEscapeJson("plain\\\"\0\b\f\n\r\t\u001f");
+
+        Assert.AreEqual("\"plain\\\\\\\"\\u0000\\b\\f\\n\\r\\t\\u001f\"", escaped);
+    }
+
+    [TestMethod]
     public void TryBuildVueRenderArtifacts_StopsWhenMemberClosureRootIsInvalid()
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
@@ -81,6 +89,49 @@ public sealed class RazorTailOutputPrivateContractTests
         StringAssert.Contains(diagnostics[0].Message, "not BuildRenderTree(RenderTreeBuilder)", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void WorkerAndDiagnosticHelpers_KeepTailOutputSchedulingAndOrderingDeterministic()
+    {
+        Assert.AreEqual(0, Invoke<int>("GetArtifactBuildWorkerCount", 0));
+        Assert.AreEqual(1, Invoke<int>("GetArtifactBuildWorkerCount", 1));
+        Assert.AreEqual(4, Invoke<int>("GetArtifactBuildWorkerCount", 4));
+        Assert.AreEqual(4, Invoke<int>("GetArtifactBuildWorkerCount", 9));
+
+        var sourceTree = CSharpSyntaxTree.ParseText(
+            "namespace Demo; public sealed class Component { }",
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "Pages/Component.razor.cs");
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.TailOutput.HelperContracts",
+            [sourceTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var component = compilation.GetTypeByMetadataName("Demo.Component");
+        Assert.IsNotNull(component);
+
+        Assert.AreEqual(
+            Location.None,
+            Invoke<Location>("GetFirstComponentLocation", ImmutableArray<INamedTypeSymbol>.Empty));
+        var sourceLocation = Invoke<Location>(
+            "GetFirstComponentLocation",
+            ImmutableArray.Create(
+                compilation.GetSpecialType(SpecialType.System_String),
+                component!));
+        Assert.AreEqual("Pages/Component.razor.cs", sourceLocation.GetLineSpan().Path);
+
+        var diagnostics = ImmutableArray.CreateBuilder<RazorVueDiagnosticInfo>();
+        diagnostics.Add(RazorVueDiagnosticFactory.Create(
+            RazorVueDiagnosticCategory.VueModule,
+            "later",
+            component: component));
+        diagnostics.Add(RazorVueDiagnosticFactory.Create(
+            RazorVueDiagnosticCategory.ComponentBinding,
+            "first"));
+        var ordered = Invoke<ImmutableArray<RazorVueDiagnosticInfo>>("OrderDiagnostics", diagnostics);
+        Assert.AreEqual(RazorVueDiagnosticCategory.ComponentBinding, ordered[0].Category);
+        Assert.AreEqual(RazorVueDiagnosticCategory.VueModule, ordered[1].Category);
+    }
+
     private static string InvokeEscape(string value)
     {
         var method = typeof(RazorTailOutput).GetMethod(
@@ -88,5 +139,22 @@ public sealed class RazorTailOutputPrivateContractTests
             BindingFlags.NonPublic | BindingFlags.Static);
         Assert.IsNotNull(method);
         return (string)method.Invoke(null, [value])!;
+    }
+
+    private static string InvokeEscapeJson(string value)
+    {
+        var method = typeof(RazorTailOutput).GetMethod(
+            "EscapeJsonString",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.IsNotNull(method);
+        return (string)method.Invoke(null, [value])!;
+    }
+
+    private static T Invoke<T>(string methodName, params object?[] arguments)
+    {
+        var method = typeof(RazorTailOutput)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == arguments.Length);
+        return (T)method.Invoke(null, arguments)!;
     }
 }

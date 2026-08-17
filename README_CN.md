@@ -32,14 +32,13 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-15
+### 2026-08-17
 
-- RazorVue direct render 现已支持官方 Razor `@for`、`@while`、`@do while`，并保留既有 `@foreach`；循环局部变量闭包、body/condition 顺序及 keyed/unkeyed Vue dynamic Fragment 语义均保持一致。`break` 与 `continue` 在当前 direct-render slice 仍是显式不支持的边界。
-- `ECMAScript.Pinia` 已升级到 Pinia 4.0.3，`ECMAScript.Pinia.Testing` 已升级到 `@pinia/testing` 2.0.1。`app.Use(pinia)` 会自动向 Vue Devtools 注册 Pinia 开发面板，production Pinia 输出不携带 Devtools 闭包；Testing 2 已内置 writable-computed 行为，因此移除了 `TestingOptions.WritableComputed`。
-- 新增独立 `ECMAScript.Vue.Devtools` 包，覆盖公开 `@vue/devtools-api` 8.1.5 plugin authoring surface：typed plugin setup/settings、inspector、timeline、component hook、custom tab/command 与连接回调。它复用 Jazor 已携带的本地 Vue Devtools runtime closure，不暴露 Devtools 内部实现；Pinia 的自动 Devtools 面板注册行为保持不变。
-- 新增 `ECMAScript.VueDataUi`，完整绑定 `vue-data-ui` 3.23.4 的 71 个公开 RazorVue 图表 entry。每个 `VueUi*` 组件只导入自己的 ESM entry；Emit 仅物化其 local closure、库样式和按需的无 bare import 本地 `jspdf` browser ESM runtime。
-- 新增 `ECMAScript.VuIcons`，完整绑定 `vu-icons` 1.5.4 的 1,821 个 Vue 3 `Vu*` wrapper。已知图标按单 SVG module 物化；仅运行时动态选择名称时才物化完整 icon catalog。
-- RazorVue 生成模块现可保持 nested static import 的无冲突 alias 与 conditional branch 的原始 vnode shape。`Jazor.Admin` 与 JazorAdmin sample 增加 overview/notification 模块、改进 scheduling 查询，并刷新管理端主要页面与导航。
+- RazorVue 最终 Compilation 失败现使用稳定的 `JAZORVGA020`-`026` 诊断，映射回 Razor/C# 源位置并给出可操作指引；组件生成失败不会再留下部分 artifact catalog。
+- 被 RazorVue 组件捕获的 runtime member class 现可安全穿过 Vue deep Proxy，包括 private storage、自动属性 backing field、primary-constructor capture 与 field-like event。
+- RazorVue 会拒绝未验证的 labeled `break`/`continue` lowering 形状；dynamic slot 保留父组件上下文，scope 输出无法使用 `renderList` 时仍会保留显式循环项 key。
+- 支持的 C# collection initializer 会保留声明或配置的 `Add` runtime name，不再生成空的 JavaScript 成员调用。
+- 发布验证会从生成的 NuGet 包发布隔离的 `JazorSSR=true` RazorVue TodoList consumer，并验证 packaged SSR、PathBase 资源解析与 Edge hydration。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 

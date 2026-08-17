@@ -144,6 +144,19 @@ public sealed class AstReferenceAnalysisTests
             new[] { "fallback", "key", "otherFallback", "source" },
             names.ToArray());
     }
+
+    [TestMethod]
+    public void IdentifierCollection_ClassMembersWithoutSuperclassOrInitializers_DoNotCreateReferences()
+    {
+        var program = new Parser().ParseScript(
+            "class Standalone { method() {} field; } const Expression = class { method() {} field; };");
+
+        var names = AstReferenceAnalysis.CollectIdentifiers([program]);
+
+        Assert.IsEmpty(names);
+        Assert.IsFalse(AstReferenceAnalysis.ReferencesIdentifier(program, "Standalone"));
+        Assert.IsFalse(AstReferenceAnalysis.ReferencesIdentifier(program, "Expression"));
+    }
 }
 
 public sealed record ReferenceEquivalenceCase(

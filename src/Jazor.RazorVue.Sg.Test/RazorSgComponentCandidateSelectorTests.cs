@@ -421,6 +421,64 @@ public sealed class ComponentSelectorTests
         StringAssert.Contains(selectionFailure, "Demo.Components.GeneratedOnly", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void SourcePathHelpers_ClassifyEverySupportedGeneratedAndRazorIdentitySuffix()
+    {
+        Assert.IsTrue(InvokeStaticBool("IsGeneratedSourcePath", "Pages/Counter.razor.g.cs"));
+        Assert.IsTrue(InvokeStaticBool("IsGeneratedSourcePath", "Pages/Counter.g.cs"));
+        Assert.IsTrue(InvokeStaticBool("IsGeneratedSourcePath", "Pages/Counter.generated.cs"));
+        Assert.IsTrue(InvokeStaticBool("IsGeneratedSourcePath", "Pages/Counter.designer.cs"));
+        Assert.IsFalse(InvokeStaticBool("IsGeneratedSourcePath", "Pages/Counter.cs"));
+        Assert.IsFalse(InvokeStaticBool("IsGeneratedSourcePath", null));
+
+        Assert.IsTrue(InvokeStaticBool("HasRazorSourcePath", "Pages/Counter.razor"));
+        Assert.IsTrue(InvokeStaticBool("HasRazorSourcePath", "Pages/Counter.razor.cs"));
+        Assert.IsTrue(InvokeStaticBool("HasRazorSourcePath", "Pages/Counter.razor.g.cs"));
+        Assert.IsFalse(InvokeStaticBool("HasRazorSourcePath", "Pages/Counter.generated.cs"));
+        Assert.IsFalse(InvokeStaticBool("HasRazorSourcePath", null));
+    }
+
+    [TestMethod]
+    public void RazorSourceIdentity_RecognizesDirectRazorTypeAndMethodLocations()
+    {
+        var tree = CSharpSyntaxTree.ParseText(
+            "namespace Demo; public sealed class RazorIdentity { public void Render() { } }",
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "Pages/RazorIdentity.razor");
+        var compilation = CreateCompilation("RazorSg.DirectRazorIdentity", tree);
+        var type = compilation.GetTypeByMetadataName("Demo.RazorIdentity");
+        Assert.IsNotNull(type);
+        var method = type!.GetMembers("Render").OfType<IMethodSymbol>().Single();
+
+        Assert.IsTrue(InvokeHasRazorSourceIdentity(type));
+        Assert.IsTrue(InvokeHasRazorSourceIdentity(method));
+    }
+
+    [TestMethod]
+    public void RazorSourceIdentity_RecognizesMappedRazorTypeAndMethodLocations()
+    {
+        var tree = CSharpSyntaxTree.ParseText(
+            """
+            namespace Demo;
+
+            #line 1 "Pages/MappedIdentity.razor"
+            public sealed class MappedIdentity
+            {
+                public void Render() { }
+            }
+            #line default
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "Generated/MappedIdentity.razor.g.cs");
+        var compilation = CreateCompilation("RazorSg.MappedRazorIdentity", tree);
+        var type = compilation.GetTypeByMetadataName("Demo.MappedIdentity");
+        Assert.IsNotNull(type);
+        var method = type!.GetMembers("Render").OfType<IMethodSymbol>().Single();
+
+        Assert.IsTrue(InvokeHasRazorSourceIdentity(type));
+        Assert.IsTrue(InvokeHasRazorSourceIdentity(method));
+    }
+
     private static Compilation CreateCompilation(string assemblyName, params SyntaxTree[] syntaxTrees)
         => CSharpCompilation.Create(
             assemblyName,
@@ -444,5 +502,17 @@ public sealed class ComponentSelectorTests
             modifiers: null);
         Assert.IsNotNull(method);
         return (bool)method.Invoke(null, [symbol])!;
+    }
+
+    private static bool InvokeStaticBool(string methodName, string? path)
+    {
+        var method = typeof(ComponentSelector).GetMethod(
+            methodName,
+            BindingFlags.NonPublic | BindingFlags.Static,
+            binder: null,
+            types: [typeof(string)],
+            modifiers: null);
+        Assert.IsNotNull(method, methodName);
+        return (bool)method.Invoke(null, [path])!;
     }
 }

@@ -1,5 +1,6 @@
 using ECMAScript;
 using Jazor.Compiler;
+using Jazor.RazorVue.Generation;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -53,6 +54,62 @@ public sealed class RenderEmitterContractTests
             failure,
             "RazorVue direct render operation lowering requires BuildRenderTree(RenderTreeBuilder).",
             StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmitWithDiagnostic_PreservesSuccessAndFailureCategories()
+    {
+        var success = CreateDirectRenderFixture("builder.AddContent(0, \"ready\");", string.Empty);
+        var emitted = RenderEmitter.TryEmitWithDiagnostic(
+            success.Compilation,
+            success.Component,
+            success.Method,
+            success.Body,
+            declaredNames: null,
+            reservedImportNames: ["reservedImport"],
+            VueInjectRegistry.ForCompilation(success.Compilation),
+            out var result,
+            out var diagnostic);
+
+        Assert.IsTrue(emitted);
+        Assert.IsNotNull(result);
+        Assert.IsNull(diagnostic);
+
+        var directFailure = CreateDirectRenderFixture("string value;", string.Empty);
+        emitted = RenderEmitter.TryEmitWithDiagnostic(
+            directFailure.Compilation,
+            directFailure.Component,
+            directFailure.Method,
+            directFailure.Body,
+            declaredNames: null,
+            reservedImportNames: null,
+            VueInjectRegistry.ForCompilation(directFailure.Compilation),
+            out result,
+            out diagnostic);
+
+        Assert.IsFalse(emitted);
+        Assert.IsNull(result);
+        Assert.IsNotNull(diagnostic);
+        Assert.AreEqual(RazorVueDiagnosticCategory.DirectRender, diagnostic.Category);
+        Assert.IsTrue(diagnostic.IsAuthorReachable);
+
+        var signatureFailure = CreateFixture();
+        emitted = RenderEmitter.TryEmitWithDiagnostic(
+            signatureFailure.Compilation,
+            signatureFailure.Component,
+            signatureFailure.Method,
+            signatureFailure.Body,
+            declaredNames: null,
+            reservedImportNames: null,
+            VueInjectRegistry.ForCompilation(signatureFailure.Compilation),
+            out result,
+            out diagnostic);
+
+        Assert.IsFalse(emitted);
+        Assert.IsNull(result);
+        Assert.IsNotNull(diagnostic);
+        Assert.AreEqual(RazorVueDiagnosticCategory.DirectRender, diagnostic.Category);
+        StringAssert.Contains(diagnostic.Message, "BuildRenderTree(RenderTreeBuilder)", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -181,6 +238,58 @@ public sealed class RenderEmitterContractTests
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "__jazor$createRawMarkup", StringComparison.Ordinal);
         StringAssert.Contains(output, "Array.from(props.Items ?? []", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_TracksStaticVNodeFactsAcrossConditionalBranchOrder()
+    {
+        // Each source shape proves one short-circuit order. Together they ensure a static
+        // hoist from either branch, or from preceding content, survives aggregate rendering.
+        // 三种顺序覆盖 true/false 分支和已有 hoist，避免聚合标记随条件分支丢失。
+        AssertStaticConditional(
+            """
+            if (Enabled)
+                builder.AddMarkupContent(0, "<strong>true branch</strong>");
+            else
+                builder.AddContent(1, "fallback");
+            """);
+        AssertStaticConditional(
+            """
+            if (Enabled)
+                builder.AddContent(0, "fallback");
+            else
+                builder.AddMarkupContent(1, "<strong>false branch</strong>");
+            """);
+        AssertStaticConditional(
+            """
+            builder.AddMarkupContent(0, "<strong>before conditional</strong>");
+            if (Enabled)
+                builder.AddContent(1, "first");
+            else
+                builder.AddContent(2, "second");
+            """);
+
+        static void AssertStaticConditional(string body)
+        {
+            var fixture = CreateDirectRenderFixture(
+                body,
+                "[Parameter] public bool Enabled { get; set; }");
+            var emitted = RenderEmitter.TryEmit(
+                fixture.Compilation,
+                fixture.Component,
+                fixture.Method,
+                fixture.Body,
+                declaredNames: null,
+                VueInjectRegistry.ForCompilation(fixture.Compilation),
+                out var result,
+                out var failure);
+
+            Assert.IsTrue(emitted, failure);
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.UsesStaticVNode);
+            Assert.IsTrue(result.ModuleHoists.Any(static hoist =>
+                hoist.Initializer.ToKnRECMAScript().Contains("createStaticVNode", StringComparison.Ordinal)));
+        }
     }
 
     [TestMethod]
@@ -1469,6 +1578,449 @@ public sealed class RenderEmitterContractTests
             "{ class: props.CssClass, style: props.CssStyle }, null, 8, [\"class\", \"style\"])",
             StringComparison.Ordinal);
         Assert.DoesNotContain(", null, 6", output, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersForLoopWithExpressionInitializerAndNoCondition()
+    {
+        // `for (;; update)` has no loop-owned C# local or condition. It exercises the
+        // separate initializer statement path without changing the runtime contract.
+        var fixture = CreateDirectRenderFixture(
+            """
+            var index = 0;
+            for (index = 0; ; index++)
+            {
+                builder.AddContent(0, index);
+            }
+            """,
+            string.Empty);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesFragment);
+        StringAssert.Contains(result.RenderExpression.ToKnRECMAScript(), "index++", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersLoopSideEffectsAtIterationBoundaries()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            var index = 0;
+            while (index < 1)
+            {
+                index++;
+                builder.AddContent(0, index);
+                index++;
+            }
+            """,
+            string.Empty);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "__jazor$loopVNode", StringComparison.Ordinal);
+        StringAssert.Contains(output, "index++", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersSingleStatementDoWhileRenderBody()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            do
+                builder.AddContent(0, "once");
+            while (false);
+            """,
+            string.Empty);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        StringAssert.Contains(result.RenderExpression.ToKnRECMAScript(), "do", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsLoopBodiesWithoutRenderContentOrWithInterleavedEffects()
+    {
+        AssertDirectRenderFailure(
+            """
+            var index = 0;
+            while (index < 1)
+            {
+                index++;
+            }
+            """,
+            "Loop direct render lowering requires RenderTreeBuilder content in the loop body.");
+        AssertDirectRenderFailure(
+            """
+            var index = 0;
+            while (index < 1)
+            {
+                builder.AddContent(0, "first");
+                index++;
+                builder.AddContent(1, "second");
+            }
+            """,
+            "Loop direct render lowering only supports ordinary statements before or after a complete RenderTreeBuilder content segment.");
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsLoopControlShapesThatNeedCompilerTemporaryDeclarations()
+    {
+        AssertDirectRenderFailure(
+            """
+            while (Items is [var first, ..])
+            {
+                builder.AddContent(0, first);
+            }
+            """,
+            "While direct render lowering does not support conditions that require compiler temporary declarations.",
+            "[Parameter] public int[] Items { get; set; } = [];");
+        AssertDirectRenderFailure(
+            """
+            for (var index = 0; Items is [var first, ..]; index++)
+            {
+                builder.AddContent(0, first + index);
+            }
+            """,
+            "For direct render lowering does not support initializer, condition, or update expressions that require compiler temporary declarations.",
+            "[Parameter] public int[] Items { get; set; } = [];");
+        AssertDirectRenderFailure(
+            """
+            for (int unused, index = 0; index < 1; index++)
+            {
+                builder.AddContent(0, index);
+            }
+            """,
+            "For direct render lowering requires initialized local control variables.");
+    }
+
+    [TestMethod]
+    public void TryEmit_UsesIterationRootKeysToChooseFragmentIdentity()
+    {
+        var keyed = CreateDirectRenderFixture(
+            """
+            var index = 0;
+            while (index < 1)
+            {
+                builder.OpenElement(0, "li");
+                builder.SetKey(index);
+                builder.AddContent(1, index);
+                builder.CloseElement();
+                index++;
+            }
+            """,
+            string.Empty);
+        var unkeyed = CreateDirectRenderFixture(
+            """
+            var index = 0;
+            while (index < 1)
+            {
+                builder.OpenElement(0, "li");
+                builder.AddContent(1, index);
+                builder.CloseElement();
+                index++;
+            }
+            """,
+            string.Empty);
+
+        AssertLoopFragmentFlag(keyed, "128");
+        AssertLoopFragmentFlag(unkeyed, "256");
+
+        static void AssertLoopFragmentFlag(Fixture fixture, string expectedPatchFlag)
+        {
+            var emitted = RenderEmitter.TryEmit(
+                fixture.Compilation,
+                fixture.Component,
+                fixture.Method,
+                fixture.Body,
+                declaredNames: null,
+                VueInjectRegistry.ForCompilation(fixture.Compilation),
+                out var result,
+                out var failure);
+
+            Assert.IsTrue(emitted, failure);
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.UsesBlockTree);
+            StringAssert.Contains(result.RenderExpression.ToKnRECMAScript(), expectedPatchFlag, StringComparison.Ordinal);
+        }
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersKeyedForLoopWithMultipleUpdates()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            for (var index = 0; index < 2; index++, index += 0)
+            {
+                builder.OpenElement(0, "li");
+                builder.SetKey(index);
+                builder.AddContent(1, index);
+                builder.CloseElement();
+            }
+            """,
+            string.Empty);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesBlockTree);
+        Assert.IsTrue(result.UsesFragment);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "for", StringComparison.Ordinal);
+        StringAssert.Contains(output, "128", StringComparison.Ordinal);
+        StringAssert.Contains(output, "index++", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_KeepsNonVNodeForeachBodiesOnArrayFromFallback()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            foreach (var item in Items)
+            {
+                builder.AddContent(0, item);
+            }
+            """,
+            "[Parameter] public string[] Items { get; set; } = [];");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.UsesRenderList);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "Array.from", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.Items", StringComparison.Ordinal);
+        Assert.DoesNotContain("renderList", output, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_HandlesEmptyAndCommentLeadingStaticMarkupWithoutPhantomVNodes()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.AddMarkupContent(0, "");
+            builder.AddMarkupContent(1, "<!-- Razor marker -->");
+            """,
+            string.Empty);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.UsesStaticVNode);
+        Assert.IsTrue(result.UsesRawMarkupRuntime);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        var hoists = string.Join(
+            Environment.NewLine,
+            result.ModuleHoists.Select(static hoist => hoist.Initializer.ToKnRECMAScript()));
+        StringAssert.Contains(output, "__jazor$hoistedRawMarkup", StringComparison.Ordinal);
+        StringAssert.Contains(hoists, "<!-- Razor marker -->", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_ProjectsMarkupStringPayloadsThroughStaticAndRuntimePaths()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.AddContent(0, new MarkupString(""));
+            builder.AddContent(1, new MarkupString("<!-- component marker -->"));
+            builder.AddMarkupContent(2, RawMarkup);
+            """,
+            "[Parameter] public string RawMarkup { get; set; } = string.Empty;");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesRawMarkupRuntime);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "__jazor$hoistedRawMarkup", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.RawMarkup", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_TracksStaticVNodeFactsAcrossForeachForAndWhileBodies()
+    {
+        AssertStaticLoopBody(
+            "foreach (var item in Items) { builder.AddMarkupContent(0, \"<i>foreach</i>\"); }",
+            "[Parameter] public string[] Items { get; set; } = [];",
+            "foreach");
+        AssertStaticLoopBody(
+            "for (var index = 0; index < 1; index++) { builder.AddMarkupContent(0, \"<i>for</i>\"); }",
+            string.Empty,
+            "for");
+        AssertStaticLoopBody(
+            "var index = 0; while (index < 1) { builder.AddMarkupContent(0, \"<i>while</i>\"); index++; }",
+            string.Empty,
+            "while");
+
+        static void AssertStaticLoopBody(string body, string members, string label)
+        {
+            var fixture = CreateDirectRenderFixture(body, members);
+            var emitted = RenderEmitter.TryEmit(
+                fixture.Compilation,
+                fixture.Component,
+                fixture.Method,
+                fixture.Body,
+                declaredNames: null,
+                VueInjectRegistry.ForCompilation(fixture.Compilation),
+                out var result,
+                out var failure);
+
+            Assert.IsTrue(emitted, label + ": " + failure);
+            Assert.IsNotNull(result);
+            // Loop-local output is intentionally non-hoistable: its helper must retain the
+            // iteration lifecycle even when the raw markup text itself is static.
+            Assert.IsFalse(result.UsesStaticVNode, label);
+            Assert.IsTrue(result.UsesRawMarkupRuntime, label);
+            StringAssert.Contains(
+                result.RenderExpression.ToKnRECMAScript(),
+                "__jazor$createRawMarkup",
+                StringComparison.Ordinal);
+        }
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersConditionalNonGenericRenderFragments()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            RenderFragment content = Enabled
+                ? child => child.AddContent(0, "enabled fragment")
+                : child => child.AddContent(0, "disabled fragment");
+            builder.AddContent(0, content);
+            """,
+            "[Parameter] public bool Enabled { get; set; }");
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "props.Enabled", StringComparison.Ordinal);
+        StringAssert.Contains(output, "enabled fragment", StringComparison.Ordinal);
+        StringAssert.Contains(output, "disabled fragment", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_DropsDoctypeOnlyMarkupAndUpdatesKnownAttributeValues()
+    {
+        var doctypeFixture = CreateDirectRenderFixture(
+            "builder.AddMarkupContent(0, \"<!doctype html>\");",
+            string.Empty);
+        var doctypeEmitted = RenderEmitter.TryEmit(
+            doctypeFixture.Compilation,
+            doctypeFixture.Component,
+            doctypeFixture.Method,
+            doctypeFixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(doctypeFixture.Compilation),
+            out var doctypeResult,
+            out var doctypeFailure);
+
+        Assert.IsTrue(doctypeEmitted, doctypeFailure);
+        Assert.IsNotNull(doctypeResult);
+        Assert.IsFalse(doctypeResult.UsesStaticVNode);
+        Assert.IsFalse(doctypeResult.UsesRawMarkupRuntime);
+        Assert.IsEmpty(doctypeResult.ModuleHoists);
+
+        var attributeFixture = CreateDirectRenderFixture(
+            """
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "data-title", "before");
+            builder.SetAttributeValue(2, "after");
+            builder.SetKey("stable-input");
+            builder.CloseElement();
+            """,
+            string.Empty);
+        var attributeEmitted = RenderEmitter.TryEmit(
+            attributeFixture.Compilation,
+            attributeFixture.Component,
+            attributeFixture.Method,
+            attributeFixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(attributeFixture.Compilation),
+            out var attributeResult,
+            out var attributeFailure);
+
+        Assert.IsTrue(attributeEmitted, attributeFailure);
+        Assert.IsNotNull(attributeResult);
+        var output = attributeResult.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "\"data-title\": \"after\"", StringComparison.Ordinal);
+        StringAssert.Contains(output, "key: \"stable-input\"", StringComparison.Ordinal);
     }
 
     private static Fixture CreateFixture()
