@@ -113,6 +113,31 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmitWithDiagnostic_PreservesCompilerBridgeFailures()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, new global::System.Uri(\"https://example.test\"));",
+            string.Empty);
+
+        var emitted = RenderEmitter.TryEmitWithDiagnostic(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            reservedImportNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var diagnostic);
+
+        Assert.IsFalse(emitted);
+        Assert.IsNull(result);
+        Assert.IsNotNull(diagnostic);
+        Assert.AreEqual(RazorVueDiagnosticCategory.CompilerBridge, diagnostic.Category);
+        Assert.AreNotEqual(Microsoft.CodeAnalysis.Location.None, diagnostic.PrimaryLocation);
+    }
+
+    [TestMethod]
     public void TryEmit_LowersComponentSlotDirectInvokeAsVueSlotSequence()
     {
         var fixture = CreateDirectRenderFixture(
@@ -414,6 +439,41 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_LowersRenderFragmentPropertyWithStraightLineLocalProvenance()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, LocalFragment);",
+            """
+            private RenderFragment LocalFragment
+            {
+                get
+                {
+                    RenderFragment header = child => child.AddContent(0, "property-local-fragment");
+                    RenderFragment alias = (RenderFragment)header;
+                    return alias;
+                }
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        StringAssert.Contains(
+            result.RenderExpression.ToKnRECMAScript(),
+            "property-local-fragment",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void TryEmit_RejectsRecursiveRenderFragmentProperty()
     {
         var fixture = CreateDirectRenderFixture(
@@ -490,6 +550,37 @@ public sealed class RenderEmitterContractTests
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "constructor-carrier", StringComparison.Ordinal);
         StringAssert.Contains(output, "initializer-carrier", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersBlockBodiedRenderFragmentFactoryWithLocalFragment()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, CreateHeader());",
+            """
+            private RenderFragment CreateHeader()
+            {
+                RenderFragment header = child => child.AddContent(0, "block-factory-header");
+                return header;
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        StringAssert.Contains(
+            result.RenderExpression.ToKnRECMAScript(),
+            "block-factory-header",
+            StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -842,19 +933,18 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
-    public void TryEmit_RejectsConditionalRenderFragmentComponentParameters()
+    public void TryEmit_LowersConditionalRenderFragmentComponentParametersAsDynamicSlots()
     {
         var fixture = CreateDirectRenderFixture(
             """
-            RenderFragment content = child => child.AddContent(0, "conditional-child");
             builder.OpenComponent<ChildComponent>(1);
             if (Enabled)
             {
-                builder.AddComponentParameter(2, "ChildContent", content);
+                builder.AddComponentParameter(2, "ChildContent", (RenderFragment)(child => child.AddContent(0, "conditional-true")));
             }
             else
             {
-                builder.AddComponentParameter(3, "ChildContent", content);
+                builder.AddComponentParameter(3, "ChildContent", (RenderFragment)(child => child.AddContent(0, "conditional-false")));
             }
             builder.CloseComponent();
             """,
@@ -878,12 +968,136 @@ public sealed class RenderEmitterContractTests
             out var result,
             out var failure);
 
-        Assert.IsFalse(emitted);
-        Assert.IsNull(result);
-        StringAssert.Contains(
-            failure,
-            "Conditional RenderFragment component parameters are not supported by direct render lowering.",
-            StringComparison.Ordinal);
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesCreateSlots);
+        Assert.IsTrue(result.UsesWithCtx);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "createSlots", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.Enabled", StringComparison.Ordinal);
+        StringAssert.Contains(output, "conditional-true", StringComparison.Ordinal);
+        StringAssert.Contains(output, "conditional-false", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_LowersConditionalRenderFragmentSlotWithAnOmittedElseBranch()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.OpenComponent<ChildComponent>(1);
+            if (Enabled)
+            {
+                builder.AddComponentParameter(2, "ChildContent", (RenderFragment)(child => child.AddContent(0, "conditional-present")));
+            }
+            builder.CloseComponent();
+            """,
+            """
+            [Parameter] public bool Enabled { get; set; }
+
+            [global::ECMAScript.ECMAScriptModule("./components/conditional-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter] public RenderFragment? ChildContent { get; set; }
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesCreateSlots);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "props.Enabled", StringComparison.Ordinal);
+        StringAssert.Contains(output, "conditional-present", StringComparison.Ordinal);
+        StringAssert.Contains(output, "null", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_UsesConditionalComponentAttributesForNonFragmentValuesAndAddAttributeSlots()
+    {
+        var propFixture = CreateDirectRenderFixture(
+            """
+            builder.OpenComponent<ChildComponent>(1);
+            if (Enabled)
+            {
+                builder.AddComponentParameter(2, "Title", "enabled");
+            }
+            else
+            {
+                builder.AddComponentParameter(3, "Title", "disabled");
+            }
+            builder.CloseComponent();
+            """,
+            """
+            [Parameter] public bool Enabled { get; set; }
+
+            [global::ECMAScript.ECMAScriptModule("./components/conditional-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter] public string? Title { get; set; }
+            }
+            """);
+        var propEmitted = RenderEmitter.TryEmit(
+            propFixture.Compilation,
+            propFixture.Component,
+            propFixture.Method,
+            propFixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(propFixture.Compilation),
+            out var propResult,
+            out var propFailure);
+
+        Assert.IsTrue(propEmitted, propFailure);
+        Assert.IsNotNull(propResult);
+        Assert.IsTrue(propResult.UsesProps);
+        StringAssert.Contains(propResult.RenderExpression.ToKnRECMAScript(), "enabled", StringComparison.Ordinal);
+
+        var slotFixture = CreateDirectRenderFixture(
+            """
+            builder.OpenComponent<ChildComponent>(1);
+            if (Enabled)
+            {
+                builder.AddAttribute(2, "ChildContent", (RenderFragment)(child => child.AddContent(0, "attribute-true")));
+            }
+            else
+            {
+                builder.AddAttribute(3, "ChildContent", (RenderFragment)(child => child.AddContent(0, "attribute-false")));
+            }
+            builder.CloseComponent();
+            """,
+            """
+            [Parameter] public bool Enabled { get; set; }
+
+            [global::ECMAScript.ECMAScriptModule("./components/conditional-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter] public RenderFragment? ChildContent { get; set; }
+            }
+            """);
+        var slotEmitted = RenderEmitter.TryEmit(
+            slotFixture.Compilation,
+            slotFixture.Component,
+            slotFixture.Method,
+            slotFixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(slotFixture.Compilation),
+            out var slotResult,
+            out var slotFailure);
+
+        Assert.IsTrue(slotEmitted, slotFailure);
+        Assert.IsNotNull(slotResult);
+        Assert.IsTrue(slotResult.UsesCreateSlots);
+        var slotOutput = slotResult.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(slotOutput, "attribute-true", StringComparison.Ordinal);
+        StringAssert.Contains(slotOutput, "attribute-false", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -1299,6 +1513,54 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_ResolvesComponentRenderFragmentPropertiesAndObjectInitializers()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.AddContent(0, ExpressionFragment);
+            builder.AddContent(1, AccessorFragment);
+            var fragments = new FragmentHolder
+            {
+                Header = child => child.AddContent(0, "initializer-fragment")
+            };
+            builder.AddContent(2, fragments.Header);
+            """,
+            """
+            private RenderFragment ExpressionFragment => child => child.AddContent(0, "expression-fragment");
+
+            private RenderFragment AccessorFragment
+            {
+                get
+                {
+                    return child => child.AddContent(0, "accessor-fragment");
+                }
+            }
+
+            private sealed class FragmentHolder
+            {
+                public RenderFragment Header { get; set; } = default!;
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "expression-fragment", StringComparison.Ordinal);
+        StringAssert.Contains(output, "accessor-fragment", StringComparison.Ordinal);
+        StringAssert.Contains(output, "initializer-fragment", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void TryEmit_LowersBranchingLoopSideEffectsAndConditionalAlternativesInSourceOrder()
     {
         var fixture = CreateDirectRenderFixture(
@@ -1481,10 +1743,6 @@ public sealed class RenderEmitterContractTests
             """
             await foreach (var item in Items)
             {
-                if (item == "stop")
-                {
-                    break;
-                }
                 builder.AddContent(0, item);
             }
             """,
@@ -2322,6 +2580,77 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_LowersConditionalLocalRenderFragmentAsADynamicComponentSlot()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            RenderFragment content = Enabled
+                ? child => child.AddContent(0, "enabled slot")
+                : child => child.AddContent(0, "disabled slot");
+            builder.OpenComponent<ChildComponent>(0);
+            builder.AddComponentParameter(1, "ChildContent", content);
+            builder.CloseComponent();
+            """,
+            """
+            [Parameter] public bool Enabled { get; set; }
+
+            [global::ECMAScript.ECMAScriptModule("./components/conditional-slot-child")]
+            private sealed class ChildComponent : ComponentBase
+            {
+                [Parameter] public RenderFragment? ChildContent { get; set; }
+            }
+            """);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        Assert.IsTrue(result.UsesCreateSlots);
+        Assert.IsTrue(result.UsesWithCtx);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "createSlots", StringComparison.Ordinal);
+        StringAssert.Contains(output, "props.Enabled", StringComparison.Ordinal);
+        StringAssert.Contains(output, "enabled slot", StringComparison.Ordinal);
+        StringAssert.Contains(output, "disabled slot", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_PrunesUnreferencedLocalRenderFragmentDeclarations()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            RenderFragment unused = child => child.AddContent(0, "unused fragment");
+            RenderFragment used = child => child.AddContent(0, "retained fragment");
+            builder.AddContent(0, used);
+            """,
+            string.Empty);
+
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        StringAssert.Contains(output, "retained fragment", StringComparison.Ordinal);
+        Assert.DoesNotContain("unused fragment", output, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void TryEmit_DropsDoctypeOnlyMarkupAndUpdatesKnownAttributeValues()
     {
         var doctypeFixture = CreateDirectRenderFixture(
@@ -2367,6 +2696,57 @@ public sealed class RenderEmitterContractTests
         var output = attributeResult.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "\"data-title\": \"after\"", StringComparison.Ordinal);
         StringAssert.Contains(output, "key: \"stable-input\"", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmit_PreservesNoUpdateForLoopsAndRuntimeLocalsAfterCompletedContent()
+    {
+        var loopFixture = CreateDirectRenderFixture(
+            """
+            for (var index = 0; index < 1;)
+            {
+                builder.AddContent(0, index);
+                break;
+            }
+            """,
+            string.Empty);
+        var localFixture = CreateDirectRenderFixture(
+            """
+            builder.AddContent(0, "before");
+            var suffix = "after";
+            builder.AddContent(1, suffix);
+            """,
+            string.Empty);
+
+        AssertDirectRenderSuccess(loopFixture, "for", "break;");
+        AssertDirectRenderSuccess(localFixture, "const suffix", "before", "after");
+    }
+
+    [TestMethod]
+    public void TryEmit_RejectsUnmodeledThrowStatementsBeforeJavaScriptEmission()
+    {
+        AssertDirectRenderFailure(
+            "throw new global::System.InvalidOperationException();",
+            "only supports straight-line RenderTreeBuilder statements");
+    }
+
+    private static void AssertDirectRenderSuccess(Fixture fixture, params string[] expectedTokens)
+    {
+        var emitted = RenderEmitter.TryEmit(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var failure);
+
+        Assert.IsTrue(emitted, failure);
+        Assert.IsNotNull(result);
+        var output = result.RenderExpression.ToKnRECMAScript();
+        foreach (var expectedToken in expectedTokens)
+            StringAssert.Contains(output, expectedToken, StringComparison.Ordinal);
     }
 
     private static Fixture CreateFixture()

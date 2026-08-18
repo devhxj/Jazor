@@ -11,6 +11,49 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorTailOutputPrivateContractTests
 {
     [TestMethod]
+    public void TailOutput_LeavesNonRazorVueCompilationsWithoutCatalogOrDiagnostics()
+    {
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.TailOutput.NoComponents",
+            [CSharpSyntaxTree.ParseText(
+                "namespace Demo; public sealed class PlainComponent { }",
+                new CSharpParseOptions(LanguageVersion.Preview),
+                path: "PlainComponent.cs")],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        Assert.IsTrue(RazorTailOutput.TryBuildFinalCompilationCatalog(
+            compilation,
+            CancellationToken.None,
+            out var catalogSource,
+            out var diagnostics));
+        Assert.IsNull(catalogSource);
+        Assert.IsEmpty(diagnostics);
+    }
+
+    [TestMethod]
+    public void TryBuildVueRenderArtifacts_AcceptsAnEmptyBinding()
+    {
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.TailOutput.EmptyBinding",
+            references: RazorSgTestHost.CreateMetadataReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var binding = new GeneratedCSharpBinding(
+            compilation,
+            ImmutableArray<GeneratedDocument>.Empty,
+            ImmutableArray<BoundComponent>.Empty);
+        var method = typeof(RazorTailOutput).GetMethod(
+            "TryBuildVueRenderArtifacts",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.IsNotNull(method);
+        var arguments = new object?[] { CancellationToken.None, binding, null, null };
+
+        Assert.IsTrue((bool)method.Invoke(null, arguments)!);
+        Assert.IsEmpty((ImmutableArray<VueModuleArtifact>)arguments[2]!);
+        Assert.IsEmpty((ImmutableArray<RazorVueDiagnosticInfo>)arguments[3]!);
+    }
+
+    [TestMethod]
     public void EscapeCSharpString_EncodesAllControlAndDelimiterCharacters()
     {
         var escaped = InvokeEscape("plain\\\"\0\a\b\f\n\r\t\v");

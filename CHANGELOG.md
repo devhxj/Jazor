@@ -2,6 +2,12 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-18
+
+### Jazor 0.16.3
+
+- Compiler and RazorVue acceptance gates now require at least 97% branch coverage, with targeted boundary regressions covering the supported lowering and component-generation paths.
+
 ## 2026-08-17
 
 ### Jazor 0.16.2

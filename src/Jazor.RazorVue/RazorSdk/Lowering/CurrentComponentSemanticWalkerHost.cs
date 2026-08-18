@@ -1013,7 +1013,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         => property
             .GetAttributes()
             .Any(static attribute => string.Equals(
-                attribute.AttributeClass?.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                attribute.AttributeClass!.OriginalDefinition.ToDisplayString(Format.NameFormat),
                 ParameterAttributeMetadataName,
                 StringComparison.Ordinal));
 
@@ -1043,7 +1043,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     }
 
     private static IFieldSymbol? GetBackingField(IPropertySymbol property)
-        => property.ContainingType?
+        => property.ContainingType
             .GetMembers($"<{property.Name}>k__BackingField")
             .OfType<IFieldSymbol>()
             .FirstOrDefault();

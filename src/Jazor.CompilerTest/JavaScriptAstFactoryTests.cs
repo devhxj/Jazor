@@ -32,8 +32,10 @@ public sealed class JavaScriptAstFactoryTests
     public void CreateStringLiteral_NullNotFollowedByDigit_UsesShortEscape()
     {
         var literal = JavaScriptAstFactory.CreateStringLiteral("\0x");
+        var beforeDecimalRange = JavaScriptAstFactory.CreateStringLiteral("\0/");
 
         Assert.AreEqual("\"\\0x\"", literal.ToKnRECMAScript());
+        Assert.AreEqual("\"\\0/\"", beforeDecimalRange.ToKnRECMAScript());
     }
 
     [TestMethod]

@@ -139,7 +139,7 @@ internal sealed class CurrentComponentMemberClosure
                 continue;
 
             var span = location.GetLineSpan();
-            var path = (span.Path ?? string.Empty).Replace('\\', '/');
+            var path = span.Path.Replace('\\', '/');
             var start = span.StartLinePosition;
             return path +
                    "|" +
@@ -365,11 +365,14 @@ internal sealed class CurrentComponentMemberClosure
                 if (propertyDeclaration.ExpressionBody is not null)
                     return model.GetOperation(propertyDeclaration.ExpressionBody.Expression, _cancellationToken);
 
-                var getter = propertyDeclaration.AccessorList?.Accessors.FirstOrDefault(static accessor =>
+                // A source property with a non-null GetMethod necessarily has a get accessor;
+                // expression-bodied properties returned above are the only accessor-list case
+                // without one.
+                var getter = propertyDeclaration.AccessorList!.Accessors.First(static accessor =>
                     accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration));
-                if (getter?.Body is not null)
+                if (getter.Body is not null)
                     return model.GetOperation(getter.Body, _cancellationToken);
-                if (getter?.ExpressionBody is not null)
+                if (getter.ExpressionBody is not null)
                     return model.GetOperation(getter.ExpressionBody.Expression, _cancellationToken);
             }
 

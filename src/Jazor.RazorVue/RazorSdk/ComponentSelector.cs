@@ -167,7 +167,7 @@ internal static class ComponentSelector
         => symbol.GetAttributes().Any(attribute =>
             Comparer.Equals(attribute.AttributeClass, moduleAttribute) ||
             string.Equals(
-                attribute.AttributeClass?.ToDisplayString(),
+                attribute.AttributeClass!.ToDisplayString(),
                 ECMAScriptModuleAttributeMetadataName,
                 StringComparison.Ordinal));
 

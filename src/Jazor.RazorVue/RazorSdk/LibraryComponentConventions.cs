@@ -49,7 +49,7 @@ internal static class LibraryComponentConventions
     public static bool IsParameterProperty(IPropertySymbol property)
         => property.GetAttributes().Any(static attribute =>
             string.Equals(
-                attribute.AttributeClass?.ToDisplayString(),
+                attribute.AttributeClass!.ToDisplayString(),
                 ParameterAttributeMetadataName,
                 StringComparison.Ordinal));
 
@@ -110,7 +110,7 @@ internal static class LibraryComponentConventions
         var definition = namedType.OriginalDefinition;
         return string.Equals(definition.Name, "EventCallback", StringComparison.Ordinal) &&
                string.Equals(
-                   definition.ContainingNamespace?.ToDisplayString(),
+                   definition.ContainingNamespace!.ToDisplayString(),
                    "Microsoft.AspNetCore.Components",
                    StringComparison.Ordinal);
     }
@@ -123,7 +123,7 @@ internal static class LibraryComponentConventions
         var definition = namedType.OriginalDefinition;
         return string.Equals(definition.Name, "RenderFragment", StringComparison.Ordinal) &&
                string.Equals(
-                   definition.ContainingNamespace?.ToDisplayString(),
+                   definition.ContainingNamespace!.ToDisplayString(),
                    "Microsoft.AspNetCore.Components",
                    StringComparison.Ordinal);
     }

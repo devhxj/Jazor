@@ -241,6 +241,122 @@ public sealed class CompilerInternalBoundaryContractTests
     }
 
     [TestMethod]
+    public void StringEnumAndComputedAliasHelpers_PreserveAuthoredRuntimeNames()
+    {
+        var compilation = CreateCompilation(
+            """
+            namespace ECMAScript
+            {
+                [global::System.AttributeUsage(global::System.AttributeTargets.Enum)]
+                public sealed class StringAttribute : global::System.Attribute
+                {
+                }
+
+                [global::System.AttributeUsage(global::System.AttributeTargets.Field | global::System.AttributeTargets.Method | global::System.AttributeTargets.Property)]
+                public sealed class ECMAScriptNameAttribute : global::System.Attribute
+                {
+                    public ECMAScriptNameAttribute(string value)
+                    {
+                    }
+                }
+            }
+
+            [ECMAScript.String]
+            public enum State
+            {
+                [ECMAScript.ECMAScriptName("ready-state")]
+                Ready = 1,
+
+                [global::System.ComponentModel.Description("@#busy-state")]
+                Busy = 2,
+
+                [global::System.ComponentModel.Description("configured-state")]
+                Configured = 4,
+
+                Plain = 3
+            }
+
+            public enum Ordinary
+            {
+                Value = 1
+            }
+
+            public sealed class Holder
+            {
+                public const int Constant = 1;
+
+                public int Read()
+                {
+                    return 1;
+                }
+            }
+            """);
+        var state = compilation.GetTypeByMetadataName("State")!;
+        var ordinary = compilation.GetTypeByMetadataName("Ordinary")!;
+        var ready = state.GetMembers("Ready").OfType<IFieldSymbol>().Single();
+        var busy = state.GetMembers("Busy").OfType<IFieldSymbol>().Single();
+        var plain = state.GetMembers("Plain").OfType<IFieldSymbol>().Single();
+        var configured = state.GetMembers("Configured").OfType<IFieldSymbol>().Single();
+        var ordinaryValue = ordinary.GetMembers("Value").OfType<IFieldSymbol>().Single();
+        var ordinaryConstant = compilation.GetTypeByMetadataName("Holder")!
+            .GetMembers("Constant")
+            .OfType<IFieldSymbol>()
+            .Single();
+
+        var literalMethod = typeof(SemanticWalker).GetMethod(
+            "TryBuildStringEnumLiteral",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+        var valueMethod = typeof(SemanticWalker).GetMethod(
+            "TryBuildStringEnumValueLiteral",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+        var literalTextMethod = typeof(SemanticWalker).GetMethod(
+            "GetStringEnumLiteralText",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+        var parseAliasMethod = typeof(SemanticWalker).GetMethod(
+            "TryParseExplicitComputedAliasProperty",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+
+        Assert.AreEqual("ready-state", Invoke<string>(literalTextMethod, null, ready));
+        Assert.AreEqual("busy-state", Invoke<string>(literalTextMethod, null, busy));
+        Assert.AreEqual("Configured", Invoke<string>(literalTextMethod, null, configured));
+        Assert.AreEqual("Plain", Invoke<string>(literalTextMethod, null, plain));
+
+        var readyArguments = new object?[] { ready, null };
+        Assert.IsTrue((bool)literalMethod.Invoke(null, readyArguments)!);
+        Assert.AreEqual("\"ready-state\"", ((Expression)readyArguments[1]!).ToKnRECMAScript());
+        var ordinaryArguments = new object?[] { ordinaryValue, null };
+        Assert.IsFalse((bool)literalMethod.Invoke(null, ordinaryArguments)!);
+        var ordinaryFieldArguments = new object?[] { ordinaryConstant, null };
+        Assert.IsFalse((bool)literalMethod.Invoke(null, ordinaryFieldArguments)!);
+
+        var matchingArguments = new object?[] { state, 2, null };
+        Assert.IsTrue((bool)valueMethod.Invoke(null, matchingArguments)!);
+        Assert.AreEqual("\"busy-state\"", ((Expression)matchingArguments[2]!).ToKnRECMAScript());
+        var nonMatchingArguments = new object?[] { state, 99, null };
+        Assert.IsFalse((bool)valueMethod.Invoke(null, nonMatchingArguments)!);
+        var ordinaryValueArguments = new object?[] { ordinary, 1, null };
+        Assert.IsFalse((bool)valueMethod.Invoke(null, ordinaryValueArguments)!);
+
+        AssertComputedAlias("[3]", "3", "3");
+        AssertComputedAlias("[\"quoted\"]", "quoted", "\"quoted\"");
+        AssertComputedAlias("[unknown]", null, null);
+        AssertComputedAlias("[ab]", null, null);
+        AssertComputedAlias("plain", null, null);
+
+        void AssertComputedAlias(string authored, string? expectedKey, string? expectedExpression)
+        {
+            var arguments = new object?[] { authored, null, null };
+            var result = (bool)parseAliasMethod.Invoke(null, arguments)!;
+            Assert.AreEqual(expectedKey is not null, result, authored);
+            if (expectedKey is null)
+                return;
+
+            Assert.AreEqual(expectedKey, arguments[2]);
+            Assert.AreEqual(expectedExpression, ((Expression)arguments[1]!).ToKnRECMAScript());
+        }
+    }
+
+    [TestMethod]
     public void RuntimeMemberHostResolver_PreservesBoundInstanceStaticAndCreationHosts()
     {
         var (compilation, block) = CreateBlock(
@@ -1728,6 +1844,12 @@ public sealed class CompilerInternalBoundaryContractTests
             method,
             null,
             new ImportNamespaceSpecifier(new Identifier("runtime"))));
+        Assert.AreEqual("feature", Invoke<string>(
+            method,
+            null,
+            new ImportSpecifier(
+                new Identifier("feature"),
+                new Identifier("featureLocal"))));
         Assert.AreEqual("feature-name", Invoke<string>(
             method,
             null,
@@ -2041,6 +2163,108 @@ public sealed class CompilerInternalBoundaryContractTests
         }
     }
 
+    [TestMethod]
+    public void AstConverter_ModuleDeclaredNameFallbacks_RemainDeterministicAcrossPolicyAndProfileBoundaries()
+    {
+        var compilation = CreateCompilation(
+            """
+            public static class ModuleHost
+            {
+                public static int Field;
+
+                public static void Work()
+                {
+                    var local = 1;
+                }
+
+                public static int Value { get; set; }
+            }
+
+            public record RuntimeRecord(int Value);
+            """);
+        var tree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(tree);
+        var module = compilation.GetTypeByMetadataName("ModuleHost")!;
+        var runtimeRecord = compilation.GetTypeByMetadataName("RuntimeRecord")!;
+        var work = module.GetMembers("Work").OfType<IMethodSymbol>().Single();
+        var value = module.GetMembers("Value").OfType<IPropertySymbol>().Single();
+        var backingField = module.GetMembers().OfType<IFieldSymbol>()
+            .Single(static field => field.AssociatedSymbol is IPropertySymbol);
+        var policy = new InvalidPreferredModuleNamePolicy();
+        var chooseName = typeof(AstConverter).GetMethod(
+            "ChooseModuleDeclaredName",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+        var preferredName = typeof(AstConverter).GetMethod(
+            "GetPreferredModuleDeclaredName",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+        var sourceName = typeof(AstConverter).GetMethod(
+            "GetSourceDeclaredNameCandidate",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+        var buildLocalNames = typeof(AstConverter).GetMethod(
+            "BuildModuleLocalNames",
+            BindingFlags.Static | BindingFlags.NonPublic)!;
+        var isAllowedAccessibility = typeof(AstConverter).GetMethod(
+            "IsAllowedTopLevelAccessibility",
+            BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var getPrimaryConstructorStorage = typeof(AstConverter).GetMethod(
+            "GetPrimaryConstructorParameterStorage",
+            BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+        Assert.AreEqual(
+            "invalid-module-name",
+            Invoke<string>(preferredName, null, work, policy, AstConverterProfile.ClrRuntime));
+        Assert.AreEqual("Work", Invoke<string>(sourceName, null, work));
+        Assert.AreEqual("Value", Invoke<string>(sourceName, null, value.GetMethod!));
+        Assert.IsNull(Invoke<string?>(sourceName, null, backingField));
+        Assert.AreEqual("ModuleHost", Invoke<string>(sourceName, null, module));
+
+        var localNames = Invoke<HashSet<string>>(
+            buildLocalNames,
+            null,
+            module,
+            AstConverterModulePolicy.Default);
+        Assert.IsTrue(localNames.Contains("local"));
+        Assert.IsFalse(localNames.Contains("Field"));
+
+        Assert.AreEqual(
+            "Work",
+            Invoke<string>(
+                chooseName,
+                null,
+                work,
+                new HashSet<string>(StringComparer.Ordinal),
+                new HashSet<string>(StringComparer.Ordinal),
+                policy,
+                AstConverterProfile.Standard));
+
+        var hashAlias = "m$" + Format.HashName(
+            work.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_');
+        Assert.AreEqual(
+            hashAlias + "$1",
+            Invoke<string>(
+                chooseName,
+                null,
+                work,
+                new HashSet<string>(StringComparer.Ordinal) { hashAlias },
+                new HashSet<string>(StringComparer.Ordinal) { "Work" },
+                policy,
+                AstConverterProfile.Standard));
+
+        var standardConverter = new AstConverter(module, model);
+        var clrConverter = new AstConverter(
+            module,
+            model,
+            new AstConverterOptions(AstConverterProfile.ClrRuntime));
+        Assert.IsTrue(Invoke<bool>(isAllowedAccessibility, standardConverter, Accessibility.Public));
+        Assert.IsFalse(Invoke<bool>(isAllowedAccessibility, standardConverter, Accessibility.Internal));
+        Assert.IsTrue(Invoke<bool>(isAllowedAccessibility, clrConverter, Accessibility.Internal));
+        Assert.IsFalse(Invoke<bool>(isAllowedAccessibility, clrConverter, Accessibility.Private));
+
+        // Runtime-class primary-constructor capture is intentionally limited to ordinary class
+        // declarations; a record's positional declaration must not allocate private class slots.
+        Assert.IsEmpty((System.Collections.IEnumerable)getPrimaryConstructorStorage.Invoke(standardConverter, [runtimeRecord])!);
+    }
+
     private static CSharpCompilation CreateCompilation(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
@@ -2110,5 +2334,11 @@ public sealed class CompilerInternalBoundaryContractTests
     {
         public override Expression? RewriteInstanceReference(IInstanceReferenceOperation operation, SenseArgument argument)
             => new Identifier("receiver");
+    }
+
+    private sealed class InvalidPreferredModuleNamePolicy : AstConverterModulePolicy
+    {
+        public override string? GetPreferredModuleDeclaredName(ISymbol symbol)
+            => "invalid-module-name";
     }
 }

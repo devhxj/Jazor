@@ -217,6 +217,40 @@ public sealed class VueInjectRegistryTests
         Assert.IsFalse((bool)InvokePrivate("CapturesUnmatchedValues", property)!);
     }
 
+    [TestMethod]
+    public void PrivateRegistryHelpers_ReadTrueCaptureUnmatchedValuesMetadata()
+    {
+        var compilation = CreateMinimalCompilation(
+            "RazorVue.VueInject.CaptureMetadataTrue",
+            """
+            using System;
+
+            namespace Microsoft.AspNetCore.Components
+            {
+                [AttributeUsage(AttributeTargets.Property)]
+                public sealed class ParameterAttribute : Attribute
+                {
+                    public bool CaptureUnmatchedValues { get; set; }
+                }
+            }
+
+            namespace Demo
+            {
+                public sealed class Component
+                {
+                    [Microsoft.AspNetCore.Components.Parameter(CaptureUnmatchedValues = true)]
+                    public string AdditionalAttributes { get; set; } = string.Empty;
+                }
+            }
+            """);
+        var property = GetNamedType(compilation, "Demo.Component")
+            .GetMembers("AdditionalAttributes")
+            .OfType<IPropertySymbol>()
+            .Single();
+
+        Assert.IsTrue((bool)InvokePrivate("CapturesUnmatchedValues", property)!);
+    }
+
     private static CSharpCompilation CreateCompilation(string source)
     {
         var compilation = CSharpCompilation.Create(

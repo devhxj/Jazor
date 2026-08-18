@@ -193,6 +193,7 @@ public sealed class ComponentSelectorTests
             "HasECMAScriptModuleAttribute",
             BindingFlags.NonPublic | BindingFlags.Static);
         Assert.IsNotNull(method);
+        Assert.IsTrue((bool)method.Invoke(null, [candidate!, actualModuleAttribute!])!);
         Assert.IsTrue((bool)method.Invoke(null, [candidate!, fallbackAttribute!])!);
         Assert.IsFalse((bool)method.Invoke(null, [decoratedPlain!, actualModuleAttribute!])!);
     }

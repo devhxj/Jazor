@@ -65,6 +65,88 @@ internal static partial class DirectRenderCaseCatalog
             members: "[Parameter] public (string Key, string Value)[] Items { get; set; } = [];",
             usesProps: true,
             tertiaryExpectedFragment: "value");
+
+        // Handwritten RenderTreeBuilder code commonly mixes ordinary C# loop work with
+        // render calls. Keep the source-order cases in the catalog so the direct emitter's
+        // imperative loop protocol stays covered alongside Razor-generated foreach output.
+        Add(
+            cases,
+            "coverage_emitter_for_loop_side_effects",
+            "var total = 0; for (var index = 0; index < Items.Length; index++) { total += index; builder.AddContent(0, Items[index]); total++; }",
+            "for (; index <",
+            "props.Items",
+            usesFragment: true,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage,
+            members: "[Parameter] public string[] Items { get; set; } = [];",
+            usesProps: true);
+
+        Add(
+            cases,
+            "coverage_emitter_for_loop_branches",
+            "for (var index = 0; index < Items.Length; index++) { if (index == 1) { continue; } builder.AddContent(0, Items[index]); if (index >= 3) { break; } }",
+            "for (; index <",
+            "continue;",
+            usesFragment: true,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage,
+            members: "[Parameter] public string[] Items { get; set; } = [];",
+            usesProps: true,
+            tertiaryExpectedFragment: "break;");
+
+        // Keep the C# for-header forms separate: Roslyn represents declarators, assignment
+        // initializers, and multiple updates through different IOperation shapes. Handwritten
+        // BuildRenderTree implementations use all three in ordinary data-driven output.
+        Add(
+            cases,
+            "coverage_emitter_for_loop_multi_initializer_and_updates",
+            "for (int index = 0, reverse = Items.Length - 1; index < reverse; index++, reverse--) { builder.AddContent(0, Items[index] + Items[reverse]); }",
+            "for (; index <",
+            "reverse--",
+            usesFragment: true,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage,
+            members: "[Parameter] public string[] Items { get; set; } = [];",
+            usesProps: true,
+            tertiaryExpectedFragment: "props.Items");
+
+        Add(
+            cases,
+            "coverage_emitter_for_loop_assignment_initializer",
+            "var index = 0; for (index = 0; index < Items.Length; index++) { builder.AddContent(0, Items[index]); }",
+            "index = 0",
+            "for (; index <",
+            usesFragment: true,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage,
+            members: "[Parameter] public string[] Items { get; set; } = [];",
+            usesProps: true,
+            tertiaryExpectedFragment: "props.Items");
+
+        Add(
+            cases,
+            "coverage_emitter_for_loop_branching_local_declaration",
+            "for (var index = 0; index < Items.Length; index++) { var current = Items[index]; if (current is null) { continue; } builder.AddContent(0, current); if (current.Length > 16) { break; } }",
+            "continue;",
+            "break;",
+            usesFragment: true,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage,
+            members: "[Parameter] public string?[] Items { get; set; } = [];",
+            usesProps: true,
+            tertiaryExpectedFragment: "props.Items");
+
+        Add(
+            cases,
+            "coverage_emitter_do_while_loop",
+            "var index = 0; do { builder.AddContent(0, index); index++; } while (index < Count);",
+            "do {",
+            "props.Count",
+            usesFragment: true,
+            usesStaticVNode: false,
+            group: DirectRenderCaseGroup.Coverage,
+            members: "[Parameter] public int Count { get; set; }",
+            usesProps: true);
     }
 
     private static void AddCoverageAuthoringCases(List<DirectRenderCase> cases)

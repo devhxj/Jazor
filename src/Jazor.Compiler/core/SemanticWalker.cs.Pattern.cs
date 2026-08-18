@@ -1329,6 +1329,11 @@ public partial class SemanticWalker
 
 	private static bool IsRuntimeTypeAssignableToInterface(ITypeSymbol runtimeType, ITypeSymbol interfaceType)
 	{
+		// C# boxes Nullable<T> as either null or its underlying T. For an interface pattern,
+		// prove the non-null branch against T so lowering can retain the required null guard.
+		if (IsNullableType(runtimeType))
+			return IsRuntimeTypeAssignableToInterface(((INamedTypeSymbol)runtimeType).TypeArguments[0], interfaceType);
+
 		if (SymbolEqualityComparer.Default.Equals(runtimeType, interfaceType))
 			return true;
 

@@ -69,11 +69,46 @@ public sealed class RazorSourceTextRegistryTests
             CreateCarrierTree(Convert.ToBase64String(Encoding.UTF8.GetBytes("unexpected-header\n"))),
             CreateCarrierTree(Convert.ToBase64String(Encoding.UTF8.GetBytes(
                 "Jazor.RazorVue.RazorSourceTextCatalog/v1\nmissing-separator\n"))),
+            CSharpSyntaxTree.ParseText(
+                """
+                namespace Jazor.RazorVue.Generation
+                {
+                    internal static class RazorSourceTextCatalog
+                    {
+                        internal static string Payload;
+                    }
+                }
+                """,
+                path: RazorSourceTextRegistry.CarrierHintName),
             CSharpSyntaxTree.ParseText("namespace Jazor.RazorVue.Generation { internal sealed class Other; }", path: RazorSourceTextRegistry.CarrierHintName));
 
         using (RazorSourceTextRegistry.PushGeneratedTrees(malformedTrees, CancellationToken.None))
         {
             Assert.IsNull(RazorSourceTextRegistry.TryGet("Pages/Counter.razor"));
+        }
+    }
+
+    [TestMethod]
+    public void PushGeneratedTrees_SkipsNonPayloadCarrierFields()
+    {
+        var carrierWithExtraField = CSharpSyntaxTree.ParseText(
+            """
+            namespace Jazor.RazorVue.Generation
+            {
+                internal static class RazorSourceTextCatalog
+                {
+                    internal const string Other = "ignored";
+                    internal const string Payload = "SmF6b3IuUmF6b3JWdWUuUmF6b3JTb3VyY2VUZXh0Q2F0YWxvZy92MQpVR0ZuWlhNdlEyOTFiblJsY2k1eVlYcHZjZz09OlBHMWhhVzQrUTI5MWJuUmxjand2YldGcGJqND0K";
+                }
+            }
+            """,
+            path: RazorSourceTextRegistry.CarrierHintName);
+
+        using (RazorSourceTextRegistry.PushGeneratedTrees(
+                   ImmutableArray.Create<SyntaxTree>(carrierWithExtraField),
+                   CancellationToken.None))
+        {
+            Assert.AreEqual("<main>Counter</main>", RazorSourceTextRegistry.TryGet("Pages/Counter.razor"));
         }
     }
 

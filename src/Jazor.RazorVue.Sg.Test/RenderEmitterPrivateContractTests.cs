@@ -658,10 +658,7 @@ public sealed class RenderEmitterPrivateContractTests
 
         AssertReturnedRenderFragmentBody(emitter, GetMethodSymbol(fixture, "EmitterHost", "ExpressionFactory"));
         AssertReturnedRenderFragmentBody(emitter, GetMethodSymbol(fixture, "EmitterHost", "BlockLiteralFactory"));
-        Assert.IsFalse(InvokeEmitterInstance<bool>(
-            emitter,
-            "TryGetReturnedRenderFragmentBody",
-            new object?[] { GetMethodSymbol(fixture, "EmitterHost", "BlockFactory"), null }));
+        AssertReturnedRenderFragmentBody(emitter, GetMethodSymbol(fixture, "EmitterHost", "BlockFactory"));
         Assert.IsFalse(InvokeEmitterInstance<bool>(
             emitter,
             "TryGetReturnedRenderFragmentBody",
@@ -677,8 +674,10 @@ public sealed class RenderEmitterPrivateContractTests
 
         AssertConstructorMap(emitter, GetNamedType(fixture, "MappedCarrier"), expected: true);
         AssertConstructorMap(emitter, GetNamedType(fixture, "MixedCarrier"), expected: true);
+        AssertConstructorMap(emitter, GetNamedType(fixture, "NoisyCarrier"), expected: true);
         AssertConstructorMap(emitter, GetNamedType(fixture, "UnmappedCarrier"), expected: false);
         AssertConstructorMap(emitter, GetNamedType(fixture, "ExpressionCarrier"), expected: false);
+        AssertConstructorMap(emitter, host.GetTypeMembers("RecordCarrier").Single(), expected: false);
     }
 
     [TestMethod]
@@ -708,6 +707,9 @@ public sealed class RenderEmitterPrivateContractTests
         AssertRenderTreeBuilderReceiver(emitter, instanceHelper, context, expected: false);
         AssertRenderTreeBuilderReceiver(emitter, staticHelper, context, expected: true);
         AssertRenderTreeBuilderReceiver(emitter, noArgumentHelper, context, expected: false);
+        Assert.AreEqual(
+            0,
+            InvokeEmitter<int>("GetRenderTreeBuilderReceiverArgumentOffset", noArgumentHelper));
 
         var state = CreateRenderState();
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", instanceHelper, context, state));
@@ -1850,6 +1852,102 @@ public sealed class RenderEmitterPrivateContractTests
             InvokeNestedInstance<Expression>(dynamicRegion, "ToRenderExpression").ToKnRECMAScript(),
             "Fragment",
             StringComparison.Ordinal);
+
+        var directReferenceFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            directReferenceFrame,
+            "AddAttribute",
+            CreateDirectAttribute("ref", new Identifier("capture")));
+        var directReferencePatch = InvokeNestedInstance<object>(
+            directReferenceFrame,
+            "BuildPatchMetadata",
+            false,
+            false,
+            0);
+        Assert.AreNotEqual(0, GetRecordProperty<int>(directReferencePatch, "Flag"));
+
+        // A standalone frame is a valid caller when module-level feature tracking is unavailable.
+        // It must still emit the dynamic-text block without attempting to invoke a null tracker.
+        var uninstrumentedBlockFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            uninstrumentedBlockFrame,
+            "AddAttribute",
+            CreateDirectAttribute("id", new Identifier("dynamicId")));
+        AddFramePlan(uninstrumentedBlockFrame, "Static", new StringLiteral("text", "\"text\""), false, false);
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(uninstrumentedBlockFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "createElementBlock",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void RenderFragmentPreludePruning_PreservesTransitiveDependenciesAndRejectsMalformedTrackedDeclarations()
+    {
+        var fixture = CreateFixture();
+        var emitter = CreateEmitter(fixture, GetNamedType(fixture, "EmitterHost"));
+        var trackedField = emitter.GetType().GetField(
+            "_renderFragmentPreludeDeclarations",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.IsNotNull(trackedField);
+        var tracked = trackedField!.GetValue(emitter) as System.Collections.IList;
+        Assert.IsNotNull(tracked);
+
+        var upstream = CreateRenderFragmentPreludeDeclaration("upstream", new Identifier("source"));
+        var rendered = CreateRenderFragmentPreludeDeclaration("rendered", new Identifier("upstream"));
+        var dead = CreateRenderFragmentPreludeDeclaration("dead", new Identifier("unused"));
+        var prelude = new List<Statement> { upstream, rendered, dead };
+        tracked!.Add(upstream);
+        tracked.Add(rendered);
+        tracked.Add(dead);
+
+        InvokeEmitterInstance<object?>(
+            emitter,
+            "PruneUnreferencedRenderFragmentDeclarations",
+            prelude,
+            new Identifier("rendered"));
+
+        CollectionAssert.AreEqual(
+            new[] { "upstream", "rendered" },
+            prelude
+                .Cast<VariableDeclaration>()
+                .Select(static declaration => ((Identifier)declaration.Declarations[0].Id).Name)
+                .ToArray());
+
+        var uninitializedEmitter = CreateEmitter(fixture, GetNamedType(fixture, "EmitterHost"));
+        var uninitializedTracked = uninitializedEmitter.GetType().GetField(
+                "_renderFragmentPreludeDeclarations",
+                BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(uninitializedEmitter) as System.Collections.IList;
+        Assert.IsNotNull(uninitializedTracked);
+        var uninitialized = new VariableDeclaration(
+            VariableDeclarationKind.Let,
+            NodeList.From(new VariableDeclarator(new Identifier("deferred"), null)));
+        var uninitializedPrelude = new List<Statement> { uninitialized };
+        uninitializedTracked!.Add(uninitialized);
+        InvokeEmitterInstance<object?>(
+            uninitializedEmitter,
+            "PruneUnreferencedRenderFragmentDeclarations",
+            uninitializedPrelude,
+            new Identifier("deferred"));
+        Assert.HasCount(1, uninitializedPrelude);
+
+        var malformed = new VariableDeclaration(
+            VariableDeclarationKind.Const,
+            NodeList.From(
+                new VariableDeclarator(new Identifier("first"), null),
+                new VariableDeclarator(new Identifier("second"), null)));
+        var malformedPrelude = new List<Statement> { malformed };
+        tracked.Add(malformed);
+        var exception = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object?>(
+                emitter,
+                "PruneUnreferencedRenderFragmentDeclarations",
+                malformedPrelude,
+                new Identifier("first")));
+        StringAssert.Contains(
+            exception.InnerException!.Message,
+            "must contain one identifier binding",
+            StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -1903,6 +2001,670 @@ public sealed class RenderEmitterPrivateContractTests
             whileLoop,
             CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", "WhileLoopStaticContent").Parameters[0]),
             CreateRenderState()));
+    }
+
+    [TestMethod]
+    public void DirectRenderLoopHelpers_HandleExpressionUpdatesAndRejectNonLoopBranches()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var helperBody = GetMethodBody(fixture, "EmitterHost", "LoopHelperShapes");
+        var helperContext = CreateEmitContext(
+            GetMethodSymbol(fixture, "EmitterHost", "LoopHelperShapes").Parameters[0]);
+        var variableDeclaration = helperBody.Operations.OfType<IVariableDeclarationGroupOperation>().Single();
+        var assignment = helperBody.Operations.OfType<IExpressionStatementOperation>().Single();
+
+        var initializerStatements = InvokeEmitterInstance<ImmutableArray<Statement>>(
+            emitter,
+            "LowerForLoopInitializers",
+            ImmutableArray.Create<IOperation>(assignment),
+            helperContext);
+        Assert.HasCount(1, initializerStatements);
+        var update = InvokeEmitterInstance<Expression>(
+            emitter,
+            "LowerForLoopUpdates",
+            ImmutableArray.Create<IOperation>(assignment),
+            helperContext);
+        StringAssert.Contains(update.ToKnRECMAScript(), "state", StringComparison.Ordinal);
+        Assert.IsNull(InvokeEmitterInstance<Expression?>(
+            emitter,
+            "LowerForLoopUpdates",
+            ImmutableArray<IOperation>.Empty,
+            helperContext));
+
+        Assert.IsFalse(InvokeEmitter<bool>("IsLoopSideEffectOperation", variableDeclaration));
+        Assert.IsTrue(InvokeEmitter<bool>("IsLoopSideEffectOperation", assignment));
+        var builderInvocation = GetInvocation(
+            fixture,
+            GetMethod(fixture, "EmitterHost", "HelperInvocationShapes"),
+            "AddContent");
+        Assert.IsFalse(InvokeEmitter<bool>("IsLoopSideEffectOperation", builderInvocation));
+
+        var loopMethod = GetMethod(fixture, "EmitterHost", "UnsupportedBranch");
+        var loop = GetOperation<IWhileLoopOperation>(
+            fixture,
+            loopMethod.DescendantNodes().OfType<WhileStatementSyntax>().Single());
+        var breakBranch = GetOperation<IBranchOperation>(
+            fixture,
+            loopMethod.DescendantNodes().OfType<BreakStatementSyntax>().Single());
+        var continueMethod = GetMethod(fixture, "EmitterHost", "ContinueBranch");
+        var continueBranch = GetOperation<IBranchOperation>(
+            fixture,
+            continueMethod.DescendantNodes().OfType<ContinueStatementSyntax>().Single());
+        var gotoMethod = GetMethod(fixture, "EmitterHost", "GotoBranch");
+        var gotoBranch = GetOperation<IBranchOperation>(
+            fixture,
+            gotoMethod.DescendantNodes().OfType<GotoStatementSyntax>().Single());
+
+        Assert.IsInstanceOfType<BreakStatement>(
+            InvokeEmitterInstance<Statement>(emitter, "LowerLoopBranch", breakBranch, helperContext));
+        Assert.IsInstanceOfType<ContinueStatement>(
+            InvokeEmitterInstance<Statement>(emitter, "LowerLoopBranch", continueBranch, helperContext));
+        Assert.IsTrue(InvokeEmitter<bool>("IsBranchTargetingLoop", breakBranch, loop));
+        Assert.IsFalse(InvokeEmitter<bool>("IsBranchTargetingLoop", gotoBranch, loop));
+        var unsupported = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<Statement>(emitter, "LowerLoopBranch", gotoBranch, helperContext));
+        StringAssert.Contains(unsupported.InnerException!.Message, "Goto statements are not supported", StringComparison.Ordinal);
+
+        var metadataInvocation = GetInvocation(
+            fixture,
+            GetMethod(fixture, "EmitterHost", "MetadataInvocation"),
+            "AddEventPreventDefaultAttribute");
+        Assert.AreEqual(1, InvokeEmitter<int>("GetRenderTreeBuilderReceiverArgumentOffset", metadataInvocation));
+        Assert.AreEqual(0, InvokeEmitter<int>("GetRenderTreeBuilderReceiverArgumentOffset", builderInvocation));
+    }
+
+    [TestMethod]
+    public void DirectRenderConditionalSlotAndPropertyBoundaries_KeepProvenanceAndRejectAmbiguousShapes()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var slotMethod = GetMethod(fixture, "EmitterHost", "ConditionalSlotInvocations");
+        var slotSymbol = GetMethodSymbol(fixture, "EmitterHost", "ConditionalSlotInvocations");
+        var context = CreateEmitContext(slotSymbol.Parameters[0]);
+
+        var normalHeader = GetInvocation(fixture, slotMethod, "AddComponentParameter", 0);
+        var genericHeader = GetInvocation(fixture, slotMethod, "AddComponentParameter", 1);
+        var genericTitle = GetInvocation(fixture, slotMethod, "AddComponentParameter", 2);
+        var dynamicName = GetInvocation(fixture, slotMethod, "AddComponentParameter", 3);
+        var scalarValue = GetInvocation(fixture, slotMethod, "AddComponentParameter", 4);
+        var multiRootHeader = GetInvocation(fixture, slotMethod, "AddComponentParameter", 5);
+        var genericMultiRootHeader = GetInvocation(fixture, slotMethod, "AddComponentParameter", 6);
+        var normalAttribute = GetInvocation(fixture, slotMethod, "AddAttribute", 0);
+        var booleanAttribute = GetInvocation(fixture, slotMethod, "AddAttribute", 1);
+        var nonSlotContent = GetInvocation(fixture, slotMethod, "AddContent");
+
+        // The resolver's empty, valid, wrong-method, wrong-arity, dynamic-name, and
+        // non-fragment paths are all observable contracts for conditional slot lowering.
+        var resolved = new object?[] { ImmutableArray<IInvocationOperation>.Empty, context, null, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            resolved[0],
+            resolved[1],
+            resolved[2],
+            resolved[3]));
+
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            ImmutableArray.Create(normalHeader),
+            context,
+            null,
+            null));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            ImmutableArray.Create(normalAttribute),
+            context,
+            null,
+            null));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            ImmutableArray.Create(nonSlotContent),
+            context,
+            null,
+            null));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            ImmutableArray.Create(booleanAttribute),
+            context,
+            null,
+            null));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            ImmutableArray.Create(dynamicName),
+            context,
+            null,
+            null));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            ImmutableArray.Create(scalarValue),
+            context,
+            null,
+            null));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            ImmutableArray.Create(normalHeader, normalAttribute),
+            context,
+            null,
+            null));
+
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            ImmutableArray.Create(multiRootHeader),
+            context,
+            null,
+            null));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryResolveConditionalComponentSlotInvocation",
+            ImmutableArray.Create(genericMultiRootHeader),
+            context,
+            null,
+            null));
+
+        var condition = new Identifier("enabled");
+        var empty = ImmutableArray<IInvocationOperation>.Empty;
+        var normal = ImmutableArray.Create(normalHeader);
+        var generic = ImmutableArray.Create(genericHeader);
+        var typedTitle = ImmutableArray.Create(genericTitle);
+        var mappedNames = ImmutableDictionary<string, string>.Empty.Add("Header", "header-slot");
+
+        // Matching RenderFragment values use the direct slot path, including a declared
+        // runtime alias. The empty/normal combination preserves conditional slot absence.
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(mappedNames),
+            condition,
+            normal,
+            normal,
+            context,
+            CreateRenderState()));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            empty,
+            normal,
+            context,
+            CreateRenderState()));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            normal,
+            empty,
+            context,
+            CreateRenderState()));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            generic,
+            generic,
+            context,
+            CreateRenderState()));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            ImmutableArray.Create(multiRootHeader),
+            ImmutableArray.Create(multiRootHeader),
+            context,
+            CreateRenderState()));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            normal,
+            ImmutableArray.Create(multiRootHeader),
+            context,
+            CreateRenderState()));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            ImmutableArray.Create(genericMultiRootHeader),
+            ImmutableArray.Create(genericMultiRootHeader),
+            context,
+            CreateRenderState()));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            empty,
+            generic,
+            context,
+            CreateRenderState()));
+
+        // Different names, same-name generic/non-generic values, both empty branches, and
+        // multiple invocations are intentionally kept on the conservative attribute path.
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            normal,
+            typedTitle,
+            context,
+            CreateRenderState()));
+
+        // The conservative attribute path still validates both RenderTreeBuilder overload
+        // families. Exercise the generic RenderFragment rejection and a scalar value that is
+        // lowered as an ordinary conditional prop.
+        var conditionalComponent = CreateComponentFrame(ImmutableDictionary<string, string>.Empty);
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "BuildConditionalAttributes",
+                ImmutableArray.Create(genericHeader),
+                context,
+                conditionalComponent));
+        var loweredAttributes = InvokeEmitterInstance<object>(
+            emitter,
+            "BuildConditionalAttributes",
+            ImmutableArray.Create(scalarValue),
+            context,
+            conditionalComponent);
+        Assert.IsNotNull(loweredAttributes);
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            normal,
+            generic,
+            context,
+            CreateRenderState()));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            empty,
+            empty,
+            context,
+            CreateRenderState()));
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            ImmutableArray.Create(normalHeader, normalAttribute),
+            normal,
+            context,
+            CreateRenderState()));
+
+        var expressionProperty = GetProperty(host, "ExpressionFragment");
+        var blockProperty = GetProperty(host, "BlockFragment");
+        var accessorExpressionProperty = GetProperty(host, "AccessorExpressionFragment");
+        var autoProperty = GetProperty(host, "AutoFragment");
+        var writeOnlyProperty = GetProperty(host, "WriteOnlyFragment");
+        var localProperty = GetProperty(host, "LocalBlockFragment");
+        var invalidLocalProperty = GetProperty(host, "InvalidLocalBlockFragment");
+        var indexer = host.GetMembers().OfType<IPropertySymbol>().Single(property => property.IsIndexer);
+
+        foreach (var property in new[] { expressionProperty, blockProperty, accessorExpressionProperty })
+            AssertReturnedPropertyValue(emitter, property);
+        foreach (var property in new[] { autoProperty, writeOnlyProperty, indexer })
+            Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedPropertyValue", new object?[] { property, null }));
+
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryGetLocalRenderFragmentPropertyValue",
+            localProperty,
+            null));
+        foreach (var property in new[] { invalidLocalProperty, expressionProperty, autoProperty, indexer })
+            Assert.IsFalse(InvokeEmitterInstance<bool>(
+                emitter,
+                "TryGetLocalRenderFragmentPropertyValue",
+                property,
+                null));
+
+        // Follow a local RenderFragment declaration, and verify that an unrelated declaration
+        // cannot be guessed as its initializer.
+        var factoryBody = GetMethodBody(fixture, "EmitterHost", "BlockFactory");
+        var factoryResult = new object?[] { factoryBody, null, null };
+        Assert.IsTrue(InvokeEmitter<bool>("TryGetRenderFragmentFactoryReturn", factoryResult));
+        var returned = (IOperation)factoryResult[1]!;
+        var declarations = (ImmutableArray<IVariableDeclarationGroupOperation>)factoryResult[2]!;
+        var unwrapResult = new object?[] { returned, declarations, null };
+        Assert.IsTrue(InvokeEmitter<bool>("TryUnwrapLocalRenderFragmentFactoryReturn", unwrapResult));
+        var unrelatedDeclarations = GetMethodBody(fixture, "EmitterHost", "UninitializedFragmentLocal")
+            .Operations
+            .OfType<IVariableDeclarationGroupOperation>()
+            .ToImmutableArray();
+        Assert.IsFalse(InvokeEmitter<bool>(
+            "TryUnwrapLocalRenderFragmentFactoryReturn",
+            returned,
+            unrelatedDeclarations,
+            null));
+
+        var multiLoop = GetOperation<IForLoopOperation>(
+            fixture,
+            GetMethod(fixture, "EmitterHost", "ForLoopWithMultipleUpdates")
+                .DescendantNodes().OfType<ForStatementSyntax>().Single());
+        var loopContext = CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", "ForLoopWithMultipleUpdates").Parameters[0]);
+        // Going through EmitOperation supplies the loop-local aliases exactly as the production
+        // path does, and exercises multi-declaration initialization plus sequence updates.
+        Assert.IsNotNull(InvokeEmitterInstance<object>(
+            emitter,
+            "EmitOperation",
+            multiLoop,
+            loopContext,
+            CreateRenderState()));
+        var literal = GetVariableInitializer(fixture, GetMethod(fixture, "OperationShapes", "Inputs"), "literal");
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "LowerForLoopInitializers",
+                ImmutableArray.Create(literal),
+                loopContext));
+    }
+
+    [TestMethod]
+    public void DirectRenderFrameBranchBoundaries_PreserveEmptyAndPreexistingFragmentState()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(CreateElementFrame(), "FormatChildrenExpression").ToKnRECMAScript(),
+            "null",
+            StringComparison.Ordinal);
+        var nonEmptyElement = CreateElementFrame();
+        AddFrameChild(nonEmptyElement, new Identifier("child"));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(nonEmptyElement, "FormatChildrenExpression").ToKnRECMAScript(),
+            "[child]",
+            StringComparison.Ordinal);
+
+        var blockPatch = InvokeNestedInstance<object>(
+            CreateElementFrame(),
+            "BuildPatchMetadata",
+            true,
+            false,
+            0);
+        Assert.IsTrue(GetRecordProperty<bool>(blockPatch, "RequiresBlock"));
+        Assert.AreEqual(0, GetRecordProperty<int>(blockPatch, "Flag"));
+
+        var slotMethod = GetMethod(fixture, "EmitterHost", "ConditionalSlotInvocations");
+        var slotSymbol = GetMethodSymbol(fixture, "EmitterHost", "ConditionalSlotInvocations");
+        var context = CreateEmitContext(slotSymbol.Parameters[0]);
+        var normal = ImmutableArray.Create(GetInvocation(fixture, slotMethod, "AddComponentParameter", 0));
+        var generic = ImmutableArray.Create(GetInvocation(fixture, slotMethod, "AddComponentParameter", 1));
+        var condition = new Identifier("enabled");
+        var state = CreateRenderState();
+        var usesFragment = state.GetType().GetProperty("UsesFragment", BindingFlags.Instance | BindingFlags.Public);
+        Assert.IsNotNull(usesFragment);
+        usesFragment!.SetValue(state, true);
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            normal,
+            normal,
+            context,
+            state));
+        Assert.IsTrue(GetRecordProperty<bool>(state, "UsesFragment"));
+
+        // The reverse generic/ordinary pairing exercises the opposite parameter-name mismatch
+        // and must remain on the conservative conditional-attribute path.
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryEmitConditionalComponentSlot",
+            CreateComponentFrame(ImmutableDictionary<string, string>.Empty),
+            condition,
+            generic,
+            normal,
+            context,
+            CreateRenderState()));
+
+        var noHoistFrame = CreateElementFrame();
+        InvokeNestedInstance<object?>(
+            noHoistFrame,
+            "AddAttribute",
+            CreateDirectAttribute("title", new StringLiteral("fixed", "\"fixed\"")));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(noHoistFrame, "ToRenderExpression").ToKnRECMAScript(),
+            "title",
+            StringComparison.Ordinal);
+
+        // A published hoist callback without a predicate must remain a normal object literal;
+        // this is the null-predicate branch of PropFrame.FormatPropsExpression.
+        var callbackOnlyFrame = CreateConfiguredElementFrame(
+            static _ => new Identifier("hoisted"),
+            canHoistStaticProps: null,
+            cacheStableEventHandler: null,
+            canCacheStableEventHandler: null,
+            isStableEventHandler: null,
+            useBlockTree: null,
+            useTextVNode: null);
+        InvokeNestedInstance<object?>(
+            callbackOnlyFrame,
+            "AddAttribute",
+            CreateDirectAttribute("title", new StringLiteral("fixed", "\"fixed\"")));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(callbackOnlyFrame, "FormatPropsExpression").ToKnRECMAScript(),
+            "title",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void DirectRenderFrameAndLoopBoundaries_PreserveEmptyChildrenAndBranchingProtocols()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+
+        var emptyComponent = CreateComponentFrame(ImmutableDictionary<string, string>.Empty);
+        var emptyComponentOutput = InvokeNestedInstance<Expression>(emptyComponent, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(emptyComponentOutput, "h(component", StringComparison.Ordinal);
+
+        var childComponent = CreateComponentFrame(ImmutableDictionary<string, string>.Empty);
+        AddFrameChild(childComponent, new Identifier("child"));
+        var childComponentOutput = InvokeNestedInstance<Expression>(childComponent, "ToRenderExpression").ToKnRECMAScript();
+        StringAssert.Contains(childComponentOutput, "h(component", StringComparison.Ordinal);
+
+        // A component with a dynamic prop but no children must take the block path even
+        // though it has no slot/child frame. This is the complement of the static empty case.
+        var dynamicComponent = CreateComponentFrame(ImmutableDictionary<string, string>.Empty);
+        InvokeNestedInstance<object?>(
+            dynamicComponent,
+            "AddAttribute",
+            CreateDirectAttribute("id", new Identifier("dynamicId")));
+        StringAssert.Contains(
+            InvokeNestedInstance<Expression>(dynamicComponent, "ToRenderExpression").ToKnRECMAScript(),
+            "createBlock",
+            StringComparison.Ordinal);
+
+        var branchMethod = GetMethod(fixture, "EmitterHost", "BranchingRootThenSideEffect");
+        var branchLoop = GetOperation<IWhileLoopOperation>(
+            fixture,
+            branchMethod.DescendantNodes().OfType<WhileStatementSyntax>().Single());
+        Assert.IsNotNull(InvokeEmitterInstance<object>(
+            emitter,
+            "EmitOperation",
+            branchLoop,
+            CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", "BranchingRootThenSideEffect").Parameters[0]),
+            CreateRenderState()));
+
+        var foreachMethod = GetMethod(fixture, "EmitterHost", "DirectRenderEdgeShapes");
+        var foreachLoop = GetOperation<IForEachLoopOperation>(
+            fixture,
+            foreachMethod.DescendantNodes().OfType<ForEachVariableStatementSyntax>().Single());
+        var foreachContext = CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", "DirectRenderEdgeShapes").Parameters[0]);
+        Assert.IsNotNull(InvokeEmitterInstance<object>(emitter, "LowerForEachLoopBinding", foreachLoop, foreachContext));
+
+        var simpleForeachMethod = GetMethod(fixture, "EmitterHost", "DirectForEachLoop");
+        var simpleForeach = GetOperation<IForEachLoopOperation>(
+            fixture,
+            simpleForeachMethod.DescendantNodes().OfType<ForEachStatementSyntax>().Single());
+        Assert.IsNotNull(InvokeEmitterInstance<object>(emitter, "LowerForEachLoopBinding", simpleForeach, foreachContext));
+
+        foreach (var methodName in new[] { "FactoryWithoutReturn", "InvalidFactory", "NonFragmentFactory" })
+        {
+            Assert.IsFalse(InvokeEmitterInstance<bool>(
+                emitter,
+                "TryGetReturnedRenderFragmentBody",
+                new object?[] { GetMethodSymbol(fixture, "EmitterHost", methodName), null }));
+        }
+    }
+
+    [TestMethod]
+    public void ExpressionAndReceiverHelpers_PreserveExplicitBindingAndRejectNonPropertyProtocols()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var inputs = GetMethod(fixture, "OperationShapes", "Inputs");
+        var inputSymbol = GetMethodSymbol(fixture, "OperationShapes", "Inputs");
+        var parameter = inputSymbol.Parameters[0];
+        var parameterReference = GetVariableInitializer(fixture, inputs, "omitParameter");
+        var literal = GetVariableInitializer(fixture, inputs, "literal");
+
+        var substitutions = ImmutableDictionary<IParameterSymbol, IOperation>.Empty
+            .WithComparers(SymbolEqualityComparer.Default)
+            .Add(parameter, literal);
+        StringAssert.Contains(
+            InvokeEmitterInstance<Expression>(
+                emitter,
+                "LowerExpression",
+                parameterReference,
+                CreateEmitContext(parameter, substitutions: substitutions)).ToKnRECMAScript(),
+            "constant",
+            StringComparison.Ordinal);
+
+        var aliases = ImmutableDictionary<IParameterSymbol, string>.Empty
+            .WithComparers(SymbolEqualityComparer.Default)
+            .Add(parameter, "boundParameter");
+        Assert.AreEqual(
+            "boundParameter",
+            InvokeEmitterInstance<Expression>(
+                emitter,
+                "LowerExpression",
+                parameterReference,
+                CreateEmitContext(parameter, parameterAliases: aliases)).ToKnRECMAScript());
+
+        var metadataMethod = GetMethod(fixture, "EmitterHost", "MetadataInvocation");
+        var metadataInvocation = GetInvocation(fixture, metadataMethod, "AddEventPreventDefaultAttribute");
+        var metadataContext = CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", "MetadataInvocation").Parameters[0]);
+        AssertRenderTreeBuilderReceiver(emitter, metadataInvocation, metadataContext, expected: true);
+
+        var helperMethod = GetMethod(fixture, "EmitterHost", "HelperInvocationShapes");
+        var helperContext = CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", "HelperInvocationShapes").Parameters[0]);
+        AssertRenderTreeBuilderReceiver(
+            emitter,
+            GetInvocation(fixture, helperMethod, "Write", ordinal: 0),
+            helperContext,
+            expected: true);
+        AssertRenderTreeBuilderReceiver(
+            emitter,
+            GetInvocation(fixture, helperMethod, "Write", ordinal: 1),
+            helperContext,
+            expected: false);
+        AssertRenderTreeBuilderReceiver(
+            emitter,
+            GetInvocation(fixture, helperMethod, "InstanceBuilderHelper", ordinal: 1),
+            helperContext,
+            expected: false);
+
+        var indexer = host.GetMembers().OfType<IPropertySymbol>().Single(static property => property.IsIndexer);
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryGetReturnedPropertyValue",
+            new object?[] { indexer, null }));
+
+        foreach (var propertyName in new[] { "ExpressionFragment", "BlockFragment", "AccessorExpressionFragment" })
+        {
+            Assert.IsTrue(InvokeEmitterInstance<bool>(
+                emitter,
+                "TryGetReturnedPropertyValue",
+                new object?[]
+                {
+                    host.GetMembers(propertyName).OfType<IPropertySymbol>().Single(),
+                    null
+                }));
+        }
+
+        foreach (var methodName in new[] { "ExpressionFactory", "BlockLiteralFactory", "GenericExpressionFactory" })
+        {
+            Assert.IsTrue(InvokeEmitterInstance<bool>(
+                emitter,
+                "TryGetReturnedRenderFragmentBody",
+                new object?[] { GetMethodSymbol(fixture, "EmitterHost", methodName), null }));
+        }
+
+        var implicitConstructor = host.InstanceConstructors.Single(static constructor => constructor.IsImplicitlyDeclared);
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryBuildConstructorRenderFragmentPropertyMap",
+            new object?[] { implicitConstructor, null }));
+
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "LowerExpression",
+                GetMethodBody(fixture, "OperationShapes", "Empty"),
+                metadataContext));
+        Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<object>(
+                emitter,
+                "LowerExpression",
+                GetReturnOperation(fixture, "OperationShapes", "VoidReturn"),
+                metadataContext));
+    }
+
+    [TestMethod]
+    public void LoopHelperLowering_PreservesMultipleUpdatesAndRejectsNonExpressionSideEffects()
+    {
+        var fixture = CreateFixture();
+        var emitter = CreateEmitter(fixture, GetNamedType(fixture, "EmitterHost"));
+        var method = GetMethod(fixture, "EmitterHost", "ForLoopWithMultipleUpdates");
+        var methodSymbol = GetMethodSymbol(fixture, "EmitterHost", "ForLoopWithMultipleUpdates");
+        var loop = GetOperation<IForLoopOperation>(
+            fixture,
+            method.DescendantNodes().OfType<ForStatementSyntax>().Single());
+        var updates = InvokeEmitterInstance<Expression>(
+            emitter,
+            "LowerForLoopUpdates",
+            loop.AtLoopBottom,
+            CreateEmitContext(methodSymbol.Parameters[0]));
+        Assert.IsInstanceOfType<SequenceExpression>(updates);
+
+        var invalidSideEffect = GetMethodBody(fixture, "EmitterHost", "LoopHelperShapes")
+            .Operations
+            .OfType<IVariableDeclarationGroupOperation>()
+            .Single();
+        var exception = Assert.Throws<TargetInvocationException>(() =>
+            InvokeEmitterInstance<ImmutableArray<Statement>>(
+                emitter,
+                "LowerLoopSideEffectStatements",
+                ImmutableArray.Create<IOperation>(invalidSideEffect),
+                CreateEmitContext(methodSymbol.Parameters[0])));
+        StringAssert.Contains(
+            exception.InnerException!.Message,
+            "ordinary expression statement",
+            StringComparison.Ordinal);
     }
 
     private static void AssertResolvedLoopVariable(IOperation operation, ILocalSymbol expected)
@@ -2305,6 +3067,11 @@ public sealed class RenderEmitterPrivateContractTests
         return value;
     }
 
+    private static VariableDeclaration CreateRenderFragmentPreludeDeclaration(string name, Expression initializer)
+        => new(
+            VariableDeclarationKind.Const,
+            NodeList.From(new VariableDeclarator(new Identifier(name), initializer)));
+
     private static void AssertReturnedPropertyValue(object emitter, IPropertySymbol property)
     {
         var arguments = new object?[] { property, null };
@@ -2490,6 +3257,24 @@ public sealed class RenderEmitterPrivateContractTests
                     }
                 }
 
+                public RenderFragment LocalBlockFragment
+                {
+                    get
+                    {
+                        RenderFragment local = builder => builder.AddContent(0, "local-property");
+                        return local;
+                    }
+                }
+
+                public RenderFragment InvalidLocalBlockFragment
+                {
+                    get
+                    {
+                        var local = 1;
+                        return builder => builder.AddContent(0, local);
+                    }
+                }
+
                 public RenderFragment AutoFragment { get; set; } = default!;
 
                 [Parameter] public RenderFragment Header { get; set; } = default!;
@@ -2559,6 +3344,22 @@ public sealed class RenderEmitterPrivateContractTests
                     }
                 }
 
+                public void ConditionalSlotInvocations(
+                    RenderTreeBuilder builder,
+                    string dynamicName)
+                {
+                    builder.AddComponentParameter(0, "Header", ExpressionFactory());
+                    builder.AddComponentParameter(1, "Header", GenericExpressionFactory());
+                    builder.AddComponentParameter(2, "Title", GenericExpressionFactory());
+                    builder.AddComponentParameter(3, dynamicName, ExpressionFactory());
+                    builder.AddComponentParameter(4, "Value", "scalar");
+                    builder.AddComponentParameter(5, "Header", MultiRootFragmentFactory());
+                    builder.AddComponentParameter(6, "Header", GenericMarkupAndMultiRootFactory());
+                    builder.AddAttribute(5, "Header", ExpressionFactory());
+                    builder.AddAttribute(6, "Header");
+                    builder.AddContent(7, "content");
+                }
+
                 public void DirectRenderEdgeShapes(
                     RenderTreeBuilder builder,
                     bool enabled,
@@ -2577,6 +3378,12 @@ public sealed class RenderEmitterPrivateContractTests
                         builder.AddContent(4, name);
                         builder.CloseElement();
                     }
+                }
+
+                public void DirectForEachLoop(RenderTreeBuilder builder)
+                {
+                    foreach (var value in new[] { 1, 2 })
+                        builder.AddContent(0, value);
                 }
 
                 public void BooleanAndConditionalAttributes(RenderTreeBuilder builder, bool enabled)
@@ -2627,6 +3434,38 @@ public sealed class RenderEmitterPrivateContractTests
                     }
                 }
 
+                public void BranchingRootThenSideEffect(RenderTreeBuilder builder)
+                {
+                    while (true)
+                    {
+                        builder.AddContent(0, "root");
+                        var marker = 1;
+                        marker = marker + 1;
+                        break;
+                    }
+                }
+
+                public void ContinueBranch(RenderTreeBuilder builder)
+                {
+                    while (true)
+                    {
+                        continue;
+                    }
+                }
+
+                public void GotoBranch(RenderTreeBuilder builder)
+                {
+                    goto done;
+                done:
+                    return;
+                }
+
+                public void LoopHelperShapes(RenderTreeBuilder builder)
+                {
+                    var state = 0;
+                    state = state + 1;
+                }
+
                 public void ForLoopWithExpressionUpdate(RenderTreeBuilder builder)
                 {
                     for (var index = 0; index < 2; index = index + 1)
@@ -2636,6 +3475,12 @@ public sealed class RenderEmitterPrivateContractTests
                 public void ForLoopWithIncrementUpdate(RenderTreeBuilder builder)
                 {
                     for (var index = 0; index < 2; index++)
+                        builder.AddContent(0, index);
+                }
+
+                public void ForLoopWithMultipleUpdates(RenderTreeBuilder builder)
+                {
+                    for (int index = 0, remaining = 2; index < remaining; index++, remaining--)
                         builder.AddContent(0, index);
                 }
 
@@ -2893,8 +3738,10 @@ public sealed class RenderEmitterPrivateContractTests
                         Header = header;
                     }
 
-                    public RenderFragment Header { get; set; } = default!;
-                }
+                public RenderFragment Header { get; set; } = default!;
+            }
+
+            public record RecordCarrier(RenderFragment Header);
             }
 
             public static class ExternalBuilderHelper
@@ -2944,6 +3791,19 @@ public sealed class RenderEmitterPrivateContractTests
                 {
                     Header = header;
                 }
+
+                public RenderFragment Header { get; set; } = default!;
+            }
+
+            public sealed class NoisyCarrier
+            {
+                public NoisyCarrier(RenderFragment header)
+                {
+                    Name = "ignored";
+                    Header = header;
+                }
+
+                public string Name { get; set; } = string.Empty;
 
                 public RenderFragment Header { get; set; } = default!;
             }

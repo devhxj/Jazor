@@ -17,7 +17,7 @@
 <p>
   <a href="docs/04-roadmap/current-status.md"><img alt="At least 10,000 compiler tests pass" src="https://img.shields.io/badge/compiler%20tests-10%2C000%2B%20passing-2ea44f" /></a>
   <a href="docs/04-roadmap/current-status.md"><img alt="At least 98 percent compiler line coverage" src="https://img.shields.io/badge/compiler%20line%20coverage-98%25%2B-2ea44f" /></a>
-  <a href="docs/04-roadmap/current-status.md"><img alt="At least 96 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-96%25%2B-2ea44f" /></a>
+  <a href="docs/04-roadmap/current-status.md"><img alt="At least 97 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-97%25%2B-2ea44f" /></a>
 </p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
@@ -32,7 +32,9 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### 2026-08-17
+### 2026-08-18
+
+- Compiler and RazorVue branch-coverage acceptance gates are now maintained at 97%+, with boundary regressions covering the supported translation and component-generation paths.
 
 - Jazor 0.16.2 broadens RazorVue component logic with base-to-derived replay of source initializers and parameterless constructors, source-base lifecycle/dispose dispatch, module-lifetime static members, and inheritance-safe module exports.
 - RazorVue direct render now preserves ordinary `break` and `continue` in verified `for`, `foreach`, `while`, and `do while` content segments; labels, `goto`, and branches crossing open render frames remain diagnosed boundaries.
@@ -74,8 +76,8 @@ flowchart LR
 
 The badges above show maintained acceptance thresholds rather than a stale one-off result. The repository verifies the following minimums through repeatable scripts:
 
-- Core compiler: at least 10,000 passing `IOperation` scenarios, 98% line coverage, and 96% branch coverage.
-- Current Razor-to-Vue integration: at least 4,000 passing scenarios, 90% line coverage, and 96% branch coverage.
+- Core compiler: at least 10,000 passing `IOperation` scenarios, 98% line coverage, and 97% branch coverage.
+- Current Razor-to-Vue integration: at least 4,000 passing scenarios, 90% line coverage, and 97% branch coverage.
 - Vue ecosystem bindings: at least 90% audited public binding-contract coverage per target.
 
 Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue-binding-coverage.cs` under `scripts/csharp/` to reproduce the relevant gate. The active scope and test entry points are listed in [Current Status](docs/04-roadmap/current-status.md).

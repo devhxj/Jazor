@@ -710,6 +710,18 @@ internal static class RenderEmitter
                 whenTrueInvocations.Length == 0 && whenFalseInvocations.Length == 0)
                 return false;
 
+            if (frame is ComponentFrame componentFrame &&
+                TryEmitConditionalComponentSlot(
+                    componentFrame,
+                    condition,
+                    whenTrueInvocations,
+                    whenFalseInvocations,
+                    context,
+                    state))
+            {
+                return true;
+            }
+
             // Keep both branches as prop sources instead of executing either during emission.
             // mergeProps will evaluate the selected runtime branch in the original render pass.
             // 条件分支不能在生成期拍平，必须由运行时选择以保留属性值的单次求值。
@@ -718,6 +730,93 @@ internal static class RenderEmitter
                 BuildConditionalAttributes(whenTrueInvocations, context, frame),
                 BuildConditionalAttributes(whenFalseInvocations, context, frame));
             _usesMergeProps = true;
+            return true;
+        }
+
+        private bool TryEmitConditionalComponentSlot(
+            ComponentFrame frame,
+            Expression condition,
+            ImmutableArray<IInvocationOperation> whenTrueInvocations,
+            ImmutableArray<IInvocationOperation> whenFalseInvocations,
+            EmitContext context,
+            RenderState state)
+        {
+            // A conditional slot is representable only when each branch is one matching
+            // component parameter (or intentionally absent). Mixed prop/slot branches retain
+            // the existing attribute path so their source-order contract is not guessed.
+            // 条件 slot 仅接收两支各一个同名参数（或显式缺席）；属性与 slot 混合时不猜测顺序。
+            if (!TryResolveConditionalComponentSlotInvocation(
+                    whenTrueInvocations,
+                    context,
+                    out var whenTrueName,
+                    out var whenTrueFragment) ||
+                !TryResolveConditionalComponentSlotInvocation(
+                    whenFalseInvocations,
+                    context,
+                    out var whenFalseName,
+                    out var whenFalseFragment) ||
+                whenTrueName is null && whenFalseName is null ||
+                whenTrueName is not null &&
+                whenFalseName is not null &&
+                !string.Equals(whenTrueName, whenFalseName, StringComparison.Ordinal) ||
+                whenTrueFragment is { ParameterName: null } && whenFalseFragment is { ParameterName: not null } ||
+                whenTrueFragment is { ParameterName: not null } && whenFalseFragment is { ParameterName: null })
+            {
+                return false;
+            }
+
+            var name = whenTrueName ?? whenFalseName!;
+            var parameterName = whenTrueFragment?.ParameterName ?? whenFalseFragment?.ParameterName;
+            var absent = new DirectRenderFragment(
+                Null(),
+                ParameterName: parameterName,
+                AvailabilityCondition: new BooleanLiteral(false, "false"),
+                RenderExpressionWhenAvailable: Null());
+            var whenTrue = whenTrueFragment ?? absent;
+            var whenFalse = whenFalseFragment ?? absent;
+            var fragment = new DirectRenderFragment(
+                new ConditionalExpression(condition, whenTrue.RenderExpression, whenFalse.RenderExpression),
+                ParameterName: parameterName,
+                UsesFragment: whenTrue.UsesFragment || whenFalse.UsesFragment,
+                Selection: new ConditionalRenderFragmentSelection(condition, whenTrue, whenFalse));
+            frame.Slots.Add(new DirectSlot(
+                frame.TryGetDeclaredSlotName(name, out var declaredSlotName)
+                    ? declaredSlotName
+                    : frame.NormalizeSlotName(name),
+                fragment));
+            state.UsesFragment = state.UsesFragment || fragment.UsesFragment;
+            return true;
+        }
+
+        private bool TryResolveConditionalComponentSlotInvocation(
+            ImmutableArray<IInvocationOperation> invocations,
+            EmitContext context,
+            out string? name,
+            out DirectRenderFragment? fragment)
+        {
+            name = null;
+            fragment = null;
+            if (invocations.Length == 0)
+                return true;
+
+            if (invocations.Length != 1)
+                return false;
+
+            var invocation = invocations[0];
+            var methodName = invocation.TargetMethod.OriginalDefinition.Name;
+            if (!string.Equals(methodName, "AddAttribute", StringComparison.Ordinal) &&
+                !string.Equals(methodName, "AddComponentParameter", StringComparison.Ordinal) ||
+                invocation.Arguments.Length != 3 ||
+                !TryGetConstantString(invocation.Arguments[1].Value, out var parameterName) ||
+                !TryResolveRenderFragmentContentExpression(invocation.Arguments[2].Value, context, out var renderFragment))
+            {
+                return false;
+            }
+
+            EnsureSignature(invocation, invocation.Arguments.Length == 3);
+            RequireOmittableSequence(invocation.Arguments[0].Value);
+            name = parameterName;
+            fragment = renderFragment;
             return true;
         }
 
@@ -761,6 +860,16 @@ internal static class RenderEmitter
 
         private void EmitForEachLoop(IForEachLoopOperation forEachLoop, EmitContext context, RenderState state)
         {
+            // Vue render functions are synchronous. Do not let a branch-free await foreach
+            // slip through the Array.from path merely because it has no loop control flow.
+            // Vue render 函数是同步的；无 break/continue 的 await foreach 也不能误走 Array.from 路径。
+            if (forEachLoop.IsAsynchronous)
+            {
+                throw Unsupported(
+                    forEachLoop,
+                    "Async foreach cannot execute inside Razor's synchronous BuildRenderTree contract.");
+            }
+
             // Array.from maps lazily at render time and supplies each iteration its own alias
             // scope. Building children once outside the mapper would duplicate/collapse loop effects.
             // 循环体必须留在 mapper 内运行，不能在 lowering 时预先展开或共享局部变量。
@@ -786,13 +895,6 @@ internal static class RenderEmitter
 
             if (HasBranchTargetingLoop(forEachLoop.Body, forEachLoop))
             {
-                if (forEachLoop.IsAsynchronous)
-                {
-                    throw Unsupported(
-                        forEachLoop,
-                        "Async foreach cannot execute inside Razor's synchronous BuildRenderTree contract.");
-                }
-
                 try
                 {
                     var resultName = CreateUniqueLocalName("__jazor$foreach");
@@ -3241,8 +3343,11 @@ internal static class RenderEmitter
 
             try
             {
-                if (!TryGetReturnedPropertyValue(property, out var returnedValue))
+                if (!TryGetReturnedPropertyValue(property, out var returnedValue) &&
+                    !TryGetLocalRenderFragmentPropertyValue(property, out returnedValue))
+                {
                     return false;
+                }
 
                 return TryResolveRenderFragmentExpression(returnedValue, context, out renderFragment);
             }
@@ -3259,21 +3364,62 @@ internal static class RenderEmitter
                 return false;
 
             var model = _compilation.GetSemanticModel(declaration.SyntaxTree);
-            IOperation? operation = declaration.ExpressionBody is { Expression: { } propertyExpression }
-                ? model.GetOperation(propertyExpression)
-                : declaration.AccessorList?.Accessors
+            var propertyExpressionBody = declaration.ExpressionBody;
+            IOperation? operation = propertyExpressionBody is not null
+                ? model.GetOperation(propertyExpressionBody.Expression)
+                : declaration.AccessorList!.Accessors
                     .Where(static accessor => accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration))
-                    .Select(accessor => accessor.ExpressionBody is { Expression: { } getterExpression }
-                        ? model.GetOperation(getterExpression)
-                        : accessor.Body is not null
-                            ? TryGetSingleReturnValue(model.GetOperation(accessor.Body))
-                            : null)
+                    .Select(accessor =>
+                    {
+                        var getterExpressionBody = accessor.ExpressionBody;
+                        return getterExpressionBody is not null
+                            ? model.GetOperation(getterExpressionBody.Expression)
+                            : accessor.Body is not null
+                                ? TryGetSingleReturnValue(model.GetOperation(accessor.Body))
+                                : null;
+                    })
                     .SingleOrDefault();
             if (operation is null)
                 return false;
 
             returnedValue = operation;
             return true;
+        }
+
+        private bool TryGetLocalRenderFragmentPropertyValue(IPropertySymbol property, out IOperation returnedValue)
+        {
+            returnedValue = null!;
+            if (property.DeclaringSyntaxReferences[0].GetSyntax() is not PropertyDeclarationSyntax
+                {
+                    AccessorList: { } accessorList
+                } declaration)
+            {
+                return false;
+            }
+
+            var getter = accessorList.Accessors.SingleOrDefault(static accessor =>
+                accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GetAccessorDeclaration) && accessor.Body is not null);
+            if (getter?.Body is null)
+                return false;
+
+            var model = _compilation.GetSemanticModel(declaration.SyntaxTree);
+            if (!TryGetRenderFragmentFactoryReturn(
+                    model.GetOperation(getter.Body),
+                    out var propertyReturn,
+                    out var localRenderFragmentDeclarations) ||
+                propertyReturn is null)
+            {
+                return false;
+            }
+
+            // Property getters share the same deliberately narrow grammar as fragment factory
+            // methods: initialized RenderFragment locals followed by one return. This supports
+            // ordinary @code composition without inventing arbitrary getter dataflow.
+            // 属性 getter 与片段工厂共用受限语法：已初始化局部片段加单一 return，不推断任意数据流。
+            return TryUnwrapLocalRenderFragmentFactoryReturn(
+                propertyReturn,
+                localRenderFragmentDeclarations,
+                out returnedValue);
         }
 
         private bool TryResolveComponentSlot(
@@ -3770,8 +3916,8 @@ internal static class RenderEmitter
             var localRenderFragmentDeclarations = ImmutableArray<IVariableDeclarationGroupOperation>.Empty;
             switch (syntax)
             {
-                case MethodDeclarationSyntax { ExpressionBody.Expression: { } expression }:
-                    returnedOperation = model.GetOperation(expression);
+                case MethodDeclarationSyntax { ExpressionBody: { } expressionBody }:
+                    returnedOperation = model.GetOperation(expressionBody.Expression);
                     break;
                 case MethodDeclarationSyntax { Body: { } methodBody }:
                     if (!TryGetRenderFragmentFactoryReturn(
@@ -3787,8 +3933,13 @@ internal static class RenderEmitter
                     return false;
             }
 
-            if (returnedOperation is null)
+            if (!TryUnwrapLocalRenderFragmentFactoryReturn(
+                    returnedOperation!,
+                    localRenderFragmentDeclarations,
+                    out returnedOperation))
+            {
                 return false;
+            }
             if (TryGetRenderFragmentBody(returnedOperation, out var builder, out var body))
             {
                 helperBody = new RenderFragmentHelperBody(
@@ -3853,6 +4004,39 @@ internal static class RenderEmitter
 
             localRenderFragmentDeclarations = declarations.ToImmutable();
             return true;
+        }
+
+        private static bool TryUnwrapLocalRenderFragmentFactoryReturn(
+            IOperation returnedOperation,
+            ImmutableArray<IVariableDeclarationGroupOperation> localRenderFragmentDeclarations,
+            out IOperation resolvedOperation)
+        {
+            resolvedOperation = returnedOperation;
+            var visited = new HashSet<ILocalSymbol>(SymbolComparer);
+            while (true)
+            {
+                while (resolvedOperation is IConversionOperation conversion)
+                    resolvedOperation = conversion.Operand;
+
+                if (resolvedOperation is not ILocalReferenceOperation localReference)
+                    return true;
+
+                // The factory grammar has already limited these declarations to initialized
+                // RenderFragment locals. Follow that straight-line provenance only; do not
+                // infer arbitrary C# dataflow from a return expression.
+                // 工厂语法已限制为已初始化的片段局部变量；这里只追踪该直线来源，不猜测任意数据流。
+                if (!visited.Add(localReference.Local))
+                    return false;
+
+                var declaration = localRenderFragmentDeclarations
+                    .SelectMany(static group => group.Declarations)
+                    .SelectMany(static declaration => declaration.Declarators)
+                    .FirstOrDefault(candidate => SymbolComparer.Equals(candidate.Symbol, localReference.Local));
+                if (declaration?.Initializer is null)
+                    return false;
+
+                resolvedOperation = declaration.Initializer.Value;
+            }
         }
 
         private static IOperation? TryGetSingleReturnValue(IOperation? operation)
@@ -4526,7 +4710,7 @@ internal static class RenderEmitter
         foreach (var attribute in componentType.GetAttributes())
         {
             if (!string.Equals(
-                    attribute.AttributeClass?.ToDisplayString(),
+                    attribute.AttributeClass!.ToDisplayString(),
                     VueLibraryComponentAttributeMetadataName,
                     StringComparison.Ordinal))
             {
@@ -4555,7 +4739,7 @@ internal static class RenderEmitter
     {
         foreach (var attribute in componentType.GetAttributes())
         {
-            if (string.Equals(attribute.AttributeClass?.ToDisplayString(), ECMAScriptModuleAttributeMetadataName, StringComparison.Ordinal) &&
+            if (string.Equals(attribute.AttributeClass!.ToDisplayString(), ECMAScriptModuleAttributeMetadataName, StringComparison.Ordinal) &&
                 attribute.ConstructorArguments.Length == 1 &&
                 attribute.ConstructorArguments[0].Value is string exportPath &&
                 !string.IsNullOrWhiteSpace(exportPath))
@@ -5432,9 +5616,7 @@ internal static class RenderEmitter
                             CreateAttributeObject(conditionalAttributes.WhenFalse)));
                         break;
 
-                    default:
-                        throw new NotSupportedException("Unsupported direct render prop source: " + source.GetType().Name);
-                }
+            }
             }
 
             if (_referenceCaptures.Count > 0)
@@ -5501,8 +5683,7 @@ internal static class RenderEmitter
                     continue;
                 }
 
-                if (source is not AttributePropSource { Attribute: var attribute })
-                    continue;
+                var attribute = ((AttributePropSource)source).Attribute;
 
                 if (string.Equals(attribute.Name, "ref", StringComparison.Ordinal))
                 {

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Jazor.RazorVue.Generation;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,6 +9,122 @@ namespace Jazor.RazorVue.Sg.Test;
 [TestClass]
 public sealed class GeneratedCSharpBinderInvariantTests
 {
+    [TestMethod]
+    public void TryBindFinalCompilation_CollectsMissingAndUnbindableRenderRootDiagnostics()
+    {
+        var generatedTree = CSharpSyntaxTree.ParseText(
+            """
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages;
+
+            public sealed class MissingRenderRoot
+            {
+            }
+
+            public sealed class ExpressionRenderRoot
+            {
+                public void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "expression");
+            }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            "Pages/InvalidRoots.razor.g.cs");
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.InvalidRoots",
+            [generatedTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var missing = compilation.GetTypeByMetadataName("Demo.Pages.MissingRenderRoot");
+        var expression = compilation.GetTypeByMetadataName("Demo.Pages.ExpressionRenderRoot");
+
+        Assert.IsNotNull(missing);
+        Assert.IsNotNull(expression);
+        Assert.IsFalse(GeneratedCSharpBinder.TryBindFinalCompilationWithDiagnostics(
+            compilation,
+            ImmutableArray.Create(missing!, expression!),
+            out var binding,
+            out var diagnostics));
+
+        Assert.IsNull(binding);
+        Assert.HasCount(2, diagnostics);
+        Assert.AreEqual(RazorVueDiagnosticCategory.ComponentBinding, diagnostics[0].Category);
+        Assert.AreEqual(RazorVueDiagnosticCategory.ComponentBinding, diagnostics[1].Category);
+        StringAssert.Contains(diagnostics[0].Message, "ExpressionRenderRoot", StringComparison.Ordinal);
+        StringAssert.Contains(diagnostics[0].Message, "bindable BuildRenderTree body", StringComparison.Ordinal);
+        StringAssert.Contains(diagnostics[1].Message, "MissingRenderRoot", StringComparison.Ordinal);
+        StringAssert.Contains(diagnostics[1].Message, "did not declare BuildRenderTree", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryBindFinalCompilation_ProducesAnEmptyBindingForAnEmptyCandidateSet()
+    {
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.EmptyBinding",
+            references: RazorSgTestHost.CreateMetadataReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindFinalCompilation(
+            compilation,
+            ImmutableArray<INamedTypeSymbol>.Empty,
+            out var binding,
+            out var failure), failure);
+        Assert.IsNotNull(binding);
+        Assert.IsEmpty(binding!.Documents);
+        Assert.IsEmpty(binding.Components);
+    }
+
+    [TestMethod]
+    public void TryBindFinalCompilation_ReusesOneGeneratedDocumentForComponentsInTheSameTree()
+    {
+        var generatedTree = CSharpSyntaxTree.ParseText(
+            """
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages;
+
+            public sealed class Alpha : ComponentBase
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "alpha");
+                }
+            }
+
+            public sealed class Zebra : ComponentBase
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, "zebra");
+                }
+            }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            "Pages/Shared.razor.g.cs");
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.SharedGeneratedDocument",
+            [generatedTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var alpha = compilation.GetTypeByMetadataName("Demo.Pages.Alpha");
+        var zebra = compilation.GetTypeByMetadataName("Demo.Pages.Zebra");
+
+        Assert.IsNotNull(alpha);
+        Assert.IsNotNull(zebra);
+        Assert.IsTrue(GeneratedCSharpBinder.TryBindFinalCompilation(
+            compilation,
+            ImmutableArray.Create(zebra!, alpha!),
+            out var binding,
+            out var failure), failure);
+        Assert.IsNotNull(binding);
+        Assert.HasCount(1, binding!.Documents);
+        CollectionAssert.AreEqual(
+            new[] { "Demo.Pages.Alpha", "Demo.Pages.Zebra" },
+            binding.Components.Select(static component => component.ComponentSymbol.ToDisplayString()).ToArray());
+        Assert.AreSame(binding.Documents[0], binding.Components[0].Document);
+        Assert.AreSame(binding.Documents[0], binding.Components[1].Document);
+    }
+
     [TestMethod]
     public void TryBindFinalCompilation_ReusesGeneratedRazorTreeWithoutParsingItAgain()
     {

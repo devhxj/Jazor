@@ -17,7 +17,7 @@
 <p>
   <a href="docs/04-roadmap/current-status.md"><img alt="至少 10,000 项编译器测试通过" src="https://img.shields.io/badge/compiler%20tests-10%2C000%2B%20passing-2ea44f" /></a>
   <a href="docs/04-roadmap/current-status.md"><img alt="编译器行覆盖率至少 98%" src="https://img.shields.io/badge/compiler%20line%20coverage-98%25%2B-2ea44f" /></a>
-  <a href="docs/04-roadmap/current-status.md"><img alt="编译器分支覆盖率至少 96%" src="https://img.shields.io/badge/compiler%20branch%20coverage-96%25%2B-2ea44f" /></a>
+  <a href="docs/04-roadmap/current-status.md"><img alt="编译器分支覆盖率至少 97%" src="https://img.shields.io/badge/compiler%20branch%20coverage-97%25%2B-2ea44f" /></a>
 </p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
@@ -32,7 +32,9 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-17
+### 2026-08-18
+
+- 编译器与 RazorVue 的分支覆盖率验收门槛提升并稳定在 97% 以上，新增边界回归覆盖受支持的转译与组件生成路径。
 
 - Jazor 0.16.2 扩展 RazorVue component logic：按基类到派生类顺序 replay source initializer 与无参 constructor，支持 source-base lifecycle/dispose dispatch、模块生命周期 static member，以及继承场景下无重复 export 的模块输出。
 - RazorVue direct render 现可在已验证的 `for`、`foreach`、`while`、`do while` content segment 中保留普通 `break`/`continue`；labeled branch、`goto` 与跨未关闭 render frame 的 branch 仍会得到可定位诊断。
@@ -74,8 +76,8 @@ flowchart LR
 
 顶部徽标展示持续适用的验收门槛，而非会过期的单次构建结果。仓库通过可复现脚本验证以下最低要求：
 
-- 核心编译器：至少 10,000 个通过的 `IOperation` 场景、98% 行覆盖率和 96% 分支覆盖率。
-- 当前 Razor-to-Vue 集成：至少 4,000 个通过场景、90% 行覆盖率和 96% 分支覆盖率。
+- 核心编译器：至少 10,000 个通过的 `IOperation` 场景、98% 行覆盖率和 97% 分支覆盖率。
+- 当前 Razor-to-Vue 集成：至少 4,000 个通过场景、90% 行覆盖率和 97% 分支覆盖率。
 - Vue 生态绑定：每个目标至少 90% 的已审计公共绑定契约覆盖率。
 
 可在 `scripts/csharp/` 下运行 `verify-compiler-coverage.cs`、`verify-razorvue-coverage.cs` 或 `verify-vue-binding-coverage.cs` 复现相应门槛。当前范围与测试入口见[当前状态](docs/04-roadmap/current-status.md)。

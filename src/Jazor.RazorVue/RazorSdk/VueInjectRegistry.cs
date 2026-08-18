@@ -207,7 +207,7 @@ internal sealed class VueInjectRegistry
     private static bool CapturesUnmatchedValues(IPropertySymbol property)
     {
         var parameter = property.GetAttributes().First(attribute =>
-            string.Equals(attribute.AttributeClass?.ToDisplayString(), ParameterAttributeMetadataName, StringComparison.Ordinal));
+            string.Equals(attribute.AttributeClass!.ToDisplayString(), ParameterAttributeMetadataName, StringComparison.Ordinal));
         foreach (var argument in parameter.NamedArguments)
         {
             if (string.Equals(argument.Key, "CaptureUnmatchedValues", StringComparison.Ordinal) &&
@@ -225,7 +225,7 @@ internal sealed class VueInjectRegistry
 
     private static bool HasAttribute(ISymbol symbol, string metadataName)
         => symbol.GetAttributes().Any(attribute =>
-            string.Equals(attribute.AttributeClass?.ToDisplayString(), metadataName, StringComparison.Ordinal));
+            string.Equals(attribute.AttributeClass!.ToDisplayString(), metadataName, StringComparison.Ordinal));
 
     private static bool Implements(INamedTypeSymbol type, INamedTypeSymbol interfaceType)
         => type.AllInterfaces.Any(candidate =>

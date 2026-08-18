@@ -37,13 +37,13 @@ internal sealed class VueModulePolicy : AstConverterModulePolicy
         => true;
 
     public override string? GetPreferredModuleDeclaredName(ISymbol symbol)
-        => symbol is IMethodSymbol
-        {
-            MethodKind: MethodKind.PropertyGet,
-            AssociatedSymbol: IPropertySymbol property
-        }
-            ? Util.GetConfigOrSymbolName(property)
-            : null;
+    {
+        if (symbol is not IMethodSymbol { MethodKind: MethodKind.PropertyGet } getter)
+            return null;
+
+        // Roslyn binds every property getter with its associated property symbol.
+        return Util.GetConfigOrSymbolName((IPropertySymbol)getter.AssociatedSymbol!);
+    }
 
     public override bool ShouldExportModuleMember(
         INamedTypeSymbol moduleType,

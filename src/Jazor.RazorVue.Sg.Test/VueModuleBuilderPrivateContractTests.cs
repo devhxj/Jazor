@@ -343,6 +343,32 @@ public sealed class VueModuleBuilderPrivateContractTests
     }
 
     [TestMethod]
+    public void ImportAndBackingFieldHelpers_RejectUnsupportedShapesDeterministically()
+    {
+        var compilation = CreateCompilation();
+        var shapes = GetNamedType(compilation, "PrivateContracts.ComponentShapes");
+        var auto = GetProperty(shapes, "Auto");
+        var computedCompilation = CreateStandaloneCompilation(
+            "public sealed class Shape { public int Computed => 1; }",
+            "ComputedShape.cs");
+        var computedShape = GetNamedType(computedCompilation, "Shape");
+        var computed = GetProperty(computedShape, "Computed");
+
+        Assert.IsNotNull(Invoke<string?>("GetPropertyBackingFieldName", shapes, auto));
+        Assert.IsNull(Invoke<string?>("GetPropertyBackingFieldName", computedShape, computed));
+        Assert.IsNotNull(Invoke<object?>("GetBackingField", auto));
+        Assert.IsNull(Invoke<object?>("GetBackingField", computed));
+
+        Assert.AreEqual(string.Empty, Invoke<string>("GetImportLocalName", new object?[] { null }));
+        var unsupportedImportedName = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<string>("GetImportedName", new BooleanLiteral(true, "true")));
+        StringAssert.Contains(
+            unsupportedImportedName.InnerException!.Message,
+            "Unsupported ECMAScript named import key",
+            StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void AstLocalAndModuleNamingHelpers_PreserveFramingContracts()
     {
         var compilation = CreateCompilation();

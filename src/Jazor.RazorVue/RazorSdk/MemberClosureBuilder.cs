@@ -605,7 +605,7 @@ internal static class MemberClosureBuilder
                 continue;
 
             var span = location.GetLineSpan();
-            var path = (span.Path ?? string.Empty).Replace('\\', '/');
+            var path = span.Path.Replace('\\', '/');
             var start = span.StartLinePosition;
             return path +
                    "|" +

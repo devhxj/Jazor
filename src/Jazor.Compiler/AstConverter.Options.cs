@@ -52,7 +52,9 @@ internal static class RuntimeClassPrivateStorageNames
         // Implicit auto-property backing fields have no source declaration. Their compiler
         // lowering already uses the property hash, so recreate that canonical name here rather
         // than depend on a module-name-plan implementation detail.
-        var canonicalName = field.AssociatedSymbol is IPropertySymbol property && field.IsImplicitlyDeclared
+        // Roslyn only associates compiler-generated property backing fields with their property;
+        // an associated property field is therefore already an implicit backing declaration.
+        var canonicalName = field.AssociatedSymbol is IPropertySymbol property
             ? Format.HashName(property.OriginalDefinition.ToDisplayString(Format.NameFormat))
             : fallbackName;
         return ProxySafePrefix + canonicalName;

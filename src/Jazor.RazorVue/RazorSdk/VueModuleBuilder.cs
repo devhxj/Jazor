@@ -2423,7 +2423,7 @@ internal static class VueModuleBuilder
         // derived component loses base-class properties and leaves their backing declaration in
         // setup instead of reactive state.
         // 属性后备字段应从声明类型查找，不能只查最派生 component。
-        var declaringType = property.ContainingType ?? componentSymbol;
+        var declaringType = property.ContainingType;
         foreach (var field in declaringType.GetMembers().OfType<IFieldSymbol>())
         {
             if (field.AssociatedSymbol is IPropertySymbol associatedProperty &&
@@ -2578,7 +2578,7 @@ internal static class VueModuleBuilder
         foreach (var attribute in componentSymbol.GetAttributes())
         {
             if (!string.Equals(
-                    attribute.AttributeClass?.ToDisplayString(),
+                    attribute.AttributeClass!.ToDisplayString(),
                     ECMAScriptModuleAttributeMetadataName,
                     StringComparison.Ordinal))
             {
