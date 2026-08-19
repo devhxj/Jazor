@@ -11,25 +11,27 @@ public static partial class WikiHomeModule
 {
     // 生成数据与查询逻辑分层：本层保留原 RouteContract 的并行数组形状，
     // 所有数据只从 docs 编译出的 WikiDocsContent 读取。
-    internal static readonly string[] PagePaths = WikiDocsContent.PagePaths;
-    internal static readonly string[] PageGroups = WikiDocsContent.PageGroups;
-    internal static readonly string[] PageTitles = WikiDocsContent.PageTitles;
-    internal static readonly string[] PageSummaries = WikiDocsContent.PageSummaries;
-    internal static readonly string[] PageStatuses = WikiDocsContent.PageStatuses;
-    internal static readonly string[] PageOwners = WikiDocsContent.PageOwners;
-    internal static readonly string[] PageAudiences = WikiDocsContent.PageAudiences;
-    internal static readonly string[] PageSourceFiles = WikiDocsContent.PageSourceFiles;
-    internal static readonly string[] PageLastUpdatedDates = WikiDocsContent.PageLastUpdatedDates;
-    internal static readonly int[] PageReadingMinutes = WikiDocsContent.PageReadingMinutes;
-    internal static readonly string[] PageSearchBodies = WikiDocsContent.PageSearchBodies;
-    internal static readonly string[][] PageTagSets = WikiDocsContent.PageTagSets;
-    internal static readonly DocsBlock[][] PageBlockSets = WikiDocsContent.PageBlockSets;
-    internal static readonly string[][] PageSectionIdSets = WikiDocsContent.PageSectionIdSets;
-    internal static readonly string[][] PageSectionTitleSets = WikiDocsContent.PageSectionTitleSets;
-    internal static readonly string[][] PageRelatedPathSets = WikiDocsContent.PageRelatedPathSets;
-    internal static readonly string[] NavGroupIds = WikiDocsContent.NavGroupIds;
-    internal static readonly string[] NavGroupLabels = WikiDocsContent.NavGroupLabels;
-    internal static readonly string[] NavGroupLandingPaths = WikiDocsContent.NavGroupLandingPaths;
+    // Use static getters rather than field initializers. Jazor emits the generated class later
+    // in the ESM module, so eager field aliases would read it inside its JavaScript TDZ.
+    internal static string[] PagePaths => WikiDocsContent.PagePaths;
+    internal static string[] PageGroups => WikiDocsContent.PageGroups;
+    internal static string[] PageTitles => WikiDocsContent.PageTitles;
+    internal static string[] PageSummaries => WikiDocsContent.PageSummaries;
+    internal static string[] PageStatuses => WikiDocsContent.PageStatuses;
+    internal static string[] PageOwners => WikiDocsContent.PageOwners;
+    internal static string[] PageAudiences => WikiDocsContent.PageAudiences;
+    internal static string[] PageSourceFiles => WikiDocsContent.PageSourceFiles;
+    internal static string[] PageLastUpdatedDates => WikiDocsContent.PageLastUpdatedDates;
+    internal static int[] PageReadingMinutes => WikiDocsContent.PageReadingMinutes;
+    internal static string[] PageSearchBodies => WikiDocsContent.PageSearchBodies;
+    internal static string[][] PageTagSets => WikiDocsContent.PageTagSets;
+    internal static DocsBlock[][] PageBlockSets => WikiDocsContent.PageBlockSets;
+    internal static string[][] PageSectionIdSets => WikiDocsContent.PageSectionIdSets;
+    internal static string[][] PageSectionTitleSets => WikiDocsContent.PageSectionTitleSets;
+    internal static string[][] PageRelatedPathSets => WikiDocsContent.PageRelatedPathSets;
+    internal static string[] NavGroupIds => WikiDocsContent.NavGroupIds;
+    internal static string[] NavGroupLabels => WikiDocsContent.NavGroupLabels;
+    internal static string[] NavGroupLandingPaths => WikiDocsContent.NavGroupLandingPaths;
 
     private static string GetGroupLabel(string groupId)
         => WikiDocsContent.GetGroupLabel(groupId);

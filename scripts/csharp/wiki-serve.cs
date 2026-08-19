@@ -1,12 +1,14 @@
 #!/usr/bin/env dotnet run
 
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 var options = ScriptArguments.Parse(args);
 
 var repoRoot = WikiScriptHelpers.RequireRepoRoot();
 var sampleRoot = Path.Combine(repoRoot, "samples", "Wiki");
 var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
+var generatedCatalog = Path.Combine(sampleRoot, "obj", "wiki", "WikiDocsContent.g.cs");
 var publishRoot = Path.Combine(repoRoot, ".tmp", "wiki-publish-preview", options.Configuration);
 var hostRoot = sampleRoot;
 var webRoot = Path.Combine(sampleRoot, "wwwroot");
@@ -129,23 +131,10 @@ else if (options.Build)
 
 WikiScriptHelpers.EnsureFileExists(browserEntryPath, options.Publish ? "release browser bundle" : "emitted main module");
 
-var routeUrls = new[]
-{
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/guides/getting-started"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/guides/content-model"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/guides/navigation-discovery"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/guides/information-architecture"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/engineering/h-function-authoring"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/engineering/compiler-support-boundary"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/engineering/route-catalog-contract"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/engineering/host-semantic-seams"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/engineering/import-emit-contract"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/engineering/runtime-catalog"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/operations/content-governance"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/operations/deployment"),
-    rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/operations/testing-verification")
-};
+// 与网站本身共用 docs 生成目录，预览输出不会再保留已删除的手写页面链接。
+var routeUrls = ReadRegisteredRoutes(generatedCatalog)
+    .Select(route => rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, route))
+    .ToArray();
 
 if (options.Publish)
 {
@@ -200,6 +189,20 @@ using var hostProcess = WikiScriptHelpers.StartProcess(
 
 await hostProcess.WaitForExitAsync();
 Environment.ExitCode = hostProcess.ExitCode;
+
+List<string> ReadRegisteredRoutes(string generatedCatalogPath)
+{
+    WikiScriptHelpers.EnsureFileExists(generatedCatalogPath, "generated Wiki docs catalog");
+    var text = File.ReadAllText(generatedCatalogPath);
+    var match = Regex.Match(text, @"PagePaths\s*=\s*\[(?<body>.*?)\];", RegexOptions.Singleline);
+    if (!match.Success)
+        throw new InvalidOperationException("Could not locate PagePaths in " + generatedCatalogPath);
+
+    return Regex.Matches(match.Groups["body"].Value, "\\\"(?<path>/[^\\\"]*)\\\"")
+        .Select(item => item.Groups["path"].Value)
+        .Distinct(StringComparer.Ordinal)
+        .ToList();
+}
 
 internal sealed record ScriptArguments
 {

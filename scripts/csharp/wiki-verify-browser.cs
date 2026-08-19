@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 var options = ScriptArguments.Parse(args);
 
 var repoRoot = WikiScriptHelpers.RequireRepoRoot();
@@ -15,13 +16,13 @@ var browserScriptPath = Path.Combine(sampleRoot, "verify-browser.mjs");
 var runnerLog = Path.Combine(sampleRoot, $".wiki-browser-runner-{Environment.ProcessId}.log");
 var stdoutLog = Path.Combine(sampleRoot, $".wiki-browser-{Environment.ProcessId}.stdout.log");
 var stderrLog = Path.Combine(sampleRoot, $".wiki-browser-{Environment.ProcessId}.stderr.log");
-var edgeStdoutLog = Path.Combine(sampleRoot, $".wiki-browser-edge-{Environment.ProcessId}.stdout.log");
-var edgeStderrLog = Path.Combine(sampleRoot, $".wiki-browser-edge-{Environment.ProcessId}.stderr.log");
+var chromeStdoutLog = Path.Combine(sampleRoot, $".wiki-browser-chrome-{Environment.ProcessId}.stdout.log");
+var chromeStderrLog = Path.Combine(sampleRoot, $".wiki-browser-chrome-{Environment.ProcessId}.stderr.log");
 var nodeStdoutLog = Path.Combine(sampleRoot, $".wiki-browser-node-{Environment.ProcessId}.stdout.log");
 var nodeStderrLog = Path.Combine(sampleRoot, $".wiki-browser-node-{Environment.ProcessId}.stderr.log");
-var edgeUserDataRoot = Path.Combine(sampleRoot, $".wiki-browser-edge-profile-{Environment.ProcessId}");
+var chromeUserDataRoot = Path.Combine(sampleRoot, $".wiki-browser-chrome-profile-{Environment.ProcessId}");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
-var edgeExecutable = WikiScriptHelpers.ResolveEdgeExecutable();
+var chromeExecutable = WikiScriptHelpers.ResolveChromeExecutable();
 var nodeExecutable = WikiScriptHelpers.FindNodeOnPath()
     ?? throw new FileNotFoundException("Node.js executable 'node' was not found on PATH.");
 
@@ -174,10 +175,12 @@ try
         AssertDebugArtifacts(jazorRoot);
     }
 
+    // 浏览器场景使用与 RouteContract 相同的生成目录，不把正文页路由、标题或相邻页写死在 Node 断言里。
+    var verificationRoutes = ReadBrowserVerificationRoutes(Path.Combine(sampleRoot, "obj", "wiki", "WikiDocsContent.g.cs"));
     WikiScriptHelpers.EnsureFileExists(browserScriptPath, "browser verification script");
 
     Process? hostProcess = null;
-    Process? edgeProcess = null;
+    Process? chromeProcess = null;
     var keepLogs = false;
     try
     {
@@ -234,15 +237,15 @@ try
             }
         }
 
-        if (Directory.Exists(edgeUserDataRoot))
+        if (Directory.Exists(chromeUserDataRoot))
         {
-            Trace("Removing stale Edge profile directory.");
-            await WikiScriptHelpers.RemoveDirectoryWithRetryAsync(edgeUserDataRoot);
+            Trace("Removing stale Chrome profile directory.");
+            await WikiScriptHelpers.RemoveDirectoryWithRetryAsync(chromeUserDataRoot);
         }
 
-        Trace("Starting Edge headless browser.");
-        edgeProcess = WikiScriptHelpers.StartProcess(
-            fileName: edgeExecutable,
+        Trace("Starting Chrome headless browser.");
+        chromeProcess = WikiScriptHelpers.StartProcess(
+            fileName: chromeExecutable,
             arguments:
             [
                 "--headless=new",
@@ -250,20 +253,20 @@ try
                 "--no-first-run",
                 "--no-default-browser-check",
                 "--remote-debugging-port=" + options.CdpPort,
-                "--user-data-dir=" + edgeUserDataRoot,
+                "--user-data-dir=" + chromeUserDataRoot,
                 "about:blank"
             ],
             workdir: sampleRoot,
-            stdoutLogPath: edgeStdoutLog,
-            stderrLogPath: edgeStderrLog);
-        Trace("Edge process started.");
+            stdoutLogPath: chromeStdoutLog,
+            stderrLogPath: chromeStderrLog);
+        Trace("Chrome process started.");
 
         await WikiScriptHelpers.WaitForCdpReadyAsync(
             options.CdpPort,
-            edgeProcess,
+            chromeProcess,
             TimeSpan.FromSeconds(options.BrowserStartupTimeoutSeconds),
-            failureContext: $"See logs: {edgeStdoutLog} ; {edgeStderrLog}");
-        Trace("Edge CDP endpoint is ready.");
+            failureContext: $"See logs: {chromeStdoutLog} ; {chromeStderrLog}");
+        Trace("Chrome CDP endpoint is ready.");
 
         var verificationMode = isPublished ? "production" : "development";
         Trace("Starting browser verification script.");
@@ -275,7 +278,12 @@ try
                 rootUrl,
                 options.CdpPort.ToString(),
                 verificationMode,
-                normalizedPathBase
+                normalizedPathBase,
+                verificationRoutes.HomeTitle,
+                verificationRoutes.HomeSummary,
+                verificationRoutes.PrimaryPath,
+                verificationRoutes.PrimaryTitle,
+                verificationRoutes.RelatedPath
             ],
             workdir: sampleRoot,
             stdoutLogPath: nodeStdoutLog,
@@ -295,10 +303,10 @@ try
     }
     finally
     {
-        if (edgeProcess is not null && !edgeProcess.HasExited)
+        if (chromeProcess is not null && !chromeProcess.HasExited)
         {
-            edgeProcess.Kill(entireProcessTree: true);
-            await edgeProcess.WaitForExitAsync();
+            chromeProcess.Kill(entireProcessTree: true);
+            await chromeProcess.WaitForExitAsync();
         }
 
         if (hostProcess is not null && !hostProcess.HasExited)
@@ -309,7 +317,7 @@ try
 
         if (!keepLogs)
         {
-            foreach (var logPath in new[] { runnerLog, stdoutLog, stderrLog, edgeStdoutLog, edgeStderrLog, nodeStdoutLog, nodeStderrLog })
+            foreach (var logPath in new[] { runnerLog, stdoutLog, stderrLog, chromeStdoutLog, chromeStderrLog, nodeStdoutLog, nodeStderrLog })
             {
                 if (File.Exists(logPath))
                 {
@@ -317,9 +325,9 @@ try
                 }
             }
 
-            if (Directory.Exists(edgeUserDataRoot))
+            if (Directory.Exists(chromeUserDataRoot))
             {
-                await WikiScriptHelpers.RemoveDirectoryWithRetryAsync(edgeUserDataRoot);
+                await WikiScriptHelpers.RemoveDirectoryWithRetryAsync(chromeUserDataRoot);
             }
 
             if (options.Publish && Directory.Exists(publishRoot))
@@ -376,6 +384,127 @@ void AssertReleaseArtifacts(string artifactRoot)
         }
     }
 }
+
+BrowserVerificationRoutes ReadBrowserVerificationRoutes(string generatedCatalogPath)
+{
+    WikiScriptHelpers.EnsureFileExists(generatedCatalogPath, "generated Wiki docs catalog");
+    var catalog = File.ReadAllText(generatedCatalogPath, Encoding.UTF8);
+    var paths = ReadGeneratedStringArray(catalog, "PagePaths");
+    var groups = ReadGeneratedStringArray(catalog, "PageGroups");
+    var titles = ReadGeneratedStringArray(catalog, "PageTitles");
+    var summaries = ReadGeneratedStringArray(catalog, "PageSummaries");
+
+    if (paths.Count != groups.Count || paths.Count != titles.Count || paths.Count != summaries.Count)
+    {
+        throw new InvalidOperationException("WikiDocsContent route metadata arrays do not have matching lengths.");
+    }
+
+    var homeIndex = paths.FindIndex(path => path == "/");
+    var primaryIndex = paths.FindIndex(path => path == "/guides/quick-start");
+    if (homeIndex < 0 || primaryIndex < 0 || groups[primaryIndex] != "Guides")
+    {
+        throw new InvalidOperationException("WikiDocsContent must contain the root page and the Guides quick-start browser fixture.");
+    }
+
+    // importer 的 RelatedPaths 契约是同组相邻页面；从排序后的目录推导相邻页，文档新增时自动保持正确。
+    var relatedIndex = -1;
+    for (var index = primaryIndex - 1; index >= 0; index--)
+    {
+        if (groups[index] == groups[primaryIndex] && paths[index] != "/search")
+        {
+            relatedIndex = index;
+            break;
+        }
+    }
+
+    if (relatedIndex < 0)
+    {
+        for (var index = primaryIndex + 1; index < paths.Count; index++)
+        {
+            if (groups[index] == groups[primaryIndex] && paths[index] != "/search")
+            {
+                relatedIndex = index;
+                break;
+            }
+        }
+    }
+
+    if (relatedIndex < 0 || titles[homeIndex].Length == 0 || summaries[homeIndex].Length == 0 || titles[primaryIndex].Length == 0)
+    {
+        throw new InvalidOperationException("WikiDocsContent does not contain enough metadata for the browser verification fixture.");
+    }
+
+    return new BrowserVerificationRoutes(
+        titles[homeIndex] + " | jazor.wiki",
+        summaries[homeIndex],
+        paths[primaryIndex],
+        titles[primaryIndex],
+        paths[relatedIndex]);
+}
+
+List<string> ReadGeneratedStringArray(string catalog, string arrayName)
+{
+    var declaration = "internal static readonly string[] " + arrayName;
+    var declarationIndex = catalog.IndexOf(declaration, StringComparison.Ordinal);
+    if (declarationIndex < 0)
+    {
+        throw new InvalidOperationException("WikiDocsContent is missing " + arrayName + ".");
+    }
+
+    var assignmentIndex = catalog.IndexOf('=', declarationIndex);
+    var position = assignmentIndex < 0 ? -1 : catalog.IndexOf('[', assignmentIndex + 1);
+    if (position < 0)
+    {
+        throw new InvalidOperationException("WikiDocsContent has no array initializer for " + arrayName + ".");
+    }
+
+    position++;
+    var values = new List<string>();
+    while (true)
+    {
+        SkipGeneratedWhitespace(catalog, ref position);
+        if (position >= catalog.Length)
+            throw new InvalidOperationException("WikiDocsContent array " + arrayName + " is not terminated.");
+
+        if (catalog[position] == ']')
+            return values;
+
+        if (catalog[position] != '"')
+            throw new InvalidOperationException("Unexpected token in WikiDocsContent array " + arrayName + ".");
+
+        var valueStart = ++position;
+        while (position < catalog.Length && catalog[position] != '"')
+        {
+            if (catalog[position] == '\\')
+                position++;
+            position++;
+        }
+
+        if (position >= catalog.Length)
+            throw new InvalidOperationException("Unterminated string in WikiDocsContent array " + arrayName + ".");
+
+        var escapedValue = catalog.Substring(valueStart, position - valueStart);
+        values.Add(Regex.Unescape(escapedValue));
+        position++;
+
+        SkipGeneratedWhitespace(catalog, ref position);
+        if (position < catalog.Length && catalog[position] == ',')
+            position++;
+    }
+}
+
+void SkipGeneratedWhitespace(string text, ref int position)
+{
+    while (position < text.Length && char.IsWhiteSpace(text[position]))
+        position++;
+}
+
+internal sealed record BrowserVerificationRoutes(
+    string HomeTitle,
+    string HomeSummary,
+    string PrimaryPath,
+    string PrimaryTitle,
+    string RelatedPath);
 
 internal sealed record ScriptArguments
 {
@@ -778,7 +907,7 @@ internal static class WikiScriptHelpers
         }
 
         throw new TimeoutException(
-            "Timed out waiting for Edge CDP endpoint on port " + port + "." + FormatFailureContext(failureContext));
+            "Timed out waiting for Chrome CDP endpoint on port " + port + "." + FormatFailureContext(failureContext));
     }
 
     public static void EnsureFileExists(string path, string description)
@@ -851,15 +980,18 @@ internal static class WikiScriptHelpers
     public static string? FindNodeOnPath()
         => FindExecutableOnPath(OperatingSystem.IsWindows() ? "node.exe" : "node");
 
-    public static string ResolveEdgeExecutable()
+    public static string ResolveChromeExecutable()
     {
         var candidates = OperatingSystem.IsWindows()
             ? new[]
             {
-                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
+                @"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "Application", "chrome.exe")
             }
-            : Array.Empty<string>();
+            : OperatingSystem.IsMacOS()
+                ? new[] { "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" }
+                : Array.Empty<string>();
 
         foreach (var candidate in candidates)
         {
@@ -869,7 +1001,15 @@ internal static class WikiScriptHelpers
             }
         }
 
-        throw new FileNotFoundException("Microsoft Edge executable was not found in the expected install locations.");
+        var pathExecutable = OperatingSystem.IsWindows()
+            ? FindExecutableOnPath("chrome.exe")
+            : FindExecutableOnPath("google-chrome") ?? FindExecutableOnPath("google-chrome-stable") ?? FindExecutableOnPath("chromium");
+        if (pathExecutable is not null)
+        {
+            return pathExecutable;
+        }
+
+        throw new FileNotFoundException("Google Chrome executable was not found in the expected install locations or PATH.");
     }
 
     private static async Task RedirectAsync(StreamReader? reader, string? logPath)

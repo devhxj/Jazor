@@ -1,76 +1,62 @@
-# Deployment Guide
+# Jazor 官方网站部署
 
-## Publish Command
+Jazor 官方网站通过 GitHub Pages 发布，生产地址为
+`https://devhxj.github.io/Jazor/`。静态文件不是从手写 HTML 复制而来，而是由发布版 Wiki 宿主逐条请求后导出，因此与 ASP.NET Core 首响应的 SEO、CSP 和路径行为保持一致。
 
-```powershell
-dotnet publish samples/Wiki/Wiki.csproj -c Release -p:JazorMode=release -o <deploy-dir>
+## GitHub Pages 工作流
+
+[`.github/workflows/wiki-pages.yml`](../../.github/workflows/wiki-pages.yml) 在 `main` 分支发生以下变更时运行：
+
+- `docs/**`
+- `samples/Wiki/**`
+- `scripts/csharp/wiki-*.cs`
+- 工作流自身
+
+工作流以完整 git 历史检出，保证内容目录中的“最后更新”日期来自真实文件提交。它安装 `global.json` 指定的 SDK，执行静态导出，上传 `output/wiki/`，再由 GitHub Pages 部署。仓库 Settings 中将 Pages 的 Source 设为 `GitHub Actions` 后即可启用站点。
+
+统一配置位于工作流顶层：
+
+```yaml
+Wiki__PathBase: /Jazor
+Wiki__SiteOrigin: https://devhxj.github.io
 ```
 
-Optional subpath deployment:
+站点的 canonical、Open Graph、Twitter、robots 和 sitemap URL 会组合为
+`https://devhxj.github.io/Jazor/...`。未来迁移到自定义域名时，只需同步更新
+`Wiki__SiteOrigin`、`Wiki__PathBase`（若需要）和 Pages 的 `CNAME`。
 
-```powershell
-$env:Wiki__PathBase = "/docs"
-dotnet <deploy-dir>\Wiki.dll --urls http://0.0.0.0:8080
+## 本地静态预览
+
+默认导出与 Pages 使用相同的路径和站点源：
+
+```bash
+dotnet run --file scripts/csharp/wiki-export-static.cs
+dotnet run --file scripts/csharp/wiki-export-static.cs -- --serve
 ```
 
-`Wiki__PathBase` / `Wiki:PathBase` enables ASP.NET Core `UsePathBase(...)` so the same publish output can be mounted below a reverse-proxy prefix such as `/docs`.
+导出器会发布 `samples/Wiki/Wiki.csproj`（`JazorMode=release`）、以配置的 PathBase 和 SiteOrigin 启动发布产物，并写出：
 
-## Directory Structure Contract
-
-Published output must follow this layout:
-
-```
-<deploy-dir>/
-  Wiki.dll
-  Wiki.exe
+```text
+output/wiki/
+  index.html
+  <route>/index.html
+  404.html
+  robots.txt
+  sitemap.xml
+  site.css
+  favicon.svg
   jazor/
-    bundle.js
-    bundle.js.map
-    __jazor_netpack_entry__.js
-    vendor/
-      <Netpack runtime dependencies>
-  wwwroot/
-    site.css
-    favicon.svg
-    vendor/
-      vue@3.5.16.mjs
 ```
 
-## Key Invariants
+`--serve` 是静态目录预览，不是 ASP.NET Core 反向代理；它可用于确认 clean URL、`/Jazor` 前缀和 404 文件在 Pages 形态下正常工作。`output/wiki/` 是本地产物，不提交。
 
-The following invariants are enforced by `wiki-verify-smoke.cs --publish`:
+## 部署契约
 
-1. `/jazor/*` must resolve from `<deploy-dir>/jazor/` through the explicit Jazor artifact mount
-2. `bundle.js` and `bundle.js.map` must exist under `<deploy-dir>/jazor/`
-3. Debug module graph files (`main.mjs`, `jazor-manifest.json`, `components/`, `style.mjs`) must not leak into a non-SSR release publish
-4. `wwwroot/jazor/` must not be used as a fallback or shadow the generated artifact graph
-5. `/vendor/vue@3.5.16.mjs` must exist and be servable
-6. Registered docs routes must return HTTP 200 with route-correct first-response metadata and the SPA shell
-7. Search routes are utility surfaces, so they must emit `noindex, nofollow` and must not appear in `sitemap.xml`
-8. Unknown docs routes must return HTTP 404 with the recoverable shell and `X-Robots-Tag: noindex, nofollow`
-9. HTML responses must carry `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`, and `X-Frame-Options: DENY`
-10. `host/index.template.html` must not reference any external CDN URL
-11. When `Wiki__PathBase` / `Wiki:PathBase` is configured, first-response HTML, discovery documents, static assets, and SPA navigation must all stay correct beneath that subpath
+- `docs/` 是页面正文的唯一来源；导出前会重新运行导入器。
+- 每个注册文档路由导出为 `<route>/index.html`，根路径导出为 `index.html`。
+- `/search` 是静态外壳页面，查询结果由浏览器运行时根据生成语料计算；它不进入 sitemap。
+- 未注册路由导出为 `404.html`，保留可恢复的站点外壳并标注 `noindex, nofollow`。
+- Pages 无法配置 ASP.NET Core 响应头，因此 HTML 同时包含与响应头 nonce 相同的 CSP `<meta http-equiv="Content-Security-Policy">`；ASP.NET Core 部署继续保留响应头。
+- 导出校验拒绝 `localhost`、未解析模板 token、空文件和缺失路由，确保 Pages artifact 可独立发布。
 
-## Verification
-
-Run before every deployment:
-
-```powershell
-dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish
-dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --publish
-dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish --path-base /docs
-dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --publish --path-base /docs
-```
-
-This checks structural invariants, discovery docs, route metadata and headers, all registered docs routes, the search/404 indexing contract, release bundle/source-map content, generated `ECMAScript.Style` registration, and real browser runtime behavior.
-
-## Rollback Procedure
-
-1. Keep the previous publish output as `<deploy-dir>.previous/`
-2. Deploy the new version by renaming the current directory to `.previous` and extracting the new output
-3. If verification fails, roll back by renaming `.previous` back
-
-## Health Check
-
-`/health` returns HTTP 200 with body `ok`. Use this endpoint for load balancer or monitoring probes.
+ASP.NET Core 自托管仍支持 `Wiki__PathBase` 与 `Wiki__SiteOrigin` 配置；Pages 工作流只是该宿主的静态发布入口，不改变本地或反向代理部署方式。

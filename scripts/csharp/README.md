@@ -23,7 +23,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `verify-razorvue-coverage.cs` | 执行 RazorVue 覆盖率门槛 |
 | `verify-vue-binding-coverage.cs` | 审核 Vue 生态 binding 的公开契约覆盖 |
 | `verify-development-hmr.cs` | 验证开发模式的 HMR artifact 和浏览器路径 |
-| `wiki-build-local.cs`、`wiki-serve.cs`、`wiki-verify-*.cs` | 构建、预览与验证 Wiki 示例 |
+| `wiki-import-docs.cs`、`wiki-build-local.cs`、`wiki-serve.cs`、`wiki-verify-*.cs`、`wiki-export-static.cs` | 导入 `docs/`、构建、预览、验证与静态导出 Jazor 官方网站 |
 | `verify-windows-spa-release.cs` | 打包本地 NuGet 后，以隔离 Wiki 消费者完成 Windows Release publish 和 Edge 浏览器验证 |
 | `verify-windows-ssr-release.cs` | 打包本地 NuGet 后，以隔离 RazorVue TodoList 消费者完成 `JazorSSR=true` Release publish、Deno SSR HTML、发布目录资源解析与 Edge hydration 交互验证 |
 | `generate-jazoradmin-brand-assets.cs` | 再生成或检查 JazorAdmin 本地品牌图标 |

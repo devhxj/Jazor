@@ -452,7 +452,8 @@ cnblog/
 .tmp-*.cs
 .tmp-*.log
 .tmp-*.json
-.wiki-browser-edge-profile*/
+.wiki-browser-*
+.wiki-smoke-*.log
 .tools/
 jazor/
 # Checked-in sample graphs are layout baselines; ordinary project output remains ignored.

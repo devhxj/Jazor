@@ -43,7 +43,7 @@ ASP.NET Core integration layer:
 | `src/Jazor.AspNetCore` | ASP.NET Core runtime integration |
 | `src/Jazor.AspNetCore.Dev` | Development-time integration (HMR, DevServer bridging) |
 
-Test projects live under `src/Jazor.CompilerTest`, `src/Jazor.CLR.Test`, `src/Jazor.RazorVue.Sg.Test`, `src/Jazor.EmitTest`, `src/ECMAScript.Style.Test`, `src/ECMAScript.WebIDL.GeneratorTest`, `src/ECMAScript.VueRoute.Test`, `src/ECMAScript.Pinia.Test`, and `src/ECMAScript.Pinia.Testing.Test`. Auxiliary tooling outside the main solution includes `src/Wiki` and `samples/`.
+Test projects live under `src/Jazor.CompilerTest`, `src/Jazor.CLR.Test`, `src/Jazor.RazorVue.Sg.Test`, `src/Jazor.EmitTest`, `src/ECMAScript.Style.Test`, `src/ECMAScript.WebIDL.GeneratorTest`, `src/ECMAScript.VueRoute.Test`, `src/ECMAScript.Pinia.Test`, and `src/ECMAScript.Pinia.Testing.Test`. Auxiliary tooling outside the main solution includes `samples/Wiki` and other projects under `samples/`.
 
 Documentation is organized under `docs/` in five categories:
 - `docs/01-overview/` — product scope, reading map, and system overview

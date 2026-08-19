@@ -1,50 +1,64 @@
-# Wiki
+# Jazor 官方网站
 
-> 定位：使用 Jazor 和 ASP.NET Core 构建文档站点的端到端示例。
+`samples/Wiki` 是 Jazor 的中文官方网站实现，部署地址为
+`https://devhxj.github.io/Jazor/`。它仍然是完整的 ASP.NET Core + Jazor
+宿主，用于本地开发、冒烟测试和生成静态 Pages 产物；网站正文不在此处维护。
 
-Wiki 使用 `ECMAScript.Vue` 的 C# `H()` authoring、`ECMAScript.Style` 生成样式、Jazor module 输出和 ASP.NET Core static hosting 实现文档站点。它用于验证站点壳、路由、产物、SEO 元数据和浏览器交互，不是独立的产品线或可编辑 CMS。
+## 内容来源
 
-## 结构
+仓库 `docs/` 是唯一的正文来源。`Wiki.csproj` 在构建前运行
+`scripts/csharp/wiki-import-docs.cs`，将 Markdown 解析为
+`obj/wiki/WikiDocsContent.g.cs` 的纯数据目录，随后由 `WikiHomeModule.DocsPage.cs`
+渲染为 Vue `H()` VNode。不要手动编辑 `obj/wiki/WikiDocsContent.g.cs`。
 
-- `Wiki.csproj` 与 `Program.cs`：ASP.NET Core host、静态资源与路由 fallback。
-- `WikiHomeModule*.cs`：页面目录、站点壳、导航、TOC 与文章内容的 C# module authoring。
-- `AppModule.cs` 与 `WikiStyleSheet.cs`：浏览器 bootstrap 和真实页面使用的 `ECMAScript.Style` 模块。
-- `wwwroot/`：站点资源和 vendored Vue runtime；`jazor/`：Jazor 生成产物。
-- `scripts/csharp/wiki-*.cs`：本地构建、预览、smoke 和浏览器验证入口。
+| Markdown 来源 | 网站路由 |
+| --- | --- |
+| `docs/README.md` | `/` |
+| `docs/01-overview/` | `/overview` |
+| `docs/02-architecture/` | `/architecture` |
+| `docs/03-guides/` | `/guides` |
+| `docs/04-roadmap/` | `/roadmap` |
+| `docs/05-history/` | `/history` |
 
-## 构建与预览
+每个分组的 `README.md` 是分组落地页，其余 Markdown 文件按文件名映射到该分组下的路由。导入器同时生成标题、摘要、章节、正文块树、搜索语料、源文件、git 最后提交日期和同组相邻页关系。
+
+## 本地开发
 
 在仓库根目录执行：
 
 ```bash
-dotnet run --file scripts/csharp/wiki-build-local.cs
+dotnet run --file scripts/csharp/wiki-import-docs.cs -- --check
 dotnet run --file scripts/csharp/wiki-serve.cs -- --build
 ```
 
-预览地址由脚本输出；默认可访问根路径和 `/search`。需要 production-shape 预览时：
+开发宿主地址由脚本输出。生成的浏览器模块位于 `samples/Wiki/jazor/`，为本地构建产物，不提交到仓库。
+
+## 静态导出
+
+GitHub Pages 使用与发布宿主相同的首响应 HTML、元数据和路由边界。默认导出到已忽略的 `output/wiki/`，使用 `/Jazor` 路径前缀和 `https://devhxj.github.io` 站点源：
 
 ```bash
-dotnet run --file scripts/csharp/wiki-serve.cs -- --publish
+dotnet run --file scripts/csharp/wiki-export-static.cs
+dotnet run --file scripts/csharp/wiki-export-static.cs -- --serve
 ```
 
-生成模块位于 `samples/Wiki/jazor/`；发布时复制到 `<publish>/jazor/`，浏览器地址保持 `/jazor/*`。Wiki 默认 `JazorMode=debug`，发布入口会显式传递 `-p:JazorMode=release`，使生产预览实际加载 `bundle.js`。
+第二条命令会在静态目录上启动本地预览服务；地址由脚本输出。导出器会校验每条文档路由、`/search`、`404.html`、`robots.txt`、`sitemap.xml`、canonical/OG URL 和所有资源文件。
 
 ## 验证
 
 ```bash
 dotnet run --file scripts/csharp/wiki-verify-smoke.cs -- --build
-dotnet run --file scripts/csharp/wiki-verify-browser.cs -- --build-local
+dotnet run --file scripts/csharp/wiki-verify-browser.cs -- --build
+dotnet run --file scripts/csharp/wiki-export-static.cs
 dotnet run --file scripts/csharp/wiki-verify-smoke.cs -- --publish --path-base /docs
-dotnet run --file scripts/csharp/wiki-verify-browser.cs -- --publish --path-base /docs
-dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs
 ```
 
-smoke 验证路由、Debug/Release 产物、首屏元数据、robots/sitemap 和静态资源。浏览器验证还覆盖 SPA 路由、搜索、hash、持久化 shell 状态、移动端抽屉以及 `ECMAScript.Style` 生成 class 与受管理样式标签；该入口需要 Node.js 和 Microsoft Edge。Windows release consumer 验证会打包并只使用本地 NuGet 包恢复同一份 Wiki。
+smoke 验证由生成目录驱动，自动覆盖当前 `docs/` 的所有页面。浏览器验证覆盖 SPA 路由、搜索、hash、持久化 shell 状态、移动端抽屉、source map 和 `ECMAScript.Style` 运行时；需要 Node.js 和 Google Chrome。
 
-部署与 PathBase 配置见 [DEPLOY.md](./DEPLOY.md)。
+部署配置、Pages 工作流和自定义域名约定见 [DEPLOY.md](./DEPLOY.md)。
 
 ## 相关文档
 
-- [ECMAScript.Vue](../../src/ECMAScript.Vue/README.md)
+- [产品概览](../../docs/01-overview/README.md)
 - [产物管线](../../docs/02-architecture/artifact-pipeline.md)
-- [示例总览](../../docs/03-guides/examples.md)
+- [开发与测试](../../docs/03-guides/development-and-testing.md)

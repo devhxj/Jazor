@@ -180,39 +180,15 @@ else
     AssertDebugArtifacts(jazorRoot);
 }
 
-var docsRoutes = new List<RouteExpectation>
-{
-    new("/", "概览 | jazor.wiki", "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue H 函数编写。", "index, follow"),
-    new("/search", "搜索 | jazor.wiki", "通过子系统、路由片段、工作流或标签搜索完整 Wiki 语料库。", "noindex, nofollow"),
-    new("/guides/getting-started", "快速开始 | jazor.wiki", "本地运行站点，理解路由模型，并端到端验证发射的 Wiki 宿主。", "index, follow"),
-    new("/guides/project-lines", "项目线路 | jazor.wiki", "了解当前 Razor-to-Vue 转型主线、共享编译器基础和已经退役的 Jolt 历史边界。", "index, follow"),
-    new("/guides/content-model", "内容模型 | jazor.wiki", "代码优先的页面元数据、显式章节和保持可读性的 C# 导航契约。", "index, follow"),
-    new("/guides/navigation-discovery", "导航与发现 | jazor.wiki", "读者如何通过分组导航、章节目录、相关页面和 404 恢复在文档外壳中移动。", "index, follow"),
-    new("/guides/information-architecture", "信息架构 | jazor.wiki", "路由、关注组、页面顺序和命名规则如何保持文档表面在增长时保持一致性。", "index, follow"),
-    new("/guides/topic-index", "主题索引 | jazor.wiki", "使用以路由为先的索引，按关注点跳转到 Jazor 主题，而无需记住确切 URL。", "index, follow"),
-    new("/guides/glossary", "术语表 | jazor.wiki", "编译器、运行时、宿主和文档术语在仓库中使用的共享词汇表。", "index, follow"),
-    new("/guides/faq", "常见问题 | jazor.wiki", "贡献者首次接触 Jazor 或 Wiki 时最常见问题的简短回答。", "index, follow"),
-    new("/guides/troubleshooting", "故障排除 | jazor.wiki", "从最常见的本地 Wiki、运行时模块和编译器边界故障中恢复。", "index, follow"),
-    new("/engineering/h-function-authoring", "H 函数编写 | jazor.wiki", "为什么 H 函数是此 Wiki 的生产编写表面，以及保持其可维护性的约定。", "index, follow"),
-    new("/engineering/compiler-overview", "编译器概览 | jazor.wiki", "编译器管线、活动契约和深入阅读方向的高级概览。", "index, follow"),
-    new("/engineering/compiler-support-boundary", "编译器支持边界 | jazor.wiki", "受控输入、使用点验证、语义擦除和显式失败边界的活动编译器契约。", "index, follow"),
-    new("/engineering/route-catalog-contract", "路由目录契约 | jazor.wiki", "为什么 `WikiHomeModule.RouteContract.cs` 是路由元数据、正文分发、目录锚点和相邻页面流的唯一注册面。", "index, follow"),
-    new("/engineering/host-semantic-seams", "宿主语义接缝 | jazor.wiki", "WhiteList、Alias、Inline、Import 和 Compile 如何在支持的宿主语义面上划分职责。", "index, follow"),
-    new("/engineering/import-emit-contract", "导入与发射契约 | jazor.wiki", "导入发现、模块 AST 组装、生成的目录和面向宿主的文件物化之间的稳定边界。", "index, follow"),
-    new("/engineering/runtime-catalog", "CLR 运行时目录 | jazor.wiki", "CLR 导入 helper 如何变为浏览器可用的 `System/*` 运行时模块，以及哪些保障使该目录可安全发布。", "index, follow"),
-    new("/engineering/jolt-host", "Jolt 宿主（历史） | jazor.wiki", "Jolt 已从转型分支退役；本页仅保留基线、能力范围和历史恢复入口。", "index, follow"),
-    new("/engineering/razorvue-library-mode", "RazorVue 库模式 | jazor.wiki", "用于将 Razor 组件编译为 JavaScript 产物的构建时库模式，无需完整开发宿主。", "index, follow"),
-    new("/engineering/vueroute-bindings", "VueRoute 绑定 | jazor.wiki", "独立的 Vue Router 绑定库、其宿主表面范围，以及将测试排除在编译器套件之外的拆分验证路径。", "index, follow"),
-    new("/operations/content-governance", "内容治理 | jazor.wiki", "代码优先文档内容如何被拥有、编辑、审查和发布，而不偏离发射的产品外壳。", "index, follow"),
-    new("/operations/deployment", "部署 | jazor.wiki", "构建输出、回退路由、冒烟验证和 Wiki 的静态交付契约。", "index, follow"),
-    new("/operations/testing-verification", "测试与验证 | jazor.wiki", "编译器、发射和运维冒烟检查如何协同保护生产文档表面。", "index, follow")
-};
+// 目录由同一次 Wiki 构建生成，docs 增删页面时无需手工同步验证路由表。
+// /search 是手写工具页，保留其带查询的专项断言，避免和 docs 页面循环重复。
+var docsRoutes = ReadDocsRouteExpectations(Path.Combine(sampleRoot, "obj", "wiki", "WikiDocsContent.g.cs"));
 
 var browserAssets = options.Publish
     ? new List<AssetExpectation>
     {
-        new("/jazor/bundle.js", "createApp(", null, new[] { "ecmascript-style:v1", "H() + ECMAScript.Style" }),
-        new("/jazor/bundle.js.map", "\"file\":\"bundle.js\"", "application/json", new[] { "AppModule.cs", "components/wiki-styles.mjs" }),
+        new("/jazor/bundle.js", "createApp(", null, new[] { "ecmascript-style:v1", "WikiDocsContent", "RenderDocsPage" }),
+        new("/jazor/bundle.js.map", "\"file\":\"bundle.js\"", "application/json", new[] { "main.mjs", "components/wiki-home.mjs", "components/wiki-styles.mjs" }),
         new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
         new("/favicon.svg", "<svg", null, Array.Empty<string>()),
         new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>())
@@ -223,7 +199,9 @@ var browserAssets = options.Publish
         new("/jazor/main.mjs.map", "\"file\":\"main.mjs\"", "application/json", new[] { "AppModule.cs", "\"sourcesContent\"" }),
         new("/jazor/components/wiki-home.mjs", "搜索文档页面", null, Array.Empty<string>()),
         new("/jazor/components/wiki-home.mjs.map", "\"file\":\"components/wiki-home.mjs\"", "application/json", new[] { "WikiHomeModule.cs", "WikiHomeModule.DocumentContract.cs", "\"sourcesContent\"" }),
-        new("/jazor/components/wiki-styles.mjs", "ecmascript-style:v1", null, new[] { "background-color" }),
+        // Debug 图中 style() 走 Import：组件模块引用 style.mjs 运行时，版本标记由运行时携带
+        new("/jazor/components/wiki-styles.mjs", "from \"style.mjs\"", null, new[] { "background-color" }),
+        new("/jazor/style.mjs", "ecmascript-style:v1", null, Array.Empty<string>()),
         new("/jazor/System/StringModule.js", "export", null, Array.Empty<string>()),
         new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
         new("/favicon.svg", "<svg", null, Array.Empty<string>()),
@@ -333,6 +311,7 @@ try
         AssertHeaderEquals(response, "X-Permitted-Cross-Domain-Policies", "none", "X-Permitted-Cross-Domain-Policies for served route " + route.Path);
         AssertHeaderEquals(response, "Permissions-Policy", "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), hid=(), microphone=(), payment=(), usb=(), clipboard-read=(self), clipboard-write=(self)", "Permissions-Policy for served route " + route.Path);
         AssertHeaderMatches(response, "Content-Security-Policy", "script-src 'self' 'nonce-[^']+'", "Content-Security-Policy nonce for served route " + route.Path);
+        AssertCspMetaUsesResponseNonce(response, content, "served route " + route.Path);
         AssertContains(content, "script type=\"importmap\" nonce=\"", "importmap nonce marker in served route " + route.Path);
         if (route.Robots == "noindex, nofollow")
         {
@@ -348,6 +327,7 @@ try
             new RouteExpectation("/search?q=compiler", "搜索: compiler | jazor.wiki", "搜索结果：\"compiler\"，覆盖路由元数据、标签、页面正文和章节标题。", "noindex, nofollow"),
             rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/search") + "?q=compiler",
             "served route /search?q=compiler");
+        AssertCspMetaUsesResponseNonce(response, content, "served route /search?q=compiler");
         AssertHeaderEquals(response, "X-Robots-Tag", "noindex, nofollow", "X-Robots-Tag for served route /search?q=compiler");
     }
 
@@ -359,6 +339,7 @@ try
             new RouteExpectation("/guides/missing-page", "页面未找到 | jazor.wiki", "当前路径未在 Wiki 页面目录中注册。", "noindex, nofollow"),
             rootUrl + WikiScriptHelpers.GetExternalPath(normalizedPathBase, "/guides/missing-page"),
             "served unknown route /guides/missing-page");
+        AssertCspMetaUsesResponseNonce(response, content, "served unknown route /guides/missing-page");
         AssertHeaderEquals(response, "X-Robots-Tag", "noindex, nofollow", "X-Robots-Tag for served unknown route /guides/missing-page");
     }
 
@@ -394,6 +375,106 @@ finally
             await WikiScriptHelpers.RemoveDirectoryWithRetryAsync(publishRoot);
         }
     }
+}
+
+List<RouteExpectation> ReadDocsRouteExpectations(string generatedCatalogPath)
+{
+    WikiScriptHelpers.EnsureFileExists(generatedCatalogPath, "generated Wiki docs catalog");
+    var catalog = File.ReadAllText(generatedCatalogPath, Encoding.UTF8);
+    var paths = ReadGeneratedStringArray(catalog, "PagePaths");
+    var titles = ReadGeneratedStringArray(catalog, "PageTitles");
+    var summaries = ReadGeneratedStringArray(catalog, "PageSummaries");
+
+    if (paths.Count != titles.Count || paths.Count != summaries.Count)
+    {
+        throw new InvalidOperationException(
+            "WikiDocsContent parallel route arrays have inconsistent lengths: paths=" + paths.Count +
+            ", titles=" + titles.Count + ", summaries=" + summaries.Count + ".");
+    }
+
+    var routes = new List<RouteExpectation>();
+    var foundSearch = false;
+    for (var index = 0; index < paths.Count; index++)
+    {
+        var path = paths[index];
+        if (path == "/search")
+        {
+            foundSearch = true;
+            continue;
+        }
+
+        if (!path.StartsWith('/', StringComparison.Ordinal) || titles[index].Length == 0 || summaries[index].Length == 0)
+        {
+            throw new InvalidOperationException("Invalid generated Wiki route metadata at index " + index + ".");
+        }
+
+        routes.Add(new RouteExpectation(path, titles[index] + " | jazor.wiki", summaries[index], "index, follow"));
+    }
+
+    if (!foundSearch || routes.Count == 0 || !routes.Any(route => route.Path == "/"))
+    {
+        throw new InvalidOperationException("WikiDocsContent must contain both the root docs route and the /search utility route.");
+    }
+
+    return routes;
+}
+
+List<string> ReadGeneratedStringArray(string catalog, string arrayName)
+{
+    var declaration = "internal static readonly string[] " + arrayName;
+    var declarationIndex = catalog.IndexOf(declaration, StringComparison.Ordinal);
+    if (declarationIndex < 0)
+    {
+        throw new InvalidOperationException("WikiDocsContent is missing " + arrayName + ".");
+    }
+
+    var assignmentIndex = catalog.IndexOf('=', declarationIndex);
+    var position = assignmentIndex < 0 ? -1 : catalog.IndexOf('[', assignmentIndex + 1);
+    if (position < 0)
+    {
+        throw new InvalidOperationException("WikiDocsContent has no array initializer for " + arrayName + ".");
+    }
+
+    position++;
+    var values = new List<string>();
+    while (true)
+    {
+        SkipGeneratedWhitespace(catalog, ref position);
+        if (position >= catalog.Length)
+            throw new InvalidOperationException("WikiDocsContent array " + arrayName + " is not terminated.");
+
+        if (catalog[position] == ']')
+            return values;
+
+        if (catalog[position] != '"')
+            throw new InvalidOperationException("Unexpected token in WikiDocsContent array " + arrayName + ".");
+
+        var valueStart = ++position;
+        while (position < catalog.Length && catalog[position] != '"')
+        {
+            if (catalog[position] == '\\')
+                position++;
+            position++;
+        }
+
+        if (position >= catalog.Length)
+            throw new InvalidOperationException("Unterminated string in WikiDocsContent array " + arrayName + ".");
+
+        // importer 的 CsString 只会写入 \\n、\\t、\\\" 和 \\\\，Regex.Unescape 与该受控契约一一对应。
+        var escapedValue = catalog.Substring(valueStart, position - valueStart);
+        values.Add(Regex.Unescape(escapedValue));
+        position++;
+
+        SkipGeneratedWhitespace(catalog, ref position);
+        if (position < catalog.Length && catalog[position] == ',')
+            position++;
+    }
+}
+
+void SkipGeneratedWhitespace(string text, ref int position)
+{
+    while (position < text.Length && char.IsWhiteSpace(text[position]))
+        position++;
 }
 
 void EnsureStatusCode(HttpResponseMessage response, HttpStatusCode expectedStatusCode, string path)
@@ -448,6 +529,29 @@ void AssertHeaderMatches(HttpResponseMessage response, string headerName, string
     {
         throw new InvalidOperationException("Unexpected " + description + ": expected pattern '" + pattern + "', actual '" + actualValue + "'.");
     }
+}
+
+void AssertCspMetaUsesResponseNonce(HttpResponseMessage response, string html, string description)
+{
+    var responsePolicy = WikiScriptHelpers.GetHeaderValue(response, "Content-Security-Policy")
+        ?? throw new InvalidOperationException("Missing Content-Security-Policy for " + description + ".");
+    var nonceMatch = Regex.Match(responsePolicy, @"script-src[^;]*'nonce-(?<nonce>[^']+)'", RegexOptions.CultureInvariant);
+    if (!nonceMatch.Success)
+    {
+        throw new InvalidOperationException("Content-Security-Policy does not contain a script nonce for " + description + ".");
+    }
+
+    var metaMatch = Regex.Match(
+        html,
+        @"<meta\s+http-equiv=""Content-Security-Policy""\s+content=""(?<policy>[^""]*)""\s*/?>",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    if (!metaMatch.Success)
+    {
+        throw new InvalidOperationException("Missing CSP meta tag for " + description + ".");
+    }
+
+    var metaPolicy = WebUtility.HtmlDecode(metaMatch.Groups["policy"].Value);
+    AssertContains(metaPolicy, "nonce-" + nonceMatch.Groups["nonce"].Value, "CSP meta nonce matching response header for " + description);
 }
 
 void AssertRouteMetadata(string html, RouteExpectation expected, string expectedAbsoluteUrl, string description)

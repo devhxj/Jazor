@@ -2,9 +2,15 @@ const baseUrl = process.argv[2];
 const cdpPort = Number(process.argv[3]);
 const verificationMode = process.argv[4] || "development";
 const configuredPathBase = process.argv[5] || "";
+const homeTitle = process.argv[6] || "";
+const homeSummary = process.argv[7] || "";
+const primaryPath = process.argv[8] || "";
+const primaryTitle = process.argv[9] || "";
+const relatedPath = process.argv[10] || "";
 
-if (!baseUrl || !Number.isFinite(cdpPort) || !["development", "production"].includes(verificationMode)) {
-  throw new Error("Usage: node verify-browser.mjs <baseUrl> <cdpPort> <development|production> [pathBase]");
+if (!baseUrl || !Number.isFinite(cdpPort) || !["development", "production"].includes(verificationMode) ||
+    !homeTitle || !homeSummary || !primaryPath || !primaryTitle || !relatedPath) {
+  throw new Error("Usage: node verify-browser.mjs <baseUrl> <cdpPort> <development|production> [pathBase] <homeTitle> <homeSummary> <primaryPath> <primaryTitle> <relatedPath>");
 }
 
 const isDevelopmentVerification = verificationMode === "development";
@@ -119,7 +125,7 @@ async function main() {
 
     if (message.method === "Runtime.exceptionThrown") {
       const details = message.params?.exceptionDetails;
-      exceptions.push(details?.text || details?.exception?.description || "Unknown runtime exception");
+      exceptions.push(details?.exception?.description || details?.text || "Unknown runtime exception");
     }
 
     if (message.method === "Network.loadingFailed") {
@@ -391,14 +397,14 @@ async function main() {
         moduleFile: "components/wiki-home.mjs",
         expectedSources: [
           "WikiHomeModule.cs",
-          "WikiHomeModule.GettingStarted.cs",
-          "WikiHomeModule.Overview.cs"
+          "WikiHomeModule.DocsPage.cs",
+          "WikiHomeModule.RouteContract.cs",
+          "obj/wiki/WikiDocsContent.g.cs"
         ],
         expectedSourceContentMarkers: [
           "public static partial class WikiHomeModule",
-          "private const string GettingStartedPath = \"/guides/getting-started\";",
-          "private static IVNode OverviewBody()",
-          "private static IVNode GettingStartedBody()"
+          "internal static IVNode RenderDocsPage(int pageIndex)",
+          "internal static string[] PagePaths => WikiDocsContent.PagePaths;"
         ]
       }
     ]
@@ -473,7 +479,7 @@ async function main() {
     })()`),
     mounted: await evaluate(`(function(){
       const title = document.querySelector('.brand-title');
-      return title ? (title.textContent || '').includes('Vue 3 H 函数') : false;
+      return title ? (title.textContent || '').includes('Jazor 官方文档') : false;
     })()`),
     emptyShell: await evaluate(`(function(){
       const element = document.querySelector('#app');
@@ -481,7 +487,7 @@ async function main() {
       const html = (element.innerHTML || '').trim();
       return html === '' || html === '<!---->';
     })()`),
-    gettingStartedLinkCount: await evaluate(`Array.from(document.querySelectorAll('a')).filter(node => node.getAttribute('href') === '${externalPath("/guides/getting-started")}').length`)
+    primaryLinkCount: await evaluate(`Array.from(document.querySelectorAll('a')).filter(node => node.getAttribute('href') === '${externalPath(primaryPath)}').length`)
   };
 
   if (!report.home.mounted) {
@@ -490,13 +496,13 @@ async function main() {
   if (report.home.emptyShell) {
     failures.push("Home page rendered an empty app shell.");
   }
-  if (report.home.gettingStartedLinkCount < 1) {
-    failures.push("Home page did not render a Getting Started route link.");
+  if (report.home.primaryLinkCount < 1) {
+    failures.push("Home page did not render the generated primary docs route link.");
   }
-  if (report.home.title !== "概览 | jazor.wiki") {
+  if (report.home.title !== homeTitle) {
     failures.push(`Home page title was unexpected before SPA navigation: ${report.home.title}`);
   }
-  if (report.home.description !== "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue H 函数编写。") {
+  if (report.home.description !== homeSummary) {
     failures.push(`Home page description was unexpected before SPA navigation: ${report.home.description}`);
   }
   if (report.home.robots !== "index, follow") {
@@ -506,62 +512,21 @@ async function main() {
     failures.push(`Home page canonical URL was unexpected before SPA navigation: ${report.home.canonical}`);
   }
 
-  await navigate(baseUrl + externalPath("/engineering/h-function-authoring"));
-  report.style = {
-    route: await evaluate("location.pathname || ''"),
-    badgeClass: await evaluate(`(function(){
-      const badge = document.querySelector('.h-function-style-badge');
-      return badge ? (badge.getAttribute('class') || '') : '';
-    })()`),
-    badgeText: await evaluate(`(function(){
-      const badge = document.querySelector('.h-function-style-badge');
-      return badge ? (badge.textContent || '').trim() : '';
-    })()`),
-    styleIdPresent: await evaluate("!!document.querySelector('style#ecmascript-style')"),
-    styleText: await evaluate(`(function(){
-      const style = document.querySelector('style#ecmascript-style');
-      return style ? (style.textContent || '') : '';
-    })()`)
-  };
-  report.style.generatedClass = (report.style.badgeClass.split(/\s+/).find(name => name.startsWith("ecs-")) || "");
-
-  if (report.style.route !== externalPath("/engineering/h-function-authoring")) {
-    failures.push(`H-function authoring route was unexpected: ${report.style.route}`);
-  }
-  if (report.style.badgeText !== "H() + ECMAScript.Style") {
-    failures.push(`H-function style badge text was unexpected: ${report.style.badgeText}`);
-  }
-  if (!report.style.generatedClass) {
-    failures.push(`H-function style badge did not receive an ecs-* class: ${report.style.badgeClass}`);
-  }
-  if (!report.style.styleIdPresent) {
-    failures.push("ECMAScript.Style did not create the managed #ecmascript-style element.");
-  }
-  if (!report.style.styleText.includes("ecmascript-style:v1")) {
-    failures.push("ECMAScript.Style managed element did not contain its version marker.");
-  }
-  if (report.style.generatedClass && !report.style.styleText.includes(`.${report.style.generatedClass}`)) {
-    failures.push(`ECMAScript.Style managed element did not contain the generated .${report.style.generatedClass} selector.`);
-  }
-  if (!/padding:4px 8px;/.test(report.style.styleText)) {
-    failures.push(`ECMAScript.Style did not emit the expected padding shorthand: ${report.style.styleText}`);
-  }
-
-  report.home.clickedGettingStarted = await evaluate(`(function(){
-    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '${externalPath("/guides/getting-started")}');
+  report.home.clickedPrimaryRoute = await evaluate(`(function(){
+    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '${externalPath(primaryPath)}');
     if (!link) return false;
     link.click();
     return true;
   })()`);
 
-  if (!report.home.clickedGettingStarted) {
-    failures.push("Could not click the Getting Started link from the mounted home page.");
+  if (!report.home.clickedPrimaryRoute) {
+    failures.push("Could not click the generated primary docs route from the mounted home page.");
   } else {
-    await waitUntil(`location.pathname === '${externalPath("/guides/getting-started")}'`);
+    await waitUntil(`location.pathname === '${externalPath(primaryPath)}'`);
     await waitUntil(`document.activeElement && document.activeElement.id === 'wiki-main-content'`, 5000, 100).catch(() => null);
     await waitUntil(`(function(){
       const element = document.querySelector('p[aria-live="polite"]');
-      return element && (element.textContent || '').trim() === '已打开 快速开始。';
+      return element && (element.textContent || '').trim() === '已打开 ${primaryTitle}。';
     })()`, 5000, 100).catch(() => null);
     await delay(300);
 
@@ -572,15 +537,52 @@ async function main() {
       return element ? (element.textContent || '').trim() : '';
     })()`);
 
-    if (report.home.pathAfterClick !== externalPath("/guides/getting-started")) {
-      failures.push(`SPA navigation from home did not reach Getting Started: ${report.home.pathAfterClick}`);
+    if (report.home.pathAfterClick !== externalPath(primaryPath)) {
+      failures.push(`SPA navigation from home did not reach the generated primary route: ${report.home.pathAfterClick}`);
     }
     if (report.home.activeElementId !== "wiki-main-content") {
       failures.push(`Route change did not focus the main content region: ${report.home.activeElementId}`);
     }
-    if (report.home.liveText !== "已打开 快速开始。") {
+    if (report.home.liveText !== `已打开 ${primaryTitle}。`) {
       failures.push(`Route change live-region announcement was unexpected: ${report.home.liveText}`);
     }
+  }
+
+  report.style = {
+    route: await evaluate("location.pathname || ''"),
+    styleIdPresent: await evaluate("!!document.querySelector('style#ecmascript-style')"),
+    styleText: await evaluate(`(function(){
+      const style = document.querySelector('style#ecmascript-style');
+      return style ? (style.textContent || '') : '';
+    })()`)
+  };
+  report.style.generatedClassCount = (report.style.styleText.match(/\.ecs-[a-z0-9_-]+/gi) || []).length;
+
+  if (report.style.route !== externalPath(primaryPath)) {
+    failures.push(`Generated docs route was unexpected while verifying managed styles: ${report.style.route}`);
+  }
+  if (!report.style.styleIdPresent) {
+    failures.push("ECMAScript.Style did not create the managed #ecmascript-style element.");
+  }
+  if (!report.style.styleText.includes("ecmascript-style:v1")) {
+    failures.push("ECMAScript.Style managed element did not contain its version marker.");
+  }
+  if (report.style.generatedClassCount < 1) {
+    failures.push("ECMAScript.Style managed element did not contain a generated ecs-* selector from WikiStyleSheet.cs.");
+  }
+  if (!/padding:4px 8px;/.test(report.style.styleText)) {
+    failures.push(`ECMAScript.Style did not emit the expected padding shorthand: ${report.style.styleText}`);
+  }
+
+  const primarySectionId = await evaluate(`(function(){
+    const link = document.querySelector('.toc-link');
+    if (!link) return '';
+    const href = link.getAttribute('href') || '';
+    const hashIndex = href.lastIndexOf('#');
+    return hashIndex >= 0 ? href.slice(hashIndex + 1) : '';
+  })()`);
+  if (!primarySectionId) {
+    failures.push("Generated primary docs route did not expose a section anchor for hash navigation.");
   }
 
   report.gettingStarted = {
@@ -630,7 +632,7 @@ async function main() {
   await delay(300);
 
   report.gettingStarted.feedback = {
-    stored: await evaluate("localStorage.getItem('jazor.wiki.feedback:/guides/getting-started') || ''"),
+    stored: await evaluate(`localStorage.getItem('jazor.wiki.feedback:${primaryPath}') || ''`),
     activeCount: await evaluate("document.querySelectorAll('.feedback-button-active').length"),
     liveText: await evaluate(`(function(){
       const element = document.querySelector('p[aria-live="polite"]');
@@ -706,11 +708,11 @@ async function main() {
     failures.push("Section permalink did not update location hash.");
   }
 
-  await navigate(baseUrl + externalPath("/guides/getting-started"));
+  await navigate(baseUrl + externalPath(primaryPath));
   report.gettingStarted.persistedAfterReload = {
     theme: await evaluate("document.documentElement.getAttribute('data-theme') || ''"),
     storedTheme: await evaluate("localStorage.getItem('jazor.wiki.theme') || ''"),
-    feedbackStored: await evaluate("localStorage.getItem('jazor.wiki.feedback:/guides/getting-started') || ''"),
+    feedbackStored: await evaluate(`localStorage.getItem('jazor.wiki.feedback:${primaryPath}') || ''`),
     feedbackActiveCount: await evaluate("document.querySelectorAll('.feedback-button-active').length")
   };
 
@@ -733,26 +735,26 @@ async function main() {
     scrollBeforeRouteChange: await evaluate("window.pageYOffset || 0")
   };
 
-  report.scrollRestore.projectLinesClicked = await evaluate(`(function(){
-    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '${externalPath("/guides/project-lines")}');
+  report.scrollRestore.relatedPageClicked = await evaluate(`(function(){
+    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '${externalPath(relatedPath)}');
     if (!link) return false;
     link.click();
     return true;
   })()`);
-  if (!report.scrollRestore.projectLinesClicked) {
-    failures.push("Could not find the Project Lines link for scroll restoration verification.");
+  if (!report.scrollRestore.relatedPageClicked) {
+    failures.push("Could not find the generated related-page link for scroll restoration verification.");
   } else {
-    await waitUntil(`location.pathname === '${externalPath("/guides/project-lines")}'`);
+    await waitUntil(`location.pathname === '${externalPath(relatedPath)}'`);
     await evaluate("history.back(); true");
-    await waitUntil(`location.pathname === '${externalPath("/guides/getting-started")}'`);
+    await waitUntil(`location.pathname === '${externalPath(primaryPath)}'`);
     await delay(1000);
 
     report.scrollRestore.pathAfterBack = await evaluate("location.pathname || ''");
     report.scrollRestore.hashAfterBack = await evaluate("location.hash || ''");
     report.scrollRestore.scrollAfterBack = await evaluate("window.pageYOffset || 0");
 
-    if (report.scrollRestore.pathAfterBack !== externalPath("/guides/getting-started")) {
-      failures.push(`Back navigation did not return to Getting Started: ${report.scrollRestore.pathAfterBack}`);
+    if (report.scrollRestore.pathAfterBack !== externalPath(primaryPath)) {
+      failures.push(`Back navigation did not return to the generated primary route: ${report.scrollRestore.pathAfterBack}`);
     }
     if (report.scrollRestore.hashAfterBack !== "") {
       failures.push(`Back navigation returned an unexpected hash-bearing URL: ${report.scrollRestore.hashAfterBack}`);
@@ -879,7 +881,7 @@ async function main() {
     }
   }
 
-  await navigate(baseUrl + externalPath("/guides/getting-started") + "#boot-the-site");
+  await navigate(baseUrl + externalPath(primaryPath) + "#" + primarySectionId);
   report.hashNavigation = {
     locationHash: await evaluate("location.hash || ''"),
     tocActiveCount: await evaluate("document.querySelectorAll('.toc-link-active').length"),
@@ -890,10 +892,10 @@ async function main() {
     })()`)
   };
 
-  if (report.hashNavigation.locationHash !== "#boot-the-site") {
+  if (report.hashNavigation.locationHash !== "#" + primarySectionId) {
     failures.push(`Direct hash navigation did not preserve the expected hash: ${report.hashNavigation.locationHash}`);
   }
-  if (report.hashNavigation.activeSectionId !== "boot-the-site") {
+  if (report.hashNavigation.activeSectionId !== primarySectionId) {
     failures.push(`Direct hash navigation did not activate the expected section: ${report.hashNavigation.activeSectionId}`);
   }
   if (report.hashNavigation.tocActiveCount < 1 || report.hashNavigation.docActiveCount < 1) {
@@ -999,7 +1001,7 @@ async function main() {
       return false;
     }
 
-    // Some Edge/CDP runs emit empty loadingFailed stylesheet events during document swaps.
+    // Some Chromium/CDP runs emit empty loadingFailed stylesheet events during document swaps.
     // Ignore those placeholders and only fail on attributable network errors.
     if (!entry.url && !entry.errorText) {
       return false;

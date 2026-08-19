@@ -1,0 +1,63 @@
+name: Deploy Wiki Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'samples/Wiki/**'
+      - 'scripts/csharp/wiki-*.cs'
+      - '.github/workflows/wiki-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+# 更换自定义域名时，同时更新这里的 origin 与 Pages CNAME。
+env:
+  Wiki__PathBase: /Jazor
+  Wiki__SiteOrigin: https://devhxj.github.io
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Export static site
+        shell: pwsh
+        run: |
+          dotnet run --file .\scripts\csharp\wiki-export-static.cs -- `
+            --output output/wiki `
+            --path-base $env:Wiki__PathBase `
+            --site-origin $env:Wiki__SiteOrigin
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output/wiki
+
+  deploy:
+    needs: build
+    runs-on: windows-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
