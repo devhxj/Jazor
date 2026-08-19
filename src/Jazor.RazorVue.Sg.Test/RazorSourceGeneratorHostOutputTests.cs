@@ -13,8 +13,8 @@ public sealed class RazorSourceGeneratorFinalCompilationTests
     [TestMethod]
     public void RazorSourceGenerator_SingleRun_ProducesGeneratedSourceWithoutHostOutputs()
     {
-        const string projectDirectory = @"D:\repo\Demo";
-        const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
+        var documentPath = RazorSgTestHost.GetTestDocumentPath("Pages/Counter.razor");
+        var projectDirectory = Path.GetDirectoryName(documentPath)!;
         const string documentText =
             """
             @page "/counter"

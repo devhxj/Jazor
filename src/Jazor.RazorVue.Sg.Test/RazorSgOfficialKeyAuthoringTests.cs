@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialKeyAuthoringTests
     public async Task BuildComponent_OfficialRazorKeyedLoop_EmitsStableVueKeysInsideLoopBody()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\KeyedLoop.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/KeyedLoop.razor"),
             documentText:
             """
             @foreach (var item in Items)

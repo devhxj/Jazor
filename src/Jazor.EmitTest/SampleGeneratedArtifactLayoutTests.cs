@@ -13,7 +13,7 @@ public sealed class SampleGeneratedArtifactLayoutTests
     ];
 
     [TestMethod]
-    public void CheckedInSampleManifests_TargetCurrentNet11ToolchainAndExistingArtifacts()
+    public void CheckedInSampleManifests_UsePortableRootIdentityAndExistingArtifacts()
     {
         var repositoryRoot = FindRepositoryRoot();
 
@@ -23,25 +23,12 @@ public sealed class SampleGeneratedArtifactLayoutTests
             Assert.IsTrue(File.Exists(manifestPath), "Sample manifest is missing: " + relativePath);
 
             var manifest = LoadManifest(manifestPath);
-            var rootAssemblyPath = manifest.RootAssemblyPath;
-
             Assert.IsFalse(
-                string.IsNullOrWhiteSpace(rootAssemblyPath),
-                "Sample manifest RootAssemblyPath is empty: " + relativePath);
-
-            var rootAssemblySegments = rootAssemblyPath!
-                .Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
-            CollectionAssert.Contains(
-                rootAssemblySegments,
-                "bin",
-                "Sample manifest RootAssemblyPath should point at a built assembly output: " + relativePath);
-            CollectionAssert.Contains(
-                rootAssemblySegments,
-                "net11.0",
-                "Sample manifest RootAssemblyPath should point at the net11.0 output produced by the current toolchain: " + relativePath);
-            Assert.IsFalse(
-                rootAssemblyPath.Contains("net10.0", StringComparison.OrdinalIgnoreCase),
-                "Sample manifest RootAssemblyPath must not point at stale net10.0 output: " + relativePath);
+                string.IsNullOrWhiteSpace(manifest.RootAssemblyName),
+                "Sample manifest RootAssemblyName is empty: " + relativePath);
+            Assert.IsTrue(
+                string.IsNullOrWhiteSpace(manifest.RootAssemblyPath),
+                "Sample manifest must not embed a developer-specific RootAssemblyPath: " + relativePath);
 
             AssertManifestArtifacts(manifest, manifestPath, relativePath);
         }

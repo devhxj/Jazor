@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialLocalGenericSlotAliasRuntimeTests
     public async Task BuildComponent_OfficialRazorLocalGenericSlotAlias_ExpandsScopedSlotResultsInLoopOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseTemplateAlias.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTemplateAlias.razor"),
             documentText:
             """
             @{

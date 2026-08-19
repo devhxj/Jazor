@@ -7,7 +7,7 @@ public sealed class RazorSgDirectRenderSlotParameterTests
     public async Task BuildComponent_DirectRenderChildContentParameter_UsesVueSlotWithoutBuilderBridge()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Components\ChildContentBridgeRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Components/ChildContentBridgeRuntime.razor"),
             documentText:
             """
             <section data-shell="panel">

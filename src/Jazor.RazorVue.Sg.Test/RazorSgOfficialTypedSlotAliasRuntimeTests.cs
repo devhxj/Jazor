@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialTypedSlotAliasRuntimeTests
     public async Task BuildComponent_OfficialRazorTypedSlotAlias_InvokesTheScopedSlotAfterLocalNullGuardOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Components\ReleaseRowTemplate.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Components/ReleaseRowTemplate.razor"),
             documentText:
             """
             @{

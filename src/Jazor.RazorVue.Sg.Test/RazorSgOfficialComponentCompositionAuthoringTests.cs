@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
     public async Task BuildComponent_OfficialRazorComponentComposition_EmitsMemberMappedPropsModelAndSlots()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComponentComposition.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentComposition.razor"),
             documentText:
             """
             @using Demo.Components
@@ -103,7 +103,7 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
     public async Task BuildComponent_OfficialRazorComponentBindAfter_EmitsModelAssignmentBeforeAsyncCallback()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComponentBindAfter.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentBindAfter.razor"),
             documentText:
             """
             @using Demo.Components
@@ -169,7 +169,7 @@ public sealed class RazorSgOfficialComponentCompositionAuthoringTests
     public async Task BuildComponent_OfficialRazorComponentBindGetAndAsyncSet_EmitsModelSetterHandler()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComponentBindSet.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentBindSet.razor"),
             documentText:
             """
             @using Demo.Components

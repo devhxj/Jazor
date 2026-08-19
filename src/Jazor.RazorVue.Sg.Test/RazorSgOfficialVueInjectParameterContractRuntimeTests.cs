@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialVueInjectParameterContractRuntimeTests
     public async Task BuildComponent_OfficialRazorVueInject_PreservesRequiredAndUnmatchedParameterContract()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InjectedShellParameterContractRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InjectedShellParameterContractRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -30,7 +30,7 @@ public sealed class RazorSgOfficialVueInjectParameterContractRuntimeTests
             componentMetadataName: "Demo.Pages.InjectedShellParameterContractRuntime",
             supportingSources: new Dictionary<string, string>
             {
-                [@"D:\repo\Demo\Components\ContainerParameterContractComponents.cs"] =
+                [RazorSgTestHost.GetTestDocumentPath("Components/ContainerParameterContractComponents.cs")] =
                 """
                 using System.Collections.Generic;
                 using ECMAScript.VueContract;

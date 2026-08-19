@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialLocalRenderFragmentDescriptorRuntimeTests
     public async Task BuildComponent_OfficialRazorLocalTemplateDescriptor_ProjectsCachedFragmentMemberOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseSummaryLocalDescriptor.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseSummaryLocalDescriptor.razor"),
             documentText:
             """
             @using Demo.Components

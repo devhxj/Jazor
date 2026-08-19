@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialJoinLoopAuthoringTests
     public async Task BuildComponent_OfficialRazorJoinLoops_UseCompilerOwnedEnumerableContracts()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseJoinSummary.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseJoinSummary.razor"),
             documentText:
             """
             @using System.Linq

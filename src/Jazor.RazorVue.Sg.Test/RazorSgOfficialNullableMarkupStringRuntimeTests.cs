@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
     public async Task BuildComponent_OfficialRazorNullableMarkupString_PreservesMarkupAndEmptyOutputOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NullableReleaseSummary.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummary.razor"),
             documentText:
             """
             @Summary
@@ -58,7 +58,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
     public async Task BuildComponent_OfficialRazorNullableMarkupStringInsideElement_ExpandsEmptyContentOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NullableReleaseSummaryPanel.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummaryPanel.razor"),
             documentText:
             """
             <section data-release-summary="panel">
@@ -111,7 +111,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
     public async Task BuildComponent_OfficialRazorNullableMarkupStringMethod_EvaluatesContentOnceOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NullableReleaseSummaryMethod.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummaryMethod.razor"),
             documentText:
             """
             @ReadSummary()
@@ -173,7 +173,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
     public async Task BuildComponent_OfficialRazorNullableMarkupStringSlot_ExpandsToAnEmptySlotResultOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NullableReleaseSummarySlot.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummarySlot.razor"),
             documentText:
             """
             @using Demo.Components
@@ -255,7 +255,7 @@ public sealed class RazorSgOfficialNullableMarkupStringRuntimeTests
     public async Task BuildComponent_OfficialRazorNullableMarkupStringInLoop_ExpandsEachElementChildOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NullableReleaseSummaryList.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NullableReleaseSummaryList.razor"),
             documentText:
             """
             @foreach (var release in Releases)

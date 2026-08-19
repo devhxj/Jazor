@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
     public async Task BuildComponent_OfficialRazorBindSetMethodGroup_UpdatesStateThroughAsyncSetterOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseNameEditor.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseNameEditor.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -76,7 +76,7 @@ public sealed class RazorSgOfficialBindSetMethodGroupRuntimeTests
     public async Task BuildComponent_OfficialRazorBindSetMethodGroup_UpdatesStateThroughSynchronousSetterOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseNameSyncEditor.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseNameSyncEditor.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

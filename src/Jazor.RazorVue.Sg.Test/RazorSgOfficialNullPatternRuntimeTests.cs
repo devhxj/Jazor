@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialNullPatternRuntimeTests
     public async Task BuildComponent_OptionalParameterNullPatternTreatsMissingPropAsNullOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\OptionalLabelRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/OptionalLabelRuntime.razor"),
             documentText:
             """
             @if (Label is null)

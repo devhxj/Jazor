@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialGenericRecursiveRenderFragmentRuntimeTests
     public async Task BuildComponent_OfficialRazorRecursiveScopedSlot_PreservesContextAndNestedChildrenOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NavigationTemplateRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NavigationTemplateRuntime.razor"),
             documentText:
             """
             @using Demo.Components

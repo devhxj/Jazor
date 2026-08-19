@@ -2,6 +2,16 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-19
+
+### Jazor 0.17.0
+
+- RazorVue now lowers official Razor Source Generator generic component type-inference helpers and open generic `OpenComponent<T>` calls. Generic type parameters remain erased at runtime, and generated artifacts no longer leak render-builder symbols from nested fragments.
+- Reachable `RenderFragment` properties and methods are retained when ordinary component members reference them, preventing generated modules from silently calling an omitted helper.
+- Final RazorVue artifact generation validates the final compilation before artifact fan-out, so invalid Vue injection metadata reports one mapped diagnostic without leaving a partial module catalog.
+- The C#-to-JavaScript compiler now supports indexed nested initializers such as `Items[0] = { ... }` while preserving the enclosing initializer target and evaluation order.
+- Checked-in sample manifests use portable root assembly identity instead of developer-specific absolute assembly paths.
+
 ## 2026-08-18
 
 ### Jazor 0.16.3

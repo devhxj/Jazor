@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialBindAfterRuntimeTests
     public async Task BuildComponent_OfficialRazorBindAfter_UpdatesStateBeforeAwaitingPersistenceOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseNamePersistence.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseNamePersistence.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

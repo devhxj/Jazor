@@ -29,9 +29,9 @@ public partial class SemanticWalker
             : MaterializeScopedStatements(bodyContext, TranslateOperationsToStatements([operation.Body], bodyContext));
 
         var statements = LowerLockStatements(operation, bodyStatements, scopedArgument);
-        return statements.Count == 1
-            ? statements[0]
-            : new NestedBlockStatement(NodeList.From(statements));
+        // LowerLockStatements always emits the null guard and the locked body, so a lock
+        // operation cannot collapse to a single statement. Keep the result shape explicit.
+        return new NestedBlockStatement(NodeList.From(statements));
     }
 
     private List<Statement> LowerLockStatements(

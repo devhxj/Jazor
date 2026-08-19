@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialComponentSplatRuntimeTests
     public async Task BuildComponent_OfficialRazorComponentSplat_MapsParameterNamesAndPreservesExplicitBindPrecedenceOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComponentSplatRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentSplatRuntime.razor"),
             documentText:
             """
             @using Demo.Components

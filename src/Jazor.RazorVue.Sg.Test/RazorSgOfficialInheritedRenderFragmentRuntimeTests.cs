@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialInheritedRenderFragmentRuntimeTests
     public async Task BuildComponent_OfficialRazorInheritedRenderFragmentMethodGroup_ProjectsBaseTemplateSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InheritedTemplateRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InheritedTemplateRuntime.razor"),
             documentText:
             """
             @using Demo.Components

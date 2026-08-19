@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialVueSfcComponentRuntimeTests
     public async Task BuildComponent_OfficialRazorVueSfcComponent_ImportsAndRendersTheDefaultExportOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseDashboardSfc.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDashboardSfc.razor"),
             documentText:
             """
             @using Demo.Components

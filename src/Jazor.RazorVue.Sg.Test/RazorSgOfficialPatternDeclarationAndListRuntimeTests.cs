@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialPatternDeclarationAndListRuntimeTests
     public async Task BuildComponent_OfficialRazorPatternLocals_RenderReleaseQueueSummaryOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseQueueSummary.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseQueueSummary.razor"),
             documentText:
             """
             @if (QueueTitle is string title)

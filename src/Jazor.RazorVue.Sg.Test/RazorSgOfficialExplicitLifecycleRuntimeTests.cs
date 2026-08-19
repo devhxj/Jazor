@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialExplicitLifecycleRuntimeTests
     public async Task BuildComponent_ExplicitDisposableLifecyclesRunOnDenoHostUnmount()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ExplicitLifecycleRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ExplicitLifecycleRuntime.razor"),
             documentText:
             """
             <p>@Log</p>

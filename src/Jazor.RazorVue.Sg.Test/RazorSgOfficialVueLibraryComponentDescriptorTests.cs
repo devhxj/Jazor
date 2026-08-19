@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialVueLibraryComponentDescriptorTests
     public async Task BuildComponent_OfficialRazorLibraryButton_MapsPropEmitAndDefaultSlot()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TDesignReleaseAction.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignReleaseAction.razor"),
             documentText:
             """
             @using Demo.Library

@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialEnumerableSetAuthoringTests
     public async Task BuildComponent_OfficialRazorSetOperators_UseCompilerOwnedEnumerableContracts()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseSetSummary.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseSetSummary.razor"),
             documentText:
             """
             @using System.Linq

@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
     public async Task BuildComponent_OfficialRazorConditionalContent_WithSharedImportModule_RetainsEveryRuntimeHelper()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ConditionalCount.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConditionalCount.razor"),
             documentText:
             """
             @using System.Linq
@@ -64,7 +64,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
     public async Task BuildComponent_OfficialRazorAdjacentConditionalSiblings_UseDistinctBranchKeysOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ConditionalProfiles.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConditionalProfiles.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -156,7 +156,7 @@ public sealed class RazorSgOfficialConditionalContentRuntimeTests
     public async Task BuildComponent_OfficialRazorConditionalContent_UsesFragmentOnlyForTheMultiNodeBranchOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseDetailsToggle.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDetailsToggle.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

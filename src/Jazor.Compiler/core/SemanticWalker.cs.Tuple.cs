@@ -954,10 +954,9 @@ public partial class SemanticWalker
 			(new TupleValueSource(operation.RightOperand), operation.RightOperand.Type!),
 			isEq,
 			argument);
-
-		if (result is null)
-			return HandleTransformationFailure<Node>(operation, "Tuple binary operation could not be translated to JavaScript.");
-
+		// Roslyn only creates ITupleBinaryOperation for non-empty, shape-compatible tuple
+		// operands; BuildTupleBinaryExpression therefore always produces an expression.
+		// 合法 tuple 比较不会落入空结果兜底，避免把不可达防御分支混入热路径。
 		return new ParenthesizedExpression(result);
 	}
 

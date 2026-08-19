@@ -51,14 +51,8 @@ internal static class RazorTailOutput
                 out var binding,
                 out diagnostics))
         {
-            if (diagnostics.IsDefaultOrEmpty)
-            {
-                diagnostics = ImmutableArray.Create(RazorVueDiagnosticFactory.Create(
-                    RazorVueDiagnosticCategory.ComponentBinding,
-                    "No component binding detail was provided.",
-                    GetFirstComponentLocation(components),
-                    components.FirstOrDefault()));
-            }
+            // The binder emits one typed diagnostic for every failed component. Keeping that
+            // contract direct avoids a generic fallback that can never identify the failed root.
             return false;
         }
 
@@ -98,11 +92,9 @@ internal static class RazorTailOutput
                     out var closure,
                     out var closureDiagnostic))
             {
-                diagnosticBuilder.Add(closureDiagnostic ?? RazorVueDiagnosticFactory.Create(
-                    RazorVueDiagnosticCategory.MemberClosure,
-                    "No component member closure detail was provided.",
-                    RazorVueDiagnosticFactory.GetSymbolLocation(component.BuildRenderTreeMethod),
-                    component.ComponentSymbol));
+                // TryBuildWithDiagnostic always carries the failure subject and category when it
+                // returns false; do not erase that information behind a generic fallback.
+                diagnosticBuilder.Add(closureDiagnostic!);
                 continue;
             }
 

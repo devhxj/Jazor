@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
     public async Task BuildComponent_OfficialRazorComposedLocalRenderFragment_ForwardsNamedSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseSummaryRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseSummaryRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -115,7 +115,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
     public async Task BuildComponent_OfficialRazorComposedLocalGenericRenderFragment_ForwardsScopedSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseItemTemplateRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseItemTemplateRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -220,7 +220,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
     public async Task BuildComponent_OfficialRazorConditionalLocalGenericRenderFragment_PreservesScopedSlotSelectionOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseItemVariantRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseItemVariantRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -326,7 +326,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
     public async Task BuildComponent_OfficialRazorRecursiveLocalRenderFragment_PreservesNestedSlotContentOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseTreeTemplateRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTreeTemplateRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -425,7 +425,7 @@ public sealed class RazorSgOfficialRenderFragmentCompositionRuntimeTests
     public async Task BuildComponent_OfficialRazorExpressionBodiedRenderFragmentFactory_ForwardsNamedSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseNoticeRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseNoticeRuntime.razor"),
             documentText:
             """
             @using Demo.Components

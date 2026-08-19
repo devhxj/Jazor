@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialNullAttributeBagRuntimeTests
     public async Task BuildComponent_OfficialRazorNullAttributeBag_LeavesExplicitAttributesIntactOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseActionWithoutAttributes.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseActionWithoutAttributes.razor"),
             documentText:
             """
             <button @attributes="null" data-action="deploy">Deploy</button>

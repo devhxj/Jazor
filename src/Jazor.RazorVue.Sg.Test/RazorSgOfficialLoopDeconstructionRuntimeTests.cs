@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialLoopDeconstructionRuntimeTests
     public async Task BuildComponent_OfficialRazorLoopDeconstruction_PreservesEachTupleBindingOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseEnvironmentSummary.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseEnvironmentSummary.razor"),
             documentText:
             """
             <ul data-summary="release-environments">

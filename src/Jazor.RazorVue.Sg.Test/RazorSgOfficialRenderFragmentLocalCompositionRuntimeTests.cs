@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialRenderFragmentLocalCompositionRuntimeTests
     public async Task BuildComponent_OfficialRazorRenderFragmentFactory_ComposesLocalTemplateBeforeReturningSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseFooterComposition.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseFooterComposition.razor"),
             documentText:
             """
             @using Demo.Components

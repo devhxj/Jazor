@@ -188,7 +188,15 @@ Parallel test stability rules:
 - When running multiple `dotnet test` lanes concurrently, isolate build outputs with distinct `BaseOutputPath` values. After a successful build, prefer focused `--no-build` reruns for verification.
 - Keep targeted regression verification fast. As a default budget, the focused suite for a change should stay around 2 minutes or less unless the user explicitly asks for broader coverage.
 
-## Release Publishing
+## Release & Versioning
+
+完整规则见 [发版与版本规则](docs/03-guides/release-and-versioning.md)。核心规则：
+
+- 所有 NuGet 包 lockstep 同版本，版本号唯一来源是 `vMAJOR.MINOR.PATCH` 格式的 git tag；不在 `.csproj` 手写版本，版本通道决策发生在打 tag 时。
+- 通道语义：`MINOR` = 新能力（`0.x` 阶段可含破坏性变更，必须在 CHANGELOG 标注迁移说明）；`PATCH` = 仅修复，禁止携带新 lowering 能力、新绑定组件或新公共 API；`MAJOR` = `1.0.0` 之后唯一的破坏性变更通道。
+- 发版按语义触发（能力切片完成 → `MINOR`，缺陷 → `PATCH`），不按日历凑版本，不跳号；跳号必须在 CHANGELOG 中解释。
+- 打 tag 前按改动触及面运行对应门禁（`test-dotnet.cs` 与各 coverage 验证脚本，门槛见 `docs/04-roadmap/current-status.md`）；SPA/SSR 消费者门禁由 tag 工作流在上传前自动执行。
+- CHANGELOG 每个版本独立章节并标注日期，破坏性变更必须写明迁移路径。
 
 Official NuGet publishing is performed only by `.github/workflows/nuget-publish-ref.yml`.
 Push a `v*` tag or use `workflow_dispatch`; GitHub Actions owns trusted publishing

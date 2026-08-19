@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialEventCallbackAuthoringTests
     public async Task BuildComponent_OfficialRazorEventCallbackInvocation_EmitsAwaitedOptionalListener()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Components\CallbackEmitter.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Components/CallbackEmitter.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

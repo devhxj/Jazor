@@ -32,17 +32,11 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-18
+### 2026-08-19
 
-- 编译器与 RazorVue 的分支覆盖率验收门槛提升并稳定在 97% 以上，新增边界回归覆盖受支持的转译与组件生成路径。
-
-- Jazor 0.16.2 扩展 RazorVue component logic：按基类到派生类顺序 replay source initializer 与无参 constructor，支持 source-base lifecycle/dispose dispatch、模块生命周期 static member，以及继承场景下无重复 export 的模块输出。
-- RazorVue direct render 现可在已验证的 `for`、`foreach`、`while`、`do while` content segment 中保留普通 `break`/`continue`；labeled branch、`goto` 与跨未关闭 render frame 的 branch 仍会得到可定位诊断。
-- Jazor 0.16.1 修复 RazorVue direct lowering：dynamic slot 保留父组件上下文，scope 输出无法使用 `renderList` 时仍保留显式循环项 key，retained static vnode helper 可正确导入，支持的 C# collection initializer 也会保留 `Add` 调用。
-- RazorVue 最终 Compilation 失败现使用稳定的 `JAZORVGA020`-`026` 诊断，映射回 Razor/C# 源位置并给出可操作指引；组件生成失败不会再留下部分 artifact catalog。
-- 被 RazorVue 组件捕获的 runtime member class 现可安全穿过 Vue deep Proxy，包括 private storage、自动属性 backing field、primary-constructor capture 与 field-like event。
-- RazorVue 0.16.0 会拒绝未验证的 labeled `break`/`continue` lowering 形状。
-- 发布验证会从生成的 NuGet 包发布隔离的 `JazorSSR=true` RazorVue TodoList consumer，并验证 packaged SSR、PathBase 资源解析与 Edge hydration。
+- Jazor 0.17.0 支持 official Razor Source Generator 的泛型组件类型推断和开放泛型 `OpenComponent<T>` lowering，不会把 render-builder 状态泄漏到生成模块。
+- 普通组件成员可达的 `RenderFragment` helper 会保留在产物闭包中；无效的 Vue injection metadata 会在生成 partial artifact 之前失败。
+- 已支持 indexed nested C# initializer 的正确 lowering，且仓库内示例 manifest 不再包含机器相关的绝对程序集路径。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 

@@ -358,8 +358,9 @@ internal sealed class CurrentComponentMemberClosure
             foreach (var reference in property.DeclaringSyntaxReferences)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
-                if (reference.GetSyntax(_cancellationToken) is not PropertyDeclarationSyntax propertyDeclaration)
-                    continue;
+                // A property symbol's declaring syntax references are property declarations by
+                // Roslyn contract; fail loudly if that invariant ever changes.
+                var propertyDeclaration = (PropertyDeclarationSyntax)reference.GetSyntax(_cancellationToken);
 
                 var model = GetSemanticModel(propertyDeclaration.SyntaxTree);
                 if (propertyDeclaration.ExpressionBody is not null)

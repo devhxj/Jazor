@@ -338,8 +338,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var storage = ImmutableArray.CreateBuilder<PrimaryConstructorParameterStorage>(parameterList.Parameters.Count);
             foreach (var parameter in parameterList.Parameters)
             {
-                if (semanticModel.GetDeclaredSymbol(parameter) is not IParameterSymbol parameterSymbol)
-                    continue;
+                // A valid primary-constructor parameter syntax always binds to its parameter
+                // symbol in the owning compilation; keep this path aligned with Roslyn's
+                // declaration contract instead of silently dropping a captured parameter.
+                var parameterSymbol = semanticModel.GetDeclaredSymbol(parameter)!;
 
                 storage.Add(new PrimaryConstructorParameterStorage(
                     parameterSymbol.OriginalDefinition,

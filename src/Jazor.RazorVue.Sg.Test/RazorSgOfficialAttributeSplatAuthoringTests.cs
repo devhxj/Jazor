@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialAttributeSplatAuthoringTests
     public async Task BuildComponent_OfficialRazorAttributeSplat_PreservesExplicitAttributePrecedence()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\AttributeSplat.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/AttributeSplat.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

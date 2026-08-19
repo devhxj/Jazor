@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialCurrentComponentAuthoringTests
     public async Task BuildComponent_OfficialRazorEventHandlerStateHasChanged_EmitsSetupInvalidator()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Components\RefreshButton.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Components/RefreshButton.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -59,7 +59,7 @@ public sealed class RazorSgOfficialCurrentComponentAuthoringTests
     public async Task BuildComponent_OfficialRazorTaskEventHandlerInvokeAsync_EmitsSetupDispatcher()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Components\QueuedRefreshButton.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Components/QueuedRefreshButton.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

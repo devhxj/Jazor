@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialNestedLocalRuntimeTests
     public async Task BuildComponent_OfficialRazorNestedCompileTimeLocal_InlinesTheValueInsideTheOpenElementFrameOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseDetailsLabel.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDetailsLabel.razor"),
             documentText:
             """
             <section data-region="release-details">

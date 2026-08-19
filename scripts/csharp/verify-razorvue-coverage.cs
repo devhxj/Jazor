@@ -13,7 +13,7 @@ try
     var options = CoverageGateOptions.Parse(args);
     var repoRoot = RequireRepoRoot();
     var resultBase = Path.GetFullPath(
-        options.ResultsDirectory ?? Path.Combine(repoRoot, ".tmp", "razorvue-coverage-gate"));
+        options.ResultsDirectory ?? Path.Combine(repoRoot, "test", "coverage", "razorvue"));
     var resultRoot = Path.Combine(resultBase, Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(resultRoot);
 
@@ -38,7 +38,15 @@ try
     if (options.NoRestore)
         arguments.Add("--no-restore");
     if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
-        arguments.Add("-p:BaseOutputPath=" + Path.GetFullPath(options.BaseOutputPath));
+        arguments.Add("-p:JazorIsolatedBaseOutputRoot=" + ResolveBuildRoot(repoRoot, options.BaseOutputPath));
+    if (!string.IsNullOrWhiteSpace(options.BaseIntermediateOutputPath))
+        arguments.Add("-p:JazorIsolatedBaseIntermediateOutputRoot=" + ResolveBuildRoot(repoRoot, options.BaseIntermediateOutputPath));
+    if (!string.IsNullOrWhiteSpace(options.BaseOutputPath) ||
+        !string.IsNullOrWhiteSpace(options.BaseIntermediateOutputPath))
+    {
+        arguments.Add("/nr:false");
+        arguments.Add("-p:UseSharedCompilation=false");
+    }
 
     await RunDotNetAsync(arguments, repoRoot);
 
@@ -108,6 +116,16 @@ static string FormatRate(int covered, int total)
     => total == 0
         ? "0.00%"
         : ((double)covered / total).ToString("P2", CultureInfo.InvariantCulture);
+
+static string ResolveBuildRoot(string repoRoot, string path)
+{
+    var fullPath = Path.IsPathRooted(path)
+        ? Path.GetFullPath(path)
+        : Path.GetFullPath(Path.Combine(repoRoot, path));
+    return fullPath.EndsWith(Path.DirectorySeparatorChar) || fullPath.EndsWith(Path.AltDirectorySeparatorChar)
+        ? fullPath
+        : fullPath + Path.DirectorySeparatorChar;
+}
 
 static string RequireSingleFile(string root, string fileName)
 {
@@ -183,6 +201,8 @@ internal sealed record CoverageGateOptions
 
     public string? BaseOutputPath { get; init; }
 
+    public string? BaseIntermediateOutputPath { get; init; }
+
     public static CoverageGateOptions Parse(string[] args)
     {
         var result = new CoverageGateOptions();
@@ -205,6 +225,9 @@ internal sealed record CoverageGateOptions
                     break;
                 case "--base-output-path":
                     result = result with { BaseOutputPath = ReadValue(args, ref index) };
+                    break;
+                case "--base-intermediate-output-path":
+                    result = result with { BaseIntermediateOutputPath = ReadValue(args, ref index) };
                     break;
                 default:
                     throw new InvalidOperationException("Unknown argument: " + args[index]);

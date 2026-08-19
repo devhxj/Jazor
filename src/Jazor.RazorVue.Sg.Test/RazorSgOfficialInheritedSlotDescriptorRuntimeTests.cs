@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialInheritedSlotNameRuntimeTests
     public async Task BuildComponent_OfficialRazorDerivedLayout_UsesNewMemberNameForInheritedParameter()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseLayout.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseLayout.razor"),
             documentText:
             """
             @inherits Demo.Components.HeaderLayoutBase
@@ -75,7 +75,7 @@ public sealed class RazorSgOfficialInheritedSlotNameRuntimeTests
     public async Task BuildComponent_OfficialRazorDerivedLayout_InheritsBaseSlotNameWhenNotHidden()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\AuditLayout.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/AuditLayout.razor"),
             documentText:
             """
             @inherits Demo.Components.HeaderLayoutBase

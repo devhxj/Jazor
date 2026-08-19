@@ -138,11 +138,13 @@ Razor SG 生成的 builder 调用按顺序解释为 Vue VNode；手写 `BuildRen
 | 未初始化 local、frame 外 metadata、`goto`、无法投影的 labeled branch | **Reject (`JAZORVGA021`)** | 改用初始化、正确 frame 顺序或 [Component C# Logic](#component-logic) 中的普通 helper。普通 loop `break`/`continue` 见下方循环规则。 |
 
 - `OpenElement`、`OpenComponent`、`OpenRegion` 必须与对应 close 成对，且按栈顺序关闭；
+- `OpenComponent<T>` 支持开放泛型组件类型（例如 `OpenComponent<TTable<T>>()`）；类型参数只作为编译期注解擦除，组件仍必须有 `[ECMAScriptModule]` 或 `[VueLibraryComponent]` 描述。official Razor SG 生成的 `TypeInference.Create*_0<T>` 辅助会在当前 fragment builder 作用域内内联，构造方法参数与方法体原始定义对齐，不会把 `builder`/`__builder` 泄漏到最终模块。运行时动态 `Type`、无法静态确定的组件类型仍报告 `JAZORVGA021`。
 - element/component 的属性、component parameter、splat 和 event metadata 必须在第一个 child 之前写入；
 - tag、attribute、parameter、event modifier 和 bulk-attribute 名称必须是 compile-time string；
 - `SetKey`、`SetUpdatesAttributeName`、reference capture 和 render-mode metadata 必须作用于正确的当前 frame；
 - `OpenComponent` 使用 generic component type 或 `typeof(T)`，不能把运行时 `Type` 值当作动态组件类型；
 - `RenderFragment`/slot 必须能解析为 inline、local、helper 或 component slot source；任意外部 factory、递归 render helper 和未闭合 fragment 会被拒绝；
+- RenderFragment 属性/方法如果被任一已发射的普通 component member 引用，会随 member closure 一起保留；不要假设“只有渲染树直接调用的片段才会发射”。若片段 body 本身不在支持切片内，编译器必须报告 `JAZORVGA024`，不会静默裁剪成未定义名称。
 - sequence 参数只允许无副作用表达式；sequence 不是运行时排序值，不要用 `NextSequence()` 之类调用填充它。
 
 ### 循环与分支

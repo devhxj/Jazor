@@ -384,9 +384,9 @@ internal static partial class DirectRenderFailureCaseCatalog
             },
             _ => new(
                 "builder.OpenElement(0, \"div\"); RenderExpression(builder, " + Literal(marker) + "); builder.CloseElement();",
-                "RenderTreeBuilder.RenderExpression is not supported by direct render operation lowering yet.")
+                "RazorVue direct render operation lowering does not support invocation")
             {
-                Members = "private static void RenderExpression(RenderTreeBuilder target, string value) => target.AddContent(0, value);"
+                Members = "private static void RenderExpression(RenderTreeBuilder target, string value) => System.Console.WriteLine(value);"
             }
         };
 

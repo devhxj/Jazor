@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialVueInjectRuntimeTests
     public async Task BuildComponent_OfficialRazorVueInject_UsesImplementationMemberNamesAndSlots()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InjectedShellRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InjectedShellRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -30,7 +30,7 @@ public sealed class RazorSgOfficialVueInjectRuntimeTests
             componentMetadataName: "Demo.Pages.InjectedShellRuntime",
             supportingSources: new Dictionary<string, string>
             {
-                [@"D:\repo\Demo\Components\ContainerComponents.cs"] =
+                [RazorSgTestHost.GetTestDocumentPath("Components/ContainerComponents.cs")] =
                 """
                 using ECMAScript.VueContract;
 

@@ -28,6 +28,9 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `verify-windows-ssr-release.cs` | 打包本地 NuGet 后，以隔离 RazorVue TodoList 消费者完成 `JazorSSR=true` Release publish、Deno SSR HTML、发布目录资源解析与 Edge hydration 交互验证 |
 | `generate-jazoradmin-brand-assets.cs` | 再生成或检查 JazorAdmin 本地品牌图标 |
 
+覆盖率脚本默认把 TRX、Cobertura 和同轮临时结果写入仓库根目录的
+`test/coverage/<gate>/`；`test/` 是本地生成目录，不应把测试产物写到仓库外的盘符根目录。
+
 具体参数和验证范围以脚本开头的说明及相应项目 README 为准。
 
 ## 相关文档

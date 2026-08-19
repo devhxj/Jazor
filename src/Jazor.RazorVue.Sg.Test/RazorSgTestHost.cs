@@ -15,6 +15,44 @@ internal static class RazorSgTestHost
             .Select(static diagnostic => diagnostic.ToString())
             .ToArray();
 
+    /// <summary>
+    /// Returns a portable source path for an in-memory Razor fixture.
+    /// The file does not need to exist: Razor SG consumes the path as source identity while the
+    /// document text is supplied through <c>AdditionalText</c> or a <c>RazorSourceDocument</c>.
+    /// Keep fixtures under the repository's test tree so source maps and reproductions never
+    /// depend on a developer-specific absolute path.
+    /// </summary>
+    public static string GetTestDocumentPath(string relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath))
+            throw new ArgumentException("A relative fixture path is required.", nameof(relativePath));
+
+        if (Path.IsPathRooted(relativePath))
+            throw new ArgumentException("Fixture paths must be relative to test/fixtures/razorvue.", nameof(relativePath));
+
+        var normalized = relativePath.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+        return Path.Combine(FindRepositoryRoot(), "test", "fixtures", "razorvue", normalized);
+    }
+
+    /// <summary>
+    /// Creates an isolated test artifact directory below the repository test tree.
+    /// </summary>
+    public static string CreateTestArtifactDirectory(string category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+            throw new ArgumentException("A test artifact category is required.", nameof(category));
+
+        var root = Path.Combine(
+            FindRepositoryRoot(),
+            "test",
+            "artifacts",
+            "razorvue",
+            category,
+            $"{Environment.ProcessId}-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        return root;
+    }
+
     public static string GetLoadedRazorCompilerAssemblyPath()
     {
         var assemblyPath = typeof(Microsoft.AspNetCore.Razor.Language.RazorProjectEngine).Assembly.Location;
@@ -101,5 +139,19 @@ internal static class RazorSgTestHost
             normalizedPath,
             static candidatePath => MetadataReference.CreateFromFile(candidatePath));
         return true;
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+                return directory.FullName;
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate the Jazor repository root from the test output directory.");
     }
 }

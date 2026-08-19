@@ -126,7 +126,9 @@ internal static class RazorVueDiagnosticFactory
 
         var location = symbol.Locations
             .Where(static candidate => candidate.IsInSource)
-            .OrderBy(static candidate => candidate.SourceTree?.FilePath, StringComparer.OrdinalIgnoreCase)
+            // Roslyn guarantees SourceTree for IsInSource locations; keeping the key non-null
+            // preserves deterministic ordering without a metadata-only fallback branch.
+            .OrderBy(static candidate => candidate.SourceTree!.FilePath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static candidate => candidate.SourceSpan.Start)
             .FirstOrDefault();
         return ToAuthorLocation(location);

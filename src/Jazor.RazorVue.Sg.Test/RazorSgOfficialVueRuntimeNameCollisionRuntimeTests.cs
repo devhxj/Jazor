@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
     public async Task BuildComponent_OfficialRazorMemberNamedH_UsesStableAliasInsteadOfVueRuntimeImportOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\RuntimeNameCollision.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/RuntimeNameCollision.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -67,7 +67,7 @@ public sealed class RazorSgOfficialVueRuntimeNameCollisionRuntimeTests
     public async Task BuildComponent_OfficialRazorNestedRuntimeClassNamedHAndInitState_PreserveVueRenderImportOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NestedRuntimeNameCollision.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NestedRuntimeNameCollision.razor"),
             documentText:
             """
             <section>@Message</section>

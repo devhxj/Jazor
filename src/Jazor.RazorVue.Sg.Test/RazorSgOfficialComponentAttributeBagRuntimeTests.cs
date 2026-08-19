@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialComponentAttributeBagRuntimeTests
     public async Task BuildComponent_OfficialRazorComponentAttributeBag_NormalizesDescriptorPropsAndPreservesForeignAttributesOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleasePanelHost.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleasePanelHost.razor"),
             documentText:
             """
             @using Demo.Components

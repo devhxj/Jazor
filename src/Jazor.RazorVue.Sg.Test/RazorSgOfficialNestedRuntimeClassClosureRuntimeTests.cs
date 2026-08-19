@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
     public async Task BuildComponent_OfficialRazorReactiveNestedRuntimeClass_UsesProxySafePrivateStorage()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReactiveNestedRuntimeClass.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReactiveNestedRuntimeClass.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -152,7 +152,7 @@ public sealed class RazorSgOfficialNestedRuntimeClassClosureRuntimeTests
     public async Task BuildComponent_OfficialRazorNestedRuntimeClass_ProjectsFieldPropertyAndHelperInvocationOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NestedRuntimeClassClosureRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NestedRuntimeClassClosureRuntime.razor"),
             documentText:
             """
             <article data-release="@formatter.Key">@formatter.Format(Title)</article>

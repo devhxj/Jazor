@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialDirectImportNameCollisionRuntimeTests
     public async Task BuildComponent_OfficialRazorMemberAndLibraryExportNamesCollide_UsesStableFallbackNameOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\DirectImportNameCollision.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DirectImportNameCollision.razor"),
             documentText:
             """
             @using Demo.Library

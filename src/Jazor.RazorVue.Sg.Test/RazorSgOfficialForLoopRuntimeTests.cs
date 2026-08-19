@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     public async Task BuildComponent_OfficialRazorForLoop_LowersIndexedKeyedContentOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\IndexedForLoopRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/IndexedForLoopRuntime.razor"),
             documentText:
             """
             @for (var index = 0; index < Items.Length; index++)
@@ -59,7 +59,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     public async Task BuildComponent_OfficialRazorWhileLoop_PreservesTrailingCounterUpdateOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\IndexedWhileLoopRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/IndexedWhileLoopRuntime.razor"),
             documentText:
             """
             @{
@@ -113,7 +113,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     public async Task BuildComponent_OfficialRazorDoWhileLoop_EvaluatesBodyBeforeConditionOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\DoWhileLoopRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DoWhileLoopRuntime.razor"),
             documentText:
             """
             @{
@@ -171,7 +171,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     public async Task BuildComponent_OfficialRazorForLoopWithoutUpdateList_PreservesTrailingBodyMutationOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ForLoopWithoutUpdateRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ForLoopWithoutUpdateRuntime.razor"),
             documentText:
             """
             @for (var index = 0; index < Items.Length;)
@@ -221,7 +221,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     public async Task BuildComponent_OfficialRazorForLoopWithMultipleUpdates_PreservesUpdateOrderOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ForLoopMultipleUpdatesRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ForLoopMultipleUpdatesRuntime.razor"),
             documentText:
             """
             @for (int index = 0, ordinal = 10; index < Items.Length; index++, ordinal += 10)
@@ -270,7 +270,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     public async Task BuildComponent_OfficialRazorWhileLoopWithKey_PreservesKeyedIterationIdentityOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\KeyedWhileLoopRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/KeyedWhileLoopRuntime.razor"),
             documentText:
             """
             @{
@@ -322,7 +322,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     public async Task BuildComponent_OfficialRazorDoWhileWithMultipleRoots_PreservesIterationFragmentsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\DoWhileMultipleRootsRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DoWhileMultipleRootsRuntime.razor"),
             documentText:
             """
             @{
@@ -379,7 +379,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
     public async Task BuildComponent_OfficialRazorLoopBranches_PreserveForeachForAndWhileControlFlowOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\LoopBranchesRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/LoopBranchesRuntime.razor"),
             documentText:
             """
             <section data-loop="foreach">

@@ -32,17 +32,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### 2026-08-18
+### 2026-08-19
 
-- Compiler and RazorVue branch-coverage acceptance gates are now maintained at 97%+, with boundary regressions covering the supported translation and component-generation paths.
-
-- Jazor 0.16.2 broadens RazorVue component logic with base-to-derived replay of source initializers and parameterless constructors, source-base lifecycle/dispose dispatch, module-lifetime static members, and inheritance-safe module exports.
-- RazorVue direct render now preserves ordinary `break` and `continue` in verified `for`, `foreach`, `while`, and `do while` content segments; labels, `goto`, and branches crossing open render frames remain diagnosed boundaries.
-- Jazor 0.16.1 preserves the parent context for RazorVue dynamic slots, retains explicit loop-item keys when scoped lowering cannot use `renderList`, imports retained static-vnode helpers correctly, and keeps supported C# collection-initializer `Add` calls intact.
-- RazorVue final-compilation failures now use stable `JAZORVGA020`-`026` diagnostics with mapped Razor/C# source locations and actionable guidance; failed component generation no longer leaves partial artifact catalogs.
-- Runtime member classes captured by RazorVue components remain safe through Vue deep Proxies, including private storage, auto-property backing fields, primary-constructor capture, and field-like events.
-- RazorVue 0.16.0 rejects unverified labeled `break`/`continue` lowering shapes.
-- Release validation publishes an isolated `JazorSSR=true` RazorVue TodoList consumer from generated NuGet packages and verifies packaged SSR, PathBase resolution, and Edge hydration.
+- Jazor 0.17.0 supports official Razor Source Generator generic component type inference and open generic `OpenComponent<T>` lowering without leaking render-builder state into generated modules.
+- Reachable component `RenderFragment` helpers now remain in the artifact closure, and invalid Vue injection metadata fails before partial artifacts are emitted.
+- Indexed nested C# initializers are lowered correctly, and checked-in sample manifests no longer embed machine-specific assembly paths.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

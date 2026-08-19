@@ -31,11 +31,9 @@ public partial class SemanticWalker
 	public override Node? VisitArrayInitializer(IArrayInitializerOperation operation, SenseArgument argument)
 	{
 		var elements = new List<Expression?>();
-		var elementTargetType = operation.Parent switch
-		{
-			IArrayCreationOperation arrayCreation => GetCollectionElementTargetType(arrayCreation.Type),
-			_ => null
-		};
+		// Roslyn only exposes IArrayInitializerOperation as the child of an array creation.
+		// The parent contract supplies the target element type for collection-expression lowering.
+		var elementTargetType = GetCollectionElementTargetType(((IArrayCreationOperation)operation.Parent!).Type);
 		foreach (var element in operation.ElementValues)
 		{
 			elements.Add(TranslateTupleForTarget(element, elementTargetType, argument));
@@ -55,9 +53,8 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitFieldInitializer(IFieldInitializerOperation operation, SenseArgument argument)
 	{
-		var targetType = operation.InitializedFields.Length > 0
-			? operation.InitializedFields[0].Type
-			: null;
+		// An initializer operation is created for at least one field by Roslyn.
+		var targetType = operation.InitializedFields[0].Type;
 		return TranslateTupleForTarget(operation.Value, targetType, argument);
 	}
 
@@ -66,9 +63,8 @@ public partial class SemanticWalker
 	/// </summary>
 	public override Node? VisitPropertyInitializer(IPropertyInitializerOperation operation, SenseArgument argument)
 	{
-		var targetType = operation.InitializedProperties.Length > 0
-			? operation.InitializedProperties[0].Type
-			: null;
+		// An initializer operation is created for at least one property by Roslyn.
+		var targetType = operation.InitializedProperties[0].Type;
 		return TranslateTupleForTarget(operation.Value, targetType, argument);
 	}
 

@@ -4,10 +4,82 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
 {
     [TestMethod]
+    public async Task BuildComponent_OfficialRazorMemberAndDirectImportShareExactName_RelowersWithStableAliases()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DeclaredDirectImportNameCollision.razor"),
+            documentText:
+            """
+            @using Demo.Library
+
+            <DirectNormalize />
+            <p>@Normalize()</p>
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/declared-direct-import-name-collision")]
+            public partial class DeclaredDirectImportNameCollision : ComponentBase, IVueComponent
+            {
+                private string Normalize() => "member";
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.DeclaredDirectImportNameCollision",
+            supportingSources: new Dictionary<string, string>
+            {
+                ["Library/DirectNormalize.cs"] =
+                """
+                using ECMAScript.VueContract;
+
+                namespace Demo.Library;
+
+                [VueLibraryComponent("declared-direct-normalize-library", "Normalize")]
+                public sealed class DirectNormalize : ComponentBase
+                {
+                }
+                """
+            });
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "declared-direct-normalize-library", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "function m$", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "import { Normalize", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/declared-direct-import-name-collision.mjs",
+            observation.ModuleText,
+            "official-declared-direct-import-name-collision-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/declared-direct-import-name-collision.mjs";
+
+            test("declared members and direct imports retain separate bindings", () => {
+                const vnode = component.setup({}, { slots: {} })();
+                assert.equal(vnode.name.description, "Fragment");
+                const panel = vnode.children.find(node => node?.name?.name === "direct-normalize");
+                const paragraph = vnode.children.find(node => node?.name === "p");
+                assert.ok(panel);
+                assert.ok(paragraph);
+                assert.equal(paragraph.children, "member");
+            });
+            """,
+            new Dictionary<string, string>
+            {
+                ["node_modules/declared-direct-normalize-library/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
+                ["node_modules/declared-direct-normalize-library/index.mjs"] =
+                    "export const Normalize = { name: \"direct-normalize\" };"
+            });
+    }
+
+    [TestMethod]
     public async Task BuildComponent_OfficialRazorModuleStaticMember_ImportsOnlyTheMemberOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\StaticModuleText.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/StaticModuleText.razor"),
             documentText:
             """
             @using Demo.Helpers
@@ -77,7 +149,7 @@ public sealed class RazorSgOfficialCrossPassImportNameCollisionRuntimeTests
     public async Task BuildComponent_CompilerAndDirectRenderImportsShareExportName_UsesStableAliasOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\CrossPassImportNameCollision.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/CrossPassImportNameCollision.razor"),
             documentText:
             """
             @using Demo.Library

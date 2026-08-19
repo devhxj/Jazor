@@ -4,10 +4,53 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialInlineConstantRuntimeTests
 {
     [TestMethod]
+    public async Task BuildComponent_OfficialRazorBooleanInlineContent_EmitsAnImmutableTextChildOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/StaticBooleanContent.razor"),
+            documentText:
+            """
+            <p>@(true)</p>
+            """,
+            codeBehindSource:
+            """
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/static-boolean-content-runtime")]
+            public partial class StaticBooleanContent : ComponentBase, IVueComponent
+            {
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.StaticBooleanContent");
+
+        StringAssert.Contains(observation.GeneratedCSharp, "AddContent", StringComparison.Ordinal);
+        StringAssert.Contains(observation.GeneratedCSharp, "true", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/static-boolean-content-runtime.mjs",
+            observation.ModuleText,
+            "official-static-boolean-content-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/static-boolean-content-runtime.mjs";
+
+            test("official Razor boolean content remains an immutable VNode child", () => {
+                const paragraph = component.setup({}, { slots: {} })();
+                assert.equal(paragraph.name, "p");
+                assert.deepEqual(paragraph.children, [{ name: "__text", children: true, patchFlag: undefined }]);
+            });
+            """);
+    }
+
+    [TestMethod]
     public async Task BuildComponent_OfficialRazorInlineFrameConstants_InlineValuesWithoutCreatingRuntimeLocalsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleasePolicySummary.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleasePolicySummary.razor"),
             documentText:
             """
             <section data-area="release-policy">

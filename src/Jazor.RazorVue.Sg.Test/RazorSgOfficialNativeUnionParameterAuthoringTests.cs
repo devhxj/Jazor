@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialNativeUnionParameterAuthoringTests
     public async Task BuildComponent_OfficialRazorNativeUnionParameter_BindsAndLowers()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NativeUnionParent.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NativeUnionParent.razor"),
             documentText:
             """
             <UnionChild Mode="@Mode" />
@@ -27,7 +27,7 @@ public sealed class RazorSgOfficialNativeUnionParameterAuthoringTests
             componentMetadataName: "Demo.Pages.NativeUnionParent",
             supportingSources: new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                [@"D:\repo\Demo\Components\UnionChild.cs"] =
+                [RazorSgTestHost.GetTestDocumentPath("Components/UnionChild.cs")] =
                 """
                 namespace Demo.Pages;
 

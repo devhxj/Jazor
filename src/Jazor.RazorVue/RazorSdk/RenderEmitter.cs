@@ -169,7 +169,14 @@ internal static class RenderEmitter
                     declaredNames,
                     reservedImportNames,
                     injectRegistry)
-                .EmitBlock(buildRenderTreeBody, BuilderBinding.ForSymbol(buildRenderTreeMethod.Parameters[0]));
+                // A concrete component can inherit BuildRenderTree from a generic base. Roslyn
+                // then supplies a constructed method symbol here, while the source body keeps
+                // the base declaration's parameter symbol. Bind the operation body by the
+                // original definition so its RenderTreeBuilder calls stay on the direct path.
+                // 泛型基类上的构造方法与方法体参数符号不同，入口必须锚定原始定义。
+                .EmitBlock(
+                    buildRenderTreeBody,
+                    BuilderBinding.ForSymbol(buildRenderTreeMethod.OriginalDefinition.Parameters[0]));
             result = new RenderResult(
                 lowered.RenderExpression,
                 lowered.PreludeStatements,
@@ -271,7 +278,15 @@ internal static class RenderEmitter
         {
             _compilation = compilation;
             _componentSymbol = componentSymbol;
-            _walker = new SemanticWalker(test: false)
+            // Direct RenderTree lowering also resolves authored runtime types (for example a
+            // nested helper class constructed directly in BuildRenderTree). Give this walker the
+            // same current-module root and declared-name map used by AstConverter; otherwise a
+            // private nested type is mistaken for a flattened external module type and the final
+            // artifact imports itself.
+            // direct 路径同样必须共享当前模块类型/命名上下文，避免生成自模块 import。
+            _walker = new SemanticWalker(
+                componentSymbol,
+                declaredNames ?? new Dictionary<ISymbol, string>(SymbolComparer))
             {
                 Host = new VueSemanticWalkerHost(
                     componentSymbol,
@@ -2097,11 +2112,16 @@ internal static class RenderEmitter
             }
 
             var syntax = method.DeclaringSyntaxReferences[0].GetSyntax();
-            if (syntax is not MethodDeclarationSyntax { Body: not null } methodDeclaration)
+            if (syntax is not MethodDeclarationSyntax methodDeclaration)
                 return false;
 
             var model = _compilation.GetSemanticModel(methodDeclaration.SyntaxTree);
-            if (model.GetOperation(methodDeclaration.Body) is not IBlockOperation body)
+            var helperOperation = methodDeclaration.Body is not null
+                ? model.GetOperation(methodDeclaration.Body)
+                : methodDeclaration.ExpressionBody is null
+                    ? null
+                    : model.GetOperation(methodDeclaration.ExpressionBody.Expression);
+            if (helperOperation is null)
                 return false;
 
             var substitutions = context.Substitutions.ToBuilder();
@@ -2109,7 +2129,12 @@ internal static class RenderEmitter
                 AddParameterSubstitution(substitutions, method, index, invocation.Arguments[index].Value);
 
             var helperContext = new EmitContext(
-                BuilderBinding.ForSymbol(method.Parameters[0]),
+                // Generic Razor TypeInference calls are bound to a constructed method, while
+                // the method body operation references OriginalDefinition parameter symbols.
+                // Bind the body to that stable symbol identity so nested builder calls remain
+                // in the direct-render protocol instead of falling through to raw C# lowering.
+                // 泛型构造调用与方法体参数符号不同，必须统一到 OriginalDefinition。
+                BuilderBinding.ForSymbol(method.OriginalDefinition.Parameters[0]),
                 substitutions.ToImmutable(),
                 context.ParameterAliases,
                 context.LocalAliases,
@@ -2120,7 +2145,10 @@ internal static class RenderEmitter
                 context.PreludeStatements,
                 AllowPreludeDeclarations: context.AllowPreludeDeclarations,
                 Argument: context.Argument);
-            _ = EmitOperations(body.Operations, helperContext, state);
+            if (helperOperation is IBlockOperation body)
+                _ = EmitOperations(body.Operations, helperContext, state);
+            else
+                _ = EmitOperation(helperOperation, helperContext, state);
             return true;
         }
 
@@ -2368,12 +2396,11 @@ internal static class RenderEmitter
                     return false;
                 }
 
-                var name = property.Key switch
-                {
-                    Identifier identifier => identifier.Name,
-                    Acornima.Ast.StringLiteral literal => literal.Value,
-                    _ => string.Empty
-                };
+                // The guard above establishes the key union. Keep the projection explicit so an
+                // impossible third arm cannot become a coverage-only fallback or hide a bad AST shape.
+                var name = property.Key is Identifier identifier
+                    ? identifier.Name
+                    : ((Acornima.Ast.StringLiteral)property.Key).Value;
                 if (string.Equals(name, "key", StringComparison.Ordinal) ||
                     string.Equals(name, "ref", StringComparison.Ordinal) ||
                     IsDirectEventAttributeName(name))

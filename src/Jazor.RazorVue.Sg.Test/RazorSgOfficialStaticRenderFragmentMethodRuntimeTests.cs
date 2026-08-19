@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialStaticRenderFragmentMethodRuntimeTests
     public async Task BuildComponent_OfficialRazorStaticRenderFragmentMethodGroup_ProjectsNamedSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseTermsPage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTermsPage.razor"),
             documentText:
             """
             @using Demo.Components

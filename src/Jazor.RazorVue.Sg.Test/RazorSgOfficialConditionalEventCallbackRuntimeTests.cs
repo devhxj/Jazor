@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialConditionalEventCallbackRuntimeTests
     public async Task BuildComponent_OfficialRazorConditionalEventCallback_SelectsCurrentActionOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseActionControl.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseActionControl.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

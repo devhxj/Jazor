@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialReleaseWorkflowRuntimeTests
     public async Task BuildComponent_OfficialRazorReleaseWorkflow_ComposesFormBindingModelSlotsAndActionsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseWorkflow.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseWorkflow.razor"),
             documentText:
             """
             @using Demo.Components

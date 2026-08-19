@@ -23,7 +23,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
 
     private readonly SsrArtifactLocator _artifactLocator;
     private readonly int _workerCount;
-    private readonly object _runnerGate = new();
+    private readonly Lock _runnerGate = new();
     private readonly SemaphoreSlim _generationGate = new(1, 1);
     private readonly SemaphoreSlim _renderCapacity;
     private string? _preparedRunnerRoot;
@@ -189,32 +189,23 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         return reader.ReadToEnd().ReplaceLineEndings("\n");
     }
 
-    private sealed class SsrWorkerPool : IAsyncDisposable
+    private sealed class SsrWorkerPool(
+        SsrRenderer.SsrArtifactGeneration generation,
+        SsrArtifacts artifacts,
+        string runnerPath,
+        int workerCount,
+        JsonSerializerOptions jsonOptions) : IAsyncDisposable
     {
-        private readonly SsrArtifactGeneration _generation;
-        private readonly SsrArtifacts _artifacts;
-        private readonly string _runnerPath;
-        private readonly JsonSerializerOptions _jsonOptions;
-        private readonly SemaphoreSlim _capacity;
+        private readonly SsrArtifactGeneration _generation = generation;
+        private readonly SsrArtifacts _artifacts = artifacts;
+        private readonly string _runnerPath = runnerPath;
+        private readonly JsonSerializerOptions _jsonOptions = jsonOptions;
+        private readonly SemaphoreSlim _capacity = new SemaphoreSlim(workerCount, workerCount);
         private readonly object _gate = new();
         private readonly Queue<SsrWorker> _idleWorkers = new();
         private readonly HashSet<SsrWorker> _workers = [];
         private bool _retired;
         private bool _disposed;
-
-        public SsrWorkerPool(
-            SsrArtifactGeneration generation,
-            SsrArtifacts artifacts,
-            string runnerPath,
-            int workerCount,
-            JsonSerializerOptions jsonOptions)
-        {
-            _generation = generation;
-            _artifacts = artifacts;
-            _runnerPath = runnerPath;
-            _jsonOptions = jsonOptions;
-            _capacity = new SemaphoreSlim(workerCount, workerCount);
-        }
 
         public async Task<string> RenderAsync(
             SsrRenderPayload payload,

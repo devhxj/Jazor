@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
     public async Task BuildComponent_OfficialRazorOverloadedRecursiveRenderFragments_KeepSymbolBoundSlotHelpersOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseOverloadTemplateRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseOverloadTemplateRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -124,7 +124,7 @@ public sealed class RazorSgOfficialOverloadedRecursiveRenderFragmentRuntimeTests
     public async Task BuildComponent_OfficialRazorConditionalRenderFragmentMember_SelectsTheActiveNamedSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseHeaderVariantRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseHeaderVariantRuntime.razor"),
             documentText:
             """
             @using Demo.Components

@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialComponentDispatchRuntimeTests
     public async Task BuildComponent_OfficialRazorComponentBaseDispatch_UpdatesStateThroughInvokeAsyncOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComponentDispatchRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentDispatchRuntime.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

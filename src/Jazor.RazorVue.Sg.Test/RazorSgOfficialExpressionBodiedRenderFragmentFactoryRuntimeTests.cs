@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
     public async Task BuildComponent_OfficialRazorExpressionBodiedRenderFragmentFactory_ProvidesSlotContentOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ExpressionBodiedReleaseHeader.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ExpressionBodiedReleaseHeader.razor"),
             documentText:
             """
             @using Demo.Components
@@ -87,7 +87,7 @@ public sealed class RazorSgOfficialExpressionBodiedRenderFragmentFactoryRuntimeT
     public async Task BuildComponent_OfficialRazorExpressionBodiedGenericRenderFragmentProperty_ProvidesScopedSlotContentOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ExpressionBodiedReleaseTemplate.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ExpressionBodiedReleaseTemplate.razor"),
             documentText:
             """
             @using Demo.Components

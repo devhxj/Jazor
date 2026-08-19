@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialInheritedGenericSlotForwardingRuntimeTests
     public async Task BuildComponent_OfficialRazorInheritedGenericSlot_ForwardsDerivedMemberNameOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InheritedReleaseTemplateForwarder.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InheritedReleaseTemplateForwarder.razor"),
             documentText:
             """
             @using Demo.Components

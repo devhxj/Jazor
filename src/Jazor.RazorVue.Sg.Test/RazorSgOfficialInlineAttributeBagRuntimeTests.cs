@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialInlineAttributeBagRuntimeTests
     public async Task BuildComponent_OfficialRazorInlineAttributeBag_ExpandsKnownAttributesAndPreservesExplicitPrecedenceOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseDeploymentInlineAttributes.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeploymentInlineAttributes.razor"),
             documentText:
             """
             @using System.Collections.Generic

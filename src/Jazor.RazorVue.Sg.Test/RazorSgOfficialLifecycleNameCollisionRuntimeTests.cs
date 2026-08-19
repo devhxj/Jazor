@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
     public async Task BuildComponent_LifecycleMethodRunsWhenRazorLocalUsesItsRuntimeName()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\LifecycleNameCollision.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/LifecycleNameCollision.razor"),
             documentText:
             """
             @{
@@ -60,7 +60,7 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
     public async Task BuildComponent_AllLifecycleMethodsRunWhenRazorLocalsUseTheirRuntimeNames()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\LifecycleNames.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/LifecycleNames.razor"),
             documentText:
             """
             @{

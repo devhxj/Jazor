@@ -112,9 +112,7 @@ internal static class GeneratedCSharpBinder
             {
                 diagnosticBuilder.Add(RazorVueDiagnosticFactory.Create(
                     RazorVueDiagnosticCategory.ComponentBinding,
-                    failure ?? "RazorVue component '" +
-                    componentSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
-                    "' did not declare " + expectedRenderMethod + ".",
+                    failure!,
                     RazorVueDiagnosticFactory.GetSymbolLocation(buildRenderTree),
                     componentSymbol));
                 continue;
@@ -204,10 +202,7 @@ internal static class GeneratedCSharpBinder
 
         foreach (var nodeOrToken in declaration.DescendantNodesAndTokensAndSelf())
         {
-            var location = nodeOrToken.GetLocation();
-            if (location is null)
-                continue;
-
+            var location = nodeOrToken.GetLocation()!;
             var mappedSpan = location.GetMappedLineSpan();
             var mappedPath = mappedSpan.Path;
             if (mappedSpan.HasMappedPath &&

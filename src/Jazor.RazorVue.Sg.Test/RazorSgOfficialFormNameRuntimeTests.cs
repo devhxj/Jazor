@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialFormNameRuntimeTests
     public async Task BuildComponent_OfficialRazorFormName_RendersFormWithoutServerOnlyMetadataOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseDeploymentForm.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeploymentForm.razor"),
             documentText:
             """
             <form @formname="release-deployment">

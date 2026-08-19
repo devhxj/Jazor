@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorInputBindAfterAction_UpdatesStateBeforeCallbackOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InputBindingAfterRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InputBindingAfterRuntime.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -68,7 +68,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorComponentBindAfterAction_UpdatesModelBeforeCallbackOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComponentBindingAfterRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentBindingAfterRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -152,7 +152,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorEventModifiers_RunPlatformControlsBeforeHandlerOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\EventModifiersRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/EventModifiersRuntime.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -223,7 +223,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorAttributeSplat_PreservesExplicitAttributePrecedenceOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\AttributeSplatRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/AttributeSplatRuntime.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -281,7 +281,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorKeyedLoop_PreservesPerItemVNodeKeysOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\KeyedLoopRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/KeyedLoopRuntime.razor"),
             documentText:
             """
             @foreach (var item in Items)
@@ -345,7 +345,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorNamedTupleLoop_PreservesStructuralBindingsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\NamedTupleLoopRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NamedTupleLoopRuntime.razor"),
             documentText:
             """
             @foreach (var (id, label) in Entries)
@@ -403,7 +403,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorDictionaryLoop_PreservesMapEntryBindingsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\DictionaryLoopRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DictionaryLoopRuntime.razor"),
             documentText:
             """
             @foreach (var (stage, count) in Counts)
@@ -461,7 +461,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorComponentSlots_ExposeExecutableNamedAndDefaultSlotCallbacksOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComponentSlotsRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentSlotsRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -558,7 +558,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorGenericItemTemplate_ExecutesTypedSlotCallbackOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseTemplateRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTemplateRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -649,7 +649,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorGenericItemTemplate_ComposesConditionalAndLoopedSlotContentOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseTemplateControlFlowRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTemplateControlFlowRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -772,7 +772,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorRenderFragmentMethodGroup_ExecutesAsNamedSlotWithCurrentStateOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseHeaderMethodGroupRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseHeaderMethodGroupRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -866,7 +866,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorGenericComponent_ErasesTypeArgumentAndRetainsTypedPropOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\GenericComponentRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/GenericComponentRuntime.razor"),
             documentText:
             """
             @typeparam TItem
@@ -944,7 +944,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorGenericComponent_MapsTypedEventCallbackToVueListenerOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\GenericEventCallbackRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/GenericEventCallbackRuntime.razor"),
             documentText:
             """
             @typeparam TItem
@@ -1049,7 +1049,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorComponentSlotFromContentDescriptor_ExecutesMethodGroupOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ContentDescriptorRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ContentDescriptorRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -1144,7 +1144,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorDirectRender_RetainsReachableHelperAndPrunesUnreachableHelperOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\DirectRenderReachabilityRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DirectRenderReachabilityRuntime.razor"),
             documentText:
             """
             <section data-title="@FormatTitle()">@FormatTitle()</section>
@@ -1194,7 +1194,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorLifecycleHooks_RunAcrossPropUpdateAndUnmountOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\LifecycleRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/LifecycleRuntime.razor"),
             documentText:
             """
             <p data-title="@Title">@Log</p>
@@ -1282,7 +1282,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorSourceBaseConstructorsAndVirtualDisposal_RunInClrOrderOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\SourceConstructorRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/SourceConstructorRuntime.razor"),
             documentText:
             """
             @inherits Demo.Pages.SourceConstructorBase
@@ -1321,7 +1321,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
             componentMetadataName: "Demo.Pages.SourceConstructorRuntime",
             supportingSources: new Dictionary<string, string>
             {
-                [@"D:\repo\Demo\Pages\SourceConstructorBase.cs"] =
+                [RazorSgTestHost.GetTestDocumentPath("Pages/SourceConstructorBase.cs")] =
                 """
                 using System;
 
@@ -1385,7 +1385,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorComponentReference_UpdatesStateUsedByNextRenderOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComponentReferenceRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComponentReferenceRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -1457,7 +1457,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorCodeBlock_ExecutesComplexComponentLogicOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComplexCodeRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComplexCodeRuntime.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -1537,7 +1537,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorStaticMembers_KeepModuleLifetimeAcrossSetupInstancesOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\StaticMembersRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/StaticMembersRuntime.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -1621,7 +1621,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
     public async Task BuildComponent_OfficialRazorEventCallback_AwaitsListenerBeforeUpdatingStateOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Components\EventCallbackRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Components/EventCallbackRuntime.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

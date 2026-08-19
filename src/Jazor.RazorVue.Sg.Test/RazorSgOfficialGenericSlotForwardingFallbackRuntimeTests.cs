@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialGenericSlotForwardingFallbackRuntimeTests
     public async Task BuildComponent_OfficialRazorGenericSlotForwardingWithFallback_RebindsScopedSlotValueOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseTemplateForwarder.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseTemplateForwarder.razor"),
             documentText:
             """
             @using Demo.Components

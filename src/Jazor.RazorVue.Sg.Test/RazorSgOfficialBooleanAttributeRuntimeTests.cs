@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialBooleanAttributeRuntimeTests
     public async Task BuildComponent_OfficialRazorBooleanAttribute_TracksParameterStateOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseDeployButton.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeployButton.razor"),
             documentText:
             """
             <button data-action="deploy" disabled="@IsDeploying">Deploy</button>

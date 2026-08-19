@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialLocalMemberNameCollisionRuntimeTests
     public async Task BuildComponent_OfficialRazorLocalAndStateMemberWithSameName_PreservesBothValuesOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\LocalMemberNameCollision.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/LocalMemberNameCollision.razor"),
             documentText:
             """
             @{

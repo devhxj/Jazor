@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
     public async Task BuildComponent_OfficialRazorRenderFragmentFactory_BlockReturnProvidesScopedSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TemplateFactoryRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TemplateFactoryRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -97,7 +97,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
     public async Task BuildComponent_OfficialRazorRenderFragmentProperty_BlockGetterProvidesScopedSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TemplatePropertyRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TemplatePropertyRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -191,7 +191,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
     public async Task BuildComponent_OfficialRazorRenderFragmentProperty_SelectsConditionalMethodGroupSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ConditionalTemplatePropertyRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConditionalTemplatePropertyRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -295,7 +295,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
     public async Task BuildComponent_OfficialRazorConditionalRenderFragmentParameter_SelectsFactorySlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ConditionalTemplateParameterRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConditionalTemplateParameterRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -398,7 +398,7 @@ public sealed class RazorSgOfficialRenderFragmentFactoryRuntimeTests
     public async Task BuildComponent_OfficialRazorRenderFragmentMethodGroups_EmitInstanceAndStaticSlotsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TemplateMethodGroupRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TemplateMethodGroupRuntime.razor"),
             documentText:
             """
             @using Demo.Components

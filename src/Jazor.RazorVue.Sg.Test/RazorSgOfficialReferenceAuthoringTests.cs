@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
     public async Task BuildComponent_OfficialRazorReferences_EmitElementAndComponentRefCallbacksInSourceOrder()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\References.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/References.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components
@@ -64,7 +64,7 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
     public async Task BuildComponent_OfficialRazorComponentReference_TracksMountAndUnmountOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReferenceRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReferenceRuntime.razor"),
             documentText:
             """
             <div>

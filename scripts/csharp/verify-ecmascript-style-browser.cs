@@ -16,6 +16,7 @@ var browserPath = ResolveBrowserExecutable()
 var root = Path.Combine(repoRoot, ".tmp", "ecmascript-style-browser-" + Environment.ProcessId);
 var profileRoot = Path.Combine(root, "browser-profile");
 
+SweepStaleHarnessRoots(repoRoot, root);
 EnsureDirectoryDeletedWithinRepo(repoRoot, root);
 Directory.CreateDirectory(root);
 
@@ -70,7 +71,25 @@ try
         ?? throw new InvalidOperationException("The browser process could not be started.");
     var standardOutput = process.StandardOutput.ReadToEndAsync();
     var standardError = process.StandardError.ReadToEndAsync();
-    await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(45));
+    try
+    {
+        await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(45));
+    }
+    catch (TimeoutException)
+    {
+        // A hung one-shot browser must be tree-killed: orphaned Chromium children keep
+        // profile file locks, and the failed cleanup in finally would then mask this
+        // timeout. / 挂起的 --dump-dom 浏览器必须整树终止，否则孤儿子进程锁住
+        // profile 目录，finally 清理失败还会覆盖真正的超时原因。
+        try
+        {
+            process.Kill(entireProcessTree: true);
+        }
+        catch
+        {
+        }
+        throw;
+    }
     var output = await standardOutput;
     var error = await standardError;
     if (process.ExitCode != 0)
@@ -114,7 +133,7 @@ try
 }
 finally
 {
-    EnsureDirectoryDeletedWithinRepo(repoRoot, root);
+    await EnsureDirectoryDeletedWithRetryAsync(repoRoot, root);
 }
 
 static object ReadSingleCatalogItem(Assembly assembly, string catalogTypeName)
@@ -179,6 +198,56 @@ static void EnsureDirectoryDeletedWithinRepo(string repoRoot, string path)
 
     if (Directory.Exists(fullPath))
         Directory.Delete(fullPath, recursive: true);
+}
+
+// Stale per-PID harness roots from abnormal runs are never reclaimed otherwise (the
+// name embeds the dead run's PID); sweep them at startup and skip locked ones, which
+// usually belong to a concurrent run or lingering browser processes.
+// 旧运行残留的 per-PID harness 目录不会再被后续运行清理；启动时尽力清扫，仍被
+// 占用的跳过并提示（可能被并发运行或孤儿浏览器进程持有）。
+static void SweepStaleHarnessRoots(string repoRoot, string currentRoot)
+{
+    var parent = Path.GetDirectoryName(Path.GetFullPath(currentRoot));
+    if (parent is null || !Directory.Exists(parent))
+        return;
+
+    foreach (var directory in Directory.GetDirectories(parent, "ecmascript-style-browser-*"))
+    {
+        try
+        {
+            EnsureDirectoryDeletedWithinRepo(repoRoot, directory);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            Console.WriteLine("ECMAScript.Style browser smoke skipped a locked stale harness directory: " + directory + " (" + error.Message + ")");
+        }
+    }
+}
+
+// Browser handles are released asynchronously, so the delete can fail transiently;
+// retry briefly and warn instead of letting a cleanup failure mask the real error.
+// 浏览器句柄异步释放会让删除瞬时失败；重试并在仍失败时告警，避免清理异常覆盖
+// 真正的失败原因。
+static async Task EnsureDirectoryDeletedWithRetryAsync(string repoRoot, string path)
+{
+    const int maxAttempts = 5;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            EnsureDirectoryDeletedWithinRepo(repoRoot, path);
+            return;
+        }
+        catch (IOException) when (attempt < maxAttempts)
+        {
+            await Task.Delay(500);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            Console.WriteLine("ECMAScript.Style browser smoke could not remove the harness directory: " + path + " (" + error.Message + ")");
+            return;
+        }
+    }
 }
 
 static string? ResolveBrowserExecutable()

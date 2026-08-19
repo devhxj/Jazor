@@ -11,7 +11,7 @@ public sealed class RazorSgVuIconsLibraryComponentTests
     {
         var exception = Assert.Throws<AssertFailedException>(
             () => RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-                documentPath: @"D:\repo\Demo\Pages\RetiredIconAlias.razor",
+                documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/RetiredIconAlias.razor"),
                 documentText:
                 """
                 @using ECMAScript.VuIcons
@@ -44,7 +44,7 @@ public sealed class RazorSgVuIconsLibraryComponentTests
         Assert.AreEqual("vu-icons", dynamicDescriptor!.ImportSpecifier);
 
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\Icons.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/Icons.razor"),
             documentText:
             """
             @using ECMAScript.VuIcons

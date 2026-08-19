@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialLoopMemberNameCollisionRuntimeTests
     public async Task BuildComponent_OfficialRazorLoopLocalAndMethodWithSameJavaScriptName_PreservesBothBindingsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseRefreshQueue.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseRefreshQueue.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

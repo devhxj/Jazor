@@ -1226,7 +1226,23 @@ public partial class SemanticWalker
 		Expression? fallbackInstance,
 		SenseArgument argument)
 	{
-		// A bound nested member initializer targets either a property/indexer or a field.
+		// Roslyn represents an indexed nested initializer as an array-element reference,
+		// whose receiver is the enclosing initializer target. Reuse that target so
+		// `Items[0] = { ... }` follows the normal array/index lowering protocol.
+		if (operation.InitializedMember is IArrayElementReferenceOperation arrayReference)
+		{
+			var initializations = new List<Expression>();
+			var receiver = fallbackInstance!;
+			foreach (var index in arrayReference.Indices)
+				receiver = BuildArrayIndexAccess(arrayReference, receiver, index, argument, initializations);
+			return initializations.Count == 0
+				? receiver
+				: new SequenceExpression(NodeList.From<Expression>([
+					.. initializations,
+					receiver]));
+		}
+
+		// A bound nested member initializer otherwise targets either a property/indexer or a field.
 		if (operation.InitializedMember is IPropertyReferenceOperation propertyReference)
 		{
 			var instance = Translate<Expression>(propertyReference.Instance, argument, null) ?? fallbackInstance!;

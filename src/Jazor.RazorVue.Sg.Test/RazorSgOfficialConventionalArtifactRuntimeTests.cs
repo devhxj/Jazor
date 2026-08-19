@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialConventionalArtifactRuntimeTests
     public async Task BuildComponent_OfficialRazorWithoutModuleAttribute_UsesTheConventionalArtifactContractOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ConventionalArtifactPage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConventionalArtifactPage.razor"),
             documentText:
             """
             <main data-area="releases">

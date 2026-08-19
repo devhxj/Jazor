@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialScopedSlotContextAliasRuntimeTests
     public async Task BuildComponent_OfficialRazorScopedSlotContextAlias_BindsTypedContextOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseListPage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseListPage.razor"),
             documentText:
             """
             @using Demo.Components

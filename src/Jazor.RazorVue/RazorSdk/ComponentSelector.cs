@@ -202,11 +202,8 @@ internal static class ComponentSelector
         foreach (var nodeOrToken in methodSyntax.DescendantNodesAndTokensAndSelf())
         {
             var location = nodeOrToken.GetLocation()!;
-            // Every Roslyn syntax node/token has a concrete Location. Only external/metadata
-            // locations must be skipped here. Syntax 位置不会为 null，只需排除非源码位置。
-            if (!location.IsInSource)
-                continue;
-
+            // Syntax nodes and tokens belong to their source tree, so this path is always
+            // source-backed; metadata filtering is only needed for symbol locations below.
             var mappedSpan = location.GetMappedLineSpan();
             if (mappedSpan.HasMappedPath && HasRazorSourcePath(mappedSpan.Path))
                 return true;

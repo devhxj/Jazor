@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialOptionalEventCallbackRuntimeTests
     public async Task BuildComponent_OfficialRazorOptionalEventCallback_HandlesMissingAndAsyncListenersOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Components\DismissiblePanel.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Components/DismissiblePanel.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

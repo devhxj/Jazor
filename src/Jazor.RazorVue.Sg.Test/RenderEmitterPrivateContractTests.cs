@@ -422,6 +422,17 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsTrue(InvokeEmitterInstance<bool>(
             emitter,
             "CanHoistStaticProps",
+            new ObjectExpression(NodeList.From<Node>(
+                new ObjectProperty(
+                    PropertyKind.Init,
+                    new StringLiteral("data-id", "\"data-id\""),
+                    new StringLiteral("fixed", "\"fixed\""),
+                    computed: false,
+                    shorthand: false,
+                    method: false)))));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(
+            emitter,
+            "CanHoistStaticProps",
             Props(Property("data-id", new StringLiteral("fixed", "\"fixed\"")))));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "CanHoistStaticProps", Props()));
         Assert.IsFalse(InvokeEmitterInstance<bool>(
@@ -474,6 +485,13 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsTrue(InvokeEmitter<bool>("IsRenderTreeBuilderMetadataMethodName", "AddEventStopPropagationAttribute"));
         Assert.IsTrue(InvokeEmitter<bool>("IsRenderTreeBuilderMetadataMethodName", "AddNamedEvent"));
         Assert.IsFalse(InvokeEmitter<bool>("IsRenderTreeBuilderMetadataMethodName", "AddContent"));
+
+        Assert.IsTrue(Invoke<bool>(
+            "IsStaticTextContent",
+            GetVariableInitializer(fixture, inputs, "literal")));
+        Assert.IsFalse(Invoke<bool>(
+            "IsStaticTextContent",
+            GetVariableInitializer(fixture, inputs, "dynamicTextValue")));
 
         var dictionaryInitializers = GetMethod(fixture, "OperationShapes", "DictionaryInitializers");
         var assignment = GetOperation<ISimpleAssignmentOperation>(
@@ -600,7 +618,7 @@ public sealed class RenderEmitterPrivateContractTests
             .OfType<CastExpressionSyntax>()
             .Single(cast => cast.Expression is LiteralExpressionSyntax { Token.ValueText: "converted" }));
 
-        Assert.IsFalse(InvokeEmitter<bool>("IsDiscardDeconstructionTarget", convertedLoopLocal));
+            Assert.IsFalse(InvokeEmitter<bool>("IsDiscardDeconstructionTarget", convertedLoopLocal));
         Assert.IsTrue(InvokeEmitter<bool>("IsCompileTimeOnlyDeconstructionValue", convertedLiteral));
 
         var loopLocals = InvokeEmitter<ImmutableArray<ILocalSymbol>>(
@@ -705,6 +723,7 @@ public sealed class RenderEmitterPrivateContractTests
         AssertRenderTreeBuilderReceiver(emitter, builderContent, context, expected: true);
         AssertRenderTreeBuilderReceiver(emitter, otherContent, context, expected: false);
         AssertRenderTreeBuilderReceiver(emitter, instanceHelper, context, expected: false);
+        AssertRenderTreeBuilderReceiver(emitter, foreignInstanceHelper, context, expected: false);
         AssertRenderTreeBuilderReceiver(emitter, staticHelper, context, expected: true);
         AssertRenderTreeBuilderReceiver(emitter, noArgumentHelper, context, expected: false);
         Assert.AreEqual(
@@ -716,7 +735,7 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", staticHelper, context, state));
         Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", externalHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", foreignInstanceHelper, context, state));
-        Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", expressionHelper, context, state));
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", expressionHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", localHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", mismatchedHelper, context, state));
         Assert.IsFalse(InvokeEmitterInstance<bool>(emitter, "TryEmitHelperInvocation", nonBuilderHelper, context, state));
@@ -2001,6 +2020,30 @@ public sealed class RenderEmitterPrivateContractTests
             whileLoop,
             CreateEmitContext(GetMethodSymbol(fixture, "EmitterHost", "WhileLoopStaticContent").Parameters[0]),
             CreateRenderState()));
+
+        // Exercise the complete block path as well as the private operation seam. The full
+        // path owns loop-local declarations and branch-state flushing that an isolated operation
+        // call intentionally bypasses.
+        foreach (var methodName in new[]
+                 {
+                     "ForLoopWithMultipleUpdates",
+                     "DirectForEachLoop",
+                     "BranchingRootThenSideEffect"
+                 })
+        {
+            var method = GetMethodSymbol(fixture, "EmitterHost", methodName);
+            var body = GetMethodBody(fixture, "EmitterHost", methodName);
+            var emitted = RenderEmitter.TryEmit(
+                fixture.Compilation,
+                component,
+                method,
+                body,
+                declaredNames: null,
+                VueInjectRegistry.ForCompilation(fixture.Compilation),
+                out _,
+                out var failure);
+            Assert.IsTrue(emitted, methodName + ": " + failure);
+        }
     }
 
     [TestMethod]
@@ -2031,6 +2074,16 @@ public sealed class RenderEmitterPrivateContractTests
             emitter,
             "LowerForLoopUpdates",
             ImmutableArray<IOperation>.Empty,
+            helperContext));
+        // A Roslyn loop update can arrive as a bare operation when it was synthesized by a
+        // caller rather than parsed from an expression statement. Preserve that shape too.
+        Assert.IsNotNull(InvokeEmitterInstance<Expression?>(
+            emitter,
+            "LowerForLoopUpdates",
+            ImmutableArray.Create<IOperation>(GetVariableInitializer(
+                fixture,
+                GetMethod(fixture, "OperationShapes", "Inputs"),
+                "literal")),
             helperContext));
 
         Assert.IsFalse(InvokeEmitter<bool>("IsLoopSideEffectOperation", variableDeclaration));
@@ -2073,6 +2126,135 @@ public sealed class RenderEmitterPrivateContractTests
             "AddEventPreventDefaultAttribute");
         Assert.AreEqual(1, InvokeEmitter<int>("GetRenderTreeBuilderReceiverArgumentOffset", metadataInvocation));
         Assert.AreEqual(0, InvokeEmitter<int>("GetRenderTreeBuilderReceiverArgumentOffset", builderInvocation));
+    }
+
+    [TestMethod]
+    public void DirectRenderLoopStateBoundaries_FlushPreludeAndTrackScopedLocals()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var loopMethod = GetMethod(fixture, "EmitterHost", "BranchingRootThenSideEffect");
+        var loop = GetOperation<IWhileLoopOperation>(
+            fixture,
+            loopMethod.DescendantNodes().OfType<WhileStatementSyntax>().Single());
+        var context = CreateEmitContext(
+            GetMethodSymbol(fixture, "EmitterHost", "BranchingRootThenSideEffect").Parameters[0]);
+
+        // A runtime local in a branching loop must be declared in the loop body prelude.
+        // This exercises the scoped argument path distinct from straight-line loops.
+        Assert.IsNotNull(InvokeEmitterInstance<object>(
+            emitter,
+            "EmitBranchingLoopBody",
+            loop,
+            context,
+            new Identifier("result")));
+
+        var state = CreateRenderState();
+        var pending = GetRecordProperty<List<Statement>>(state, "PendingPreludeStatements");
+        pending.Add(new NonSpecialExpressionStatement(new Identifier("sideEffect")));
+        var statements = new List<Statement>();
+        var factsType = typeof(RenderEmitter).GetNestedType("BranchingLoopFacts", BindingFlags.NonPublic)!;
+        var facts = Activator.CreateInstance(factsType)!;
+        var flush = typeof(RenderEmitter).GetNestedType("Emitter", BindingFlags.NonPublic)!
+            .GetMethod("FlushBranchingLoopRenderState", BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.IsNotNull(flush);
+        flush!.Invoke(null, [
+            GetMethodBody(fixture, "EmitterHost", "BranchingRootThenSideEffect"),
+            state,
+            new Identifier("result"),
+            statements,
+            facts]);
+        Assert.HasCount(1, statements);
+    }
+
+    [TestMethod]
+    public void DirectRenderLoopHelpers_CoverConvertedSideEffectsAndTerminatedBranches()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var loopMethod = GetMethod(fixture, "EmitterHost", "LoopWithScopedSideEffects");
+        var loop = GetOperation<IWhileLoopOperation>(
+            fixture,
+            loopMethod.DescendantNodes().OfType<WhileStatementSyntax>().Single());
+        var loopSymbol = GetMethodSymbol(fixture, "EmitterHost", "LoopWithScopedSideEffects");
+        var context = CreateEmitContext(loopSymbol.Parameters[0]);
+        Assert.IsNotNull(InvokeEmitterInstance<object>(
+            emitter,
+            "EmitLoopIterationBody",
+            loop.Body,
+            context));
+
+        var converted = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "OperationShapes", "Inputs"),
+            "convertedLiteral");
+        Assert.IsFalse(InvokeEmitter<bool>("IsLoopSideEffectOperation", converted));
+
+        var coalesce = GetOperation<IOperation>(
+            fixture,
+            GetMethod(fixture, "EmitterHost", "LoopWithScopedSideEffects")
+                .DescendantNodes()
+                .OfType<AssignmentExpressionSyntax>()
+                .Single(expression => expression.IsKind(SyntaxKind.CoalesceAssignmentExpression)));
+        InvokeEmitterInstance<object?>(emitter, "TrackMutableRenderLocal", coalesce);
+
+        var terminatedContext = CreateEmitContext(loopSymbol.Parameters[0], isTerminated: true);
+        var state = CreateRenderState();
+        var statements = new List<Statement>();
+        var factsType = typeof(RenderEmitter).GetNestedType("BranchingLoopFacts", BindingFlags.NonPublic)!;
+        var facts = Activator.CreateInstance(factsType)!;
+        InvokeEmitterInstance<object>(
+            emitter,
+            "EmitBranchingLoopOperation",
+            loop.Body,
+            loop,
+            terminatedContext,
+            state,
+            new Identifier("result"),
+            statements,
+            facts);
+
+        var frame = typeof(RenderEmitter).GetNestedType("Frame", BindingFlags.NonPublic)!;
+        var tryKey = frame.GetMethod("TrySetImplicitRootKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        Assert.IsNotNull(tryKey);
+        Assert.IsTrue((bool)tryKey!.Invoke(CreateRegionFrame(), ["key"])!);
+    }
+
+    [TestMethod]
+    public void RenderFragmentHelperRegistration_HandlesReentrantRegistrationAndInvalidReturn()
+    {
+        var fixture = CreateFixture();
+        var host = GetNamedType(fixture, "EmitterHost");
+        var emitter = CreateEmitter(fixture, host);
+        var context = CreateEmitContext(
+            GetMethodSymbol(fixture, "EmitterHost", "HelperInvocationShapes").Parameters[0]);
+        var method = GetMethodSymbol(fixture, "EmitterHost", "NamedFragmentFactory");
+        var bodyArguments = new object?[] { method, null };
+        Assert.IsTrue(InvokeEmitterInstance<bool>(emitter, "TryGetReturnedRenderFragmentBody", bodyArguments));
+
+        var emitting = emitter.GetType().GetField(
+            "_emittingRenderFragmentHelperFunctions",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.IsNotNull(emitting);
+        var set = emitting!.GetValue(emitter);
+        var add = set!.GetType().GetMethod("Add", BindingFlags.Instance | BindingFlags.Public);
+        Assert.IsNotNull(add);
+        add!.Invoke(set, [method.OriginalDefinition]);
+        var reentrant = InvokeEmitterInstance<object>(
+            emitter,
+            "EnsureRenderFragmentHelperFunction",
+            method,
+            bodyArguments[1]!,
+            context);
+        Assert.IsNotNull(reentrant);
+
+        var invalid = GetMethodSymbol(fixture, "EmitterHost", "InvalidFactory");
+        Assert.IsFalse(InvokeEmitterInstance<bool>(
+            emitter,
+            "TryGetReturnedRenderFragmentBody",
+            new object?[] { invalid, null }));
     }
 
     [TestMethod]
@@ -2651,6 +2833,9 @@ public sealed class RenderEmitterPrivateContractTests
             CreateEmitContext(methodSymbol.Parameters[0]));
         Assert.IsInstanceOfType<SequenceExpression>(updates);
 
+        foreach (var update in loop.AtLoopBottom)
+            _ = InvokeEmitterInstance<object?>(emitter, "TrackMutableRenderLocal", update);
+
         var invalidSideEffect = GetMethodBody(fixture, "EmitterHost", "LoopHelperShapes")
             .Operations
             .OfType<IVariableDeclarationGroupOperation>()
@@ -2832,7 +3017,8 @@ public sealed class RenderEmitterPrivateContractTests
         bool allowPreludeDeclarations = true,
         ImmutableHashSet<ILocalSymbol>? secondaryBuilders = null,
         ImmutableDictionary<IParameterSymbol, IOperation>? substitutions = null,
-        ImmutableDictionary<IParameterSymbol, string>? parameterAliases = null)
+        ImmutableDictionary<IParameterSymbol, string>? parameterAliases = null,
+        bool isTerminated = false)
     {
         var contextType = typeof(RenderEmitter).GetNestedType("EmitContext", BindingFlags.NonPublic);
         var fragmentType = typeof(RenderEmitter).GetNestedType("DirectRenderFragment", BindingFlags.NonPublic);
@@ -2857,7 +3043,7 @@ public sealed class RenderEmitterPrivateContractTests
             new List<Statement>(),
             allowPreludeDeclarations,
             new SenseArgument(),
-            false
+            isTerminated
         ]);
     }
 
@@ -3442,6 +3628,17 @@ public sealed class RenderEmitterPrivateContractTests
                         var marker = 1;
                         marker = marker + 1;
                         break;
+                    }
+                }
+
+                public void LoopWithScopedSideEffects(RenderTreeBuilder builder)
+                {
+                    int? local = null;
+                    while (local.GetValueOrDefault() < 2)
+                    {
+                        local ??= 1;
+                        local++;
+                        builder.AddContent(0, local);
                     }
                 }
 

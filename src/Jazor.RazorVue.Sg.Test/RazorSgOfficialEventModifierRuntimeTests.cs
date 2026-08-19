@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialEventModifierRuntimeTests
     public async Task BuildComponent_OfficialRazorDynamicFormEventModifiers_ApplyOnlyEnabledGuardsBeforeTheHandlerOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseDeployForm.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeployForm.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

@@ -11,7 +11,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
     public async Task BuildComponent_StaticPropsAndMarkupVNode_AreModuleHoistsSharedByRenderAndSetupInstances()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\StaticHoists.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/StaticHoists.razor"),
             documentText:
             """
             <section class="fixed" data-kind="catalog">@Label</section>
@@ -88,7 +88,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
     public async Task BuildComponent_DynamicAndCommentFirstMarkup_ImportSharedRuntimeOnlyOnce()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\DynamicRawMarkup.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DynamicRawMarkup.razor"),
             documentText:
             """
             @((MarkupString)"<!--lead--><b>fixed</b>")
@@ -121,7 +121,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
     public async Task BuildComponent_ChildPlans_UseTextAndNestedBlocksWithoutPromotingOpaqueChildren()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ChildPlans.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ChildPlans.razor"),
             documentText:
             """
             <section id="single">@Value</section>
@@ -240,7 +240,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
     public async Task BuildComponent_DynamicLeafAndImmediateChildren_UseTheConservativeBlockBoundary()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\BlockBoundary.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/BlockBoundary.razor"),
             documentText:
             """
             <input value="@Value" /><section class="@Css">@Value</section>@Summary
@@ -281,7 +281,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
     public async Task BuildComponent_StableSlotsUseWithCtxAndKeepForeachBodiesOutOfHoistsAndCaches()
     {
         var slotObservation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\SlotScope.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/SlotScope.razor"),
             documentText:
             """
             @using Demo.Components
@@ -355,7 +355,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
             });
 
         var loopObservation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\LoopScope.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/LoopScope.razor"),
             documentText:
             """
             @foreach (var entry in Entries)
@@ -395,7 +395,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
     public async Task BuildComponent_ConditionalSlotsUseCreateSlotsAndRefreshTheSelectedBody()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ConditionalSlotScope.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConditionalSlotScope.razor"),
             documentText:
             """
             @using Demo.Components
@@ -489,7 +489,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
     public async Task BuildComponent_StableBindHandler_IsCachedPerSetupInstanceOnly()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\StableHandler.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/StableHandler.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

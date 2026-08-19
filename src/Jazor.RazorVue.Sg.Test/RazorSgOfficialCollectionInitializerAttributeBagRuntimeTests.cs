@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialCollectionInitializerAttributeBagRuntimeTests
     public async Task BuildComponent_OfficialRazorCollectionInitializerAttributeBag_ExpandsDictionaryAddEntriesOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseCollectionAttributes.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseCollectionAttributes.razor"),
             documentText:
             """
             @using System.Collections.Generic

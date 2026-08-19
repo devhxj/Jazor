@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
     public async Task BuildComponent_OfficialRazorLibraryComponent_UsesExplicitModelUpdateMetadata()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TDesignSelectUsage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignSelectUsage.razor"),
             documentText:
             """
             @using Demo.Library
@@ -65,7 +65,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
     public async Task BuildComponent_OfficialRazorLibraryComponent_UsesExplicitNamedSlotMetadata()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TDesignPanelUsage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignPanelUsage.razor"),
             documentText:
             """
             @using Demo.Library
@@ -125,7 +125,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
     public async Task BuildComponent_OfficialRazorLibraryComponent_AllowsPropAndSlotWithSameVueName()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TDesignSubmenuUsage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignSubmenuUsage.razor"),
             documentText:
             """
             @using Demo.Library
@@ -177,7 +177,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
     public async Task BuildComponent_OfficialRazorLibraryComponent_UsesExplicitOrdinaryEventName()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TDesignActionUsage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignActionUsage.razor"),
             documentText:
             """
             @using Demo.Library
@@ -226,7 +226,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
     public async Task BuildComponent_OfficialRazorLibraryComponent_UsesExplicitModelPropertyNameWithoutDescriptorKinds()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TDesignSelectModelUsage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignSelectModelUsage.razor"),
             documentText:
             """
             @using Demo.Library
@@ -281,7 +281,7 @@ public sealed class RazorSgOfficialVueLibraryComponentRuntimeTests
     public async Task BuildComponent_OfficialRazorTDesignComponent_UsesNamedLibraryImport()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TDesignButtonUsage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignButtonUsage.razor"),
             documentText:
             """
             @using Demo.Library

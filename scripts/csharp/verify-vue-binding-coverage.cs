@@ -69,7 +69,7 @@ try
     var options = CoverageGateOptions.Parse(args);
     var repoRoot = RequireRepoRoot();
     var resultBase = Path.GetFullPath(
-        options.ResultsDirectory ?? Path.Combine(repoRoot, ".tmp", "vue-binding-coverage-gate"));
+        options.ResultsDirectory ?? Path.Combine(repoRoot, "test", "coverage", "vue-bindings"));
     var resultRoot = Path.Combine(resultBase, Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(resultRoot);
 

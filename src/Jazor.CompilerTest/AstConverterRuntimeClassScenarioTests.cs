@@ -458,6 +458,135 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public async Task ConvertModule_PrimaryConstructorCapturedParameters_UseClrDefaultsAndRetainValues()
+    {
+        const string scenarioId = "ast-converter-runtime-class.primary-constructor-captured-parameter-defaults";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class Snapshot(long total, string label)
+                {
+                    public long Total() => total;
+
+                    public string Label() => label;
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "class Snapshot", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "= 0n", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "= null", StringComparison.Ordinal, scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-runtime-class-primary-constructor-defaults-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "snapshot.mjs");
+            var testPath = Path.Combine(root, "snapshot.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { Snapshot } from "./snapshot.mjs";
+
+                Deno.test("primary constructor parameters survive their private storage bridge", () => {
+                  const snapshot = new Snapshot(42n, "published");
+                  if (snapshot.Total() !== 42n || snapshot.Label() !== "published")
+                    throw new Error("primary constructor values were not retained by the generated class");
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ConvertModule_LocalToArrayHelper_IsNotLoweredAsEnumerableIntrinsic()
+    {
+        const string scenarioId = "ast-converter-runtime-class.local-to-array-helper";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public static int ToArray(int value) => value + 1;
+
+                public static int Project() => ToArray(41);
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "return ToArray(41)", StringComparison.Ordinal, scenarioId);
+        Assert.IsFalse(script.Contains("Array.from", StringComparison.Ordinal), scenarioId);
+        _ = new Parser().ParseModule(script);
+
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "jazor-local-to-array-helper-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            var modulePath = Path.Combine(root, "helpers.mjs");
+            var testPath = Path.Combine(root, "helpers.test.mjs");
+            await File.WriteAllTextAsync(
+                modulePath,
+                script,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            await File.WriteAllTextAsync(
+                testPath,
+                """
+                import { Project } from "./helpers.mjs";
+
+                Deno.test("a source helper named ToArray remains a source helper", () => {
+                  if (Project() !== 42)
+                    throw new Error(`expected the local ToArray helper result 42, got ${Project()}`);
+                });
+                """,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Deno.Execute(
+                new DenoExecuteBaseOptions { WorkingDirectory = root },
+                ["test", "--quiet", "--allow-read", testPath],
+                timeout.Token);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ConvertRuntimeClass_ModuleDeclaredBase_UsesExtendsAndSynthesizesSuper()
     {
         const string scenarioId = "ast-converter-runtime-class.module-base-implicit-super";

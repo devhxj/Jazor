@@ -7,7 +7,7 @@ public sealed class RazorSgDirectRenderTypedSlotParameterTests
     public async Task BuildComponent_DirectRenderTypedTemplateParameter_InvokesScopedVueSlotWithoutBuilderBridge()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Components\TypedTemplateBridgeRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Components/TypedTemplateBridgeRuntime.razor"),
             documentText:
             """
             <section data-shell="panel">

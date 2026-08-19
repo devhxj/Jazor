@@ -120,6 +120,52 @@ public sealed class MemberClosureTests
     }
 
     [TestMethod]
+    public async Task Build_CurrentComponentClosure_RetainsRenderFragmentMemberReferencedByOrdinaryMethod()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using static ECMAScript.Vue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/render-fragment-closure")]
+                public partial class Counter : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, Columns());
+                    }
+
+                    private int Columns() => Cell is null ? 0 : 1;
+
+                    private RenderFragment Cell => child => child.AddContent(0, "cell");
+                }
+            }
+            """);
+
+        var closure = BuildClosure(fixture);
+        AssertHasMethod(closure, "Columns");
+        AssertHasProperty(closure, "Cell");
+
+        var artifact = await VueModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        // The ordinary compiler method must not call a member that was removed by the
+        // direct-render template filter. This is the F3 closure contract: reachable members
+        // remain defined even when RenderFragment is consumed outside BuildRenderTree itself.
+        // 普通成员引用的 RenderFragment 不能被模板过滤器静默裁剪，否则只会在浏览器报未定义。
+        StringAssert.Contains(script, "Columns", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Cell", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public async Task Build_CurrentComponentClosure_IncludesConstructedNestedRuntimeClass()
     {
         var fixture = CreateManualGeneratedFixture(
@@ -215,6 +261,132 @@ public sealed class MemberClosureTests
             script);
         Assert.IsFalse(script.Contains("from \"./components/counter", StringComparison.Ordinal), script);
         _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Build_CurrentComponentClosure_KeepsStaticHelpersAndRuntimeClassesAtModuleLifetime()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/module-lifetime")]
+                public partial class ModuleLifetime : ComponentBase, IVueComponent
+                {
+                    private string suffix = "!";
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        var text = new RuntimeText(CreateInitialText());
+                        builder.AddContent(0, FormatForView(text.Text));
+                    }
+
+                    private static string CreateInitialText()
+                    {
+                        return "module";
+                    }
+
+                    private string FormatForView(string value)
+                    {
+                        return value + suffix;
+                    }
+
+                    private sealed class RuntimeText
+                    {
+                        public RuntimeText(string value)
+                        {
+                            Text = value;
+                        }
+
+                        public string Text { get; }
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+
+        AssertHasMethod(closure, "CreateInitialText");
+        AssertHasMethod(closure, "FormatForView");
+        Assert.IsTrue(closure.OrderedMembers.OfType<INamedTypeSymbol>().Any(static type => type.Name == "RuntimeText"));
+
+        var artifact = await VueModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "function CreateInitialText()", StringComparison.Ordinal);
+        StringAssert.Contains(script, "function FormatForView(value)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "class RuntimeText", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return value + state.suffix;", StringComparison.Ordinal);
+
+        var staticHelperIndex = script.IndexOf("function CreateInitialText()", StringComparison.Ordinal);
+        var runtimeClassIndex = script.IndexOf("class RuntimeText", StringComparison.Ordinal);
+        var componentIndex = script.IndexOf("const __jazorComponent = defineComponent", StringComparison.Ordinal);
+        Assert.IsTrue(staticHelperIndex < componentIndex, script);
+        Assert.IsTrue(runtimeClassIndex < componentIndex, script);
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
+    public async Task Build_CurrentComponentClosure_RetainsExplicitSourceBaseDisposeImplementations()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                public abstract class DisposalBase : ComponentBase, IDisposable, IAsyncDisposable
+                {
+                    protected int disposalCount;
+
+                    void IDisposable.Dispose()
+                    {
+                        disposalCount += 1;
+                    }
+
+                    ValueTask IAsyncDisposable.DisposeAsync()
+                    {
+                        disposalCount += 10;
+                        return ValueTask.CompletedTask;
+                    }
+                }
+
+                [ECMAScriptModule("./components/explicit-dispose")]
+                public sealed class ExplicitDispose : DisposalBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, disposalCount);
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+
+        var disposalRoots = closure.LifecycleRoots
+            .Where(static method => method.ExplicitInterfaceImplementations.Any())
+            .ToArray();
+        Assert.HasCount(2, disposalRoots);
+        Assert.IsTrue(disposalRoots.All(static method =>
+            method.MethodKind == MethodKind.ExplicitInterfaceImplementation));
+        Assert.IsTrue(disposalRoots.All(static method => method.ContainingType.Name == "DisposalBase"));
+
+        // The closure contract is intentionally checked before module lowering. The explicit
+        // async implementation is discovered correctly; its ValueTask body remains subject to
+        // the compiler's existing external-task support boundary and is not silently erased.
+        // 先验证生命周期根选择，不把 ValueTask 外部 API 的另一个边界混进本测试。
     }
 
     [TestMethod]
@@ -381,10 +553,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -493,10 +662,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "const __jazor$hoistedStatic0 = createStaticVNode(\"<strong>raw</strong>\", 1);", StringComparison.Ordinal);
         StringAssert.Contains(script, "h(Fragment, null, [h(Fragment, null, [\"region\", __jazor$hoistedStatic0]), \"tail\"])", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -610,10 +776,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "mergeProps(", StringComparison.Ordinal);
         StringAssert.Contains(script, "renderList(Items(),", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -753,10 +916,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("builder.finish()", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "mergeProps(", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -882,10 +1042,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "name: \"Navigation\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "Horizontal: true", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -1025,10 +1182,7 @@ public sealed class MemberClosureTests
             script.IndexOf("props.ShowFirst ? renderRenderItem", StringComparison.Ordinal),
             script);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -1136,10 +1290,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "{ Title: \"direct\" }", StringComparison.Ordinal);
         StringAssert.Contains(script, "{ Title: \"alias\" }", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -1272,10 +1423,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "ChildContent: withCtx(() => [].concat((openBlock(), createElementBlock(\"span\", null, state.title, 1)) ?? []))", StringComparison.Ordinal);
         StringAssert.Contains(script, "_: 1", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -1570,10 +1718,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "name: \"Logo\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "fn: withCtx(() => [].concat(slots.Logo() ?? []))", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -1679,10 +1824,7 @@ public sealed class MemberClosureTests
             script.Contains("Logo: () => typeof slots.Logo", StringComparison.Ordinal),
             script);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -1786,10 +1928,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "typeof item === \"string\"", StringComparison.Ordinal);
         StringAssert.Contains(script, "text = item", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -1900,10 +2039,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
         StringAssert.Contains(script, "slots.Extra", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -2016,10 +2152,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -2127,10 +2260,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -2346,10 +2476,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "event?.stopPropagation?.();", StringComparison.Ordinal);
         StringAssert.Contains(script, "{ Title: \"bulk\", Count: 3 }", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -2445,9 +2572,14 @@ public sealed class MemberClosureTests
                 {
                     private string[] Columns { get; } = ["name"];
 
+                    // `h` is also a Vue framing import. The builder must reserve the import and
+                    // deterministically rename this reachable component member on the second pass.
+                    private string h => "shadow";
+
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenElement(0, "div");
+                        builder.AddAttribute(1, "data-shadow", h);
                         foreach (var column in Columns)
                         {
                             var columnIsSorted = ColumnIsSorted(column);
@@ -2475,10 +2607,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "const columnIsSorted = ColumnIsSorted(column);", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -2575,10 +2704,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("state.selectedKey === releasesKey", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -2706,10 +2832,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "const __jazor$hoistedProps0 = { Title: \"bulk\", Count: 3 };", StringComparison.Ordinal);
         StringAssert.Contains(script, "__jazor$hoistedProps0", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -2821,10 +2944,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "event?.stopPropagation?.();", StringComparison.Ordinal);
         StringAssert.Contains(script, "return ((eventOrValue, ...args) =>", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -3071,10 +3191,7 @@ public sealed class MemberClosureTests
             parent,
             parentClosure);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, childArtifact.RelativePath), childArtifact.ModuleText);
@@ -4009,10 +4126,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("scope.buildRenderTree(builder);", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -4211,10 +4325,7 @@ public sealed class MemberClosureTests
             fixture.Component,
             closure);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -4339,10 +4450,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains(".addComponentReferenceCapture(", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "ref: value =>", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -4519,10 +4627,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "invokeAsync(Increment);", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("InvokeAsync", StringComparison.Ordinal), script);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -4642,10 +4747,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "RazorVue component is disposed; InvokeAsync cannot run after unmount.", StringComparison.Ordinal);
         StringAssert.Contains(script, "disposed = true;", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -4836,10 +4938,7 @@ public sealed class MemberClosureTests
             fixture.Component,
             closure);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -5027,10 +5126,7 @@ public sealed class MemberClosureTests
             fixture.Component,
             closure);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -5268,10 +5364,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
         StringAssert.Contains(parentScript, "{ Header: withCtx(() => [].concat(h(\"h1\", null, [createTextVNode(\"Named header\")]) ?? [])), _: 1 }", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, childArtifact.RelativePath), childArtifact.ModuleText);
@@ -5447,10 +5540,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(parentScript.Contains("const header =", StringComparison.Ordinal), parentScript);
         StringAssert.Contains(parentScript, "{ Header: withCtx(value => [].concat((openBlock(), createElementBlock(\"h1\", null, value, 1)) ?? [])), _: 1 }", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, childArtifact.RelativePath), childArtifact.ModuleText);
@@ -5741,7 +5831,7 @@ public sealed class MemberClosureTests
     [TestMethod]
     public async Task BuildVueComponentModule_SourceMapPreservesMultipleRazorRazorSourceMapSegments()
     {
-        const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
+        var documentPath = RazorSgTestHost.GetTestDocumentPath("Pages/Counter.razor");
         const string generatedSource = """
             using ECMAScript;
             using static ECMAScript.Vue;
@@ -5856,10 +5946,7 @@ public sealed class MemberClosureTests
             fixture.Component,
             closure);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -6008,10 +6095,7 @@ public sealed class MemberClosureTests
         Assert.IsFalse(script.Contains("builder.finish();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "{ title: props.Title, onValueChanged: HandleValueChanged }", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -6131,10 +6215,7 @@ public sealed class MemberClosureTests
             fixture.Component,
             closure);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -6260,10 +6341,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "\"onUpdate:value\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.text = __value)", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("modelValue", StringComparison.Ordinal), script);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, artifact.RelativePath), artifact.ModuleText);
@@ -6412,10 +6490,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(parentScript, "modelValue: state.text", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "\"onUpdate:modelValue\": __jazor$handlerCache[0] || (__jazor$handlerCache[0] = __value => state.text = __value)", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, childArtifact.RelativePath), childArtifact.ModuleText);
@@ -6599,10 +6674,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(parentScript, "onAction: HandleAction", StringComparison.Ordinal);
         StringAssert.Contains(parentScript, "{ title: withCtx(value => [].concat((openBlock(), createElementBlock(\"h1\", null, [createTextVNode(\"slot:\"), createTextVNode(value, 1)])) ?? [])), _: 1 }", StringComparison.Ordinal);
 
-        var tempRoot = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var tempRoot = RazorSgTestHost.CreateTestArtifactDirectory("component-member-closure");
         try
         {
             WriteFile(Path.Combine(tempRoot, childArtifact.RelativePath), childArtifact.ModuleText);
@@ -7422,7 +7494,7 @@ public sealed class MemberClosureTests
 
     private static ClosureFixture CreateOfficialCounterFixture()
     {
-        const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
+        var documentPath = RazorSgTestHost.GetTestDocumentPath("Pages/Counter.razor");
         const string hintName = "Counter.razor.g.cs";
         const string documentText = """
             <button @onclick="Increment">@count</button>
@@ -7495,9 +7567,10 @@ public sealed class MemberClosureTests
 
     private static ClosureFixture CreateManualGeneratedFixture(
         string source,
-        string documentSourcePath = @"D:\repo\Demo\Pages\Counter.razor",
+        string? documentSourcePath = null,
         ImmutableArray<RazorSourceMap> sourceMappings = default)
     {
+        documentSourcePath ??= RazorSgTestHost.GetTestDocumentPath("Pages/Counter.razor");
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var generatedTree = CSharpSyntaxTree.ParseText(source, parseOptions, "Counter.razor.g.cs");
         var compilation = CSharpCompilation.Create(

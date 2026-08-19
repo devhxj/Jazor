@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
     public async Task BuildComponent_OfficialRazorDerivedComponent_InheritsBasePropAndEmitDescriptorsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Components\InheritedReleasePanel.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Components/InheritedReleasePanel.razor"),
             documentText:
             """
             @inherits Demo.Components.InheritedReleasePanelBase
@@ -65,7 +65,7 @@ public sealed class RazorSgOfficialInheritedDescriptorContractRuntimeTests
     public async Task BuildComponent_OfficialRazorInheritedComponentContract_UsesBasePropEmitAndSlotDescriptorsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseEditor.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseEditor.razor"),
             documentText:
             """
             @using Demo.Components

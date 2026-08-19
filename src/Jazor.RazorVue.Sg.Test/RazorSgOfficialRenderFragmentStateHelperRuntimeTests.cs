@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
     public async Task BuildComponent_OfficialRazorRenderStateHelper_ProjectsConstructedTemplatePropertyToScopedSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TemplateStateHelperRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TemplateStateHelperRuntime.razor"),
             documentText:
             """
             @using Demo.Components
@@ -110,7 +110,7 @@ public sealed class RazorSgOfficialRenderFragmentStateHelperRuntimeTests
     public async Task BuildComponent_OfficialRazorRenderStateHelper_ProjectsInitializedTemplatePropertyToScopedSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TemplateStateInitializerRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TemplateStateInitializerRuntime.razor"),
             documentText:
             """
             @using Demo.Components

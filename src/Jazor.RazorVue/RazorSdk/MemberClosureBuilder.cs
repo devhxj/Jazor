@@ -20,7 +20,6 @@ internal static class MemberClosureBuilder
     private const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
     private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
-    private const string RenderFragmentMetadataName = "Microsoft.AspNetCore.Components.RenderFragment";
     private const string IDisposableMetadataName = "System.IDisposable";
     private const string IAsyncDisposableMetadataName = "System.IAsyncDisposable";
     private const string UnsupportedSetParametersAsyncFailure =
@@ -658,7 +657,6 @@ internal sealed record MemberClosure(
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
-    private const string RenderFragmentMetadataName = "Microsoft.AspNetCore.Components.RenderFragment";
 
     public ImmutableArray<ISymbol> OrderedMembers
         => CompilerClosure.Members;
@@ -792,25 +790,9 @@ internal sealed record MemberClosure(
     }
 
     private static bool IsDirectRenderTemplateHelper(IMethodSymbol method)
-        => IsAnyRenderFragmentType(method.ReturnType) ||
-           (method.ReturnsVoid &&
-            method.Parameters.Length == 1 &&
-            IsRenderTreeBuilderType(method.Parameters[0].Type));
-
-    private static bool IsAnyRenderFragmentType(ITypeSymbol type)
-    {
-        if (type is not INamedTypeSymbol named || !string.Equals(named.Name, "RenderFragment", StringComparison.Ordinal))
-            return false;
-
-        return string.Equals(
-            named.OriginalDefinition.ToDisplayString(),
-            RenderFragmentMetadataName,
-            StringComparison.Ordinal) ||
-            string.Equals(
-                named.OriginalDefinition.ToDisplayString(),
-                RenderFragmentMetadataName + "<TValue>",
-                StringComparison.Ordinal);
-    }
+        => method.ReturnsVoid &&
+           method.Parameters.Length == 1 &&
+           IsRenderTreeBuilderType(method.Parameters[0].Type);
 
     private static bool IsRenderTreeBuilderType(ITypeSymbol type)
         => string.Equals(

@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialPropertyLocalNameCollisionRuntimeTests
     public async Task BuildComponent_OfficialRazorLocalAndComputedPropertyNameCollision_PreservesBothValuesOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ComputedStatus.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ComputedStatus.razor"),
             documentText:
             """
             @{

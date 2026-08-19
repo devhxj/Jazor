@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialConditionalSlotRuntimeTests
     public async Task BuildComponent_OfficialRazorConditionalChildContent_SelectsTheActiveDefaultSlotContentOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleasePanelPage.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleasePanelPage.razor"),
             documentText:
             """
             @using Demo.Components

@@ -29,7 +29,7 @@ public sealed class BootstrapPatchTests
     [TestMethod]
     public void DriverCompletionHook_CompilationError_DoesNotCreatePartialCatalog()
     {
-        const string documentPath = @"D:\repo\Demo\Pages\InvalidCounter.razor";
+        var documentPath = RazorSgTestHost.GetTestDocumentPath("Pages/InvalidCounter.razor");
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var compilation = CSharpCompilation.Create(
             "RazorVue.DriverCompletion.InvalidCounter",
@@ -75,7 +75,7 @@ public sealed class BootstrapPatchTests
     [TestMethod]
     public void DriverCompletionHook_UnsupportedRazorControlFlow_ReportsMappedAuthorDiagnostic()
     {
-        const string documentPath = @"D:\repo\Demo\Pages\TryContent.razor";
+        var documentPath = RazorSgTestHost.GetTestDocumentPath("Pages/TryContent.razor");
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var compilation = CSharpCompilation.Create(
             "RazorVue.DriverCompletion.TryContent",
@@ -137,7 +137,7 @@ public sealed class BootstrapPatchTests
     [TestMethod]
     public void DriverCompletionHook_CompilerBridgeFailure_ReportsMappedAuthorDiagnostic()
     {
-        const string documentPath = @"D:\repo\Demo\Pages\UnsupportedExpression.razor";
+        var documentPath = RazorSgTestHost.GetTestDocumentPath("Pages/UnsupportedExpression.razor");
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var compilation = CSharpCompilation.Create(
             "RazorVue.DriverCompletion.UnsupportedExpression",
@@ -181,7 +181,7 @@ public sealed class BootstrapPatchTests
 
     private static void AssertDriverCompletionCatalog()
     {
-        const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
+        var documentPath = RazorSgTestHost.GetTestDocumentPath("Pages/Counter.razor");
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var compilation = CSharpCompilation.Create(
             "RazorVue.DriverCompletion",
@@ -239,7 +239,8 @@ public sealed class BootstrapPatchTests
             {
                 ["build_property.RazorLangVersion"] = "11.0",
                 ["build_property.RootNamespace"] = "Demo",
-                ["build_property.MSBuildProjectDirectory"] = @"D:\repo\Demo"
+                ["build_property.MSBuildProjectDirectory"] =
+                    Path.GetDirectoryName(documentPath)!
             },
             new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
             {

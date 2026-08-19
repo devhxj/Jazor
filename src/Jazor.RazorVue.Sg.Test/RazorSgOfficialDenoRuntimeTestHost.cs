@@ -28,10 +28,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         IReadOnlyDictionary<string, string>? supportingModules = null,
         string? vueRuntimeSource = null)
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            "Jazor.RazorVue.Sg.Test",
-            Guid.NewGuid().ToString("N"));
+        var root = RazorSgTestHost.CreateTestArtifactDirectory("deno-runtime");
         try
         {
             WriteFile(Path.Combine(root, moduleRelativePath), moduleText);

@@ -116,38 +116,19 @@ internal sealed class InitializeNativeHook : IDisposable
             var replacement = typeof(InitializeNativeHook).GetMethod(
                 nameof(SelfTestReplacement),
                 BindingFlags.Static | BindingFlags.NonPublic);
-            if (target is null || replacement is null)
-            {
-                failure = "RazorVue Razor SG hook backend self-test methods could not be resolved.";
+            if (!TryValidateSelfTestMethods(target, replacement, out failure))
                 return false;
-            }
 
+            int patchedResult;
+            int replacementCount;
             using (Install(target, replacement))
             {
-                var patchedResult = SelfTestTarget(41);
-                if (patchedResult != 43 || Volatile.Read(ref _selfTestReplacementCount) != 1)
-                {
-                    failure = "RazorVue Razor SG hook backend self-test failed after patching. " +
-                              "Expected replacement result 43 and one replacement invocation, got result " +
-                              patchedResult.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-                              " and " +
-                              Volatile.Read(ref _selfTestReplacementCount).ToString(System.Globalization.CultureInfo.InvariantCulture) +
-                              " replacement invocations.";
-                    return false;
-                }
+                patchedResult = SelfTestTarget(41);
+                replacementCount = Volatile.Read(ref _selfTestReplacementCount);
             }
 
             var restoredResult = SelfTestTarget(41);
-            if (restoredResult != 42)
-            {
-                failure = "RazorVue Razor SG hook backend self-test failed after unpatching. Expected original result 42, got " +
-                          restoredResult.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-                          ".";
-                return false;
-            }
-
-            failure = string.Empty;
-            return true;
+            return TryValidateSelfTestResults(patchedResult, replacementCount, restoredResult, out failure);
         }
         catch (Exception ex)
         {
@@ -159,6 +140,50 @@ internal sealed class InitializeNativeHook : IDisposable
                       ex.Message;
             return false;
         }
+    }
+
+    private static bool TryValidateSelfTestMethods(
+        MethodInfo? target,
+        MethodInfo? replacement,
+        out string failure)
+    {
+        if (target is null || replacement is null)
+        {
+            failure = "RazorVue Razor SG hook backend self-test methods could not be resolved.";
+            return false;
+        }
+
+        failure = string.Empty;
+        return true;
+    }
+
+    private static bool TryValidateSelfTestResults(
+        int patchedResult,
+        int replacementCount,
+        int restoredResult,
+        out string failure)
+    {
+        if (patchedResult != 43 || replacementCount != 1)
+        {
+            failure = "RazorVue Razor SG hook backend self-test failed after patching. " +
+                      "Expected replacement result 43 and one replacement invocation, got result " +
+                      patchedResult.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                      " and " +
+                      replacementCount.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                      " replacement invocations.";
+            return false;
+        }
+
+        if (restoredResult != 42)
+        {
+            failure = "RazorVue Razor SG hook backend self-test failed after unpatching. Expected original result 42, got " +
+                      restoredResult.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                      ".";
+            return false;
+        }
+
+        failure = string.Empty;
+        return true;
     }
 
     public void Dispose()
@@ -230,8 +255,13 @@ internal sealed class InitializeNativeHook : IDisposable
     }
 
     private static byte[] BuildJump(IntPtr destination)
+        => BuildJump(destination, RuntimeInformation.ProcessArchitecture);
+
+    // Keep instruction encoding independent from host detection so every supported architecture
+    // has a deterministic contract test without pretending the current process is another ABI.
+    // 跳转字节本身是纯函数；平台探测只决定生产路径选择哪一种编码。
+    private static byte[] BuildJump(IntPtr destination, Architecture architecture)
     {
-        var architecture = RuntimeInformation.ProcessArchitecture;
         if (architecture == Architecture.X64)
         {
             var bytes = new byte[X64JumpLength];

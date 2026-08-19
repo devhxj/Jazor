@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialRenderFragmentConstructorDescriptorRuntimeTes
     public async Task BuildComponent_OfficialRazorConstructorContentDescriptor_ProjectsMethodGroupSlotOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ConstructorContentDescriptorRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConstructorContentDescriptorRuntime.razor"),
             documentText:
             """
             @using Demo.Components

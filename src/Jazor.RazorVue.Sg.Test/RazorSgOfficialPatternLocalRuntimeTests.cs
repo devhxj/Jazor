@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialPatternLocalRuntimeTests
     public async Task BuildComponent_OfficialRazorPropertyPatternLocal_RendersOnlyForMatchingValueOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\PatternLocalRuntime.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/PatternLocalRuntime.razor"),
             documentText:
             """
             @if (ReleaseName is { Length: > 0 } label)

@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialLoopCheckboxBindingRuntimeTests
     public async Task BuildComponent_OfficialRazorLoopCheckboxBinding_UpdatesTheCapturedTaskOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\TodoBoard.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TodoBoard.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

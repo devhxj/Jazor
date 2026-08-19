@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialLoopBoundSelectRuntimeTests
     public async Task BuildComponent_OfficialRazorLoopBoundSelect_UpdatesTheCapturedRowOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseEnvironmentEditor.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseEnvironmentEditor.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

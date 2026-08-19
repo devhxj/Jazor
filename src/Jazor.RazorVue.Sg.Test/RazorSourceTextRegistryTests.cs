@@ -115,7 +115,10 @@ public sealed class RazorSourceTextRegistryTests
     [TestMethod]
     public void SourceTextScope_UsesUniqueMatchesFallsBackToParentsAndRejectsAmbiguity()
     {
-        using var parent = RazorSourceTextRegistry.Push(@"D:\repo\Pages\Parent.razor", "parent");
+        var parentPath = RazorSgTestHost.GetTestDocumentPath("Pages/Parent.razor");
+        var featurePath = RazorSgTestHost.GetTestDocumentPath("Features/Counter.razor");
+
+        using var parent = RazorSourceTextRegistry.Push(parentPath, "parent");
         using (RazorSourceTextRegistry.PushGeneratedTrees(
                    ImmutableArray.Create<SyntaxTree>(CSharpSyntaxTree.ParseText(
                        RazorSourceTextRegistry.BuildCarrierSource(
@@ -129,7 +132,7 @@ public sealed class RazorSourceTextRegistryTests
                    CancellationToken.None))
         {
             Assert.AreEqual("parent", RazorSourceTextRegistry.TryGet("Pages/Parent.razor"));
-            Assert.AreEqual("first", RazorSourceTextRegistry.TryGet(@"D:\repo\Features\Counter.razor"));
+            Assert.AreEqual("first", RazorSourceTextRegistry.TryGet(featurePath));
             Assert.IsNull(RazorSourceTextRegistry.TryGet("Counter.razor"));
             Assert.IsNull(RazorSourceTextRegistry.TryGet("Pages/Duplicate.razor"));
         }

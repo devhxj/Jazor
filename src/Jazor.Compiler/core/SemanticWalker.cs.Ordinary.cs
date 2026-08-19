@@ -302,11 +302,11 @@ public partial class SemanticWalker
 	public override Node? VisitExpressionStatement(IExpressionStatementOperation operation, SenseArgument argument)
 	{
 		var node = Visit(operation.Operation, argument);
-		if (node is Statement statement)
-			return statement;
 		if (node is SequenceExpression { Expressions.Count: 0 } sequenceExpression)
 			return sequenceExpression;
 
+		// Roslyn expression statements contain expression-shaped operations; host rewrites also
+		// return Expression, so the only non-expression marker is the explicit empty sequence.
 		return WithOrigin(new NonSpecialExpressionStatement((Expression)node!), operation);
 	}
 

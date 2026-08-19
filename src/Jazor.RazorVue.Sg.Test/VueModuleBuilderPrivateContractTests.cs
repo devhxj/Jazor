@@ -4,6 +4,7 @@ using Acornima;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.Common.SourceMaps;
+using Jazor.RazorVue.Generation;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -278,7 +279,9 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("component.razor", Invoke<string>("NormalizeSourcePath", string.Empty));
         Assert.AreEqual("Pages/Counter.razor", Invoke<string>("NormalizeSourcePath", "/repo/Pages/Counter.razor"));
         Assert.AreEqual("relative/source.razor", Invoke<string>("NormalizeSourcePath", "relative/source.razor"));
-        Assert.AreEqual("Rooted.razor", Invoke<string>("NormalizeSourcePath", Path.Combine(Path.GetTempPath(), "Rooted.razor")));
+        Assert.AreEqual(
+            "Rooted.razor",
+            Invoke<string>("NormalizeSourcePath", RazorSgTestHost.GetTestDocumentPath("Rooted.razor")));
         Assert.AreEqual("pages/source.mjs", Invoke<string>("NormalizeGeneratedSourcePath", "././pages\\source.mjs"));
 
         Assert.IsTrue(Invoke<bool>("IsIntermediateSource", "pages/component.mjs", "pages/component.mjs"));
@@ -510,6 +513,57 @@ public sealed class VueModuleBuilderPrivateContractTests
     }
 
     [TestMethod]
+    public void NamingAndImportHelpers_CoverAuthoredAliasFallbackAndEmptySpecifierShapes()
+    {
+        var aliasedCompilation = CreateStandaloneCompilation(
+            "using ECMAScript; namespace Aliased; public sealed class Host { [ECMAScriptName(\"wire-name\")] public void Original() { } }",
+            "Aliased.cs");
+        var host = GetNamedType(aliasedCompilation, "Aliased.Host");
+        var method = GetMethod(host, "Original");
+        var preferred = Invoke<string>("GetPreferredModuleDeclaredName", method);
+        var source = Invoke<string?>("GetSourceDeclaredNameCandidate", method);
+        Assert.AreEqual("wire-name", preferred);
+        Assert.AreEqual("Original", source);
+        var fallback = Invoke<string>(
+            "ChooseModuleDeclaredName",
+            method,
+            new HashSet<string>(StringComparer.Ordinal) { preferred },
+            new HashSet<string>(StringComparer.Ordinal));
+        Assert.AreEqual(source, fallback);
+
+        var arrow = Invoke<ArrowFunctionExpression>(
+            "CreateArrowExpression",
+            new NumericLiteral(1, "1"),
+            new[] { "value", "index" });
+        Assert.IsInstanceOfType<NumericLiteral>(arrow.Body);
+        Assert.AreEqual(2, arrow.Params.Count);
+
+        var imports = new Parser().ParseModule(
+            "import { source as local } from \"./module.mjs\";")
+            .Body
+            .OfType<ImportDeclaration>()
+            .Single();
+        var emptyLocal = new ImportSpecifier(new Identifier("source"), new Identifier(string.Empty));
+        var emptyLocalImport = new ImportDeclaration(
+            NodeList.From<ImportDeclarationSpecifier>(emptyLocal),
+            imports.Source,
+            imports.Attributes,
+            imports.Phase);
+        var bindingType = typeof(VueModuleBuilder).GetNestedType("ImportBinding", BindingFlags.NonPublic)!;
+        var bindings = Activator.CreateInstance(
+            typeof(Dictionary<,>).MakeGenericType(typeof(string), bindingType));
+        var retainedEmptyLocal = Invoke<ImportDeclaration?>(
+            "FilterEmittedImportSpecifiers",
+            emptyLocalImport,
+            bindings);
+        Assert.IsNotNull(retainedEmptyLocal);
+        Assert.HasCount(1, retainedEmptyLocal!.Specifiers);
+        var retainedSpecifier = (ImportSpecifier)retainedEmptyLocal.Specifiers.Single();
+        Assert.AreEqual("source", ((Identifier)retainedSpecifier.Imported).Name);
+        Assert.AreEqual(string.Empty, retainedSpecifier.Local.Name);
+    }
+
+    [TestMethod]
     public void ImportBindingFilter_DeduplicatesEquivalentBindingsAndRejectsCollisions()
     {
         var imports = new Parser().ParseModule(
@@ -561,6 +615,27 @@ public sealed class VueModuleBuilderPrivateContractTests
             Invoke<ImportDeclaration?>("FilterEmittedImportSpecifiers", collision, bindings));
         StringAssert.Contains(collisionException.InnerException!.Message, "namedLocal", StringComparison.Ordinal);
         StringAssert.Contains(collisionException.InnerException!.Message, "Import aliases must be unique", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void ImportBindingHelpers_ClassifyNamedDefaultNamespaceAndStringImports()
+    {
+        var module = new Parser().ParseModule(
+            "import defaultLocal, * as namespaceLocal from \"./mixed.mjs\"; import { source as namedLocal, \"wire-name\" as stringLocal } from \"./named.mjs\";");
+        var declarations = module.Body.OfType<ImportDeclaration>().ToArray();
+        var getBinding = typeof(VueModuleBuilder).GetMethod(
+            "GetImportBinding",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.IsNotNull(getBinding);
+
+        foreach (var declaration in declarations)
+        {
+            foreach (var specifier in declaration.Specifiers)
+            {
+                var binding = getBinding!.Invoke(null, [declaration, specifier]);
+                Assert.IsNotNull(binding);
+            }
+        }
     }
 
     [TestMethod]
@@ -791,7 +866,9 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual("component.razor", Invoke<string>("NormalizeSourcePath", new object?[] { null }));
         Assert.AreEqual(
             "component.razor",
-            Invoke<string>("NormalizeSourcePath", Path.GetPathRoot(Path.GetTempPath())!));
+            Invoke<string>(
+                "NormalizeSourcePath",
+                Path.GetPathRoot(RazorSgTestHost.GetTestDocumentPath("Rooted.razor"))!));
         Assert.AreEqual(string.Empty, Invoke<string>("NormalizeGeneratedSourcePath", new object?[] { null }));
     }
 
@@ -1194,7 +1271,7 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.AreEqual(0, Invoke<int>("GetOrAddSourceIndex", sources, indexes, "Pages/Empty.razor", null));
         Assert.AreEqual(0, Invoke<int>("GetOrAddSourceIndex", sources, indexes, "pages/empty.razor", null));
 
-        var root = Path.Combine(Path.GetTempPath(), "JazorVue", "PrivateContractSourceRoot");
+        var root = RazorSgTestHost.CreateTestArtifactDirectory("private-contract-source-root");
         var rootedTree = CSharpSyntaxTree.ParseText(
             "public sealed class RootedComponent { }",
             new CSharpParseOptions(LanguageVersion.Preview),
@@ -1219,6 +1296,24 @@ public sealed class VueModuleBuilderPrivateContractTests
             SourceText.From("class Generated { }"),
             []);
         Assert.IsNull(Invoke<string?>("TryGetCompilationSourceRoot", CreateCompilation(), relativeDocument));
+    }
+
+    [TestMethod]
+    public void CoarseSourceMap_MapsDirectRenderToTheAuthoredRazorDocument()
+    {
+        var fixture = CreateRuntimeComponentFixture();
+        var sourcePath = fixture.Component.Document.SourcePath;
+        using var sourceScope = RazorSourceTextRegistry.Push(sourcePath, "<p>runtime component</p>");
+
+        var sourceMap = Invoke<string>(
+            "BuildCoarseSourceMapContent",
+            fixture.Component,
+            "pages/runtime-component.mjs",
+            "const scope = {};\nscope.$renderDirect();");
+
+        StringAssert.Contains(sourceMap, "pages/runtime-component.mjs", StringComparison.Ordinal);
+        StringAssert.Contains(sourceMap, "RuntimeComponent.razor", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(sourceMap, "runtime component", StringComparison.Ordinal);
     }
 
     [TestMethod]

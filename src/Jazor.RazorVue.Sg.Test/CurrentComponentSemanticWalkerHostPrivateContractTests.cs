@@ -640,6 +640,28 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             "RewriteInferredBindSetterHandler",
             inferredArguments[1]!,
             new SenseArgument()));
+        var inferredConversion = inferredMethodGroup
+            .DescendantsAndSelf()
+            .OfType<IConversionOperation>()
+            .FirstOrDefault();
+        if (inferredConversion is not null)
+        {
+            Assert.IsInstanceOfType<ArrowFunctionExpression>(InvokeInstance<Expression?>(
+                host,
+                "RewriteInferredBindSetterHandler",
+                inferredConversion,
+                new SenseArgument()));
+        }
+        foreach (var shape in ((IOperation)inferredArguments[1]!)
+                     .DescendantsAndSelf()
+                     .Where(static operation => operation is IDelegateCreationOperation or IAnonymousFunctionOperation or IMethodReferenceOperation))
+        {
+            Assert.IsNotNull(InvokeInstance<Expression?>(
+                host,
+                "RewriteInferredBindSetterHandler",
+                shape,
+                new SenseArgument()));
+        }
         Assert.IsInstanceOfType<ArrowFunctionExpression>(InvokeInstance<Expression?>(
             host,
             "RewriteEventCallbackHandler",
@@ -659,6 +681,16 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
             host,
             "RewriteInferredBindSetterHandler",
             literal,
+            new SenseArgument()));
+
+        var validConditional = GetVariableInitializer(
+            fixture,
+            GetMethod(fixture, "ComponentUnderTest", "ConditionalHandlers"),
+            "callback");
+        Assert.IsInstanceOfType<ConditionalExpression>(InvokeInstance<Expression?>(
+            host,
+            "RewriteEventCallbackHandler",
+            validConditional,
             new SenseArgument()));
     }
 

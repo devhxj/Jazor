@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialConditionalAttributeBagRuntimeTests
     public async Task BuildComponent_OfficialRazorConditionalAttributeBag_SelectsActiveAttributesAndPreservesExplicitPrecedenceOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseDeployAction.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDeployAction.razor"),
             documentText:
             """
             <button @attributes="@(IsDeploying ? DeployingAttributes : ReadyAttributes)" data-phase="@Phase">Deploy</button>

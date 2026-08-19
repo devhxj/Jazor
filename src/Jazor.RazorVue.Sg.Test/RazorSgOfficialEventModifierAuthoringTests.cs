@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialEventModifierAuthoringTests
     public async Task BuildComponent_OfficialRazorEventModifiers_EmitOrderedDirectHandler()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\EventModifiers.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/EventModifiers.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

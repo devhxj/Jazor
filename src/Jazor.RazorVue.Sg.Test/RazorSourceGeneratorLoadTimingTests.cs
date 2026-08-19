@@ -260,9 +260,7 @@ public sealed class RazorSourceGeneratorLoadTimingTests
 
     private static string CreateTemporaryDirectory()
     {
-        var path = Path.Combine(Path.GetTempPath(), "JazorRazorSourceGeneratorTimingTests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(path);
-        return path;
+        return RazorSgTestHost.CreateTestArtifactDirectory("source-generator-timing");
     }
 
     private static string EnsureTrailingDirectorySeparator(string path)

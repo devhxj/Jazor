@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialBindingAuthoringTests
     public async Task BuildComponent_OfficialRazorInputBind_EmitsStateAssignmentHandler()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InputBinding.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InputBinding.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -56,7 +56,7 @@ public sealed class RazorSgOfficialBindingAuthoringTests
     public async Task BuildComponent_OfficialRazorInputBindAfter_EmitsAssignmentThenAsyncCallback()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InputBindingAfter.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InputBindingAfter.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -100,7 +100,7 @@ public sealed class RazorSgOfficialBindingAuthoringTests
     public async Task BuildComponent_OfficialRazorInputBindAfterAction_EmitsAssignmentThenCallback()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InputBindingAfterAction.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InputBindingAfterAction.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -147,7 +147,7 @@ public sealed class RazorSgOfficialBindingAuthoringTests
     public async Task BuildComponent_OfficialRazorInputBindAfterInlineAsyncLambda_EmitsAssignmentThenInvokesCallbackOnce()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InputBindingAfterInline.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InputBindingAfterInline.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -192,7 +192,7 @@ public sealed class RazorSgOfficialBindingAuthoringTests
     public async Task BuildComponent_OfficialRazorInputBindGetAndAsyncSet_EmitsInferredSetterWithoutSdkHelper()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InputBindingSet.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InputBindingSet.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -240,7 +240,7 @@ public sealed class RazorSgOfficialBindingAuthoringTests
     public async Task BuildComponent_OfficialRazorInputBindGetAndSet_EmitsCurrentComponentSetterHandler()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InputBindingSyncSet.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InputBindingSyncSet.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web
@@ -284,7 +284,7 @@ public sealed class RazorSgOfficialBindingAuthoringTests
     public async Task BuildComponent_NumericAndExplicitSetterBinds_KeepGenericDomAdapter()
     {
         var explicitSetter = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ExplicitSetterBinding.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ExplicitSetterBinding.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

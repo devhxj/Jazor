@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialGroupedLoopAuthoringTests
     public async Task BuildComponent_OfficialRazorGroupedLoop_UsesCompilerOwnedGroupingContracts()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseBucketSummary.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseBucketSummary.razor"),
             documentText:
             """
             @using System.Linq

@@ -18,7 +18,7 @@ public sealed class VueHmrMetadataTests
     public async Task BuildComponent_OfficialRazor_RegistersVueHmrComponentWithStableModuleId()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\HmrCounter.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/HmrCounter.razor"),
             documentText: "<span>counter</span>",
             codeBehindSource:
             """

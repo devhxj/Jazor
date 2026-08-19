@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialRenderFragmentObjectInitializerRuntimeTests
     public async Task BuildComponent_OfficialRazorBlockDescriptorFactory_ProjectsLocalFragmentFromObjectInitializerOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseSummaryDescriptor.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseSummaryDescriptor.razor"),
             documentText:
             """
             @using Demo.Components

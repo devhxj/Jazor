@@ -14,7 +14,7 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
         Assert.AreEqual("vue-data-ui/vue-ui-donut", descriptor!.ImportSpecifier);
 
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\RevenueDonut.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/RevenueDonut.razor"),
             documentText:
             """
             @using ECMAScript.VueDataUi
@@ -67,7 +67,7 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
     public async Task BuildComponent_OfficialRazorVueDataUiExtendedCatalog_UsesTypedAndOptionalDescriptors()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ExtendedCharts.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ExtendedCharts.razor"),
             documentText:
             """
             @using ECMAScript.VueDataUi

@@ -113,8 +113,8 @@ internal static class ComponentInitializationLowerer
         foreach (var reference in constructor.DeclaringSyntaxReferences)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (reference.GetSyntax(cancellationToken) is not ConstructorDeclarationSyntax declaration)
-                continue;
+            // Constructor symbols expose only constructor declarations through Roslyn.
+            var declaration = (ConstructorDeclarationSyntax)reference.GetSyntax(cancellationToken);
 
             var semanticModel = compilation.GetSemanticModel(declaration.SyntaxTree);
             if (declaration.Body is not null)

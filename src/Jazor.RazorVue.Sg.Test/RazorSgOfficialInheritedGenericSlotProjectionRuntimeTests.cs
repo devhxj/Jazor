@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialInheritedGenericSlotProjectionRuntimeTests
     public async Task BuildComponent_OfficialRazorInheritedGenericSlot_UsesDerivedMemberNameForDirectProjectionOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\InheritedReleaseTemplate.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/InheritedReleaseTemplate.razor"),
             documentText:
             """
             @using Demo.Components

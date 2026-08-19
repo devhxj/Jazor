@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialRepeatedComponentImportRuntimeTests
     public async Task BuildComponent_OfficialRazorRepeatedExternalComponent_UsesOneStableImportOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseDashboard.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseDashboard.razor"),
             documentText:
             """
             <section data-dashboard="releases">

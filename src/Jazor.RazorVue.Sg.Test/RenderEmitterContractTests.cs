@@ -138,6 +138,146 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_RecognizesEveryScalarConstantAsStaticTextContent()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.AddContent(0, (object?)null);
+            builder.AddContent(1, "text");
+            builder.AddContent(2, true);
+            builder.AddContent(3, 'c');
+            builder.AddContent(4, (sbyte)-1);
+            builder.AddContent(5, (byte)2);
+            builder.AddContent(6, (short)-3);
+            builder.AddContent(7, (ushort)4);
+            builder.AddContent(8, 5);
+            builder.AddContent(9, (uint)6);
+            builder.AddContent(10, (long)-7);
+            builder.AddContent(11, (ulong)8);
+            builder.AddContent(12, 9.0f);
+            builder.AddContent(13, 10.0d);
+            builder.AddContent(14, 11.0m);
+            builder.AddContent(15, StaticTextKind.Second);
+            """,
+            """
+            private enum StaticTextKind
+            {
+                First,
+                Second
+            }
+            """);
+
+        AssertDirectRenderSuccess(
+            fixture,
+            "null",
+            "text",
+            "true",
+            "c",
+            "11");
+    }
+
+    [TestMethod]
+    public void TryEmitWithDiagnostic_LowersTypeInferenceHelperInsideRenderFragment()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, CreateFragment());",
+            """
+            private RenderFragment CreateFragment() => child =>
+                TypeInference.CreateWidget_0<string>(child, 0, "value");
+
+            private static class TypeInference
+            {
+                public static void CreateWidget_0<T>(RenderTreeBuilder __builder, int sequence, T value)
+                {
+                    __builder.OpenComponent<GenericChild<T>>(sequence);
+                    __builder.CloseComponent();
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule("./components/render-emitter-generic-child")]
+            private sealed class GenericChild<T> : ComponentBase { }
+            """);
+
+        var emitted = RenderEmitter.TryEmitWithDiagnostic(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            reservedImportNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var diagnostic);
+
+        Assert.IsTrue(emitted, diagnostic?.Message ?? "TypeInference helper lowering failed.");
+        Assert.IsNotNull(result);
+        Assert.IsNull(diagnostic);
+        var module = result!.RenderExpression.ToKnRECMAScript();
+        Assert.IsFalse(module.Contains("__builder", StringComparison.Ordinal), module);
+        StringAssert.Contains(module, "h(", StringComparison.Ordinal);
+        var imports = string.Join(
+            Environment.NewLine,
+            result.ImportDeclarations.Select(static declaration => declaration.ToKnRECMAScript()));
+        StringAssert.Contains(imports, "render-emitter-generic-child", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmitWithDiagnostic_LowersOpenGenericComponentTypeWithErasedTypeArgument()
+    {
+        var fixture = CreateGenericDirectRenderFixture();
+
+        var emitted = RenderEmitter.TryEmitWithDiagnostic(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            reservedImportNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var diagnostic);
+
+        Assert.IsTrue(emitted, diagnostic?.Message ?? "Open generic component lowering failed.");
+        Assert.IsNotNull(result);
+        Assert.IsNull(diagnostic);
+        var module = result!.RenderExpression.ToKnRECMAScript();
+        Assert.IsFalse(module.Contains("builder.OpenComponent", StringComparison.Ordinal), module);
+        StringAssert.Contains(module, "h(", StringComparison.Ordinal);
+        var imports = string.Join(
+            Environment.NewLine,
+            result.ImportDeclarations.Select(static declaration => declaration.ToKnRECMAScript()));
+        StringAssert.Contains(imports, "render-emitter-open-generic-child", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void TryEmitWithDiagnostic_LowersOpenGenericComponentTypeFromInheritedBuildRenderTree()
+    {
+        var fixture = CreateInheritedGenericDirectRenderFixture();
+
+        var emitted = RenderEmitter.TryEmitWithDiagnostic(
+            fixture.Compilation,
+            fixture.Component,
+            fixture.Method,
+            fixture.Body,
+            declaredNames: null,
+            reservedImportNames: null,
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            out var result,
+            out var diagnostic);
+
+        Assert.IsTrue(emitted, diagnostic?.Message ?? "Inherited open generic component lowering failed.");
+        Assert.IsNotNull(result);
+        Assert.IsNull(diagnostic);
+        var module = result!.RenderExpression.ToKnRECMAScript();
+        Assert.IsFalse(module.Contains("builder.", StringComparison.Ordinal), module);
+        StringAssert.Contains(module, "h(", StringComparison.Ordinal);
+        var imports = string.Join(
+            Environment.NewLine,
+            result.ImportDeclarations.Select(static declaration => declaration.ToKnRECMAScript()));
+        StringAssert.Contains(imports, "render-emitter-inherited-generic-child", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void TryEmit_LowersComponentSlotDirectInvokeAsVueSlotSequence()
     {
         var fixture = CreateDirectRenderFixture(
@@ -800,6 +940,8 @@ public sealed class RenderEmitterContractTests
             private FragmentCarrier CreateCarrier(string text)
             {
                 RenderFragment header = child => child.AddContent(0, "object-helper:" + text);
+                {
+                }
                 return new FragmentCarrier(header);
             }
             """);
@@ -2723,6 +2865,107 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_CoversForIterationDeclarationsForeachBindingAndLoopPreludeState()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            for (var index = 0; index < 2; index++)
+            {
+                var prefix = "item:";
+                builder.AddContent(0, prefix + index);
+                if (index == 1)
+                    continue;
+                builder.AddContent(1, "first");
+            }
+            foreach (var item in Items)
+            {
+                builder.AddContent(2, item);
+                break;
+            }
+            """,
+            "[Parameter] public string[] Items { get; set; } = [];" );
+
+        AssertDirectRenderSuccess(fixture, "item:", "first", "props.Items");
+    }
+
+    [TestMethod]
+    public void TryEmit_PreservesPatternLocalsAcrossLoopBodiesWithAndWithoutBranches()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            for (var index = 0; index < Items.Length; index++)
+            {
+                if (Items[index] is string selected)
+                {
+                    builder.AddContent(0, selected);
+                    continue;
+                }
+
+                builder.AddContent(1, "missing");
+            }
+
+            for (var index = 0; index < Items.Length; index++)
+            {
+                builder.AddContent(2, Items[index] is string selected ? selected : "missing");
+            }
+
+            var renderCount = 0;
+            for (var index = 0; index < Items.Length; index++)
+            {
+                renderCount++;
+                builder.AddContent(3, Items[index] is string selected ? selected : "missing");
+                renderCount++;
+            }
+            """,
+            "[Parameter] public string?[] Items { get; set; } = [];" );
+
+        AssertDirectRenderSuccess(fixture, "continue;", "__jazor$loopVNode", "let ");
+    }
+
+    [TestMethod]
+    public void TryEmit_PreservesLoopLocalDeclarationsAndConvertedSideEffectsInIterationOrder()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            var renderCount = 0;
+            for (var index = 0; index < Items.Length; index++)
+            {
+                renderCount++;
+                var item = Items[index];
+                builder.OpenElement(0, "li");
+                builder.AddContent(1, item);
+                builder.CloseElement();
+                renderCount++;
+            }
+            """,
+            "[Parameter] public string[] Items { get; set; } = [];" );
+
+        AssertDirectRenderSuccess(
+            fixture,
+            "__jazor$loopVNode",
+            "const item",
+            "renderCount++",
+            "createElementBlock");
+    }
+
+    [TestMethod]
+    public void TryEmit_MaterializesLoopSideEffectConversionTemporariesBeforeRenderContent()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            string? selected = null;
+            for (var index = 0; index < Items.Length; index++)
+            {
+                selected = Items[index] as string;
+                builder.AddContent(0, selected ?? "missing");
+            }
+            """,
+            "[Parameter] public object?[] Items { get; set; } = [];" );
+
+        AssertDirectRenderSuccess(fixture, "let ", "selected", "missing");
+    }
+
+    [TestMethod]
     public void TryEmit_RejectsUnmodeledThrowStatementsBeforeJavaScriptEmission()
     {
         AssertDirectRenderFailure(
@@ -2835,6 +3078,116 @@ public sealed class RenderEmitterContractTests
         return new Fixture(compilation, component!, method!, operation!);
     }
 
+    private static Fixture CreateGenericDirectRenderFixture()
+    {
+        var sourceTree = CSharpSyntaxTree.ParseText(
+            """
+            #nullable enable
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace RenderEmitter.Contract;
+
+            public sealed class ContractComponent<T> : ComponentBase
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<GenericChild<T>>(0);
+                    builder.CloseComponent();
+                }
+            }
+
+            [ECMAScriptModule("./components/render-emitter-open-generic-child")]
+            public sealed class GenericChild<TValue> : ComponentBase { }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "RenderEmitterOpenGenericContract.cs");
+        var compilation = CSharpCompilation.Create(
+            "RenderEmitter.OpenGenericContract.Tests",
+            [sourceTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
+
+        var model = compilation.GetSemanticModel(sourceTree);
+        var declaration = sourceTree.GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Single(static candidate => candidate.Identifier.ValueText == "ContractComponent");
+        var component = model.GetDeclaredSymbol(declaration);
+        Assert.IsNotNull(component);
+        var methodDeclaration = declaration.Members.OfType<MethodDeclarationSyntax>()
+            .Single(static candidate => candidate.Identifier.ValueText == "BuildRenderTree");
+        var method = model.GetDeclaredSymbol(methodDeclaration);
+        Assert.IsNotNull(method);
+        var operation = model.GetOperation(methodDeclaration.Body!) as IBlockOperation;
+        Assert.IsNotNull(operation);
+
+        return new Fixture(compilation, component!, method!, operation!);
+    }
+
+    private static Fixture CreateInheritedGenericDirectRenderFixture()
+    {
+        var sourceTree = CSharpSyntaxTree.ParseText(
+            """
+            #nullable enable
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace RenderEmitter.Contract;
+
+            public abstract class GenericBase<T> : ComponentBase
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<GenericChild<T>>(0);
+                    builder.CloseComponent();
+                }
+            }
+
+            [ECMAScriptModule("./components/render-emitter-inherited-generic-host")]
+            public sealed class ContractComponent : GenericBase<string> { }
+
+            [ECMAScriptModule("./components/render-emitter-inherited-generic-child")]
+            public sealed class GenericChild<TValue> : ComponentBase { }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "RenderEmitterInheritedGenericContract.cs");
+        var compilation = CSharpCompilation.Create(
+            "RenderEmitter.InheritedGenericContract.Tests",
+            [sourceTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
+
+        var model = compilation.GetSemanticModel(sourceTree);
+        var componentDeclaration = sourceTree.GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Single(static candidate => candidate.Identifier.ValueText == "ContractComponent");
+        var component = model.GetDeclaredSymbol(componentDeclaration);
+        Assert.IsNotNull(component);
+        var baseType = component!.BaseType;
+        Assert.IsNotNull(baseType);
+        var method = baseType!.GetMembers("BuildRenderTree")
+            .OfType<IMethodSymbol>()
+            .Single(static candidate => candidate.Parameters.Length == 1);
+        Assert.IsFalse(SymbolEqualityComparer.Default.Equals(method, method.OriginalDefinition));
+
+        var methodDeclaration = method.OriginalDefinition.DeclaringSyntaxReferences
+            .Single()
+            .GetSyntax() as MethodDeclarationSyntax;
+        Assert.IsNotNull(methodDeclaration);
+        var operation = model.GetOperation(methodDeclaration!.Body!) as IBlockOperation;
+        Assert.IsNotNull(operation);
+
+        return new Fixture(compilation, component, method, operation!);
+    }
+
     private static void AssertDirectRenderFailure(string body, string expectedFailure, string members = "")
     {
         var fixture = CreateDirectRenderFixture(body, members);
@@ -2858,4 +3211,5 @@ public sealed class RenderEmitterContractTests
         INamedTypeSymbol Component,
         IMethodSymbol Method,
         IBlockOperation Body);
+
 }

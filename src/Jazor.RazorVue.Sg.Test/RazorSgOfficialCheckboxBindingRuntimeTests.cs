@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialCheckboxBindingRuntimeTests
     public async Task BuildComponent_OfficialRazorCheckboxBinding_UpdatesBooleanStateFromCheckedTargetOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseApprovalToggle.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseApprovalToggle.razor"),
             documentText:
             """
             @using Microsoft.AspNetCore.Components.Web

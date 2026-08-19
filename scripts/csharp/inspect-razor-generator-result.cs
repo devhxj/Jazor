@@ -18,8 +18,8 @@ var razorAssembly = Assembly.LoadFrom(razorCompilerPath);
 var generatorType = razorAssembly.GetType("Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", throwOnError: true)!;
 var generator = (IIncrementalGenerator)Activator.CreateInstance(generatorType)!;
 
-const string projectDirectory = @"D:\repo\Demo";
-const string documentPath = @"D:\repo\Demo\Pages\Counter.razor";
+var projectDirectory = Path.Combine(FindRepositoryRoot(), "test", "fixtures", "razorvue", "inspect");
+var documentPath = Path.Combine(projectDirectory, "Pages", "Counter.razor");
 const string documentText = """
     @page "/counter"
     <h1>Hello</h1>
@@ -300,4 +300,18 @@ internal static class RazorCompilerPathResolver
 
         return null;
     }
+}
+
+static string FindRepositoryRoot()
+{
+    var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+    while (directory is not null)
+    {
+        if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+            return directory.FullName;
+
+        directory = directory.Parent;
+    }
+
+    throw new DirectoryNotFoundException("Could not locate the Jazor repository root from the current directory.");
 }

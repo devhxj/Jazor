@@ -1504,7 +1504,7 @@ public partial class SemanticWalker
 		return false;
 	}
 
-	private static bool TryResolveSingleAssignmentLocalInitializer(
+    private static bool TryResolveSingleAssignmentLocalInitializer(
 		ILocalReferenceOperation localReference,
 		IOperation useSiteOperation,
 		out IOperation initializerValue)

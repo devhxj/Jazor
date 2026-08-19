@@ -71,7 +71,12 @@ BenchmarkDotNet.Artifacts/
 # .NET Core
 project.lock.json
 project.fragment.lock.json
+*.nuget.dgspec.json
+*.nuget.g.props
+*.nuget.g.targets
+project.assets.json
 /artifacts/
+/test/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt

@@ -11,7 +11,7 @@ public sealed class RazorSgParameterLifecycleWatchRuntimeTests
     public async Task BuildComponent_ShallowParameterWatch_TriggersOnlyForValueOrReferenceReplacement()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ParameterLifecycle.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ParameterLifecycle.razor"),
             documentText:
             """
             <p>@Message</p>

@@ -7,7 +7,7 @@ public sealed class RazorSgOfficialRenderFragmentMemberRuntimeTests
     public async Task BuildComponent_OfficialRazorRenderFragmentMembers_ProjectPropertyAndMethodGroupSlotsOnDenoHost()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseSummaryMembers.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseSummaryMembers.razor"),
             documentText:
             """
             @using Demo.Components

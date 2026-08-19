@@ -16,7 +16,7 @@ public sealed class RazorSgOfficialStaticSourceMapTests
             </article>
             """;
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: @"D:\repo\Demo\Pages\ReleaseNotes.razor",
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReleaseNotes.razor"),
             documentText: documentText,
             codeBehindSource:
             """
