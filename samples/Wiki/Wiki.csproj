@@ -27,6 +27,22 @@
     </Content>
   </ItemGroup>
 
+  <!-- docs/ markdown 是官网内容单一事实来源：docs 变化时重新生成纯数据路由目录。 -->
+  <PropertyGroup>
+    <WikiDocsGeneratedFile>$(MSBuildProjectDirectory)\obj\wiki\WikiDocsContent.g.cs</WikiDocsGeneratedFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(WikiDocsGeneratedFile)" Visible="false" />
+  </ItemGroup>
+
+  <Target Name="ImportWikiDocsCatalog"
+          BeforeTargets="BeforeBuild"
+          Inputs="$(MSBuildProjectDirectory)\..\..\docs\**\*.md;$(MSBuildProjectDirectory)\..\..\scripts\csharp\wiki-import-docs.cs"
+          Outputs="$(WikiDocsGeneratedFile)">
+    <Exec Command="dotnet run --file &quot;$(MSBuildProjectDirectory)\..\..\scripts\csharp\wiki-import-docs.cs&quot;" />
+  </Target>
+
   <ItemGroup Condition="'$(WikiUsePackages)' != 'true'">
     <!-- Source builds do not import ECMAScript.Vue's packaged buildTransitive target. -->
     <JazorLibraryManifest Include="..\..\src\ECMAScript.Vue\manifest.json" />

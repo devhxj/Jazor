@@ -273,7 +273,7 @@ public static partial class WikiHomeModule
                 Events = CreateRouteClickEvents()
             },
             [
-                H("span", new VueObject { Class = "route-card-group" }, GetPageGroup(path)),
+                H("span", new VueObject { Class = "route-card-group" }, GetPageGroupLabel(path)),
                 H("strong", new VueObject { Class = "route-card-title" }, GetPageTitle(path)),
                 H("code", new VueObject { Class = "route-card-path" }, path),
                 H("span", new VueObject { Class = "route-card-summary" }, GetPageSummary(path))

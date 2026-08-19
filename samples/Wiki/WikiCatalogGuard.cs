@@ -24,7 +24,7 @@ internal static class WikiCatalogGuard
         EnsureCatalogLength(nameof(WikiHomeModule.PageReadingMinutes), WikiHomeModule.PageReadingMinutes.Length);
         EnsureCatalogLength(nameof(WikiHomeModule.PageSearchBodies), WikiHomeModule.PageSearchBodies.Length);
         EnsureCatalogLength(nameof(WikiHomeModule.PageTagSets), WikiHomeModule.PageTagSets.Length);
-        EnsureCatalogLength(nameof(WikiHomeModule.PageBodies), WikiHomeModule.PageBodies.Length);
+        EnsureCatalogLength(nameof(WikiHomeModule.PageBlockSets), WikiHomeModule.PageBlockSets.Length);
         EnsureCatalogLength(nameof(WikiHomeModule.PageSectionIdSets), WikiHomeModule.PageSectionIdSets.Length);
         EnsureCatalogLength(nameof(WikiHomeModule.PageSectionTitleSets), WikiHomeModule.PageSectionTitleSets.Length);
         EnsureCatalogLength(nameof(WikiHomeModule.PageRelatedPathSets), WikiHomeModule.PageRelatedPathSets.Length);
@@ -70,11 +70,19 @@ internal static class WikiCatalogGuard
                     "Wiki route catalog contains a non-positive reading-time value for path " + path + ".");
             }
 
-            if (WikiHomeModule.PageBodies[pageIndex] == null)
+            // docs 内容页必须有正文块；搜索工具页为空数组 / Docs pages require content blocks; search is empty
+            var blocks = WikiHomeModule.PageBlockSets[pageIndex];
+            if (blocks == null)
             {
                 throw new InvalidOperationException(
-                    "Wiki route catalog contains a null page body delegate at index " + pageIndex +
+                    "Wiki route catalog contains a null page block set at index " + pageIndex +
                     " for path " + path + ".");
+            }
+
+            if (path != "/search" && blocks.Length == 0)
+            {
+                throw new InvalidOperationException(
+                    "Wiki route catalog contains an empty docs page body for path " + path + ".");
             }
 
             var sectionIds = WikiHomeModule.PageSectionIdSets[pageIndex];
@@ -84,6 +92,12 @@ internal static class WikiCatalogGuard
                 throw new InvalidOperationException(
                     "Wiki route catalog section metadata mismatch for path " + path +
                     ": ids=" + sectionIds.Length + ", titles=" + sectionTitles.Length + ".");
+            }
+
+            if (sectionIds.Length == 0)
+            {
+                throw new InvalidOperationException(
+                    "Wiki route catalog contains no section metadata for path " + path + ".");
             }
 
             var tags = WikiHomeModule.PageTagSets[pageIndex];
@@ -169,6 +183,34 @@ internal static class WikiCatalogGuard
                         "' for page " + currentPath + ".");
                 }
             }
+        }
+
+        // 分组级数组彼此等长、非空且指向已注册路由 / Group arrays align, non-empty, point to known routes
+        if (WikiHomeModule.NavGroupIds.Length == 0)
+            throw new InvalidOperationException("Wiki route catalog has no navigation groups.");
+        if (WikiHomeModule.NavGroupLabels.Length != WikiHomeModule.NavGroupIds.Length ||
+            WikiHomeModule.NavGroupLandingPaths.Length != WikiHomeModule.NavGroupIds.Length)
+        {
+            throw new InvalidOperationException(
+                "Wiki route catalog navigation group arrays are misaligned: ids=" + WikiHomeModule.NavGroupIds.Length +
+                ", labels=" + WikiHomeModule.NavGroupLabels.Length +
+                ", landingPaths=" + WikiHomeModule.NavGroupLandingPaths.Length + ".");
+        }
+
+        var knownGroups = new HashSet<string>(StringComparer.Ordinal);
+        var knownLandingPaths = new HashSet<string>(StringComparer.Ordinal);
+        for (var groupIndex = 0; groupIndex < WikiHomeModule.NavGroupIds.Length; groupIndex++)
+        {
+            var groupId = WikiHomeModule.NavGroupIds[groupIndex];
+            if (string.IsNullOrWhiteSpace(groupId) || !knownGroups.Add(groupId))
+                throw new InvalidOperationException("Wiki route catalog has an invalid or duplicate navigation group: " + groupId);
+
+            if (string.IsNullOrWhiteSpace(WikiHomeModule.NavGroupLabels[groupIndex]))
+                throw new InvalidOperationException("Wiki route catalog has an empty group label for group " + groupId);
+
+            var landingPath = WikiHomeModule.NavGroupLandingPaths[groupIndex];
+            if (!knownPaths.Contains(landingPath) || !knownLandingPaths.Add(landingPath))
+                throw new InvalidOperationException("Wiki route catalog has an unknown or duplicate group landing path '" + landingPath + "' for group " + groupId + ".");
         }
     }
 

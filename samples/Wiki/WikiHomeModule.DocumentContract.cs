@@ -49,8 +49,9 @@ public static partial class WikiHomeModule
     {
         if (currentPath == SearchPath)
         {
+            // 空查询时与目录摘要保持一致 / Empty query delegates to the catalog summary
             return currentSearchQuery.Length == 0
-                ? "通过子系统、路由片段、工作流或标签搜索完整 Wiki 语料库。"
+                ? GetPageSummary(SearchPath)
                 : "搜索结果：\"" + currentSearchQuery + "\"，覆盖路由元数据、标签、页面正文和章节标题。";
         }
 

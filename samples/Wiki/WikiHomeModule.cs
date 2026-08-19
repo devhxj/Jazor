@@ -22,31 +22,9 @@ public static partial class WikiHomeModule
     private const string RepositoryIssueBaseUrl = RepositoryRootUrl + "/issues/new?title=";
     private const string PathBaseAttributeName = "data-wiki-path-base";
 
-    // ── 路由路径常量 / Route path constants ──
+    // ── 路由路径常量（其余路由由 DocsCatalog.g.cs 从 docs/ 生成） / Route path constants ──
     private const string OverviewPath = "/";
     private const string SearchPath = "/search";
-    private const string GettingStartedPath = "/guides/getting-started";
-    private const string ProjectLinesPath = "/guides/project-lines";
-    private const string ContentModelPath = "/guides/content-model";
-    private const string NavigationDiscoveryPath = "/guides/navigation-discovery";
-    private const string InformationArchitecturePath = "/guides/information-architecture";
-    private const string TopicIndexPath = "/guides/topic-index";
-    private const string GlossaryPath = "/guides/glossary";
-    private const string FaqPath = "/guides/faq";
-    private const string TroubleshootingPath = "/guides/troubleshooting";
-    private const string HFunctionAuthoringPath = "/engineering/h-function-authoring";
-    private const string CompilerOverviewPath = "/engineering/compiler-overview";
-    private const string CompilerBoundaryPath = "/engineering/compiler-support-boundary";
-    private const string RouteCatalogContractPath = "/engineering/route-catalog-contract";
-    private const string HostSemanticSeamsPath = "/engineering/host-semantic-seams";
-    private const string ImportEmitContractPath = "/engineering/import-emit-contract";
-    private const string RuntimeCatalogPath = "/engineering/runtime-catalog";
-    private const string JoltHostPath = "/engineering/jolt-host";
-    private const string RazorVueLibraryModePath = "/engineering/razorvue-library-mode";
-    private const string VueRouteBindingsPath = "/engineering/vueroute-bindings";
-    private const string ContentGovernancePath = "/operations/content-governance";
-    private const string DeploymentPath = "/operations/deployment";
-    private const string TestingVerificationPath = "/operations/testing-verification";
 
     // ── Vue 响应式引用 / Vue reactive refs ──
     private static IVueRef<string>? CurrentPathRef;
@@ -249,16 +227,16 @@ public static partial class WikiHomeModule
                 H("div", new VueObject { Class = "site-brand" },
                 [
                     H("p", new VueObject { Class = "brand-kicker" }, "jazor.wiki"),
-                    H("h1", new VueObject { Class = "brand-title" }, "基于 Vue 3 H 函数构建的文档"),
-                    H("p", new VueObject { Class = "brand-summary" }, "Jazor 的真实文档外壳，具备路由驱动搜索、元数据丰富页面和生产级阅读流程。")
+                    H("h1", new VueObject { Class = "brand-title" }, "Jazor 官方文档"),
+                    H("p", new VueObject { Class = "brand-summary" }, "Jazor 将受支持的 C# 语义编译为确定性 ECMAScript 模块，并把官方 Razor SG 产物转换为 Vue render function。")
                 ]),
                 H("div", new VueObject { Class = "brand-actions-panel" },
                 [
                     H("div", new VueObject { Class = "brand-actions" },
                     [
                         HeaderLink(SearchPath, "搜索"),
-                        HeaderLink(GettingStartedPath, "快速开始"),
-                        HeaderLink(TopicIndexPath, "主题索引")
+                        HeaderLink("/guides/quick-start", "快速开始"),
+                        HeaderLink("/guides", "指南")
                     ]),
                     H("div", new VueObject { Class = "brand-toggles" },
                     [
@@ -344,11 +322,15 @@ public static partial class WikiHomeModule
     // 左侧导航栏（浏览文档、筛选页面、全文搜索） / Left navigation rail (browse docs, filter pages, full-text search)
     private static IVNode NavigationRail(string currentPath, string navFilter)
     {
-        var foundationLinks = BuildNavLinksForGroup("Foundation", currentPath, navFilter);
-        var engineeringLinks = BuildNavLinksForGroup("Engineering", currentPath, navFilter);
-        var operationsLinks = BuildNavLinksForGroup("Operations", currentPath, navFilter);
+        // 分组由生成目录驱动（NavGroupIds/NavGroupLabels），docs 增删分组时侧边栏自动跟随
+        var groupLinks = new List<IVNode>[NavGroupIds.Length];
+        for (var groupIndex = 0; groupIndex < NavGroupIds.Length; groupIndex++)
+            groupLinks[groupIndex] = BuildNavLinksForGroup(NavGroupIds[groupIndex], currentPath, navFilter);
 
-        var visibleCount = foundationLinks.Count + engineeringLinks.Count + operationsLinks.Count;
+        var visibleCount = 0;
+        for (var groupIndex = 0; groupIndex < groupLinks.Length; groupIndex++)
+            visibleCount += groupLinks[groupIndex].Count;
+
         var railClassName = "nav-rail";
         if (IsNavDrawerOpen())
             railClassName += " nav-rail-open";
@@ -369,7 +351,7 @@ public static partial class WikiHomeModule
             H("div", new VueObject { Class = "rail-card nav-search-card" },
             [
                 H("p", new VueObject { Class = "rail-kicker" }, "查找页面"),
-                H("p", new VueObject { Class = "rail-copy" }, "在当前页面内筛选路由、标题、摘要、标签和状态。"),
+                H("p", new VueObject { Class = "rail-copy" }, "在当前页面内筛选路由、标题、摘要、标签和分组。"),
                 H("div", new VueObject { Class = "nav-search-row" },
                 [
                     H("input", new VueObject
@@ -404,7 +386,7 @@ public static partial class WikiHomeModule
                     Events = CreateRouteClickEvents()
                 },
                 [
-                    H("span", new VueObject { Class = "route-card-group" }, "Foundation"),
+                    H("span", new VueObject { Class = "route-card-group" }, "搜索"),
                     H("strong", new VueObject { Class = "route-card-title" }, navFilter.Length == 0 ? "打开搜索" : "搜索全部内容：\"" + navFilter + "\""),
                     H("code", new VueObject { Class = "route-card-path" }, BuildSearchRoute(navFilter)),
                     H("span", new VueObject { Class = "route-card-summary" }, "使用 `/search` 路由匹配页面正文、标签和章节标题。")
@@ -412,14 +394,11 @@ public static partial class WikiHomeModule
             ])
         };
 
-        if (foundationLinks.Count > 0)
-            railChildren.Add(NavGroup("Foundation", foundationLinks.ToArray()));
-
-        if (engineeringLinks.Count > 0)
-            railChildren.Add(NavGroup("Engineering", engineeringLinks.ToArray()));
-
-        if (operationsLinks.Count > 0)
-            railChildren.Add(NavGroup("Operations", operationsLinks.ToArray()));
+        for (var groupIndex = 0; groupIndex < NavGroupIds.Length; groupIndex++)
+        {
+            if (groupLinks[groupIndex].Count > 0)
+                railChildren.Add(NavGroup(NavGroupLabels[groupIndex], groupLinks[groupIndex].ToArray()));
+        }
 
         if (visibleCount == 0)
         {
@@ -511,7 +490,7 @@ public static partial class WikiHomeModule
             Breadcrumbs(currentPath),
             H("div", new VueObject { Class = "hero-meta-row" },
             [
-                H("span", new VueObject { Class = "hero-group" }, GetPageGroup(currentPath)),
+                H("span", new VueObject { Class = "hero-group" }, GetPageGroupLabel(currentPath)),
                 H("span", new VueObject { Class = "hero-status" }, GetPageStatus(currentPath)),
                 H("code", new VueObject { Class = "hero-route" }, currentPath)
             ]),
@@ -580,7 +559,7 @@ public static partial class WikiHomeModule
                     Class = "breadcrumb-link",
                     Href = GetGroupLandingPath(group),
                     Events = CreateRouteClickEvents()
-                }, group));
+                }, GetGroupLabel(group)));
                 children.Add(H("span", new VueObject { Class = "breadcrumb-separator" }, "/"));
             }
 
@@ -600,14 +579,11 @@ public static partial class WikiHomeModule
 
     private static string GetGroupLandingPath(string group)
     {
-        if (group == "Foundation")
-            return TopicIndexPath;
-
-        if (group == "Engineering")
-            return CompilerOverviewPath;
-
-        if (group == "Operations")
-            return DeploymentPath;
+        for (var groupIndex = 0; groupIndex < NavGroupIds.Length; groupIndex++)
+        {
+            if (NavGroupIds[groupIndex] == group)
+                return NavGroupLandingPaths[groupIndex];
+        }
 
         return OverviewPath;
     }
@@ -616,12 +592,12 @@ public static partial class WikiHomeModule
     private static IVNode PageMetaPanel(string currentPath)
         => H("section", new VueObject { Class = "meta-grid" },
         [
-            MetaCard("负责人", GetPageOwner(currentPath), "负责此页面准确性和维护的人员。"),
+            MetaCard("负责人", GetPageOwner(currentPath), "负责此页面准确性和维护的团队。"),
             MetaCard("目标读者", GetPageAudience(currentPath), "选择入口点时应优先阅读此页面的人群。"),
-            MetaCard("更新日期", GetPageLastUpdated(currentPath), "此路由上最新由目录支持的编辑的确切日期。"),
-            MetaCard("阅读时间", GetReadingTimeLabel(GetPageReadingMinutes(currentPath)), "基于当前页面契约的预估阅读时间。"),
-            MetaCard("源文件", GetPageSourceFile(currentPath), "拥有页面正文内容的主要源文件。"),
-            MetaCard("状态", GetPageStatus(currentPath), "在导航和搜索中暴露的当前成熟度标记。")
+            MetaCard("更新日期", GetPageLastUpdated(currentPath), "此页面对应 docs/ 源文件的最后一次提交日期。"),
+            MetaCard("阅读时间", GetReadingTimeLabel(GetPageReadingMinutes(currentPath)), "基于页面中文与代码内容的预估阅读时间。"),
+            MetaCard("源文件", GetPageSourceFile(currentPath), "拥有页面正文内容的 docs/ markdown 源文件。"),
+            MetaCard("分组", GetPageStatus(currentPath), "此页面在导航与搜索中所属的文档分组。")
         ]);
 
     // 获取阅读时间标签 / Get reading time label
@@ -732,9 +708,9 @@ public static partial class WikiHomeModule
                     H("a", new VueObject
                     {
                         Class = "hero-action-link",
-                        Href = BuildBrowserUrl(TopicIndexPath, "", ""),
+                        Href = BuildBrowserUrl("/guides/quick-start", "", ""),
                         Events = CreateRouteClickEvents()
-                    }, "打开主题索引")
+                    }, "打开快速开始")
                 ])
             ]),
             H("div", new VueObject { Class = "doc-body" },
@@ -746,16 +722,16 @@ public static partial class WikiHomeModule
                 ]),
                 PageSection("suggested-routes", "建议的路由",
                 [
-                    H("p", "从下方最近的已注册页面开始，或返回概览页面从目录导航。"),
+                    H("p", "从下方最近的已注册页面开始，或返回首页从导航进入。"),
                     RouteCardGrid(suggestedPaths)
                 ]),
                 PageSection("recover", "恢复",
                 [
                     H("ul",
                     [
-                        H("li", "返回概览页面，从左侧导航重新进入。"),
+                        H("li", "返回首页，从左侧导航重新进入。"),
                         H("li", "如果你只记得某个子系统或路由片段，使用 `/search`。"),
-                        H("li", "如果此路由应该存在，请将其添加到中央页面目录和正文分支映射中。"),
+                        H("li", "如果此路由应该存在，请在 docs/ 目录补充对应文档并重新生成页面目录。"),
                         H("li", "注册路由后重新运行 `wiki-verify-smoke.cs`。")
                     ]),
                     H("p",
@@ -807,7 +783,7 @@ public static partial class WikiHomeModule
     // 站点底部（摘要和统计信息） / Site footer (summary and stats)
     private static IVNode SiteFooter(string currentSearchQuery)
     {
-        var footerSummary = "jazor.wiki 现在作为真实文档站点运行：H 函数编写、静态发射、路由回退就绪，并由中央页面目录支撑。";
+        var footerSummary = "jazor.wiki 是 Jazor 的官方网站：内容由仓库 docs/ 目录驱动，外壳完全使用 Vue 3 H 函数编写并编译为静态模块。";
         if (currentSearchQuery.Length > 0)
             footerSummary = "当前搜索查询：\"" + currentSearchQuery + "\" | " + footerSummary;
 

@@ -38,7 +38,7 @@ public static partial class WikiHomeModule
             [
                 H("p", "当你知道关注点但不知道确切页面标题时，使用标签。"),
                 SearchTagRow(FeaturedSearchTags),
-                RouteCardGrid([TopicIndexPath, GlossaryPath, TroubleshootingPath, CompilerOverviewPath, RazorVueLibraryModePath, VueRouteBindingsPath])
+                RouteCardGrid(["/architecture/compiler", "/architecture/razor-to-vue", "/guides/razorvue-authoring", "/guides/installation-and-configuration", "/guides/examples", "/history/evolution"])
             ]),
             PageSection("query-sharing", "可分享查询",
             [
@@ -73,7 +73,7 @@ public static partial class WikiHomeModule
                 }, "清除")
             ]),
             H("p", new VueObject { Class = "search-status" }, GetSearchStatus(query)),
-            H("p", new VueObject { Class = "search-hint" }, "查询匹配页面标题、摘要、标签、状态、路由路径和策划的页面正文文本。")
+            H("p", new VueObject { Class = "search-hint" }, "查询匹配页面标题、摘要、标签、分组、路由路径和页面正文全文。")
         ]);
 
     // 获取搜索状态文本 / Get search status text
@@ -96,7 +96,7 @@ public static partial class WikiHomeModule
             [
                 H("p", new VueObject { Class = "search-empty-title" }, "从路由或子系统名称开始。"),
                 H("p", new VueObject { Class = "search-empty-summary" }, "有用的起点包括 `compiler`、`razor-sg`、`razorvue`、`vueroute`、`runtime`、`catalog` 和 `smoke`。"),
-                RouteCardGrid([GettingStartedPath, ProjectLinesPath, CompilerOverviewPath, RuntimeCatalogPath])
+                RouteCardGrid(["/guides/quick-start", "/guides/installation-and-configuration", "/architecture/compiler", "/overview/system-architecture"])
             ]);
         }
 
@@ -153,7 +153,7 @@ public static partial class WikiHomeModule
             [
                 H("div", new VueObject { Class = "search-result-meta" },
                 [
-                    H("span", new VueObject { Class = "search-result-group" }, GetPageGroup(path)),
+                    H("span", new VueObject { Class = "search-result-group" }, GetPageGroupLabel(path)),
                     H("span", new VueObject { Class = "search-result-kind" }, "页面")
                 ]),
                 H("h3", new VueObject { Class = "search-result-title" }, HighlightText(GetPageTitle(path), query)),
@@ -204,7 +204,7 @@ public static partial class WikiHomeModule
                     H("div", new VueObject { Class = "search-result-footer" },
                     [
                         H("code", new VueObject { Class = "search-result-path" }, path + "#" + sectionId),
-                        H("span", new VueObject { Class = "search-result-status" }, GetPageGroup(path))
+                        H("span", new VueObject { Class = "search-result-status" }, GetPageGroupLabel(path))
                     ])
                 ]));
             }
