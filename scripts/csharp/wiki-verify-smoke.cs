@@ -541,6 +541,8 @@ void AssertCspMetaUsesResponseNonce(HttpResponseMessage response, string html, s
         throw new InvalidOperationException("Content-Security-Policy does not contain a script nonce for " + description + ".");
     }
 
+    AssertContains(responsePolicy, "frame-ancestors 'none'", "CSP response frame protection for " + description);
+
     var metaMatch = Regex.Match(
         html,
         @"<meta\s+http-equiv=""Content-Security-Policy""\s+content=""(?<policy>[^""]*)""\s*/?>",
@@ -552,6 +554,7 @@ void AssertCspMetaUsesResponseNonce(HttpResponseMessage response, string html, s
 
     var metaPolicy = WebUtility.HtmlDecode(metaMatch.Groups["policy"].Value);
     AssertContains(metaPolicy, "nonce-" + nonceMatch.Groups["nonce"].Value, "CSP meta nonce matching response header for " + description);
+    AssertNotContains(metaPolicy, "frame-ancestors", "unsupported CSP meta directive for " + description);
 }
 
 void AssertRouteMetadata(string html, RouteExpectation expected, string expectedAbsoluteUrl, string description)

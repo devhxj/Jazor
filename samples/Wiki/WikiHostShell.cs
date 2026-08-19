@@ -66,7 +66,8 @@ internal static class WikiHostShell
         var absoluteUrl = BuildAbsoluteUrl(context.Request, configuration, relativeUrl);
         var documentTitle = pageTitle + " | jazor.wiki";
         var scriptNonce = GenerateScriptNonce();
-        var contentSecurityPolicy = BuildContentSecurityPolicy(scriptNonce);
+        var documentContentSecurityPolicy = BuildDocumentContentSecurityPolicy(scriptNonce);
+        var responseContentSecurityPolicy = BuildResponseContentSecurityPolicy(scriptNonce);
         var pathBase = NormalizePathBase(context.Request.PathBase.Value);
         var browserModulePath = ResolveBrowserModulePath(context);
         var template = await LoadIndexTemplateAsync(context, cancellationToken);
@@ -77,7 +78,7 @@ internal static class WikiHostShell
             absoluteUrl,
             robotsDirective,
             scriptNonce,
-            contentSecurityPolicy,
+            documentContentSecurityPolicy,
             pathBase,
             browserModulePath);
 
@@ -86,7 +87,7 @@ internal static class WikiHostShell
             ? StatusCodes.Status200OK
             : StatusCodes.Status404NotFound;
         context.Response.Headers["Cache-Control"] = HtmlCacheControl;
-        context.Response.Headers["Content-Security-Policy"] = contentSecurityPolicy;
+        context.Response.Headers["Content-Security-Policy"] = responseContentSecurityPolicy;
 
         if (!isIndexablePath)
             context.Response.Headers["X-Robots-Tag"] = robotsDirective;
@@ -246,12 +247,11 @@ internal static class WikiHostShell
         throw new InvalidOperationException("Wiki host could not locate jazor/bundle.js or jazor/main.mjs.");
     }
 
-    private static string BuildContentSecurityPolicy(string scriptNonce)
+    private static string BuildDocumentContentSecurityPolicy(string scriptNonce)
     {
         return "default-src 'self'; " +
                "base-uri 'none'; " +
                "object-src 'none'; " +
-               "frame-ancestors 'none'; " +
                "form-action 'none'; " +
                "img-src 'self' data:; " +
                "font-src 'self'; " +
@@ -261,4 +261,9 @@ internal static class WikiHostShell
                "script-src 'self' 'nonce-" + scriptNonce + "'; " +
                "style-src 'self' 'unsafe-inline'";
     }
+
+    // `frame-ancestors` only works in an HTTP response header. GitHub Pages relies on
+    // the HTML meta policy, so omit the unsupported directive there without weakening ASP.NET hosting.
+    private static string BuildResponseContentSecurityPolicy(string scriptNonce)
+        => BuildDocumentContentSecurityPolicy(scriptNonce) + "; frame-ancestors 'none'";
 }
