@@ -34,6 +34,7 @@ internal static class WikiHostShell
     private const string ComponentsImportBaseToken = "__WIKI_COMPONENTS_IMPORT_BASE__";
     private const string SystemImportBaseToken = "__WIKI_SYSTEM_IMPORT_BASE__";
     private const string VendorVueUrlToken = "__WIKI_VENDOR_VUE_URL__";
+    private const string SoberUrlToken = "__WIKI_SOBER_URL__";
     // 缓存策略常量 / Cache policy constants
     private const string HtmlCacheControl = "no-cache, must-revalidate";
     private const string DiscoveryCacheControl = "public, max-age=300, must-revalidate";
@@ -160,6 +161,7 @@ internal static class WikiHostShell
         var componentsImportBase = BuildAssetUrl(pathBase, "/jazor/components/");
         var systemImportBase = BuildAssetUrl(pathBase, "/jazor/System/");
         var vendorVueUrl = BuildAssetUrl(pathBase, "/vendor/vue@3.5.16.mjs");
+        var soberUrl = BuildAssetUrl(pathBase, "/vendor/sober@1.1.10.min.js");
         rendered = ReplaceRequiredToken(rendered, TitleToken, htmlEncoder.Encode(documentTitle));
         rendered = ReplaceRequiredToken(rendered, DescriptionToken, htmlEncoder.Encode(pageSummary));
         rendered = ReplaceRequiredToken(rendered, CanonicalUrlToken, htmlEncoder.Encode(absoluteUrl));
@@ -179,6 +181,7 @@ internal static class WikiHostShell
         rendered = ReplaceRequiredToken(rendered, ComponentsImportBaseToken, htmlEncoder.Encode(componentsImportBase));
         rendered = ReplaceRequiredToken(rendered, SystemImportBaseToken, htmlEncoder.Encode(systemImportBase));
         rendered = ReplaceRequiredToken(rendered, VendorVueUrlToken, htmlEncoder.Encode(vendorVueUrl));
+        rendered = ReplaceRequiredToken(rendered, SoberUrlToken, htmlEncoder.Encode(soberUrl));
 
         if (rendered.Contains(MetadataTokenPrefix, StringComparison.Ordinal))
             throw new InvalidOperationException("Wiki index template contains unresolved metadata tokens after rendering.");

@@ -1,4 +1,6 @@
 // WikiHomeModule.cs - Wiki 主模块：路由、导航、状态管理和事件处理 / Main Wiki module: routing, navigation, state management and event handling
+// 外壳使用 Sober (Material 3 Web Components)：s-page 主题容器 + s-appbar + s-drawer（含移动端覆盖式抽屉）。
+// s-drawer 的 show/close 是自定义元素方法，通过 Reflect 通道调用（与 JazorAdmin ApiClient 同模式）。
 using System.Collections.Generic;
 using ECMAScript;
 using static ECMAScript.Vue;
@@ -21,8 +23,11 @@ public static partial class WikiHomeModule
     private const string RepositoryBlobBaseUrl = RepositoryRootUrl + "/blob/main/";
     private const string RepositoryIssueBaseUrl = RepositoryRootUrl + "/issues/new?title=";
     private const string PathBaseAttributeName = "data-wiki-path-base";
+    private const string DrawerStartSlot = "start";
+    private const string DrawerEndSlot = "end";
+    private const string WikiDrawerRefKey = "wikiDrawer";
 
-    // ── 路由路径常量（其余路由由 DocsCatalog.g.cs 从 docs/ 生成） / Route path constants ──
+    // ── 路由路径常量（其余路由由 WikiDocsContent 从 docs/ 生成） / Route path constants ──
     private const string OverviewPath = "/";
     private const string SearchPath = "/search";
 
@@ -41,8 +46,7 @@ public static partial class WikiHomeModule
     private static IVueRef<string>? CurrentPageFeedbackRef;
     private static IVueRef<string>? LiveStatusRef;
     private static IVueRef<int>? ReadingProgressPercentRef;
-    private static IVueRef<bool>? NavDrawerOpenRef;
-    private static IVueRef<bool>? TocDrawerOpenRef;
+    private static VueReadonlyRef<HTMLElement?>? WikiDrawerRef;
 
     // ── 滚动位置存储 / Scroll position storage ──
     private static readonly List<string> StoredScrollRouteKeys = [];
@@ -97,8 +101,7 @@ public static partial class WikiHomeModule
         var currentPageFeedback = Ref(ReadStoredPageFeedback(requestedPath));
         var liveStatus = Ref("");
         var readingProgressPercent = Ref(0);
-        var navDrawerOpen = Ref(false);
-        var tocDrawerOpen = Ref(false);
+        var wikiDrawer = UseTemplateRef<HTMLElement>(WikiDrawerRefKey);
 
         CurrentPathRef = currentPath;
         CurrentHashRef = currentHash;
@@ -114,8 +117,7 @@ public static partial class WikiHomeModule
         CurrentPageFeedbackRef = currentPageFeedback;
         LiveStatusRef = liveStatus;
         ReadingProgressPercentRef = readingProgressPercent;
-        NavDrawerOpenRef = navDrawerOpen;
-        TocDrawerOpenRef = tocDrawerOpen;
+        WikiDrawerRef = wikiDrawer;
 
         ApplyTheme(currentTheme.Value);
         SyncDocumentState(requestedPath, requestedSearchQuery);
@@ -129,10 +131,11 @@ public static partial class WikiHomeModule
         else
             QueueActiveSectionSync();
 
-        return () => Render(currentPath.Value, currentHash.Value, navFilter.Value, currentSearchQuery.Value);
+        return () => Render(currentPath.Value, currentHash.Value, navFilter.Value, currentSearchQuery.Value, currentTheme.Value);
     }
 
-    private static IVNode Render(string currentPath, string currentHash, string navFilter, string currentSearchQuery)
+    // Sober 外壳：s-page 主题容器包住 s-drawer（start=导航 / 默认=主列 / end=目录）
+    private static IVNode Render(string currentPath, string currentHash, string navFilter, string currentSearchQuery, string currentTheme)
     {
         var article = NotFoundArticle(currentPath);
         var toc = EmptyTocRail();
@@ -143,10 +146,14 @@ public static partial class WikiHomeModule
             toc = TocRail(currentPath, currentHash);
         }
 
-        return H("main", new VueObject
+        return H("s-page", new VueObject
         {
-            Class = GetShellClassName(),
-            Id = "top"
+            Class = "wiki-shell",
+            Id = "top",
+            Raw = new VueDictionary
+            {
+                ["theme"] = currentTheme
+            }
         },
         [
             H("a", new VueObject
@@ -163,131 +170,142 @@ public static partial class WikiHomeModule
                     ["aria-atomic"] = "true"
                 }
             }, GetLiveStatusRef()?.Value ?? ""),
-            SiteHeader(currentPath),
-            MobileUtilityBar(currentPath),
-            DrawerBackdrop(),
-            H("div", new VueObject { Class = "wiki-layout" },
-            [
-                NavigationRail(currentPath, navFilter),
-                article,
-                toc
-            ]),
-            SiteFooter(currentSearchQuery)
-        ]);
-    }
-
-    private static string GetShellClassName()
-    {
-        var className = "wiki-shell";
-        if (IsNavDrawerOpen())
-            className += " wiki-shell-nav-open";
-        if (IsTocDrawerOpen())
-            className += " wiki-shell-toc-open";
-
-        return className;
-    }
-
-    private static bool IsNavDrawerOpen()
-        => GetNavDrawerOpenRef()?.Value == true;
-
-    private static bool IsTocDrawerOpen()
-        => GetTocDrawerOpenRef()?.Value == true;
-
-    // 抽屉遮罩层（点击关闭导航/目录面板） / Drawer backdrop (click to close nav/TOC panels)
-    private static IVNode DrawerBackdrop()
-    {
-        var className = "drawer-backdrop";
-        if (IsNavDrawerOpen() || IsTocDrawerOpen())
-            className += " drawer-backdrop-open";
-
-        return H("button", new VueObject
-        {
-            Class = className,
-            Type = "button",
-            Title = "关闭导航面板",
-            Events = CreateCloseDrawersEvents(),
-            Raw = new VueDictionary
+            H("s-drawer", new VueObject
             {
-                ["aria-hidden"] = (IsNavDrawerOpen() || IsTocDrawerOpen()) ? "false" : "true"
-            }
-        }, "");
-    }
-
-    // 站点头部（品牌、导航链接、主题切换） / Site header (brand, nav links, theme toggle)
-    private static IVNode SiteHeader(string currentPath)
-    {
-        var theme = GetCurrentThemeRef()?.Value ?? "dark";
-        var themeLabel = theme == "light" ? "主题：浅色" : "主题：深色";
-        var themeTitle = theme == "light" ? "切换到深色主题" : "切换到浅色主题";
-
-        return H("header", new VueObject { Class = "site-header" },
-        [
-            H("div", new VueObject { Class = "site-header-inner" },
-            [
-                H("div", new VueObject { Class = "site-brand" },
-                [
-                    H("p", new VueObject { Class = "brand-kicker" }, "jazor.wiki"),
-                    H("h1", new VueObject { Class = "brand-title" }, "Jazor 官方文档"),
-                    H("p", new VueObject { Class = "brand-summary" }, "Jazor 将受支持的 C# 语义编译为确定性 ECMAScript 模块，并把官方 Razor SG 产物转换为 Vue render function。")
-                ]),
-                H("div", new VueObject { Class = "brand-actions-panel" },
-                [
-                    H("div", new VueObject { Class = "brand-actions" },
-                    [
-                        HeaderLink(SearchPath, "搜索"),
-                        HeaderLink("/guides/quick-start", "快速开始"),
-                        HeaderLink("/guides", "指南")
-                    ]),
-                    H("div", new VueObject { Class = "brand-toggles" },
-                    [
-                        H("button", new VueObject
-                        {
-                            Class = "header-toggle",
-                            Type = "button",
-                            Title = themeTitle,
-                            Events = CreateThemeToggleEvents()
-                        }, themeLabel)
-                    ])
-                ])
-            ]),
-            ReadingProgressStrip(currentPath)
-        ]);
-    }
-
-    // 阅读进度条 / Reading progress strip
-    private static IVNode ReadingProgressStrip(string currentPath)
-    {
-        var progressPercent = GetReadingProgressPercent();
-        return H("div", new VueObject { Class = "reading-progress-shell" },
-        [
-            H("div", new VueObject { Class = "reading-progress-row" },
-            [
-                H("span", new VueObject { Class = "reading-progress-title" }, GetReadingProgressTitle(currentPath)),
-                H("span", new VueObject { Class = "reading-progress-value" }, progressPercent + "%")
-            ]),
-            H("div", new VueObject
-            {
-                Class = "reading-progress-track",
-                Role = "progressbar",
-                Raw = new VueDictionary
-                {
-                    ["aria-label"] = "阅读进度",
-                    ["aria-valuemin"] = "0",
-                    ["aria-valuemax"] = "100",
-                    ["aria-valuenow"] = progressPercent + ""
-                }
+                Class = "wiki-drawer",
+                Ref = WikiDrawerRefKey
             },
             [
-                H("span", new VueObject
-                {
-                    Class = "reading-progress-bar",
-                    Style = new VueDictionary
-                    {
-                        ["width"] = progressPercent + "%"
-                    }
-                }, "")
+                NavigationRail(currentPath, navFilter),
+                H("div", new VueObject { Class = "wiki-main-column" },
+                [
+                    SiteAppBar(currentPath, currentTheme),
+                    article,
+                    SiteFooter(currentSearchQuery)
+                ]),
+                toc
             ])
         ]);
+    }
+
+    // 顶部应用栏：菜单（开导航抽屉）+ 品牌 + 搜索/主题操作 / Top app bar
+    private static IVNode SiteAppBar(string currentPath, string currentTheme)
+    {
+        var isLightTheme = currentTheme == "light";
+        var themeIcon = isLightTheme ? "dark_mode" : "light_mode";
+        var themeTitle = isLightTheme ? "切换到深色主题" : "切换到浅色主题";
+
+        return H("header", new VueObject { Class = "wiki-top-region" },
+        [
+            H("s-appbar", new VueObject { Class = "wiki-appbar" },
+            [
+                H("s-icon-button", new VueObject
+                {
+                    Class = "wiki-menu-button",
+                    Title = "打开导航",
+                    Raw = new VueDictionary
+                    {
+                        ["slot"] = "navigation",
+                        ["aria-label"] = "打开导航"
+                    },
+                    Events = CreateOpenNavDrawerEvents()
+                },
+                [
+                    H("s-icon", new VueObject { Raw = new VueDictionary { ["name"] = "menu" } }, "")
+                ]),
+                H("a", new VueObject
+                {
+                    Class = "wiki-brand",
+                    Href = BuildBrowserUrl(OverviewPath, "", ""),
+                    Raw = new VueDictionary
+                    {
+                        ["slot"] = "logo"
+                    },
+                    Events = CreateRouteClickEvents()
+                },
+                [
+                    H("span", new VueObject { Class = "brand-title" }, "Jazor 官方文档")
+                ]),
+                H("span", new VueObject
+                {
+                    Class = "wiki-headline",
+                    Raw = new VueDictionary
+                    {
+                        ["slot"] = "headline"
+                    }
+                }, GetReadingProgressTitle(currentPath)),
+                H("s-icon-button", new VueObject
+                {
+                    Class = "wiki-action-button wiki-toc-button",
+                    Title = "本页目录",
+                    Raw = new VueDictionary
+                    {
+                        ["slot"] = "action",
+                        ["aria-label"] = "本页目录"
+                    },
+                    Events = CreateOpenTocDrawerEvents()
+                },
+                [
+                    H("s-icon", new VueObject { Raw = new VueDictionary { ["name"] = "chevron_right" } }, "")
+                ]),
+                H("s-icon-button", new VueObject
+                {
+                    Class = "wiki-action-button",
+                    Title = "搜索",
+                    Raw = new VueDictionary
+                    {
+                        ["slot"] = "action",
+                        ["aria-label"] = "搜索"
+                    },
+                    Events = CreateSearchActionEvents()
+                },
+                [
+                    H("s-icon", new VueObject { Raw = new VueDictionary { ["name"] = "search" } }, "")
+                ]),
+                H("s-icon-button", new VueObject
+                {
+                    Class = "wiki-action-button wiki-theme-toggle",
+                    Title = themeTitle,
+                    Raw = new VueDictionary
+                    {
+                        ["slot"] = "action",
+                        ["aria-label"] = "主题：" + (isLightTheme ? "浅色" : "深色")
+                    },
+                    Events = CreateThemeToggleEvents()
+                },
+                [
+                    H("s-icon", new VueObject { Raw = new VueDictionary { ["name"] = themeIcon } }, "")
+                ]),
+                H("a", new VueObject
+                {
+                    Class = "wiki-github-link",
+                    Href = RepositoryRootUrl,
+                    Target = "_blank",
+                    Rel = "noreferrer",
+                    Title = "在 GitHub 上查看 Jazor 仓库",
+                    Raw = new VueDictionary
+                    {
+                        ["slot"] = "action"
+                    }
+                }, "GitHub")
+            ]),
+            WikiReadingProgress()
+        ]);
+    }
+
+    // 阅读进度：MD3 线性进度，value/max 走 Raw 数值属性 / Reading progress bar
+    private static IVNode WikiReadingProgress()
+    {
+        var progressPercent = GetReadingProgressPercent();
+        return H("s-linear-progress", new VueObject
+        {
+            Class = "wiki-reading-progress",
+            Raw = new VueDictionary
+            {
+                ["value"] = progressPercent / 100.0,
+                ["max"] = 1.0
+            }
+        }, "");
     }
 
     // 获取阅读进度标题（根据当前路径） / Get reading progress title based on current path
@@ -305,20 +323,6 @@ public static partial class WikiHomeModule
         return "页面外壳";
     }
 
-    // 移动端工具栏（浏览、本页目录、搜索） / Mobile utility bar (browse, on-this-page, search)
-    private static IVNode MobileUtilityBar(string currentPath)
-        => H("div", new VueObject { Class = "mobile-utility-bar" },
-        [
-            DrawerButton("浏览", "utility-button", NavRailId, IsNavDrawerOpen(), false, CreateOpenNavDrawerEvents()),
-            DrawerButton("本页目录", "utility-button", TocRailId, IsTocDrawerOpen(), !IsKnownPage(currentPath), CreateOpenTocDrawerEvents()),
-            H("a", new VueObject
-            {
-                Class = "utility-link",
-                Href = BuildBrowserUrl(SearchPath, "", ""),
-                Events = CreateRouteClickEvents()
-            }, "搜索")
-        ]);
-
     // 左侧导航栏（浏览文档、筛选页面、全文搜索） / Left navigation rail (browse docs, filter pages, full-text search)
     private static IVNode NavigationRail(string currentPath, string navFilter)
     {
@@ -331,54 +335,50 @@ public static partial class WikiHomeModule
         for (var groupIndex = 0; groupIndex < groupLinks.Length; groupIndex++)
             visibleCount += groupLinks[groupIndex].Count;
 
-        var railClassName = "nav-rail";
-        if (IsNavDrawerOpen())
-            railClassName += " nav-rail-open";
-
         var railChildren = new List<IVNode>
         {
-            H("div", new VueObject { Class = "rail-card nav-drawer-head" },
+            H("div", new VueObject { Class = "wiki-nav-head" },
             [
                 H("p", new VueObject { Class = "rail-kicker" }, "浏览文档"),
-                H("button", new VueObject
+                H("s-icon-button", new VueObject
                 {
-                    Class = "drawer-close",
-                    Type = "button",
-                    Title = "关闭页面导航",
+                    Class = "wiki-nav-close",
+                    Title = "关闭导航",
+                    Raw = new VueDictionary { ["aria-label"] = "关闭导航" },
                     Events = CreateCloseDrawersEvents()
-                }, "关闭")
-            ]),
-            H("div", new VueObject { Class = "rail-card nav-search-card" },
-            [
-                H("p", new VueObject { Class = "rail-kicker" }, "查找页面"),
-                H("p", new VueObject { Class = "rail-copy" }, "在当前页面内筛选路由、标题、摘要、标签和分组。"),
-                H("div", new VueObject { Class = "nav-search-row" },
+                },
                 [
-                    H("input", new VueObject
+                    H("s-icon", new VueObject { Raw = new VueDictionary { ["name"] = "close" } }, "")
+                ])
+            ]),
+            H("div", new VueObject { Class = "wiki-nav-filter" },
+            [
+                H("s-text-field", new VueObject
+                {
+                    Id = NavSearchInputId,
+                    Class = "wiki-nav-filter-input",
+                    Type = "text",
+                    Placeholder = "搜索文档页面",
+                    Value = navFilter,
+                    Raw = new VueDictionary
                     {
-                        Id = NavSearchInputId,
-                        Class = "nav-search-input",
-                        Type = "search",
-                        Placeholder = "搜索文档页面",
-                        Autocomplete = "off",
-                        Value = navFilter,
-                        Events = CreateNavFilterInputEvents()
-                    }),
-                    H("button", new VueObject
-                    {
-                        Class = "nav-search-clear",
-                        Type = "button",
-                        Disabled = navFilter.Length == 0,
-                        Events = CreateClearNavFilterEvents()
-                    }, "清除")
-                ]),
-                H("p", new VueObject { Class = "nav-search-hint" }, "按 / 或 Ctrl+K 聚焦搜索，按 Escape 清除或退出。"),
+                        ["label"] = "筛选页面",
+                        ["autocomplete"] = "off"
+                    },
+                    Events = CreateNavFilterInputEvents()
+                }, ""),
+                H("s-button", new VueObject
+                {
+                    Class = "wiki-nav-filter-clear",
+                    Type = "text",
+                    Disabled = navFilter.Length == 0,
+                    Events = CreateClearNavFilterEvents()
+                }, "清除"),
                 H("p", new VueObject { Class = "nav-search-status" }, GetNavFilterStatus(navFilter, visibleCount))
             ]),
-            H("div", new VueObject { Class = "rail-card" },
+            H("div", new VueObject { Class = "wiki-nav-search-card" },
             [
                 H("p", new VueObject { Class = "rail-kicker" }, "全文搜索"),
-                H("p", new VueObject { Class = "rail-copy" }, "打开专用搜索路由以获取查询 URL、正文匹配和章节级结果。"),
                 H("a", new VueObject
                 {
                     Class = "route-card route-card-inline",
@@ -409,13 +409,14 @@ public static partial class WikiHomeModule
             ]));
         }
 
-        return H("aside", new VueObject
+        return H("nav", new VueObject
         {
             Id = NavRailId,
-            Class = railClassName,
+            Class = "wiki-nav",
             Role = "navigation",
             Raw = new VueDictionary
             {
+                ["slot"] = DrawerStartSlot,
                 ["aria-label"] = "页面导航"
             }
         }, railChildren.ToArray());
@@ -459,16 +460,16 @@ public static partial class WikiHomeModule
         },
         [
             DocumentHero(currentPath),
-            PageMetaPanel(currentPath),
             DocumentBody(currentPath),
             RelatedPagesPanel(currentPath),
             PageFeedbackPanel(currentPath),
             PagePager(currentPath)
         ]);
 
-    // 文档头部（面包屑、标题、操作按钮） / Document hero (breadcrumbs, title, action buttons)
+    // 文档头部（面包屑、标题、元数据行、操作） / Document hero
     private static IVNode DocumentHero(string currentPath)
     {
+        var isHomePage = currentPath == OverviewPath;
         var pageButtonLabel = "复制页面链接";
         var pageButtonClassName = "page-permalink";
         var pageButtonTitle = "复制此页面的直接链接";
@@ -485,44 +486,75 @@ public static partial class WikiHomeModule
             pageButtonTitle = "页面链接已在地址栏就绪；剪贴板复制不可用";
         }
 
-        return H("header", new VueObject { Class = "doc-hero" },
-        [
+        var heroChildren = new List<IVNode>
+        {
             Breadcrumbs(currentPath),
-            H("div", new VueObject { Class = "hero-meta-row" },
+            H("h1", new VueObject { Class = isHomePage ? "doc-title doc-title-hero" : "doc-title" }, GetPageTitle(currentPath)),
+            H("p", new VueObject { Class = isHomePage ? "doc-summary doc-summary-hero" : "doc-summary" }, GetPageSummary(currentPath))
+        };
+
+        if (isHomePage)
+        {
+            heroChildren.Add(H("div", new VueObject { Class = "hero-cta-row" },
             [
-                H("span", new VueObject { Class = "hero-group" }, GetPageGroupLabel(currentPath)),
-                H("span", new VueObject { Class = "hero-status" }, GetPageStatus(currentPath)),
-                H("code", new VueObject { Class = "hero-route" }, currentPath)
-            ]),
-            H("h1", new VueObject { Class = "doc-title" }, GetPageTitle(currentPath)),
-            H("p", new VueObject { Class = "doc-summary" }, GetPageSummary(currentPath)),
-            H("div", new VueObject { Class = "hero-tags-row" }, BuildTagLinks(currentPath)),
-            H("div", new VueObject { Class = "hero-actions-row" },
-            [
-                H("button", new VueObject
+                H("s-button", new VueObject
                 {
-                    Class = pageButtonClassName,
-                    Type = "button",
-                    Title = pageButtonTitle,
-                    Value = currentPath,
-                    Events = CreatePagePermalinkEvents()
-                }, pageButtonLabel),
+                    Class = "hero-cta-primary",
+                    Type = "filled",
+                    Events = CreateQuickStartEvents()
+                }, "快速开始"),
                 H("a", new VueObject
                 {
-                    Class = "hero-action-link",
-                    Href = BuildSourceUrl(currentPath),
+                    Class = "hero-cta-secondary",
+                    Href = RepositoryRootUrl,
                     Target = "_blank",
                     Rel = "noreferrer"
-                }, "查看源码"),
-                H("a", new VueObject
-                {
-                    Class = "hero-action-link",
-                    Href = BuildIssueUrl(currentPath),
-                    Target = "_blank",
-                    Rel = "noreferrer"
-                }, "报告问题")
-            ])
-        ]);
+                }, "GitHub 仓库")
+            ]));
+        }
+        else
+        {
+            heroChildren.Add(H("div", new VueObject { Class = "hero-tags-row" }, BuildTagLinks(currentPath)));
+        }
+
+        heroChildren.Add(H("div", new VueObject { Class = "doc-meta-strip" },
+        [
+            H("span", new VueObject { Class = "meta-item meta-item-group" }, GetPageGroupLabel(currentPath)),
+            H("span", new VueObject { Class = "meta-sep" }, "·"),
+            H("span", new VueObject { Class = "meta-item" }, GetReadingTimeLabel(GetPageReadingMinutes(currentPath))),
+            H("span", new VueObject { Class = "meta-sep" }, "·"),
+            H("span", new VueObject { Class = "meta-item" }, GetPageLastUpdated(currentPath) + " 更新"),
+            H("span", new VueObject { Class = "meta-sep" }, "·"),
+            H("a", new VueObject
+            {
+                Class = "meta-item meta-item-link",
+                Href = BuildSourceUrl(currentPath),
+                Target = "_blank",
+                Rel = "noreferrer"
+            }, "查看源码"),
+            H("span", new VueObject { Class = "meta-sep" }, "·"),
+            H("a", new VueObject
+            {
+                Class = "meta-item meta-item-link",
+                Href = BuildIssueUrl(currentPath),
+                Target = "_blank",
+                Rel = "noreferrer"
+            }, "报告问题")
+        ]));
+
+        heroChildren.Add(H("div", new VueObject { Class = "hero-actions-row" },
+        [
+            H("s-button", new VueObject
+            {
+                Class = pageButtonClassName,
+                Type = "text",
+                Title = pageButtonTitle,
+                Raw = new VueDictionary { ["value"] = currentPath },
+                Events = CreatePagePermalinkEvents()
+            }, pageButtonLabel)
+        ]));
+
+        return H("header", new VueObject { Class = isHomePage ? "doc-hero doc-hero-home" : "doc-hero" }, heroChildren.ToArray());
     }
 
     private static IVNode[] BuildTagLinks(string currentPath)
@@ -587,18 +619,6 @@ public static partial class WikiHomeModule
 
         return OverviewPath;
     }
-
-    // 页面元数据面板（负责人、读者、更新日期等） / Page metadata panel
-    private static IVNode PageMetaPanel(string currentPath)
-        => H("section", new VueObject { Class = "meta-grid" },
-        [
-            MetaCard("负责人", GetPageOwner(currentPath), "负责此页面准确性和维护的团队。"),
-            MetaCard("目标读者", GetPageAudience(currentPath), "选择入口点时应优先阅读此页面的人群。"),
-            MetaCard("更新日期", GetPageLastUpdated(currentPath), "此页面对应 docs/ 源文件的最后一次提交日期。"),
-            MetaCard("阅读时间", GetReadingTimeLabel(GetPageReadingMinutes(currentPath)), "基于页面中文与代码内容的预估阅读时间。"),
-            MetaCard("源文件", GetPageSourceFile(currentPath), "拥有页面正文内容的 docs/ markdown 源文件。"),
-            MetaCard("分组", GetPageStatus(currentPath), "此页面在导航与搜索中所属的文档分组。")
-        ]);
 
     // 获取阅读时间标签 / Get reading time label
     private static string GetReadingTimeLabel(int minutes)
@@ -741,7 +761,7 @@ public static partial class WikiHomeModule
                             Class = "pager-link pager-link-single",
                             Href = OverviewPath,
                             Events = CreateRouteClickEvents()
-                        }, "打开概览页面")
+                        }, "打开首页")
                     ])
                 ])
             ])
@@ -780,17 +800,55 @@ public static partial class WikiHomeModule
         ]);
     }
 
-    // 站点底部（摘要和统计信息） / Site footer (summary and stats)
+    // 站点页脚（品牌、文档分组导航、资源链接、版权） / Professional site footer
     private static IVNode SiteFooter(string currentSearchQuery)
     {
-        var footerSummary = "jazor.wiki 是 Jazor 的官方网站：内容由仓库 docs/ 目录驱动，外壳完全使用 Vue 3 H 函数编写并编译为静态模块。";
-        if (currentSearchQuery.Length > 0)
-            footerSummary = "当前搜索查询：\"" + currentSearchQuery + "\" | " + footerSummary;
+        var groupLinks = new List<IVNode>();
+        for (var groupIndex = 0; groupIndex < NavGroupIds.Length; groupIndex++)
+        {
+            groupLinks.Add(H("a", new VueObject
+            {
+                Class = "footer-nav-link",
+                Href = BuildBrowserUrl(NavGroupLandingPaths[groupIndex], "", ""),
+                Events = CreateRouteClickEvents()
+            }, NavGroupLabels[groupIndex]));
+        }
+
+        var footerNavChildren = new List<IVNode>
+        {
+            H("p", new VueObject { Class = "footer-heading" }, "文档")
+        };
+        footerNavChildren.AddRange(groupLinks);
 
         return H("footer", new VueObject { Class = "site-footer" },
         [
-            H("p", footerSummary),
-            H("p", "健康端点：/health | 已注册文档页面：" + TotalPageCount + " | 最新目录刷新：" + GetLatestCatalogRefreshDate())
+            H("div", new VueObject { Class = "footer-grid" },
+            [
+                H("div", new VueObject { Class = "footer-brand" },
+                [
+                    H("p", new VueObject { Class = "footer-brand-name" }, "Jazor"),
+                    H("p", new VueObject { Class = "footer-brand-summary" }, "将受支持的 C# 语义编译为确定性 ECMAScript 模块，并把官方 Razor SG 产物转换为 Vue render function。")
+                ]),
+                H("nav", new VueObject
+                {
+                    Class = "footer-nav",
+                    Raw = new VueDictionary { ["aria-label"] = "页脚文档导航" }
+                },
+                footerNavChildren.ToArray()),
+                H("div", new VueObject { Class = "footer-resources" },
+                [
+                    H("p", new VueObject { Class = "footer-heading" }, "资源"),
+                    H("a", new VueObject { Class = "footer-nav-link", Href = RepositoryRootUrl, Target = "_blank", Rel = "noreferrer" }, "GitHub"),
+                    H("a", new VueObject { Class = "footer-nav-link", Href = RepositoryRootUrl + "/blob/main/CHANGELOG.md", Target = "_blank", Rel = "noreferrer" }, "变更日志"),
+                    H("a", new VueObject { Class = "footer-nav-link", Href = BuildBrowserUrl(SearchPath, "", ""), Events = CreateRouteClickEvents() }, "站内搜索")
+                ])
+            ]),
+            H("div", new VueObject { Class = "footer-legal" },
+            [
+                H("span", "© Jazor 项目"),
+                H("span", "内容由仓库 docs/ 目录驱动"),
+                H("span", "已注册文档页面：" + TotalPageCount + " · 最新目录刷新：" + GetLatestCatalogRefreshDate())
+            ])
         ]);
     }
 
@@ -1000,12 +1058,6 @@ public static partial class WikiHomeModule
     private static IVueRef<int>? GetReadingProgressPercentRef()
         => ReadingProgressPercentRef;
 
-    private static IVueRef<bool>? GetNavDrawerOpenRef()
-        => NavDrawerOpenRef;
-
-    private static IVueRef<bool>? GetTocDrawerOpenRef()
-        => TocDrawerOpenRef;
-
     // ── 状态修改器 / State mutators ──
     private static void SetNavFilter(string value)
     {
@@ -1124,29 +1176,38 @@ public static partial class WikiHomeModule
         readingProgressPercent.Value = value;
     }
 
-    private static void SetNavDrawerOpen(bool value)
+    // ── Sober s-drawer 互操作 / Sober s-drawer interop ──
+    // s-drawer 的 show/close/toggle 是自定义元素方法且无 opened 属性；
+    // 通过 Reflect 通道调用。并排（宽容器）模式下 close() 会把常驻面板宽度折叠为 0，
+    // 因此只在窄视口（Sober laptop 断点 1024px 附近）需要主动关闭覆盖抽屉。
+    private const int DrawerOverlayMaxViewportWidth = 1040;
+
+    private static bool IsDrawerOverlayMode()
+        => ECMAScript.Global.Window.InnerWidth <= DrawerOverlayMaxViewportWidth;
+
+    private static void ToggleWikiDrawer(string slot)
+        => InvokeWikiDrawer("toggle", slot);
+
+    private static void CloseWikiDrawers()
     {
-        var navDrawer = GetNavDrawerOpenRef();
-        if (navDrawer == null)
+        if (!IsDrawerOverlayMode())
             return;
 
-        navDrawer.Value = value;
+        InvokeWikiDrawer("close", DrawerStartSlot);
+        InvokeWikiDrawer("close", DrawerEndSlot);
     }
 
-    private static void SetTocDrawerOpen(bool value)
+    private static void InvokeWikiDrawer(string method, string slot)
     {
-        var tocDrawer = GetTocDrawerOpenRef();
-        if (tocDrawer == null)
+        var drawerElement = WikiDrawerRef?.Value;
+        if (drawerElement == null)
             return;
 
-        tocDrawer.Value = value;
-    }
+        var methodFunction = Reflect.Get(drawerElement, method);
+        if (methodFunction == null)
+            return;
 
-    // ── 抽屉和反馈状态 / Drawer and feedback state ──
-    private static void CloseDrawers()
-    {
-        SetNavDrawerOpen(false);
-        SetTocDrawerOpen(false);
+        Reflect.Apply(methodFunction, drawerElement, [slot]);
     }
 
     // 段落链接复制反馈 / Section link copy feedback
@@ -1592,7 +1653,7 @@ public static partial class WikiHomeModule
         currentPath.Value = normalizedPath;
         currentHash.Value = normalizedHash;
         currentSearchQuery.Value = normalizedSearchQuery;
-        CloseDrawers();
+        CloseWikiDrawers();
         SetCurrentPageFeedback(ReadStoredPageFeedback(normalizedPath));
 
         if (updateHistory)
@@ -1639,7 +1700,6 @@ public static partial class WikiHomeModule
         currentPath.Value = normalizedPath;
         currentHash.Value = normalizedHash;
         currentSearchQuery.Value = normalizedSearchQuery;
-        CloseDrawers();
         SetCurrentPageFeedback(ReadStoredPageFeedback(normalizedPath));
         SyncDocumentState(normalizedPath, normalizedSearchQuery);
 
@@ -1682,14 +1742,15 @@ public static partial class WikiHomeModule
             return;
 
         mouseEvent.PreventDefault();
-        CloseDrawers();
+        CloseWikiDrawers();
         var normalizedPath = NormalizeBrowserPath(anchor.Pathname);
         NavigateTo(anchor.Pathname, anchor.Hash, GetSearchQueryFromSearchString(anchor.Search, normalizedPath), updateHistory: true, resetScroll: true);
     }
 
     private static void OnSectionPermalinkClick(MouseEvent mouseEvent)
     {
-        if (mouseEvent.CurrentTarget is not HTMLButtonElement buttonElement)
+        // s-button 宿主是普通 Element；value 以 attribute 形式写入
+        if (mouseEvent.CurrentTarget is not Element buttonElement)
             return;
 
         mouseEvent.PreventDefault();
@@ -1699,7 +1760,7 @@ public static partial class WikiHomeModule
         if (currentPath == null || currentSearchQuery == null)
             return;
 
-        var sectionId = NormalizeHash(buttonElement.Value);
+        var sectionId = NormalizeHash(buttonElement.GetAttribute("value") ?? "");
         if (sectionId.Length == 0)
             return;
 
@@ -1733,7 +1794,7 @@ public static partial class WikiHomeModule
 
     private static void OnPagePermalinkClick(MouseEvent mouseEvent)
     {
-        if (mouseEvent.CurrentTarget is not HTMLButtonElement buttonElement)
+        if (mouseEvent.CurrentTarget is not Element buttonElement)
             return;
 
         mouseEvent.PreventDefault();
@@ -1743,7 +1804,7 @@ public static partial class WikiHomeModule
         if (currentPath == null || currentSearchQuery == null)
             return;
 
-        var targetPath = NormalizePath(buttonElement.Value);
+        var targetPath = NormalizePath(buttonElement.GetAttribute("value") ?? "");
         ResetPageLinkFeedback();
 
         var location = ECMAScript.Global.Document.Location;
@@ -1825,12 +1886,12 @@ public static partial class WikiHomeModule
 
     private static void OnCodeBlockCopyClick(MouseEvent mouseEvent)
     {
-        if (mouseEvent.CurrentTarget is not HTMLButtonElement buttonElement)
+        if (mouseEvent.CurrentTarget is not Element buttonElement)
             return;
 
         mouseEvent.PreventDefault();
 
-        var codeBlockId = buttonElement.Value;
+        var codeBlockId = buttonElement.GetAttribute("value") ?? "";
         if (codeBlockId.Length == 0)
             return;
 
@@ -1864,10 +1925,17 @@ public static partial class WikiHomeModule
 
     private static void OnNavFilterInput(Event @event)
     {
-        if (@event.CurrentTarget is not HTMLInputElement inputElement)
+        // s-text-field 宿主是普通 Element；value 是组件 property，经 Reflect 读取
+        if (@event.CurrentTarget is not Element fieldElement)
             return;
 
-        SetNavFilter(inputElement.Value);
+        SetNavFilter(ReadElementStringValue(fieldElement, "value"));
+    }
+
+    private static string ReadElementStringValue(Element element, string propertyName)
+    {
+        var value = Reflect.Get(element, propertyName);
+        return value == null ? "" : ECMAScript.Global.StringFn(value);
     }
 
     private static void ClearNavFilter(MouseEvent mouseEvent)
@@ -1878,10 +1946,10 @@ public static partial class WikiHomeModule
 
     private static void OnSearchInput(Event @event)
     {
-        if (@event.CurrentTarget is not HTMLInputElement inputElement)
+        if (@event.CurrentTarget is not Element fieldElement)
             return;
 
-        SetSearchQuery(inputElement.Value, updateLocation: true);
+        SetSearchQuery(ReadElementStringValue(fieldElement, "value"), updateLocation: true);
     }
 
     private static void ClearSearch(MouseEvent mouseEvent)
@@ -1907,26 +1975,36 @@ public static partial class WikiHomeModule
     private static void OpenNavDrawer(MouseEvent mouseEvent)
     {
         mouseEvent.PreventDefault();
-        SetNavDrawerOpen(true);
-        SetTocDrawerOpen(false);
+        ToggleWikiDrawer(DrawerStartSlot);
     }
 
     private static void OpenTocDrawer(MouseEvent mouseEvent)
     {
         mouseEvent.PreventDefault();
-        SetTocDrawerOpen(true);
-        SetNavDrawerOpen(false);
+        ToggleWikiDrawer(DrawerEndSlot);
     }
 
     private static void CloseAllDrawers(MouseEvent mouseEvent)
     {
         mouseEvent.PreventDefault();
-        CloseDrawers();
+        CloseWikiDrawers();
+    }
+
+    private static void OpenSearchRoute(MouseEvent mouseEvent)
+    {
+        mouseEvent.PreventDefault();
+        NavigateTo(SearchPath, "", "", updateHistory: true, resetScroll: true);
+    }
+
+    private static void OpenQuickStart(MouseEvent mouseEvent)
+    {
+        mouseEvent.PreventDefault();
+        NavigateTo("/guides/quick-start", "", "", updateHistory: true, resetScroll: true);
     }
 
     private static void OnPageFeedbackClick(MouseEvent mouseEvent)
     {
-        if (mouseEvent.CurrentTarget is not HTMLButtonElement buttonElement)
+        if (mouseEvent.CurrentTarget is not Element buttonElement)
             return;
 
         mouseEvent.PreventDefault();
@@ -1935,7 +2013,7 @@ public static partial class WikiHomeModule
         if (currentPath == null)
             return;
 
-        var feedbackValue = buttonElement.Value;
+        var feedbackValue = buttonElement.GetAttribute("value") ?? "";
         SetCurrentPageFeedback(feedbackValue);
         PersistCurrentPageFeedback(currentPath.Value, feedbackValue);
 
@@ -1946,22 +2024,21 @@ public static partial class WikiHomeModule
     }
 
     // ── 搜索焦点管理 / Search focus management ──
+    // document.activeElement 对 shadow 内焦点会重定向到宿主 s-text-field，
+    // 因此按宿主 id 判断聚焦状态，聚焦时通过组件的 native input 执行。
     private static void FocusNavSearch()
-    {
-        if (ECMAScript.Global.Document.GetElementById(NavSearchInputId) is not HTMLInputElement inputElement)
-            return;
-
-        inputElement.Focus();
-        inputElement.Select();
-    }
+        => FocusSoberTextField(NavSearchInputId);
 
     private static void FocusPageSearch()
+        => FocusSoberTextField(SearchInputId);
+
+    private static void FocusSoberTextField(string elementId)
     {
-        if (ECMAScript.Global.Document.GetElementById(SearchInputId) is not HTMLInputElement inputElement)
+        if (ECMAScript.Global.Document.GetElementById(elementId) is not Element fieldElement)
             return;
 
-        inputElement.Focus();
-        inputElement.Select();
+        if (Reflect.Get(fieldElement, "native") is HTMLElement nativeInput)
+            nativeInput.Focus();
     }
 
     private static void FocusPrimarySearch()
@@ -1987,12 +2064,12 @@ public static partial class WikiHomeModule
     }
 
     private static bool IsNavSearchFocused()
-        => ECMAScript.Global.Document.ActiveElement is HTMLInputElement activeInput &&
-           activeInput.Id == NavSearchInputId;
+        => ECMAScript.Global.Document.ActiveElement is HTMLElement activeElement &&
+           activeElement.Id == NavSearchInputId;
 
     private static bool IsPageSearchFocused()
-        => ECMAScript.Global.Document.ActiveElement is HTMLInputElement activeInput &&
-           activeInput.Id == SearchInputId;
+        => ECMAScript.Global.Document.ActiveElement is HTMLElement activeElement &&
+           activeElement.Id == SearchInputId;
 
     // ── 全局键盘/滚动/历史事件 / Global keyboard/scroll/history events ──
     private static object OnGlobalKeyDown(Event @event)
@@ -2028,8 +2105,8 @@ public static partial class WikiHomeModule
                 keyboardEvent.PreventDefault();
                 if ((GetCurrentSearchQueryRef()?.Value ?? "").Length > 0)
                     SetSearchQuery("", updateLocation: true);
-                else if (ECMAScript.Global.Document.ActiveElement is HTMLInputElement searchInput)
-                    searchInput.Blur();
+                else if (ECMAScript.Global.Document.ActiveElement is HTMLElement searchHost)
+                    searchHost.Blur();
 
                 return 0;
             }
@@ -2039,18 +2116,16 @@ public static partial class WikiHomeModule
                 keyboardEvent.PreventDefault();
                 if ((GetNavFilterRef()?.Value ?? "").Length > 0)
                     SetNavFilter("");
-                else if (ECMAScript.Global.Document.ActiveElement is HTMLInputElement activeInput)
-                    activeInput.Blur();
+                else if (ECMAScript.Global.Document.ActiveElement is HTMLElement activeHost)
+                    activeHost.Blur();
 
                 return 0;
             }
 
-            if (IsNavDrawerOpen() || IsTocDrawerOpen())
-            {
-                keyboardEvent.PreventDefault();
-                CloseDrawers();
-                return 0;
-            }
+            // Escape 兜底关闭两侧抽屉（s-drawer 的 scrim 点击关闭不经过这里）
+            keyboardEvent.PreventDefault();
+            CloseWikiDrawers();
+            return 0;
         }
 
         return 0;

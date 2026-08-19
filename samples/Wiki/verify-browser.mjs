@@ -600,8 +600,9 @@ async function main() {
   }
 
   report.gettingStarted.themeToggleClicked = await evaluate(`(function(){
-    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').includes('主题：'));
-    if (!button) return false;
+    // Sober 外壳：主题切换是 s-icon-button，语义在 aria-label 上
+    const button = document.querySelector('.wiki-theme-toggle');
+    if (!button || !(button.getAttribute('aria-label') || '').includes('主题：')) return false;
     button.click();
     return true;
   })()`);
@@ -911,45 +912,61 @@ async function main() {
   await delay(300);
 
   report.mobile = {};
+  // Sober s-drawer：开合状态由抽屉内部 slot 包裹层 class 与导航面板几何决定
+  const mobileDrawerState = () => evaluate(`(function(){
+    const drawer = document.querySelector('s-drawer');
+    const startSlot = drawer && drawer.shadowRoot ? drawer.shadowRoot.querySelector('slot[name=start]') : null;
+    const scrim = drawer && drawer.shadowRoot ? drawer.shadowRoot.querySelector('.scrim') : null;
+    const nav = document.querySelector('#wiki-nav-rail');
+    const toc = document.querySelector('#wiki-toc-rail');
+    const rect = (el) => { if (!el) return null; const r = el.getBoundingClientRect(); return { x: Math.round(r.x), w: Math.round(r.width) }; };
+    return {
+      startSlotClass: startSlot ? (startSlot.className || '') : '',
+      scrimClass: scrim ? (scrim.className || '') : '',
+      navRect: rect(nav),
+      tocRect: rect(toc)
+    };
+  })()`);
+  const isPanelVisibleOnScreen = (rect) => !!rect && rect.w > 0 && rect.x >= 0 && rect.x < 390;
+
   report.mobile.navClicked = await evaluate(`(function(){
-    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').trim() === '浏览');
+    const button = document.querySelector('.wiki-menu-button');
     if (!button) return false;
     button.click();
     return true;
   })()`);
   if (!report.mobile.navClicked) {
-    failures.push("Mobile Browse drawer button was not found.");
+    failures.push("Mobile navigation menu button was not found.");
   }
-  await delay(300);
+  await delay(400);
 
-  report.mobile.shellClassAfterNavOpen = await evaluate("document.querySelector('.wiki-shell') ? document.querySelector('.wiki-shell').className : ''");
-  report.mobile.backdropOpenAfterNavOpen = await evaluate(`(function(){
-    const backdrop = document.querySelector('.drawer-backdrop');
-    return backdrop ? backdrop.className.includes('drawer-backdrop-open') : false;
-  })()`);
-
-  if (report.mobile.navClicked && !report.mobile.shellClassAfterNavOpen.includes("wiki-shell-nav-open")) {
-    failures.push("Mobile nav drawer did not apply the expected open class.");
-  }
-  if (report.mobile.navClicked && !report.mobile.backdropOpenAfterNavOpen) {
-    failures.push("Mobile nav drawer did not open the backdrop.");
+  report.mobile.stateAfterNavOpen = await mobileDrawerState();
+  if (report.mobile.navClicked) {
+    if (!isPanelVisibleOnScreen(report.mobile.stateAfterNavOpen.navRect)) {
+      failures.push("Mobile nav drawer did not reveal the navigation panel on screen.");
+    }
+    if (!report.mobile.stateAfterNavOpen.startSlotClass.includes("show-laptop") ||
+        !report.mobile.stateAfterNavOpen.scrimClass.includes("show-laptop")) {
+      failures.push("Mobile nav drawer did not switch the drawer slots into overlay mode.");
+    }
   }
 
   report.mobile.backdropClicked = await evaluate(`(function(){
-    const backdrop = document.querySelector('.drawer-backdrop');
-    if (!backdrop) return false;
-    backdrop.click();
+    const drawer = document.querySelector('s-drawer');
+    const scrim = drawer && drawer.shadowRoot ? drawer.shadowRoot.querySelector('.scrim') : null;
+    if (!scrim) return false;
+    scrim.click();
     return true;
   })()`);
-  await delay(300);
+  await delay(400);
 
-  report.mobile.navStillOpenAfterBackdrop = await evaluate("document.querySelector('.wiki-shell') ? document.querySelector('.wiki-shell').className.includes('wiki-shell-nav-open') : false");
-  if (report.mobile.backdropClicked && report.mobile.navStillOpenAfterBackdrop) {
-    failures.push("Mobile nav drawer did not close after clicking the backdrop.");
+  report.mobile.stateAfterBackdrop = await mobileDrawerState();
+  if (report.mobile.backdropClicked && isPanelVisibleOnScreen(report.mobile.stateAfterBackdrop.navRect)) {
+    failures.push("Mobile nav drawer did not close after clicking the scrim.");
   }
 
   report.mobile.tocClicked = await evaluate(`(function(){
-    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').trim() === '本页目录');
+    const button = document.querySelector('.wiki-toc-button');
     if (!button) return false;
     button.click();
     return true;
@@ -957,27 +974,20 @@ async function main() {
   if (!report.mobile.tocClicked) {
     failures.push("Mobile TOC drawer button was not found.");
   }
-  await delay(300);
+  await delay(400);
 
-  report.mobile.shellClassAfterTocOpen = await evaluate("document.querySelector('.wiki-shell') ? document.querySelector('.wiki-shell').className : ''");
-  report.mobile.backdropOpenAfterTocOpen = await evaluate(`(function(){
-    const backdrop = document.querySelector('.drawer-backdrop');
-    return backdrop ? backdrop.className.includes('drawer-backdrop-open') : false;
-  })()`);
+  report.mobile.stateAfterTocOpen = await mobileDrawerState();
   report.mobile.tocLinkCount = await evaluate("document.querySelectorAll('.toc-link').length");
 
-  if (report.mobile.tocClicked && !report.mobile.shellClassAfterTocOpen.includes("wiki-shell-toc-open")) {
-    failures.push("Mobile TOC drawer did not apply the expected open class.");
-  }
-  if (report.mobile.tocClicked && !report.mobile.backdropOpenAfterTocOpen) {
-    failures.push("Mobile TOC drawer did not open the backdrop.");
+  if (report.mobile.tocClicked && !isPanelVisibleOnScreen(report.mobile.stateAfterTocOpen.tocRect)) {
+    failures.push("Mobile TOC drawer did not reveal the TOC panel on screen.");
   }
   if (report.mobile.tocClicked && report.mobile.tocLinkCount < 1) {
     failures.push("Mobile TOC drawer opened without visible TOC links.");
   }
 
   report.mobile.tocLinkClicked = await evaluate(`(function(){
-    const link = document.querySelector('.toc-rail-open .toc-link');
+    const link = document.querySelector('#wiki-toc-rail .toc-link');
     if (!link) return false;
     link.click();
     return true;
@@ -988,11 +998,11 @@ async function main() {
   await delay(500);
 
   report.mobile.hashAfterTocClick = await evaluate("location.hash || ''");
-  report.mobile.tocOpenAfterLinkClick = await evaluate("document.querySelector('.wiki-shell') ? document.querySelector('.wiki-shell').className.includes('wiki-shell-toc-open') : false");
+  report.mobile.stateAfterTocLink = await mobileDrawerState();
   if (report.mobile.tocLinkClicked && report.mobile.hashAfterTocClick.length === 0) {
     failures.push("Mobile TOC link did not update the hash.");
   }
-  if (report.mobile.tocLinkClicked && report.mobile.tocOpenAfterLinkClick) {
+  if (report.mobile.tocLinkClicked && isPanelVisibleOnScreen(report.mobile.stateAfterTocLink.tocRect)) {
     failures.push("Mobile TOC drawer remained open after selecting a section link.");
   }
 

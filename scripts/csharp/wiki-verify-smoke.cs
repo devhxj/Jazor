@@ -149,6 +149,7 @@ AssertContains(indexTemplateContent, "__WIKI_MAIN_MODULE_URL__", "main module to
 AssertContains(indexTemplateContent, "\"System/\": \"__WIKI_SYSTEM_IMPORT_BASE__\"", "CLR runtime import-map token in host HTML template");
 AssertContains(indexTemplateContent, "data-wiki-path-base=\"__WIKI_PATH_BASE__\"", "path-base token in host HTML template");
 AssertContains(indexTemplateContent, "__WIKI_VENDOR_VUE_URL__", "vendored dependency marker in host HTML template");
+AssertContains(indexTemplateContent, "__WIKI_SOBER_URL__", "vendored Sober UI library token in host HTML template");
 AssertNotContains(indexTemplateContent, "unpkg.com", "forbidden CDN URL in host HTML template");
 
 var siteCssPath = Path.Combine(webRoot, "site.css");
@@ -158,12 +159,13 @@ foreach (var marker in new[]
 {
     ".skip-link",
     ".breadcrumbs",
-    ".meta-card",
+    ".doc-meta-strip",
     ".feedback-button",
-    ".reading-progress-track",
+    ".wiki-reading-progress",
     ".search-result-card",
-    ".mobile-utility-bar",
-    ".drawer-backdrop",
+    ".wiki-appbar",
+    ".wiki-drawer",
+    "s-page {",
     "html[data-theme=\"light\"]"
 })
 {
@@ -191,7 +193,8 @@ var browserAssets = options.Publish
         new("/jazor/bundle.js.map", "\"file\":\"bundle.js\"", "application/json", new[] { "main.mjs", "components/wiki-home.mjs", "components/wiki-styles.mjs" }),
         new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
         new("/favicon.svg", "<svg", null, Array.Empty<string>()),
-        new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>())
+        new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>()),
+        new("/vendor/sober@1.1.10.min.js", "globalThis.sober", null, Array.Empty<string>())
     }
     : new List<AssetExpectation>
     {
@@ -205,7 +208,8 @@ var browserAssets = options.Publish
         new("/jazor/System/StringModule.js", "export", null, Array.Empty<string>()),
         new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
         new("/favicon.svg", "<svg", null, Array.Empty<string>()),
-        new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>())
+        new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>()),
+        new("/vendor/sober@1.1.10.min.js", "globalThis.sober", null, Array.Empty<string>())
     };
 
 var discoveryDocuments = new List<DiscoveryExpectation>

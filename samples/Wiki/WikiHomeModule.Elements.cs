@@ -86,35 +86,23 @@ public static partial class WikiHomeModule
             ["onClick"] = CloseAllDrawers
         };
 
+    private static VueEventHandlers<MouseEvent> CreateSearchActionEvents()
+        => new()
+        {
+            ["onClick"] = OpenSearchRoute
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateQuickStartEvents()
+        => new()
+        {
+            ["onClick"] = OpenQuickStart
+        };
+
     private static VueEventHandlers<MouseEvent> CreatePageFeedbackEvents()
         => new()
         {
             ["onClick"] = OnPageFeedbackClick
         };
-
-    // 头部导航链接 / Header navigation link
-    private static IVNode HeaderLink(string path, string label)
-        => H("a", new VueObject
-        {
-            Class = "header-link",
-            Href = BuildBrowserUrl(path, "", ""),
-            Events = CreateRouteClickEvents()
-        }, label);
-
-    // 抽屉按钮（移动端导航/目录切换） / Drawer button for mobile nav/TOC toggle
-    private static IVNode DrawerButton(string label, string className, string controlsId, bool isExpanded, bool isDisabled, VueEventHandlers<MouseEvent> events)
-        => H("button", new VueObject
-        {
-            Class = className,
-            Type = "button",
-            Disabled = isDisabled,
-            Events = events,
-            Raw = new VueDictionary
-            {
-                ["aria-controls"] = controlsId,
-                ["aria-expanded"] = isExpanded ? "true" : "false"
-            }
-        }, label);
 
     // 导航分组（按主题归类链接） / Navigation group (links grouped by topic)
     private static IVNode NavGroup(string title, IVNode[] links)
@@ -151,73 +139,59 @@ public static partial class WikiHomeModule
         ]);
     }
 
-    // 目录侧边栏（右侧 TOC 导航） / Table of contents rail (right-side TOC navigation)
+    // 目录侧边栏（右侧 TOC 导航，置于 s-drawer 的 end 槽位） / TOC rail in the s-drawer end slot
     private static IVNode TocRail(string title, IVNode[] links)
-    {
-        var className = "toc-rail";
-        if (IsTocDrawerOpen())
-            className += " toc-rail-open";
-
-        return H("aside", new VueObject
+        => H("aside", new VueObject
         {
             Id = TocRailId,
-            Class = className,
+            Class = "wiki-toc",
             Role = "navigation",
             Raw = new VueDictionary
             {
+                ["slot"] = "end",
                 ["aria-label"] = title
             }
         },
         [
-            H("div", new VueObject { Class = "rail-card toc-card" },
+            H("div", new VueObject { Class = "toc-card" },
             [
-                H("div", new VueObject { Class = "toc-drawer-head" },
+                H("div", new VueObject { Class = "toc-head" },
                 [
                     H("p", new VueObject { Class = "rail-kicker" }, title),
-                    H("button", new VueObject
+                    H("s-icon-button", new VueObject
                     {
-                        Class = "drawer-close",
-                        Type = "button",
+                        Class = "wiki-toc-close",
                         Title = "关闭目录",
+                        Raw = new VueDictionary { ["aria-label"] = "关闭目录" },
                         Events = CreateCloseDrawersEvents()
-                    }, "关闭")
+                    },
+                    [
+                        H("s-icon", new VueObject { Raw = new VueDictionary { ["name"] = "close" } }, "")
+                    ])
                 ]),
                 H("p", new VueObject { Class = "rail-copy" }, "稳定的锚点是文档契约的一部分，应视为面向用户的入口点。"),
                 H("div", new VueObject { Class = "toc-links" }, links)
             ])
         ]);
-    }
 
     // 空目录侧边栏（页面未注册时显示） / Empty TOC rail (shown when page is not registered)
     private static IVNode EmptyTocRail()
-    {
-        var className = "toc-rail toc-rail-empty";
-        if (IsTocDrawerOpen())
-            className += " toc-rail-open";
-
-        return H("aside", new VueObject
+        => H("aside", new VueObject
         {
             Id = TocRailId,
-            Class = className
+            Class = "wiki-toc wiki-toc-empty",
+            Raw = new VueDictionary
+            {
+                ["slot"] = "end"
+            }
         },
         [
-            H("div", new VueObject { Class = "rail-card toc-card" },
+            H("div", new VueObject { Class = "toc-card" },
             [
-                H("div", new VueObject { Class = "toc-drawer-head" },
-                [
-                    H("p", new VueObject { Class = "rail-kicker" }, "缺失页面"),
-                    H("button", new VueObject
-                    {
-                        Class = "drawer-close",
-                        Type = "button",
-                        Title = "关闭目录",
-                        Events = CreateCloseDrawersEvents()
-                    }, "关闭")
-                ]),
+                H("p", new VueObject { Class = "rail-kicker" }, "缺失页面"),
                 H("p", new VueObject { Class = "rail-copy" }, "请求的路由未在当前 Wiki 路由映射中注册。")
             ])
         ]);
-    }
 
     // 目录链接（带当前锚点高亮） / TOC link with active anchor highlight
     private static IVNode TocLink(string path, string id, string title, string currentHash)
@@ -292,27 +266,22 @@ public static partial class WikiHomeModule
             Events = CreateRouteClickEvents()
         }, tag);
 
-    // 元数据卡片（Owner/Audience/Updated 等信息展示） / Metadata card for Owner/Audience/Updated etc.
-    private static IVNode MetaCard(string title, string value, string summary)
-        => H("article", new VueObject { Class = "meta-card" },
-        [
-            H("p", new VueObject { Class = "meta-card-title" }, title),
-            H("strong", new VueObject { Class = "meta-card-value" }, value),
-            H("p", new VueObject { Class = "meta-card-summary" }, summary)
-        ]);
-
-    // 反馈按钮（有帮助/需改进） / Feedback button (helpful/needs-work)
+    // 反馈按钮（有帮助/需改进，MD3 s-button） / Feedback button (helpful/needs-work)
     private static IVNode FeedbackButton(string label, string value, string currentValue)
     {
         var className = "feedback-button";
         if (currentValue == value)
             className += " feedback-button-active";
 
-        return H("button", new VueObject
+        return H("s-button", new VueObject
         {
             Class = className,
-            Type = "button",
-            Value = value,
+            Type = value == "helpful" ? "filled-tonal" : "outlined",
+            Raw = new VueDictionary
+            {
+                ["value"] = value,
+                ["selected"] = currentValue == value ? "true" : "false"
+            },
             Events = CreatePageFeedbackEvents()
         }, label);
     }
@@ -350,11 +319,11 @@ public static partial class WikiHomeModule
             H("div", new VueObject { Class = "section-title-row" },
             [
                 H("h2", title),
-                H("button", new VueObject
+                H("s-button", new VueObject
                 {
                     Class = permalinkClassName,
-                    Type = "button",
-                    Value = id,
+                    Type = "text",
+                    Raw = new VueDictionary { ["value"] = id },
                     Title = permalinkTitle,
                     Events = CreateSectionPermalinkEvents()
                 }, permalinkLabel)
@@ -362,31 +331,6 @@ public static partial class WikiHomeModule
             H("div", new VueObject { Class = "section-body" }, content)
         ]);
     }
-
-    // 指标卡片（数值+标题+描述） / Metric card (value + title + summary)
-    private static IVNode MetricCard(string value, string title, string summary)
-        => H("article", new VueObject { Class = "metric-card" },
-        [
-            H("p", new VueObject { Class = "metric-value" }, value),
-            H("h3", new VueObject { Class = "metric-title" }, title),
-            H("p", new VueObject { Class = "metric-summary" }, summary)
-        ]);
-
-    // 检查卡片（标题+描述） / Check card (title + summary)
-    private static IVNode CheckCard(string title, string summary)
-        => H("article", new VueObject { Class = "check-card" },
-        [
-            H("h3", new VueObject { Class = "check-title" }, title),
-            H("p", new VueObject { Class = "check-summary" }, summary)
-        ]);
-
-    // 提示框（标题+描述） / Callout box (title + summary)
-    private static IVNode Callout(string title, string summary)
-        => H("div", new VueObject { Class = "callout" },
-        [
-            H("p", new VueObject { Class = "callout-title" }, title),
-            H("p", new VueObject { Class = "callout-summary" }, summary)
-        ]);
 
     // 代码块（带复制按钮） / Code block with copy button
     private static IVNode CodeBlock(string label, string code)
@@ -414,11 +358,11 @@ public static partial class WikiHomeModule
             H("div", new VueObject { Class = "code-label-row" },
             [
                 H("div", new VueObject { Class = "code-label" }, label),
-                H("button", new VueObject
+                H("s-button", new VueObject
                 {
                     Class = copyClassName,
-                    Type = "button",
-                    Value = codeBlockId,
+                    Type = "text",
+                    Raw = new VueDictionary { ["value"] = codeBlockId },
                     Title = copyTitle,
                     Events = CreateCodeBlockCopyEvents()
                 }, copyLabel)

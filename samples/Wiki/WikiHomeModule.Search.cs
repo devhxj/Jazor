@@ -54,20 +54,24 @@ public static partial class WikiHomeModule
         [
             H("div", new VueObject { Class = "search-row" },
             [
-                H("input", new VueObject
+                H("s-text-field", new VueObject
                 {
                     Id = SearchInputId,
                     Class = "search-input",
-                    Type = "search",
+                    Type = "text",
                     Placeholder = "搜索编译器、运行时、Razor SG、RazorVue、验证...",
-                    Autocomplete = "off",
                     Value = query,
+                    Raw = new VueDictionary
+                    {
+                        ["label"] = "搜索",
+                        ["autocomplete"] = "off"
+                    },
                     Events = CreateSearchInputEvents()
-                }),
-                H("button", new VueObject
+                }, ""),
+                H("s-button", new VueObject
                 {
                     Class = "search-clear",
-                    Type = "button",
+                    Type = "text",
                     Disabled = query.Length == 0,
                     Events = CreateClearSearchEvents()
                 }, "清除")
