@@ -2,6 +2,7 @@
 // 动态生成 robots.txt 和 sitemap.xml / Dynamically generates robots.txt and sitemap.xml
 
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace Wiki;
 
@@ -31,7 +32,7 @@ internal static class WikiHostDiscoveryDocuments
     // 生成 robots.txt / Generate robots.txt
     private static async Task WriteRobotsAsync(HttpContext context, CancellationToken cancellationToken)
     {
-        var siteOrigin = BuildSiteOrigin(context.Request);
+        var siteOrigin = BuildSiteOrigin(context.Request, context.RequestServices.GetRequiredService<IConfiguration>());
         var body = "User-agent: *\nAllow: /\nSitemap: " + siteOrigin + "/sitemap.xml\n";
 
         context.Response.StatusCode = StatusCodes.Status200OK;
@@ -47,7 +48,7 @@ internal static class WikiHostDiscoveryDocuments
     // 生成 sitemap.xml / Generate sitemap.xml
     private static async Task WriteSitemapAsync(HttpContext context, CancellationToken cancellationToken)
     {
-        var siteOrigin = BuildSiteOrigin(context.Request);
+        var siteOrigin = BuildSiteOrigin(context.Request, context.RequestServices.GetRequiredService<IConfiguration>());
         var builder = new StringBuilder();
         builder.AppendLine("""<?xml version="1.0" encoding="utf-8"?>""");
         builder.AppendLine("""<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">""");
@@ -78,6 +79,6 @@ internal static class WikiHostDiscoveryDocuments
     }
 
     // 构建站点 Origin URL / Build site origin URL
-    private static string BuildSiteOrigin(HttpRequest request)
-        => request.Scheme + "://" + request.Host.Value + request.PathBase.Value;
+    private static string BuildSiteOrigin(HttpRequest request, IConfiguration configuration)
+        => WikiHostShell.BuildSiteOrigin(request, configuration);
 }

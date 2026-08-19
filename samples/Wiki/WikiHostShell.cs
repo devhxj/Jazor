@@ -4,6 +4,7 @@
 
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Configuration;
 namespace Wiki;
 
 internal static class WikiHostShell
@@ -23,6 +24,7 @@ internal static class WikiHostShell
     private const string TwitterTitleToken = "__WIKI_TWITTER_TITLE__";
     private const string TwitterDescriptionToken = "__WIKI_TWITTER_DESCRIPTION__";
     private const string RobotsDirectiveToken = "__WIKI_DOCUMENT_ROBOTS__";
+    private const string ContentSecurityPolicyToken = "__WIKI_CONTENT_SECURITY_POLICY__";
     private const string ScriptNonceToken = "__WIKI_SCRIPT_NONCE__";
     private const string PathBaseToken = "__WIKI_PATH_BASE__";
     private const string FaviconUrlToken = "__WIKI_FAVICON_URL__";
@@ -59,10 +61,12 @@ internal static class WikiHostShell
         var isRegisteredPath = WikiHomeModule.IsRegisteredDocumentPath(normalizedPath);
         var isIndexablePath = WikiHomeModule.IsIndexableDocumentPath(normalizedPath);
 
+        var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
         var relativeUrl = BuildRelativeUrl(normalizedPath, normalizedSearchQuery);
-        var absoluteUrl = BuildAbsoluteUrl(context.Request, relativeUrl);
+        var absoluteUrl = BuildAbsoluteUrl(context.Request, configuration, relativeUrl);
         var documentTitle = pageTitle + " | jazor.wiki";
         var scriptNonce = GenerateScriptNonce();
+        var contentSecurityPolicy = BuildContentSecurityPolicy(scriptNonce);
         var pathBase = NormalizePathBase(context.Request.PathBase.Value);
         var browserModulePath = ResolveBrowserModulePath(context);
         var template = await LoadIndexTemplateAsync(context, cancellationToken);
@@ -73,6 +77,7 @@ internal static class WikiHostShell
             absoluteUrl,
             robotsDirective,
             scriptNonce,
+            contentSecurityPolicy,
             pathBase,
             browserModulePath);
 
@@ -81,7 +86,7 @@ internal static class WikiHostShell
             ? StatusCodes.Status200OK
             : StatusCodes.Status404NotFound;
         context.Response.Headers["Cache-Control"] = HtmlCacheControl;
-        context.Response.Headers["Content-Security-Policy"] = BuildContentSecurityPolicy(scriptNonce);
+        context.Response.Headers["Content-Security-Policy"] = contentSecurityPolicy;
 
         if (!isIndexablePath)
             context.Response.Headers["X-Robots-Tag"] = robotsDirective;
@@ -112,8 +117,20 @@ internal static class WikiHostShell
         return normalizedPath;
     }
 
-    private static string BuildAbsoluteUrl(HttpRequest request, string relativeUrl)
-        => request.Scheme + "://" + request.Host.Value + request.PathBase.Value + relativeUrl;
+    // 静态导出没有真实的公开 Request Host；优先使用配置的 origin，再拼接 PathBase。
+    // ASP.NET 部署未配置时仍从当前请求派生，保持本地和反向代理部署兼容。
+    internal static string BuildAbsoluteUrl(HttpRequest request, IConfiguration configuration, string relativeUrl)
+        => BuildSiteOrigin(request, configuration) + relativeUrl;
+
+    internal static string BuildSiteOrigin(HttpRequest request, IConfiguration configuration)
+    {
+        var configuredOrigin = configuration["Wiki:SiteOrigin"];
+        var origin = string.IsNullOrWhiteSpace(configuredOrigin)
+            ? request.Scheme + "://" + request.Host.Value
+            : configuredOrigin.Trim().TrimEnd('/');
+
+        return origin + NormalizePathBase(request.PathBase.Value);
+    }
 
     private static string RenderIndexTemplate(
         string template,
@@ -122,6 +139,7 @@ internal static class WikiHostShell
         string absoluteUrl,
         string robotsDirective,
         string scriptNonce,
+        string contentSecurityPolicy,
         string pathBase,
         string browserModulePath)
     {
@@ -151,6 +169,7 @@ internal static class WikiHostShell
         rendered = ReplaceRequiredToken(rendered, TwitterDescriptionToken, htmlEncoder.Encode(pageSummary));
         rendered = ReplaceRequiredToken(rendered, RobotsDirectiveToken, htmlEncoder.Encode(robotsDirective));
         rendered = ReplaceRequiredToken(rendered, ScriptNonceToken, htmlEncoder.Encode(scriptNonce));
+        rendered = ReplaceRequiredToken(rendered, ContentSecurityPolicyToken, htmlEncoder.Encode(contentSecurityPolicy));
         rendered = ReplaceRequiredToken(rendered, PathBaseToken, htmlEncoder.Encode(pathBase));
         rendered = ReplaceRequiredToken(rendered, FaviconUrlToken, htmlEncoder.Encode(faviconUrl));
         rendered = ReplaceRequiredToken(rendered, SiteCssUrlToken, htmlEncoder.Encode(siteCssUrl));
