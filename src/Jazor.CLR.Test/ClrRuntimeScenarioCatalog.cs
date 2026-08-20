@@ -20,6 +20,7 @@ internal enum ClrRuntimeValueKind
     AsyncDisposable,
     RuntimeInvocation,
     Error,
+    Url,
     Undefined
 }
 
@@ -44,7 +45,8 @@ internal enum ClrRuntimeCallableKind
 	ReturnHashCode,
     Identity,
     SameParity,
-    ParityHash
+    ParityHash,
+    CaptureNotFoundPath
 }
 
 internal sealed record ClrRuntimeInvocationValue(
@@ -127,6 +129,10 @@ internal sealed record ClrRuntimeValue(
 
     public static ClrRuntimeValue Error(string message, ClrRuntimeValue? cause = null)
         => new(ClrRuntimeValueKind.Error, message, [cause ?? Null()]);
+
+    // System.Uri lowers to the browser URL constructor, so a Uri-shaped runtime value is a URL
+    // instance rather than the href string it stringifies to.
+    public static ClrRuntimeValue Url(string href) => new(ClrRuntimeValueKind.Url, href);
 
     public static ClrRuntimeValue Undefined() => new(ClrRuntimeValueKind.Undefined);
 
@@ -226,6 +232,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeDateOnlyScenarios.All,
         .. ClrRuntimeCalendarScenarios.All,
         .. ClrRuntimeCultureInfoScenarios.All,
+        .. ClrRuntimeUriScenarios.All,
         .. ClrRuntimeNavigationScenarios.All
     ];
 

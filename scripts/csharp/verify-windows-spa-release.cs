@@ -54,6 +54,7 @@ try
 
     ScriptHelpers.CopyWikiConsumerProps(repoRoot, workRoot);
     ScriptHelpers.CopyWikiSource(sourceWikiRoot, consumerRoot);
+    await ScriptHelpers.MaterializeWikiDocsCatalogAsync(repoRoot, consumerRoot, dotnetCliHome);
     ScriptHelpers.AssertDetachedConsumer(consumerRoot, repoRoot);
 
     var consumerProject = Path.Combine(consumerRoot, "Wiki.csproj");
@@ -435,6 +436,25 @@ internal static class ScriptHelpers
 
         Directory.CreateDirectory(consumerRoot);
         File.Copy(sourcePath, Path.Combine(consumerRoot, "Directory.Build.props"), overwrite: true);
+    }
+
+    public static Task MaterializeWikiDocsCatalogAsync(string repoRoot, string consumerRoot, string dotnetCliHome)
+    {
+        // A detached package consumer has no repository-relative docs/ or importer script.
+        // Generate the same catalog before publish, while source builds retain the MSBuild target.
+        return RunDotNetAsync(
+            [
+                "run",
+                "--file",
+                Path.Combine("scripts", "csharp", "wiki-import-docs.cs"),
+                "--",
+                "--docs",
+                Path.Combine(repoRoot, "docs"),
+                "--output",
+                Path.Combine(consumerRoot, "obj", "wiki", "WikiDocsContent.g.cs")
+            ],
+            repoRoot,
+            dotnetCliHome);
     }
 
     public static void AssertDetachedConsumer(string consumerRoot, string repoRoot)

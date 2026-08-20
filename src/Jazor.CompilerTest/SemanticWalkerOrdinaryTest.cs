@@ -2738,13 +2738,13 @@ public sealed class SemanticWalkerOrdinaryTest
   public void Visit_DefaultValue_UnsupportedExternalConcreteReferenceType_Throws()
   {
     var block = GetBlockOperation(@"
-            using System;
+            using System.IO;
 
             class TestClass
             {
                 void TestMethod()
                 {
-                    Uri uri = default(Uri);
+                    FileInfo file = default(FileInfo);
                 }
             }
             ");

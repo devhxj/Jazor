@@ -68,6 +68,7 @@ internal static partial class WhiteList
 		types["Microsoft.AspNetCore.Components.NavigationManagerExtensions"] = new(Op.Alias, "Object");
 		types["Microsoft.AspNetCore.Components.NavigationManager"] = new(Op.Alias, "Object");
 		types["Microsoft.AspNetCore.Components.NavigationOptions"] = new(Op.Alias, "Object");
+		types["Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs"] = new(Op.Alias, "Object");
 		types["object"] = new(Op.Alias, "Object");
 		types["System.Collections.Generic.Queue<T>"] = new(Op.Alias, "Object", null, new("JQueue", "System/RuntimeModule.js"));
 		types["System.Range"] = new(Op.Alias, "Object", null, new("JRange", "System/RuntimeModule.js"));
@@ -88,6 +89,7 @@ internal static partial class WhiteList
 		types["ushort"] = new(Op.Alias, "Number");
 		types["uint"] = new(Op.Alias, "Number");
 		types["ulong"] = new(Op.Alias, "BigInt");
+		types["System.Uri"] = new(Op.Alias, "URL");
 		types["System.ValueTuple"] = new(Op.Alias, "Object");
 		types["System.WeakReference"] = new(Op.Alias, "WeakRef");
 		types["System.Nullable<T>"] = new(Op.Allowed);
@@ -2040,6 +2042,8 @@ internal static partial class WhiteList
 		members["static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithFragment(Microsoft.AspNetCore.Components.NavigationManager, string)"] = new(Op.Import, "getUriWithFragment", "Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js");
 		members["Microsoft.AspNetCore.Components.NavigationManager.LocationChanged.add"] = new(Op.Import, "addLocationChanged", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
 		members["Microsoft.AspNetCore.Components.NavigationManager.LocationChanged.remove"] = new(Op.Import, "removeLocationChanged", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
+		members["Microsoft.AspNetCore.Components.NavigationManager.OnNotFound.add"] = new(Op.Import, "addOnNotFound", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
+		members["Microsoft.AspNetCore.Components.NavigationManager.OnNotFound.remove"] = new(Op.Import, "removeOnNotFound", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
 		members["Microsoft.AspNetCore.Components.NavigationManager.BaseUri.get"] = new(Op.Import, "getBaseUri", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
 		members["Microsoft.AspNetCore.Components.NavigationManager.Uri.get"] = new(Op.Import, "getUri", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
 		members["Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.get"] = new(Op.Import, "getHistoryEntryState", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
@@ -2047,6 +2051,7 @@ internal static partial class WhiteList
 		members["Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string, bool, bool)"] = new(Op.Import, "navigateToForceLoadReplace", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
 		members["Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string, Microsoft.AspNetCore.Components.NavigationOptions)"] = new(Op.Import, "navigateToOptions", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
 		members["virtual Microsoft.AspNetCore.Components.NavigationManager.Refresh(bool)"] = new(Op.Import, "refresh", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
+		members["Microsoft.AspNetCore.Components.NavigationManager.NotFound()"] = new(Op.Import, "notFound", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
 		members["Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string)"] = new(Op.Import, "toAbsoluteUri", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
 		members["Microsoft.AspNetCore.Components.NavigationManager.ToBaseRelativePath(string)"] = new(Op.Import, "toBaseRelativePath", "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
 		members["Microsoft.AspNetCore.Components.NavigationOptions.NavigationOptions()"] = new(Op.Inline, "({ forceLoad: false, replaceHistoryEntry: false, relativeToCurrentUri: false, historyEntryState: null })");
@@ -2058,6 +2063,9 @@ internal static partial class WhiteList
 		members["Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.init"] = new(Op.Alias, "historyEntryState");
 		members["Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get"] = new(Op.Alias, "relativeToCurrentUri");
 		members["Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init"] = new(Op.Alias, "relativeToCurrentUri");
+		members["Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs()"] = new(Op.Import, "createNotFoundEventArgs", "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js");
+		members["Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.get"] = new(Op.Alias, "path");
+		members["Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.set"] = new(Op.Alias, "path");
 		members["System.Nullable<T>.HasValue.get"] = new(Op.Inline, "(__arg1 !== null && __arg1 !== undefined)");
 		members["System.Nullable<T>.Value.get"] = new(Op.Compile, "NullableValue");
 		members["System.Nullable<T>.GetValueOrDefault()"] = new(Op.Compile, "NullableGetValueOrDefault");
@@ -2943,6 +2951,18 @@ internal static partial class WhiteList
 		members["static ulong.Sign(ulong)"] = new(Op.Inline, "(__arg1 === 0n ? 0 : 1)");
 		members["static ulong.IsEvenInteger(ulong)"] = new(Op.Inline, "((__arg1 % 2n) === 0n)");
 		members["static ulong.IsOddInteger(ulong)"] = new(Op.Inline, "((__arg1 % 2n) !== 0n)");
+		members["System.Uri.Uri(string)"] = new(Op.Inline, "new URL(__arg1)");
+		members["System.Uri.Uri(System.Uri, string)"] = new(Op.Inline, "new URL(__arg2, __arg1.href)");
+		members["System.Uri.AbsoluteUri.get"] = new(Op.Alias, "href");
+		members["override System.Uri.ToString()"] = new(Op.Inline, "__arg1.href");
+		members["System.Uri.AbsolutePath.get"] = new(Op.Alias, "pathname");
+		members["System.Uri.Query.get"] = new(Op.Alias, "search");
+		members["System.Uri.Fragment.get"] = new(Op.Alias, "hash");
+		members["System.Uri.Host.get"] = new(Op.Alias, "hostname");
+		members["System.Uri.Authority.get"] = new(Op.Alias, "host");
+		members["System.Uri.Scheme.get"] = new(Op.Inline, "__arg1.protocol.slice(0, -1)");
+		members["System.Uri.PathAndQuery.get"] = new(Op.Import, "getPathAndQuery", "System/UriModule.js");
+		members["System.Uri.Port.get"] = new(Op.Import, "getPort", "System/UriModule.js");
 		members["System.ValueTuple.ValueTuple()"] = new(Op.Inline, "null");
 		members["override System.ValueTuple.Equals(object)"] = new(Op.Inline, "(__arg2 === null)");
 		members["System.ValueTuple.Equals(System.ValueTuple)"] = new(Op.Inline, "true");

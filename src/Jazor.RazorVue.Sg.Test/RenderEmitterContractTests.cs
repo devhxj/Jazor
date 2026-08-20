@@ -115,8 +115,10 @@ public sealed class RenderEmitterContractTests
     [TestMethod]
     public void TryEmitWithDiagnostic_PreservesCompilerBridgeFailures()
     {
+        // System.IO.Path has no browser surface, so it stays outside the CLR whitelist and keeps
+        // this fixture a genuine compiler-bridge failure.
         var fixture = CreateDirectRenderFixture(
-            "builder.AddContent(0, new global::System.Uri(\"https://example.test\"));",
+            "builder.AddContent(0, global::System.IO.Path.GetTempPath());",
             string.Empty);
 
         var emitted = RenderEmitter.TryEmitWithDiagnostic(

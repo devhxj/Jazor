@@ -32,11 +32,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### 2026-08-20
+### 2026-08-21
 
-- Jazor 0.18.0 adds RazorVue browser navigation support for `NavigationManager.Refresh(false)` and reliable query-parameter replacement.
-- Browser `File` and `Window` bindings use the clear C# authoring names `JazorFile` and `JazorWindow`, while retaining their standard JavaScript ABI names.
-- `Global.IsUndefined(value)` distinguishes JavaScript `undefined` from `null`; RazorVue's active integration gate currently requires 94% branch coverage while the remaining work continues.
+- Jazor 0.19.0 adds RazorVue browser support for `NavigationManager.OnNotFound`, `NavigationManager.NotFound()`, and `NotFoundEventArgs` callback payloads.
+- `NavigationManager.ToAbsoluteUri(...)` now returns a URL-backed `System.Uri`, so supported URI members remain available in browser components.
+- Packaged Wiki SPA consumers now retain their generated documentation catalog during detached release verification.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -94,15 +94,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.18.0
+dotnet add package Jazor --version 0.19.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.18.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.18.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.19.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.19.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

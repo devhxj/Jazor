@@ -279,6 +279,9 @@ internal static class ClrRuntimeTestHost
                 case "Identity": fn = item => item; break;
                 case "SameParity": fn = (left, right) => Math.abs(left) % 2 === Math.abs(right) % 2; break;
                 case "ParityHash": fn = item => Math.abs(item) % 2; break;
+                // NotFound dispatch is only observable through the sender the runtime passes in,
+                // so record the event-args path onto it. A missing args object throws here.
+                case "CaptureNotFoundPath": fn = (sender, args) => { sender.notFoundPath = args.path; }; break;
                 default: throw new Error(`Unsupported CLR runtime callable kind: ${value.scalar}`);
               }
               Object.defineProperty(fn, "__clrRuntimeCallable", { value: value.scalar });
@@ -314,6 +317,7 @@ internal static class ClrRuntimeTestHost
               const cause = await decode(value.items[0], references);
               return new Error(value.scalar, { cause });
             }
+            case "url": return new URL(value.scalar);
             case "undefined": return undefined;
             default: throw new Error(`Unsupported CLR runtime value kind: ${value.kind}`);
           }
@@ -326,6 +330,9 @@ internal static class ClrRuntimeTestHost
           if (value instanceof Set) return { kind: "set", items: Array.from(value, encode) };
           if (value instanceof Map) return { kind: "map", items: Array.from(value).flatMap(([key, item]) => [encode(key), encode(item)]) };
           if (value instanceof WeakMap) return { kind: "weakMap", items: Array.from(value.__clrRuntimeEntries ?? []).flatMap(([key, item]) => [encode(key), encode(item)]) };
+          // System.Uri lowers to the browser URL constructor. Encode the carrier identity so a
+          // scenario cannot pass by accidentally producing the href string instead.
+          if (value instanceof URL) return { kind: "url", scalar: value.href };
           // JQueue/JStack state is exposed through prototype getters, not enumerable own fields.
           if (value?.constructor?.name === "JQueue") {
             return { kind: "record", properties: { head: encode(value.head), items: encode(value.items) } };

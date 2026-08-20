@@ -9,6 +9,7 @@ namespace Jazor.CLR;
 public static class NavigationManagerModule
 {
 	private static readonly WeakMap<object, Array<object>> LocationHandlers = new();
+	private static readonly WeakMap<object, Array<object>> NotFoundHandlers = new();
 	// Public NavigationManager overloads only receive the service instance. Keep the
 	// Router invalidation callback with that instance so all entry points refresh alike.
 	private static readonly WeakMap<object, Action?> RefreshHandlers = new();
@@ -21,6 +22,7 @@ public static class NavigationManagerModule
 	{
 		var instance = Object.Create(null);
 		LocationHandlers.Set(instance, []);
+		NotFoundHandlers.Set(instance, []);
 		RefreshHandlers.Set(instance, refresh);
 
 		Object.DefineProperty(instance, "baseUri", new JSPropertyDescriptor
@@ -47,6 +49,18 @@ public static class NavigationManagerModule
 		{
 			Value = (Action<object>)((value) => RemoveLocationChanged(instance, value))
 		});
+		Object.DefineProperty(instance, "addOnNotFound", new ECMAScript.JSPropertyDescriptor
+		{
+			Value = (Action<object>)((value) => AddNotFound(instance, value))
+		});
+		Object.DefineProperty(instance, "removeOnNotFound", new ECMAScript.JSPropertyDescriptor
+		{
+			Value = (Action<object>)((value) => RemoveNotFound(instance, value))
+		});
+		Object.DefineProperty(instance, "notFound", new ECMAScript.JSPropertyDescriptor
+		{
+			Value = (Action)(() => NotFound(instance))
+		});
 		Object.DefineProperty(instance, "notifyLocationChanged", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Action<bool>)((intercepted) => NotifyLocationChanged(instance, intercepted))
@@ -58,7 +72,7 @@ public static class NavigationManagerModule
 		});
 		Object.DefineProperty(instance, "toAbsoluteUri", new ECMAScript.JSPropertyDescriptor
 		{
-			Value = (Func<string?, global::System.Uri>)((uri) => ToAbsoluteUri(instance, uri))
+			Value = (Func<string?, URL>)((uri) => ToAbsoluteUri(instance, uri))
 		});
 		Object.DefineProperty(instance, "toBaseRelativePath", new ECMAScript.JSPropertyDescriptor
 		{
@@ -101,11 +115,13 @@ public static class NavigationManagerModule
 	public static void _2b4e6a7b7c69da10(object instance, object value)
 		=> RemoveLocationChanged(instance, value);
 
-	[Jazor(Op.Discard ,"Microsoft.AspNetCore.Components.NavigationManager.OnNotFound.add")]
-	public extern static void _918e5c63c185e5fc(object instance, object value);
+	[Jazor(Op.Import, "Microsoft.AspNetCore.Components.NavigationManager.OnNotFound.add", "addOnNotFound")]
+	public static void _918e5c63c185e5fc(object instance, object value)
+		=> AddNotFound(instance, value);
 
-	[Jazor(Op.Discard ,"Microsoft.AspNetCore.Components.NavigationManager.OnNotFound.remove")]
-	public extern static void _9c4f3f19f8f29f6c(object instance, object value);
+	[Jazor(Op.Import, "Microsoft.AspNetCore.Components.NavigationManager.OnNotFound.remove", "removeOnNotFound")]
+	public static void _9c4f3f19f8f29f6c(object instance, object value)
+		=> RemoveNotFound(instance, value);
 
 	[Jazor(Op.Import, "Microsoft.AspNetCore.Components.NavigationManager.BaseUri.get", "getBaseUri")]
 	public static string _ab8ef4bd82ceca73(object instance) => GetBaseUri();
@@ -132,11 +148,12 @@ public static class NavigationManagerModule
 	public static void _f9e277a2ad23f3f2(object instance, bool forceReload)
 		=> Refresh(instance, forceReload);
 
-	[Jazor(Op.Discard ,"Microsoft.AspNetCore.Components.NavigationManager.NotFound()")]
-	public extern static void _5a573c4876e1e50b(object instance);
+	[Jazor(Op.Import, "Microsoft.AspNetCore.Components.NavigationManager.NotFound()", "notFound")]
+	public static void _5a573c4876e1e50b(object instance)
+		=> NotFound(instance);
 
 	[Jazor(Op.Import, "Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string)", "toAbsoluteUri")]
-	public static global::System.Uri _d13389b43547427e(object instance, string? relativeUri)
+	public static URL _d13389b43547427e(object instance, string? relativeUri)
 		=> ToAbsoluteUri(instance, relativeUri);
 
 	[Jazor(Op.Import, "Microsoft.AspNetCore.Components.NavigationManager.ToBaseRelativePath(string)", "toBaseRelativePath")]
@@ -147,21 +164,33 @@ public static class NavigationManagerModule
 	public extern static global::System.IDisposable _eaafc9868e2e1ebe(object instance, object locationChangingHandler);
 
 	private static void AddLocationChanged(object instance, object value)
+		=> AddHandler(LocationHandlers, instance, value);
+
+	private static void RemoveLocationChanged(object instance, object value)
+		=> RemoveHandler(LocationHandlers, instance, value);
+
+	private static void AddNotFound(object instance, object value)
+		=> AddHandler(NotFoundHandlers, instance, value);
+
+	private static void RemoveNotFound(object instance, object value)
+		=> RemoveHandler(NotFoundHandlers, instance, value);
+
+	private static void AddHandler(WeakMap<object, Array<object>> registry, object instance, object value)
 	{
 		if (instance is null || value is null)
 			return;
 
-		var handlers = GetHandlers(instance);
+		var handlers = GetHandlers(registry, instance);
 		// CLR events keep duplicate delegate subscriptions as distinct invocation-list entries.
 		handlers.Splice(handlers.Length, 0, value);
 	}
 
-	private static void RemoveLocationChanged(object instance, object value)
+	private static void RemoveHandler(WeakMap<object, Array<object>> registry, object instance, object value)
 	{
-		if (instance is null || value is null || !LocationHandlers.Has(instance))
+		if (instance is null || value is null || !registry.Has(instance))
 			return;
 
-		var handlers = LocationHandlers.Get(instance)!;
+		var handlers = registry.Get(instance)!;
 		for (var index = handlers.Length - 1; index >= 0; index--)
 		{
 			if (Object.Is(handlers[index], value))
@@ -172,11 +201,11 @@ public static class NavigationManagerModule
 		}
 	}
 
-	private static Array<object> GetHandlers(object instance)
+	private static Array<object> GetHandlers(WeakMap<object, Array<object>> registry, object instance)
 	{
-		if (!LocationHandlers.Has(instance))
-			LocationHandlers.Set(instance, []);
-		return LocationHandlers.Get(instance)!;
+		if (!registry.Has(instance))
+			registry.Set(instance, []);
+		return registry.Get(instance)!;
 	}
 
 	private static Number GetVersion(object instance)
@@ -194,7 +223,27 @@ public static class NavigationManagerModule
 		var args = LocationChangedEventArgsModule._16454e1af5169b10(GetUri(), intercepted);
 		// Capture the invocation list before dispatch. A handler can subscribe or remove
 		// callbacks, but that must only affect a later LocationChanged notification.
-		var handlers = GetHandlers(instance).Slice();
+		var handlers = GetHandlers(LocationHandlers, instance).Slice();
+		for (var handlerIndex = 0; handlerIndex < handlers.Length; handlerIndex++)
+		{
+			var handler = handlers[handlerIndex];
+			if (handler is null)
+				continue;
+			ECMAScript.Reflect.Apply(handler, null, [instance, args]);
+		}
+	}
+
+	private static void NotFound(object instance)
+	{
+		// The CLR event field stays null until the first subscription, and NotFound() is a
+		// no-op in that state. An empty invocation list keeps that observable behavior.
+		var handlers = GetHandlers(NotFoundHandlers, instance).Slice();
+		if (handlers.Length == 0)
+			return;
+
+		// NotFoundCore constructs a fresh NotFoundEventArgs per call, and its Path stays at
+		// the CLR default because no router re-execution path exists in the browser.
+		var args = NotFoundEventArgsModule._8ed2c94001d3c848();
 		for (var handlerIndex = 0; handlerIndex < handlers.Length; handlerIndex++)
 		{
 			var handler = handlers[handlerIndex];
@@ -306,15 +355,14 @@ public static class NavigationManagerModule
 		return baseUri.Href;
 	}
 
-	private static global::System.Uri ToAbsoluteUri(object instance, string? relativeUri)
-		=> (global::System.Uri)(object)ToAbsoluteUriText(relativeUri);
-
-	private static string ToAbsoluteUriText(string? relativeUri)
+	// System.Uri lowers to the browser URL constructor, so the resolved URL object is the
+	// runtime value and stays usable through the System.Uri members mapped in UriModule.
+	private static URL ToAbsoluteUri(object instance, string? relativeUri)
 	{
 		var resolved = URL.Parse(relativeUri ?? "", GetBaseUri());
 		if (resolved is null)
 			throw new Error($"Navigation URI '{relativeUri ?? ""}' is invalid.");
-		return resolved.Href;
+		return resolved;
 	}
 
 	private static string ToBaseRelativePath(object instance, string uri)

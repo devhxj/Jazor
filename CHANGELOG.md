@@ -4,6 +4,14 @@
 
 ## Unreleased
 
+## 2026-08-21
+
+### Jazor 0.19.0
+
+- RazorVue browser navigation now supports `NavigationManager.OnNotFound` subscriptions and `NavigationManager.NotFound()` dispatch, including a browser-side `NotFoundEventArgs.Path` payload for component callbacks.
+- `NavigationManager.ToAbsoluteUri(...)` now returns a URL-backed `System.Uri` value. RazorVue components can use the supported absolute URI, path, query, fragment, host, authority, scheme, port, and path-and-query members without losing the resolved browser URL.
+- Packaged Wiki SPA consumers now materialize their documentation catalog before publish, so detached release verification retains the generated documentation routes.
+
 ## 2026-08-20
 
 ### Jazor 0.18.0

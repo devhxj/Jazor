@@ -227,7 +227,7 @@ public sealed class RazorSgNavigationRuntimeTests
 
                 const events = [];
                 navigation.addLocationChanged((_sender, args) => events.push(args));
-                navigation.navigateTo("/app/next?x=1", { replace: true });
+                navigation.navigateTo("/app/next?x=1", { replaceHistoryEntry: true });
                 assert.deepEqual(historyCalls, [["replace", "/app/next?x=1", null]]);
                 assert.equal(events[0].location, "https://example.test/app/next?x=1");
                 assert.equal(events[0].isNavigationIntercepted, true);
@@ -314,5 +314,131 @@ public sealed class RazorSgNavigationRuntimeTests
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, ".addLocationChanged", StringComparison.Ordinal);
         StringAssert.Contains(observation.ModuleText, ".removeLocationChanged", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task NavigationManager_NotFoundSubscription_DispatchesEventArgsAndUriMembers()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NotFoundRuntime.razor"),
+            documentText: "<p>@Current</p>",
+            codeBehindSource:
+            """
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Routing;
+            using ECMAScript;
+            using System;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/not-found-runtime")]
+            public partial class NotFoundRuntime : ComponentBase, IVueComponent, IDisposable
+            {
+                [Inject]
+                public NavigationManager Navigation { get; set; } = null!;
+
+                private string Current { get; set; } = "unset";
+
+                protected override void OnInitialized()
+                {
+                    Navigation.OnNotFound += OnNotFound;
+                    Uri absolute = Navigation.ToAbsoluteUri("orders?state=open");
+                    Current = absolute.Scheme + "|" + absolute.Host + "|" + absolute.Port +
+                        "|" + absolute.PathAndQuery;
+                    Navigation.NotFound();
+                }
+
+                private void OnNotFound(object? sender, NotFoundEventArgs args)
+                {
+                    Current = Current + "|not-found:" + (args.Path ?? "none");
+                }
+
+                public void Dispose()
+                {
+                    Navigation.OnNotFound -= OnNotFound;
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.NotFoundRuntime");
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "addOnNotFound", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "removeOnNotFound", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "notFound", StringComparison.Ordinal);
+        // System.Uri lowers to the browser URL carrier, so the absolute URI stays usable through
+        // the UriModule members instead of degrading to a bare href string.
+        StringAssert.Contains(observation.ModuleText, "getPathAndQuery", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "getPort", StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/not-found-runtime.mjs",
+            observation.ModuleText,
+            "not-found-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+            import component from "./components/not-found-runtime.mjs";
+            import { __serviceProvider } from "vue";
+            import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
+
+            test("OnNotFound dispatches fresh event args and Uri members resolve", () => {
+                if (typeof URL.parse !== "function")
+                    URL.parse = (value, base) => {
+                        try { return new URL(value, base); }
+                        catch { return null; }
+                    };
+                const browserLocation = {
+                    origin: "https://example.test",
+                    href: "https://example.test/app/start",
+                    pathname: "/app/start",
+                    search: "",
+                    hash: "",
+                };
+                globalThis.location = browserLocation;
+                globalThis.history = { state: null };
+                globalThis.window = {
+                    location: browserLocation,
+                    history: globalThis.history,
+                    addEventListener() {},
+                    removeEventListener() {},
+                };
+                globalThis.addEventListener = () => {};
+                globalThis.removeEventListener = () => {};
+                globalThis.document = {
+                    querySelector() { return { getAttribute() { return "/app/"; } }; },
+                };
+                // The real browser adapter owns the OnNotFound invocation list, so the service
+                // registration uses it instead of a hand-written stub object.
+                __serviceProvider(
+                    "jazor:service:Microsoft.AspNetCore.Components.NavigationManager",
+                    CreateNavigationManager(() => {}));
+
+                const render = component.setup({}, { slots: {} });
+                const vnode = render();
+                assert.equal(
+                    vnode.children,
+                    "https|example.test|443|/app/orders?state=open|not-found:none");
+            });
+            """,
+            supportingModules: new Dictionary<string, string>
+            {
+                ["@jazor/vue-runtime/routes.mjs"] = "export const routes = [];\n"
+            },
+            vueRuntimeSource: """
+            const providers = new Map();
+            export function __serviceProvider(key, value) { providers.set(key, value); }
+            export function defineComponent(options) { return options; }
+            export function inject(key) { return providers.get(key); }
+            export function provide() {}
+            export function reactive(value) { return value; }
+            export function onUnmounted() {}
+            export function createStaticVNode(html, count) { return { name: "__static", props: { html, count }, children: html }; }
+            export function openBlock() { return null; }
+            export function createElementBlock(name, props, children) { return { name, props, children }; }
+            export function createBlock(name, props, children) { return { name, props, children }; }
+            export function h(name, props, children) { return { name, props, children }; }
+            """
+        );
     }
 }

@@ -32,11 +32,11 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-20
+### 2026-08-21
 
-- Jazor 0.18.0 支持 RazorVue 浏览器导航的 `NavigationManager.Refresh(false)`，并可靠地追加或替换 query 参数。
-- 浏览器 `File` 与 `Window` 绑定在 C# 编写侧使用更清晰的 `JazorFile` 和 `JazorWindow` 名称，同时保留标准 JavaScript ABI 名称。
-- `Global.IsUndefined(value)` 可区分 JavaScript `undefined` 与 `null`；RazorVue 集成仍在持续完善，当前分支覆盖率门槛暂定为 94%。
+- Jazor 0.19.0 支持 RazorVue 浏览器导航的 `NavigationManager.OnNotFound`、`NavigationManager.NotFound()` 与 `NotFoundEventArgs` 回调负载。
+- `NavigationManager.ToAbsoluteUri(...)` 现返回 URL 驱动的 `System.Uri`，浏览器组件可继续使用受支持的 URI 成员。
+- 已打包的 Wiki SPA 消费者会在脱离仓库的发布验证中保留生成的文档目录。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -94,15 +94,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.18.0
+dotnet add package Jazor --version 0.19.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.18.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.18.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.19.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.19.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

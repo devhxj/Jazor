@@ -199,10 +199,12 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             return null;
         }
 
-        // NavigationManager.LocationChanged uses custom CLR accessors, so it cannot enter the
-        // field-like event protocol. Project only this host-owned event to the browser service;
-        // all other external events keep the normal explicit failure.
-        // LocationChanged 是 host-owned custom event，不能伪装成 CLR field-like event。
+        // NavigationManager.LocationChanged and NavigationManager.OnNotFound use custom CLR
+        // accessors, so neither can enter the field-like event protocol. Project only these
+        // host-owned events to the browser service; all other external events keep the normal
+        // explicit failure.
+        // 它们是 host-owned custom event，不能伪装成 CLR field-like event。
+        var eventName = eventReference.Event.Name;
         var walker = new SemanticWalker(true)
         {
             Host = this
@@ -210,12 +212,12 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         var receiver = walker.Visit(eventReference.Instance!, argument) as Expression
             ?? throw new OperationTransformationException(
                 operation,
-                "NavigationManager.LocationChanged receiver could not be lowered to the browser service.");
+                $"NavigationManager.{eventName} receiver could not be lowered to the browser service.");
         var handler = RewriteEventCallbackHandler(operation.HandlerValue, argument)
             ?? throw new OperationTransformationException(
                 operation,
-                "NavigationManager.LocationChanged requires a component method or lambda handler that RazorVue can lower.");
-        var accessor = operation.Adds ? "addLocationChanged" : "removeLocationChanged";
+                $"NavigationManager.{eventName} requires a component method or lambda handler that RazorVue can lower.");
+        var accessor = (operation.Adds ? "add" : "remove") + eventName;
 
         return JavaScriptAstFactory.CreateSingleEvaluationArrowInvocation(
             [
@@ -1123,8 +1125,10 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                ErrorBoundaryBaseMetadataName,
                StringComparison.Ordinal);
 
+    // The adapter names its accessors after the CLR event, so "add"/"remove" + event name matches
+    // the browser service surface exactly for every event listed here.
     private bool IsNavigationManagerEvent(IEventSymbol eventSymbol, IOperation? instance)
-        => string.Equals(eventSymbol.Name, "LocationChanged", StringComparison.Ordinal) &&
+        => eventSymbol.Name is "LocationChanged" or "OnNotFound" &&
            IsNavigationManagerType(eventSymbol.ContainingType) &&
            IsNavigationManagerReceiver(instance);
 

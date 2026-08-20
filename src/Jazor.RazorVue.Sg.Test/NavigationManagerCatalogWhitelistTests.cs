@@ -21,6 +21,20 @@ public sealed class NavigationManagerCatalogWhitelistTests
         Assert.AreEqual("toAbsoluteUri", attributes["Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string)"].Value);
         Assert.AreEqual("getHistoryEntryState", attributes["Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.get"].Value);
 
+        // OnNotFound and NotFound() own an invocation list plus event-args construction, so they
+        // stay module imports instead of collapsing into inline templates.
+        var notFoundAdd = attributes["Microsoft.AspNetCore.Components.NavigationManager.OnNotFound.add"];
+        Assert.AreEqual(Op.Import, notFoundAdd.Op);
+        Assert.AreEqual("addOnNotFound", notFoundAdd.Value);
+
+        var notFoundRemove = attributes["Microsoft.AspNetCore.Components.NavigationManager.OnNotFound.remove"];
+        Assert.AreEqual(Op.Import, notFoundRemove.Op);
+        Assert.AreEqual("removeOnNotFound", notFoundRemove.Value);
+
+        var notFound = attributes["Microsoft.AspNetCore.Components.NavigationManager.NotFound()"];
+        Assert.AreEqual(Op.Import, notFound.Op);
+        Assert.AreEqual("notFound", notFound.Value);
+
         var extensionAttributes = typeof(NavigationManagerExtensionsModule)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Select(static method => method.GetCustomAttribute<JazorAttribute>())
@@ -61,4 +75,82 @@ public sealed class NavigationManagerCatalogWhitelistTests
         Assert.AreEqual(Op.Inline, historyEntryState.Op);
         Assert.AreEqual("__arg1.historyEntryState", historyEntryState.Value);
     }
+
+    [TestMethod]
+    public void NotFoundPayload_UsesPlainBrowserObjectWithExplicitPathField()
+    {
+        var typeAttribute = typeof(NotFoundEventArgsModule).GetCustomAttribute<JazorAttribute>();
+
+        Assert.IsNotNull(typeAttribute);
+        Assert.AreEqual(Op.Alias, typeAttribute.Op);
+        Assert.AreEqual("Object", typeAttribute.Value);
+
+        var members = Members(typeof(NotFoundEventArgsModule));
+
+        // The constructor writes the field so a freshly dispatched payload reads as null instead
+        // of JavaScript undefined; the property itself is a plain name remap.
+        var constructor = members["Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs()"];
+        Assert.AreEqual(Op.Import, constructor.Op);
+        Assert.AreEqual("createNotFoundEventArgs", constructor.Value);
+
+        Assert.AreEqual(Op.Alias, members["Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.get"].Op);
+        Assert.AreEqual("path", members["Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.get"].Value);
+        Assert.AreEqual(Op.Alias, members["Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.set"].Op);
+        Assert.AreEqual("path", members["Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.set"].Value);
+    }
+
+    [TestMethod]
+    public void NavigationOptions_ConstructorSpellsOutEveryClrDefault()
+    {
+        var typeAttribute = typeof(NavigationOptionsModule).GetCustomAttribute<JazorAttribute>();
+
+        Assert.IsNotNull(typeAttribute);
+        Assert.AreEqual(Op.Alias, typeAttribute.Op);
+        Assert.AreEqual("Object", typeAttribute.Value);
+
+        var constructor = Members(typeof(NavigationOptionsModule))[
+            "Microsoft.AspNetCore.Components.NavigationOptions.NavigationOptions()"];
+        Assert.AreEqual(Op.Inline, constructor.Op);
+        Assert.AreEqual(
+            "({ forceLoad: false, replaceHistoryEntry: false, relativeToCurrentUri: false, historyEntryState: null })",
+            constructor.Value);
+    }
+
+    [TestMethod]
+    public void UriMembers_LowerToTheBrowserUrlCarrier()
+    {
+        var typeAttribute = typeof(UriModule).GetCustomAttribute<JazorAttribute>();
+
+        Assert.IsNotNull(typeAttribute);
+        Assert.AreEqual(Op.Alias, typeAttribute.Op);
+        Assert.AreEqual("URL", typeAttribute.Value);
+
+        var members = Members(typeof(UriModule));
+
+        Assert.AreEqual("new URL(__arg1)", members["System.Uri.Uri(string)"].Value);
+        Assert.AreEqual("new URL(__arg2, __arg1.href)", members["System.Uri.Uri(System.Uri, string)"].Value);
+        Assert.AreEqual("href", members["System.Uri.AbsoluteUri.get"].Value);
+        Assert.AreEqual("pathname", members["System.Uri.AbsolutePath.get"].Value);
+        Assert.AreEqual("search", members["System.Uri.Query.get"].Value);
+        Assert.AreEqual("hash", members["System.Uri.Fragment.get"].Value);
+        // Uri.Host drops the port while Uri.Authority keeps it, matching hostname vs host.
+        Assert.AreEqual("hostname", members["System.Uri.Host.get"].Value);
+        Assert.AreEqual("host", members["System.Uri.Authority.get"].Value);
+        Assert.AreEqual("__arg1.protocol.slice(0, -1)", members["System.Uri.Scheme.get"].Value);
+        Assert.AreEqual("__arg1.href", members["override System.Uri.ToString()"].Value);
+
+        // Both of these read the receiver more than once or branch on the protocol, so they stay
+        // module imports rather than inline templates.
+        Assert.AreEqual(Op.Import, members["System.Uri.PathAndQuery.get"].Op);
+        Assert.AreEqual("getPathAndQuery", members["System.Uri.PathAndQuery.get"].Value);
+        Assert.AreEqual(Op.Import, members["System.Uri.Port.get"].Op);
+        Assert.AreEqual("getPort", members["System.Uri.Port.get"].Value);
+    }
+
+    private static Dictionary<string, JazorAttribute> Members(Type module)
+        => module
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Select(static method => method.GetCustomAttribute<JazorAttribute>())
+            .OfType<JazorAttribute>()
+            .ToDictionary(static attribute => attribute.Member!, static attribute => attribute);
 }

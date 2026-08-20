@@ -8,9 +8,9 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.18.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.18.0" PrivateAssets="all" />
-  <PackageReference Include="Jazor.Admin" Version="0.18.0" />
+  <PackageReference Include="Jazor" Version="0.19.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.19.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Admin" Version="0.19.0" />
 </ItemGroup>
 ```
 

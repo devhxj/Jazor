@@ -27,6 +27,7 @@ public sealed class RazorVueCatalogOwnershipTests
                 Path.Combine("src", "Jazor.CLR", "module", "NavigationManagerModule.cs"),
                 Path.Combine("src", "Jazor.CLR", "module", "NavigationOptionsModule.cs"),
                 Path.Combine("src", "Jazor.CLR", "module", "LocationChangedEventArgsModule.cs"),
+                Path.Combine("src", "Jazor.CLR", "module", "NotFoundEventArgsModule.cs"),
                 Path.Combine("src", "Jazor.CLR", "module", "NavigationManagerExtensionsModule.cs"),
             },
             clrAspNetReferences);

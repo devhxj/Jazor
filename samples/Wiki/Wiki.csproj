@@ -38,6 +38,7 @@
 
   <Target Name="ImportWikiDocsCatalog"
           BeforeTargets="BeforeBuild"
+          Condition="'$(WikiUsePackages)' != 'true'"
           Inputs="$(MSBuildProjectDirectory)\..\..\docs\**\*.md;$(MSBuildProjectDirectory)\..\..\scripts\csharp\wiki-import-docs.cs"
           Outputs="$(WikiDocsGeneratedFile)">
     <Exec Command="dotnet run --file &quot;$(MSBuildProjectDirectory)\..\..\scripts\csharp\wiki-import-docs.cs&quot;" />
