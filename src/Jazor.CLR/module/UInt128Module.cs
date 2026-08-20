@@ -8,11 +8,11 @@ namespace Jazor.CLR;
 public static class UInt128Module
 {
 	private static BigInt MinValueCore => BigInt.Zero;
-	private static BigInt MaxValueCore => BigIntFn("340282366920938463463374607431768211455");
+	private static BigInt MaxValueCore => BigIntValue("340282366920938463463374607431768211455");
 	private static BigInt Mask => MaxValueCore;
-	private static BigInt Modulus => BigIntFn("340282366920938463463374607431768211456");
-	private static BigInt Int128MaxValue => BigIntFn("170141183460469231731687303715884105727");
-	private static BigInt DecimalMaxValue => BigIntFn("79228162514264337593543950335");
+	private static BigInt Modulus => BigIntValue("340282366920938463463374607431768211456");
+	private static BigInt Int128MaxValue => BigIntValue("170141183460469231731687303715884105727");
+	private static BigInt DecimalMaxValue => BigIntValue("79228162514264337593543950335");
 	[Jazor(Op.Inline ,"System.UInt128.UInt128()", "0n")]
 	public extern static BigInt _8c61bda013f8b908();
 
@@ -117,7 +117,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked byte(System.UInt128)")]
 	public static Number _64e60de5b1e03760(BigInt value)
-		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntFn(255));
+		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntValue(255));
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Char" /> value.</summary>
 	[Jazor(Op.Inline ,"static System.UInt128.explicit operator char(System.UInt128)", "Number(BigInt.asUintN(16, __arg1))")]
@@ -125,7 +125,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import ,"static System.UInt128.explicit operator checked char(System.UInt128)")]
 	public static Number _b68867a4bbf792ed(BigInt value)
-		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntFn(65535));
+		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntValue(65535));
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Decimal" /> value.</summary>
 	[Jazor(Op.Import, "static System.UInt128.explicit operator decimal(System.UInt128)")]
@@ -147,7 +147,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked short(System.UInt128)")]
 	public static Number _5efef087d1235b8b(BigInt value)
-		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntFn(32767));
+		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntValue(32767));
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Int32" /> value.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.explicit operator int(System.UInt128)", "Number(BigInt.asIntN(32, __arg1))")]
@@ -155,7 +155,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked int(System.UInt128)")]
 	public static Number _ab4813fe5941ad49(BigInt value)
-		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntFn(2147483647));
+		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntValue(2147483647));
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Int64" /> value.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.explicit operator long(System.UInt128)", "BigInt.asIntN(64, __arg1)")]
@@ -163,7 +163,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked long(System.UInt128)")]
 	public static BigInt _191ebf43930db2a5(BigInt value)
-		=> BigIntIntegerRuntime.EnsureRange(value, BigInt.Zero, BigIntFn("9223372036854775807"));
+		=> BigIntIntegerRuntime.EnsureRange(value, BigInt.Zero, BigIntValue("9223372036854775807"));
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Int128" /> value.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.explicit operator System.Int128(System.UInt128)", "BigInt.asIntN(128, __arg1)")]
@@ -186,7 +186,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked sbyte(System.UInt128)")]
 	public static Number _95c576d9e4841566(BigInt value)
-		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntFn(127));
+		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntValue(127));
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.Single" /> value.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.explicit operator float(System.UInt128)", "Math.fround(Number(__arg1))")]
@@ -198,7 +198,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked ushort(System.UInt128)")]
 	public static Number _b68ba902309cfb9a(BigInt value)
-		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntFn(65535));
+		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntValue(65535));
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.UInt32" /> value.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.explicit operator uint(System.UInt128)", "Number(BigInt.asUintN(32, __arg1))")]
@@ -206,7 +206,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked uint(System.UInt128)")]
 	public static Number _4b86a17a8f47b33f(BigInt value)
-		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntFn("4294967295"));
+		=> BigIntIntegerRuntime.ToCheckedNumber(value, BigInt.Zero, BigIntValue("4294967295"));
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.UInt64" /> value.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.explicit operator ulong(System.UInt128)", "BigInt.asUintN(64, __arg1)")]
@@ -214,7 +214,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked ulong(System.UInt128)")]
 	public static BigInt _b7d11ef0703deabf(BigInt value)
-		=> BigIntIntegerRuntime.EnsureRange(value, BigInt.Zero, BigIntFn("18446744073709551615"));
+		=> BigIntIntegerRuntime.EnsureRange(value, BigInt.Zero, BigIntValue("18446744073709551615"));
 
 	///<summary>Explicitly converts a 128-bit unsigned integer to a <see cref="T:System.UIntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.UInt128.explicit operator nuint(System.UInt128)")]
@@ -243,7 +243,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked System.UInt128(short)")]
 	public static BigInt _958e84ffc74ece86(Number value)
-		=> BigIntIntegerRuntime.EnsureRange(BigIntFn(value), BigInt.Zero, MaxValueCore);
+		=> BigIntIntegerRuntime.EnsureRange(BigIntValue(value), BigInt.Zero, MaxValueCore);
 
 	///<summary>Explicitly converts a <see cref="T:System.Int32" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.explicit operator System.UInt128(int)", "BigInt.asUintN(128, BigInt(__arg1))")]
@@ -251,7 +251,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked System.UInt128(int)")]
 	public static BigInt _06d213d11ddf681c(Number value)
-		=> BigIntIntegerRuntime.EnsureRange(BigIntFn(value), BigInt.Zero, MaxValueCore);
+		=> BigIntIntegerRuntime.EnsureRange(BigIntValue(value), BigInt.Zero, MaxValueCore);
 
 	///<summary>Explicitly converts a <see cref="T:System.Int64" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Inline, "static System.UInt128.explicit operator System.UInt128(long)", "BigInt.asUintN(128, __arg1)")]
@@ -274,7 +274,7 @@ public static class UInt128Module
 
 	[Jazor(Op.Import, "static System.UInt128.explicit operator checked System.UInt128(sbyte)")]
 	public static BigInt _8366585a071ba8b1(Number value)
-		=> BigIntIntegerRuntime.EnsureRange(BigIntFn(value), BigInt.Zero, MaxValueCore);
+		=> BigIntIntegerRuntime.EnsureRange(BigIntValue(value), BigInt.Zero, MaxValueCore);
 
 	///<summary>Explicitly converts a <see cref="T:System.Single" /> value to a 128-bit unsigned integer.</summary>
 	[Jazor(Op.Import, "static System.UInt128.explicit operator System.UInt128(float)")]

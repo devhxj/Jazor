@@ -101,7 +101,7 @@ public static class ListT1Module<T>
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
-		if (IsNaN(value) || Math.FloorFn(value) != value)
+		if (IsNaN(value) || Math.FloorFunc(value) != value)
 			throw new Error(message);
 	}
 
@@ -220,7 +220,7 @@ public static class ListT1Module<T>
 		var upper = index + count - 1;
 		while (lower <= upper)
 		{
-			var midpoint = lower + Math.FloorFn((upper - lower) / 2);
+			var midpoint = lower + Math.FloorFunc((upper - lower) / 2);
 			var comparison = CompareWith(comparer, instance[midpoint], item);
 			if (comparison == 0)
 				return midpoint;
@@ -965,7 +965,7 @@ public static class ListT1Module<T>
 	public static void _27c95e83eced65e9(Array<T> instance)
 	{
 		var capacity = GetCapacity(instance);
-		if (instance.Length < Math.FloorFn(capacity * 0.9))
+		if (instance.Length < Math.FloorFunc(capacity * 0.9))
 			Capacities.Set(instance, instance.Length);
 	}
 

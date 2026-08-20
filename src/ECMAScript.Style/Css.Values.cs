@@ -285,7 +285,7 @@ public static partial class css
     public static CssVariable var_or(string name, CssValue fallback)
     {
         var normalized = normalizeVariableName(name);
-        return CssVariable.create("var(" + normalized + "," + StringFn(fallback.Value) + ")");
+        return CssVariable.create("var(" + normalized + "," + StringValue(fallback.Value) + ")");
     }
 
     /// <summary>
@@ -312,7 +312,7 @@ public static partial class css
 
         var output = new Array<string>();
         foreach (var value in values)
-            output.Push(StringFn(value));
+            output.Push(StringValue(value));
         return CssAnchorNameList.create(output.Join(" "));
     }
 
@@ -321,7 +321,7 @@ public static partial class css
     /// 使用 <c>anchor(...)</c> 引用隐式锚点的指定边。
     /// </summary>
     public static CssAnchor anchor(CssAnchorSideValue side)
-        => CssAnchor.create("anchor(" + StringFn(side.Value) + ")");
+        => CssAnchor.create("anchor(" + StringValue(side.Value) + ")");
 
     /// <summary>
     /// References a specified named anchor side with <c>anchor(...)</c>.
@@ -329,7 +329,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorNamed")]
     public static CssAnchor anchor(CssAnchorName name, CssAnchorSideValue side)
-        => CssAnchor.create("anchor(" + StringFn(name) + " " + StringFn(side.Value) + ")");
+        => CssAnchor.create("anchor(" + StringValue(name) + " " + StringValue(side.Value) + ")");
 
     /// <summary>
     /// References an implicit anchor side and supplies the CSS fallback used when no anchor resolves.
@@ -337,7 +337,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorFallback")]
     public static CssAnchor anchor(CssAnchorSideValue side, CssLengthPercentageValue fallback)
-        => CssAnchor.create("anchor(" + StringFn(side.Value) + "," + StringFn(fallback.Value) + ")");
+        => CssAnchor.create("anchor(" + StringValue(side.Value) + "," + StringValue(fallback.Value) + ")");
 
     /// <summary>
     /// References a named anchor side and supplies its CSS fallback.
@@ -345,7 +345,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorNamedFallback")]
     public static CssAnchor anchor(CssAnchorName name, CssAnchorSideValue side, CssLengthPercentageValue fallback)
-        => CssAnchor.create("anchor(" + StringFn(name) + " " + StringFn(side.Value) + "," + StringFn(fallback.Value) + ")");
+        => CssAnchor.create("anchor(" + StringValue(name) + " " + StringValue(side.Value) + "," + StringValue(fallback.Value) + ")");
 
     /// <summary>
     /// Creates an <c>anchor-size()</c> expression using the implicit anchor and its default axis.
@@ -361,7 +361,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorSizeNamed")]
     public static CssAnchorSize anchor_size(CssAnchorName name)
-        => CssAnchorSize.create("anchor-size(" + StringFn(name) + ")");
+        => CssAnchorSize.create("anchor-size(" + StringValue(name) + ")");
 
     /// <summary>
     /// Creates an <c>anchor-size()</c> expression for one axis of the implicit anchor.
@@ -369,7 +369,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorSizeAxis")]
     public static CssAnchorSize anchor_size(CssAnchorSizeAxis axis)
-        => CssAnchorSize.create("anchor-size(" + StringFn(axis) + ")");
+        => CssAnchorSize.create("anchor-size(" + StringValue(axis) + ")");
 
     /// <summary>
     /// Creates an <c>anchor-size()</c> expression for one axis of a named anchor.
@@ -377,7 +377,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorSizeNamedAxis")]
     public static CssAnchorSize anchor_size(CssAnchorName name, CssAnchorSizeAxis axis)
-        => CssAnchorSize.create("anchor-size(" + StringFn(name) + " " + StringFn(axis) + ")");
+        => CssAnchorSize.create("anchor-size(" + StringValue(name) + " " + StringValue(axis) + ")");
 
     /// <summary>
     /// Creates <c>anchor-size(, fallback)</c> for the implicit anchor when its size cannot resolve.
@@ -385,7 +385,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorSizeFallback")]
     public static CssAnchorSize anchor_size(CssLengthPercentageValue fallback)
-        => CssAnchorSize.create("anchor-size(," + StringFn(fallback.Value) + ")");
+        => CssAnchorSize.create("anchor-size(," + StringValue(fallback.Value) + ")");
 
     /// <summary>
     /// Creates an <c>anchor-size()</c> expression for a named anchor with a fallback.
@@ -393,7 +393,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorSizeNamedFallback")]
     public static CssAnchorSize anchor_size(CssAnchorName name, CssLengthPercentageValue fallback)
-        => CssAnchorSize.create("anchor-size(" + StringFn(name) + "," + StringFn(fallback.Value) + ")");
+        => CssAnchorSize.create("anchor-size(" + StringValue(name) + "," + StringValue(fallback.Value) + ")");
 
     /// <summary>
     /// Creates an <c>anchor-size()</c> expression for an implicit anchor axis with a fallback.
@@ -401,7 +401,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorSizeAxisFallback")]
     public static CssAnchorSize anchor_size(CssAnchorSizeAxis axis, CssLengthPercentageValue fallback)
-        => CssAnchorSize.create("anchor-size(" + StringFn(axis) + "," + StringFn(fallback.Value) + ")");
+        => CssAnchorSize.create("anchor-size(" + StringValue(axis) + "," + StringValue(fallback.Value) + ")");
 
     /// <summary>
     /// Creates an <c>anchor-size()</c> expression for a named anchor axis with a fallback.
@@ -409,7 +409,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("anchorSizeNamedAxisFallback")]
     public static CssAnchorSize anchor_size(CssAnchorName name, CssAnchorSizeAxis axis, CssLengthPercentageValue fallback)
-        => CssAnchorSize.create("anchor-size(" + StringFn(name) + " " + StringFn(axis) + "," + StringFn(fallback.Value) + ")");
+        => CssAnchorSize.create("anchor-size(" + StringValue(name) + " " + StringValue(axis) + "," + StringValue(fallback.Value) + ")");
 
     /// <summary>
     /// Creates <c>calc-size(basis, calculation)</c> using the typed result-side expression rooted
@@ -418,7 +418,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("calcSize")]
     public static CssCalcSize calc_size(CssCalcSizeBasis basis, CssCalcSizeExpression calculation)
-        => CssCalcSize.create("calc-size(" + StringFn(basis.Value) + "," + StringFn(calculation) + ")");
+        => CssCalcSize.create("calc-size(" + StringValue(basis.Value) + "," + StringValue(calculation) + ")");
 
     /// <summary>
     /// Creates <c>calc-size(basis, calculation)</c> when the calculation is already a typed
@@ -427,7 +427,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("calcSizeValue")]
     public static CssCalcSize calc_size(CssCalcSizeBasis basis, CssLengthPercentageValue calculation)
-        => CssCalcSize.create("calc-size(" + StringFn(basis.Value) + "," + StringFn(calculation.Value) + ")");
+        => CssCalcSize.create("calc-size(" + StringValue(basis.Value) + "," + StringValue(calculation.Value) + ")");
 
     /// <summary>
     /// Creates a pixel CSS length. Unit factories return <see cref="CssLength"/>, so they cannot accidentally
@@ -466,20 +466,20 @@ public static partial class css
 
     /// <summary>Creates a length-only <c>min(...)</c> expression。创建仅长度的 <c>min(...)</c> 表达式。</summary>
     public static CssLength min(CssLength first, CssLength second)
-        => CssLength.create("min(" + StringFn(first) + "," + StringFn(second) + ")");
+        => CssLength.create("min(" + StringValue(first) + "," + StringValue(second) + ")");
 
     /// <summary>Creates a mixed length-percentage <c>min(...)</c> expression。创建混合长度/百分比 <c>min(...)</c> 表达式。</summary>
     [ECMAScriptName("minLengthPercentage")]
     public static CssLengthPercentage min(CssLengthPercentageValue first, CssLengthPercentageValue second)
-        => CssLengthPercentage.create("min(" + StringFn(first.Value) + "," + StringFn(second.Value) + ")");
+        => CssLengthPercentage.create("min(" + StringValue(first.Value) + "," + StringValue(second.Value) + ")");
 
     /// <summary>Creates a length-only <c>max(...)</c> expression。创建仅长度的 <c>max(...)</c> 表达式。</summary>
     public static CssLength max(CssLength first, CssLength second)
-        => CssLength.create("max(" + StringFn(first) + "," + StringFn(second) + ")");
+        => CssLength.create("max(" + StringValue(first) + "," + StringValue(second) + ")");
 
     /// <summary>Creates a length-only <c>clamp(minimum, preferred, maximum)</c> expression。创建仅长度的 <c>clamp(minimum, preferred, maximum)</c> 表达式。</summary>
     public static CssLength clamp(CssLength minimum, CssLength preferred, CssLength maximum)
-        => CssLength.create("clamp(" + StringFn(minimum) + "," + StringFn(preferred) + "," + StringFn(maximum) + ")");
+        => CssLength.create("clamp(" + StringValue(minimum) + "," + StringValue(preferred) + "," + StringValue(maximum) + ")");
 
     public static CssAngle deg(double value) => CssAngle.create(number(value) + "deg");
     public static CssAngle grad(double value) => CssAngle.create(number(value) + "grad");
@@ -502,7 +502,7 @@ public static partial class css
         validateByte(red, "red");
         validateByte(green, "green");
         validateByte(blue, "blue");
-        return CssColor.create("rgb(" + StringFn(red) + " " + StringFn(green) + " " + StringFn(blue) + ")");
+        return CssColor.create("rgb(" + StringValue(red) + " " + StringValue(green) + " " + StringValue(blue) + ")");
     }
 
     /// <summary>
@@ -525,7 +525,7 @@ public static partial class css
         validateByte(green, "green");
         validateByte(blue, "blue");
         validateUnitInterval(alpha, "alpha");
-        return CssColor.create("rgb(" + StringFn(red) + " " + StringFn(green) + " " + StringFn(blue) + " / " + number(alpha) + ")");
+        return CssColor.create("rgb(" + StringValue(red) + " " + StringValue(green) + " " + StringValue(blue) + " / " + number(alpha) + ")");
     }
 
     /// <summary>Creates an HSL color with percentage saturation and lightness。创建 saturation、lightness 为百分比的 HSL 颜色。</summary>
@@ -586,7 +586,7 @@ public static partial class css
     /// <summary>Creates a typed grid <c>minmax(...)</c> track function。创建类型化 grid <c>minmax(...)</c> 轨道函数。</summary>
     [ECMAScriptName("minMax")]
     public static CssTrack min_max(CssTrackValue minimum, CssTrackValue maximum)
-        => CssTrack.create("minmax(" + StringFn(minimum.Value) + "," + StringFn(maximum.Value) + ")");
+        => CssTrack.create("minmax(" + StringValue(minimum.Value) + "," + StringValue(maximum.Value) + ")");
 
     /// <summary>
     /// Creates the functional <c>fit-content(...)</c> size. The returned carrier is accepted by
@@ -596,7 +596,7 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("fitContent")]
     public static CssFitContent fit_content(CssLengthPercentageValue limit)
-        => CssFitContent.create("fit-content(" + StringFn(limit.Value) + ")");
+        => CssFitContent.create("fit-content(" + StringValue(limit.Value) + ")");
 
     /// <summary>
     /// Creates a fixed-count grid <c>repeat(...)</c> function. The count is validated as positive before emission.
@@ -606,7 +606,7 @@ public static partial class css
     {
         if (count <= 0)
             Fail("CSS repeat count must be greater than zero.");
-        return CssTrack.create("repeat(" + StringFn(count) + "," + StringFn(track.Value) + ")");
+        return CssTrack.create("repeat(" + StringValue(count) + "," + StringValue(track.Value) + ")");
     }
 
     /// <summary>
@@ -622,7 +622,7 @@ public static partial class css
 
         var output = new Array<string>();
         foreach (var value in values)
-            output.Push(StringFn(value.Value));
+            output.Push(StringValue(value.Value));
         return CssTrack.create(output.Join(" "));
     }
 
@@ -631,38 +631,38 @@ public static partial class css
     /// 创建 CSS padding 简写。各重载分别映射标准的一、二、三、四边形式。
     /// </summary>
     public static CssPadding padding(CssPaddingPart value)
-        => CssPadding.create(StringFn(value.Value));
+        => CssPadding.create(StringValue(value.Value));
 
     [ECMAScriptName("padding2")]
     public static CssPadding padding(CssPaddingPart vertical, CssPaddingPart horizontal)
-        => CssPadding.create(join(StringFn(vertical.Value), StringFn(horizontal.Value)));
+        => CssPadding.create(join(StringValue(vertical.Value), StringValue(horizontal.Value)));
 
     [ECMAScriptName("padding3")]
     public static CssPadding padding(CssPaddingPart top, CssPaddingPart horizontal, CssPaddingPart bottom)
-        => CssPadding.create(join(StringFn(top.Value), StringFn(horizontal.Value), StringFn(bottom.Value)));
+        => CssPadding.create(join(StringValue(top.Value), StringValue(horizontal.Value), StringValue(bottom.Value)));
 
     [ECMAScriptName("padding4")]
     public static CssPadding padding(CssPaddingPart top, CssPaddingPart right, CssPaddingPart bottom, CssPaddingPart left)
-        => CssPadding.create(join(StringFn(top.Value), StringFn(right.Value), StringFn(bottom.Value), StringFn(left.Value)));
+        => CssPadding.create(join(StringValue(top.Value), StringValue(right.Value), StringValue(bottom.Value), StringValue(left.Value)));
 
     /// <summary>
     /// Creates a CSS margin shorthand. Anchor-size values remain allowed only through <see cref="CssMarginPart"/>.
     /// 创建 CSS margin 简写。anchor-size 值只会通过 <see cref="CssMarginPart"/> 被允许。
     /// </summary>
     public static CssMargin margin(CssMarginPart value)
-        => CssMargin.create(StringFn(value.Value));
+        => CssMargin.create(StringValue(value.Value));
 
     [ECMAScriptName("margin2")]
     public static CssMargin margin(CssMarginPart vertical, CssMarginPart horizontal)
-        => CssMargin.create(join(StringFn(vertical.Value), StringFn(horizontal.Value)));
+        => CssMargin.create(join(StringValue(vertical.Value), StringValue(horizontal.Value)));
 
     [ECMAScriptName("margin3")]
     public static CssMargin margin(CssMarginPart top, CssMarginPart horizontal, CssMarginPart bottom)
-        => CssMargin.create(join(StringFn(top.Value), StringFn(horizontal.Value), StringFn(bottom.Value)));
+        => CssMargin.create(join(StringValue(top.Value), StringValue(horizontal.Value), StringValue(bottom.Value)));
 
     [ECMAScriptName("margin4")]
     public static CssMargin margin(CssMarginPart top, CssMarginPart right, CssMarginPart bottom, CssMarginPart left)
-        => CssMargin.create(join(StringFn(top.Value), StringFn(right.Value), StringFn(bottom.Value), StringFn(left.Value)));
+        => CssMargin.create(join(StringValue(top.Value), StringValue(right.Value), StringValue(bottom.Value), StringValue(left.Value)));
 
     /// <summary>
     /// Creates a one-side <c>inset</c> shorthand. Use the overloads for two to four sides when the
@@ -672,61 +672,61 @@ public static partial class css
     /// </summary>
     [ECMAScriptName("insetSides")]
     public static CssInset inset_sides(CssInsetPart value)
-        => CssInset.create(StringFn(value.Value));
+        => CssInset.create(StringValue(value.Value));
 
     /// <summary>Creates a two-side <c>inset</c> shorthand。创建双边 <c>inset</c> 简写。</summary>
     [ECMAScriptName("insetSides2")]
     public static CssInset inset_sides(CssInsetPart vertical, CssInsetPart horizontal)
-        => CssInset.create(join(StringFn(vertical.Value), StringFn(horizontal.Value)));
+        => CssInset.create(join(StringValue(vertical.Value), StringValue(horizontal.Value)));
 
     /// <summary>Creates a three-side <c>inset</c> shorthand。创建三值 <c>inset</c> 简写。</summary>
     [ECMAScriptName("insetSides3")]
     public static CssInset inset_sides(CssInsetPart top, CssInsetPart horizontal, CssInsetPart bottom)
-        => CssInset.create(join(StringFn(top.Value), StringFn(horizontal.Value), StringFn(bottom.Value)));
+        => CssInset.create(join(StringValue(top.Value), StringValue(horizontal.Value), StringValue(bottom.Value)));
 
     /// <summary>Creates a four-side <c>inset</c> shorthand。创建四边 <c>inset</c> 简写。</summary>
     [ECMAScriptName("insetSides4")]
     public static CssInset inset_sides(CssInsetPart top, CssInsetPart right, CssInsetPart bottom, CssInsetPart left)
-        => CssInset.create(join(StringFn(top.Value), StringFn(right.Value), StringFn(bottom.Value), StringFn(left.Value)));
+        => CssInset.create(join(StringValue(top.Value), StringValue(right.Value), StringValue(bottom.Value), StringValue(left.Value)));
 
     /// <summary>Creates a one- or two-axis CSS gap shorthand。创建单轴或双轴 CSS gap 简写。</summary>
     public static CssGap gap(CssGapPart value)
-        => CssGap.create(StringFn(value.Value));
+        => CssGap.create(StringValue(value.Value));
 
     [ECMAScriptName("gap2")]
     public static CssGap gap(CssGapPart row, CssGapPart column)
-        => CssGap.create(join(StringFn(row.Value), StringFn(column.Value)));
+        => CssGap.create(join(StringValue(row.Value), StringValue(column.Value)));
 
     /// <summary>Creates a one-, two-, or four-corner radius shorthand。创建一、二或四角 radius 简写。</summary>
     public static CssRadius radius(CssRadiusPart value)
-        => CssRadius.create(StringFn(value.Value));
+        => CssRadius.create(StringValue(value.Value));
 
     [ECMAScriptName("radius2")]
     public static CssRadius radius(CssRadiusPart vertical, CssRadiusPart horizontal)
-        => CssRadius.create(join(StringFn(vertical.Value), StringFn(horizontal.Value)));
+        => CssRadius.create(join(StringValue(vertical.Value), StringValue(horizontal.Value)));
 
     [ECMAScriptName("radius4")]
     public static CssRadius radius(CssRadiusPart topLeft, CssRadiusPart topRight, CssRadiusPart bottomRight, CssRadiusPart bottomLeft)
-        => CssRadius.create(join(StringFn(topLeft.Value), StringFn(topRight.Value), StringFn(bottomRight.Value), StringFn(bottomLeft.Value)));
+        => CssRadius.create(join(StringValue(topLeft.Value), StringValue(topRight.Value), StringValue(bottomRight.Value), StringValue(bottomLeft.Value)));
 
     /// <summary>Creates the structured <c>flex-grow flex-shrink flex-basis</c> shorthand。创建结构化 <c>flex-grow flex-shrink flex-basis</c> 简写。</summary>
     [ECMAScriptName("flexBox")]
     public static CssFlex flex_box(double grow, double shrink, CssLengthPercentageValue basis)
-        => CssFlex.create(number(grow) + " " + number(shrink) + " " + StringFn(basis.Value));
+        => CssFlex.create(number(grow) + " " + number(shrink) + " " + StringValue(basis.Value));
 
     /// <summary>Creates a two-dimensional background-size value。创建二维 background-size 值。</summary>
     [ECMAScriptName("backgroundSize")]
     public static CssBackgroundSize background_size(CssLengthPercentageValue width, CssLengthPercentageValue height)
-        => CssBackgroundSize.create(join(StringFn(width.Value), StringFn(height.Value)));
+        => CssBackgroundSize.create(join(StringValue(width.Value), StringValue(height.Value)));
 
     /// <summary>Creates a grid line reference or start/end line range。创建 grid 线引用或 start/end 线区间。</summary>
     [ECMAScriptName("gridLine")]
     public static CssGridLine grid_line(int line)
-        => CssGridLine.create(StringFn(line));
+        => CssGridLine.create(StringValue(line));
 
     [ECMAScriptName("gridLine2")]
     public static CssGridLine grid_line(int start, int end)
-        => CssGridLine.create(StringFn(start) + " / " + StringFn(end));
+        => CssGridLine.create(StringValue(start) + " / " + StringValue(end));
 
     /// <summary>Creates a gradient stop, optionally with a point or range position。创建 gradient stop，可选单点或区间位置。</summary>
     public static CssGradientStop stop(CssColorValue color)
@@ -752,7 +752,7 @@ public static partial class css
 
     /// <summary>Creates a compact animation shorthand from a typed name, duration, and timing keyword。根据类型化名称、duration、timing keyword 创建紧凑 animation 简写。</summary>
     public static CssAnimation animation(CssIdent name, CssTime duration, CssTimingFunctionKeyword timing)
-        => CssAnimation.create(StringFn(name) + " " + StringFn(duration) + " " + StringFn(timing));
+        => CssAnimation.create(StringValue(name) + " " + StringValue(duration) + " " + StringValue(timing));
 
     /// <summary>Creates a quoted font-family entry。创建带引号的 font-family 条目。</summary>
     public static CssFontFamilyName font(string value)
@@ -761,7 +761,7 @@ public static partial class css
     /// <summary>Creates a validated generic font-family identifier without quotes。创建不带引号、已验证的 generic font-family 标识符。</summary>
     [ECMAScriptName("genericFont")]
     public static CssFontFamilyName generic_font(string value)
-        => CssFontFamilyName.create(StringFn(ident(value)));
+        => CssFontFamilyName.create(StringValue(ident(value)));
 
     /// <summary>Creates an ordered font fallback list that contains at least one family。创建至少含一个字体族的有序后备列表。</summary>
     [ECMAScriptName("fontFamily")]
@@ -772,27 +772,27 @@ public static partial class css
 
         var output = new Array<string>();
         foreach (var name in names)
-            output.Push(StringFn(name));
+            output.Push(StringValue(name));
         return CssFontFamily.create(output.Join(","));
     }
 
     /// <summary>Creates an X-axis translate transform from a length-percentage value。根据长度/百分比值创建 X 轴 translate transform。</summary>
     [ECMAScriptName("translateX")]
     public static CssTransform translate_x(CssLengthPercentageValue value)
-        => CssTransform.create("translateX(" + StringFn(value.Value) + ")");
+        => CssTransform.create("translateX(" + StringValue(value.Value) + ")");
 
     /// <summary>Creates a Y-axis translate transform from a length-percentage value。根据长度/百分比值创建 Y 轴 translate transform。</summary>
     [ECMAScriptName("translateY")]
     public static CssTransform translate_y(CssLengthPercentageValue value)
-        => CssTransform.create("translateY(" + StringFn(value.Value) + ")");
+        => CssTransform.create("translateY(" + StringValue(value.Value) + ")");
 
     /// <summary>Creates a two-axis translate transform。创建双轴 translate transform。</summary>
     public static CssTransform translate(CssLengthPercentageValue x, CssLengthPercentageValue y)
-        => CssTransform.create("translate(" + StringFn(x.Value) + "," + StringFn(y.Value) + ")");
+        => CssTransform.create("translate(" + StringValue(x.Value) + "," + StringValue(y.Value) + ")");
 
     /// <summary>Creates a rotate transform from a typed angle。根据类型化角度创建 rotate transform。</summary>
     public static CssTransform rotate(CssAngle angle)
-        => CssTransform.create("rotate(" + StringFn(angle) + ")");
+        => CssTransform.create("rotate(" + StringValue(angle) + ")");
 
     /// <summary>Creates a uniform scale transform。创建统一缩放的 scale transform。</summary>
     public static CssTransform scale(double value)
@@ -813,7 +813,7 @@ public static partial class css
 
         var output = new Array<string>();
         foreach (var item in functions)
-            output.Push(StringFn(item));
+            output.Push(StringValue(item));
         return CssTransform.create(output.Join(" "));
     }
 
@@ -838,20 +838,20 @@ public static partial class css
             if (shadow.Inset)
                 parts.Push("inset");
 
-            parts.Push(StringFn(shadow.OffsetX.Value));
-            parts.Push(StringFn(shadow.OffsetY.Value));
+            parts.Push(StringValue(shadow.OffsetX.Value));
+            parts.Push(StringValue(shadow.OffsetY.Value));
 
             var blur = shadow.Blur;
             if (blur is not null)
-                parts.Push(StringFn(blur.Value.Value));
+                parts.Push(StringValue(blur.Value.Value));
 
             var spread = shadow.Spread;
             if (spread is not null)
-                parts.Push(StringFn(spread.Value.Value));
+                parts.Push(StringValue(spread.Value.Value));
 
             var colorValue = shadow.Color;
             if (colorValue is not null)
-                parts.Push(StringFn(colorValue.Value.Value));
+                parts.Push(StringValue(colorValue.Value.Value));
 
             output.Push(parts.Join(" "));
         }
@@ -864,7 +864,7 @@ public static partial class css
     {
         if (numerator <= 0 || denominator <= 0)
             Fail("CSS ratio terms must be greater than zero.");
-        return CssRatio.create(StringFn(numerator) + " / " + StringFn(denominator));
+        return CssRatio.create(StringValue(numerator) + " / " + StringValue(denominator));
     }
 
     /// <summary>
@@ -882,17 +882,17 @@ public static partial class css
 
         var parts = new Array<string>();
         if (width is not null)
-            parts.Push(StringFn(width.Value.Value));
+            parts.Push(StringValue(width.Value.Value));
         if (style is not null)
-            parts.Push(StringFn(style.Value.Value));
+            parts.Push(StringValue(style.Value.Value));
         if (color is not null)
-            parts.Push(StringFn(color.Value.Value));
+            parts.Push(StringValue(color.Value.Value));
         return CssBorder.create(parts.Join(" "));
     }
 
     /// <summary>Creates a blur filter from a typed length。根据类型化长度创建 blur filter。</summary>
     public static CssFilter blur(CssLength value)
-        => CssFilter.create("blur(" + StringFn(value) + ")");
+        => CssFilter.create("blur(" + StringValue(value) + ")");
 
     /// <summary>Creates a grayscale filter with a validated 0..1 amount。创建 amount 已验证为 0..1 的 grayscale filter。</summary>
     public static CssFilter grayscale(double amount)
@@ -917,7 +917,7 @@ public static partial class css
 
         var output = new Array<string>();
         foreach (var value in values)
-            output.Push(StringFn(value));
+            output.Push(StringValue(value));
         return CssFilter.create(output.Join(" "));
     }
 
@@ -929,11 +929,11 @@ public static partial class css
         var output = new Array<string>();
         foreach (var stop in stops)
         {
-            var value = StringFn(stop.Color.Value);
+            var value = StringValue(stop.Color.Value);
             if (stop.From is not null)
-                value += " " + StringFn(stop.From.Value.Value);
+                value += " " + StringValue(stop.From.Value.Value);
             if (stop.To is not null)
-                value += " " + StringFn(stop.To.Value.Value);
+                value += " " + StringValue(stop.To.Value.Value);
             output.Push(value);
         }
 
@@ -952,7 +952,7 @@ public static partial class css
     {
         if (!IsFinite(value))
             Fail("CSS numeric values must be finite.");
-        return StringFn(value);
+        return StringValue(value);
     }
 
     private static void validateByte(int value, string channel)

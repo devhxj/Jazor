@@ -17,8 +17,8 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "ulong", "BigInt")]
 public static class UInt64Module
 {
-	private static BigInt Mask => BigIntFn("18446744073709551615");
-	private static BigInt Modulus => BigIntFn("18446744073709551616");
+	private static BigInt Mask => BigIntValue("18446744073709551615");
+	private static BigInt Modulus => BigIntValue("18446744073709551616");
 
 	/// <summary>
 	/// C#: ulong.MaxValue
@@ -108,7 +108,7 @@ public static class UInt64Module
 		BigInt result;
 		try
 		{
-			result = BigIntFn(trimmed);
+			result = BigIntValue(trimmed);
 		}
 		catch
 		{
@@ -116,8 +116,8 @@ public static class UInt64Module
 		}
 
 		// 仅转换失败属于 FormatException；无符号范围验证必须保留 OverflowException。
-		var minValue = BigIntFn("0");
-		var maxValue = BigIntFn("18446744073709551615");
+		var minValue = BigIntValue("0");
+		var maxValue = BigIntValue("18446744073709551615");
 		if (result < minValue || result > maxValue)
 			throw new Error($"OverflowException: Value '{s}' was either too large or too small for a UInt64.");
 		return result;
@@ -152,10 +152,10 @@ public static class UInt64Module
 		var trimmed = s.Trim();
 		try
 		{
-			var parsed = BigIntFn(trimmed);
+			var parsed = BigIntValue(trimmed);
 			// Check ulong range: 0 to 18446744073709551615
-			var minValue = BigIntFn("0");
-			var maxValue = BigIntFn("18446744073709551615");
+			var minValue = BigIntValue("0");
+			var maxValue = BigIntValue("18446744073709551615");
 			if (parsed < minValue || parsed > maxValue)
 				return [false, BigInt.Zero];
 			return [true, parsed];

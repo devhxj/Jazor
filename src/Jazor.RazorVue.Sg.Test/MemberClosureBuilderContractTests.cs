@@ -132,30 +132,29 @@ public sealed class MemberClosureBuilderContractTests
     }
 
     [TestMethod]
-    public void TryBuild_RejectsOnlyParameterViewRuntimeEntryPoint()
+    public void TryBuild_AcceptsParameterViewRuntimeEntryPoint()
     {
         var fixture = CreateUnsupportedRuntimeEntryFixture();
-        var scenario = fixture.Scenarios.Single(static scenario => !scenario.IsSupported);
+        var scenario = fixture.Scenarios.Single(static scenario =>
+            string.Equals(scenario.EntryPoint.Name, "SetParametersAsync", StringComparison.Ordinal));
 
-        Assert.IsFalse(MemberClosureBuilder.TryBuild(
+        Assert.IsTrue(MemberClosureBuilder.TryBuild(
             fixture.Binding,
             scenario.Component,
             out var closure,
-            out var failure));
-        Assert.IsNull(closure);
-        StringAssert.Contains(failure, scenario.ExpectedFailure!, StringComparison.Ordinal);
+            out var failure), failure);
+        Assert.IsNotNull(closure);
+        Assert.IsTrue(closure.UsesParameterViewState);
+        Assert.IsTrue(closure.LifecycleRoots.Any(root =>
+            SymbolEqualityComparer.Default.Equals(root.OriginalDefinition, scenario.EntryPoint.OriginalDefinition)));
 
-        Assert.IsFalse(MemberClosureBuilder.TryBuildWithDiagnostic(
+        Assert.IsTrue(MemberClosureBuilder.TryBuildWithDiagnostic(
             fixture.Binding,
             scenario.Component,
             out var diagnosticClosure,
             out var diagnostic));
-        Assert.IsNull(diagnosticClosure);
-        Assert.IsNotNull(diagnostic);
-        Assert.AreEqual(RazorVueDiagnosticCategory.MemberClosure, diagnostic.Category);
-        Assert.AreEqual(
-            scenario.EntryPoint.Locations.Single(static location => location.IsInSource).SourceSpan,
-            diagnostic.PrimaryLocation.SourceSpan);
+        Assert.IsNotNull(diagnosticClosure);
+        Assert.IsNull(diagnostic);
     }
 
     [TestMethod]
@@ -1000,8 +999,8 @@ public sealed class MemberClosureBuilderContractTests
                 new UnsupportedRuntimeEntryScenario(
                     components[setParametersType.Name],
                     setParameters,
-                    IsSupported: false,
-                    ExpectedFailure: "does not map ComponentBase.SetParametersAsync"),
+                    IsSupported: true,
+                    ExpectedFailure: null),
                 new UnsupportedRuntimeEntryScenario(
                     components[inheritedLifecycleType!.Name],
                     inheritedLifecycle,

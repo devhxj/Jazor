@@ -175,7 +175,7 @@ public sealed class VEmptyState : ComponentBase
     /// </summary>
     [Parameter]
     [ECMAScriptName("onClick:action")]
-    public EventCallback<Event> OnActionClick { get; set; }
+    public EventCallback<JazorEvent> OnActionClick { get; set; }
 
     /// <summary>
     /// 附加到组件的额外 HTML 属性。

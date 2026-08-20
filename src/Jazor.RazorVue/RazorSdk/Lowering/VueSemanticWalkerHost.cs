@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -18,22 +19,55 @@ internal sealed class VueSemanticWalkerHost : CompositeSemanticWalkerHost
         string propsIdentifier = "props",
         IReadOnlyDictionary<string, string>? parameterRuntimeNames = null,
         IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames = null,
+        bool parameterPropertiesUseState = false,
         Func<IParameterReferenceOperation, SenseArgument, Expression?>? parameterReferenceRewriter = null,
         Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter = null,
         Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null,
-        Action<Expression, DirectBinderValueKind>? directBinderHandlerObserver = null)
-        : base(
-            new CurrentComponentSemanticWalkerHost(
-                componentType,
-                stateIdentifier,
-                propsIdentifier,
-                parameterRuntimeNames,
-                memberRuntimeNames,
-                parameterReferenceRewriter,
-                localReferenceRewriter,
-                propertyReferenceRewriter,
-                directBinderHandlerObserver),
-            ChildrenToSlotSemanticWalkerHost.Instance)
+        Action<Expression, DirectBinderValueKind>? directBinderHandlerObserver = null,
+        SemanticWalkerHost? tableCellHost = null)
+        : base(BuildHosts(
+            componentType,
+            stateIdentifier,
+            propsIdentifier,
+            parameterRuntimeNames,
+            memberRuntimeNames,
+            parameterPropertiesUseState,
+            parameterReferenceRewriter,
+            localReferenceRewriter,
+            propertyReferenceRewriter,
+            directBinderHandlerObserver,
+            tableCellHost))
     {
+    }
+
+    private static SemanticWalkerHost[] BuildHosts(
+        INamedTypeSymbol componentType,
+        string stateIdentifier,
+        string propsIdentifier,
+        IReadOnlyDictionary<string, string>? parameterRuntimeNames,
+        IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames,
+        bool parameterPropertiesUseState,
+        Func<IParameterReferenceOperation, SenseArgument, Expression?>? parameterReferenceRewriter,
+        Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter,
+        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter,
+        Action<Expression, DirectBinderValueKind>? directBinderHandlerObserver,
+        SemanticWalkerHost? tableCellHost)
+    {
+        var hosts = new List<SemanticWalkerHost>();
+        if (tableCellHost is not null)
+            hosts.Add(tableCellHost);
+        hosts.Add(new CurrentComponentSemanticWalkerHost(
+            componentType,
+            stateIdentifier,
+            propsIdentifier,
+            parameterRuntimeNames,
+            memberRuntimeNames,
+            parameterPropertiesUseState,
+            parameterReferenceRewriter,
+            localReferenceRewriter,
+            propertyReferenceRewriter,
+            directBinderHandlerObserver));
+        hosts.Add(ChildrenToSlotSemanticWalkerHost.Instance);
+        return hosts.ToArray();
     }
 }

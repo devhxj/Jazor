@@ -122,8 +122,8 @@ public class ArrayBuffer : IAllowSharedBufferSource
 	public extern virtual bool Resizable { get; }
 
 	/// <summary>
-/// Returns a copied section of this JavaScript buffer.
-/// 返回此 JavaScript 缓冲区的一段副本；不返回原缓冲区的视图。
+	/// Returns a copied section of this JavaScript buffer.
+	/// 返回此 JavaScript 缓冲区的一段副本；不返回原缓冲区的视图。
 	/// </summary>
 	/// <param name="begin"></param>
 	/// <param name="end"></param>
@@ -133,7 +133,7 @@ public class ArrayBuffer : IAllowSharedBufferSource
 
 	/// <summary>
 	/// Resizes a resizable JavaScript array buffer in place.
-/// This maps to the runtime host member and is intentionally absent on fixed-length buffers at runtime.
+	/// This maps to the runtime host member and is intentionally absent on fixed-length buffers at runtime.
 	/// 原地调整可调整大小 JavaScript 缓冲区的长度；固定大小缓冲区在运行时不支持该成员。
 	/// </summary>
 	[Description("@#resize")]
@@ -465,7 +465,7 @@ public abstract class TypedArray<T, TArray> : IArrayBufferView, IBufferSource, I
 
 	/// <summary>
 	/// Creates an array from an array-like or iterable object.
-/// This overload mirrors JavaScript <c>TypedArray.from</c> when the caller does not need the element index in the mapping callback.
+	/// This overload mirrors JavaScript <c>TypedArray.from</c> when the caller does not need the element index in the mapping callback.
 	/// 对应无需元素索引的 JavaScript <c>TypedArray.from</c> 映射回调。
 	/// </summary>
 	[Description("@#from")]

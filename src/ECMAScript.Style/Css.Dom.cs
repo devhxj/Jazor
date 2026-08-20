@@ -1,3 +1,5 @@
+using static ECMAScript.Global;
+
 namespace ECMAScript.Style;
 
 public static partial class css
@@ -10,15 +12,15 @@ public static partial class css
         if (context.Detached || context.DomHydrated)
             return;
 
-        Document domDocument;
+        JazorDocument domDocument;
         Element? existing;
         Node insertionTarget;
         if (context.Target is null)
         {
-            if (ECMAScript.Global.TypeOf(ECMAScript.Global.Document) == "undefined")
+            if (TypeOf(Global.Document) == "undefined")
                 return;
 
-            domDocument = ECMAScript.Global.Document;
+            domDocument = Global.Document;
             existing = domDocument.GetElementById(context.StyleId);
             var head = domDocument.Head;
             if (head is null)
@@ -82,7 +84,7 @@ public static partial class css
         context.HasRegistered = context.EntryIds.Length > 0;
     }
 
-    private static void AdoptDomEntries(CssContext context, Document document, string text)
+    private static void AdoptDomEntries(CssContext context, JazorDocument document, string text)
     {
         var memoryIds = context.EntryIds;
         var memoryBodies = context.EntryBodies;
@@ -182,7 +184,7 @@ public static partial class css
     }
 
     private static string FormatDomEntry(string id, string body)
-        => EntryMarkerPrefix + id + ":" + StringFn(body.Length) + "*/" + body;
+        => EntryMarkerPrefix + id + ":" + StringValue(body.Length) + "*/" + body;
 
     private static string BuildHydrationText(CssContext context)
     {
@@ -194,7 +196,7 @@ public static partial class css
         return output.Join("");
     }
 
-    private static void AppendTextNode(CssContext context, Document document, string text)
+    private static void AppendTextNode(CssContext context, JazorDocument document, string text)
     {
         if (context.DomStyle is null)
             return;

@@ -64,7 +64,7 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
 
             attributedTypeSymbolCount++;
 
-            var (typeOp, typeMemberName, typeValue) = SharedGeneration.ReadJazorAttribute(jazorAttr, semanticModel);
+            var (typeOp, typeMemberName, typeValue, typeModulePath) = SharedGeneration.ReadJazorAttribute(jazorAttr, semanticModel);
             if (typeOp == nameof(Op.Discard))
                 continue;
 
@@ -74,7 +74,7 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
                 throw new InvalidOperationException($"Whitelist type alias '{typeDeclaration.Identifier.ValueText}' requires a non-empty runtime alias value.");
 
             var typeName = type.OriginalDefinition.ToDisplayString(Format.NameFormat);
-            var modulePath = SharedGeneration.ReadModulePath(typeDeclaration.AttributeLists, semanticModel);
+            var modulePath = typeModulePath ?? SharedGeneration.ReadModulePath(typeDeclaration.AttributeLists, semanticModel);
             var mappedTypeName = string.IsNullOrEmpty(typeMemberName) ? typeName : typeMemberName;
 
             if (typeOp != nameof(Op.Compile))
@@ -93,7 +93,7 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
                 if (member is null)
                     continue;
 
-                var (op, memberName, value) = SharedGeneration.ReadJazorAttribute(attr, semanticModel);
+                var (op, memberName, value, memberModulePath) = SharedGeneration.ReadJazorAttribute(attr, semanticModel);
                 if (op == nameof(Op.Discard))
                     continue;
 
@@ -123,19 +123,19 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
                     {
                         var getMemberName = property.GetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat);
                         if (seenMembers.Add(getMemberName))
-                            members.Add((typeName, op, getMemberName, value, modulePath));
+                            members.Add((typeName, op, getMemberName, value, memberModulePath ?? modulePath));
                     }
 
                     if (property.SetMethod is not null)
                     {
                         var setMemberName = property.SetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat);
                         if (seenMembers.Add(setMemberName))
-                            members.Add((typeName, op, setMemberName, value, modulePath));
+                            members.Add((typeName, op, setMemberName, value, memberModulePath ?? modulePath));
                     }
                 }
                 else if (memberName is not null && seenMembers.Add(memberName))
                 {
-                    members.Add((typeName, op, memberName, value, modulePath));
+                    members.Add((typeName, op, memberName, value, memberModulePath ?? modulePath));
                 }
             }
         }

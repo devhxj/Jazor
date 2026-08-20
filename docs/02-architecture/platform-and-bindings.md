@@ -16,6 +16,7 @@
 | `ECMAScript.VueContract` | 组件、props、事件、slot 与注入契约 |
 | `ECMAScript.VueRoute` | Vue Router 类型绑定 |
 | `ECMAScript.Pinia` | Pinia 状态管理绑定 |
+| `ECMAScript.Pinia.Testing` | `@pinia/testing` 绑定：测试期 Pinia root、spy 与 initial-state 的 authoring contract |
 | `ECMAScript.Vue.Devtools` | Vue Devtools Plugin API 绑定：custom inspector、timeline、component hook、tab 与 command |
 | `ECMAScript.VueDataUi` | `vue-data-ui` 3.23.4 binding：完整 71 个公开 `VueUi*` 组件、强类型 dataset/config 与按组件 ESM entry |
 | `ECMAScript.VuIcons` | `vu-icons` 1.5.4 binding：完整 1,821 个 `Vu*` 图标组件与闭合动态 icon enum |

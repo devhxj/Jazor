@@ -2057,6 +2057,135 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Invocation_ObjectComputedAccess_Get_LowersToComputedMember()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = Reflect.Get(new TestClass(), ""target"");
+                    var value = obj.Get(""Value"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let obj = Reflect.get(new TestClass, ""target"");
+  let value = obj[""Value""];
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ObjectComputedAccess_Get_ChainsThroughErasedValues()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = Reflect.Get(new TestClass(), ""target"");
+                    var nested = obj.Get(""a"").Get(""b"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let obj = Reflect.get(new TestClass, ""target"");
+  let nested = obj[""a""][""b""];
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ObjectComputedAccess_Set_LowersToAssignment()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = Reflect.Get(new TestClass(), ""target"");
+                    obj.Set(""Value"", 1);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let obj = Reflect.get(new TestClass, ""target"");
+  obj[""Value""] = 1;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ObjectComputedAccess_Invoke_SpreadsPreservedArgumentList()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = Reflect.Get(new TestClass(), ""target"");
+                    var direct = obj.Invoke(""save"");
+                    var withArgs = obj.Invoke(""save"", 1, ""two"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let obj = Reflect.get(new TestClass, ""target"");
+  let direct = obj[""save""](...[]);
+  let withArgs = obj[""save""](...[1, ""two""]);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ObjectComputedAccess_Invoke_SpreadsRuntimeArray()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = Reflect.Get(new TestClass(), ""target"");
+                    object?[] args = [1, ""two""];
+                    var result = obj.Invoke(""save"", args);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+@"{
+  let obj = Reflect.get(new TestClass, ""target"");
+  let args = [1, ""two""];
+  let result = obj[""save""](...args);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
 	public void Visit_Invocation_ObjectStaticMethod_Keys()
 	{
 		var block = GetBlockOperation(@"
@@ -4751,6 +4880,28 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let same = left === true;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ObjectStaticReferenceEquals_UsesWhiteListShape()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object left, object right)
+                {
+                    var same = ReferenceEquals(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let same = left === right;
 }", script);
 	}
 

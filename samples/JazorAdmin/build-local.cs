@@ -11,6 +11,7 @@ var adminRoot = Path.GetDirectoryName(scriptPath)
 var repoRoot = ScriptHelpers.FindRepositoryRoot(adminRoot);
 var projectPath = Path.Combine(adminRoot, "JazorAdmin.csproj");
 var injectProjectPath = Path.Combine(adminRoot, "InjectSmoke", "JazorAdmin.InjectSmoke.csproj");
+var demoProjectPath = Path.Combine(repoRoot, "samples", "JazorAdmin.DemoClient", "JazorAdmin.DemoClient.csproj");
 var publishScriptPath = Path.Combine(repoRoot, "scripts", "csharp", "publish-nuget.cs");
 var packageOutput = Path.Combine(repoRoot, ".tmp", "nupkg-sample");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
@@ -24,6 +25,10 @@ if (!string.IsNullOrWhiteSpace(options.JazorDir))
 if (!string.IsNullOrWhiteSpace(options.InjectJazorDir))
 {
     ScriptHelpers.CleanDirectoryWithinRepo(ScriptHelpers.ResolvePath(repoRoot, options.InjectJazorDir), repoRoot);
+}
+if (!string.IsNullOrWhiteSpace(options.DemoJazorDir))
+{
+    ScriptHelpers.CleanDirectoryWithinRepo(ScriptHelpers.ResolvePath(repoRoot, options.DemoJazorDir), repoRoot);
 }
 
 var isolation = ScriptHelpers.GetIsolationArguments(options, repoRoot);
@@ -41,7 +46,9 @@ var packArguments = new List<string>
     "--package", "style",
     "--package", "vueroute",
     "--package", "admin",
-    "--package", "tdesign"
+    "--package", "tdesign",
+    "--package", "dataui",
+    "--package", "vu-icons"
 };
 if (!string.IsNullOrWhiteSpace(options.PackageVersion))
 {
@@ -101,12 +108,35 @@ if (!string.IsNullOrWhiteSpace(options.InjectJazorDir))
 
 await ScriptHelpers.RunDotNetAsync(injectBuildArguments, repoRoot, dotnetCliHome);
 
+if (!string.IsNullOrWhiteSpace(options.DemoJazorDir))
+{
+    var demoBuildArguments = new List<string>
+    {
+        "build",
+        demoProjectPath,
+        "-c", options.Configuration,
+        "-t:Rebuild",
+        "/m:1",
+        "/p:BuildInParallel=false",
+        $"-p:RestoreAdditionalProjectSources={packageOutput}",
+        $"-p:RestorePackagesPath={restorePackagesPath}",
+        "-p:RestoreForce=true",
+        $"-p:JazorPackageVersion={packageInfo.Version}",
+        "-p:JazorDir=" + ScriptHelpers.ResolvePath(repoRoot, options.DemoJazorDir),
+        "/nr:false",
+        "-p:UseSharedCompilation=false"
+    };
+    demoBuildArguments.AddRange(isolation.BuildArguments);
+    await ScriptHelpers.RunDotNetAsync(demoBuildArguments, repoRoot, dotnetCliHome);
+}
+
 internal sealed record SampleBuildOptions(
     string Configuration,
     string? BaseOutputPath,
     string? BaseIntermediateOutputPath,
     string? JazorDir,
     string? InjectJazorDir,
+    string? DemoJazorDir,
     string? PackageVersion)
 {
     public static SampleBuildOptions Parse(IReadOnlyList<string> arguments)
@@ -116,6 +146,7 @@ internal sealed record SampleBuildOptions(
         string? baseIntermediateOutputPath = null;
         string? jazorDir = null;
         string? injectJazorDir = null;
+        string? demoJazorDir = null;
         string? packageVersion = null;
 
         for (var index = 0; index < arguments.Count; index++)
@@ -144,6 +175,10 @@ internal sealed record SampleBuildOptions(
                 case "-InjectJazorDir":
                     injectJazorDir = RequireValue(arguments, ref index, argument);
                     break;
+                case "--demo-jazor-dir":
+                case "-DemoJazorDir":
+                    demoJazorDir = RequireValue(arguments, ref index, argument);
+                    break;
                 case "--package-version":
                 case "-PackageVersion":
                     packageVersion = RequireValue(arguments, ref index, argument);
@@ -164,6 +199,7 @@ internal sealed record SampleBuildOptions(
             baseIntermediateOutputPath,
             jazorDir,
             injectJazorDir,
+            demoJazorDir,
             packageVersion);
     }
 
@@ -186,6 +222,7 @@ internal sealed record SampleBuildOptions(
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --jazor-dir <path>");
         Console.WriteLine("  --inject-jazor-dir <path>");
+        Console.WriteLine("  --demo-jazor-dir <path>");
         Console.WriteLine("  --package-version <semver>");
     }
 }

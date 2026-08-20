@@ -12,21 +12,21 @@ namespace Jazor.CLR;
 public static class DateTimeOffsetModule
 {
 	private static BigInt ZeroTicks => BigInt.Zero;
-	private static BigInt UnixEpochTicks => BigIntFn("621355968000000000");
-	private static BigInt FileTimeUnixEpochTicks => BigIntFn("116444736000000000");
-	private static BigInt TicksPerMicrosecond => BigIntFn("10");
-	private static BigInt TicksPerMillisecond => BigIntFn("10000");
-	private static BigInt TicksPerSecond => BigIntFn("10000000");
-	private static BigInt TicksPerMinute => BigIntFn("600000000");
-	private static BigInt TicksPerHour => BigIntFn("36000000000");
-	private static BigInt TicksPerDay => BigIntFn("864000000000");
-	private static BigInt OffsetMinuteTicks => BigIntFn("600000000");
-	private static BigInt MaxOffsetTicks => BigIntFn("504000000000");
-	private static BigInt MaxDateTimeTicks => BigIntFn("3155378975999999999");
-	private static BigInt MinUnixTimeMilliseconds => BigIntFn("-62135596800000");
-	private static BigInt MaxUnixTimeMilliseconds => BigIntFn("253402300799999");
-	private static BigInt MinUnixTimeSeconds => BigIntFn("-62135596800");
-	private static BigInt MaxUnixTimeSeconds => BigIntFn("253402300799");
+	private static BigInt UnixEpochTicks => BigIntValue("621355968000000000");
+	private static BigInt FileTimeUnixEpochTicks => BigIntValue("116444736000000000");
+	private static BigInt TicksPerMicrosecond => BigIntValue("10");
+	private static BigInt TicksPerMillisecond => BigIntValue("10000");
+	private static BigInt TicksPerSecond => BigIntValue("10000000");
+	private static BigInt TicksPerMinute => BigIntValue("600000000");
+	private static BigInt TicksPerHour => BigIntValue("36000000000");
+	private static BigInt TicksPerDay => BigIntValue("864000000000");
+	private static BigInt OffsetMinuteTicks => BigIntValue("600000000");
+	private static BigInt MaxOffsetTicks => BigIntValue("504000000000");
+	private static BigInt MaxDateTimeTicks => BigIntValue("3155378975999999999");
+	private static BigInt MinUnixTimeMilliseconds => BigIntValue("-62135596800000");
+	private static BigInt MaxUnixTimeMilliseconds => BigIntValue("253402300799999");
+	private static BigInt MinUnixTimeSeconds => BigIntValue("-62135596800");
+	private static BigInt MaxUnixTimeSeconds => BigIntValue("253402300799");
 	private static Number DateTimeKindUtc => 1;
 	private static Number DateTimeKindLocal => 2;
 	private static Number MinValueMilliseconds => -62135596800000d;
@@ -38,7 +38,7 @@ public static class DateTimeOffsetModule
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
-		if (IsNaN(value) || Math.FloorFn(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+		if (IsNaN(value) || Math.FloorFunc(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
 			throw new Error(message);
 	}
 
@@ -47,7 +47,7 @@ public static class DateTimeOffsetModule
 
 	private static RuntimeModule.JDateTimeOffset CreateDateTimeOffset(Date utcDateTime, BigInt offsetTicks, BigInt utcSubMillisecondTicks)
 	{
-		var utcTicks = BigIntFn(utcDateTime.GetTime()) * TicksPerMillisecond + utcSubMillisecondTicks + UnixEpochTicks;
+		var utcTicks = BigIntValue(utcDateTime.GetTime()) * TicksPerMillisecond + utcSubMillisecondTicks + UnixEpochTicks;
 		ValidateDateTimeOffsetRange(utcTicks, offsetTicks);
 		return new(utcDateTime, offsetTicks, utcSubMillisecondTicks);
 	}
@@ -76,7 +76,7 @@ public static class DateTimeOffsetModule
 
 	private static void ValidateMicrosecond(Number microsecond)
 	{
-		if (Math.FloorFn(microsecond) != microsecond || microsecond < 0 || microsecond > 999)
+		if (Math.FloorFunc(microsecond) != microsecond || microsecond < 0 || microsecond > 999)
 			throw new Error("ArgumentOutOfRangeException: Microsecond must be between 0 and 999.");
 	}
 
@@ -93,7 +93,7 @@ public static class DateTimeOffsetModule
 			|| utc.GetUTCMilliseconds() != millisecond)
 			throw new Error("ArgumentOutOfRangeException: The supplied date or time component is out of range.");
 
-		return BigIntFn(utc.GetTime()) * TicksPerMillisecond + UnixEpochTicks;
+		return BigIntValue(utc.GetTime()) * TicksPerMillisecond + UnixEpochTicks;
 	}
 
 	private static BigInt GetDateTimeInstantTicks(RuntimeModule.JDateTime dateTime)
@@ -101,7 +101,7 @@ public static class DateTimeOffsetModule
 		if (dateTime.Kind == DateTimeKindUtc)
 		{
 			var date = dateTime.Date;
-			return BigIntFn(Date.UTC(
+			return BigIntValue(Date.UTC(
 				date.GetFullYear(),
 				date.GetMonth(),
 				date.GetDate(),
@@ -111,13 +111,13 @@ public static class DateTimeOffsetModule
 				date.GetMilliseconds())) * TicksPerMillisecond + dateTime.SubMillisecondTicks + UnixEpochTicks;
 		}
 
-		return BigIntFn(dateTime.Date.GetTime()) * TicksPerMillisecond + dateTime.SubMillisecondTicks + UnixEpochTicks;
+		return BigIntValue(dateTime.Date.GetTime()) * TicksPerMillisecond + dateTime.SubMillisecondTicks + UnixEpochTicks;
 	}
 
 	private static BigInt GetDateTimeTicks(RuntimeModule.JDateTime dateTime)
 	{
 		var date = dateTime.Date;
-		return BigIntFn(Date.UTC(
+		return BigIntValue(Date.UTC(
 			date.GetFullYear(),
 			date.GetMonth(),
 			date.GetDate(),
@@ -128,7 +128,7 @@ public static class DateTimeOffsetModule
 	}
 
 	private static BigInt GetUtcTicks(RuntimeModule.JDateTimeOffset instance)
-		=> BigIntFn(instance.UtcDateTime.GetTime()) * TicksPerMillisecond + instance.UtcSubMillisecondTicks + UnixEpochTicks;
+		=> BigIntValue(instance.UtcDateTime.GetTime()) * TicksPerMillisecond + instance.UtcSubMillisecondTicks + UnixEpochTicks;
 
 	private static BigInt GetTicks(RuntimeModule.JDateTimeOffset instance)
 		=> GetUtcTicks(instance) + instance.OffsetTicks;
@@ -142,11 +142,11 @@ public static class DateTimeOffsetModule
 		var utcSubMillisecondTicks = ticksSinceUnixEpoch % TicksPerMillisecond;
 		if (utcSubMillisecondTicks < ZeroTicks)
 		{
-			milliseconds -= BigIntFn(1);
+			milliseconds -= BigIntValue(1);
 			utcSubMillisecondTicks += TicksPerMillisecond;
 		}
 
-		return CreateDateTimeOffset(new Date(NumberFn(milliseconds)), offsetTicks, utcSubMillisecondTicks);
+		return CreateDateTimeOffset(new Date(NumberValue(milliseconds)), offsetTicks, utcSubMillisecondTicks);
 	}
 
 	private static BigInt NormalizeSubMillisecondTicks(BigInt ticks)
@@ -162,10 +162,10 @@ public static class DateTimeOffsetModule
 	{
 		EnsureWholeNumber(months, "ArgumentOutOfRangeException: Months value must be a whole number.");
 
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		var year = local.GetUTCFullYear();
 		var monthIndex = (year - 1) * 12 + local.GetUTCMonth() + months;
-		var newYear = Math.FloorFn(monthIndex / 12) + 1;
+		var newYear = Math.FloorFunc(monthIndex / 12) + 1;
 		var newMonthIndex = monthIndex % 12;
 		if (newMonthIndex < 0)
 			newMonthIndex += 12;
@@ -187,19 +187,19 @@ public static class DateTimeOffsetModule
 
 	private static RuntimeModule.JDateTimeOffset CreateWithLocalOffset(Date utcDateTime)
 	{
-		var offsetTicks = BigIntFn(-utcDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
+		var offsetTicks = BigIntValue(-utcDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
 		return CreateDateTimeOffset(utcDateTime, offsetTicks);
 	}
 
 	private static RuntimeModule.JDateTimeOffset CreateWithLocalOffset(BigInt utcTicks)
 	{
 		var utcDateTime = CreateFromUtcTicks(utcTicks, ZeroTicks).UtcDateTime;
-		var offsetTicks = BigIntFn(-utcDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
+		var offsetTicks = BigIntValue(-utcDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
 		return CreateFromUtcTicks(utcTicks, offsetTicks);
 	}
 
 	private static Date GetOffsetLocalDate(RuntimeModule.JDateTimeOffset instance)
-		=> new(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		=> new(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 
 	private static string GetProviderLocale(object? provider)
 	{
@@ -387,8 +387,8 @@ public static class DateTimeOffsetModule
 		var negative = offsetTicks < BigInt.Zero;
 		var absolute = negative ? -offsetTicks : offsetTicks;
 		var totalMinutes = absolute / OffsetMinuteTicks;
-		var hours = NumberFn(totalMinutes / BigIntFn(60));
-		var minutes = NumberFn(totalMinutes % BigIntFn(60));
+		var hours = NumberValue(totalMinutes / BigIntValue(60));
+		var minutes = NumberValue(totalMinutes % BigIntValue(60));
 		var sign = negative ? "-" : "+";
 
 		if (count <= 1)
@@ -653,7 +653,7 @@ public static class DateTimeOffsetModule
 			hour12 = 12;
 		var minute = local.GetUTCMinutes();
 		var second = local.GetUTCSeconds();
-		var fraction = BigIntFn(local.GetUTCMilliseconds()) * TicksPerMillisecond + instance.UtcSubMillisecondTicks;
+		var fraction = BigIntValue(local.GetUTCMilliseconds()) * TicksPerMillisecond + instance.UtcSubMillisecondTicks;
 
 		switch (token)
 		{
@@ -867,7 +867,7 @@ public static class DateTimeOffsetModule
 		if (!IsAsciiDigit(text[start]) || !IsAsciiDigit(text[start + 1]))
 			return false;
 
-		value = NumberFn(text.Substring(start, 2));
+		value = NumberValue(text.Substring(start, 2));
 		return true;
 	}
 
@@ -889,9 +889,9 @@ public static class DateTimeOffsetModule
 				return false;
 		}
 
-		year = NumberFn(text.Substring(0, 4));
-		month = NumberFn(text.Substring(5, 2));
-		day = NumberFn(text.Substring(8, 2));
+		year = NumberValue(text.Substring(0, 4));
+		month = NumberValue(text.Substring(5, 2));
+		day = NumberValue(text.Substring(8, 2));
 		if (year < 1 || year > 9999 || month < 1 || month > 12)
 			return false;
 
@@ -973,8 +973,8 @@ public static class DateTimeOffsetModule
 			while (digits.Length < 7)
 				digits += "0";
 
-			millisecond = NumberFn(digits.Substring(0, 3));
-			subMillisecondTicks = BigIntFn(digits.Substring(3, 4));
+			millisecond = NumberValue(digits.Substring(0, 3));
+			subMillisecondTicks = BigIntValue(digits.Substring(3, 4));
 		}
 
 		if (index == text.Length)
@@ -1015,7 +1015,7 @@ public static class DateTimeOffsetModule
 		if (offsetHours > 14 || offsetMinutes > 59 || (offsetHours == 14 && offsetMinutes != 0))
 			return false;
 
-		offsetTicks = BigIntFn(offsetHours * 60 + offsetMinutes) * OffsetMinuteTicks;
+		offsetTicks = BigIntValue(offsetHours * 60 + offsetMinutes) * OffsetMinuteTicks;
 		if (sign == '-')
 			offsetTicks = -offsetTicks;
 
@@ -1071,8 +1071,8 @@ public static class DateTimeOffsetModule
 			while (digits.Length < 7)
 				digits += "0";
 
-			millisecond = NumberFn(digits.Substring(0, 3));
-			subMillisecondTicks = BigIntFn(digits.Substring(3, 4));
+			millisecond = NumberValue(digits.Substring(0, 3));
+			subMillisecondTicks = BigIntValue(digits.Substring(3, 4));
 		}
 
 		if (index == text.Length)
@@ -1113,7 +1113,7 @@ public static class DateTimeOffsetModule
 		if (offsetHours > 14 || offsetMinutes > 59 || (offsetHours == 14 && offsetMinutes != 0))
 			return false;
 
-		offsetTicks = BigIntFn(offsetHours * 60 + offsetMinutes) * OffsetMinuteTicks;
+		offsetTicks = BigIntValue(offsetHours * 60 + offsetMinutes) * OffsetMinuteTicks;
 		if (sign == '-')
 			offsetTicks = -offsetTicks;
 
@@ -1128,13 +1128,13 @@ public static class DateTimeOffsetModule
 		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("ArgumentOutOfRangeException: Value must be finite.");
 
-		var maxUnitCount = NumberFn(MaxDateTimeTicks) / NumberFn(ticksPerUnit);
-		if (Math.AbsFn(value) > maxUnitCount)
+		var maxUnitCount = NumberValue(MaxDateTimeTicks) / NumberValue(ticksPerUnit);
+		if (Math.Absolute(value) > maxUnitCount)
 			throw new Error("ArgumentOutOfRangeException: Value is outside the supported DateTimeOffset range.");
 
-		var integralPart = Math.TruncFn(value);
+		var integralPart = Math.Trunc(value);
 		var fractionalPart = value - integralPart;
-		return BigIntFn(integralPart) * ticksPerUnit + BigIntFn(Math.TruncFn(fractionalPart * NumberFn(ticksPerUnit)));
+		return BigIntValue(integralPart) * ticksPerUnit + BigIntValue(Math.Trunc(fractionalPart * NumberValue(ticksPerUnit)));
 	}
 
 	private static Number GetDateTimeStylesValue(object styles)
@@ -1142,7 +1142,7 @@ public static class DateTimeOffsetModule
 		if (styles is Number numberStyle)
 			return numberStyle;
 		if (styles is System.Globalization.DateTimeStyles enumStyle)
-			return NumberFn((int)enumStyle);
+			return NumberValue((int)enumStyle);
 		if (styles == null)
 			return 0;
 
@@ -1151,7 +1151,7 @@ public static class DateTimeOffsetModule
 
 	private static void ValidateDateTimeStyles(Number styles)
 	{
-		if (styles < 0 || Math.FloorFn(styles) != styles || (styles & ~AllowedDateTimeStylesMask) != 0)
+		if (styles < 0 || Math.FloorFunc(styles) != styles || (styles & ~AllowedDateTimeStylesMask) != 0)
 			throw new Error("ArgumentException: Invalid DateTimeStyles value.");
 
 		if ((styles & DateTimeStylesNoCurrentDateDefault) != 0)
@@ -1199,11 +1199,11 @@ public static class DateTimeOffsetModule
 			var sign = input[signIndex];
 			if ((sign == '+' || sign == '-') && input[input.Length - 3] == ':')
 			{
-				var hours = NumberFn(input.Substring(input.Length - 5, 2));
-				var minutes = NumberFn(input.Substring(input.Length - 2, 2));
+				var hours = NumberValue(input.Substring(input.Length - 5, 2));
+				var minutes = NumberValue(input.Substring(input.Length - 2, 2));
 				if (signIndex > timeIndex && !IsNaN(hours) && !IsNaN(minutes) && minutes >= 0 && minutes < 60)
 				{
-					var ticks = BigIntFn(hours * 60 + minutes) * OffsetMinuteTicks;
+					var ticks = BigIntValue(hours * 60 + minutes) * OffsetMinuteTicks;
 					return sign == '-' ? -ticks : ticks;
 				}
 			}
@@ -1215,11 +1215,11 @@ public static class DateTimeOffsetModule
 			var sign = input[signIndex];
 			if (sign == '+' || sign == '-')
 			{
-				var hours = NumberFn(input.Substring(input.Length - 4, 2));
-				var minutes = NumberFn(input.Substring(input.Length - 2, 2));
+				var hours = NumberValue(input.Substring(input.Length - 4, 2));
+				var minutes = NumberValue(input.Substring(input.Length - 2, 2));
 				if (signIndex > timeIndex && !IsNaN(hours) && !IsNaN(minutes) && minutes >= 0 && minutes < 60)
 				{
-					var ticks = BigIntFn(hours * 60 + minutes) * OffsetMinuteTicks;
+					var ticks = BigIntValue(hours * 60 + minutes) * OffsetMinuteTicks;
 					return sign == '-' ? -ticks : ticks;
 				}
 			}
@@ -1231,16 +1231,16 @@ public static class DateTimeOffsetModule
 			var sign = input[signIndex];
 			if (sign == '+' || sign == '-')
 			{
-				var hours = NumberFn(input.Substring(input.Length - 2, 2));
+				var hours = NumberValue(input.Substring(input.Length - 2, 2));
 				if (signIndex > timeIndex && !IsNaN(hours))
 				{
-					var ticks = BigIntFn(hours * 60) * OffsetMinuteTicks;
+					var ticks = BigIntValue(hours * 60) * OffsetMinuteTicks;
 					return sign == '-' ? -ticks : ticks;
 				}
 			}
 		}
 
-		return BigIntFn(-parsedDate.GetTimezoneOffset()) * OffsetMinuteTicks;
+		return BigIntValue(-parsedDate.GetTimezoneOffset()) * OffsetMinuteTicks;
 	}
 
 	private static BigInt ExtractSubMillisecondTicks(string input)
@@ -1272,7 +1272,7 @@ public static class DateTimeOffsetModule
 		while (digits.Length < 7)
 			digits += "0";
 
-		return BigIntFn(digits.Substring(3, 4));
+		return BigIntValue(digits.Substring(3, 4));
 	}
 
 	private static BigInt FloorDiv(BigInt value, BigInt divisor)
@@ -1280,7 +1280,7 @@ public static class DateTimeOffsetModule
 		var quotient = value / divisor;
 		var remainder = value % divisor;
 		if (remainder < ZeroTicks)
-			return quotient - BigIntFn(1);
+			return quotient - BigIntValue(1);
 
 		return quotient;
 	}
@@ -1300,8 +1300,8 @@ public static class DateTimeOffsetModule
 			if (!timeHasExplicitOffset)
 			{
 				var localDateTime = RuntimeModule.CreateLocalDateTime(currentYear, currentMonth, currentDay, timeHour, timeMinute, timeSecond, timeMillisecond);
-				var localOffsetTicks = BigIntFn(-localDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
-				var utcTicks = BigIntFn(localDateTime.GetTime()) * TicksPerMillisecond + timeSubMillisecondTicks + UnixEpochTicks;
+				var localOffsetTicks = BigIntValue(-localDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
+				var utcTicks = BigIntValue(localDateTime.GetTime()) * TicksPerMillisecond + timeSubMillisecondTicks + UnixEpochTicks;
 				return CreateFromUtcTicks(utcTicks, localOffsetTicks);
 			}
 
@@ -1312,7 +1312,7 @@ public static class DateTimeOffsetModule
 		if (TryParseIsoDate(s, out var year, out var month, out var day))
 		{
 			var date = RuntimeModule.CreateLocalDate(year, month, day);
-			var utcTicks = BigIntFn(date.GetTime()) * TicksPerMillisecond + UnixEpochTicks;
+			var utcTicks = BigIntValue(date.GetTime()) * TicksPerMillisecond + UnixEpochTicks;
 			return CreateWithLocalOffset(utcTicks);
 		}
 
@@ -1321,8 +1321,8 @@ public static class DateTimeOffsetModule
 			if (!hasExplicitOffset)
 			{
 				var localDateTime = RuntimeModule.CreateLocalDateTime(year, month, day, hour, minute, second, millisecond);
-				var localOffsetTicks = BigIntFn(-localDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
-				var utcTicks = BigIntFn(localDateTime.GetTime()) * TicksPerMillisecond + subMillisecondTicks + UnixEpochTicks;
+				var localOffsetTicks = BigIntValue(-localDateTime.GetTimezoneOffset()) * OffsetMinuteTicks;
+				var utcTicks = BigIntValue(localDateTime.GetTime()) * TicksPerMillisecond + subMillisecondTicks + UnixEpochTicks;
 				return CreateFromUtcTicks(utcTicks, localOffsetTicks);
 			}
 
@@ -1343,7 +1343,7 @@ public static class DateTimeOffsetModule
 			throw new Error($"FormatException: String '{input}' was not recognized as a valid DateTimeOffset.");
 
 		var parsedSubMillisecondTicks = ExtractSubMillisecondTicks(s);
-		return CreateFromUtcTicks(BigIntFn(parsed.GetTime()) * TicksPerMillisecond + parsedSubMillisecondTicks + UnixEpochTicks, resolvedOffsetTicks);
+		return CreateFromUtcTicks(BigIntValue(parsed.GetTime()) * TicksPerMillisecond + parsedSubMillisecondTicks + UnixEpochTicks, resolvedOffsetTicks);
 	}
 
 	/// <summary>
@@ -1358,7 +1358,7 @@ public static class DateTimeOffsetModule
 	/// JS: new Date(8640000000000000)
 	/// </summary>
 	[Jazor(Op.Import, "static readonly System.DateTimeOffset.MaxValue")]
-	public static RuntimeModule.JDateTimeOffset _d45d439f0b97ae0e() => CreateDateTimeOffset(new Date(253402300799999d), ZeroTicks, BigIntFn("9999"));
+	public static RuntimeModule.JDateTimeOffset _d45d439f0b97ae0e() => CreateDateTimeOffset(new Date(253402300799999d), ZeroTicks, BigIntValue("9999"));
 
 	/// <summary>
 	/// C#: DateTimeOffset.UnixEpoch
@@ -1404,7 +1404,7 @@ public static class DateTimeOffsetModule
 
 		if (dateTime.Kind == DateTimeKindLocal)
 		{
-			var expectedOffset = BigIntFn(-dateTime.Date.GetTimezoneOffset()) * OffsetMinuteTicks;
+			var expectedOffset = BigIntValue(-dateTime.Date.GetTimezoneOffset()) * OffsetMinuteTicks;
 			if (expectedOffset != offset.Ticks)
 				throw new Error("ArgumentException: The UTC Offset of the local dateTime parameter does not match the offset argument.");
 		}
@@ -1453,7 +1453,7 @@ public static class DateTimeOffsetModule
 	{
 		ValidateOffset(offset);
 		ValidateMicrosecond(microsecond);
-		var localTicks = CreateLocalTicks(year, month, day, hour, minute, second, millisecond) + BigIntFn(microsecond) * BigIntFn("10");
+		var localTicks = CreateLocalTicks(year, month, day, hour, minute, second, millisecond) + BigIntValue(microsecond) * BigIntValue("10");
 		return CreateFromUtcTicks(localTicks - offset.Ticks, offset.Ticks);
 	}
 
@@ -1482,13 +1482,13 @@ public static class DateTimeOffsetModule
 		var localTicks = GetTicks(instance);
 		return new RuntimeModule.JDateTime(
 			RuntimeModule.CreateLocalDateTime(
-				NumberFn(_127105b7a40a7665(instance)),
-				NumberFn(_79eb4c93cea58d59(instance)),
-				NumberFn(_ba8df912681fe784(instance)),
-				NumberFn(_b7fc65477ef4df45(instance)),
-				NumberFn(_0fe8054b55f9f1c7(instance)),
-				NumberFn(_822de224fed5bb6b(instance)),
-				NumberFn(_0c1b2675cd7a2faa(instance))),
+				NumberValue(_127105b7a40a7665(instance)),
+				NumberValue(_79eb4c93cea58d59(instance)),
+				NumberValue(_ba8df912681fe784(instance)),
+				NumberValue(_b7fc65477ef4df45(instance)),
+				NumberValue(_0fe8054b55f9f1c7(instance)),
+				NumberValue(_822de224fed5bb6b(instance)),
+				NumberValue(_0c1b2675cd7a2faa(instance))),
 			0,
 			NormalizeSubMillisecondTicks(localTicks));
 	}
@@ -1530,7 +1530,7 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.Date.get")]
 	public static RuntimeModule.JDateTime _d7098a1eabebc945(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		return new RuntimeModule.JDateTime(RuntimeModule.CreateLocalDate(local.GetUTCFullYear(), local.GetUTCMonth() + 1, local.GetUTCDate()), 0);
 	}
 
@@ -1541,7 +1541,7 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.Day.get")]
 	public static Number _ba8df912681fe784(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		return local.GetUTCDate();
 	}
 
@@ -1552,7 +1552,7 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.DayOfWeek.get")]
 	public static System.DayOfWeek _17d30a204818ce34(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		return (System.DayOfWeek)(int)local.GetUTCDay();
 	}
 
@@ -1563,9 +1563,9 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.DayOfYear.get")]
 	public static Number _b69ef2b7d0abde1a(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		var start = Date.UTC(local.GetUTCFullYear(), 0, 0);
-		return Math.FloorFn((local.GetTime() - start) / 86400000);
+		return Math.FloorFunc((local.GetTime() - start) / 86400000);
 	}
 
 	/// <summary>
@@ -1575,7 +1575,7 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.Hour.get")]
 	public static Number _b7fc65477ef4df45(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		return local.GetUTCHours();
 	}
 
@@ -1586,7 +1586,7 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.Millisecond.get")]
 	public static Number _0c1b2675cd7a2faa(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		return local.GetUTCMilliseconds();
 	}
 
@@ -1596,7 +1596,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.Microsecond.get")]
 	public static Number _ae3a48995f0953ed(RuntimeModule.JDateTimeOffset instance)
-		=> NumberFn((instance.UtcSubMillisecondTicks / BigIntFn("10")) % BigIntFn(1000));
+		=> NumberValue((instance.UtcSubMillisecondTicks / BigIntValue("10")) % BigIntValue(1000));
 
 	/// <summary>
 	/// C#: instance.Nanosecond
@@ -1604,7 +1604,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.Nanosecond.get")]
 	public static Number _f9acef215c7d5168(RuntimeModule.JDateTimeOffset instance)
-		=> NumberFn((instance.UtcSubMillisecondTicks % BigIntFn("10")) * BigIntFn(100));
+		=> NumberValue((instance.UtcSubMillisecondTicks % BigIntValue("10")) * BigIntValue(100));
 
 	/// <summary>
 	/// C#: instance.Minute
@@ -1613,7 +1613,7 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.Minute.get")]
 	public static Number _0fe8054b55f9f1c7(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		return local.GetUTCMinutes();
 	}
 
@@ -1624,7 +1624,7 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.Month.get")]
 	public static Number _79eb4c93cea58d59(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		return local.GetUTCMonth() + 1;
 	}
 
@@ -1643,7 +1643,7 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.Second.get")]
 	public static Number _822de224fed5bb6b(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		return local.GetUTCSeconds();
 	}
 
@@ -1670,8 +1670,8 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.TimeOfDay.get")]
 	public static RuntimeModule.JTimeSpan _90401f92f6a9141e(RuntimeModule.JDateTimeOffset instance)
 	{
-		var normalized = GetTicks(instance) % BigIntFn("864000000000");
-		return new RuntimeModule.JTimeSpan(normalized < ZeroTicks ? normalized + BigIntFn("864000000000") : normalized);
+		var normalized = GetTicks(instance) % BigIntValue("864000000000");
+		return new RuntimeModule.JTimeSpan(normalized < ZeroTicks ? normalized + BigIntValue("864000000000") : normalized);
 	}
 
 	/// <summary>
@@ -1681,7 +1681,7 @@ public static class DateTimeOffsetModule
 	[Jazor(Op.Import, "System.DateTimeOffset.Year.get")]
 	public static Number _127105b7a40a7665(RuntimeModule.JDateTimeOffset instance)
 	{
-		var local = new Date(instance.UtcDateTime.GetTime() + NumberFn(instance.OffsetTicks) / 10000);
+		var local = new Date(instance.UtcDateTime.GetTime() + NumberValue(instance.OffsetTicks) / 10000);
 		return local.GetUTCFullYear();
 	}
 
@@ -1842,7 +1842,7 @@ public static class DateTimeOffsetModule
 		if (seconds < MinUnixTimeSeconds || seconds > MaxUnixTimeSeconds)
 			throw new Error("ArgumentOutOfRangeException: Unix time seconds must be within the range of DateTimeOffset.");
 
-		return CreateDateTimeOffset(new Date(NumberFn(seconds * BigIntFn(1000))), ZeroTicks);
+		return CreateDateTimeOffset(new Date(NumberValue(seconds * BigIntValue(1000))), ZeroTicks);
 	}
 
 	///<summary>Converts a Unix time expressed as the number of milliseconds that have elapsed since 1970-01-01T00:00:00Z to a <see cref="T:System.DateTimeOffset" /> value.</summary>
@@ -1852,7 +1852,7 @@ public static class DateTimeOffsetModule
 		if (milliseconds < MinUnixTimeMilliseconds || milliseconds > MaxUnixTimeMilliseconds)
 			throw new Error("ArgumentOutOfRangeException: Unix time milliseconds must be within the range of DateTimeOffset.");
 
-		return CreateDateTimeOffset(new Date(NumberFn(milliseconds)), ZeroTicks);
+		return CreateDateTimeOffset(new Date(NumberValue(milliseconds)), ZeroTicks);
 	}
 
 	///<summary>Returns the hash code for the current <see cref="T:System.DateTimeOffset" /> object.</summary>
@@ -1918,7 +1918,7 @@ public static class DateTimeOffsetModule
 	///<summary>Returns the number of seconds that have elapsed since 1970-01-01T00:00:00Z.</summary>
 	[Jazor(Op.Import ,"System.DateTimeOffset.ToUnixTimeSeconds()")]
 	public static BigInt _8bc213443653978d(RuntimeModule.JDateTimeOffset instance)
-		=> FloorDiv(GetUtcTicks(instance) - UnixEpochTicks, BigIntFn("10000000"));
+		=> FloorDiv(GetUtcTicks(instance) - UnixEpochTicks, BigIntValue("10000000"));
 
 	///<summary>Returns the number of milliseconds that have elapsed since 1970-01-01T00:00:00.000Z.</summary>
 	[Jazor(Op.Import ,"System.DateTimeOffset.ToUnixTimeMilliseconds()")]
@@ -2103,7 +2103,7 @@ public static class DateTimeOffsetModule
 	public static RuntimeModule.JDateTimeOffset _e679a7abf50cf648()
 	{
 		var now = new Date();
-		var offsetTicks = BigIntFn(-now.GetTimezoneOffset()) * OffsetMinuteTicks;
+		var offsetTicks = BigIntValue(-now.GetTimezoneOffset()) * OffsetMinuteTicks;
 		return CreateDateTimeOffset(new Date(now.GetTime()), offsetTicks);
 	}
 }

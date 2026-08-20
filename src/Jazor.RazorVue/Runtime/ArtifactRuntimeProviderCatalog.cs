@@ -15,6 +15,21 @@ internal static class RuntimeProviderCatalog
             "Jazor.RazorVue.Runtime.raw-markup.mjs",
             "Jazor.RazorVue.Runtime.raw-markup",
             "@jazor/vue-runtime/raw-markup.mjs",
+            []),
+        new(
+            "Jazor.RazorVue.Runtime.cascading.mjs",
+            "Jazor.RazorVue.Runtime.cascading",
+            "@jazor/vue-runtime/cascading.mjs",
+            []),
+        new(
+            "Jazor.RazorVue.Runtime.blazor-routing.mjs",
+            "Jazor.RazorVue.Runtime.blazor-routing",
+            "@jazor/vue-runtime/blazor-routing.mjs",
+            ["@jazor/vue-runtime/routes.mjs"]),
+        new(
+            "Jazor.RazorVue.Runtime.blazor-components.mjs",
+            "Jazor.RazorVue.Runtime.blazor-components",
+            "@jazor/vue-runtime/blazor-components.mjs",
             [])
     ];
 

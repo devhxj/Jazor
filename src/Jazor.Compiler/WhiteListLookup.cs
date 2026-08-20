@@ -44,6 +44,24 @@ internal static class WhiteListLookup
 			var rawDisplayString = candidate.OriginalDefinition.ToDisplayString(Format.NameFormat);
 			string? staticExtensionKey = null;
 
+			// Roslyn represents a reduced extension invocation with the receiver in the
+			// argument list while NameFormat renders the reduced symbol as an instance
+			// member. Prefer the authored static extension contract first; otherwise an
+			// unrelated instance alias with the same reduced display can capture the call
+			// and make the compiler emit `Extensions.alias(...)` instead of the mapped
+			// helper import.
+			if (candidate is IMethodSymbol extensionMethod &&
+				(extensionMethod.IsExtensionMethod || extensionMethod.ReducedFrom is not null))
+			{
+				var extensionSource = extensionMethod.ReducedFrom?.OriginalDefinition ?? extensionMethod.OriginalDefinition;
+				staticExtensionKey = extensionSource.OriginalDefinition.ToDisplayString(Format.StaticExtensionNameFormat);
+				foreach (var lookupKey in EnumerateWhiteListLookupKeys(staticExtensionKey))
+				{
+					if (TryGetValue(mappings, lookupKey, out displayString, out value))
+						return true;
+				}
+			}
+
 			foreach (var lookupKey in EnumerateWhiteListLookupKeys(rawDisplayString))
 			{
 				if (TryGetValue(mappings, lookupKey, out displayString, out value))
@@ -51,7 +69,8 @@ internal static class WhiteListLookup
 			}
 
 			if (candidate is IMethodSymbol method &&
-				(method.IsExtensionMethod || method.ReducedFrom is not null))
+				(method.IsExtensionMethod || method.ReducedFrom is not null) &&
+				staticExtensionKey is null)
 			{
 				var extensionSource = method.ReducedFrom?.OriginalDefinition ?? method.OriginalDefinition;
 				staticExtensionKey = extensionSource.OriginalDefinition.ToDisplayString(Format.StaticExtensionNameFormat);

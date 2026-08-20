@@ -7,7 +7,10 @@ internal sealed record ClrImportMappingCase(
     string Id,
     string Member,
     string ModulePath,
-    string ExportName);
+    string ExportName)
+{
+    public bool IsExternalRuntime => ModulePath.StartsWith("@", StringComparison.Ordinal);
+}
 
 internal static class ClrRuntimeMappingCatalog
 {
@@ -55,7 +58,7 @@ internal static class ClrRuntimeMappingCatalog
 
                 foreach (var method in GetRuntimeMethods(member))
                 {
-                    var resolvedModulePath = modulePath ?? string.Empty;
+                    var resolvedModulePath = mapping.ModulePath ?? modulePath ?? string.Empty;
                     // Op.Import may publish a deliberate JavaScript export name. The adapter
                     // method name is only the generator fallback when no name was authored.
                     var exportName = string.IsNullOrEmpty(mapping.Value) ? method.Name : mapping.Value;

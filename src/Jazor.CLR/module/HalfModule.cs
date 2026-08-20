@@ -12,10 +12,10 @@ namespace Jazor.CLR;
 public static class HalfModule
 {
 	private static Number RoundToHalf(Number value)
-		=> Math.F16roundFn(value);
+		=> Math.F16round(value);
 
 	internal static Number FromBigIntCore(BigInt value)
-		=> RoundToHalf(NumberFn(value));
+		=> RoundToHalf(NumberValue(value));
 
 	private static Number CheckedToNumberCore(Number value, Number min, Number max)
 	{
@@ -23,7 +23,7 @@ public static class HalfModule
 			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
 
 		// Checked floating conversions validate the truncated integer, so -0.5 can become unsigned zero.
-		var truncated = Math.TruncFn(value);
+		var truncated = Math.Trunc(value);
 		if (truncated < min || truncated > max)
 			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
 
@@ -39,14 +39,14 @@ public static class HalfModule
 		if (value <= -2147483648)
 			return -2147483648;
 
-		var truncated = Math.TruncFn(value);
+		var truncated = Math.Trunc(value);
 		return truncated == 0 ? 0 : truncated;
 	}
 
 	private static Number UncheckedToNarrowCore(Number value, Number width, bool signed)
 	{
-		var integer = BigIntFn(UncheckedToInt32Core(value));
-		return NumberFn(signed ? BigInt.AsIntN(width, integer) : BigInt.AsUintN(width, integer));
+		var integer = BigIntValue(UncheckedToInt32Core(value));
+		return NumberValue(signed ? BigInt.AsIntN(width, integer) : BigInt.AsUintN(width, integer));
 	}
 
 	private static Number UncheckedToUnsignedNumberCore(Number value, Number max)
@@ -56,7 +56,7 @@ public static class HalfModule
 		if (value >= max)
 			return max;
 
-		return Math.TruncFn(value);
+		return Math.Trunc(value);
 	}
 
 	private static Number RoundToEven(Number value)
@@ -64,7 +64,7 @@ public static class HalfModule
 		if (!DoubleModule.IsFiniteCore(value) || value == 0)
 			return value;
 
-		var floor = Math.FloorFn(value);
+		var floor = Math.FloorFunc(value);
 		var fraction = value - floor;
 		var rounded = fraction < 0.5
 			? floor
@@ -86,13 +86,13 @@ public static class HalfModule
 		if (regular == 0)
 			return left < 0 || Object.Is(left, -0) ? -0 : 0;
 
-		var alternative = RoundToHalf(regular - Math.AbsFn(right) * (left < 0 ? -1 : 1));
-		var regularMagnitude = Math.AbsFn(regular);
-		var alternativeMagnitude = Math.AbsFn(alternative);
+		var alternative = RoundToHalf(regular - Math.Absolute(right) * (left < 0 ? -1 : 1));
+		var regularMagnitude = Math.Absolute(regular);
+		var alternativeMagnitude = Math.Absolute(alternative);
 		if (alternativeMagnitude == regularMagnitude)
 		{
 			var quotient = RoundToHalf(left / right);
-			return Math.AbsFn(RoundToEven(quotient)) > Math.AbsFn(quotient)
+			return Math.Absolute(RoundToEven(quotient)) > Math.Absolute(quotient)
 				? alternative
 				: regular;
 		}
@@ -108,7 +108,7 @@ public static class HalfModule
 			return -2147483648;
 
 		var magnitudeBits = GetHalfBitsCore(value) % 32768d;
-		var exponentBits = Math.FloorFn(magnitudeBits / 1024d);
+		var exponentBits = Math.FloorFunc(magnitudeBits / 1024d);
 		if (exponentBits != 0)
 			return exponentBits - 15;
 
@@ -141,13 +141,13 @@ public static class HalfModule
 	{
 		var negative = value < 0 || Object.Is(value, -0);
 		var signBits = negative ? 32768 : 0;
-		var magnitude = Math.AbsFn(value);
+		var magnitude = Math.Absolute(value);
 		if (magnitude == Number.POSITIVE_INFINITY)
 			return signBits + 31744;
 		if (magnitude == 0)
 			return signBits;
 		if (magnitude < 0.00006103515625)
-			return signBits + Math.FloorFn(magnitude / 5.960464477539063e-8 + 0.5);
+			return signBits + Math.FloorFunc(magnitude / 5.960464477539063e-8 + 0.5);
 
 		var exponent = -14;
 		var scale = 0.00006103515625;
@@ -157,7 +157,7 @@ public static class HalfModule
 			exponent++;
 		}
 
-		var mantissa = Math.FloorFn((magnitude / scale - 1) * 1024 + 0.5);
+		var mantissa = Math.FloorFunc((magnitude / scale - 1) * 1024 + 0.5);
 		return signBits + (exponent + 15) * 1024 + mantissa;
 	}
 
@@ -165,7 +165,7 @@ public static class HalfModule
 	{
 		var negative = bits >= 32768;
 		var magnitudeBits = bits % 32768d;
-		var exponentBits = Math.FloorFn(magnitudeBits / 1024d);
+		var exponentBits = Math.FloorFunc(magnitudeBits / 1024d);
 		var mantissa = magnitudeBits % 1024d;
 		Number value;
 		if (exponentBits == 0)
@@ -178,7 +178,7 @@ public static class HalfModule
 		}
 		else
 		{
-			value = (1 + mantissa / 1024d) * Math.PowFn(2, exponentBits - 15);
+			value = (1 + mantissa / 1024d) * Math.Power(2, exponentBits - 15);
 		}
 
 		return negative ? -value : value;
@@ -189,7 +189,7 @@ public static class HalfModule
 		var bit = -1;
 		while (value > 0)
 		{
-			value = Math.FloorFn(value / 2);
+			value = Math.FloorFunc(value / 2);
 			bit++;
 		}
 
@@ -228,7 +228,7 @@ public static class HalfModule
 		if (value < 0 && !oddDegree)
 			return Number.NaN;
 
-		var magnitude = Math.PowFn(Math.AbsFn(value), 1 / degree);
+		var magnitude = Math.Power(Math.Absolute(value), 1 / degree);
 		var negativeResult = oddDegree && (value < 0 || Object.Is(value, -0));
 		return RoundToHalf(negativeResult ? -magnitude : magnitude);
 	}
@@ -528,30 +528,30 @@ public static class HalfModule
 	public static BigInt _1d590a5b31b1ced4(Number value)
 		=> BigIntIntegerRuntime.FromFloatingSaturatingSigned(
 			value,
-			BigIntFn("-9223372036854775808"),
-			BigIntFn("9223372036854775807"));
+			BigIntValue("-9223372036854775808"),
+			BigIntValue("9223372036854775807"));
 
 	[Jazor(Op.Import, "static System.Half.explicit operator checked long(System.Half)")]
 	public static BigInt _b245ca9db3ecb868(Number value)
 		=> BigIntIntegerRuntime.FromFloatingChecked(
 			value,
-			BigIntFn("-9223372036854775808"),
-			BigIntFn("9223372036854775807"));
+			BigIntValue("-9223372036854775808"),
+			BigIntValue("9223372036854775807"));
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.Int128" />.</summary>
 	[Jazor(Op.Import, "static System.Half.explicit operator System.Int128(System.Half)")]
 	public static BigInt _24b890794cafdd5b(Number value)
 		=> BigIntIntegerRuntime.FromFloatingSaturatingSigned(
 			value,
-			BigIntFn("-170141183460469231731687303715884105728"),
-			BigIntFn("170141183460469231731687303715884105727"));
+			BigIntValue("-170141183460469231731687303715884105728"),
+			BigIntValue("170141183460469231731687303715884105727"));
 
 	[Jazor(Op.Import, "static System.Half.explicit operator checked System.Int128(System.Half)")]
 	public static BigInt _ad10a10a383b6b8c(Number value)
 		=> BigIntIntegerRuntime.FromFloatingChecked(
 			value,
-			BigIntFn("-170141183460469231731687303715884105728"),
-			BigIntFn("170141183460469231731687303715884105727"));
+			BigIntValue("-170141183460469231731687303715884105728"),
+			BigIntValue("170141183460469231731687303715884105727"));
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.IntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator nint(System.Half)")]
@@ -590,24 +590,24 @@ public static class HalfModule
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.UInt64" /> value.</summary>
 	[Jazor(Op.Import, "static System.Half.explicit operator ulong(System.Half)")]
 	public static BigInt _368654d3a116fc21(Number value)
-		=> BigIntIntegerRuntime.FromFloatingSaturatingUnsigned(value, BigIntFn("18446744073709551615"));
+		=> BigIntIntegerRuntime.FromFloatingSaturatingUnsigned(value, BigIntValue("18446744073709551615"));
 
 	[Jazor(Op.Import, "static System.Half.explicit operator checked ulong(System.Half)")]
 	public static BigInt _8d52fe89e6ca9452(Number value)
-		=> BigIntIntegerRuntime.FromFloatingChecked(value, BigInt.Zero, BigIntFn("18446744073709551615"));
+		=> BigIntIntegerRuntime.FromFloatingChecked(value, BigInt.Zero, BigIntValue("18446744073709551615"));
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.UInt128" />.</summary>
 	[Jazor(Op.Import, "static System.Half.explicit operator System.UInt128(System.Half)")]
 	public static BigInt _de1cee73a929bf8e(Number value)
 		=> BigIntIntegerRuntime.FromFloatingSaturatingUnsigned(
 			value,
-			BigIntFn("340282366920938463463374607431768211455"));
+			BigIntValue("340282366920938463463374607431768211455"));
 
 	[Jazor(Op.Import, "static System.Half.explicit operator checked System.UInt128(System.Half)")]
 	public static BigInt _bd3cc1c48165dbab(Number value)
 		=> BigIntIntegerRuntime.FromFloatingCheckedUInt128(
 			value,
-			BigIntFn("340282366920938463463374607431768211455"));
+			BigIntValue("340282366920938463463374607431768211455"));
 
 	///<summary>Explicitly converts a half-precision floating-point value to its nearest representable <see cref="T:System.UIntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Half.explicit operator nuint(System.Half)")]
@@ -1041,14 +1041,14 @@ public static class HalfModule
 	///<summary>Computes the sine and cosine of a value.</summary>
 	[Jazor(Op.Import, "static System.Half.SinCos(System.Half)")]
 	public static (Number Sin, Number Cos) _7bdc16d36920d5d9(Number value)
-		=> (Sin: RoundToHalf(Math.SinFn(value)), Cos: RoundToHalf(Math.CosFn(value)));
+		=> (Sin: RoundToHalf(Math.Sine(value)), Cos: RoundToHalf(Math.Cosine(value)));
 
 	///<summary>Computes the sine and cosine of a value that has been multiplied by <code data-dev-comment-type="c">pi</code>.</summary>
 	[Jazor(Op.Import, "static System.Half.SinCosPi(System.Half)")]
 	public static (Number SinPi, Number CosPi) _a1628326328dadd0(Number value)
 	{
 		var angle = value * Math.PI;
-		return (RoundToHalf(Math.SinFn(angle)), RoundToHalf(Math.CosFn(angle)));
+		return (RoundToHalf(Math.Sine(angle)), RoundToHalf(Math.Cosine(angle)));
 	}
 
 	///<summary>Computes the sine of a value that has been multiplied by <code data-dev-comment-type="c">pi</code>.</summary>

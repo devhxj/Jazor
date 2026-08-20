@@ -221,7 +221,7 @@ public static class DictionaryT2Module<TKey, TValue>
 
 		var state = (Comparer: comparer, KeysByHash: new Map<Number, Array<TKey>>());
 		States.Set(instance, state);
-		Object.DefineProperty(instance, "set", new ECMAScript.PropertyDescriptor
+		Object.DefineProperty(instance, "set", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Func<TKey, TValue, Map<TKey, TValue>>)(
 				(key, value) => SetCore(instance, key, value, state)),
@@ -229,28 +229,28 @@ public static class DictionaryT2Module<TKey, TValue>
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "get", new ECMAScript.PropertyDescriptor
+		Object.DefineProperty(instance, "get", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Func<TKey, TValue?>)(key => GetCore(instance, key, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "has", new ECMAScript.PropertyDescriptor
+		Object.DefineProperty(instance, "has", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Func<TKey, bool>)(key => HasCore(key, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "delete", new ECMAScript.PropertyDescriptor
+		Object.DefineProperty(instance, "delete", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Func<TKey, bool>)(key => DeleteCore(instance, key, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "clear", new ECMAScript.PropertyDescriptor
+		Object.DefineProperty(instance, "clear", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Action)(() => ClearCore(instance, state)),
 			Enumerable = false,

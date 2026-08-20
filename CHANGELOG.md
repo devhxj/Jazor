@@ -2,9 +2,16 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## Unreleased
+
 ## 2026-08-19
 
-### Jazor 0.17.0
+### Jazor 0.18.0
+
+- **Breaking:** JazorAdmin retires the 22 upstream TDesign Starter replica/result routes and their branded result assets, and adds an audit trail plus a `JazorAdmin.DemoClient` sample. Migrate bookmarks and demos to the portal, IAM, and platform-operations routes documented by the JazorAdmin reference application; the retained shell, appearance drawer, and dashboard are not replacement route aliases.
+- RazorVue member closure now overlays `ParameterView` state: an effective `SetParametersAsync` override participates in component initialization, and parameter auto-property storage is retained even before render code reads it, so missing parameters keep their CLR default or previous value.
+- New RazorVue compatibility analyzers `JAZORVCA001`/`JAZORVCA002` report injected `DbContext` and other server-only ASP.NET services in RazorVue browser components at the authored source location instead of failing during artifact generation.
+- Jazor now has an official website deployed to GitHub Pages from the repository `docs/` tree: a docs-driven generated route catalog, static full-route export, and a Material 3 (Sober web components) responsive shell with overlay navigation drawers on mobile.
 
 - RazorVue now lowers official Razor Source Generator generic component type-inference helpers and open generic `OpenComponent<T>` calls. Generic type parameters remain erased at runtime, and generated artifacts no longer leak render-builder symbols from nested fragments.
 - Reachable `RenderFragment` properties and methods are retained when ordinary component members reference them, preventing generated modules from silently calling an omitted helper.

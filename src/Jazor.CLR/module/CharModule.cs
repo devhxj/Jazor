@@ -85,7 +85,7 @@ public static class CharModule
 	{
 		if (value == null)
 			throw new Error("ArgumentNullException");
-		if (Math.FloorFn(index) != index || index < 0 || index >= value.Length)
+		if (Math.FloorFunc(index) != index || index < 0 || index >= value.Length)
 			throw new Error("ArgumentOutOfRangeException");
 
 		return value[(int)index].ToString();

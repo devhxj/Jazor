@@ -101,6 +101,53 @@ public sealed class SemanticWalkerTryCatchTest
         StringAssert.Contains(exception.Message, "not within a try block", StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void VisitThrow_ExpressionPosition_UsesThrowingIife()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string input)
+                {
+                    var value = input ?? throw new Exception(""missing"");
+                }
+            }
+        ");
+        var throwOperation = block.Descendants().OfType<IThrowOperation>().Single();
+
+        var node = new SemanticWalker(true).VisitThrow(throwOperation, new SenseArgument());
+
+        AssertScriptEqual(
+            @"(() => {
+  throw new Error(""missing"");
+})()",
+            node?.ToKnRECMAScript());
+    }
+
+    [TestMethod]
+    public void Visit_ThrowExpressionInNullCoalescing_PreservesExpressionSemantics()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string input)
+                {
+                    var value = input ?? throw new Exception(""missing"");
+                }
+            }
+        ");
+
+        var node = new SemanticWalker(true).Visit(block, new SenseArgument());
+
+        AssertScriptEqual(
+@"{
+  let value = input ?? (() => {
+    throw new Error(""missing"");
+  })();
+}",
+            node?.ToKnRECMAScript());
+    }
+
     /// <summary>
     /// 测试 try-catch 语句转换
     /// C# 示例：

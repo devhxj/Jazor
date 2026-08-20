@@ -2889,6 +2889,36 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_LowersReferenceEqualsInsideRenderFragmentHelperArguments()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            var items = new[] { new Item(), new Item() };
+            var lastItem = items[^1];
+            foreach (var item in items)
+            {
+                builder.AddContent(0, RenderItem(item, ReferenceEquals(item, lastItem)));
+            }
+            """,
+            """
+            private RenderFragment RenderItem(Item item, bool isCurrent) => child =>
+            {
+                child.OpenElement(0, "span");
+                child.AddAttribute(1, "data-current", isCurrent);
+                child.AddContent(2, item.Name);
+                child.CloseElement();
+            };
+
+            private sealed class Item
+            {
+                public string Name { get; set; } = "item";
+            }
+            """);
+
+        AssertDirectRenderSuccess(fixture, "item === lastItem");
+    }
+
+    [TestMethod]
     public void TryEmit_PreservesPatternLocalsAcrossLoopBodiesWithAndWithoutBranches()
     {
         var fixture = CreateDirectRenderFixture(

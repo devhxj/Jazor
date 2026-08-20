@@ -265,7 +265,7 @@ public static partial class css
         if (!hasDigit)
             return false;
 
-        var number = NumberFn(numberText);
+        var number = NumberValue(numberText);
         return number >= 0 && number <= 100;
     }
 }

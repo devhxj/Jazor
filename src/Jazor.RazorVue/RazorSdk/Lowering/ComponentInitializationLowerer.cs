@@ -85,7 +85,8 @@ internal static class ComponentInitializationLowerer
             Host = new VueSemanticWalkerHost(
                 closure.ComponentSymbol,
                 parameterRuntimeNames: LibraryComponentConventions.BuildParameterRuntimeNameMap(closure.ComponentSymbol),
-                memberRuntimeNames: declaredNames)
+                memberRuntimeNames: declaredNames,
+                parameterPropertiesUseState: closure.UsesParameterViewState)
         };
         var body = GetConstructorFunctionBody(compilation, constructor, walker, argument, cancellationToken);
 

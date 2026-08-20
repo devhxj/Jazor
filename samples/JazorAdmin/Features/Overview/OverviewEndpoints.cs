@@ -1,12 +1,18 @@
 // Provides real platform statistics for the administration dashboard.
 // 为管理台仪表盘提供真实的平台统计数据：Identity、组织、SSO、配置与 Quartz 执行序列。
+using JazorAdmin.Authentication;
 using JazorAdmin.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OpenIddict.EntityFrameworkCore.Models;
 
 namespace JazorAdmin.Features.Overview;
 
 public sealed record OverviewDailyRunView(string Date, int Succeeded, int Failed);
+
+public sealed record OverviewDailyAuditView(string Date, int SignIns, int TokenIssuances);
+
+public sealed record PortalApplicationView(string ClientId, string DisplayName, string LaunchUri);
 
 public sealed record OverviewView(
     int Accounts,
@@ -21,7 +27,11 @@ public sealed record OverviewView(
     int Settings,
     int Schedules,
     int EnabledSchedules,
-    OverviewDailyRunView[] RecentRuns);
+    OverviewDailyRunView[] RecentRuns,
+    int AuditEvents,
+    int TokenIssuances,
+    OverviewDailyAuditView[] RecentAudit,
+    PortalApplicationView[] PortalApplications);
 
 public static class OverviewEndpoints
 {
@@ -37,6 +47,7 @@ public static class OverviewEndpoints
 
     private static async Task<IResult> GetAsync(
         AdminDbContext database,
+        IOptions<DemoClientOptions> demoClientOptions,
         CancellationToken cancellationToken)
     {
         var now = DateTimeOffset.UtcNow;
@@ -97,6 +108,51 @@ public static class OverviewEndpoints
             series[offset] = new OverviewDailyRunView(day.ToString("yyyy-MM-dd"), counts?[0] ?? 0, counts?[1] ?? 0);
         }
 
+        var auditFirstDay = DateTime.UtcNow.Date.AddDays(-6);
+        var auditValues = await database.AuditEvents
+            .AsNoTracking()
+            .Where(item => item.OccurredAtUtc >= auditFirstDay)
+            .Select(item => new { item.OccurredAtUtc, item.Action, item.ObjectType, item.Summary })
+            .ToArrayAsync(cancellationToken);
+        var auditBuckets = new Dictionary<DateTime, int[]>();
+        var tokenIssuances = 0;
+        foreach (var audit in auditValues)
+        {
+            if (audit.ObjectType != "oidc-token" || audit.Action != AuditSaveChangesInterceptor.Issued)
+                continue;
+
+            tokenIssuances++;
+            var day = audit.OccurredAtUtc.Date;
+            if (!auditBuckets.TryGetValue(day, out var counts))
+            {
+                counts = new int[2];
+                auditBuckets[day] = counts;
+            }
+
+            // One authorization_code issuance represents the interactive sign-in leg; access and
+            // refresh tokens remain visible in the second series as total token activity.
+            // 每次 authorization_code 签发对应一次交互登录；access/refresh 仍计入令牌活动总量。
+            if (string.Equals(audit.Summary, "authorization_code", StringComparison.Ordinal))
+                counts[0]++;
+            counts[1]++;
+        }
+
+        var auditSeries = new OverviewDailyAuditView[7];
+        for (var offset = 0; offset < 7; offset++)
+        {
+            var day = auditFirstDay.AddDays(offset);
+            auditBuckets.TryGetValue(day, out var counts);
+            auditSeries[offset] = new OverviewDailyAuditView(
+                day.ToString("yyyy-MM-dd"),
+                counts?[0] ?? 0,
+                counts?[1] ?? 0);
+        }
+
+        var demo = demoClientOptions.Value;
+        PortalApplicationView[] portalApplications = !demo.HasPortalLaunch
+            ? []
+            : [new PortalApplicationView(demo.ClientId, "JazorAdmin Operations Demo", demo.LaunchUri!)];
+
         var view = new OverviewView(
             accounts.Length,
             enabledAccounts,
@@ -110,7 +166,11 @@ public static class OverviewEndpoints
             await database.Settings.CountAsync(cancellationToken),
             schedules,
             enabledSchedules,
-            series);
+            series,
+            auditValues.Length,
+            tokenIssuances,
+            auditSeries,
+            portalApplications);
 
         return Results.Ok(view);
     }

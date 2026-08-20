@@ -49,7 +49,9 @@ public sealed class RazorTailOutputPrivateContractTests
         var arguments = new object?[] { CancellationToken.None, binding, null, null };
 
         Assert.IsTrue((bool)method.Invoke(null, arguments)!);
-        Assert.IsEmpty((ImmutableArray<VueModuleArtifact>)arguments[2]!);
+        var artifacts = (ImmutableArray<VueModuleArtifact>)arguments[2]!;
+        Assert.HasCount(1, artifacts);
+        Assert.AreEqual(RazorVueRouteCatalogBuilder.RelativePath, artifacts[0].RelativePath);
         Assert.IsEmpty((ImmutableArray<RazorVueDiagnosticInfo>)arguments[3]!);
     }
 

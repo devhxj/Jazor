@@ -13,7 +13,9 @@
 | `samples/ECMAScript.VueDataUi.Dashboard/` | Vue Data UI Razor dashboard | typed dataset/config、per-chart ESM import 与本地 NuGet consumer 验证 |
 | `samples/ECMAScript.VueRoute.MemorySmoke/` | Vue Router 模块与浏览器验证 | Router 绑定与导航运行时 |
 | `samples/Wiki/` | 端到端示例应用 | 使用与验证参考，不是独立产品线 |
-| `samples/JazorAdmin/` | 管理应用示例与 dogfood 验证 | 消费 `Jazor.Admin`，不定义库 API |
+| `samples/JazorAdmin/` | 生产级管理应用参考（门户/IAM/运营） | 消费 `Jazor.Admin`，不定义库 API |
+| `samples/JazorAdmin.DemoClient/` | 独立 confidential OIDC 下游客户端 | 授权码 + PKCE、Bearer API 与单点登出；不承载下游业务权限模型 |
+| `samples/JazorAdmin.Test/` | JazorAdmin 的 API 与审计回归测试 | 随示例演进，不定义库 API |
 
 `Jazor.Admin` 的公共契约位于 `src/Jazor.Admin/`；`samples/JazorAdmin` 可以选择具体的应用框架、业务功能和 UI 组合。不得从示例的页面、认证或部署策略反推出 `Jazor.Admin` 库的必需行为。
 

@@ -35,15 +35,15 @@ public static class MathModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX > absY)
 			return x;
 		if (absX < absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更大的那个，这里顺带修正 +0 / -0。
-		return Math.MaxFn(x, y);
+		return Math.Maximum(x, y);
 	}
 
 	private static Number MinMagnitudeCore(Number x, Number y)
@@ -51,15 +51,15 @@ public static class MathModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX < absY)
 			return x;
 		if (absX > absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更小的那个，这里顺带修正 +0 / -0。
-		return Math.MinFn(x, y);
+		return Math.Minimum(x, y);
 	}
 
 	private static (sbyte Quotient, sbyte Remainder) DivRemSByteCore(Number left, Number right)
@@ -69,7 +69,7 @@ public static class MathModule
 		if (left == -128 && right == -1)
 			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
 
-		var quotient = Math.TruncFn(left / right);
+		var quotient = Math.Trunc(left / right);
 		return ((sbyte)quotient, (sbyte)(left - quotient * right));
 	}
 
@@ -77,7 +77,7 @@ public static class MathModule
 	{
 		var product = left * right;
 		var low = BigInt.AsUintN(64, product);
-		var high = BigInt.AsUintN(64, product >> BigIntFn(64));
+		var high = BigInt.AsUintN(64, product >> BigIntValue(64));
 		return [high, low];
 	}
 
@@ -85,7 +85,7 @@ public static class MathModule
 	{
 		var product = left * right;
 		var low = BigInt.AsIntN(64, product);
-		var high = BigInt.AsIntN(64, product >> BigIntFn(64));
+		var high = BigInt.AsIntN(64, product >> BigIntValue(64));
 		return [high, low];
 	}
 
@@ -190,7 +190,7 @@ public static class MathModule
 	///<summary>Returns the sine and cosine of the specified angle.</summary>
 	[Jazor(Op.Import, "static System.Math.SinCos(double)")]
 	public static (double Sin, double Cos) _4dcadff583296186(Number x)
-		=> (Sin: Math.SinFn(x), Cos: Math.CosFn(x));
+		=> (Sin: Math.Sine(x), Cos: Math.Cosine(x));
 
 	///<summary>Returns the hyperbolic sine of the specified angle.</summary>
 	[Jazor(Op.Alias, "static System.Math.Sinh(double)", "sinh")]

@@ -1,4 +1,6 @@
+using ECMAScript.TDesign;
 using JazorAdmin.Features.Settings;
+using Microsoft.AspNetCore.Components;
 
 namespace JazorAdmin;
 
@@ -16,16 +18,77 @@ public partial class SettingsPage : AppComponentBase, IVueContainerComponent
     private string kind = "text";
     private string value = string.Empty;
     private bool deleteArmed;
+    private int loadVersion;
 
     private bool IsNew => selectedKey is null;
+
+    // TDesign 表格列在 C# 侧组装：标题走 string 分支，组合单元格走 Cell 渲染片段，
+    // 行数据经 TPrimaryTableCellParams.Row 以 C# 成员访问，避免依赖 JS 侧键名。
+    private TPrimaryTableCol<SettingView>[] Columns =>
+    [
+        new()
+        {
+            Title = (TPrimaryTableColTitle<SettingView>)L("Setting", "配置项"),
+            Cell = (TPrimaryTableColCell<SettingView>)((RenderFragment<TPrimaryTableCellParams<SettingView>>)(context => builder =>
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "data-setting-key", context.Row.Key);
+                builder.OpenElement(2, "strong");
+                builder.AddContent(3, context.Row.Label);
+                builder.CloseElement();
+                builder.OpenElement(4, "span");
+                builder.AddContent(5, context.Row.Key);
+                builder.CloseElement();
+                builder.CloseElement();
+            }))
+        },
+        new() { ColKey = "Group", Title = (TPrimaryTableColTitle<SettingView>)L("Group", "分组") },
+        new()
+        {
+            Title = (TPrimaryTableColTitle<SettingView>)L("Type", "类型"),
+            Cell = (TPrimaryTableColCell<SettingView>)((RenderFragment<TPrimaryTableCellParams<SettingView>>)(context => builder =>
+            {
+                builder.OpenElement(0, "code");
+                builder.AddContent(1, context.Row.Kind);
+                builder.CloseElement();
+            }))
+        },
+        new() { Title = (TPrimaryTableColTitle<SettingView>)L("Actions", "操作"), Cell = (TPrimaryTableColCell<SettingView>)((RenderFragment<TPrimaryTableCellParams<SettingView>>)(context => builder =>
+        {
+            builder.OpenComponent<TButton>(0);
+            builder.AddComponentParameter(1, nameof(TButton.Variant), TButtonVariantValue.Text);
+            builder.AddComponentParameter(2, nameof(TButton.Size), TSizeEnum.Small);
+            builder.AddComponentParameter(3, "data-setting-command", "edit");
+            builder.AddComponentParameter(4, nameof(TButton.OnClick),
+                EventCallback.Factory.Create(this, () => Select(context.Row)));
+            builder.AddComponentParameter(5, nameof(TContentComponentBase.ChildContent),
+                (RenderFragment)(child => child.AddContent(0, L("Edit", "编辑"))));
+            builder.CloseComponent();
+        })) }
+    ];
+
+    private TTableRowClassNameValue<SettingView> SelectedRowClassName
+        => (TTableRowClassNameValueOption2<SettingView>)SelectedRowClass;
+
+    private TClassName SelectedRowClass(TRowClassNameParams<SettingView> parameters)
+        => parameters.Row.Key == selectedKey ? (TClassName)"ja-table-row-selected" : (TClassName)string.Empty;
 
     protected override void OnInitialized() => Load();
 
     private void Load()
     {
+        var requestVersion = ++loadVersion;
         loading = true;
         error = null;
-        ApiClient.GetSettings().Then(ApplySettings);
+        ApiClient.GetSettings().Then(outcome =>
+        {
+            // Create/delete can issue a newer refresh before an older response resolves.
+            // 忽略过期响应，避免旧配置快照在写操作后覆盖最新表格状态。
+            if (requestVersion != loadVersion)
+                return;
+
+            ApplySettings(outcome);
+        });
     }
 
     private void ApplySettings(ApiOutcome outcome)
@@ -65,6 +128,10 @@ public partial class SettingsPage : AppComponentBase, IVueContainerComponent
 
     private void NewSetting()
     {
+        // Opening a new editor is explicit user intent, so an in-flight load must not reselect
+        // an older row after the form has been reset.
+        // 用户明确切换到新建态时，失效旧请求，避免其回写并重新选中旧配置。
+        loadVersion++;
         selectedKey = null;
         key = string.Empty;
         group = "general";

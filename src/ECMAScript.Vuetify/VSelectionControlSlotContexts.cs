@@ -39,7 +39,7 @@ public sealed record VSelectionControlLabelSlotContext
 public sealed record VSelectionControlInputProps
 {
     [Description("@#onBlur")]
-    public Action<Event>? OnBlur { get; init; }
+    public Action<JazorEvent>? OnBlur { get; init; }
 
     [Description("@#onFocus")]
     public Action<FocusEvent>? OnFocus { get; init; }

@@ -23,16 +23,16 @@ public sealed record VuetifyIntersectionObserverOptions : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public readonly union VuetifyIntersectionObserverRoot(Element, Document)
+public readonly union VuetifyIntersectionObserverRoot(Element, JazorDocument)
 {
     public Element? AsElement => Value as Element;
 
-    public Document? AsDocument => Value as Document;
+    public JazorDocument? AsDocument => Value as JazorDocument;
 
     public static implicit operator VuetifyIntersectionObserverRoot(Element value)
         => new(value);
 
-    public static implicit operator VuetifyIntersectionObserverRoot(Document value)
+    public static implicit operator VuetifyIntersectionObserverRoot(JazorDocument value)
         => new(value);
 }
 

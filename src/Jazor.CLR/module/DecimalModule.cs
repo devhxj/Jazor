@@ -12,31 +12,31 @@ namespace Jazor.CLR;
 public static class DecimalModule
 {
 	private static Number MaxFractionDigits => 28;
-	private static BigInt MaxDecimalUnscaled => BigIntFn("79228162514264337593543950335");
-	private static BigInt Int64MinValue => BigIntFn("-9223372036854775808");
-	private static BigInt Int64MaxValue => BigIntFn("9223372036854775807");
-	private static BigInt UInt64MaxValue => BigIntFn("18446744073709551615");
-	private static BigInt Int32MinValue => BigIntFn("-2147483648");
-	private static BigInt Int32MaxValue => BigIntFn("2147483647");
-	private static BigInt UInt32MaxValue => BigIntFn("4294967295");
-	private static BigInt Int16MinValue => BigIntFn("-32768");
-	private static BigInt Int16MaxValue => BigIntFn("32767");
-	private static BigInt UInt16MaxValue => BigIntFn("65535");
-	private static BigInt SByteMinValue => BigIntFn("-128");
-	private static BigInt SByteMaxValue => BigIntFn("127");
-	private static BigInt ByteMaxValue => BigIntFn("255");
-	private static Number AllowLeadingWhiteStyle => NumberFn((int)System.Globalization.NumberStyles.AllowLeadingWhite);
-	private static Number AllowTrailingWhiteStyle => NumberFn((int)System.Globalization.NumberStyles.AllowTrailingWhite);
-	private static Number AllowLeadingSignStyle => NumberFn((int)System.Globalization.NumberStyles.AllowLeadingSign);
-	private static Number AllowTrailingSignStyle => NumberFn((int)System.Globalization.NumberStyles.AllowTrailingSign);
-	private static Number AllowParenthesesStyle => NumberFn((int)System.Globalization.NumberStyles.AllowParentheses);
-	private static Number AllowDecimalPointStyle => NumberFn((int)System.Globalization.NumberStyles.AllowDecimalPoint);
-	private static Number AllowThousandsStyle => NumberFn((int)System.Globalization.NumberStyles.AllowThousands);
-	private static Number AllowExponentStyle => NumberFn((int)System.Globalization.NumberStyles.AllowExponent);
-	private static Number AllowCurrencySymbolStyle => NumberFn((int)System.Globalization.NumberStyles.AllowCurrencySymbol);
-	private static Number AllowHexSpecifierStyle => NumberFn((int)System.Globalization.NumberStyles.AllowHexSpecifier);
-	private static Number AllowBinarySpecifierStyle => NumberFn((int)System.Globalization.NumberStyles.AllowBinarySpecifier);
-	private static Number NumberStyleNumber => NumberFn((int)System.Globalization.NumberStyles.Number);
+	private static BigInt MaxDecimalUnscaled => BigIntValue("79228162514264337593543950335");
+	private static BigInt Int64MinValue => BigIntValue("-9223372036854775808");
+	private static BigInt Int64MaxValue => BigIntValue("9223372036854775807");
+	private static BigInt UInt64MaxValue => BigIntValue("18446744073709551615");
+	private static BigInt Int32MinValue => BigIntValue("-2147483648");
+	private static BigInt Int32MaxValue => BigIntValue("2147483647");
+	private static BigInt UInt32MaxValue => BigIntValue("4294967295");
+	private static BigInt Int16MinValue => BigIntValue("-32768");
+	private static BigInt Int16MaxValue => BigIntValue("32767");
+	private static BigInt UInt16MaxValue => BigIntValue("65535");
+	private static BigInt SByteMinValue => BigIntValue("-128");
+	private static BigInt SByteMaxValue => BigIntValue("127");
+	private static BigInt ByteMaxValue => BigIntValue("255");
+	private static Number AllowLeadingWhiteStyle => NumberValue((int)System.Globalization.NumberStyles.AllowLeadingWhite);
+	private static Number AllowTrailingWhiteStyle => NumberValue((int)System.Globalization.NumberStyles.AllowTrailingWhite);
+	private static Number AllowLeadingSignStyle => NumberValue((int)System.Globalization.NumberStyles.AllowLeadingSign);
+	private static Number AllowTrailingSignStyle => NumberValue((int)System.Globalization.NumberStyles.AllowTrailingSign);
+	private static Number AllowParenthesesStyle => NumberValue((int)System.Globalization.NumberStyles.AllowParentheses);
+	private static Number AllowDecimalPointStyle => NumberValue((int)System.Globalization.NumberStyles.AllowDecimalPoint);
+	private static Number AllowThousandsStyle => NumberValue((int)System.Globalization.NumberStyles.AllowThousands);
+	private static Number AllowExponentStyle => NumberValue((int)System.Globalization.NumberStyles.AllowExponent);
+	private static Number AllowCurrencySymbolStyle => NumberValue((int)System.Globalization.NumberStyles.AllowCurrencySymbol);
+	private static Number AllowHexSpecifierStyle => NumberValue((int)System.Globalization.NumberStyles.AllowHexSpecifier);
+	private static Number AllowBinarySpecifierStyle => NumberValue((int)System.Globalization.NumberStyles.AllowBinarySpecifier);
+	private static Number NumberStyleNumber => NumberValue((int)System.Globalization.NumberStyles.Number);
 	private static Number DefaultFixedPrecision => 2;
 	private static Number DefaultNumberPrecision => 2;
 
@@ -86,7 +86,7 @@ public static class DecimalModule
 
 	private static void ValidateDecimalNumberStyles(Number style)
 	{
-		if (Math.FloorFn(style) != style || style < 0)
+		if (Math.FloorFunc(style) != style || style < 0)
 			throw new Error("ArgumentException: An undefined NumberStyles value is not supported.");
 		if (HasStyle(style, AllowHexSpecifierStyle) || HasStyle(style, AllowBinarySpecifierStyle))
 			throw new Error("ArgumentException: The number style AllowHexSpecifier or AllowBinarySpecifier is not supported on floating point data types.");
@@ -142,9 +142,9 @@ public static class DecimalModule
 
 	private static BigInt Pow10(Number exponent)
 	{
-		var result = BigIntFn(1);
+		var result = BigIntValue(1);
 		for (var i = 0; i < exponent; i++)
-			result *= BigIntFn(10);
+			result *= BigIntValue(10);
 
 		return result;
 	}
@@ -174,9 +174,9 @@ public static class DecimalModule
 		var absolute = unscaled < BigInt.Zero ? -unscaled : unscaled;
 		while (scale > 0
 			&& (scale > MaxFractionDigits || absolute > MaxDecimalUnscaled)
-			&& unscaled % BigIntFn(10) == BigInt.Zero)
+			&& unscaled % BigIntValue(10) == BigInt.Zero)
 		{
-			unscaled /= BigIntFn(10);
+			unscaled /= BigIntValue(10);
 			scale--;
 			absolute = unscaled < BigInt.Zero ? -unscaled : unscaled;
 		}
@@ -194,9 +194,9 @@ public static class DecimalModule
 		var parts = PreserveParts(unscaled, scale);
 		unscaled = GetUnscaled(parts);
 		scale = GetScale(parts);
-		while (scale > 0 && unscaled % BigIntFn(10) == BigInt.Zero)
+		while (scale > 0 && unscaled % BigIntValue(10) == BigInt.Zero)
 		{
-			unscaled /= BigIntFn(10);
+			unscaled /= BigIntValue(10);
 			scale--;
 		}
 
@@ -230,8 +230,8 @@ public static class DecimalModule
 				throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
 
 			var exponentText = s.Substring(exponentIndex + 1);
-			var exponentValue = NumberFn(exponentText);
-			if (IsNaN(exponentValue) || Math.FloorFn(exponentValue) != exponentValue)
+			var exponentValue = NumberValue(exponentText);
+			if (IsNaN(exponentValue) || Math.FloorFunc(exponentValue) != exponentValue)
 				throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
 
 			exponent = exponentValue;
@@ -270,7 +270,7 @@ public static class DecimalModule
 			scale = 0;
 		}
 
-		var unscaled = BigIntFn(digits);
+		var unscaled = BigIntValue(digits);
 		if (negative && unscaled != BigInt.Zero)
 			unscaled = -unscaled;
 
@@ -512,7 +512,7 @@ public static class DecimalModule
 				throw new Error("FormatException: Format specifier was invalid.");
 		}
 
-		return NumberFn(precisionText);
+		return NumberValue(precisionText);
 	}
 
 	private static bool IsSimpleCustomDecimalFormat(string format)
@@ -591,7 +591,7 @@ public static class DecimalModule
 		if (integral < min || integral > max)
 			throw new Error($"OverflowException: Value was either too large or too small for a {typeName}.");
 
-		return NumberFn(integral);
+		return NumberValue(integral);
 	}
 
 	private static BigInt ToCheckedBigInt(string value, BigInt min, BigInt max, string typeName)
@@ -606,9 +606,9 @@ public static class DecimalModule
 	private static string FromOACurrencyCore(BigInt currency)
 	{
 		var scale = 4;
-		while (currency != BigInt.Zero && scale > 0 && currency % BigIntFn(10) == BigInt.Zero)
+		while (currency != BigInt.Zero && scale > 0 && currency % BigIntValue(10) == BigInt.Zero)
 		{
-			currency /= BigIntFn(10);
+			currency /= BigIntValue(10);
 			scale--;
 		}
 
@@ -645,11 +645,11 @@ public static class DecimalModule
 
 	private static string RoundDecimal(string value, Number decimals, object? mode = null)
 	{
-		if (Math.FloorFn(decimals) != decimals || decimals < 0 || decimals > MaxFractionDigits)
+		if (Math.FloorFunc(decimals) != decimals || decimals < 0 || decimals > MaxFractionDigits)
 			throw new Error("ArgumentOutOfRangeException: Decimal digits must be between 0 and 28.");
 
-		var modeValue = mode == null ? NumberFn(0) : GetMidpointRoundingValue(mode);
-		if (modeValue < 0 || modeValue > 4 || Math.FloorFn(modeValue) != modeValue)
+		var modeValue = mode == null ? NumberValue(0) : GetMidpointRoundingValue(mode);
+		if (modeValue < 0 || modeValue > 4 || Math.FloorFunc(modeValue) != modeValue)
 			throw new Error("ArgumentException: Invalid MidpointRounding value.");
 
 		var parts = ParseDecimal(value);
@@ -669,20 +669,20 @@ public static class DecimalModule
 		if (modeValue == 2)
 			return FormatDecimal(quotient, decimals);
 		if (modeValue == 3)
-			return FormatDecimal(negative ? quotient - BigIntFn(1) : quotient, decimals);
+			return FormatDecimal(negative ? quotient - BigIntValue(1) : quotient, decimals);
 		if (modeValue == 4)
-			return FormatDecimal(negative ? quotient : quotient + BigIntFn(1), decimals);
+			return FormatDecimal(negative ? quotient : quotient + BigIntValue(1), decimals);
 
 		var absoluteRemainder = negative ? -remainder : remainder;
-		var comparison = absoluteRemainder * BigIntFn(2) - divisor;
+		var comparison = absoluteRemainder * BigIntValue(2) - divisor;
 		if (comparison < BigInt.Zero)
 			return FormatDecimal(quotient, decimals);
 
-		var step = negative ? -BigIntFn(1) : BigIntFn(1);
+		var step = negative ? -BigIntValue(1) : BigIntValue(1);
 		if (comparison > BigInt.Zero || modeValue == 1)
 			return FormatDecimal(quotient + step, decimals);
 
-		return quotient % BigIntFn(2) == BigInt.Zero
+		return quotient % BigIntValue(2) == BigInt.Zero
 			? FormatDecimal(quotient, decimals)
 			: FormatDecimal(quotient + step, decimals);
 	}
@@ -734,15 +734,15 @@ public static class DecimalModule
 
 		var absoluteRemainder = remainder < BigInt.Zero ? -remainder : remainder;
 		var absoluteDenominator = denominator < BigInt.Zero ? -denominator : denominator;
-		var comparison = absoluteRemainder * BigIntFn(2) - absoluteDenominator;
+		var comparison = absoluteRemainder * BigIntValue(2) - absoluteDenominator;
 		if (comparison < BigInt.Zero)
 			return quotient;
 
-		var step = numerator < BigInt.Zero ? -BigIntFn(1) : BigIntFn(1);
+		var step = numerator < BigInt.Zero ? -BigIntValue(1) : BigIntValue(1);
 		if (comparison > BigInt.Zero)
 			return quotient + step;
 
-		return quotient % BigIntFn(2) == BigInt.Zero ? quotient : quotient + step;
+		return quotient % BigIntValue(2) == BigInt.Zero ? quotient : quotient + step;
 	}
 
 	private static string DivideDecimal(string left, string right)
@@ -786,7 +786,7 @@ public static class DecimalModule
 		var quotient = unscaled / divisor;
 		var remainder = unscaled % divisor;
 		if (remainder != BigInt.Zero && unscaled < BigInt.Zero)
-			quotient -= BigIntFn(1);
+			quotient -= BigIntValue(1);
 
 		return FormatDecimal(quotient, 0);
 	}
@@ -803,7 +803,7 @@ public static class DecimalModule
 		var quotient = unscaled / divisor;
 		var remainder = unscaled % divisor;
 		if (remainder != BigInt.Zero && unscaled > BigInt.Zero)
-			quotient += BigIntFn(1);
+			quotient += BigIntValue(1);
 
 		return FormatDecimal(quotient, 0);
 	}
@@ -1238,7 +1238,7 @@ public static class DecimalModule
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent double-precision floating-point number.</summary>
 	[Jazor(Op.Import ,"static decimal.ToDouble(decimal)")]
 	public static Number _cfbbd251b43c99f4(string d)
-		=> NumberFn(NormalizeDecimal(d));
+		=> NumberValue(NormalizeDecimal(d));
 
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent 32-bit signed integer.</summary>
 	[Jazor(Op.Import ,"static decimal.ToInt32(decimal)")]
@@ -1268,7 +1268,7 @@ public static class DecimalModule
 	///<summary>Converts the value of the specified <see cref="T:System.Decimal" /> to the equivalent single-precision floating-point number.</summary>
 	[Jazor(Op.Import ,"static decimal.ToSingle(decimal)")]
 	public static Number _1450e4ab34b1a945(string d)
-		=> NumberFn(NormalizeDecimal(d));
+		=> NumberValue(NormalizeDecimal(d));
 
 	///<summary>Returns the integral digits of the specified <see cref="T:System.Decimal" />; any fractional digits are discarded.</summary>
 	[Jazor(Op.Import ,"static decimal.Truncate(decimal)")]
@@ -1542,7 +1542,7 @@ public static class DecimalModule
 	///<summary>Determines if a value represents an even integral number.</summary>
 	[Jazor(Op.Import ,"static decimal.IsEvenInteger(decimal)")]
 	public static bool _9d28fa751d24ce2e(string value)
-		=> IsIntegerDecimal(value) && TruncateToIntegralValue(value) % BigIntFn(2) == BigInt.Zero;
+		=> IsIntegerDecimal(value) && TruncateToIntegralValue(value) % BigIntValue(2) == BigInt.Zero;
 
 	///<summary>Determines if a value represents an integral number.</summary>
 	[Jazor(Op.Import ,"static decimal.IsInteger(decimal)")]
@@ -1557,7 +1557,7 @@ public static class DecimalModule
 	///<summary>Determines if a value represents an odd integral number.</summary>
 	[Jazor(Op.Import ,"static decimal.IsOddInteger(decimal)")]
 	public static bool _38587400d9c44cb5(string value)
-		=> IsIntegerDecimal(value) && TruncateToIntegralValue(value) % BigIntFn(2) != BigInt.Zero;
+		=> IsIntegerDecimal(value) && TruncateToIntegralValue(value) % BigIntValue(2) != BigInt.Zero;
 
 	///<summary>Determines if a value is positive.</summary>
 	[Jazor(Op.Import ,"static decimal.IsPositive(decimal)")]

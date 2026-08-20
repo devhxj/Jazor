@@ -69,7 +69,8 @@ internal static class ClrRuntimeTestHost
                 JsonSerializer.Serialize(
                     new DenoImportMap(new Dictionary<string, string>(StringComparer.Ordinal)
                     {
-                        ["System/"] = "./System/"
+                        ["System/"] = "./System/",
+                        ["Microsoft/"] = "./Microsoft/"
                     }),
                     JsonOptions),
                 Utf8WithoutBom);
@@ -131,6 +132,63 @@ internal static class ClrRuntimeTestHost
     private const string RunnerSource = """
         const [scenarioPath, resultPath] = Deno.args;
         const scenarios = JSON.parse(await Deno.readTextFile(scenarioPath));
+
+        if (typeof URL.parse !== "function")
+          URL.parse = (value, base) => {
+            try { return new URL(value, base); }
+            catch { return null; }
+          };
+
+        const browserLocation = {
+          origin: "https://example.test",
+          href: "https://example.test/app/start",
+          pathname: "/app/start",
+          search: "",
+          hash: "",
+          assign(href) { updateBrowserLocation(href); },
+          replace(href) { updateBrowserLocation(href); },
+        };
+
+        class BrowserHistory {
+          state = "history-state";
+
+          replaceState(state, _title, target) {
+            this.state = state;
+            updateBrowserLocation(target);
+          }
+
+          pushState(state, _title, target) {
+            this.state = state;
+            updateBrowserLocation(target);
+          }
+        }
+
+        function updateBrowserLocation(value) {
+          const resolved = new URL(value, browserLocation.href);
+          browserLocation.origin = resolved.origin;
+          browserLocation.href = resolved.href;
+          browserLocation.pathname = resolved.pathname;
+          browserLocation.search = resolved.search;
+          browserLocation.hash = resolved.hash;
+        }
+
+        const browserHistory = new BrowserHistory();
+        function resetBrowser() {
+          updateBrowserLocation("https://example.test/app/start");
+          browserHistory.state = "history-state";
+        }
+
+        globalThis.History = BrowserHistory;
+        globalThis.window = { location: browserLocation, history: browserHistory };
+        globalThis.location = browserLocation;
+        globalThis.history = browserHistory;
+        globalThis.document = {
+          querySelector(selector) {
+            return selector === "base[href]"
+              ? { getAttribute() { return "/app/"; } }
+              : null;
+          }
+        };
 
         async function decodeAll(values, references) {
           const decoded = [];
@@ -326,6 +384,7 @@ internal static class ClrRuntimeTestHost
         const results = [];
         for (const scenario of scenarios) {
           try {
+            resetBrowser();
             const runtimeModule = await import(`./${scenario.modulePath}`);
             const runtimeFunction = runtimeModule[scenario.exportName];
             if (typeof runtimeFunction !== "function")

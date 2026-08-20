@@ -1,0 +1,82 @@
+@inherits ComponentBase
+
+<main class="@(DemoStyles.Application)" data-demo-workbench="true">
+    <header class="@(DemoStyles.Header)">
+        <div>
+            <p class="@(DemoStyles.Eyebrow)">JazorAdmin downstream reference</p>
+            <h1>Operations Demo Client</h1>
+            <p class="@(DemoStyles.Subtitle)">A separate confidential RazorVue application using the platform identity boundary.</p>
+        </div>
+        @if (authenticated)
+        {
+            <a class="@(DemoStyles.Action)" data-demo-command="sign-out" href="/auth/signout">
+                <VuLogOut Size="18px" />
+                <span>Single logout</span>
+            </a>
+        }
+    </header>
+
+    <TLoading Loading="@loading" TextValue="Loading the downstream session">
+        <ContentSlot>
+            @if (error is not null)
+            {
+                <TAlert Theme="@TAlertThemeValue.Error" MessageValue="@error" role="alert" />
+            }
+            else if (!authenticated)
+            {
+                <section class="@(DemoStyles.Anonymous)" data-demo-state="anonymous">
+                    <VuLockKeyhole Size="30px" />
+                    <div>
+                        <h2>Sign in with JazorAdmin</h2>
+                        <p>The client will redirect to the identity center, complete authorization-code + PKCE, then return here.</p>
+                    </div>
+                    <a class="@(DemoStyles.Action) @(DemoStyles.PrimaryAction)" data-demo-command="sign-in" href="/auth/signin">
+                        <VuLogIn Size="18px" />
+                        <span>Start sign-in</span>
+                    </a>
+                </section>
+            }
+            else
+            {
+                <section class="@(DemoStyles.IdentityStrip)" data-demo-state="authenticated">
+                    <div class="@(DemoStyles.IdentityIcon)"><VuUserRoundCheck Size="24px" /></div>
+                    <div>
+                        <strong>@(session?.Name ?? session?.Email ?? "Signed-in user")</strong>
+                        <span>@(session?.Email ?? session?.Subject)</span>
+                    </div>
+                    <TTag Theme="@TTagThemeValue.Success">Identity verified</TTag>
+                </section>
+
+                <section class="@(DemoStyles.Cards)" aria-label="Downstream client status">
+                    <TCard TitleValue="Protected API" SubtitleValue="Bearer token exchange" Bordered="@true" HoverShadow="@true" data-demo-card="protected-api">
+                        <ContentSlot>
+                            <div class="@(DemoStyles.CardBody)">
+                                <VuShieldCheck Size="26px" />
+                                <strong>@(protectedOverview is null ? "Waiting" : "Connected")</strong>
+                                <span>JazorAdmin Overview API</span>
+                            </div>
+                        </ContentSlot>
+                    </TCard>
+                    <TCard TitleValue="Platform snapshot" SubtitleValue="Read through the downstream token" Bordered="@true" HoverShadow="@true" data-demo-card="platform-snapshot">
+                        <ContentSlot>
+                            <div class="@(DemoStyles.Metrics)">
+                                <span><small>Accounts</small><strong>@(protectedOverview?.Accounts.ToString() ?? "--")</strong></span>
+                                <span><small>Applications</small><strong>@(protectedOverview?.Applications.ToString() ?? "--")</strong></span>
+                                <span><small>Tokens</small><strong>@(protectedOverview?.Tokens.ToString() ?? "--")</strong></span>
+                            </div>
+                        </ContentSlot>
+                    </TCard>
+                    <TCard TitleValue="Audit signal" SubtitleValue="Platform operations" Bordered="@true" HoverShadow="@true" data-demo-card="audit-signal">
+                        <ContentSlot>
+                            <div class="@(DemoStyles.CardBody)">
+                                <VuChartLine Size="26px" />
+                                <strong>@(protectedOverview?.TokenIssuances.ToString() ?? "--") issued</strong>
+                                <span>@(protectedOverview?.AuditEvents.ToString() ?? "--") events in the current window</span>
+                            </div>
+                        </ContentSlot>
+                    </TCard>
+                </section>
+            }
+        </ContentSlot>
+    </TLoading>
+</main>

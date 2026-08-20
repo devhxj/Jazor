@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-
 namespace ECMAScript;
 
 [ECMAScript]
@@ -16,7 +12,7 @@ namespace ECMAScript;
 /// <c>PropertyKey</c> 允许 <see cref="string"/>、<see cref="Number"/> 和 <see cref="Symbol"/> 三种 authoring 分支，并在编译后擦除为对应 JavaScript 值；
 /// <c>AsX</c> 属性保持精确分支投影，不应将其视为可反射的 CLR union 对象。
 /// </remarks>
-public readonly union PropertyKey(string, Number, Symbol)
+public readonly union JPropertyKey(string, Number, Symbol)
 {
 	/// <summary>Gets the string branch, or <see langword="null"/> for another branch. 获取 string 分支；其他分支时为 <see langword="null"/>。</summary>
 	public string? AsString => Value as string;

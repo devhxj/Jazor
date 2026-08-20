@@ -15,7 +15,7 @@ partial class AdminDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20260814152032_AddScheduleRunUtcBackfillIndex";
+    public override string LastMigrationId => "20260819094537_AddAuditEvents";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -88,6 +88,58 @@ partial class AdminDbContextModelSnapshot : ModelSnapshot
                     .HasDatabaseName("UserNameIndex");
 
                 b.ToTable("AspNetUsers");
+            });
+
+        modelBuilder.Entity("JazorAdmin.Data.AuditEvent", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Action")
+                    .IsRequired()
+                    .HasMaxLength(32)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("ActorId")
+                    .HasMaxLength(400)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("ActorName")
+                    .HasMaxLength(256)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("ObjectId")
+                    .IsRequired()
+                    .HasMaxLength(512)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("ObjectType")
+                    .IsRequired()
+                    .HasMaxLength(64)
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTimeOffset>("OccurredAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime>("OccurredAtUtc")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Summary")
+                    .HasMaxLength(512)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("OccurredAtUtc");
+
+                b.HasIndex("Action", "OccurredAtUtc");
+
+                b.HasIndex("ActorId", "OccurredAtUtc");
+
+                b.HasIndex("ObjectType", "OccurredAtUtc");
+
+                b.ToTable("AuditEvents");
             });
 
         modelBuilder.Entity("JazorAdmin.Data.AuthorizationOperation", b =>

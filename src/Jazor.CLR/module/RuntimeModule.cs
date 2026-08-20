@@ -72,7 +72,7 @@ public static class RuntimeModule
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
-		if (IsNaN(value) || Math.FloorFn(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+		if (IsNaN(value) || Math.FloorFunc(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
 			throw new Error(message);
 	}
 
@@ -140,7 +140,7 @@ public static class RuntimeModule
 		if (candidate < 2 || candidate % 2 == 0)
 			return false;
 
-		var limit = Math.FloorFn(Math.Sqrt(candidate));
+		var limit = Math.FloorFunc(Math.Sqrt(candidate));
 		for (var divisor = 3; divisor <= limit; divisor += 2)
 		{
 			if (candidate % divisor == 0)
@@ -175,18 +175,18 @@ public static class RuntimeModule
 
 	private static bool ThrowReadOnlyArraySet<TItem>(
 		Array<TItem> target,
-		ECMAScript.PropertyKey property,
+		ECMAScript.JPropertyKey property,
 		object? value,
 		object receiver)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static bool ThrowReadOnlyArrayDelete<TItem>(Array<TItem> target, ECMAScript.PropertyKey property)
+	private static bool ThrowReadOnlyArrayDelete<TItem>(Array<TItem> target, ECMAScript.JPropertyKey property)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static bool ThrowReadOnlyArrayDefine<TItem>(
 		Array<TItem> target,
-		ECMAScript.PropertyKey property,
-		ECMAScript.PropertyDescriptor attributes)
+		ECMAScript.JPropertyKey property,
+		ECMAScript.JSPropertyDescriptor attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	internal static Array<TItem> CreateReadOnlyArrayView<TItem>(Array<TItem>? source, string nullMessage)
@@ -291,7 +291,7 @@ public static class RuntimeModule
 			var number = (Number)value;
 			if (IsNaN(number) || number == 0)
 				return 0;
-			if (Math.FloorFn(number) == number && number >= -2147483648 && number <= 2147483647)
+			if (Math.FloorFunc(number) == number && number >= -2147483648 && number <= 2147483647)
 				return number | 0;
 			return HashString(number.ToString());
 		}
@@ -326,7 +326,7 @@ public static class RuntimeModule
 		return value.ToString() ?? "";
 	}
 
-	private static object? BindReadOnlyCollectionProperty<TTarget>(TTarget target, ECMAScript.PropertyKey property)
+	private static object? BindReadOnlyCollectionProperty<TTarget>(TTarget target, ECMAScript.JPropertyKey property)
 		where TTarget : class
 	{
 		var value = ECMAScript.Reflect.Get(target, property, target);
@@ -345,7 +345,7 @@ public static class RuntimeModule
 	private static void ThrowReadOnlySetClear<T>()
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static object? GetReadOnlySetProperty<T>(Set<T> target, ECMAScript.PropertyKey property, object receiver)
+	private static object? GetReadOnlySetProperty<T>(Set<T> target, ECMAScript.JPropertyKey property, object receiver)
 	{
 		var propertyName = property.AsString;
 		if (propertyName == "add")
@@ -360,18 +360,18 @@ public static class RuntimeModule
 
 	private static bool ThrowReadOnlySetPropertySet<T>(
 		Set<T> target,
-		ECMAScript.PropertyKey property,
+		ECMAScript.JPropertyKey property,
 		object? value,
 		object receiver)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static bool ThrowReadOnlySetPropertyDelete<T>(Set<T> target, ECMAScript.PropertyKey property)
+	private static bool ThrowReadOnlySetPropertyDelete<T>(Set<T> target, ECMAScript.JPropertyKey property)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static bool ThrowReadOnlySetPropertyDefine<T>(
 		Set<T> target,
-		ECMAScript.PropertyKey property,
-		ECMAScript.PropertyDescriptor attributes)
+		ECMAScript.JPropertyKey property,
+		ECMAScript.JSPropertyDescriptor attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	internal static Set<T> MarkAsReadOnlySetCarrier<T>(Set<T> instance)
@@ -408,7 +408,7 @@ public static class RuntimeModule
 
 	private static object? GetReadOnlyDictionaryProperty<TKey, TValue>(
 		Map<TKey, TValue> target,
-		ECMAScript.PropertyKey property,
+		ECMAScript.JPropertyKey property,
 		object receiver)
 	{
 		var propertyName = property.AsString;
@@ -424,18 +424,18 @@ public static class RuntimeModule
 
 	private static bool ThrowReadOnlyDictionaryPropertySet<TKey, TValue>(
 		Map<TKey, TValue> target,
-		ECMAScript.PropertyKey property,
+		ECMAScript.JPropertyKey property,
 		object? value,
 		object receiver)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static bool ThrowReadOnlyDictionaryPropertyDelete<TKey, TValue>(Map<TKey, TValue> target, ECMAScript.PropertyKey property)
+	private static bool ThrowReadOnlyDictionaryPropertyDelete<TKey, TValue>(Map<TKey, TValue> target, ECMAScript.JPropertyKey property)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static bool ThrowReadOnlyDictionaryPropertyDefine<TKey, TValue>(
 		Map<TKey, TValue> target,
-		ECMAScript.PropertyKey property,
-		ECMAScript.PropertyDescriptor attributes)
+		ECMAScript.JPropertyKey property,
+		ECMAScript.JSPropertyDescriptor attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	internal static Map<TKey, TValue> MarkAsReadOnlyDictionaryCarrier<TKey, TValue>(Map<TKey, TValue> instance)
@@ -478,7 +478,7 @@ public static class RuntimeModule
 			this.Date = new Date(date.GetTime());
 			this.Kind = 0;
 			this.SubMillisecondTicks = BigInt.Zero;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -490,7 +490,7 @@ public static class RuntimeModule
 			this.Date = new Date(date.GetTime());
 			this.Kind = kind;
 			this.SubMillisecondTicks = BigInt.Zero;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -502,7 +502,7 @@ public static class RuntimeModule
 			this.Date = new Date(date.GetTime());
 			this.Kind = kind;
 			this.SubMillisecondTicks = subMillisecondTicks;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -520,7 +520,7 @@ public static class RuntimeModule
 				+ ":"
 				+ Pad2(Date.GetSeconds())
 				+ "."
-				+ Pad7(BigIntFn(Date.GetMilliseconds()) * BigIntFn(10000) + SubMillisecondTicks);
+				+ Pad7(BigIntValue(Date.GetMilliseconds()) * BigIntValue(10000) + SubMillisecondTicks);
 		}
 
 		[Description("@#valueOf")]
@@ -565,7 +565,7 @@ public static class RuntimeModule
 			this.UtcDateTime = new Date(utcDateTime.GetTime());
 			this.OffsetTicks = offsetTicks;
 			this.UtcSubMillisecondTicks = BigInt.Zero;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -577,7 +577,7 @@ public static class RuntimeModule
 			this.UtcDateTime = new Date(utcDateTime.GetTime());
 			this.OffsetTicks = offsetTicks;
 			this.UtcSubMillisecondTicks = utcSubMillisecondTicks;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -587,13 +587,13 @@ public static class RuntimeModule
 		[Description("@#toString")]
 		public override string ToString()
 		{
-			var local = new Date(UtcDateTime.GetTime() + NumberFn(OffsetTicks) / 10000);
+			var local = new Date(UtcDateTime.GetTime() + NumberValue(OffsetTicks) / 10000);
 
 			var negative = OffsetTicks < BigInt.Zero;
 			var absolute = negative ? -OffsetTicks : OffsetTicks;
-			var totalMinutes = absolute / BigIntFn(600000000);
-			var hours = NumberFn(totalMinutes / BigIntFn(60));
-			var minutes = NumberFn(totalMinutes % BigIntFn(60));
+			var totalMinutes = absolute / BigIntValue(600000000);
+			var hours = NumberValue(totalMinutes / BigIntValue(60));
+			var minutes = NumberValue(totalMinutes % BigIntValue(60));
 			var offset = (negative ? "-" : "+") + Pad2(hours) + ":" + Pad2(minutes);
 
 			return FormatDateOnlyText(local.GetUTCFullYear(), local.GetUTCMonth() + 1, local.GetUTCDate())
@@ -604,7 +604,7 @@ public static class RuntimeModule
 				+ ":"
 				+ Pad2(local.GetUTCSeconds())
 				+ "."
-				+ Pad7(BigIntFn(local.GetUTCMilliseconds()) * BigIntFn(10000) + UtcSubMillisecondTicks)
+				+ Pad7(BigIntValue(local.GetUTCMilliseconds()) * BigIntValue(10000) + UtcSubMillisecondTicks)
 				+ offset;
 		}
 
@@ -647,8 +647,8 @@ public static class RuntimeModule
 			this.Day = day;
 			var utcDate = CreateUtcDate(year, month, day);
 			var start = CreateUtcDate(1, 1, 1);
-			DayNumber = Math.FloorFn((utcDate.GetTime() - start.GetTime()) / 86400000);
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			DayNumber = Math.FloorFunc((utcDate.GetTime() - start.GetTime()) / 86400000);
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -805,9 +805,9 @@ public static class RuntimeModule
 
 		public JTimeOnly(BigInt ticks)
 		{
-			var normalized = ticks % BigIntFn("864000000000");
-			this.Ticks = normalized < BigInt.Zero ? normalized + BigIntFn("864000000000") : normalized;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			var normalized = ticks % BigIntValue("864000000000");
+			this.Ticks = normalized < BigInt.Zero ? normalized + BigIntValue("864000000000") : normalized;
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -817,10 +817,10 @@ public static class RuntimeModule
 		[Description("@#toString")]
 		public override string ToString()
 		{
-			var hour = NumberFn(Ticks / BigIntFn("36000000000"));
-			var minute = NumberFn((Ticks / BigIntFn(600000000)) % BigIntFn(60));
-			var second = NumberFn((Ticks / BigIntFn(10000000)) % BigIntFn(60));
-			var fraction = Ticks % BigIntFn(10000000);
+			var hour = NumberValue(Ticks / BigIntValue("36000000000"));
+			var minute = NumberValue((Ticks / BigIntValue(600000000)) % BigIntValue(60));
+			var second = NumberValue((Ticks / BigIntValue(10000000)) % BigIntValue(60));
+			var fraction = Ticks % BigIntValue(10000000);
 
 			return Pad2(hour)
 				+ ":"
@@ -855,11 +855,11 @@ public static class RuntimeModule
 
 		public JTimeSpan(BigInt ticks)
 		{
-			if (ticks < BigIntFn("-9223372036854775808") || ticks > BigIntFn("9223372036854775807"))
+			if (ticks < BigIntValue("-9223372036854775808") || ticks > BigIntValue("9223372036854775807"))
 				throw new Error("OverflowException: TimeSpan is too long or too short.");
 
 			this.Ticks = ticks;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -871,11 +871,11 @@ public static class RuntimeModule
 		{
 			var negative = Ticks < BigInt.Zero;
 			var absolute = negative ? -Ticks : Ticks;
-			var days = absolute / BigIntFn("864000000000");
-			var hours = NumberFn((absolute / BigIntFn("36000000000")) % BigIntFn(24));
-			var minutes = NumberFn((absolute / BigIntFn(600000000)) % BigIntFn(60));
-			var seconds = NumberFn((absolute / BigIntFn(10000000)) % BigIntFn(60));
-			var fraction = absolute % BigIntFn(10000000);
+			var days = absolute / BigIntValue("864000000000");
+			var hours = NumberValue((absolute / BigIntValue("36000000000")) % BigIntValue(24));
+			var minutes = NumberValue((absolute / BigIntValue(600000000)) % BigIntValue(60));
+			var seconds = NumberValue((absolute / BigIntValue(10000000)) % BigIntValue(60));
+			var fraction = absolute % BigIntValue(10000000);
 
 			var text = (negative ? "-" : "")
 				+ (days > BigInt.Zero ? days.ToString() + "." : "")
@@ -920,7 +920,7 @@ public static class RuntimeModule
 		{
 			this.CalendarType = calendarType;
 			this.TwoDigitYearMax = twoDigitYearMax;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -963,15 +963,15 @@ public static class RuntimeModule
 
 	public static Number GetInt64HashCode(BigInt value)
 	{
-		var low = (int)NumberFn(BigInt.AsIntN(32, value));
-		var high = (int)NumberFn(BigInt.AsIntN(32, value >> BigIntFn(32)));
+		var low = (int)NumberValue(BigInt.AsIntN(32, value));
+		var high = (int)NumberValue(BigInt.AsIntN(32, value >> BigIntValue(32)));
 		return low ^ high;
 	}
 
 	public static Number GetInt128HashCode(BigInt value)
 	{
 		var low = BigInt.AsIntN(64, value);
-		var high = BigInt.AsIntN(64, value >> BigIntFn(64));
+		var high = BigInt.AsIntN(64, value >> BigIntValue(64));
 		return GetInt64HashCode(low) ^ GetInt64HashCode(high);
 	}
 

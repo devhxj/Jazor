@@ -14,7 +14,7 @@ public delegate void MutationCallback(MutationRecord[] mutations, MutationObserv
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate void HandleEventCallback(Event @event);
+public delegate void HandleEventCallback(JazorEvent @event);
 
 /// <summary>
 /// <see href="https://dom.spec.whatwg.org/#dom-nodefilter-acceptnode">DOM Standard: 6.3 Interface NodeFilter</see>
@@ -116,7 +116,7 @@ public delegate PromiseResult NavigationPrecommitHandler(NavigationPrecommitCont
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate object EventHandlerNonNull(Event @event);
+public delegate object EventHandlerNonNull(JazorEvent @event);
 
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/webappapis.html#onbeforeunloadeventhandlernonnull">HTML Standard: 8.1.8.1 Event handlers</see>
@@ -124,7 +124,7 @@ public delegate object EventHandlerNonNull(Event @event);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate string? OnBeforeUnloadEventHandlerNonNull(Event @event);
+public delegate string? OnBeforeUnloadEventHandlerNonNull(JazorEvent @event);
 
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/webappapis.html#onerroreventhandlernonnull">HTML Standard: 8.1.8.1 Event handlers</see>
@@ -415,14 +415,6 @@ public delegate void DecodeSuccessCallback(AudioBuffer decodedData);
 public delegate AudioWorkletProcessor AudioWorkletProcessorConstructor(object options);
 
 /// <summary>
-/// <see href="https://webidl.spec.whatwg.org/#Function">Web IDL Standard: 4.5 Function</see>
-/// </summary>
-[ECMAScript]
-[Description("@#")]
-[Category("literal")]
-public delegate object Function(object arguments);
-
-/// <summary>
 /// <see href="https://webidl.spec.whatwg.org/#VoidFunction">Web IDL Standard: 4.6 VoidFunction</see>
 /// </summary>
 [ECMAScript]
@@ -476,7 +468,7 @@ public delegate void ErrorCallback(DOMException err);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate void FileCallback(Files file);
+public delegate void FileCallback(JSFile file);
 
 /// <summary>
 /// <see href="https://wicg.github.io/entries-api/#callbackdef-filesystementriescallback">File and Directory Entries API: 7.3 The FileSystemDirectoryReader Interface</see>
@@ -595,6 +587,17 @@ public delegate void MediaSessionActionHandler(MediaSessionActionDetails details
 [Description("@#")]
 [Category("literal")]
 public delegate void ObservableSubscriptionCallback(object value);
+
+/// <summary>
+/// The &quot;Custom DOM Elements&quot; spec wants to use callback function types for platform object provided functions. Should we rename &quot;callback functions&quot; to just &quot;functions&quot; to make it clear that they can be used for both purposes?
+/// </summary>
+/// <remarks>
+/// <see href="https://webidl.spec.whatwg.org/#Function">Web IDL Standard: 4.5 Function</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#")]
+[Category("literal")]
+public delegate object Function(object arguments);
 
 /// <summary>
 /// The RemotePlaybackAvailabilityCallback returns the current remote playback device availability.

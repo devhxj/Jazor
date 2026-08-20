@@ -981,38 +981,56 @@ public enum GPUTextureFormat
     Rgb9e5ufloat = 28,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgb10a2uint">WebGPU: 6.3 Texture Formats</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 mixed component width, 32 bits per texel (4-byte render target component alignment) rgb10a2uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8 rgb10a2unorm &quot;float&quot;, &quot;unfilterable-float&quot; ✓ ✓ ✓ ✓ If &quot;texture-formats-tier1&quot; is enabled 4 8 rg11b10ufloat &quot;float&quot;, &quot;unfilterable-float&quot; If &quot;rg11b10ufloat-renderable&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgb10a2uint">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#rgb10a2uint")]
     Rgb10a2uint = 29,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgb10a2unorm">WebGPU: 6.3 Texture Formats</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 mixed component width, 32 bits per texel (4-byte render target component alignment) rgb10a2uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8 rgb10a2unorm &quot;float&quot;, &quot;unfilterable-float&quot; ✓ ✓ ✓ ✓ If &quot;texture-formats-tier1&quot; is enabled 4 8 rg11b10ufloat &quot;float&quot;, &quot;unfilterable-float&quot; If &quot;rg11b10ufloat-renderable&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgb10a2unorm">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#rgb10a2unorm")]
     Rgb10a2unorm = 30,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rg11b10ufloat">WebGPU: 6.3 Texture Formats</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 mixed component width, 32 bits per texel (4-byte render target component alignment) rgb10a2uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8 rgb10a2unorm &quot;float&quot;, &quot;unfilterable-float&quot; ✓ ✓ ✓ ✓ If &quot;texture-formats-tier1&quot; is enabled 4 8 rg11b10ufloat &quot;float&quot;, &quot;unfilterable-float&quot; If &quot;rg11b10ufloat-renderable&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rg11b10ufloat">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#rg11b10ufloat")]
     Rg11b10ufloat = 31,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rg32uint">WebGPU: 6.3 Texture Formats</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled ✓ ✓ ✓ 4 rg32uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32sint &quot;sint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rg32uint">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#rg32uint")]
     Rg32uint = 32,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rg32sint">WebGPU: 6.3 Texture Formats</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled ✓ ✓ ✓ 4 rg32uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32sint &quot;sint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rg32sint">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#rg32sint")]
     Rg32sint = 33,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rg32float">WebGPU: 6.3 Texture Formats</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled ✓ ✓ ✓ 4 rg32uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32sint &quot;sint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rg32float">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#rg32float")]
     Rg32float = 34,
 
@@ -1047,26 +1065,38 @@ public enum GPUTextureFormat
     Rgba16float = 39,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgba32uint">WebGPU: 6.3 Texture Formats</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled 8 rgba32uint &quot;uint&quot; ✓ ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 rgba32sint &quot;sint&quot; ✓ ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 rgba32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgba32uint">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#rgba32uint")]
     Rgba32uint = 40,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgba32sint">WebGPU: 6.3 Texture Formats</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled 8 rgba32uint &quot;uint&quot; ✓ ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 rgba32sint &quot;sint&quot; ✓ ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 rgba32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgba32sint">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#rgba32sint")]
     Rgba32sint = 41,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgba32float">WebGPU: 6.3 Texture Formats</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled 8 rgba32uint &quot;uint&quot; ✓ ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 rgba32sint &quot;sint&quot; ✓ ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 rgba32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-rgba32float">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#rgba32float")]
     Rgba32float = 42,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-stencil8">WebGPU: 6.3 Texture Formats</see>
+    /// The depth component of the &quot;depth24plus&quot; and &quot;depth24plus-stencil8&quot; formats may be implemented as either a 24-bit depth value or a &quot;depth32float&quot; value.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-stencil8">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#stencil8")]
     Stencil8 = 43,
 
@@ -1077,20 +1107,29 @@ public enum GPUTextureFormat
     Depth16unorm = 44,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-depth24plus">WebGPU: 6.3 Texture Formats</see>
+    /// The depth component of the &quot;depth24plus&quot; and &quot;depth24plus-stencil8&quot; formats may be implemented as either a 24-bit depth value or a &quot;depth32float&quot; value.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-depth24plus">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#depth24plus")]
     Depth24plus = 45,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-depth24plus-stencil8">WebGPU: 6.3 Texture Formats</see>
+    /// The depth component of the &quot;depth24plus&quot; and &quot;depth24plus-stencil8&quot; formats may be implemented as either a 24-bit depth value or a &quot;depth32float&quot; value.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-depth24plus-stencil8">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#depth24plus-stencil8")]
     Depth24plusStencil8 = 46,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-depth32float">WebGPU: 6.3 Texture Formats</see>
+    /// The depth component of the &quot;depth24plus&quot; and &quot;depth24plus-stencil8&quot; formats may be implemented as either a 24-bit depth value or a &quot;depth32float&quot; value.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputextureformat-depth32float">WebGPU: 6.3 Texture Formats</see>
+    /// </remarks>
     [Description("@#depth32float")]
     Depth32float = 47,
 
@@ -1422,14 +1461,20 @@ public enum GPUTextureFormat
 public enum GPUTextureSampleType
 {
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexturesampletype-float">WebGPU: 8.1.1 Bind Group Layout Creation</see>
+    /// &quot;float&quot; if &quot;float32-filterable&quot; is enabled
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexturesampletype-float">WebGPU: 8.1.1 Bind Group Layout Creation</see>
+    /// </remarks>
     [Description("@#float")]
     Float = 0,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexturesampletype-unfilterable-float">WebGPU: 8.1.1 Bind Group Layout Creation</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled ✓ ✓ ✓ 4 rg32uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32sint &quot;sint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexturesampletype-unfilterable-float">WebGPU: 8.1.1 Bind Group Layout Creation</see>
+    /// </remarks>
     [Description("@#unfilterable-float")]
     UnfilterableFloat = 1,
 
@@ -1440,14 +1485,20 @@ public enum GPUTextureSampleType
     Depth = 2,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexturesampletype-sint">WebGPU: 8.1.1 Bind Group Layout Creation</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled ✓ ✓ ✓ 4 rg32uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32sint &quot;sint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexturesampletype-sint">WebGPU: 8.1.1 Bind Group Layout Creation</see>
+    /// </remarks>
     [Description("@#sint")]
     Sint = 3,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexturesampletype-uint">WebGPU: 8.1.1 Bind Group Layout Creation</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled ✓ ✓ ✓ 4 rg32uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32sint &quot;sint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexturesampletype-uint">WebGPU: 8.1.1 Bind Group Layout Creation</see>
+    /// </remarks>
     [Description("@#uint")]
     Uint = 4
 }
@@ -1824,8 +1875,11 @@ public enum GPUCanvasToneMappingMode
 public enum GPUFeatureName
 {
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#core-features-and-limits">WebGPU: 25.1 &quot;core-features-and-limits&quot;</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled ✓ ✓ ✓ 4 rg32uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32sint &quot;sint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#core-features-and-limits">WebGPU: 25.1 &quot;core-features-and-limits&quot;</see>
+    /// </remarks>
     [Description("@#core-features-and-limits")]
     CoreFeaturesAndLimits = 0,
 
@@ -1890,8 +1944,11 @@ public enum GPUFeatureName
     ShaderF16 = 10,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#rg11b10ufloat-renderable">WebGPU: 25.12 &quot;rg11b10ufloat-renderable&quot;</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 mixed component width, 32 bits per texel (4-byte render target component alignment) rgb10a2uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8 rgb10a2unorm &quot;float&quot;, &quot;unfilterable-float&quot; ✓ ✓ ✓ ✓ If &quot;texture-formats-tier1&quot; is enabled 4 8 rg11b10ufloat &quot;float&quot;, &quot;unfilterable-float&quot; If &quot;rg11b10ufloat-renderable&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#rg11b10ufloat-renderable">WebGPU: 25.12 &quot;rg11b10ufloat-renderable&quot;</see>
+    /// </remarks>
     [Description("@#rg11b10ufloat-renderable")]
     Rg11b10ufloatRenderable = 11,
 
@@ -1902,14 +1959,20 @@ public enum GPUFeatureName
     Bgra8unormStorage = 12,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#float32-filterable">WebGPU: 25.14 &quot;float32-filterable&quot;</see>
+    /// &quot;float&quot; if &quot;float32-filterable&quot; is enabled
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#float32-filterable">WebGPU: 25.14 &quot;float32-filterable&quot;</see>
+    /// </remarks>
     [Description("@#float32-filterable")]
     Float32Filterable = 13,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#float32-blendable">WebGPU: 25.15 &quot;float32-blendable&quot;</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled ✓ ✓ ✓ 4 rg32uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32sint &quot;sint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled 8 rg32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#float32-blendable">WebGPU: 25.15 &quot;float32-blendable&quot;</see>
+    /// </remarks>
     [Description("@#float32-blendable")]
     Float32Blendable = 14,
 
@@ -1932,14 +1995,20 @@ public enum GPUFeatureName
     Subgroups = 17,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#texture-formats-tier1">WebGPU: 25.19 &quot;texture-formats-tier1&quot;</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 mixed component width, 32 bits per texel (4-byte render target component alignment) rgb10a2uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8 rgb10a2unorm &quot;float&quot;, &quot;unfilterable-float&quot; ✓ ✓ ✓ ✓ If &quot;texture-formats-tier1&quot; is enabled 4 8 rg11b10ufloat &quot;float&quot;, &quot;unfilterable-float&quot; If &quot;rg11b10ufloat-renderable&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#texture-formats-tier1">WebGPU: 25.19 &quot;texture-formats-tier1&quot;</see>
+    /// </remarks>
     [Description("@#texture-formats-tier1")]
     TextureFormatsTier1 = 18,
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#texture-formats-tier2">WebGPU: 25.20 &quot;texture-formats-tier2&quot;</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled If &quot;core-features-and-limits&quot; is enabled 8 rgba32uint &quot;uint&quot; ✓ ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 rgba32sint &quot;sint&quot; ✓ ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 rgba32float
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#texture-formats-tier2">WebGPU: 25.20 &quot;texture-formats-tier2&quot;</see>
+    /// </remarks>
     [Description("@#texture-formats-tier2")]
     TextureFormatsTier2 = 19,
 

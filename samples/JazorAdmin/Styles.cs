@@ -235,102 +235,6 @@ internal static class Styles
                 filter = grayscale(1)
             });
 
-        global(".ja-shell",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("232px minmax(0, 1fr)"),
-                min_height = raw("100vh")
-            });
-
-        global(".ja-shell--top",
-            new CssRule
-            {
-                display = raw("block")
-            });
-
-        global(".ja-shell__sidebar",
-            new CssRule
-            {
-                position = sticky,
-                top = px(0),
-                z_index = raw("20"),
-                height = vh(100),
-                overflow = raw("auto"),
-                background = raw("#17241f"),
-                color = raw("#eef7f3"),
-                border_right = px(1) | solid | hex("293a33")
-            });
-
-        global(".ja-shell--collapsed",
-            new CssRule
-            {
-                grid_template_columns = raw("0 minmax(0, 1fr)")
-            });
-
-        global(".ja-shell--collapsed .ja-shell__sidebar",
-            new CssRule
-            {
-                display = raw("none"),
-                width = raw("0"),
-                border_right = raw("0")
-            });
-
-        global(".ja-shell__main",
-            new CssRule
-            {
-                min_width = raw("0")
-            });
-
-        global(".ja-shell__header",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                position = raw("sticky"),
-                top = raw("0"),
-                z_index = raw("15"),
-                min_height = raw("64px"),
-                background = raw("color-mix(in srgb, var(--surface) 94%, transparent)"),
-                border_bottom = px(1) | solid | var("--border"),
-                backdrop_filter = raw("blur(12px)")
-            });
-
-        global(".ja-shell__sidebar-toggle",
-            new CssRule
-            {
-                position = raw("relative"),
-                flex = raw("0 0 36px"),
-                width = raw("36px"),
-                height = raw("36px"),
-                padding = padding(px(0)),
-                margin_left = raw("14px"),
-                color = raw("var(--text)"),
-                background = raw("transparent"),
-                border = px(1) | solid | var("--border"),
-                border_radius = raw("5px")
-            });
-
-        global(".ja-shell__sidebar-toggle::before",
-            new CssRule
-            {
-                font_size = raw("20px"),
-                line_height = raw("1"),
-                content = raw("\"\\2630\"")
-            });
-
-        global(".ja-shell__sidebar-toggle:hover",
-            new CssRule
-            {
-                background = raw("var(--surface-strong)")
-            });
-
-        global(".ja-shell__content",
-            new CssRule
-            {
-                width = raw("100%")
-            });
-
         global(".ja-tdesign-layout",
             new CssRule
             {
@@ -772,169 +676,6 @@ internal static class Styles
                 overflow_x = hidden
             });
 
-        global(".ja-sidebar",
-            new CssRule
-            {
-                min_height = raw("100%"),
-                padding = padding(px(20), px(14))
-            });
-
-        global(".ja-sidebar__logo",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                min_height = raw("42px"),
-                margin = raw("0 8px 22px"),
-                color = raw("#ffffff"),
-                font_size = raw("18px"),
-                font_weight = raw("750")
-            });
-
-        global(".ja-sidebar__list, .ja-sidebar__children",
-            new CssRule
-            {
-                padding = padding(px(0)),
-                margin = raw("0"),
-                list_style = raw("none")
-            });
-
-        global(".ja-sidebar__item",
-            new CssRule
-            {
-                margin = raw("3px 0")
-            });
-
-        global(".ja-sidebar__item-content",
-            new CssRule
-            {
-                position = raw("relative")
-            });
-
-        global(".ja-sidebar__link, .ja-sidebar__button",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                width = raw("100%"),
-                min_height = raw("40px"),
-                padding = padding(px(8), px(12)),
-                color = raw("#b8c8c1"),
-                text_align = raw("left"),
-                text_decoration = raw("none"),
-                background = raw("transparent"),
-                border = raw("0"),
-                border_radius = raw("6px")
-            });
-
-        global(".ja-sidebar__link:hover, .ja-sidebar__button:hover, .ja-sidebar__item.is-ancestor-selected > .ja-sidebar__item-content > .ja-sidebar__button",
-            new CssRule
-            {
-                color = raw("#ffffff"),
-                background = raw("#243a31")
-            });
-
-        global(".ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__link, .ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__button",
-            new CssRule
-            {
-                color = raw("#ffffff"),
-                background = raw("#087f5b")
-            });
-
-        global(".ja-sidebar__toggle",
-            new CssRule
-            {
-                margin_left = raw("auto"),
-                font_size = raw("12px")
-            });
-
-        global(".ja-sidebar__children",
-            new CssRule
-            {
-                padding = padding(px(4), px(0), px(4), px(12))
-            });
-
-        global(".ja-sidebar__children .ja-sidebar__link, .ja-sidebar__children .ja-sidebar__button",
-            new CssRule
-            {
-                min_height = raw("36px"),
-                padding_left = raw("16px"),
-                font_size = raw("14px")
-            });
-
-        global(".ja-header",
-            new CssRule
-            {
-                flex = raw("1 1 auto"),
-                min_width = raw("0"),
-                display = raw("flex"),
-                align_items = raw("center"),
-                justify_content = raw("space-between"),
-                min_height = raw("64px"),
-                padding = padding(px(8), px(24)),
-                gap = raw("20px")
-            });
-
-        global(".ja-header__main, .ja-header__actions, .ja-header__toolbar, .ja-header__user-region, .ja-preferences, .ja-user-region",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center")
-            });
-
-        global(".ja-header__main",
-            new CssRule
-            {
-                min_width = raw("0"),
-                gap = raw("12px")
-            });
-
-        global(".ja-header__logo",
-            new CssRule
-            {
-                color = raw("var(--accent)"),
-                font_weight = raw("750")
-            });
-
-        global(".ja-header__titles",
-            new CssRule
-            {
-                min_width = raw("0")
-            });
-
-        global(".ja-header__title",
-            new CssRule
-            {
-                overflow = raw("hidden"),
-                font_size = raw("16px"),
-                font_weight = raw("700"),
-                text_overflow = raw("ellipsis"),
-                white_space = raw("nowrap")
-            });
-
-        global(".ja-header__subtitle",
-            new CssRule
-            {
-                margin_top = raw("2px"),
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px")
-            });
-
-        global(".ja-header__actions",
-            new CssRule
-            {
-                justify_content = raw("flex-end"),
-                min_width = raw("0"),
-                gap = raw("16px")
-            });
-
-        global(".ja-header__navigation",
-            new CssRule
-            {
-                flex = raw("1 1 auto"),
-                min_width = raw("0")
-            });
-
         global(".ja-tdesign-header",
             new CssRule
             {
@@ -957,20 +698,6 @@ internal static class Styles
                 padding_left = raw("0 !important"),
                 border_bottom = px(1) | solid | var("--border"),
                 overflow = hidden
-            });
-
-        global(".ja-tdesign-header__main, .ja-tdesign-header__actions",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center")
-            });
-
-        global(".ja-tdesign-header__main",
-            new CssRule
-            {
-                min_width = raw("0"),
-                gap = raw("12px")
             });
 
         global(".ja-tdesign-header__titles",
@@ -1007,14 +734,6 @@ internal static class Styles
 
         global(".ja-tdesign-header__navigation .t-menu__item",
             new CssRule { min_width = raw("unset") });
-
-        global(".ja-tdesign-header__actions",
-            new CssRule
-            {
-                justify_content = raw("flex-end"),
-                min_width = raw("0"),
-                gap = raw("16px")
-            });
 
         global(".ja-tdesign-header__logo, .ja-tdesign-header__operations",
             new CssRule
@@ -1093,191 +812,12 @@ internal static class Styles
                 color = raw("var(--text)")
             });
 
-        global(".ja-sidebar--horizontal > .ja-sidebar__list, .ja-sidebar--horizontal .ja-sidebar__children",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                gap = raw("4px")
-            });
-
-        global(".ja-sidebar--horizontal > .ja-sidebar__list",
-            new CssRule
-            {
-                overflow_x = raw("auto"),
-                overscroll_behavior_inline = raw("contain")
-            });
-
-        global(".ja-sidebar--horizontal .ja-sidebar__item",
-            new CssRule
-            {
-                display = raw("flex"),
-                flex = raw("0 0 auto"),
-                align_items = raw("center"),
-                margin = raw("0")
-            });
-
-        global(".ja-sidebar--horizontal .ja-sidebar__link, .ja-sidebar--horizontal .ja-sidebar__button",
-            new CssRule
-            {
-                width = raw("auto"),
-                min_height = raw("34px"),
-                padding = padding(px(6), px(10)),
-                color = raw("var(--text-muted)"),
-                white_space = raw("nowrap")
-            });
-
-        global(".ja-sidebar--horizontal .ja-sidebar__link:hover, .ja-sidebar--horizontal .ja-sidebar__button:hover, .ja-sidebar--horizontal .ja-sidebar__item.is-ancestor-selected > .ja-sidebar__item-content > .ja-sidebar__button",
-            new CssRule
-            {
-                color = raw("var(--text)"),
-                background = raw("var(--surface-strong)")
-            });
-
-        global(".ja-sidebar--horizontal .ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__link, .ja-sidebar--horizontal .ja-sidebar__item.is-selected > .ja-sidebar__item-content > .ja-sidebar__button",
-            new CssRule
-            {
-                color = raw("var(--accent-strong)"),
-                background = raw("var(--accent-soft)")
-            });
-
-        global(".ja-sidebar--horizontal .ja-sidebar__children",
-            new CssRule
-            {
-                padding = padding(px(0), px(0), px(0), px(4))
-            });
-
-        global(".ja-header__toolbar, .ja-preferences, .ja-user-region",
-            new CssRule
-            {
-                gap = raw("8px")
-            });
-
-        global(".ja-preference, .ja-preference-toggle",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                gap = raw("6px"),
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px"),
-                white_space = raw("nowrap")
-            });
-
-        global(".ja-preference select, .ja-access input",
-            new CssRule
-            {
-                min_height = raw("36px"),
-                padding = padding(px(7), px(10)),
-                color = raw("var(--text)"),
-                background = raw("var(--surface)"),
-                border = px(1) | solid | var("--border-strong"),
-                border_radius = raw("5px")
-            });
-
-        global(".ja-preference select",
-            new CssRule
-            {
-                min_height = raw("32px"),
-                padding = padding(px(4), px(24), px(4), px(8))
-            });
-
-        global(".ja-user",
-            new CssRule
-            {
-                max_width = raw("180px"),
-                overflow = raw("hidden"),
-                font_size = raw("13px"),
-                font_weight = raw("650"),
-                text_overflow = raw("ellipsis"),
-                white_space = raw("nowrap")
-            });
-
-        global(".ja-access-command, .ja-error__action, .ja-access button",
-            new CssRule
-            {
-                min_height = raw("34px"),
-                padding = padding(px(7), px(12)),
-                color = raw("var(--text)"),
-                font_weight = raw("650"),
-                background = raw("var(--surface)"),
-                border = px(1) | solid | var("--border-strong"),
-                border_radius = raw("5px")
-            });
-
-        global(".ja-access-command:hover",
-            new CssRule
-            {
-                background = raw("var(--surface-strong)")
-            });
-
         global(".ja-page",
             new CssRule
             {
                 width = raw("min(100%, 1480px)"),
                 margin = raw("0 auto"),
                 padding = padding(px(16))
-            });
-
-        global(".ja-page__header",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("flex-end"),
-                justify_content = raw("space-between"),
-                margin_bottom = raw("16px"),
-                gap = raw("16px")
-            });
-
-        global(".ja-page__titles",
-            new CssRule
-            {
-                min_width = raw("0")
-            });
-
-        global(".ja-breadcrumb",
-            new CssRule
-            {
-                display = raw("flex"),
-                flex_wrap = raw("wrap"),
-                gap = raw("6px"),
-                margin_bottom = raw("7px"),
-                color = raw("var(--text-muted)"),
-                font_size = raw("13px")
-            });
-
-        global(".ja-breadcrumb__item + .ja-breadcrumb__item::before",
-            new CssRule
-            {
-                margin_right = raw("6px"),
-                color = raw("var(--border-strong)"),
-                content = raw("\"/\"")
-            });
-
-        global(".ja-page__title",
-            new CssRule
-            {
-                margin = raw("0"),
-                font_size = raw("26px"),
-                line_height = raw("1.25")
-            });
-
-        global(".ja-page__subtitle",
-            new CssRule
-            {
-                max_width = raw("760px"),
-                margin = raw("7px 0 0"),
-                color = raw("var(--text-muted)"),
-                line_height = raw("1.5")
-            });
-
-        global(".ja-page__actions",
-            new CssRule
-            {
-                display = raw("flex"),
-                flex_wrap = raw("wrap"),
-                justify_content = raw("flex-end"),
-                gap = raw("8px")
             });
 
         global(".ja-error__action, .ja-access button",
@@ -1293,19 +833,6 @@ internal static class Styles
             {
                 background = raw("var(--accent-strong)"),
                 border_color = raw("var(--accent-strong)")
-            });
-
-        global(".ja-page__action--danger",
-            new CssRule
-            {
-                color = raw("var(--danger)"),
-                border_color = raw("var(--danger)")
-            });
-
-        global(".ja-page__body > * + *",
-            new CssRule
-            {
-                margin_top = raw("16px")
             });
 
         global(".ja-tdesign-page-container",
@@ -1736,68 +1263,16 @@ internal static class Styles
                 outline_offset = raw("2px")
             });
 
-        Media(".ja-header", "(max-width: 1080px)",
-            new CssRule
-            {
-                align_items = raw("flex-start")
-            });
-
-        Media(".ja-header__actions", "(max-width: 1080px)",
-            new CssRule
-            {
-                align_items = raw("flex-end"),
-                flex_direction = raw("column-reverse"),
-                gap = raw("6px")
-            });
-
-        Media(".ja-header__navigation", "(max-width: 1080px)",
-            new CssRule
-            {
-                width = raw("100%")
-            });
-
-        Media(".ja-preferences", "(max-width: 1080px)",
-            new CssRule
-            {
-                flex_wrap = raw("wrap"),
-                justify_content = raw("flex-end")
-            });
-
         Media(".ja-tdesign-header", "(max-width: 1080px)",
             new CssRule
             {
                 align_items = center
             });
 
-        Media(".ja-tdesign-header__actions", "(max-width: 1080px)",
-            new CssRule
-            {
-                align_items = raw("flex-end"),
-                flex_direction = raw("column-reverse"),
-                gap = raw("6px")
-            });
-
         Media(".ja-tdesign-header__navigation", "(max-width: 1080px)",
             new CssRule
             {
                 width = raw("100%")
-            });
-
-        Media(".ja-shell", "(max-width: 760px)",
-            new CssRule
-            {
-                display = raw("block"),
-                min_width = raw("0")
-            });
-
-        Media(".ja-shell__sidebar", "(max-width: 760px)",
-            new CssRule
-            {
-                position = raw("static"),
-                height = raw("auto"),
-                overflow = raw("visible"),
-                border_right = raw("0"),
-                border_bottom = px(1) | solid | hex("293a33")
             });
 
         Media(".ja-tdesign-layout", "(max-width: 760px)",
@@ -1924,103 +1399,6 @@ internal static class Styles
                 overscroll_behavior_inline = keyword("contain")
             });
 
-        Media(".ja-sidebar", "(max-width: 760px)",
-            new CssRule
-            {
-                min_height = raw("0"),
-                padding = padding(px(10), px(12))
-            });
-
-        Media(".ja-sidebar__logo", "(max-width: 760px)",
-            new CssRule
-            {
-                min_height = raw("34px"),
-                margin = raw("0 6px 8px"),
-                font_size = raw("16px")
-            });
-
-        Media(".ja-sidebar__list", "(max-width: 760px)",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("flex-start"),
-                width = raw("100%"),
-                padding_bottom = raw("3px"),
-                gap = raw("4px"),
-                overflow_x = raw("auto"),
-                overscroll_behavior_inline = raw("contain")
-            });
-
-        Media(".ja-sidebar__item", "(max-width: 760px)",
-            new CssRule
-            {
-                flex = raw("0 0 auto"),
-                margin = raw("0")
-            });
-
-        Media(".ja-sidebar__link,   .ja-sidebar__button", "(max-width: 760px)",
-            new CssRule
-            {
-                min_height = raw("36px"),
-                width = raw("auto"),
-                white_space = raw("nowrap")
-            });
-
-        Media(".ja-sidebar__children", "(max-width: 760px)",
-            new CssRule
-            {
-                display = raw("flex"),
-                padding = padding(px(4), px(0), px(0), px(8)),
-                gap = raw("4px")
-            });
-
-        Media(".ja-sidebar__children .ja-sidebar__item", "(max-width: 760px)",
-            new CssRule
-            {
-                flex = raw("0 0 auto")
-            });
-
-        Media(".ja-sidebar__children .ja-sidebar__link,   .ja-sidebar__children .ja-sidebar__button", "(max-width: 760px)",
-            new CssRule
-            {
-                min_height = raw("32px"),
-                padding = padding(px(6), px(10))
-            });
-
-        Media(".ja-shell__header", "(max-width: 760px)",
-            new CssRule
-            {
-                position = raw("static")
-            });
-
-        Media(".ja-header", "(max-width: 760px)",
-            new CssRule
-            {
-                display = raw("block"),
-                min_height = raw("0"),
-                padding = padding(px(12), px(16))
-            });
-
-        Media(".ja-shell__sidebar-toggle", "(max-width: 760px)",
-            new CssRule
-            {
-                align_self = raw("flex-start"),
-                margin = raw("12px 0 0 12px")
-            });
-
-        Media(".ja-header__subtitle", "(max-width: 760px)",
-            new CssRule
-            {
-                display = raw("none")
-            });
-
-        Media(".ja-header__actions", "(max-width: 760px)",
-            new CssRule
-            {
-                align_items = raw("stretch"),
-                margin_top = raw("10px")
-            });
-
         Media(".ja-tdesign-header", "(max-width: 760px)",
             new CssRule
             {
@@ -2036,56 +1414,16 @@ internal static class Styles
                 display = raw("none")
             });
 
-        Media(".ja-tdesign-header__actions", "(max-width: 760px)",
-            new CssRule
-            {
-                align_items = raw("stretch"),
-                margin_top = raw("10px")
-            });
-
         Media(".ja-tdesign-header__navigation", "(max-width: 760px)",
             new CssRule
             {
                 margin_top = raw("10px")
             });
 
-        Media(".ja-header__navigation", "(max-width: 760px)",
-            new CssRule
-            {
-                margin_top = raw("10px")
-            });
-
-        Media(".ja-preferences,   .ja-user-region", "(max-width: 760px)",
-            new CssRule
-            {
-                justify_content = raw("flex-start"),
-                overflow_x = raw("auto")
-            });
-
         Media(".ja-page", "(max-width: 760px)",
             new CssRule
             {
                 padding = padding(px(18), px(14), px(28))
-            });
-
-        Media(".ja-page__header", "(max-width: 760px)",
-            new CssRule
-            {
-                display = raw("block"),
-                margin_bottom = raw("16px")
-            });
-
-        Media(".ja-page__title", "(max-width: 760px)",
-            new CssRule
-            {
-                font_size = raw("23px")
-            });
-
-        Media(".ja-page__actions", "(max-width: 760px)",
-            new CssRule
-            {
-                justify_content = raw("flex-start"),
-                margin_top = raw("14px")
             });
 
         Media(".ja-tdesign-layout__content", "(max-width: 760px)",
@@ -2174,17 +1512,250 @@ internal static class Styles
                 font_size = raw("58px")
             });
 
-        Media(".ja-preference-toggle", "(max-width: 430px)",
+        // M2 design-system page scaffolding. Only layout utilities and TDesign gaps live here;
+        // visual control styling belongs to TDesign components themselves.
+        // M2 设计系统页面骨架：仅承载布局工具与 TDesign 未覆盖的缺口，控件视觉归 TDesign。
+        global(".ja-page",
             new CssRule
             {
-                display = raw("none")
+                display = raw("grid"),
+                gap = raw("16px"),
+                min_width = raw("0")
             });
 
-        Media(".ja-user", "(max-width: 430px)",
+        global(".ja-page__split",
             new CssRule
             {
-                max_width = raw("120px")
+                display = raw("grid"),
+                grid_template_columns = raw("minmax(0, 1fr) minmax(0, 1fr)"),
+                gap = raw("16px"),
+                align_items = raw("start")
             });
+
+        global(".ja-panel",
+            new CssRule
+            {
+                display = raw("grid"),
+                gap = raw("16px"),
+                padding = raw("20px"),
+                background = raw("var(--surface)"),
+                border_radius = raw("3px")
+            });
+
+        global(".ja-panel__header",
+            new CssRule
+            {
+                display = raw("flex"),
+                align_items = raw("flex-start"),
+                justify_content = raw("space-between"),
+                gap = raw("12px")
+            });
+
+        global(".ja-panel__header h2",
+            new CssRule { margin = raw("0"), color = raw("var(--text)"), font_size = raw("16px"), font_weight = raw("600") });
+
+        global(".ja-panel__header p",
+            new CssRule { margin = raw("4px 0 0"), color = raw("var(--text-muted)"), font_size = raw("12px") });
+
+        global(".ja-form__grid",
+            new CssRule
+            {
+                display = raw("grid"),
+                grid_template_columns = raw("repeat(2, minmax(0, 1fr))"),
+                gap = raw("0 16px")
+            });
+
+        global(".ja-form__commands",
+            new CssRule
+            {
+                display = raw("flex"),
+                justify_content = raw("flex-end"),
+                gap = raw("8px")
+            });
+
+        global(".ja-audit__filters",
+            new CssRule
+            {
+                display = raw("grid"),
+                grid_template_columns = raw("repeat(5, minmax(0, 1fr))"),
+                gap = raw("0 16px")
+            });
+
+        global(".ja-table-row-selected td",
+            new CssRule { background = raw("var(--td-brand-color-light)") });
+
+        global(".ja-panel__section",
+            new CssRule
+            {
+                display = raw("grid"),
+                gap = raw("8px"),
+                padding_top = raw("16px"),
+                border_top = raw("1px solid var(--border)")
+            });
+
+        global(".ja-panel__section h3",
+            new CssRule { margin = raw("0"), font_size = raw("14px"), font_weight = raw("600") });
+
+        global(".ja-panel__section p",
+            new CssRule { margin = raw("0"), color = raw("var(--text-muted)"), font_size = raw("12px") });
+
+        global(".ja-form__inline",
+            new CssRule { display = raw("flex"), align_items = raw("center"), gap = raw("8px") });
+
+        global(".ja-form__inline-label",
+            new CssRule { margin_left = raw("8px"), color = raw("var(--text)") });
+
+        global(".ja-form__options",
+            new CssRule
+            {
+                display = raw("grid"),
+                margin = raw("0"),
+                padding = raw("0"),
+                border = raw("none"),
+                gap = raw("10px")
+            });
+
+        global(".ja-form__options legend",
+            new CssRule { color = raw("var(--text-muted)"), font_size = raw("12px"), padding = raw("0") });
+
+        global(".ja-form__option",
+            new CssRule { display = raw("flex"), align_items = raw("center"), gap = raw("8px"), color = raw("var(--text)") });
+
+        global(".ja-form__summary",
+            new CssRule
+            {
+                display = raw("grid"),
+                margin = raw("0"),
+                padding = raw("12px 14px"),
+                background = raw("var(--surface-subtle)"),
+                border_radius = raw("3px"),
+                gap = raw("6px")
+            });
+
+        global(".ja-form__summary div",
+            new CssRule { display = raw("flex"), justify_content = raw("space-between"), gap = raw("12px") });
+
+        global(".ja-form__summary dt",
+            new CssRule { color = raw("var(--text-muted)"), font_size = raw("12px") });
+
+        global(".ja-form__summary dd",
+            new CssRule { margin = raw("0"), font_size = raw("13px") });
+
+        global(".ja-profiles",
+            new CssRule { display = raw("flex"), flex_wrap = raw("wrap"), gap = raw("8px") });
+
+        global(".ja-secret",
+            new CssRule
+            {
+                display = raw("grid"),
+                gap = raw("6px"),
+                padding = raw("12px 14px"),
+                border_left = raw("3px solid var(--td-warning-color)"),
+                background = raw("var(--surface-subtle)"),
+                border_radius = raw("3px)")
+            });
+
+        global(".ja-secret code",
+            new CssRule
+            {
+                padding = raw("8px 10px"),
+                color = raw("var(--text)"),
+                font_family = raw("ui-monospace, SFMono-Regular, Consolas, monospace"),
+                font_size = raw("13px"),
+                background = raw("var(--surface)"),
+                border_radius = raw("3px"),
+                overflow_wrap = raw("anywhere")
+            });
+
+        global(".ja-secret span",
+            new CssRule { color = raw("var(--text-muted)"), font_size = raw("12px") });
+
+        global(".ja-item-list",
+            new CssRule
+            {
+                display = raw("grid"),
+                margin = raw("0"),
+                padding = raw("0"),
+                list_style = raw("none"),
+                gap = raw("4px")
+            });
+
+        global(".ja-item-list li",
+            new CssRule
+            {
+                display = raw("flex"),
+                align_items = raw("center"),
+                gap = raw("10px"),
+                padding = raw("8px 10px"),
+                background = raw("var(--surface-subtle)"),
+                border_radius = raw("3px"),
+                font_size = raw("13px")
+            });
+
+        global(".ja-item-list__code",
+            new CssRule
+            {
+                padding = raw("2px 6px"),
+                color = raw("var(--td-brand-color)"),
+                font_family = raw("ui-monospace, SFMono-Regular, Consolas, monospace"),
+                font_size = raw("12px"),
+                background = raw("var(--td-brand-color-light)"),
+                border_radius = raw("3px")
+            });
+
+        global(".ja-role-list",
+            new CssRule
+            {
+                display = raw("grid"),
+                margin = raw("0"),
+                padding = raw("0"),
+                list_style = raw("none"),
+                gap = raw("6px")
+            });
+
+        global(".ja-role-list button",
+            new CssRule
+            {
+                display = raw("grid"),
+                width = raw("100%"),
+                padding = raw("10px 12px"),
+                text_align = raw("left"),
+                background = raw("var(--surface-subtle)"),
+                border = raw("1px solid transparent"),
+                border_radius = raw("3px"),
+                cursor = raw("pointer")
+            });
+
+        global(".ja-role-list button span",
+            new CssRule { font_size = raw("13px"), color = raw("var(--text)") });
+
+        global(".ja-role-list button small",
+            new CssRule { color = raw("var(--text-muted)"), font_size = raw("12px") });
+
+        global(".ja-role-list li.is-selected button",
+            new CssRule { border_color = raw("var(--td-brand-color)"), background = raw("var(--td-brand-color-light)") });
+
+        global(".ja-option-list",
+            new CssRule
+            {
+                display = raw("grid"),
+                gap = raw("10px")
+            });
+
+        global(".ja-option-list .ja-form__option small",
+            new CssRule { margin_left = raw("auto"), color = raw("var(--text-muted)"), font_size = raw("12px") });
+
+        Media(".ja-page__split", "(max-width: 1080px)",
+            new CssRule { grid_template_columns = raw("minmax(0, 1fr)") });
+
+        Media(".ja-form__grid", "(max-width: 620px)",
+            new CssRule { grid_template_columns = raw("minmax(0, 1fr)") });
+
+        Media(".ja-audit__filters", "(max-width: 1080px)",
+            new CssRule { grid_template_columns = raw("repeat(2, minmax(0, 1fr))") });
+
+        Media(".ja-audit__filters", "(max-width: 620px)",
+            new CssRule { grid_template_columns = raw("minmax(0, 1fr)") });
 
         // The production administration pages share a compact TDesign Starter-like work surface.
         // 生产管理页共用紧凑的 TDesign Starter 风格工作台，状态层次由数据与选择关系表达。
@@ -2220,813 +1791,11 @@ internal static class Styles
                 gap = raw("8px")
             });
 
-        global(".ja-organization-picker",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("auto minmax(112px, 180px)"),
-                align_items = raw("center"),
-                min_width = raw("0"),
-                padding_right = raw("8px"),
-                gap = raw("7px"),
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px"),
-                border_right = px(1) | solid | var("--border")
-            });
-
-        global(".ja-organization-picker select",
-            new CssRule
-            {
-                min_width = raw("0"),
-                min_height = raw("32px"),
-                padding = padding(px(4), px(26), px(4), px(8)),
-                overflow = raw("hidden"),
-                color = raw("var(--text)"),
-                font_size = raw("12px"),
-                font_weight = raw("600"),
-                text_overflow = raw("ellipsis"),
-                white_space = raw("nowrap"),
-                background = raw("var(--surface-subtle)"),
-                border = px(1) | solid | var("--border"),
-                border_radius = raw("4px")
-            });
-
-        global(".ja-user-region",
-            new CssRule
-            {
-                min_width = raw("0"),
-                padding_left = raw("8px"),
-                border_left = px(1) | solid | var("--border")
-            });
-
-        global(".ja-access-command",
-            new CssRule
-            {
-                min_height = raw("30px"),
-                padding = padding(px(4), px(8)),
-                font_size = raw("12px"),
-                background = raw("transparent"),
-                border = raw("0")
-            });
-
-        global(".ja-access-command[data-access-command=\"sign-out\"]",
-            new CssRule
-            {
-                color = raw("var(--danger)")
-            });
-
-        global(".ja-overview",
-            new CssRule
-            {
-                display = raw("grid"),
-                min_width = raw("0"),
-                gap = raw("16px")
-            });
-
-        global(".ja-overview__metrics",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("repeat(4, minmax(0, 1fr))"),
-                gap = raw("16px")
-            });
-
-        global(".ja-overview__metric",
-            new CssRule
-            {
-                min_width = raw("0"),
-                min_height = raw("116px"),
-                padding = padding(px(14), px(16)),
-                background = raw("var(--surface)"),
-                border = px(1) | solid | var("--border"),
-                border_top = px(3) | solid | var("--accent"),
-                border_radius = raw("6px"),
-                box_shadow = var("--shadow"),
-                animation = raw(dashboardEnter + " 260ms ease both")
-            });
-
-        global(".ja-overview__metric:nth-child(2)",
-            new CssRule
-            {
-                animation_delay = raw("35ms")
-            });
-
-        global(".ja-overview__metric:nth-child(3)",
-            new CssRule
-            {
-                animation_delay = raw("70ms")
-            });
-
-        global(".ja-overview__metric:nth-child(4)",
-            new CssRule
-            {
-                animation_delay = raw("105ms")
-            });
-
-        global(".ja-overview__metric span, .ja-overview__metric small",
-            new CssRule
-            {
-                display = raw("block"),
-                overflow = raw("hidden"),
-                color = raw("var(--text-muted)"),
-                text_overflow = raw("ellipsis"),
-                white_space = raw("nowrap")
-            });
-
-        global(".ja-overview__metric span",
-            new CssRule
-            {
-                font_size = raw("13px"),
-                font_weight = raw("600")
-            });
-
-        global(".ja-overview__metric strong",
-            new CssRule
-            {
-                display = raw("block"),
-                margin = raw("12px 0 6px"),
-                overflow = raw("hidden"),
-                font_size = raw("24px"),
-                line_height = raw("1"),
-                text_overflow = raw("ellipsis"),
-                white_space = raw("nowrap")
-            });
-
-        global(".ja-overview__metric small",
-            new CssRule
-            {
-                font_size = raw("12px")
-            });
-
-        global(".ja-overview__grid",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("repeat(2, minmax(0, 1fr))"),
-                min_width = raw("0"),
-                gap = raw("16px")
-            });
-
-        global(".ja-overview__panel, .ja-management__panel",
-            new CssRule
-            {
-                min_width = raw("0"),
-                background = raw("var(--surface)"),
-                border = px(1) | solid | var("--border"),
-                border_radius = raw("6px"),
-                box_shadow = var("--shadow")
-            });
-
-        global(".ja-overview__panel-header, .ja-management__panel-header",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                justify_content = raw("space-between"),
-                min_height = raw("56px"),
-                padding = padding(px(12), px(16)),
-                gap = raw("12px"),
-                border_bottom = px(1) | solid | var("--border")
-            });
-
-        global(".ja-overview__panel-header h2, .ja-overview__panel-header p, .ja-management__panel-header h2, .ja-management__panel-header p",
-            new CssRule
-            {
-                margin = raw("0")
-            });
-
-        global(".ja-overview__panel-header h2, .ja-management__panel-header h2",
-            new CssRule
-            {
-                font_size = raw("15px"),
-                font_weight = raw("650")
-            });
-
-        global(".ja-overview__panel-header p, .ja-management__panel-header p",
-            new CssRule
-            {
-                margin_top = raw("5px"),
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px"),
-                line_height = raw("1.4")
-            });
-
-        global(".ja-overview__organization-list, .ja-overview__role-list, .ja-management__item-list, .ja-management__role-list",
-            new CssRule
-            {
-                padding = padding(px(0)),
-                margin = raw("0"),
-                list_style = raw("none")
-            });
-
-        global(".ja-overview__organization-list li, .ja-overview__role-list li, .ja-management__item-list li",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                min_height = raw("48px"),
-                padding = padding(px(10), px(20)),
-                gap = raw("10px"),
-                border_bottom = px(1) | solid | var("--border")
-            });
-
-        global(".ja-overview__organization-list li.is-current",
-            new CssRule
-            {
-                color = raw("var(--accent-strong)"),
-                background = raw("var(--accent-soft)")
-            });
-
-        global(".ja-overview__organization-code, .ja-management__code",
-            new CssRule
-            {
-                flex = raw("0 0 auto"),
-                padding = padding(px(3), px(6)),
-                color = raw("var(--accent-strong)"),
-                font_size = raw("11px"),
-                font_weight = raw("650"),
-                background = raw("var(--accent-soft)"),
-                border_radius = raw("3px")
-            });
-
-        global(".ja-overview__role-list li",
-            new CssRule
-            {
-                color = raw("var(--text-muted)"),
-                font_size = raw("13px")
-            });
-
-        global(".ja-overview__empty, .ja-management__empty, .ja-management__loading, .ja-management__error",
-            new CssRule
-            {
-                margin = raw("0"),
-                padding = padding(px(20)),
-                color = raw("var(--text-muted)"),
-                font_size = raw("13px"),
-                line_height = raw("1.5")
-            });
-
-        global(".ja-management__error",
-            new CssRule
-            {
-                color = raw("var(--danger)"),
-                background = raw("var(--danger-soft)"),
-                border = px(1) | solid | raw("color-mix(in srgb, var(--danger) 30%, var(--border))"),
-                border_radius = raw("6px")
-            });
-
-        global(".ja-management",
-            new CssRule
-            {
-                display = raw("grid"),
-                min_width = raw("0"),
-                gap = raw("16px")
-            });
-
-        global(".ja-management__split",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("minmax(0, 7fr) minmax(300px, 4fr)"),
-                align_items = raw("start"),
-                min_width = raw("0"),
-                gap = raw("16px")
-            });
-
-        global(".ja-management__split--authorization",
-            new CssRule
-            {
-                grid_template_columns = raw("minmax(260px, 4fr) minmax(0, 7fr)")
-            });
-
-        global(".ja-management__split--members",
-            new CssRule
-            {
-                grid_template_columns = raw("minmax(0, 7fr) minmax(320px, 4fr)")
-            });
-
-        global(".ja-management__panel > h3, .ja-management__role-editor h3",
-            new CssRule
-            {
-                margin = raw("20px 20px 10px"),
-                font_size = raw("14px")
-            });
-
-        global(".ja-management__details",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("repeat(3, minmax(0, 1fr))"),
-                padding = padding(px(20)),
-                margin = raw("0"),
-                gap = raw("12px")
-            });
-
-        global(".ja-management__details div",
-            new CssRule
-            {
-                min_width = raw("0"),
-                padding = padding(px(12)),
-                background = raw("var(--surface-subtle)"),
-                border = px(1) | solid | var("--border"),
-                border_radius = raw("4px")
-            });
-
-        global(".ja-management__details dt, .ja-management__details dd",
-            new CssRule
-            {
-                margin = raw("0")
-            });
-
-        global(".ja-management__details dt",
-            new CssRule
-            {
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px")
-            });
-
-        global(".ja-management__details dd",
-            new CssRule
-            {
-                margin_top = raw("6px"),
-                overflow = raw("hidden"),
-                font_size = raw("13px"),
-                font_weight = raw("600"),
-                text_overflow = raw("ellipsis"),
-                white_space = raw("nowrap")
-            });
-
-        global(".ja-management__form",
-            new CssRule
-            {
-                display = raw("grid"),
-                padding = padding(px(20)),
-                gap = raw("14px")
-            });
-
-        global(".ja-management__form--inline",
-            new CssRule
-            {
-                grid_template_columns = raw("minmax(0, 1fr) minmax(0, 1fr) auto"),
-                align_items = raw("end")
-            });
-
-        global(".ja-management__form label",
-            new CssRule
-            {
-                display = raw("grid"),
-                gap = raw("6px"),
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px"),
-                font_weight = raw("600")
-            });
-
-        global(".ja-management input, .ja-management select, .ja-management textarea",
-            new CssRule
-            {
-                width = raw("100%"),
-                min_height = raw("34px"),
-                padding = padding(px(6), px(9)),
-                color = raw("var(--text)"),
-                background = raw("var(--surface)"),
-                border = px(1) | solid | var("--border-strong"),
-                border_radius = raw("4px")
-            });
-
-        global(".ja-management textarea",
-            new CssRule
-            {
-                min_height = raw("76px"),
-                resize = raw("vertical"),
-                line_height = raw("1.5")
-            });
-
-        global(".ja-management__field-grid",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("repeat(2, minmax(0, 1fr))"),
-                gap = raw("14px")
-            });
-
-        global(".ja-management__options",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("repeat(2, minmax(0, 1fr))"),
-                padding = padding(px(12)),
-                margin = raw("0"),
-                gap = raw("10px 14px"),
-                border = px(1) | solid | var("--border"),
-                border_radius = raw("4px")
-            });
-
-        global(".ja-management__options legend",
-            new CssRule
-            {
-                padding = padding(px(0), px(5)),
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px"),
-                font_weight = raw("650")
-            });
-
-        global(".ja-management__options label",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                min_width = raw("0"),
-                gap = raw("8px"),
-                color = raw("var(--text)"),
-                font_size = raw("13px"),
-                font_weight = raw("500")
-            });
-
-        global(".ja-management__options input",
-            new CssRule
-            {
-                flex = raw("0 0 16px"),
-                width = raw("16px"),
-                min_height = raw("16px"),
-                padding = padding(px(0))
-            });
-
-        global(".ja-management__profiles",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("repeat(3, minmax(0, 1fr))"),
-                margin = raw("20px 20px 0"),
-                border = px(1) | solid | var("--border-strong"),
-                border_radius = raw("4px"),
-                overflow = raw("hidden")
-            });
-
-        global(".ja-management__profiles button",
-            new CssRule
-            {
-                color = raw("var(--text-muted)"),
-                background = raw("var(--surface)"),
-                border = raw("0"),
-                border_right = px(1) | solid | var("--border-strong"),
-                border_radius = raw("0")
-            });
-
-        global(".ja-management__profiles button:last-child",
-            new CssRule
-            {
-                border_right = raw("0")
-            });
-
-        global(".ja-management__profiles button:hover, .ja-management__profiles button.is-selected",
-            new CssRule
-            {
-                color = raw("var(--accent-strong)"),
-                background = raw("var(--accent-soft)")
-            });
-
-        global(".ja-management__commands",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                flex_wrap = raw("wrap"),
-                gap = raw("8px")
-            });
-
-        global(".ja-management__secondary-button",
-            new CssRule
-            {
-                color = raw("var(--text) !important"),
-                background = raw("var(--surface) !important"),
-                border_color = raw("var(--border-strong) !important")
-            });
-
-        global(".ja-management__danger-button",
-            new CssRule
-            {
-                color = raw("var(--danger) !important"),
-                background = raw("var(--danger-soft) !important"),
-                border_color = raw("color-mix(in srgb, var(--danger) 45%, var(--border)) !important")
-            });
-
-        global(".ja-management__secret",
-            new CssRule
-            {
-                display = raw("grid"),
-                padding = padding(px(14)),
-                margin = raw("20px 20px 0"),
-                gap = raw("6px"),
-                color = raw("var(--text)"),
-                background = raw("var(--warning-soft)"),
-                border = px(1) | solid | raw("color-mix(in srgb, var(--warning) 38%, var(--border))"),
-                border_radius = raw("4px")
-            });
-
-        global(".ja-management__secret code",
-            new CssRule
-            {
-                overflow_wrap = raw("anywhere"),
-                font_size = raw("13px")
-            });
-
-        global(".ja-management__secret span",
-            new CssRule
-            {
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px")
-            });
-
-        global(".ja-management button",
-            new CssRule
-            {
-                min_height = raw("34px"),
-                padding = padding(px(6), px(12)),
-                color = raw("#ffffff"),
-                font_size = raw("13px"),
-                font_weight = raw("600"),
-                background = raw("var(--accent)"),
-                border = px(1) | solid | var("--accent"),
-                border_radius = raw("4px")
-            });
-
-        global(".ja-management button:hover",
-            new CssRule
-            {
-                background = raw("var(--accent-strong)")
-            });
-
-        global(".ja-management__table-wrap",
-            new CssRule
-            {
-                width = raw("100%"),
-                overflow_x = raw("auto")
-            });
-
-        global(".ja-management__table",
-            new CssRule
-            {
-                width = raw("100%"),
-                min_width = raw("560px"),
-                border_collapse = raw("collapse")
-            });
-
-        global(".ja-management__table th, .ja-management__table td",
-            new CssRule
-            {
-                padding = padding(px(13), px(20)),
-                text_align = raw("left"),
-                vertical_align = raw("middle"),
-                border_bottom = px(1) | solid | var("--border")
-            });
-
-        global(".ja-management__table th",
-            new CssRule
-            {
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px"),
-                font_weight = raw("600"),
-                background = raw("var(--surface-subtle)")
-            });
-
-        global(".ja-management__table td",
-            new CssRule
-            {
-                font_size = raw("13px")
-            });
-
-        global(".ja-management__table td strong, .ja-management__table td span",
-            new CssRule
-            {
-                display = raw("block")
-            });
-
-        global(".ja-management__table td span",
-            new CssRule
-            {
-                margin_top = raw("3px"),
-                color = raw("var(--text-muted)"),
-                font_size = raw("12px")
-            });
-
-        global(".ja-management__table tr.is-selected td, .ja-management__table tbody tr:hover td",
-            new CssRule
-            {
-                background = raw("var(--accent-soft)")
-            });
-
-        global(".ja-management__text-button",
-            new CssRule
-            {
-                padding = important(padding(px(4), px(0))),
-                color = raw("var(--accent) !important"),
-                background = raw("transparent !important"),
-                border = raw("0 !important")
-            });
-
-        global(".ja-management__role-list",
-            new CssRule
-            {
-                padding = padding(px(8), px(0))
-            });
-
-        global(".ja-management__role-list button",
-            new CssRule
-            {
-                display = raw("flex"),
-                align_items = raw("center"),
-                justify_content = raw("space-between"),
-                width = raw("100%"),
-                padding = padding(px(11), px(20)),
-                color = raw("var(--text)"),
-                text_align = raw("left"),
-                background = raw("transparent"),
-                border = raw("0"),
-                border_left = px(3) | solid | transparent,
-                border_radius = raw("0")
-            });
-
-        global(".ja-management__role-list button:hover, .ja-management__role-list li.is-selected button",
-            new CssRule
-            {
-                color = raw("var(--accent-strong)"),
-                background = raw("var(--accent-soft)"),
-                border_left_color = raw("var(--accent)")
-            });
-
-        global(".ja-management__role-list small, .ja-management__check small",
-            new CssRule
-            {
-                color = raw("var(--text-muted)"),
-                font_size = raw("11px")
-            });
-
-        global(".ja-management__grant-list, .ja-management__role-editor",
-            new CssRule
-            {
-                display = raw("grid"),
-                padding = padding(px(12), px(20), px(20)),
-                gap = raw("8px")
-            });
-
-        global(".ja-management__check",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("16px minmax(0, 1fr) auto"),
-                align_items = raw("center"),
-                min_height = raw("40px"),
-                padding = padding(px(7), px(9)),
-                gap = raw("8px"),
-                font_size = raw("13px"),
-                background = raw("var(--surface-subtle)"),
-                border = px(1) | solid | var("--border"),
-                border_radius = raw("4px")
-            });
-
-        global(".ja-management__check input",
-            new CssRule
-            {
-                width = raw("16px"),
-                min_height = raw("16px"),
-                padding = padding(px(0))
-            });
-
-        global(".ja-management__grant-list + button, .ja-management__role-editor > button",
-            new CssRule
-            {
-                margin = raw("0 20px 20px")
-            });
-
-        Media(".ja-overview__metrics", "(max-width: 1100px)",
-            new CssRule
-            {
-                grid_template_columns = raw("repeat(2, minmax(0, 1fr))")
-            });
-
-        Media(".ja-management__split, .ja-management__split--authorization, .ja-management__split--members", "(max-width: 980px)",
-            new CssRule
-            {
-                grid_template_columns = raw("1fr")
-            });
-
         Media(".ja-header-context", "(max-width: 1080px)",
             new CssRule
             {
                 flex_wrap = raw("wrap"),
                 justify_content = raw("flex-end")
-            });
-
-        Media(".ja-overview__grid", "(max-width: 760px)",
-            new CssRule
-            {
-                grid_template_columns = raw("1fr")
-            });
-
-        Media(".ja-management__details", "(max-width: 620px)",
-            new CssRule
-            {
-                grid_template_columns = raw("1fr")
-            });
-
-        Media(".ja-overview__metrics", "(max-width: 620px)",
-            new CssRule
-            {
-                grid_template_columns = raw("1fr")
-            });
-
-        Media(".ja-management__form--inline", "(max-width: 620px)",
-            new CssRule
-            {
-                grid_template_columns = raw("1fr")
-            });
-
-        Media(".ja-management__field-grid, .ja-management__options", "(max-width: 620px)",
-            new CssRule
-            {
-                grid_template_columns = raw("1fr")
-            });
-
-        Media(".ja-management__commands button", "(max-width: 620px)",
-            new CssRule
-            {
-                flex = raw("1 1 100%"),
-                width = raw("100%")
-            });
-
-        Media(".ja-organization-picker", "(max-width: 620px)",
-            new CssRule
-            {
-                grid_template_columns = raw("1fr"),
-                padding_right = raw("0"),
-                border_right = raw("0")
-            });
-
-        global(".ja-schedules__status",
-            new CssRule
-            {
-                display = raw("inline-block !important"),
-                padding = padding(px(3), px(7)),
-                margin_top = raw("0 !important"),
-                font_size = raw("11px !important"),
-                font_weight = raw("650"),
-                border_radius = raw("3px")
-            });
-
-        global(".ja-schedules__status.is-enabled",
-            new CssRule
-            {
-                color = raw("var(--success) !important"),
-                background = raw("var(--success-soft)")
-            });
-
-        global(".ja-schedules__status.is-disabled",
-            new CssRule
-            {
-                color = raw("var(--text-muted) !important"),
-                background = raw("var(--surface-strong)")
-            });
-
-        global(".ja-schedules__summary",
-            new CssRule
-            {
-                display = raw("grid"),
-                padding = padding(px(12)),
-                margin = raw("0"),
-                gap = raw("10px"),
-                background = raw("var(--surface-subtle)"),
-                border = px(1) | solid | var("--border"),
-                border_radius = raw("4px")
-            });
-
-        global(".ja-schedules__summary div",
-            new CssRule
-            {
-                display = raw("grid"),
-                grid_template_columns = raw("110px minmax(0, 1fr)"),
-                gap = raw("10px")
-            });
-
-        global(".ja-schedules__summary dt, .ja-schedules__summary dd",
-            new CssRule
-            {
-                min_width = raw("0"),
-                margin = raw("0"),
-                font_size = raw("12px")
-            });
-
-        global(".ja-schedules__summary dt",
-            new CssRule
-            {
-                color = raw("var(--text-muted)"),
-                font_weight = raw("650")
-            });
-
-        global(".ja-schedules__summary dd",
-            new CssRule
-            {
-                overflow_wrap = raw("anywhere"),
-                color = raw("var(--text)")
             });
 
         Media("*,   *::before,   *::after", "(prefers-reduced-motion: reduce)",

@@ -69,81 +69,81 @@ public static partial class Global
 	/// <summary>
 	/// C# host name for JavaScript <c>Number(...)</c>.
 	/// The Fn suffix only avoids naming conflicts on the C# side.
-	/// JavaScript <c>Number()</c> 的 C# 宿主名称；<c>Fn</c> 后缀只用于避免 C# 侧命名冲突。
+	/// JavaScript <c>Number()</c> 的 C# 宿主名称；<c>J</c> 前缀只用于避免 C# 侧命名冲突。
 	/// </summary>
 	[Description("@#Number")]
-	public extern static Number NumberFn();
+	public extern static Number NumberValue();
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Number(...)</c>.
 	/// This overload keeps JavaScript's value-coercion entry point available for arbitrary runtime values.
 	/// The Fn suffix only avoids naming conflicts on the C# side.
-	/// JavaScript <c>Number(value)</c> 的 C# 宿主名称，保留 JavaScript 的值转换语义；<c>Fn</c> 后缀仅用于 C# 命名冲突。
+	/// JavaScript <c>Number(value)</c> 的 C# 宿主名称，保留 JavaScript 的值转换语义；<c>J</c> 前缀仅用于 C# 命名冲突。
 	/// </summary>
 	[Description("@#Number")]
-	public extern static Number NumberFn(object? value);
+	public extern static Number NumberValue(object? value);
 
 	/// <summary>Converts an existing JavaScript number through <c>Number(...)</c>. 将已有 JavaScript Number 通过 <c>Number(...)</c> 转换。</summary>
 	[Description("@#Number")]
-	public extern static Number NumberFn(Number value);
+	public extern static Number NumberValue(Number value);
 
 	/// <summary>Converts a JavaScript bigint through <c>Number(...)</c>. 通过 <c>Number(...)</c> 将 JavaScript BigInt 转换为 Number，精度规则遵循 JavaScript。</summary>
 	[Description("@#Number")]
-	public extern static Number NumberFn(BigInt value);
+	public extern static Number NumberValue(BigInt value);
 
 	/// <summary>Converts text through JavaScript <c>Number(...)</c>. 通过 JavaScript <c>Number(...)</c> 将文本转换为数值。</summary>
 	[Description("@#Number")]
-	public extern static Number NumberFn(string value);
+	public extern static Number NumberValue(string value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>String()</c>.
 	/// The Fn suffix only avoids naming conflicts on the C# side.
-	/// JavaScript <c>String()</c> 的 C# 宿主名称；<c>Fn</c> 后缀只用于避免 C# 侧命名冲突。
+	/// JavaScript <c>String()</c> 的 C# 宿主名称；<c>J</c> 前缀只用于避免 C# 侧命名冲突。
 	/// </summary>
 	[Description("@#String")]
-	public extern static string StringFn();
+	public extern static string StringValue();
 
 	/// <summary>
 	/// C# host name for JavaScript <c>String(...)</c>.
 	/// This overload keeps JavaScript's value-to-string coercion entry point available for arbitrary runtime values.
 	/// The Fn suffix only avoids naming conflicts on the C# side.
-	/// JavaScript <c>String(value)</c> 的 C# 宿主名称，保留 JavaScript 的值转文本语义；<c>Fn</c> 后缀仅用于 C# 命名冲突。
+	/// JavaScript <c>String(value)</c> 的 C# 宿主名称，保留 JavaScript 的值转文本语义；<c>J</c> 前缀仅用于 C# 命名冲突。
 	/// </summary>
 	[Description("@#String")]
-	public extern static string StringFn(object? value);
+	public extern static string StringValue(object? value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Boolean()</c>.
 	/// The Fn suffix only avoids naming conflicts on the C# side.
-	/// JavaScript <c>Boolean()</c> 的 C# 宿主名称；<c>Fn</c> 后缀只用于避免 C# 侧命名冲突。
+	/// JavaScript <c>Boolean()</c> 的 C# 宿主名称；<c>J</c> 前缀只用于避免 C# 侧命名冲突。
 	/// </summary>
 	[Description("@#Boolean")]
-	public extern static bool BooleanFn();
+	public extern static bool BooleanValue();
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Boolean(...)</c>.
 	/// This overload keeps JavaScript's truthiness conversion entry point available for arbitrary runtime values.
 	/// The Fn suffix only avoids naming conflicts on the C# side.
-	/// JavaScript <c>Boolean(value)</c> 的 C# 宿主名称，按 JavaScript truthiness 规则转换；<c>Fn</c> 后缀仅用于 C# 命名冲突。
+	/// JavaScript <c>Boolean(value)</c> 的 C# 宿主名称，按 JavaScript truthiness 规则转换；<c>J</c> 前缀仅用于 C# 命名冲突。
 	/// </summary>
 	[Description("@#Boolean")]
-	public extern static bool BooleanFn(object? value);
+	public extern static bool BooleanValue(object? value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
 	/// The Fn suffix only avoids naming conflicts on the C# side.
-	/// JavaScript <c>BigInt(value)</c> 的 C# 宿主名称；<c>Fn</c> 后缀只用于避免 C# 侧命名冲突。
+	/// JavaScript <c>BigInt(value)</c> 的 C# 宿主名称；<c>J</c> 前缀只用于避免 C# 侧命名冲突。
 	/// </summary>
 	[Description("@#BigInt")]
-	public extern static BigInt BigIntFn(Number value);
+	public extern static BigInt BigIntValue(Number value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
 	/// The Fn suffix only avoids naming conflicts on the C# side.
-	/// 通过 JavaScript <c>BigInt(string)</c> 解析整数文本；<c>Fn</c> 后缀只用于避免 C# 侧命名冲突。
+	/// 通过 JavaScript <c>BigInt(string)</c> 解析整数文本；<c>J</c> 前缀只用于避免 C# 侧命名冲突。
 	/// </summary>
 	[Description("@#BigInt")]
-	public extern static BigInt BigIntFn(string value);
+	public extern static BigInt BigIntValue(string value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
@@ -153,15 +153,15 @@ public static partial class Global
 	/// 通过 JavaScript <c>BigInt(value)</c> 执行通用 bigint 转换；转换失败仍按 JavaScript <c>BigInt</c> 规则在运行时发生。
 	/// </summary>
 	[Description("@#BigInt")]
-	public extern static BigInt BigIntFn(object? value);
+	public extern static BigInt BigIntValue(object? value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Symbol(...)</c>.
 	/// The Fn suffix only avoids naming conflicts with the <see cref="Symbol"/> type.
-	/// JavaScript <c>Symbol(description)</c> 的 C# 宿主名称；<c>Fn</c> 后缀用于避免与 <see cref="Symbol"/> 类型冲突。
+	/// JavaScript <c>Symbol(description)</c> 的 C# 宿主名称；<c>J</c> 前缀用于避免与 <see cref="Symbol"/> 类型冲突。
 	/// </summary>
 	[Description("@#Symbol")]
-	public extern static Symbol SymbolFn(string? description = null);
+	public extern static Symbol SymbolValue(string? description = null);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Symbol(...)</c>.
@@ -169,11 +169,11 @@ public static partial class Global
 	/// JavaScript <c>Symbol(description)</c> 接受任意 description 值，并在其不是 <c>undefined</c> 时按运行时规则转为文本。
 	/// </summary>
 	[Description("@#Symbol")]
-	public extern static Symbol SymbolFn(object? description);
+	public extern static Symbol SymbolValue(object? description);
 
 	/// <summary>Gets the browser <c>document</c> global. 获取浏览器全局对象 <c>document</c>。</summary>
 	[Description("@#document")]
-	public extern static Document Document { get; }
+	public extern static JazorDocument Document { get; }
 
 	/// <summary>Gets the browser <c>window</c> proxy. 获取浏览器 <c>window</c> 代理对象。</summary>
 	[Description("@#window")]

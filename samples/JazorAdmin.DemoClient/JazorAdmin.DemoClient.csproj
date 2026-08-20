@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RazorLangVersion>11.0</RazorLangVersion>
+    <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+    <JazorMode>debug</JazorMode>
+    <UserSecretsId>JazorAdmin-DemoClient-3ad9af1d-4ed3-4ba3-9bf4-4cc0e0a3c8c1</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="build-local.cs;verify-smoke.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="11.0.0-preview.6.26359.118" />
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.VuIcons" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+</Project>

@@ -58,7 +58,7 @@ public static class DoubleModule
 		if (!decimalPattern.Test(trimmed))
 			return false;
 
-		value = NumberFn(trimmed.Replace(",", ""));
+		value = NumberValue(trimmed.Replace(",", ""));
 		return true;
 	}
 
@@ -90,8 +90,8 @@ public static class DoubleModule
 			return false;
 
 		// JS Number 没有可直接复用的 64 位尾数位运算，这里退化为判定 log2 是否为整数。
-		var exponent = Math.Log2Fn(value);
-		return IsFiniteCore(exponent) && Math.FloorFn(exponent) == exponent;
+		var exponent = Math.Logarithm2(value);
+		return IsFiniteCore(exponent) && Math.FloorFunc(exponent) == exponent;
 	}
 
 	internal static Number SignCore(Number value)
@@ -112,8 +112,8 @@ public static class DoubleModule
 		if (!IsFiniteCore(value) || value == 0)
 			return value;
 
-		var truncated = Math.TruncFn(value);
-		var difference = Math.AbsFn(value - truncated);
+		var truncated = Math.Trunc(value);
+		var difference = Math.Absolute(value - truncated);
 		if (difference < 0.5)
 			return truncated;
 		if (difference > 0.5)
@@ -133,17 +133,17 @@ public static class DoubleModule
 			if (!IsFiniteCore(value) || value == 0)
 				return value;
 
-			var truncated = Math.TruncFn(value);
-			return Math.AbsFn(value - truncated) < 0.5
+			var truncated = Math.Trunc(value);
+			return Math.Absolute(value - truncated) < 0.5
 				? truncated
 				: truncated + (value < 0 ? -1 : 1);
 		}
 		if (mode == 2)
-			return Math.TruncFn(value);
+			return Math.Trunc(value);
 		if (mode == 3)
-			return Math.FloorFn(value);
+			return Math.FloorFunc(value);
 
-		return Math.CeilFn(value);
+		return Math.Ceil(value);
 	}
 
 	internal static Number RoundCore(Number value, Number digits, Number mode)
@@ -167,8 +167,8 @@ public static class DoubleModule
 
 	internal static Number RoundSingleCore(Number value, Number digits, Number mode)
 	{
-		var singleValue = Math.FroundFn(value);
-		return Math.FroundFn(RoundBinaryCore(
+		var singleValue = Math.Fround(value);
+		return Math.Fround(RoundBinaryCore(
 			singleValue,
 			GetSingleBitsCore(singleValue),
 			23,
@@ -191,18 +191,18 @@ public static class DoubleModule
 		Number digits,
 		Number mode)
 	{
-		if (!IsFiniteCore(value) || value == 0 || Math.AbsFn(value) >= integerBoundary)
+		if (!IsFiniteCore(value) || value == 0 || Math.Absolute(value) >= integerBoundary)
 			return value;
 
-		var exponentMask = (BigInt.One << BigIntFn(exponentBitCount)) - BigInt.One;
-		var fractionMask = (BigInt.One << BigIntFn(fractionBitCount)) - BigInt.One;
-		var exponentField = (bits >> BigIntFn(fractionBitCount)) & exponentMask;
+		var exponentMask = (BigInt.One << BigIntValue(exponentBitCount)) - BigInt.One;
+		var fractionMask = (BigInt.One << BigIntValue(fractionBitCount)) - BigInt.One;
+		var exponentField = (bits >> BigIntValue(fractionBitCount)) & exponentMask;
 		var significand = bits & fractionMask;
 		var exponent = subnormalExponent;
 		if (exponentField != BigInt.Zero)
 		{
-			significand |= BigInt.One << BigIntFn(fractionBitCount);
-			exponent = NumberFn(exponentField) - exponentBias - fractionBitCount;
+			significand |= BigInt.One << BigIntValue(fractionBitCount);
+			exponent = NumberValue(exponentField) - exponentBias - fractionBitCount;
 		}
 
 		// Do not scale a binary float through Number arithmetic: a value below a decimal
@@ -214,7 +214,7 @@ public static class DoubleModule
 			return value;
 
 		var numerator = significand * PowerOfTenCore(digits);
-		var denominator = BigInt.One << BigIntFn(-exponent);
+		var denominator = BigInt.One << BigIntValue(-exponent);
 		var floor = numerator / denominator;
 		var remainder = numerator % denominator;
 		var hasRemainder = remainder != BigInt.Zero;
@@ -229,7 +229,7 @@ public static class DoubleModule
 
 		// Decimal text lets JavaScript perform the final correctly-rounded decimal-to-binary
 		// conversion, matching the result materialization performed by .NET.
-		var rounded = NumberFn(floor.ToString() + "e-" + digits);
+		var rounded = NumberValue(floor.ToString() + "e-" + digits);
 		return isNegative ? -rounded : rounded;
 	}
 
@@ -246,14 +246,14 @@ public static class DoubleModule
 		var buffer = new ArrayBuffer(4);
 		var view = new DataView(buffer);
 		view.SetFloat32(0, (float)value, false);
-		return BigIntFn(view.GetUint32(0, false));
+		return BigIntValue(view.GetUint32(0, false));
 	}
 
 	private static BigInt PowerOfTenCore(Number digits)
 	{
 		var power = BigInt.One;
 		for (var index = 0; index < digits; index++)
-			power *= BigIntFn(10);
+			power *= BigIntValue(10);
 
 		return power;
 	}
@@ -294,13 +294,13 @@ public static class DoubleModule
 		if (regular == 0)
 			return left < 0 || Object.Is(left, -0) ? -0 : 0;
 
-		var alternative = regular - Math.AbsFn(right) * (left < 0 ? -1 : 1);
-		var regularMagnitude = Math.AbsFn(regular);
-		var alternativeMagnitude = Math.AbsFn(alternative);
+		var alternative = regular - Math.Absolute(right) * (left < 0 ? -1 : 1);
+		var regularMagnitude = Math.Absolute(regular);
+		var alternativeMagnitude = Math.Absolute(alternative);
 		if (alternativeMagnitude == regularMagnitude)
 		{
 			var quotient = left / right;
-			return Math.AbsFn(RoundToEvenCore(quotient)) > Math.AbsFn(quotient)
+			return Math.Absolute(RoundToEvenCore(quotient)) > Math.Absolute(quotient)
 				? alternative
 				: regular;
 		}
@@ -333,10 +333,10 @@ public static class DoubleModule
 
 		var buffer = new ArrayBuffer(8);
 		var view = new DataView(buffer);
-		view.SetFloat64(0, Math.AbsFn(value), false);
+		view.SetFloat64(0, Math.Absolute(value), false);
 		var high = view.GetUint32(0, false);
 		var low = view.GetUint32(4, false);
-		var exponentBits = Math.FloorFn(high / 1048576d) % 2048d;
+		var exponentBits = Math.FloorFunc(high / 1048576d) % 2048d;
 		if (exponentBits != 0)
 			return exponentBits - 1023;
 
@@ -357,7 +357,7 @@ public static class DoubleModule
 		var bit = -1;
 		while (value > 0)
 		{
-			value = Math.FloorFn(value / 2);
+			value = Math.FloorFunc(value / 2);
 			bit++;
 		}
 
@@ -413,15 +413,15 @@ public static class DoubleModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX > absY)
 			return x;
 		if (absX < absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更大的那个，这里顺带修正 +0 / -0。
-		return Math.MaxFn(x, y);
+		return Math.Maximum(x, y);
 	}
 
 	internal static Number MinMagnitudeCore(Number x, Number y)
@@ -429,15 +429,15 @@ public static class DoubleModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX < absY)
 			return x;
 		if (absX > absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更小的那个，这里顺带修正 +0 / -0。
-		return Math.MinFn(x, y);
+		return Math.Minimum(x, y);
 	}
 
 	internal static Number MaxMagnitudeNumberCore(Number x, Number y)
@@ -914,13 +914,13 @@ public static class DoubleModule
 
 	[Jazor(Op.Import, "static double.SinCos(double)")]
 	public static (double Sin, double Cos) _bc56189e3e1f8a22(Number x)
-		=> (Sin: Math.SinFn(x), Cos: Math.CosFn(x));
+		=> (Sin: Math.Sine(x), Cos: Math.Cosine(x));
 
 	[Jazor(Op.Import, "static double.SinCosPi(double)")]
 	public static (double SinPi, double CosPi) _0f4aeef5d225794d(Number x)
 	{
 		var angle = x * Math.PI;
-		return (SinPi: Math.SinFn(angle), CosPi: Math.CosFn(angle));
+		return (SinPi: Math.Sine(angle), CosPi: Math.Cosine(angle));
 	}
 
 	[Jazor(Op.Inline, "static double.SinPi(double)", "Math.sin(__arg1 * Math.PI)")]

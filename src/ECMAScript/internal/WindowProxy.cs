@@ -11,7 +11,7 @@ public interface IWindow
 {
 	/// <summary>Gets the window location value. 获取 window 的 location 值。</summary>
 	[Description("@#location")]
-	string Location { get; }
+	string? Location { get; }
 }
 
 /// <summary>
@@ -21,9 +21,9 @@ public interface IWindow
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public sealed class WindowProxy : Window, IWindow
+public sealed class WindowProxy : JazorWindow, IWindow
 {
 	/// <summary>Gets the proxied window location value. 获取代理 window 的 location 值。</summary>
 	[Description("@#location")]
-	public extern new string Location { get; }
+	public extern new string? Location { get; }
 }

@@ -14,7 +14,12 @@ internal static class ComponentSymbolPolicy
         INamedTypeSymbol componentType,
         INamedTypeSymbol? containingType)
     {
-        if (containingType is null)
+        // The component projection owns authored source members only. ComponentBase and its
+        // CLR ancestors are in the inheritance chain too, but treating them as component
+        // methods bypasses the normal whitelist route (for example object.ReferenceEquals).
+        // 组件投影只接管源码成员；框架/BCL 基类仍必须走 compiler 的 CLR mapping。
+        if (containingType is null ||
+            !containingType.Locations.Any(static location => location.IsInSource))
             return false;
 
         for (var current = componentType; current is not null; current = current.BaseType)

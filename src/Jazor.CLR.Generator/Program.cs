@@ -58,7 +58,14 @@ var outTypes = new Type[]{
 	typeof(Stack<>),
 	typeof(Array),
 	typeof(Guid),
-	typeof(Task)
+	typeof(Task),
+	// Blazor authoring contracts are scaffolded from the real ASP.NET Core symbols,
+	// then carried into Jazor.CLR as erased browser-facing signatures. The CLR project
+	// itself must not reference ASP.NET Core; only this generator needs the package.
+	typeof(Microsoft.AspNetCore.Components.NavigationManager),
+	typeof(Microsoft.AspNetCore.Components.NavigationOptions),
+	typeof(Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs),
+	typeof(Microsoft.AspNetCore.Components.NavigationManagerExtensions)
 };
 var operatorNames = new Dictionary<string, string>
 {
@@ -134,6 +141,10 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(CultureInfo),"String"},
 	{typeof(Console),"Object"},
 	{typeof(Guid),"String"},
+	{typeof(Microsoft.AspNetCore.Components.NavigationManager),"Object"},
+	{typeof(Microsoft.AspNetCore.Components.NavigationOptions),"Object"},
+	{typeof(Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs),"Object"},
+	{typeof(Microsoft.AspNetCore.Components.NavigationManagerExtensions),"Object"},
 };
 var nameMaps = new Dictionary<string, string>()
 {
@@ -209,11 +220,18 @@ var compilation = CSharpCompilation.Create("Jazor", references: [
 	MetadataReference.CreateFromFile(typeof(Console).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(Math).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location, documentation: numericsXml),
+	MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.NavigationManager).Assembly.Location),
 ]);
 string ConvertTypeName(ITypeSymbol symbol)
 {
 	var display = symbol.ToDisplayString();
 	var nullableSuffix = display.EndsWith("?", StringComparison.Ordinal) ? "?" : string.Empty;
+	// The scaffold is copied into Jazor.CLR, which deliberately has no ASP.NET Core
+	// reference. Preserve the CLR member signature in the Jazor attribute, but erase
+	// Blazor-only carriers in the generated adapter declaration.
+	if (UsesBlazorExternalType(symbol))
+		return $"Object{nullableSuffix}";
+
 	var key = display.TrimEnd('?');
 	if (nameMaps.TryGetValue(key, out var mapName))
 		return $"{mapName}{nullableSuffix}";
@@ -244,6 +262,19 @@ string ConvertTypeName(ITypeSymbol symbol)
 	// 不能把生成骨架的强类型契约悄悄降为 object。
 	var nonNullable = symbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
 	return $"{nonNullable.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}{nullableSuffix}";
+}
+
+bool UsesBlazorExternalType(ITypeSymbol symbol)
+{
+	if (symbol is INamedTypeSymbol named &&
+		(named.ContainingNamespace?.ToDisplayString().StartsWith("Microsoft.AspNetCore.Components", StringComparison.Ordinal) == true ||
+		 named.TypeArguments.Any(UsesBlazorExternalType)))
+		return true;
+
+	if (symbol is IArrayTypeSymbol array)
+		return UsesBlazorExternalType(array.ElementType);
+
+	return false;
 }
 
 string FormatParameter(IParameterSymbol symbol)
@@ -356,7 +387,9 @@ public static class {typeName}Module{(typeGenerics.Length > 0 ? typeGenerics : "
 	{
 		if (member.DeclaredAccessibility.HasFlag(Accessibility.Public))
 		{
-			var display = member.ToDisplayString(Format.NameFormat);
+			var display = member is IMethodSymbol { IsExtensionMethod: true } extensionMethod
+				? extensionMethod.OriginalDefinition.ToDisplayString(Format.StaticExtensionNameFormat)
+				: member.ToDisplayString(Format.NameFormat);
 			var hash = Format.HashName(display);
 			var comment = GetComment(member,out var summary);
 			var generics = string.Empty;

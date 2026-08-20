@@ -10,9 +10,9 @@ namespace ECMAScript;
 public sealed class Symbol
 {
 	/// <summary>
-/// Gets JavaScript <c>Symbol.prototype</c> object.
-/// Keeping this on the constructor host avoids inventing a separate CLR helper surface.
-/// 获取 JavaScript <c>Symbol.prototype</c> 对象；保留在构造器宿主上可避免虚构独立的 CLR 辅助表面。
+	/// Gets JavaScript <c>Symbol.prototype</c> object.
+	/// Keeping this on the constructor host avoids inventing a separate CLR helper surface.
+	/// 获取 JavaScript <c>Symbol.prototype</c> 对象；保留在构造器宿主上可避免虚构独立的 CLR 辅助表面。
 	/// </summary>
 	[Description("@#prototype")]
 	public extern static Symbol Prototype { get; }
@@ -64,26 +64,26 @@ public sealed class Symbol
 	public extern static Symbol Unscopables { get; }
 
 	/// <summary>
-/// Gets the optional description carried by the JavaScript symbol.
-/// Nullable is used because symbols may be created without a description; it is not a globally unique identifier.
-/// 获取 JavaScript Symbol 携带的可选说明；可空是因为 Symbol 可在无说明时创建，且说明不是全局唯一标识。
+	/// Gets the optional description carried by the JavaScript symbol.
+	/// Nullable is used because symbols may be created without a description; it is not a globally unique identifier.
+	/// 获取 JavaScript Symbol 携带的可选说明；可空是因为 Symbol 可在无说明时创建，且说明不是全局唯一标识。
 	/// </summary>
 	[Description("@#description")]
 	public extern string? Description { get; }
 
 	/// <summary>
-/// Hidden protocol bridge for JavaScript <c>Symbol.prototype[@@toPrimitive]</c>.
-/// JavaScript ignores the hint and returns the wrapped symbol value directly.
-/// JavaScript <c>Symbol.prototype[@@toPrimitive]</c> 的隐藏协议桥接；JavaScript 忽略 hint 并直接返回包装的 Symbol 值。
+	/// Hidden protocol bridge for JavaScript <c>Symbol.prototype[@@toPrimitive]</c>.
+	/// JavaScript ignores the hint and returns the wrapped symbol value directly.
+	/// JavaScript <c>Symbol.prototype[@@toPrimitive]</c> 的隐藏协议桥接；JavaScript 忽略 hint 并直接返回包装的 Symbol 值。
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Description("@#@@toPrimitive")]
 	public extern Symbol ToPrimitive_();
 
 	/// <summary>
-/// Hidden projection of JavaScript <c>Symbol.prototype[@@toStringTag]</c>.
-/// This stays hidden because it is primarily used by host protocol machinery such as <c>Object.prototype.toString</c>.
-/// JavaScript <c>Symbol.prototype[@@toStringTag]</c> 的隐藏投影；主要供 <c>Object.prototype.toString</c> 等宿主协议机制使用。
+	/// Hidden projection of JavaScript <c>Symbol.prototype[@@toStringTag]</c>.
+	/// This stays hidden because it is primarily used by host protocol machinery such as <c>Object.prototype.toString</c>.
+	/// JavaScript <c>Symbol.prototype[@@toStringTag]</c> 的隐藏投影；主要供 <c>Object.prototype.toString</c> 等宿主协议机制使用。
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Description("@#@@toStringTag")]
@@ -94,25 +94,25 @@ public sealed class Symbol
 	public extern override string ToString();
 
 	/// <summary>
-/// Returns the primitive symbol value carried by this host projection.
-/// Returns the same symbol identity rather than creating a new Symbol.
-/// 返回此宿主投影携带的原始 Symbol 值；返回相同 Symbol 标识，不会创建新 Symbol。
+	/// Returns the primitive symbol value carried by this host projection.
+	/// Returns the same symbol identity rather than creating a new Symbol.
+	/// 返回此宿主投影携带的原始 Symbol 值；返回相同 Symbol 标识，不会创建新 Symbol。
 	/// </summary>
 	[Description("@#valueOf")]
 	public extern Symbol ValueOf();
 
 	/// <summary>
-/// Retrieves or creates a symbol from JavaScript's realm-wide global registry.
-/// Repeated calls with the same key return the same Symbol identity, unlike separately created symbols with the same description.
-/// 从 JavaScript realm 范围的全局注册表获取或创建 Symbol；相同键的重复调用返回相同 Symbol 标识，不同于说明相同但独立创建的 Symbol。
+	/// Retrieves or creates a symbol from JavaScript's realm-wide global registry.
+	/// Repeated calls with the same key return the same Symbol identity, unlike separately created symbols with the same description.
+	/// 从 JavaScript realm 范围的全局注册表获取或创建 Symbol；相同键的重复调用返回相同 Symbol 标识，不同于说明相同但独立创建的 Symbol。
 	/// </summary>
 	[Description("@#for")]
 	public extern static Symbol For(string key);
 
 	/// <summary>
-/// Returns the key associated with the given symbol in the global registry, or <see langword="null"/>.
-/// Symbols not created through <see cref="For"/> have no registry key.
-/// 返回给定 Symbol 在全局注册表中的键；不在注册表中时为 <see langword="null"/>。未通过 <see cref="For"/> 创建的 Symbol 没有注册表键。
+	/// Returns the key associated with the given symbol in the global registry, or <see langword="null"/>.
+	/// Symbols not created through <see cref="For"/> have no registry key.
+	/// 返回给定 Symbol 在全局注册表中的键；不在注册表中时为 <see langword="null"/>。未通过 <see cref="For"/> 创建的 Symbol 没有注册表键。
 	/// </summary>
 	[Description("@#keyFor")]
 	public extern static string? KeyFor(Symbol sym);

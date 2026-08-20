@@ -1,4 +1,5 @@
 using JazorAdmin.Features.Accounts;
+using JazorAdmin.Features.Audit;
 using JazorAdmin.Features.Identity;
 using JazorAdmin.Features.Notifications;
 using JazorAdmin.Features.Organizations;
@@ -193,6 +194,22 @@ public static class ApiClient
 
     public static IPromise<ApiOutcome> GetOverview()
         => Get("/api/overview/");
+
+    public static IPromise<ApiOutcome> GetAudit(
+        string? from,
+        string? to,
+        string? actor,
+        string? target,
+        string? action)
+    {
+        var path = "/api/audit/";
+        path = AppendQuery(path, "from", from);
+        path = AppendQuery(path, "to", to);
+        path = AppendQuery(path, "actor", actor);
+        path = AppendQuery(path, "object", target);
+        path = AppendQuery(path, "action", action);
+        return Get(path);
+    }
 
     public static SessionResponse ToSession(object data)
         => new(
@@ -440,6 +457,27 @@ public static class ApiClient
         return runs;
     }
 
+    public static AuditEventView[] ToAuditEvents(object? data)
+    {
+        var values = ReadArray(data);
+        var events = new AuditEventView[values.Length];
+        for (var index = 0; index < values.Length; index++)
+        {
+            var value = values[index]!;
+            events[index] = new AuditEventView(
+                ReadString(value, "id"),
+                ReadString(value, "occurredAt"),
+                ReadOptionalString(Reflect.Get(value, "actorId")),
+                ReadOptionalString(Reflect.Get(value, "actorName")),
+                ReadString(value, "action"),
+                ReadString(value, "objectType"),
+                ReadString(value, "objectId"),
+                ReadOptionalString(Reflect.Get(value, "summary")));
+        }
+
+        return events;
+    }
+
     public static NotificationView[] ToNotifications(object? data)
     {
         var values = ReadArray(data);
@@ -472,6 +510,28 @@ public static class ApiClient
                 ReadInt(Reflect.Get(run, "failed")));
         }
 
+        var auditValues = ReadArray(Reflect.Get(data, "recentAudit"));
+        var recentAudit = new OverviewDailyAuditView[auditValues.Length];
+        for (var index = 0; index < auditValues.Length; index++)
+        {
+            var audit = auditValues[index]!;
+            recentAudit[index] = new OverviewDailyAuditView(
+                ReadString(audit, "date"),
+                ReadInt(Reflect.Get(audit, "signIns")),
+                ReadInt(Reflect.Get(audit, "tokenIssuances")));
+        }
+
+        var portalValues = ReadArray(Reflect.Get(data, "portalApplications"));
+        var portalApplications = new PortalApplicationView[portalValues.Length];
+        for (var index = 0; index < portalValues.Length; index++)
+        {
+            var application = portalValues[index]!;
+            portalApplications[index] = new PortalApplicationView(
+                ReadString(application, "clientId"),
+                ReadString(application, "displayName"),
+                ReadString(application, "launchUri"));
+        }
+
         return new OverviewView(
             ReadInt(Reflect.Get(data, "accounts")),
             ReadInt(Reflect.Get(data, "enabledAccounts")),
@@ -485,11 +545,23 @@ public static class ApiClient
             ReadInt(Reflect.Get(data, "settings")),
             ReadInt(Reflect.Get(data, "schedules")),
             ReadInt(Reflect.Get(data, "enabledSchedules")),
-            recentRuns);
+            recentRuns,
+            ReadInt(Reflect.Get(data, "auditEvents")),
+            ReadInt(Reflect.Get(data, "tokenIssuances")),
+            recentAudit,
+            portalApplications);
     }
 
     private static IPromise<ApiOutcome> Get(string path)
         => Send(path, "GET");
+
+    private static string AppendQuery(string path, string key, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return path;
+
+        return path + (path.Contains("?") ? "&" : "?") + key + "=" + EncodeURIComponent(value.Trim());
+    }
 
     private static IPromise<ApiOutcome> Send(string path, string method, object? body = null)
     {

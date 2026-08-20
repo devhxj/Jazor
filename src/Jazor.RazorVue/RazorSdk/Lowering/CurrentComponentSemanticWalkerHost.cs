@@ -15,8 +15,8 @@ namespace Jazor.RazorVue.RazorSdk;
 /// Host seam for the first RazorVue current-component lowering slice.
 /// It rewrites members declared on the current component into the explicit
 /// component runtime surface used by render-function framing:
-/// fields/non-parameter properties read from <c>state</c>, parameters read from
-/// <c>props</c>, and current-component method references lower to stable module
+/// fields/non-parameter properties read from <c>state</c>, parameters normally read from
+/// <c>props</c> (or state for a ParameterView adapter), and current-component method references lower to stable module
 /// function identifiers.
 /// </summary>
 /// <remarks>
@@ -30,13 +30,18 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private const string EventCallbackMetadataName = "Microsoft.AspNetCore.Components.EventCallback";
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
     private const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
+    private const string ParameterViewMetadataName = "Microsoft.AspNetCore.Components.ParameterView";
+    private const string NavigationManagerMetadataName = "Microsoft.AspNetCore.Components.NavigationManager";
+    private const string ErrorBoundaryBaseMetadataName = "Microsoft.AspNetCore.Components.ErrorBoundaryBase";
     private const string StateHasChangedRuntimeName = "stateHasChanged";
     private const string InvokeAsyncRuntimeName = "invokeAsync";
+    private const string ParameterAdapterRuntimeName = "parameterAdapter";
     private readonly INamedTypeSymbol _componentType;
     private readonly string _stateIdentifier;
     private readonly string _propsIdentifier;
     private readonly IReadOnlyDictionary<string, string>? _parameterRuntimeNames;
     private readonly IReadOnlyDictionary<ISymbol, string>? _memberRuntimeNames;
+    private readonly bool _parameterPropertiesUseState;
     private readonly Func<IParameterReferenceOperation, SenseArgument, Expression?>? _parameterReferenceRewriter;
     private readonly Func<ILocalReferenceOperation, SenseArgument, Expression?>? _localReferenceRewriter;
     private readonly Func<IPropertyReferenceOperation, SenseArgument, Expression?>? _propertyReferenceRewriter;
@@ -48,6 +53,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         string propsIdentifier = "props",
         IReadOnlyDictionary<string, string>? parameterRuntimeNames = null,
         IReadOnlyDictionary<ISymbol, string>? memberRuntimeNames = null,
+        bool parameterPropertiesUseState = false,
         Func<IParameterReferenceOperation, SenseArgument, Expression?>? parameterReferenceRewriter = null,
         Func<ILocalReferenceOperation, SenseArgument, Expression?>? localReferenceRewriter = null,
         Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null,
@@ -63,6 +69,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         _propsIdentifier = propsIdentifier;
         _parameterRuntimeNames = parameterRuntimeNames;
         _memberRuntimeNames = memberRuntimeNames;
+        _parameterPropertiesUseState = parameterPropertiesUseState;
         _parameterReferenceRewriter = parameterReferenceRewriter;
         _localReferenceRewriter = localReferenceRewriter;
         _propertyReferenceRewriter = propertyReferenceRewriter;
@@ -93,6 +100,29 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (IsStateHasChangedInvocation(operation.TargetMethod, operation.Instance))
             return RewriteStateHasChanged(operation);
 
+        if (IsErrorBoundaryInvocation(operation))
+        {
+            if (!IsErrorBoundaryRecoverInvocation(operation.TargetMethod))
+            {
+                throw new OperationTransformationException(
+                    operation,
+                    "ErrorBoundary member '" +
+                    operation.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat) +
+                    "' is not available in the RazorVue browser adapter. Only ErrorBoundary.Recover() is currently projected from a component reference.");
+            }
+        }
+
+        // The normal compiler cannot materialize ComponentBase or ParameterView. In adapter
+        // mode these two calls are explicit runtime protocol seams, so claim them before the
+        // generic current-component dispatch guard can report a misleading indirect-call error.
+        // ParameterView 只在 adapter 定义的两个入口穿过 compiler，其他 API 不得静默降级。
+        if (_parameterPropertiesUseState &&
+            (IsComponentBaseSetParametersAsyncInvocation(operation.TargetMethod) ||
+             IsParameterViewSetParameterPropertiesInvocation(operation)))
+        {
+            return null;
+        }
+
         if (IsUnsupportedIndirectCurrentComponentDispatch(operation.TargetMethod, operation.Instance))
             throw CreateUnsupportedIndirectCurrentComponentDispatchException(operation, operation.TargetMethod, operation.Instance);
 
@@ -113,6 +143,15 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 
         if (IsComponentBaseInvokeAsyncInvocation(operation.TargetMethod, operation.Instance))
             return RewriteInvokeAsync(operation, arguments);
+
+        if (IsErrorBoundaryInvocation(operation))
+            return RewriteErrorBoundaryRecoverInvocation(operation, instance, arguments);
+
+        if (_parameterPropertiesUseState && IsComponentBaseSetParametersAsyncInvocation(operation.TargetMethod))
+            return RewriteComponentBaseSetParametersAsync(operation, arguments);
+
+        if (_parameterPropertiesUseState && IsParameterViewSetParameterPropertiesInvocation(operation))
+            return RewriteParameterViewSetParameterProperties(operation, instance);
 
         if (IsRazorRuntimeHelpersTypeCheck(operation.TargetMethod))
             return RewriteRazorRuntimeHelpersTypeCheck(operation, arguments);
@@ -150,6 +189,49 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             ? new Identifier(GetMemberName(operation.Method))
             : null;
 
+    public override Expression? RewriteEventAssignment(
+        IEventAssignmentOperation operation,
+        SenseArgument argument)
+    {
+        if (operation.EventReference is not IEventReferenceOperation eventReference ||
+            !IsNavigationManagerEvent(eventReference.Event, eventReference.Instance))
+        {
+            return null;
+        }
+
+        // NavigationManager.LocationChanged uses custom CLR accessors, so it cannot enter the
+        // field-like event protocol. Project only this host-owned event to the browser service;
+        // all other external events keep the normal explicit failure.
+        // LocationChanged 是 host-owned custom event，不能伪装成 CLR field-like event。
+        var walker = new SemanticWalker(true)
+        {
+            Host = this
+        };
+        var receiver = walker.Visit(eventReference.Instance!, argument) as Expression
+            ?? throw new OperationTransformationException(
+                operation,
+                "NavigationManager.LocationChanged receiver could not be lowered to the browser service.");
+        var handler = RewriteEventCallbackHandler(operation.HandlerValue, argument)
+            ?? throw new OperationTransformationException(
+                operation,
+                "NavigationManager.LocationChanged requires a component method or lambda handler that RazorVue can lower.");
+        var accessor = operation.Adds ? "addLocationChanged" : "removeLocationChanged";
+
+        return JavaScriptAstFactory.CreateSingleEvaluationArrowInvocation(
+            [
+                ("$navigation", receiver),
+                ("$handler", handler)
+            ],
+            values => new CallExpression(
+                new MemberExpression(
+                    values[0],
+                    new Identifier(accessor),
+                    computed: false,
+                    optional: false),
+                NodeList.From<Expression>([values[1]]),
+                optional: false));
+    }
+
     public override Expression? RewriteMethodReferencePreorder(IMethodReferenceOperation operation, SenseArgument argument)
     {
         if (IsUnsupportedIndirectCurrentComponentDispatch(operation.Method, operation.Instance))
@@ -174,6 +256,30 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         Expression? instance,
         IReadOnlyList<Expression> arguments)
     {
+        if (IsErrorBoundaryPropertyReference(operation))
+        {
+            if (!string.Equals(operation.Property.Name, "CurrentException", StringComparison.Ordinal) ||
+                operation.Property.SetMethod is not null && operation.Property.SetMethod.DeclaredAccessibility == Accessibility.Public)
+            {
+                throw new OperationTransformationException(
+                    operation,
+                    "ErrorBoundary member '" +
+                    operation.Property.OriginalDefinition.ToDisplayString(Format.NameFormat) +
+                    "' is not available in the RazorVue browser adapter. Only the read-only CurrentException property is projected from a component reference.");
+            }
+
+            if (instance is null)
+                throw new OperationTransformationException(
+                    operation,
+                    "ErrorBoundary.CurrentException lost its component-reference receiver during RazorVue lowering.");
+
+            return new MemberExpression(
+                instance,
+                new Identifier("CurrentException"),
+                computed: false,
+                optional: false);
+        }
+
         if (!IsCurrentComponentProperty(operation.Property, operation.Instance))
             return null;
 
@@ -192,7 +298,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         // invoked for more than one component instance.
         // [Parameter]、实例 auto-property 与 static property 的生命周期载体必须分开。
         if (IsParameterProperty(operation.Property))
-            return BuildPropsAccess(operation.Property);
+            return BuildParameterAccess(operation.Property);
 
         if (operation.Property.IsStatic)
         {
@@ -223,7 +329,8 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     {
         if (operation.Target is IPropertyReferenceOperation propertyReference &&
             IsCurrentComponentProperty(propertyReference.Property, propertyReference.Instance) &&
-            IsParameterProperty(propertyReference.Property))
+            IsParameterProperty(propertyReference.Property) &&
+            !_parameterPropertiesUseState)
         {
             throw new OperationTransformationException(
                 operation,
@@ -245,7 +352,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             propertyReference.Property.IsIndexer ||
             propertyReference.Arguments.Length != 0 ||
             !IsCurrentComponentProperty(propertyReference.Property, propertyReference.Instance) ||
-            IsParameterProperty(propertyReference.Property) ||
+            (!_parameterPropertiesUseState && IsParameterProperty(propertyReference.Property)) ||
             (!propertyReference.Property.IsStatic && !IsAutoProperty(propertyReference.Property)))
         {
             return null;
@@ -551,7 +658,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                 => BuildStateAccess(fieldReference.Field),
             IPropertyReferenceOperation propertyReference when
                 IsCurrentComponentProperty(propertyReference.Property, propertyReference.Instance) &&
-                !IsParameterProperty(propertyReference.Property) &&
+                (!IsParameterProperty(propertyReference.Property) || _parameterPropertiesUseState) &&
                 !propertyReference.Property.IsIndexer &&
                 IsAutoProperty(propertyReference.Property)
                     => BuildStateAccess(propertyReference.Property),
@@ -618,7 +725,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                 IsCurrentComponentProperty(propertyReference.Property, propertyReference.Instance) &&
                 IsParameterProperty(propertyReference.Property) &&
                 IsEventCallbackType(propertyReference.Property.Type)
-                    => BuildPropsAccess(propertyReference.Property),
+                    => BuildParameterAccess(propertyReference.Property),
             _ => null
         };
 
@@ -807,7 +914,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private Expression RewriteEventCallbackInvoke(IPropertySymbol parameter, IReadOnlyList<Expression> arguments)
     {
         // EventCallback parameters lower as optional Vue listener props: props.onX?.(args...)
-        return RewriteEventCallbackInvoke(BuildPropsAccess(parameter), arguments);
+        return RewriteEventCallbackInvoke(BuildParameterAccess(parameter), arguments);
     }
 
     private static Expression RewriteEventCallbackInvoke(
@@ -892,6 +999,146 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             optional: false);
     }
 
+    private static bool IsComponentBaseSetParametersAsyncInvocation(IMethodSymbol method)
+        => !method.IsStatic &&
+           string.Equals(method.Name, "SetParametersAsync", StringComparison.Ordinal) &&
+           method.Parameters.Length == 1 &&
+           string.Equals(
+               method.ContainingType!.OriginalDefinition.ToDisplayString(Format.NameFormat),
+               ComponentBaseMetadataName,
+               StringComparison.Ordinal);
+
+    private static Expression RewriteComponentBaseSetParametersAsync(
+        IInvocationOperation operation,
+        IReadOnlyList<Expression> arguments)
+    {
+        if (arguments.Count != 1)
+        {
+            throw new OperationTransformationException(
+                operation,
+                "ComponentBase.SetParametersAsync is supported by RazorVue only for the standard single ParameterView argument shape.");
+        }
+
+        return new CallExpression(
+            new MemberExpression(
+                new Identifier(ParameterAdapterRuntimeName),
+                new Identifier("applyComponentBaseParameters"),
+                computed: false,
+                optional: false),
+            NodeList.From(arguments),
+            optional: false);
+    }
+
+    private bool IsParameterViewSetParameterPropertiesInvocation(IInvocationOperation operation)
+    {
+        var method = operation.TargetMethod;
+        if (method.IsStatic ||
+            !string.Equals(method.Name, "SetParameterProperties", StringComparison.Ordinal) ||
+            method.Parameters.Length != 1 ||
+            !string.Equals(
+                method.ContainingType!.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                ParameterViewMetadataName,
+                StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return operation.Arguments.Length == 1 &&
+               IsCurrentComponentReceiver(operation.Arguments[0].Value);
+    }
+
+    private static Expression RewriteParameterViewSetParameterProperties(
+        IInvocationOperation operation,
+        Expression? instance)
+    {
+        if (instance is null)
+        {
+            throw new OperationTransformationException(
+                operation,
+                "ParameterView.SetParameterProperties requires the current ParameterView instance in RazorVue's component adapter.");
+        }
+
+        return new CallExpression(
+            new MemberExpression(
+                new Identifier(ParameterAdapterRuntimeName),
+                new Identifier("applyParameterProperties"),
+                computed: false,
+                optional: false),
+            NodeList.From<Expression>(instance),
+            optional: false);
+    }
+
+    private static Expression RewriteErrorBoundaryRecoverInvocation(
+        IInvocationOperation operation,
+        Expression? instance,
+        IReadOnlyList<Expression> arguments)
+    {
+        if (instance is null)
+        {
+            throw new OperationTransformationException(
+                operation,
+                "ErrorBoundary.Recover requires a component reference captured by @ref in RazorVue's browser adapter.");
+        }
+
+        if (arguments.Count != 0)
+        {
+            throw new OperationTransformationException(
+                operation,
+                "ErrorBoundary.Recover is supported by the RazorVue browser adapter only as a parameterless call.");
+        }
+
+        return new CallExpression(
+            new MemberExpression(
+                instance,
+                new Identifier("Recover"),
+                computed: false,
+                optional: false),
+            NodeList.Empty<Expression>(),
+            optional: false);
+    }
+
+    private static bool IsErrorBoundaryInvocation(IInvocationOperation operation)
+        => !operation.TargetMethod.IsStatic &&
+           IsErrorBoundaryBaseType(operation.TargetMethod.ContainingType);
+
+    private static bool IsErrorBoundaryRecoverInvocation(IMethodSymbol method)
+        => string.Equals(method.Name, "Recover", StringComparison.Ordinal) &&
+           method.Parameters.Length == 0 &&
+           !method.IsStatic &&
+           IsErrorBoundaryBaseType(method.ContainingType);
+
+    private static bool IsErrorBoundaryPropertyReference(IPropertyReferenceOperation operation)
+        => IsErrorBoundaryBaseType(operation.Property.ContainingType);
+
+    private static bool IsErrorBoundaryBaseType(ITypeSymbol? type)
+        => type is INamedTypeSymbol namedType &&
+           string.Equals(
+               namedType.OriginalDefinition.ToDisplayString(Format.NameFormat),
+               ErrorBoundaryBaseMetadataName,
+               StringComparison.Ordinal);
+
+    private bool IsNavigationManagerEvent(IEventSymbol eventSymbol, IOperation? instance)
+        => string.Equals(eventSymbol.Name, "LocationChanged", StringComparison.Ordinal) &&
+           IsNavigationManagerType(eventSymbol.ContainingType) &&
+           IsNavigationManagerReceiver(instance);
+
+    private bool IsNavigationManagerReceiver(IOperation? operation)
+    {
+        while (operation is IConversionOperation conversion)
+            operation = conversion.Operand;
+
+        return operation is IPropertyReferenceOperation propertyReference &&
+               IsCurrentComponentProperty(propertyReference.Property, propertyReference.Instance) &&
+               IsNavigationManagerType(propertyReference.Property.Type);
+    }
+
+    private static bool IsNavigationManagerType(ITypeSymbol? type)
+        => type is INamedTypeSymbol namedType &&
+           string.Equals(
+               namedType.OriginalDefinition.ToDisplayString(Format.NameFormat),
+               NavigationManagerMetadataName,
+               StringComparison.Ordinal);
+
     private static Expression RewriteRazorRuntimeHelpersTypeCheck(
         IInvocationOperation operation,
         IReadOnlyList<Expression> arguments)
@@ -932,6 +1179,7 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private bool IsUnsupportedIndirectCurrentComponentDispatch(IMethodSymbol method, IOperation? instance)
         => !IsStateHasChangedInvocation(method, instance) &&
            !IsComponentBaseInvokeAsyncInvocation(method, instance) &&
+           !(_parameterPropertiesUseState && IsComponentBaseSetParametersAsyncInvocation(method)) &&
            !IsRazorRuntimeHelpersTypeCheck(method) &&
            !IsCurrentComponentMethod(method, instance) &&
            IsCurrentComponentReceiver(instance);
@@ -1067,12 +1315,26 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
                 optional: false);
     }
 
+    private Expression BuildParameterAccess(ISymbol symbol)
+        => _parameterPropertiesUseState
+            ? BuildStateAccess(symbol)
+            : BuildPropsAccess(symbol);
+
     private Expression BuildRuntimeAccess(string runtimeObjectName, ISymbol symbol)
-        => new MemberExpression(
-            new Identifier(runtimeObjectName),
-            new Identifier(GetMemberName(symbol)),
-            computed: false,
-            optional: false);
+    {
+        var memberName = GetMemberName(symbol);
+        return JavaScriptAstFactory.IsJavaScriptIdentifierName(memberName)
+            ? new MemberExpression(
+                new Identifier(runtimeObjectName),
+                new Identifier(memberName),
+                computed: false,
+                optional: false)
+            : new MemberExpression(
+                new Identifier(runtimeObjectName),
+                JavaScriptAstFactory.CreateStringLiteral(memberName),
+                computed: true,
+                optional: false);
+    }
 
     private string GetMemberName(ISymbol symbol)
         => _memberRuntimeNames is not null &&

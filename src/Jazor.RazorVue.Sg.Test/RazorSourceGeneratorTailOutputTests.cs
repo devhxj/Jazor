@@ -8,6 +8,83 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorTailOutputTests
 {
     [TestMethod]
+    public void RouteCatalog_EmitsDeterministicPageAndLayoutEntries()
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.FinalCompilation.Routes",
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript;
+                    global using Microsoft.AspNetCore.Components;
+                    global using Microsoft.AspNetCore.Components.Rendering;
+                    global using static ECMAScript.Vue;
+                    """,
+                    parseOptions,
+                    "GlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    namespace Demo.Layouts;
+
+                    [ECMAScriptModule("./components/shell")]
+                    public sealed class Shell : ComponentBase, IVueComponent
+                    {
+                        protected override void BuildRenderTree(RenderTreeBuilder builder)
+                        {
+                            builder.AddContent(0, ChildContent);
+                        }
+
+                        [Parameter] public RenderFragment? ChildContent { get; set; }
+                    }
+                    """,
+                    parseOptions,
+                    "Shell.razor.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    namespace Demo.Pages;
+
+                    [Route("/orders/{id:int}")]
+                    [Layout(typeof(Demo.Layouts.Shell))]
+                    [ECMAScriptModule("./components/orders")]
+                    public sealed class Orders : ComponentBase, IVueComponent
+                    {
+                        [Parameter] public int Id { get; set; }
+                        [SupplyParameterFromQuery(Name = "q")] public string? Query { get; set; }
+
+                        protected override void BuildRenderTree(RenderTreeBuilder builder)
+                        {
+                            builder.AddContent(0, Id);
+                        }
+                    }
+                    """,
+                    parseOptions,
+                    "Orders.razor.g.cs")
+            ],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors));
+
+        Assert.IsTrue(
+            RazorTailOutput.TryBuildFinalCompilationCatalog(
+                compilation,
+                CancellationToken.None,
+                out var catalogSource,
+                out var diagnostics),
+            DescribeDiagnostics(diagnostics));
+        Assert.IsEmpty(diagnostics, DescribeDiagnostics(diagnostics));
+        Assert.IsNotNull(catalogSource);
+        StringAssert.Contains(catalogSource, "@jazor/vue-runtime/routes.mjs");
+        StringAssert.Contains(catalogSource, "export const routes");
+        StringAssert.Contains(catalogSource, "orders/{id:int}");
+        StringAssert.Contains(catalogSource, "queries");
+        StringAssert.Contains(catalogSource, "components/shell.mjs");
+        StringAssert.Contains(catalogSource, "components/orders.mjs");
+    }
+
+    [TestMethod]
     public void TryBuildFinalCompilationCatalog_MixedRazorAndHandwrittenComponents_EmitsBothModules()
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);

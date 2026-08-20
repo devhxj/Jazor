@@ -23,6 +23,9 @@ public static class Routes
     public const string SsoTokensKey = "sso.tokens";
     public const string SettingsKey = "settings";
     public const string SchedulesKey = "schedules";
+    public const string AuditKey = "audit";
+    public const string IamZoneKey = "iam";
+    public const string OperationsZoneKey = "operations";
     public const string LoginKey = "login";
     public const string LockKey = "lock";
     public const string InternalErrorKey = "error.500";
@@ -61,6 +64,8 @@ public static class Routes
         }
     ];
 
+    // 两级导航按业务分区组织：IconBar 承载分区，次级菜单承载模块与页面。
+    // 门户工作台、身份与访问、平台运营都走同一导航目录；后续新增模块只在对应分区扩展。
     public static AdminRouteDefinition[] CreateItems(AdminLanguage language)
         =>
         [
@@ -74,112 +79,137 @@ public static class Routes
         },
         new()
         {
-            Key = OrganizationsKey,
-            Icon = "tree-square-dot",
-            Title = Localization.Get(language, TextKey.Organizations),
-            Children =
-            [
-                new()
-                {
-                    Key = OrganizationStructureKey,
-                    Path = "/organizations/structure",
-                    Title = Localization.Get(language, TextKey.OrganizationStructure),
-                    Subtitle = Localization.Get(language, TextKey.OrganizationStructureSubtitle)
-                },
-                new()
-                {
-                    Key = OrganizationMembersKey,
-                    Path = "/organizations/members",
-                    Title = Localization.Get(language, TextKey.Members),
-                    Subtitle = Localization.Get(language, TextKey.MembersSubtitle)
-                }
-            ]
-        },
-        new()
-        {
-            Key = AuthorizationKey,
+            Key = IamZoneKey,
             Icon = "secured",
-            Title = Localization.Get(language, TextKey.Authorization),
+            Title = Localization.Get(language, TextKey.IdentityAccessZone),
             Children =
             [
                 new()
                 {
-                    Key = AuthorizationRolesKey,
-                    Path = "/authorization/roles",
-                    Title = Localization.Get(language, TextKey.RolesAndGrants),
-                    Subtitle = Localization.Get(language, TextKey.RolesAndGrantsSubtitle)
+                    Key = OrganizationsKey,
+                    Icon = "tree-square-dot",
+                    Title = Localization.Get(language, TextKey.Organizations),
+                    Children =
+                    [
+                        new()
+                        {
+                            Key = OrganizationStructureKey,
+                            Path = "/organizations/structure",
+                            Title = Localization.Get(language, TextKey.OrganizationStructure),
+                            Subtitle = Localization.Get(language, TextKey.OrganizationStructureSubtitle)
+                        },
+                        new()
+                        {
+                            Key = OrganizationMembersKey,
+                            Path = "/organizations/members",
+                            Title = Localization.Get(language, TextKey.Members),
+                            Subtitle = Localization.Get(language, TextKey.MembersSubtitle)
+                        }
+                    ]
                 },
                 new()
                 {
-                    Key = AuthorizationResourcesKey,
-                    Path = "/authorization/resources",
-                    Title = Localization.Get(language, TextKey.ResourceOperations),
-                    Subtitle = Localization.Get(language, TextKey.ResourceOperationsSubtitle)
+                    Key = AuthorizationKey,
+                    Icon = "secured",
+                    Title = Localization.Get(language, TextKey.Authorization),
+                    Children =
+                    [
+                        new()
+                        {
+                            Key = AuthorizationRolesKey,
+                            Path = "/authorization/roles",
+                            Title = Localization.Get(language, TextKey.RolesAndGrants),
+                            Subtitle = Localization.Get(language, TextKey.RolesAndGrantsSubtitle)
+                        },
+                        new()
+                        {
+                            Key = AuthorizationResourcesKey,
+                            Path = "/authorization/resources",
+                            Title = Localization.Get(language, TextKey.ResourceOperations),
+                            Subtitle = Localization.Get(language, TextKey.ResourceOperationsSubtitle)
+                        }
+                    ]
+                },
+                new()
+                {
+                    Key = AccountsKey,
+                    Path = "/accounts",
+                    Icon = "usergroup",
+                    Title = Localization.Get(language, TextKey.Accounts),
+                    Subtitle = Localization.Get(language, TextKey.AccountsSubtitle)
+                },
+                new()
+                {
+                    Key = SsoKey,
+                    Icon = "root-list",
+                    Title = Localization.Get(language, TextKey.Sso),
+                    Children =
+                    [
+                        new()
+                        {
+                            Key = SsoApplicationsKey,
+                            Path = "/sso/applications",
+                            Title = Localization.Get(language, TextKey.OpenIdApplications),
+                            Subtitle = Localization.Get(language, TextKey.OpenIdApplicationsSubtitle)
+                        },
+                        new()
+                        {
+                            Key = SsoScopesKey,
+                            Path = "/sso/scopes",
+                            Title = Localization.Get(language, TextKey.OpenIdScopes),
+                            Subtitle = Localization.Get(language, TextKey.OpenIdScopesSubtitle)
+                        },
+                        new()
+                        {
+                            Key = SsoAuthorizationsKey,
+                            Path = "/sso/authorizations",
+                            Title = Localization.Get(language, TextKey.OpenIdAuthorizations),
+                            Subtitle = Localization.Get(language, TextKey.OpenIdAuthorizationsSubtitle)
+                        },
+                        new()
+                        {
+                            Key = SsoTokensKey,
+                            Path = "/sso/tokens",
+                            Title = Localization.Get(language, TextKey.OpenIdTokens),
+                            Subtitle = Localization.Get(language, TextKey.OpenIdTokensSubtitle)
+                        }
+                    ]
                 }
             ]
         },
         new()
         {
-            Key = AccountsKey,
-            Path = "/accounts",
-            Icon = "usergroup",
-            Title = Localization.Get(language, TextKey.Accounts),
-            Subtitle = Localization.Get(language, TextKey.AccountsSubtitle)
-        },
-        new()
-        {
-            Key = SsoKey,
-            Icon = "root-list",
-            Title = Localization.Get(language, TextKey.Sso),
-            Children =
-            [
-                new()
-                {
-                    Key = SsoApplicationsKey,
-                    Path = "/sso/applications",
-                    Title = Localization.Get(language, TextKey.OpenIdApplications),
-                    Subtitle = Localization.Get(language, TextKey.OpenIdApplicationsSubtitle)
-                },
-                new()
-                {
-                    Key = SsoScopesKey,
-                    Path = "/sso/scopes",
-                    Title = Localization.Get(language, TextKey.OpenIdScopes),
-                    Subtitle = Localization.Get(language, TextKey.OpenIdScopesSubtitle)
-                },
-                new()
-                {
-                    Key = SsoAuthorizationsKey,
-                    Path = "/sso/authorizations",
-                    Title = Localization.Get(language, TextKey.OpenIdAuthorizations),
-                    Subtitle = Localization.Get(language, TextKey.OpenIdAuthorizationsSubtitle)
-                },
-                new()
-                {
-                    Key = SsoTokensKey,
-                    Path = "/sso/tokens",
-                    Title = Localization.Get(language, TextKey.OpenIdTokens),
-                    Subtitle = Localization.Get(language, TextKey.OpenIdTokensSubtitle)
-                }
-            ]
-        },
-        new()
-        {
-            Key = SettingsKey,
-            Path = "/settings",
+            Key = OperationsZoneKey,
             Icon = "setting",
-            Title = Localization.Get(language, TextKey.Settings),
-            Subtitle = Localization.Get(language, TextKey.SettingsSubtitle)
+            Title = Localization.Get(language, TextKey.PlatformOperationsZone),
+            Children =
+            [
+                new()
+                {
+                    Key = SettingsKey,
+                    Path = "/settings",
+                    Icon = "setting",
+                    Title = Localization.Get(language, TextKey.Settings),
+                    Subtitle = Localization.Get(language, TextKey.SettingsSubtitle)
+                },
+                new()
+                {
+                    Key = SchedulesKey,
+                    Path = "/schedules",
+                    Icon = "time",
+                    Title = Localization.Get(language, TextKey.Schedules),
+                    Subtitle = Localization.Get(language, TextKey.SchedulesSubtitle)
+                },
+                new()
+                {
+                    Key = AuditKey,
+                    Path = "/audit",
+                    Icon = "file-paste",
+                    Title = Localization.Get(language, TextKey.Audit),
+                    Subtitle = Localization.Get(language, TextKey.AuditSubtitle)
+                }
+            ]
         },
-        new()
-        {
-            Key = SchedulesKey,
-            Path = "/schedules",
-            Icon = "time",
-            Title = Localization.Get(language, TextKey.Schedules),
-            Subtitle = Localization.Get(language, TextKey.SchedulesSubtitle)
-        },
-        .. StarterCatalog.CreateRoutes(language),
         ];
 
     public static readonly AdminNavItems NavigationItems =

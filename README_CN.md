@@ -87,22 +87,22 @@ flowchart LR
 | `ECMAScript.VuIcons` | `vu-icons` 的强类型 RazorVue 图标，支持静态单图标与动态 catalog 路径 |
 | `Jazor.Admin` | UI 库无关的管理壳库与 RazorVue 组件 |
 
-`samples/JazorAdmin` 是消费 `Jazor.Admin` 的示例应用，不属于该库的公共契约。
+`samples/JazorAdmin` 是消费 `Jazor.Admin` 的生产级管理参考应用，不属于该库的公共契约。
 
 ## 安装
 
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.16.0
+dotnet add package Jazor --version 0.17.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.16.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.16.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.17.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.17.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

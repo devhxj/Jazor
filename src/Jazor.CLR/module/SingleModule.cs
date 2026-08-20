@@ -73,7 +73,7 @@ public static class SingleModule
 		if (!decimalPattern.Test(trimmed))
 			return false;
 
-		value = NumberFn(trimmed.Replace(",", ""));
+		value = NumberValue(trimmed.Replace(",", ""));
 		return true;
 	}
 
@@ -83,8 +83,8 @@ public static class SingleModule
 			return false;
 
 		// JS Number 没有可直接复用的 float 位级判定，这里退化为判定 log2 是否为整数。
-		var exponent = Math.Log2Fn(value);
-		return IsFiniteCore(exponent) && Math.FloorFn(exponent) == exponent;
+		var exponent = Math.Logarithm2(value);
+		return IsFiniteCore(exponent) && Math.FloorFunc(exponent) == exponent;
 	}
 
 	internal static Number SignCore(Number value)
@@ -101,7 +101,7 @@ public static class SingleModule
 	}
 
 	private static Number RoundToEvenCore(Number value)
-		=> Math.FroundFn(DoubleModule.RoundToEvenCore(value));
+		=> Math.Fround(DoubleModule.RoundToEvenCore(value));
 
 	internal static Number RoundCore(Number value, Number digits, Number mode)
 	{
@@ -122,19 +122,19 @@ public static class SingleModule
 		if (IsNaN(right))
 			return right;
 
-		var regular = Math.FroundFn(left % right);
+		var regular = Math.Fround(left % right);
 		if (IsNaN(regular))
 			return Number.NaN;
 		if (regular == 0)
 			return left < 0 || Object.Is(left, -0) ? -0 : 0;
 
-		var alternative = Math.FroundFn(regular - Math.AbsFn(right) * (left < 0 ? -1 : 1));
-		var regularMagnitude = Math.AbsFn(regular);
-		var alternativeMagnitude = Math.AbsFn(alternative);
+		var alternative = Math.Fround(regular - Math.Absolute(right) * (left < 0 ? -1 : 1));
+		var regularMagnitude = Math.Absolute(regular);
+		var alternativeMagnitude = Math.Absolute(alternative);
 		if (alternativeMagnitude == regularMagnitude)
 		{
-			var quotient = Math.FroundFn(left / right);
-			return Math.AbsFn(RoundToEvenCore(quotient)) > Math.AbsFn(quotient)
+			var quotient = Math.Fround(left / right);
+			return Math.Absolute(RoundToEvenCore(quotient)) > Math.Absolute(quotient)
 				? alternative
 				: regular;
 		}
@@ -165,9 +165,9 @@ public static class SingleModule
 
 		var buffer = new ArrayBuffer(4);
 		var view = new DataView(buffer);
-		view.SetFloat32(0, (float)Math.AbsFn(value), false);
+		view.SetFloat32(0, (float)Math.Absolute(value), false);
 		var bits = view.GetUint32(0, false);
-		var exponentBits = Math.FloorFn(bits / 8388608d) % 256d;
+		var exponentBits = Math.FloorFunc(bits / 8388608d) % 256d;
 		if (exponentBits != 0)
 			return exponentBits - 127;
 
@@ -185,7 +185,7 @@ public static class SingleModule
 		var bit = -1;
 		while (value > 0)
 		{
-			value = Math.FloorFn(value / 2);
+			value = Math.FloorFunc(value / 2);
 			bit++;
 		}
 
@@ -218,15 +218,15 @@ public static class SingleModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX > absY)
 			return x;
 		if (absX < absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更大的那个，这里顺带修正 +0 / -0。
-		return Math.MaxFn(x, y);
+		return Math.Maximum(x, y);
 	}
 
 	private static Number MinMagnitudeCore(Number x, Number y)
@@ -234,15 +234,15 @@ public static class SingleModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX < absY)
 			return x;
 		if (absX > absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更小的那个，这里顺带修正 +0 / -0。
-		return Math.MinFn(x, y);
+		return Math.Minimum(x, y);
 	}
 
 	private static Number MaxMagnitudeNumberCore(Number x, Number y)
@@ -876,14 +876,14 @@ public static class SingleModule
 	///<summary>Computes the sine and cosine of a value.</summary>
 	[Jazor(Op.Import ,"static float.SinCos(float)")]
 	public static (float Sin, float Cos) _9905e3952bca67bc(Number x)
-		=> (Sin: Math.SinFn(x), Cos: Math.CosFn(x));
+		=> (Sin: Math.Sine(x), Cos: Math.Cosine(x));
 
 	///<summary>Computes the sine and cosine of a value.</summary>
 	[Jazor(Op.Import ,"static float.SinCosPi(float)")]
 	public static (float SinPi, float CosPi) _2c792a5d6ef88cd1(Number x)
 	{
 		var angle = x * Math.PI;
-		return (SinPi: Math.SinFn(angle), CosPi: Math.CosFn(angle));
+		return (SinPi: Math.Sine(angle), CosPi: Math.Cosine(angle));
 	}
 
 	///<summary>Computes the sine of a value that has been multiplied by <code data-dev-comment-type="c">pi</code>.</summary>

@@ -20,17 +20,17 @@ public static class BigIntegerModule
 		if (isBigEndian)
 		{
 			for (var i = 0; i < bytes.Length; i++)
-				value = (value << BigIntFn(8)) | BigIntFn(bytes[i]);
+				value = (value << BigIntValue(8)) | BigIntValue(bytes[i]);
 		}
 		else
 		{
 			for (var i = bytes.Length - 1; i >= 0; i--)
-				value = (value << BigIntFn(8)) | BigIntFn(bytes[i]);
+				value = (value << BigIntValue(8)) | BigIntValue(bytes[i]);
 		}
 
 		var signByte = isBigEndian ? bytes[0] : bytes[bytes.Length - 1];
 		if (!isUnsigned && (signByte & 0x80) != 0)
-			value -= BigInt.One << BigIntFn(bytes.Length * 8);
+			value -= BigInt.One << BigIntValue(bytes.Length * 8);
 
 		return value;
 	}
@@ -41,8 +41,8 @@ public static class BigIntegerModule
 			throw new Error("OverflowException: Negative values do not have an unsigned representation.");
 
 		var bitLength = GetBitLengthCore(value) + (isUnsigned ? BigInt.Zero : BigInt.One);
-		var byteCount = (bitLength + BigIntFn(7)) / BigIntFn(8);
-		return NumberFn(byteCount > BigInt.Zero ? byteCount : BigInt.One);
+		var byteCount = (bitLength + BigIntValue(7)) / BigIntValue(8);
+		return NumberValue(byteCount > BigInt.Zero ? byteCount : BigInt.One);
 	}
 
 	private static Array<byte> GetBytesCore(BigInt value, bool isUnsigned, bool isBigEndian)
@@ -50,13 +50,13 @@ public static class BigIntegerModule
 		var byteCount = GetByteCountCore(value, isUnsigned);
 		var encoded = value;
 		if (value < BigInt.Zero)
-			encoded += BigInt.One << BigIntFn(byteCount * 8);
+			encoded += BigInt.One << BigIntValue(byteCount * 8);
 
 		var bytes = new Array<byte>();
 		for (var i = 0; i < byteCount; i++)
 		{
-			bytes.Push(NumberFn(encoded & BigIntFn(0xFF)));
-			encoded >>= BigIntFn(8);
+			bytes.Push(NumberValue(encoded & BigIntValue(0xFF)));
+			encoded >>= BigIntValue(8);
 		}
 
 		if (isBigEndian)
@@ -69,7 +69,7 @@ public static class BigIntegerModule
 	{
 		var magnitude = value < BigInt.Zero ? -value : value;
 		var bitLength = GetBitLengthCore(magnitude);
-		var wordSize = BigIntFn(32);
+		var wordSize = BigIntValue(32);
 		var width = ((bitLength + wordSize - BigInt.One) / wordSize) * wordSize;
 		return width < minimumWidth ? minimumWidth : width;
 	}
@@ -79,8 +79,8 @@ public static class BigIntegerModule
 		if (value == BigInt.Zero)
 			return BigInt.Zero;
 
-		var width = GetWordWidthCore(value, BigIntFn(32));
-		var widthNumber = NumberFn(width);
+		var width = GetWordWidthCore(value, BigIntValue(32));
+		var widthNumber = NumberValue(width);
 		var amount = rotateAmount % widthNumber;
 		if (amount < 0)
 			amount += widthNumber;
@@ -90,7 +90,7 @@ public static class BigIntegerModule
 		var modulus = BigInt.One << width;
 		var mask = modulus - BigInt.One;
 		var bits = value < BigInt.Zero ? modulus + value : value;
-		var shift = BigIntFn(amount);
+		var shift = BigIntValue(amount);
 		var complementShift = width - shift;
 		var rotated = rotateLeft
 			? ((bits << shift) | (bits >> complementShift)) & mask
@@ -107,11 +107,11 @@ public static class BigIntegerModule
 		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("OverflowException: Cannot convert a non-finite floating-point value to BigInteger.");
 
-		return BigIntFn(Math.TruncFn(value));
+		return BigIntValue(Math.Trunc(value));
 	}
 
 	private static BigInt FromDecimalCore(string value)
-		=> BigIntFn(DecimalModule._be8b149ea0e1d76b(value));
+		=> BigIntValue(DecimalModule._be8b149ea0e1d76b(value));
 
 	private static BigInt RequireRangeCore(BigInt value, BigInt min, BigInt max)
 	{
@@ -122,11 +122,11 @@ public static class BigIntegerModule
 	}
 
 	private static Number RequireNumberRangeCore(BigInt value, BigInt min, BigInt max)
-		=> NumberFn(RequireRangeCore(value, min, max));
+		=> NumberValue(RequireRangeCore(value, min, max));
 
 	private static string ToDecimalCore(BigInt value)
 	{
-		var limit = BigIntFn("79228162514264337593543950335");
+		var limit = BigIntValue("79228162514264337593543950335");
 		return RequireRangeCore(value, -limit, limit).ToString();
 	}
 
@@ -252,16 +252,16 @@ public static class BigIntegerModule
 
 	private static Number ComputePositiveLog(BigInt value, Number baseValue)
 	{
-		if (value <= BigIntFn(Number.MAX_SAFE_INTEGER))
-			return Math.Log(NumberFn(value), baseValue);
+		if (value <= BigIntValue(Number.MAX_SAFE_INTEGER))
+			return Math.Log(NumberValue(value), baseValue);
 
-		var bitLength = NumberFn(GetBitLengthCore(value));
+		var bitLength = NumberValue(GetBitLengthCore(value));
 		var shift = bitLength - 64;
 		var x = shift > 0
-			? value >> BigIntFn(shift)
-			: value << BigIntFn(-shift);
+			? value >> BigIntValue(shift)
+			: value << BigIntValue(-shift);
 
-		return Math.Log(NumberFn(x), baseValue) + shift / Math.Log(baseValue, 2);
+		return Math.Log(NumberValue(x), baseValue) + shift / Math.Log(baseValue, 2);
 	}
 
 	private static bool TryParseCore(string? text, out BigInt value)
@@ -276,7 +276,7 @@ public static class BigIntegerModule
 
 		try
 		{
-			value = BigIntFn(trimmed);
+			value = BigIntValue(trimmed);
 			return true;
 		}
 		catch
@@ -522,7 +522,7 @@ public static class BigIntegerModule
 				result *= current;
 
 			current *= current;
-			exp = Math.FloorFn(exp / 2);
+			exp = Math.FloorFunc(exp / 2);
 		}
 
 		return result;
@@ -644,9 +644,9 @@ public static class BigIntegerModule
 		try
 		{
 			// 对于可以直接使用Intl.NumberFormat的范围（在安全整数范围内）
-			if (absValue <= BigIntFn(Number.MAX_SAFE_INTEGER))
+			if (absValue <= BigIntValue(Number.MAX_SAFE_INTEGER))
 			{
-				var formatted = provider.Format(NumberFn(absValue));
+				var formatted = provider.Format(NumberValue(absValue));
 				return isNegative ? $"-{formatted}" : formatted;
 			}
 
@@ -699,12 +699,12 @@ public static class BigIntegerModule
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to an unsigned byte value.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator byte(System.Numerics.BigInteger)")]
 	public static Number _c1afe3218f0f82f9(BigInt value)
-		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntFn(255));
+		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntValue(255));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.Char" /> value.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator char(System.Numerics.BigInteger)")]
 	public static Number _ac2920ee8216c023(BigInt value)
-		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntFn(65535));
+		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntValue(65535));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a <see cref="T:System.Decimal" /> value.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator decimal(System.Numerics.BigInteger)")]
@@ -723,25 +723,25 @@ public static class BigIntegerModule
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a 16-bit signed integer value.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator short(System.Numerics.BigInteger)")]
 	public static Number _c57fc79b767bf069(BigInt value)
-		=> RequireNumberRangeCore(value, BigIntFn(-32768), BigIntFn(32767));
+		=> RequireNumberRangeCore(value, BigIntValue(-32768), BigIntValue(32767));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a 32-bit signed integer value.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator int(System.Numerics.BigInteger)")]
 	public static Number _7c261f922cc43235(BigInt value)
-		=> RequireNumberRangeCore(value, BigIntFn(-2147483648), BigIntFn(2147483647));
+		=> RequireNumberRangeCore(value, BigIntValue(-2147483648), BigIntValue(2147483647));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a 64-bit signed integer value.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator long(System.Numerics.BigInteger)")]
 	public static BigInt _15fe350cf299c580(BigInt value)
-		=> RequireRangeCore(value, BigIntFn("-9223372036854775808"), BigIntFn("9223372036854775807"));
+		=> RequireRangeCore(value, BigIntValue("-9223372036854775808"), BigIntValue("9223372036854775807"));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.Int128" /> value.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator System.Int128(System.Numerics.BigInteger)")]
 	public static BigInt _5958070a15559320(BigInt value)
 		=> RequireRangeCore(
 			value,
-			BigIntFn("-170141183460469231731687303715884105728"),
-			BigIntFn("170141183460469231731687303715884105727"));
+			BigIntValue("-170141183460469231731687303715884105728"),
+			BigIntValue("170141183460469231731687303715884105727"));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.IntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator nint(System.Numerics.BigInteger)")]
@@ -750,7 +750,7 @@ public static class BigIntegerModule
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a signed 8-bit value. This API is not CLS-compliant. The compliant alternative is <see cref="T:System.Int16" />.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator sbyte(System.Numerics.BigInteger)")]
 	public static Number _63d8cc7789144528(BigInt value)
-		=> RequireNumberRangeCore(value, BigIntFn(-128), BigIntFn(127));
+		=> RequireNumberRangeCore(value, BigIntValue(-128), BigIntValue(127));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to a single-precision floating-point value.</summary>
 	[Jazor(Op.Inline, "static System.Numerics.BigInteger.explicit operator float(System.Numerics.BigInteger)", "Math.fround(Number(__arg1))")]
@@ -759,22 +759,22 @@ public static class BigIntegerModule
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to an unsigned 16-bit integer value. This API is not CLS-compliant. The compliant alternative is <see cref="T:System.Int32" />.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator ushort(System.Numerics.BigInteger)")]
 	public static Number _b2311568a6faa3b8(BigInt value)
-		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntFn(65535));
+		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntValue(65535));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to an unsigned 32-bit integer value. This API is not CLS-compliant. The compliant alternative is <see cref="T:System.Int64" />.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator uint(System.Numerics.BigInteger)")]
 	public static Number _385437ecb9a2b10a(BigInt value)
-		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntFn("4294967295"));
+		=> RequireNumberRangeCore(value, BigInt.Zero, BigIntValue("4294967295"));
 
 	///<summary>Defines an explicit conversion of a <see cref="T:System.Numerics.BigInteger" /> object to an unsigned 64-bit integer value. This API is not CLS-compliant. The compliant alternative is <see cref="T:System.Double" />.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator ulong(System.Numerics.BigInteger)")]
 	public static BigInt _6043725cddf263dd(BigInt value)
-		=> RequireRangeCore(value, BigInt.Zero, BigIntFn("18446744073709551615"));
+		=> RequireRangeCore(value, BigInt.Zero, BigIntValue("18446744073709551615"));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.UInt128" /> value.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.explicit operator System.UInt128(System.Numerics.BigInteger)")]
 	public static BigInt _f8ae8a4213449843(BigInt value)
-		=> RequireRangeCore(value, BigInt.Zero, BigIntFn("340282366920938463463374607431768211455"));
+		=> RequireRangeCore(value, BigInt.Zero, BigIntValue("340282366920938463463374607431768211455"));
 
 	///<summary>Explicitly converts a big integer to a <see cref="T:System.UIntPtr" /> value.</summary>
 	[Jazor(Op.Discard ,"static System.Numerics.BigInteger.explicit operator nuint(System.Numerics.BigInteger)")]
@@ -1055,15 +1055,15 @@ public static class BigIntegerModule
 	public static BigInt _276680abacb93277(BigInt value)
 	{
 		if (value == BigInt.Zero)
-			return BigIntFn(32);
+			return BigIntValue(32);
 		if (value < BigInt.Zero)
 			return BigInt.Zero;
 
-		var remainder = GetBitLengthCore(value) % BigIntFn(32);
+		var remainder = GetBitLengthCore(value) % BigIntValue(32);
 		if (remainder == BigInt.Zero)
 			return BigInt.Zero;
 
-		return BigIntFn(32) - remainder;
+		return BigIntValue(32) - remainder;
 	}
 
 	///<summary>Computes the number of bits that are set in a value.</summary>
@@ -1078,7 +1078,7 @@ public static class BigIntegerModule
 		if (value < BigInt.Zero)
 		{
 			var bitLength = GetBitLengthCore(value) + BigInt.One;
-			var wordSize = BigIntFn(32);
+			var wordSize = BigIntValue(32);
 			var width = ((bitLength + wordSize - BigInt.One) / wordSize) * wordSize;
 			if (width < wordSize)
 				width = wordSize;
@@ -1112,7 +1112,7 @@ public static class BigIntegerModule
 	{
 		// Handle zero value
 		if (value == BigInt.Zero)
-			return BigIntFn(32);
+			return BigIntValue(32);
 
 		var count = BigInt.Zero;
 		var temp = value;
@@ -1213,7 +1213,7 @@ public static class BigIntegerModule
 				throw new RangeError("Value is outside safe integer range");
 
 			// Convert to BigInt
-			return BigIntFn(n);
+			return BigIntValue(n);
 		}
 
 		// Handle string input
@@ -1229,7 +1229,7 @@ public static class BigIntegerModule
 			// Convert to BigInt
 			try
 			{
-				return BigIntFn(trimmed);
+				return BigIntValue(trimmed);
 			}
 			catch
 			{
@@ -1329,14 +1329,14 @@ public static class BigIntegerModule
 	public static BigInt _49adf7adfc1228f8(BigInt value, Number shiftAmount)
 	{
 		if (shiftAmount < 0)
-			return value << BigIntFn(-shiftAmount);
+			return value << BigIntValue(-shiftAmount);
 
-		var shift = BigIntFn(shiftAmount);
+		var shift = BigIntValue(shiftAmount);
 
 		if (value >= BigInt.Zero)
 			return value >> shift;
 
-		var width = GetWordWidthCore(value, BigIntFn(64));
+		var width = GetWordWidthCore(value, BigIntValue(64));
 		if (shift >= width)
 			return BigInt.Zero;
 

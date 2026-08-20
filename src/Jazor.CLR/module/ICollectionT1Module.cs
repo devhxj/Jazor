@@ -16,7 +16,7 @@ public static class ICollectionT1Module<T>
 {
 	private static void EnsureWholeNumber(Number value, string parameterName)
 	{
-		if (IsNaN(value) || Math.FloorFn(value) != value)
+		if (IsNaN(value) || Math.FloorFunc(value) != value)
 			throw new Error($"ArgumentOutOfRangeException: {parameterName} must be a whole number.");
 	}
 

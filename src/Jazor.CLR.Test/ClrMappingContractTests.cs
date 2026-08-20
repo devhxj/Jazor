@@ -29,7 +29,13 @@ public sealed class ClrMappingContractTests
                 continue;
 
             var modulePath = ClrRuntimeMappingCatalog.GetModulePath(type);
-            if (string.IsNullOrWhiteSpace(modulePath))
+            var externalImports = imports
+                .Select(import => ClrRuntimeMappingCatalog.Imports.FirstOrDefault(mapping =>
+                    string.Equals(mapping.Member, import.Mapping!.Member, StringComparison.Ordinal)))
+                .Where(static mapping => mapping?.IsExternalRuntime == true)
+                .ToArray();
+            var clrImports = imports.Length - externalImports.Length;
+            if (clrImports > 0 && string.IsNullOrWhiteSpace(modulePath))
             {
                 failures.Add($"{type.FullName}: Import mappings require a non-empty ECMAScript module path.");
                 continue;
@@ -37,6 +43,11 @@ public sealed class ClrMappingContractTests
 
             foreach (var import in imports)
             {
+                var mapping = ClrRuntimeMappingCatalog.Imports.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Member, import.Mapping!.Member, StringComparison.Ordinal));
+                if (mapping?.IsExternalRuntime == true)
+                    continue;
+
                 var methods = ClrRuntimeMappingCatalog.GetRuntimeMethods(import.Member);
                 if (methods.Count == 0)
                     failures.Add($"{type.FullName}.{import.Member.Name}: Import mappings require a method or property accessor implementation.");
@@ -68,6 +79,12 @@ public sealed class ClrMappingContractTests
     {
         var mapping = ClrRuntimeMappingCatalog.GetImportById(mappingId);
         Assert.IsFalse(string.IsNullOrWhiteSpace(mapping.ModulePath));
+
+        if (mapping.IsExternalRuntime)
+        {
+            StringAssert.StartsWith(mapping.ModulePath, "@jazor/", StringComparison.Ordinal);
+            return;
+        }
 
         var artifact = ClrRuntimeCatalog.Get(mapping.ModulePath);
         Assert.Contains(mapping.ExportName, artifact.GetExportedNames(),

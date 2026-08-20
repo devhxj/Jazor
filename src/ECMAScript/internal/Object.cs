@@ -1,4 +1,4 @@
-using PropertyKey = ECMAScript.PropertyKey;
+using PropertyKey = ECMAScript.JPropertyKey;
 
 namespace ECMAScript;
 
@@ -127,7 +127,7 @@ public static partial class Global
 		/// <param name="attributes">Descriptor for the property. It can describe a data or accessor property.</param>
 		/// <returns>The same <paramref name="o"/> instance.</returns>
 		[Description("@#defineProperty")]
-		public extern static TTarget DefineProperty<TTarget>(TTarget o, PropertyKey p, PropertyDescriptor attributes);
+		public extern static TTarget DefineProperty<TTarget>(TTarget o, JPropertyKey p, JSPropertyDescriptor attributes);
 
 		/// <summary>
 		/// Adds one or more properties to an object, and/or modifies attributes of existing properties.
@@ -172,7 +172,7 @@ public static partial class Global
 		/// <param name="p">Name of the property.</param>
 		/// <returns></returns>
 		[Description("@#getOwnPropertyDescriptor")]
-		public extern static PropertyDescriptor? GetOwnPropertyDescriptor(object o, PropertyKey p);
+		public extern static JSPropertyDescriptor? GetOwnPropertyDescriptor(object o, JPropertyKey p);
 
 		/// <summary>
 		/// Returns all own property descriptors of an object.
@@ -245,7 +245,7 @@ public static partial class Global
 		/// <param name="v">A property name.</param>
 		/// <returns></returns>
 		[Description("@#hasOwnProperty")]
-		public extern bool HasOwnProperty(PropertyKey v);		
+		public extern bool HasOwnProperty(JPropertyKey v);
 
 		/// <summary>
 		/// Determines whether an object exists in another object's prototype chain.
@@ -263,7 +263,49 @@ public static partial class Global
 		/// <param name="v">A property name.</param>
 		/// <returns></returns>
 		[Description("@#propertyIsEnumerable")]
-		public extern bool PropertyIsEnumerable(PropertyKey v);
+		public extern bool PropertyIsEnumerable(JPropertyKey v);
+
+		/// <summary>
+		/// Reads a property by dynamic key on an already-erased runtime value, lowering to
+		/// JavaScript computed member access <c>obj[key]</c>.
+		/// This is the boundary helper for values that lost their static shape (custom elements,
+		/// <c>Reflect.Get</c> results, JSON payloads). Prefer the typed host bindings whenever the
+		/// static type is known; computed access on primitives boxes them exactly like JavaScript.
+		/// 按动态 key 读取已擦除运行时值的属性，lowering 为 JavaScript 计算成员访问 <c>obj[key]</c>。
+		/// 这是针对已丢失静态形状的值（自定义元素、<c>Reflect.Get</c> 结果、JSON 载荷）的边界帮助器；
+		/// 静态类型已知时应优先使用类型化宿主绑定。对原始值的计算访问会按 JavaScript 语义装箱。
+		/// </summary>
+		/// <param name="name">The property key to read. 要读取的属性 key。</param>
+		/// <returns>The property value; JavaScript <c>undefined</c> projects as <see langword="null"/>.</returns>
+		[ECMAScriptInline("__arg1[__arg2]")]
+		public extern object? Get(JPropertyKey name);
+
+		/// <summary>
+		/// Writes a property by dynamic key on an already-erased runtime value, lowering to the
+		/// JavaScript assignment expression <c>(obj[key] = value)</c>. The assignment result is
+		/// discarded because the authoring surface is <see langword="void"/>.
+		/// 按动态 key 向已擦除运行时值写入属性，lowering 为 JavaScript 赋值表达式
+		/// <c>(obj[key] = value)</c>；作者面为 <see langword="void"/>，赋值结果被丢弃。
+		/// </summary>
+		/// <param name="name">The property key to write. 要写入的属性 key。</param>
+		/// <param name="value">The value to assign. 要赋的值。</param>
+		[ECMAScriptInline("(__arg1[__arg2] = __arg3)")]
+		public extern void Set(JPropertyKey name, object? value);
+
+		/// <summary>
+		/// Invokes a method by dynamic name on an already-erased runtime value, lowering to the
+		/// JavaScript computed call <c>obj[name](...args)</c> with the receiver bound to the object.
+		/// The argument list is preserved as one array so the template spreads it once; receiver and
+		/// arguments keep C# left-to-right single-evaluation order.
+		/// 按动态名称调用已擦除运行时值上的方法，lowering 为 JavaScript 计算调用
+		/// <c>obj[name](...args)</c>，receiver 绑定为当前对象。参数列表保持为单个数组由模板一次展开；
+		/// receiver 与参数保持 C# 从左到右的单次求值顺序。
+		/// </summary>
+		/// <param name="name">The method name to invoke. 要调用的方法名。</param>
+		/// <param name="args">The argument list passed through as a single spread. 作为单个 spread 传递的参数列表。</param>
+		/// <returns>The method's return value; JavaScript <c>undefined</c> projects as <see langword="null"/>.</returns>
+		[ECMAScriptInline("__arg1[__arg2](...__arg3)")]
+		public extern object? Invoke(JPropertyKey name, [Preserve] params object?[] args);
 
 		/// <summary>
 		/// Legacy JavaScript accessor for the current prototype.
@@ -280,7 +322,7 @@ public static partial class Global
 		/// 遗留 JavaScript 帮助器，在当前对象上安装指定 key 的 getter；委托形状匹配 JavaScript property descriptor 的 accessor。
 		/// </summary>
 		[Description("@#__defineGetter__")]
-		public extern void __defineGetter__(PropertyKey property, Func<object?> getter);
+		public extern void __defineGetter__(JPropertyKey property, Func<object?> getter);
 
 		/// <summary>
 		/// Legacy JavaScript helper that installs a setter for the supplied property key on the current object.
@@ -288,7 +330,7 @@ public static partial class Global
 		/// 遗留 JavaScript 帮助器，在当前对象上安装指定 key 的 setter；委托形状匹配 JavaScript property descriptor 的 accessor。
 		/// </summary>
 		[Description("@#__defineSetter__")]
-		public extern void __defineSetter__(PropertyKey property, Action<object?> setter);
+		public extern void __defineSetter__(JPropertyKey property, Action<object?> setter);
 
 		/// <summary>
 		/// Legacy JavaScript helper that looks up an inherited or own getter for the supplied property key.
@@ -296,7 +338,7 @@ public static partial class Global
 		/// 查找当前对象或 prototype chain 上指定 key 的 getter；不存在时 JavaScript <c>undefined</c> 投影为 <see langword="null"/>。
 		/// </summary>
 		[Description("@#__lookupGetter__")]
-		public extern Func<object?>? __lookupGetter__(PropertyKey property);
+		public extern Func<object?>? __lookupGetter__(JPropertyKey property);
 
 		/// <summary>
 		/// Legacy JavaScript helper that looks up an inherited or own setter for the supplied property key.
@@ -304,7 +346,7 @@ public static partial class Global
 		/// 查找当前对象或 prototype chain 上指定 key 的 setter；不存在时 JavaScript <c>undefined</c> 投影为 <see langword="null"/>。
 		/// </summary>
 		[Description("@#__lookupSetter__")]
-		public extern Action<object?>? __lookupSetter__(PropertyKey property);
+		public extern Action<object?>? __lookupSetter__(JPropertyKey property);
 
 		/// <summary>
 		/// Returns the names of the enumerable string properties and methods of an object.
@@ -359,7 +401,7 @@ public static partial class Global
 		/// 按 JavaScript property key 对 iterable 元素分组；结果为对象式值，key 通常通过动态属性访问消费，因此返回 <see cref="IObject"/>。
 		/// </summary>
 		[Description("@#groupBy")]
-		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, Number, PropertyKey> callbackfn);
+		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, Number, JPropertyKey> callbackfn);
 
 		/// <summary>
 		/// Groups iterable values by a JavaScript property key and returns the grouped result as an object.
@@ -367,7 +409,7 @@ public static partial class Global
 		/// 不需要索引参数时的 <c>Object.groupBy</c> 回调重载。
 		/// </summary>
 		[Description("@#groupBy")]
-		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, PropertyKey> callbackfn);
+		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, JPropertyKey> callbackfn);
 
 		/// <summary>
 		/// Returns whether the object has the specified own property.
@@ -376,7 +418,7 @@ public static partial class Global
 		/// <param name="p">Property key to test.</param>
 		/// <returns><see langword="true"/> when the property exists directly on the object.</returns>
 		[Description("@#hasOwn")]
-		public extern static bool HasOwn(object o, PropertyKey p);
+		public extern static bool HasOwn(object o, JPropertyKey p);
 
 		/// <summary>
 		/// Returns true if existing property attributes cannot be modified in an object and new properties cannot be added to the object.

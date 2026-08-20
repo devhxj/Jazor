@@ -1,6 +1,8 @@
 // Loads and updates resource-operation grants for roles in the selected organization.
 // 加载并更新当前组织中角色的资源操作授权集合。
+using ECMAScript.TDesign;
 using JazorAdmin.Features.Organizations;
+using Microsoft.AspNetCore.Components;
 
 namespace JazorAdmin;
 
@@ -31,6 +33,14 @@ public partial class AccessControlPage : AppComponentBase, IVueContainerComponen
     private string[] grants = [];
     private string roleCode = string.Empty;
     private string roleDisplayName = string.Empty;
+
+    // 资源操作目录表列：只读展示，行键用资源/操作组合语义。
+    private TPrimaryTableCol<ResourceOperationResponse>[] OperationColumns =>
+    [
+        new() { ColKey = "Resource", Title = (TPrimaryTableColTitle<ResourceOperationResponse>)L("Resource", "资源") },
+        new() { ColKey = "Operation", Title = (TPrimaryTableColTitle<ResourceOperationResponse>)L("Operation", "操作") },
+        new() { ColKey = "DisplayName", Title = (TPrimaryTableColTitle<ResourceOperationResponse>)L("Display name", "显示名称") }
+    ];
 
     protected override void OnParametersSet()
     {

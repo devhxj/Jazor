@@ -4,7 +4,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueCatalogOwnershipTests
 {
     [TestMethod]
-    public void AspNetComponentCatalog_IsOwnedByRazorVueInsteadOfClrRuntime()
+    public void AspNetComponentCatalog_KeepsCompilerOwnedSurfaceSeparateFromClrNavigation()
     {
         var repositoryRoot = FindRepositoryRoot();
         var catalogDirectory = Path.Combine(repositoryRoot, "src", "Jazor.RazorVue", "RazorSdk", "Catalog");
@@ -12,6 +12,7 @@ public sealed class RazorVueCatalogOwnershipTests
 
         Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "ComponentBaseCatalog.cs")));
         Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "EventCallbackCatalog.cs")));
+        Assert.IsFalse(File.Exists(Path.Combine(catalogDirectory, "NavigationManagerCatalog.cs")));
         Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "RenderTreeBuilderCatalog.cs")));
         Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "WebRenderTreeBuilderExtensionsCatalog.cs")));
 
@@ -20,7 +21,15 @@ public sealed class RazorVueCatalogOwnershipTests
             .Select(path => Path.GetRelativePath(repositoryRoot, path))
             .ToArray();
 
-        Assert.AreEqual(0, clrAspNetReferences.Length, string.Join(Environment.NewLine, clrAspNetReferences));
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                Path.Combine("src", "Jazor.CLR", "module", "NavigationManagerModule.cs"),
+                Path.Combine("src", "Jazor.CLR", "module", "NavigationOptionsModule.cs"),
+                Path.Combine("src", "Jazor.CLR", "module", "LocationChangedEventArgsModule.cs"),
+                Path.Combine("src", "Jazor.CLR", "module", "NavigationManagerExtensionsModule.cs"),
+            },
+            clrAspNetReferences);
     }
 
     private static string FindRepositoryRoot()

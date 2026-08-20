@@ -67,7 +67,7 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
     private bool HasNavigationItems
         => AdminNavItemRenderHelper.BuildEffectiveItems(NavItems?.AsArray).Length > 0;
 
-    private bool IsMobileViewport => Global.Window.MatchMedia(MobileBreakpointQuery).Matches;
+    private bool IsMobileViewport => Window.MatchMedia(MobileBreakpointQuery).Matches;
 
     private VueClassValue RootCssClass
     {

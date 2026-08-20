@@ -1649,8 +1649,11 @@ public class GPUTexture
     public extern void Destroy();
 
     /// <summary>
-    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexture-width">WebGPU: 6.1 GPUTexture</see>
+    /// &quot;unfilterable-float&quot; ✓ If &quot;float32-blendable&quot; is enabled ✓ ✓ If &quot;texture-formats-tier2&quot; is enabled 16 mixed component width, 32 bits per texel (4-byte render target component alignment) rgb10a2uint &quot;uint&quot; ✓ If &quot;core-features-and-limits&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8 rgb10a2unorm &quot;float&quot;, &quot;unfilterable-float&quot; ✓ ✓ ✓ ✓ If &quot;texture-formats-tier1&quot; is enabled 4 8 rg11b10ufloat &quot;float&quot;, &quot;unfilterable-float&quot; If &quot;rg11b10ufloat-renderable&quot; is enabled If &quot;texture-formats-tier1&quot; is enabled 4 8
     /// </summary>
+    /// <remarks>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gputexture-width">WebGPU: 6.1 GPUTexture</see>
+    /// </remarks>
     [Description("@#width")]
     public extern GPUIntegerCoordinateOut Width { get; }
 
@@ -1732,7 +1735,7 @@ public class GPUTextureView
 /// </summary>
 [ECMAScript]
 [Description("@#GPUUncapturedErrorEvent")]
-public class GPUUncapturedErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class GPUUncapturedErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpuuncapturederrorevent-gpuuncapturederrorevent">WebGPU: 22.4 Telemetry</see>

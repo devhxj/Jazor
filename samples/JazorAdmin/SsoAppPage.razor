@@ -1,109 +1,126 @@
 @* Manages every OpenIddict application profile through one exact permission surface. *@
 @inherits AppComponentBase
 
-<section class="ja-management" data-management-area="sso" data-sso-view="applications">
-    @if (loading)
-    {
-        <p class="ja-management__loading" aria-live="polite">@L("Loading OpenID applications", "正在加载 OpenID 应用")</p>
-    }
-    else
-    {
-        @if (error is not null)
-        {
-            <p class="ja-management__error" role="alert">@error</p>
-        }
+<section class="ja-page" data-management-area="sso" data-sso-view="applications">
+    <TLoading Loading="@loading" TextValue="@L("Loading OpenID applications", "正在加载 OpenID 应用")">
+        <ContentSlot>
+            @if (error is not null)
+            {
+                <TAlert Theme="@TAlertThemeValue.Error" MessageValue="@error" role="alert" />
+            }
 
-        <div class="ja-management__split ja-management__split--editor">
-            <section class="ja-management__panel" aria-labelledby="sso-apps-title">
-                <header class="ja-management__panel-header">
-                    <div><h2 id="sso-apps-title">@L("OpenID applications", "OpenID 应用")</h2><p>@L("Interactive clients, machine clients, and API resources", "交互客户端、机器客户端与 API 资源")</p></div>
-                    <button type="button" data-sso-command="new-application" @onclick="NewInteractive">@L("New", "新建")</button>
-                </header>
-                <div class="ja-management__table-wrap">
-                    <table class="ja-management__table">
-                        <thead><tr><th>@L("Application", "应用")</th><th>@L("Profile", "配置")</th><th>@L("Client type", "客户端类型")</th><th></th></tr></thead>
-                        <tbody>
-                            @foreach (var application in applications)
+            <div class="ja-page__split">
+                <section class="ja-panel" aria-labelledby="sso-apps-title">
+                    <header class="ja-panel__header">
+                        <div><h2 id="sso-apps-title">@L("OpenID applications", "OpenID 应用")</h2><p>@L("Interactive clients, machine clients, and API resources", "交互客户端、机器客户端与 API 资源")</p></div>
+                        <TButton Theme="@TButtonThemeValue.Primary" data-sso-command="new-application" OnClick="@(_ => NewInteractive())">@L("New", "新建")</TButton>
+                    </header>
+                    @if (applications.Length == 0)
+                    {
+                        <TEmpty TitleValue="@L("No OpenID applications are registered.", "尚未注册 OpenID 应用。")" />
+                    }
+                    else
+                    {
+                        <AdminAppTable Data="@applications"
+                                    Columns="@Columns"
+                                    RowKey="Id"
+                                    RowClassName="@SelectedRowClassName" />
+                    }
+                </section>
+
+                <section class="ja-panel" aria-labelledby="sso-app-editor-title">
+                    <header class="ja-panel__header">
+                        <div><h2 id="sso-app-editor-title">@(IsNew ? L("Register application", "注册应用") : L("Application settings", "应用设置"))</h2><p>@L("Protocol permissions are stored directly by OpenIddict", "协议权限由 OpenIddict 直接存储")</p></div>
+                    </header>
+
+                    @if (issuedSecret is not null)
+                    {
+                        <div class="ja-secret" role="status" data-issued-secret="">
+                            <strong>@L("Client secret", "客户端密钥")</strong>
+                            <code>@issuedSecret</code>
+                            <span>@L("This value is shown once. Store it before leaving this view.", "该值仅显示一次，请离开本页前妥善保存。")</span>
+                        </div>
+                    }
+
+                    @if (IsNew)
+                    {
+                        <AdminRadioGroup Value="@profile" OnChange="@(value => SelectProfile(value))" CssClass="@("ja-profiles")">
+                            <span data-sso-profile="interactive"><AdminRadioButton Value="interactive" LabelValue="@L("Interactive", "交互应用")" /></span>
+                            <span data-sso-profile="machine"><AdminRadioButton Value="machine" LabelValue="@L("Machine", "机器应用")" /></span>
+                            <span data-sso-profile="api"><AdminRadioButton Value="api" LabelValue="API" /></span>
+                        </AdminRadioGroup>
+                    }
+
+                    <AdminForm LabelAlign="@TFormLabelAlignValue.Top">
+                        <div class="ja-form__grid">
+                            <TFormItem LabelValue="@L("Client ID", "客户端 ID")" Name="clientId">
+                                <span data-app-field="clientId"><AdminInput Value="@clientId" OnChange="@(value => clientId = value)" Readonly="@(!IsNew)" /></span>
+                            </TFormItem>
+                            <TFormItem LabelValue="@L("Display name", "显示名称")" Name="displayName">
+                                <span data-app-field="displayName"><AdminInput Value="@displayName" OnChange="@(value => displayName = value)" /></span>
+                            </TFormItem>
+                        </div>
+                        <TFormItem LabelValue="@L("Application type", "应用类型")" Name="applicationType">
+                            <AdminRadioGroup Value="@applicationType" OnChange="@(value => applicationType = value)">
+                                <AdminRadioButton Value="web" LabelValue="Web" />
+                                <AdminRadioButton Value="native" LabelValue="Native" />
+                            </AdminRadioGroup>
+                        </TFormItem>
+                        <TFormItem LabelValue="@L("Client type", "客户端类型")" Name="clientType">
+                            <AdminRadioGroup Value="@clientType" OnChange="@(value => clientType = value)">
+                                <AdminRadioButton Value="public" LabelValue="@L("Public", "公开")" />
+                                <AdminRadioButton Value="confidential" LabelValue="@L("Confidential", "机密")" />
+                            </AdminRadioGroup>
+                        </TFormItem>
+                        <TFormItem LabelValue="@L("Consent", "授权同意")" Name="consentType">
+                            <AdminRadioGroup Value="@consentType" OnChange="@(value => consentType = value)">
+                                <AdminRadioButton Value="implicit" LabelValue="@L("Implicit", "隐式")" />
+                                <AdminRadioButton Value="explicit" LabelValue="@L("Explicit", "显式")" />
+                                <AdminRadioButton Value="systematic" LabelValue="@L("Systematic", "系统式")" />
+                            </AdminRadioGroup>
+                        </TFormItem>
+                        <TFormItem LabelValue="@L("Redirect URIs", "回调地址")" Name="redirectUris">
+                            <span data-app-field="redirectUris"><AdminTextarea Value="@redirectUris" OnChange="@(value => redirectUris = value)" Placeholder="https://client.example/auth/callback" /></span>
+                        </TFormItem>
+                        <TFormItem LabelValue="@L("Post-logout URIs", "登出回调地址")" Name="postLogoutRedirectUris">
+                            <span data-app-field="postLogoutRedirectUris"><AdminTextarea Value="@postLogoutRedirectUris" OnChange="@(value => postLogoutRedirectUris = value)" Placeholder="https://client.example/logout" /></span>
+                        </TFormItem>
+                        <TFormItem LabelValue="@L("Allowed scopes", "允许的 Scope")" Name="scopeValues">
+                            <span data-app-field="scopeValues"><AdminInput Value="@scopeValues" OnChange="@(value => scopeValues = value)" Placeholder="openid profile api" /></span>
+                        </TFormItem>
+
+                        <fieldset class="ja-form__options">
+                            <legend>@L("Endpoint access", "端点访问")</legend>
+                            <label class="ja-form__option"><AdminToggle Value="@endpointAuthorization" OnChange="@(value => endpointAuthorization = value)" /><span>@L("Authorization", "授权端点")</span></label>
+                            <label class="ja-form__option"><AdminToggle Value="@endpointToken" OnChange="@(value => endpointToken = value)" /><span>@L("Token", "令牌端点")</span></label>
+                            <label class="ja-form__option"><AdminToggle Value="@endpointEndSession" OnChange="@(value => endpointEndSession = value)" /><span>@L("End session", "登出端点")</span></label>
+                            <label class="ja-form__option"><AdminToggle Value="@endpointIntrospection" OnChange="@(value => endpointIntrospection = value)" /><span>@L("Introspection", "内省端点")</span></label>
+                            <label class="ja-form__option"><AdminToggle Value="@endpointRevocation" OnChange="@(value => endpointRevocation = value)" /><span>@L("Revocation", "撤销端点")</span></label>
+                        </fieldset>
+
+                        <fieldset class="ja-form__options">
+                            <legend>@L("Grant and response types", "授权与响应类型")</legend>
+                            <label class="ja-form__option"><AdminToggle Value="@grantAuthorizationCode" OnChange="@(value => grantAuthorizationCode = value)" /><span>@L("Authorization code", "授权码")</span></label>
+                            <label class="ja-form__option"><AdminToggle Value="@grantClientCredentials" OnChange="@(value => grantClientCredentials = value)" /><span>@L("Client credentials", "客户端凭证")</span></label>
+                            <label class="ja-form__option"><AdminToggle Value="@grantRefreshToken" OnChange="@(value => grantRefreshToken = value)" /><span>@L("Refresh token", "刷新令牌")</span></label>
+                            <label class="ja-form__option"><AdminToggle Value="@responseCode" OnChange="@(value => responseCode = value)" /><span>@L("Code response", "Code 响应")</span></label>
+                            <label class="ja-form__option"><AdminToggle Value="@requirePkce" OnChange="@(value => requirePkce = value)" /><span>@L("Require PKCE", "要求 PKCE")</span></label>
+                        </fieldset>
+
+                        <div class="ja-form__commands">
+                            <TButton Theme="@TButtonThemeValue.Primary" data-sso-command="save-application" OnClick="@(_ => Save())">@(IsNew ? L("Register", "注册") : L("Save changes", "保存修改"))</TButton>
+                            @if (!IsNew && IsConfidential)
                             {
-                                <tr class="@(application.Id == selectedId ? "is-selected" : string.Empty)" data-sso-application="@application.ClientId">
-                                    <td><strong>@application.DisplayName</strong><span>@application.ClientId</span></td>
-                                    <td>@application.Profile</td>
-                                    <td>@application.ClientType</td>
-                                    <td><button type="button" class="ja-management__text-button" @onclick="() => Select(application)">@L("Manage", "管理")</button></td>
-                                </tr>
+                                <TButton Variant="@TButtonVariantValue.Outline" data-sso-command="rotate-secret" OnClick="@(_ => RotateSecret())">@L("Rotate secret", "轮换密钥")</TButton>
                             }
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section class="ja-management__panel" aria-labelledby="sso-app-editor-title">
-                <header class="ja-management__panel-header">
-                    <div><h2 id="sso-app-editor-title">@(IsNew ? L("Register application", "注册应用") : L("Application settings", "应用设置"))</h2><p>@L("Protocol permissions are stored directly by OpenIddict", "协议权限由 OpenIddict 直接存储")</p></div>
-                </header>
-
-                @if (issuedSecret is not null)
-                {
-                    <div class="ja-management__secret" role="status" data-issued-secret="">
-                        <strong>@L("Client secret", "客户端密钥")</strong>
-                        <code>@issuedSecret</code>
-                        <span>@L("This value is shown once. Store it before leaving this view.", "该值仅显示一次，请离开本页前妥善保存。")</span>
-                    </div>
-                }
-
-                @if (IsNew)
-                {
-                    <div class="ja-management__profiles" role="group" aria-label="@L("New application preset", "新应用预设")">
-                        <button type="button" class="@(profile == "interactive" ? "is-selected" : string.Empty)" @onclick="NewInteractive">@L("Interactive", "交互应用")</button>
-                        <button type="button" class="@(profile == "machine" ? "is-selected" : string.Empty)" @onclick="NewMachine">@L("Machine", "机器应用")</button>
-                        <button type="button" class="@(profile == "api" ? "is-selected" : string.Empty)" @onclick="NewApi">API</button>
-                    </div>
-                }
-
-                <form class="ja-management__form" @onsubmit="Save" @onsubmit:preventDefault>
-                    <div class="ja-management__field-grid">
-                        <label><span>@L("Client ID", "客户端 ID")</span><input required readonly="@(!IsNew)" autocomplete="off" @bind="clientId" @bind:event="oninput" /></label>
-                        <label><span>@L("Display name", "显示名称")</span><input required autocomplete="off" @bind="displayName" @bind:event="oninput" /></label>
-                        <label><span>@L("Application type", "应用类型")</span><select @bind="applicationType"><option value="web">Web</option><option value="native">Native</option></select></label>
-                        <label><span>@L("Client type", "客户端类型")</span><select @bind="clientType"><option value="public">@L("Public", "公开")</option><option value="confidential">@L("Confidential", "机密")</option></select></label>
-                        <label><span>@L("Consent", "授权同意")</span><select @bind="consentType"><option value="implicit">@L("Implicit", "隐式")</option><option value="explicit">@L("Explicit", "显式")</option><option value="systematic">@L("Systematic", "系统式")</option></select></label>
-                    </div>
-
-                    <label><span>@L("Redirect URIs", "回调地址")</span><textarea rows="3" placeholder="https://client.example/auth/callback" @bind="redirectUris"></textarea></label>
-                    <label><span>@L("Post-logout URIs", "登出回调地址")</span><textarea rows="2" placeholder="https://client.example/logout" @bind="postLogoutRedirectUris"></textarea></label>
-                    <label><span>@L("Allowed scopes", "允许的 Scope")</span><input autocomplete="off" placeholder="openid profile api" @bind="scopeValues" @bind:event="oninput" /></label>
-
-                    <fieldset class="ja-management__options">
-                        <legend>@L("Endpoint access", "端点访问")</legend>
-                        <label><input type="checkbox" @bind="endpointAuthorization" />@L("Authorization", "授权端点")</label>
-                        <label><input type="checkbox" @bind="endpointToken" />@L("Token", "令牌端点")</label>
-                        <label><input type="checkbox" @bind="endpointEndSession" />@L("End session", "登出端点")</label>
-                        <label><input type="checkbox" @bind="endpointIntrospection" />@L("Introspection", "内省端点")</label>
-                        <label><input type="checkbox" @bind="endpointRevocation" />@L("Revocation", "撤销端点")</label>
-                    </fieldset>
-
-                    <fieldset class="ja-management__options">
-                        <legend>@L("Grant and response types", "授权与响应类型")</legend>
-                        <label><input type="checkbox" @bind="grantAuthorizationCode" />@L("Authorization code", "授权码")</label>
-                        <label><input type="checkbox" @bind="grantClientCredentials" />@L("Client credentials", "客户端凭证")</label>
-                        <label><input type="checkbox" @bind="grantRefreshToken" />@L("Refresh token", "刷新令牌")</label>
-                        <label><input type="checkbox" @bind="responseCode" />@L("Code response", "Code 响应")</label>
-                        <label><input type="checkbox" @bind="requirePkce" />@L("Require PKCE", "要求 PKCE")</label>
-                    </fieldset>
-
-                    <div class="ja-management__commands">
-                        <button type="submit" data-sso-command="save-application">@(IsNew ? L("Register", "注册") : L("Save changes", "保存修改"))</button>
-                        @if (!IsNew && IsConfidential)
-                        {
-                            <button type="button" class="ja-management__secondary-button" data-sso-command="rotate-secret" @onclick="RotateSecret">@L("Rotate secret", "轮换密钥")</button>
-                        }
-                        @if (!IsNew)
-                        {
-                            <button type="button" class="ja-management__danger-button" data-sso-command="delete-application" @onclick="DeleteApp">@(deleteArmed ? L("Confirm delete", "确认删除") : L("Delete", "删除"))</button>
-                        }
-                    </div>
-                </form>
-            </section>
-        </div>
-    }
+                            @if (!IsNew)
+                            {
+                                <TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Outline" data-sso-command="delete-application" OnClick="@(_ => DeleteApp())">@(deleteArmed ? L("Confirm delete", "确认删除") : L("Delete", "删除"))</TButton>
+                            }
+                        </div>
+                    </AdminForm>
+                </section>
+            </div>
+        </ContentSlot>
+    </TLoading>
 </section>

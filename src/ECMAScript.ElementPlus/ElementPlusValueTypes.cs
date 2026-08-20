@@ -2032,7 +2032,7 @@ public sealed record ElTableV2RowEventHandlerContext : VueProps
     public ElTableV2KeyValue? RowKey { get; init; }
 
     [Description("@#event")]
-    public Event? Event { get; init; }
+    public JazorEvent? Event { get; init; }
 
     [Description("@#rowData")]
     public VueValue? RowData { get; init; }

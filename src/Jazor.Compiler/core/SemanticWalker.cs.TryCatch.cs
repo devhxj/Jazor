@@ -401,6 +401,25 @@ public partial class SemanticWalker
                 return HandleTransformationFailure<Node>(operation, "Throw statement could not be translated to JavaScript because it is not within a try block.");
         }
 
+		// C# also permits throw in expression position (`value ?? throw ...`).
+		// JavaScript's throw is statement-only, so preserve the expression contract with
+		// a zero-argument IIFE. The exception expression is still evaluated exactly once
+		// and only when the surrounding expression selects this branch.
+		if (operation.Syntax is ThrowExpressionSyntax)
+		{
+			var throwBody = new FunctionBody(
+				NodeList.From<Statement>(new ThrowStatement(expr)),
+				strict: true);
+			return new CallExpression(
+				new ArrowFunctionExpression(
+					NodeList.From<Node>(),
+					throwBody,
+					expression: false,
+					async: false),
+				NodeList.From<Expression>(),
+				optional: false);
+		}
+
 		return new ThrowStatement(expr);
 	}
 

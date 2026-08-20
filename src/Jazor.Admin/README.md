@@ -2,15 +2,15 @@
 
 > 定位：面向 Razor-to-Vue 应用的管理壳契约与原生组件库。
 
-`Jazor.Admin` 是库项目，提供可复用的应用框架、导航模型和 RazorVue 管理壳组件。`samples/JazorAdmin` 是消费该库的示例应用；示例中的 TDesign 组合、业务页面、认证和部署策略不构成此包的公共 API。
+`Jazor.Admin` 是库项目，提供可复用的应用框架、导航模型和 RazorVue 管理壳组件。`samples/JazorAdmin` 是消费该库的生产级管理参考应用；示例中的 TDesign 组合、业务页面、认证和部署策略不构成此包的公共 API。
 
 ## 安装
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.9.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
-  <PackageReference Include="Jazor.Admin" Version="0.9.0" />
+  <PackageReference Include="Jazor" Version="0.17.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.17.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Admin" Version="0.17.0" />
 </ItemGroup>
 ```
 

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "JazorAdmin.DemoClient": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:49734;http://localhost:49735"
+    }
+  }
+}

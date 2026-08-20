@@ -545,3 +545,414 @@ internal static class RazorVueUsageScenarioCatalog
         RazorVueUsageScenarioExpectation Expectation,
         string[] ShapeDescriptions);
 }
+
+public enum RazorVueCapabilityPriority
+{
+    P0,
+    P1,
+    P2
+}
+
+public enum RazorVueCapabilityDecision
+{
+    DirectSupport,
+    CompatibilityAdapter,
+    GuidedAdaptation,
+    Reject
+}
+
+public enum RazorVueCapabilityStatus
+{
+    Planned,
+    InProof,
+    Support,
+    Guidance,
+    Reject
+}
+
+[Flags]
+public enum RazorVueCapabilityEvidence
+{
+    None = 0,
+    AuthorSource = 1 << 0,
+    OfficialRazorSourceGenerator = 1 << 1,
+    ModuleArtifact = 1 << 2,
+    DenoRuntime = 1 << 3,
+    BrowserSmoke = 1 << 4,
+    SsrHydration = 1 << 5,
+    PackageConsumer = 1 << 6
+}
+
+/// <summary>
+/// One auditable M5 authoring-surface decision. This is a maintainer ledger, not a
+/// prerequisite API for page authors: supported rows stay normal Blazor Razor/C#.
+/// M5 ledger 只用于维护者验收；页面作者仍只需写标准 Blazor Razor/C#。
+/// </summary>
+public sealed record RazorVueCapabilityLedgerEntry(
+    string Id,
+    string AuthoringShape,
+    RazorVueCapabilityPriority Priority,
+    RazorVueCapabilityDecision Decision,
+    RazorVueCapabilityStatus Status,
+    string Owner,
+    string? DiagnosticId,
+    string Fixture,
+    RazorVueCapabilityEvidence Evidence,
+    string Blocker);
+
+/// <summary>
+/// Blazor-first compatibility baseline. Keep an explicit entry for every major authoring
+/// family so a missing proof never becomes an implied runtime fallback.
+/// 每个作者面必须有明确决策和证据；未完成 adapter 不能因可以编译而被标记为 Support。
+/// </summary>
+internal static class RazorVueM5CapabilityLedger
+{
+    public static IReadOnlyList<RazorVueCapabilityLedgerEntry> All { get; } =
+    [
+        new(
+            "P0-markup-composition",
+            "Razor markup, component composition, regions, static markup, and normal child content",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.Support,
+            "RenderEmitter + VueModuleBuilder",
+            null,
+            "RazorSgOfficialComponentCompositionAuthoringTests",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Release browser/package proof remains owned by the consumer gate."),
+        new(
+            "P0-generic-templates-fragments",
+            "Generic components, TypeInference helpers, RenderFragment, RenderFragment<T>, typed slots, and member-reachable fragments",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.Support,
+            "RenderEmitter + MemberClosureBuilder",
+            null,
+            "RazorSgOfficialGenericComponentBindingRuntimeTests; RazorSgOfficialTDesignTableCellRuntimeTests",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Dynamic runtime Type and unresolved fragment factories remain final-pipeline owned."),
+        new(
+            "P0-control-flow-attributes-identity",
+            "Conditional/loop rendering, conditional attributes, attribute splat, @key, and @ref",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.Support,
+            "RenderEmitter",
+            null,
+            "RazorSgDirectRenderAdvancedMatrixTests; RazorSgOfficialKeyAuthoringTests; RazorSgOfficialReferenceAuthoringTests",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Cross-frame branch and unresolved builder protocol shapes remain final-pipeline rejects."),
+        new(
+            "P0-bind-events",
+            "DOM/component @bind, EventCallback, async handlers, and event modifiers",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.Support,
+            "RenderEmitter + CurrentComponentSemanticWalkerHost",
+            null,
+            "RazorSgOfficialBindAfterRuntimeTests; RazorSgOfficialEventModifierRuntimeTests",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Browser user-journey proof is still required before a consumer-specific form workflow is promoted."),
+        new(
+            "P0-parameter-lifecycle",
+            "[Parameter], replacement-driven OnParametersSet*, StateHasChanged, ShouldRender, and dispose",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.Support,
+            "MemberClosureBuilder + VueModuleBuilder",
+            null,
+            "RazorSgParameterLifecycleWatchRuntimeTests; RazorSgOfficialExplicitLifecycleRuntimeTests",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "ParameterView/SetParametersAsync has a separate P1 entry because it needs a real snapshot protocol."),
+        new(
+            "P0-route-layout-page-state",
+            "@page, @layout, route parameters, not-found, and normal loading/error/retry page workflows",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "RazorVue route host",
+            null,
+            "RazorSourceGeneratorTailOutputTests.RouteCatalog_EmitsDeterministicPageLayoutAndQueryMappings; RazorSgStandardBlazorComponentRuntimeTests.RouterRouteViewAndLayoutView_RenderThroughStandardAdapters",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "The route catalog and standard routing adapters own @page/@layout/query mapping; page authors do not write Vue Router glue."),
+        new(
+            "P1-parameter-view",
+            "SetParametersAsync(ParameterView), parameter snapshot, overlay order, and async error behavior",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "MemberClosureBuilder + VueModuleBuilder ParameterView adapter",
+            null,
+            "RazorSgSetParametersAsyncRuntimeTests (sparse, alias, slot, SetParameterProperties, queue); MemberClosureBuilderContractTests.TryBuild_AcceptsParameterViewRuntimeEntryPoint",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "The adapter preserves CLR defaults before base application, sparse source-name overlay, explicit undefined, RenderFragment slots, lifecycle order, and queued updates; authored exception propagation and browser/SSR consumer proof remain before Support."),
+        new(
+            "P1-parameter-view-unsupported-members",
+            "ParameterView.TryGetValue, enumeration, and ToDictionary used from authored component logic",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.GuidedAdaptation,
+            RazorVueCapabilityStatus.Guidance,
+            "RazorVueCompatibilityAnalyzer",
+            "JAZORVCA003/JAZORVCA004/JAZORVCA005",
+            "RazorVueCompatibilityAnalyzerTests.ParameterViewTryGetValue_ReportsAtAuthoredInvocation; RazorVueCompatibilityAnalyzerTests.ParameterViewEnumeration_ReportsAtAuthoredCollection; RazorVueCompatibilityAnalyzerTests.ParameterViewToDictionary_ReportsAtAuthoredInvocation",
+            RazorVueCapabilityEvidence.AuthorSource,
+            "The standard snapshot entry point is supported, but arbitrary parameter-bag inspection is not materialized; typed [Parameter] properties are the direct authoring replacement."),
+        new(
+            "P1-server-only-injection",
+            "[Inject]/@inject DbContext or derived database context",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityStatus.Reject,
+            "RazorVueCompatibilityAnalyzer",
+            "JAZORVCA001",
+            "RazorVueCompatibilityAnalyzerTests",
+            RazorVueCapabilityEvidence.AuthorSource,
+            "Use a typed endpoint client; DbContext cannot be materialized in a browser bundle."),
+        new(
+            "P1-server-only-aspnet-injection",
+            "[Inject]/@inject HttpContext, IHttpContextAccessor, ASP.NET host environment, or Identity manager",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityStatus.Reject,
+            "RazorVueCompatibilityAnalyzer",
+            "JAZORVCA002",
+            "RazorVueCompatibilityAnalyzerTests.InjectedHttpContext_ReportsServerOnlyServiceAtAuthoredAttribute",
+            RazorVueCapabilityEvidence.AuthorSource,
+            "Move request/identity work to a server endpoint and inject a typed browser client."),
+        new(
+            "P1-injection-property-shape",
+            "[Inject] properties with readonly, init-only, custom-setter, or static activation shape",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.GuidedAdaptation,
+            RazorVueCapabilityStatus.Guidance,
+            "RazorVueCompatibilityAnalyzer + VueModuleBuilder activation",
+            "JAZORVCA006",
+            "RazorVueCompatibilityAnalyzerTests.InjectedBrowserServiceWithReadOnlyProperty_ReportsAtAuthoredInjectAttribute; RazorVueCompatibilityAnalyzerTests.InjectPropertyShapeRule_StillRunsWithoutOptionalServerMetadata",
+            RazorVueCapabilityEvidence.AuthorSource,
+            "Use a normal writable auto-property; the adapter assigns it after initialization and before lifecycle callbacks."),
+        new(
+            "P1-known-host-service-adapter-gap",
+            "[Inject]/@inject known Blazor circuit, protected-storage, or host activation services without a browser adapter",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.GuidedAdaptation,
+            RazorVueCapabilityStatus.Guidance,
+            "RazorVueCompatibilityAnalyzer",
+            "JAZORVCA007",
+            "RazorVueCompatibilityAnalyzerTests.InjectedBlazorHostServiceWithoutAdapter_ReportsAtAuthoredInjectAttribute",
+            RazorVueCapabilityEvidence.AuthorSource,
+            "Register a typed browser adapter or move the operation behind an endpoint; ordinary application services remain quiet when they have a valid writable property."),
+        new(
+            "P1-browser-service-injection",
+            "[Inject]/@inject property activation for browser-capable services",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "VueInjectRegistry + VueModuleBuilder component activation adapter",
+            null,
+            "RazorSgInjectedServiceRuntimeTests (provider, lifecycle order, missing-provider failure)",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Constructor injection/parameterized activation remains an explicit JAZORVGA024 boundary; provider lifetime and browser/SSR consumer proof are still required before Support."),
+        new(
+            "P1-cascading-values",
+            "CascadingValue, [CascadingParameter], named cascades, nested override, and updates",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "Cascading adapter + VueModuleBuilder lifecycle bridge",
+            "JAZORVCA008",
+            "RazorSgCascadingValueRuntimeTests; RazorVueCompatibilityAnalyzerTests.WritableCascadingParameter_IsHandledByBrowserAdapterWithoutDiagnostic",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Typed/named provider lookup, nested Vue scope behavior, IsFixed and browser/package consumer proof remain before Support."),
+        new(
+            "P1-navigation-router",
+            "NavigationManager, Router, RouteView, LayoutView, NavLink, and query/route parameter refresh",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "RazorVue route catalog + blazor-routing.mjs",
+            null,
+            "RazorSgNavigationRuntimeTests.NavigationManager_UsesBrowserAdapterForUriAndNavigateTo; RazorTailOutputTests.RouteCatalog_EmitsDeterministicPageAndLayoutEntries",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Router route matching, page/layout composition, history refresh, and query/route parameter browser proof remain before Support."),
+        new(
+            "P1-standard-blazor-component-adapters",
+            "DynamicComponent, EditForm, ErrorBoundary, Router, RouteView, LayoutView, NavLink, and built-in input components",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "RenderEmitter + blazor-components.mjs",
+            null,
+            "RazorVueCompatibilityAnalyzerTests.StandardBlazorComponentTag_RemainsQuietWhenAdapterIsRegistered; RazorSgStandardBlazorComponentRuntimeTests",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Dynamic parameter validation, EditContext/validation semantics, and browser/package proof remain before Support."),
+        new(
+            "P1-dynamic-component",
+            "DynamicComponent with statically discoverable component type and validated parameters",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "RenderEmitter + blazor-components.mjs",
+            null,
+            "RazorSgStandardBlazorComponentRuntimeTests.DynamicComponent_UsesStaticComponentRegistryAdapter",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Static type-token registry is supported; parameter descriptor validation and unknown external runtime types remain before Support."),
+        new(
+            "P1-error-boundary",
+            "ErrorBoundary with child render/update/unmount error semantics",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "blazor-components.mjs ErrorBoundary adapter",
+            null,
+            "RazorSgStandardBlazorComponentRuntimeTests; ErrorBoundary adapter module proof",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Initial child/error slot capture is supported; Recover API, nested update/unmount coverage and SSR/browser proof remain before Support."),
+        new(
+            "P1-standard-forms",
+            "EditForm, InputBase, built-in Input*, validation messages, and edit context",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "blazor-components.mjs form/input adapters",
+            null,
+            "RazorSgStandardBlazorComponentRuntimeTests.EditFormAndInputText_KeepStandardBindingSurface",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Common text/textarea/checkbox/number/date/select binding is materialized; InputBase, EditContext validation, culture/enum parsing, server errors and package/SSR proof remain before Support."),
+        new(
+            "P2-authentication",
+            "AuthenticationStateProvider, AuthorizeView, and authorization-aware route composition",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.Planned,
+            "Authentication state adapter + server endpoint contract",
+            null,
+            "JazorAdmin authenticated browser workflow",
+            RazorVueCapabilityEvidence.None,
+            "Browser state handoff and endpoint enforcement contract are not implemented."),
+        new(
+            "P2-js-runtime",
+            "IJSRuntime/IJSObjectReference/JSInvokable with a typed registered module contract",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.GuidedAdaptation,
+            RazorVueCapabilityStatus.Guidance,
+            "Typed WebIDL/module registry",
+            null,
+            "typed module registry fixture",
+            RazorVueCapabilityEvidence.None,
+            "Arbitrary string invocation and dynamic import remain intentionally unsupported."),
+        new(
+            "P2-ssr-state-and-forms",
+            "PersistentComponentState, SupplyParameterFromForm, antiforgery, enhanced post, and hydration state",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.Planned,
+            "SSR/hydration host adapter",
+            null,
+            "RazorVue SSR state/form fixture",
+            RazorVueCapabilityEvidence.None,
+            "No versioned state handoff or form-post adapter exists yet."),
+        new(
+            "P2-advanced-rendering",
+            "Virtualize, QuickGrid, SectionOutlet/SectionContent, StreamRendering, localization, and complex validation",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.GuidedAdaptation,
+            RazorVueCapabilityStatus.Guidance,
+            "Feature-specific adapter owners",
+            null,
+            "feature-specific feasibility fixture",
+            RazorVueCapabilityEvidence.None,
+            "Each feature needs a browser semantic proof before it can become an adapter."),
+        new(
+            "P2-parameterized-activation",
+            "Primary constructors, constructor injection, this(...), and base(args) component activation",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityStatus.Reject,
+            "MemberClosureBuilder + component activation adapter",
+            "JAZORVGA024",
+            "MemberClosureBuilderContractTests.TryBuild_RejectsUnsupportedSourceConstructorActivationProtocols",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
+            "No activation/DI protocol can preserve base initialization order yet."),
+        new(
+            "crosscut-hmr",
+            "Component HMR identity and template/logic boundary metadata",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.Support,
+            "VueModuleBuilder",
+            null,
+            "VueHmrMetadataTests; RazorSgOfficialReleaseWorkflowRuntimeTests",
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Production browser HMR remains covered by the dev-host gate."),
+        new(
+            "crosscut-ssr-package",
+            "Existing RazorVue package consumer, SSR rendering, and hydration delivery contract",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "Jazor.Emit + ASP.NET Core host",
+            null,
+            "verify-windows-ssr-release.cs",
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.SsrHydration |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "M5 feature adapters must add their own SSR/hydration behavior proof."),
+        new(
+            "consumer-jazor-admin",
+            "JazorAdmin pages as real P0/component-binding consumer regression",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.InProof,
+            "samples/JazorAdmin",
+            null,
+            "samples/JazorAdmin/verify-smoke.cs",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.BrowserSmoke,
+            "Only capabilities with an independent platform proof may be promoted from this consumer evidence.")
+    ];
+}

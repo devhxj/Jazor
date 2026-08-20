@@ -127,4 +127,19 @@ public abstract class SemanticWalkerHost
 
     public virtual Expression? RewriteInstanceReference(IInstanceReferenceOperation operation, SenseArgument argument)
         => null;
+
+    /// <summary>
+    /// Rewrites a host-owned event subscription before the CLR field-like event protocol is
+    /// validated. This is intentionally narrow: external events still fail through the normal
+    /// compiler boundary unless a host explicitly owns their runtime contract.
+    /// </summary>
+    public virtual Expression? RewriteEventAssignment(
+        IEventAssignmentOperation operation,
+        SenseArgument argument)
+        => null;
+
+    public virtual Expression? RewriteEventReference(
+        IEventReferenceOperation operation,
+        SenseArgument argument)
+        => null;
 }

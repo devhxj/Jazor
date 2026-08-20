@@ -12,6 +12,7 @@ namespace JazorAdmin.Data;
 public sealed class DatabaseInitializer(
     IServiceScopeFactory scopeFactory,
     IOptions<OpenIddictOptions> openIddictOptions,
+    IOptions<DemoClientOptions> demoClientOptions,
     IOptions<BootstrapOptions> bootstrapOptions,
     IHostEnvironment environment,
     ILogger<DatabaseInitializer> logger) : IHostedService
@@ -29,6 +30,9 @@ public sealed class DatabaseInitializer(
         await SeedAuthorizationCatalogAsync(database, cancellationToken);
         await SeedDevelopmentWorkspaceAsync(database, bootstrapAdministrator, cancellationToken);
         await SeedSpaClientAsync(
+            scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>(),
+            cancellationToken);
+        await SeedDemoClientAsync(
             scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>(),
             cancellationToken);
 
@@ -281,5 +285,71 @@ public sealed class DatabaseInitializer(
             await applications.CreateAsync(descriptor, cancellationToken);
         else
             await applications.UpdateAsync(application, descriptor, cancellationToken);
+    }
+
+    private async Task SeedDemoClientAsync(
+        IOpenIddictApplicationManager applications,
+        CancellationToken cancellationToken)
+    {
+        var options = demoClientOptions.Value;
+        if (string.IsNullOrWhiteSpace(options.ClientSecret))
+        {
+            // Keeping a client secret out of source control is deliberate. The normal admin app
+            // remains usable without the optional demo client; README documents the local setup.
+            // 客户端密钥不入源码是刻意约束；未配置时管理台仍可正常使用，README 说明本地接入方式。
+            if (options.RedirectUris.Length > 0 || options.PostLogoutRedirectUris.Length > 0)
+            {
+                logger.LogWarning(
+                    "JazorAdmin demo client registration was skipped because {Section}:ClientSecret is not configured.",
+                    DemoClientOptions.SectionName);
+            }
+
+            return;
+        }
+
+        if (options.RedirectUris.Length == 0 || options.PostLogoutRedirectUris.Length == 0)
+        {
+            throw new InvalidOperationException(
+                "Configure JazorAdmin:DemoClient:RedirectUris and " +
+                "JazorAdmin:DemoClient:PostLogoutRedirectUris before enabling the demo client.");
+        }
+
+        var application = await applications.FindByClientIdAsync(options.ClientId, cancellationToken);
+        var descriptor = new OpenIddictApplicationDescriptor
+        {
+            ClientId = options.ClientId,
+            ClientSecret = options.ClientSecret,
+            ClientType = OpenIddictConstants.ClientTypes.Confidential,
+            ConsentType = OpenIddictConstants.ConsentTypes.Implicit,
+            DisplayName = "JazorAdmin Operations Demo"
+        };
+        descriptor.RedirectUris.UnionWith(options.RedirectUris.Select(static uri => new Uri(uri, UriKind.Absolute)));
+        descriptor.PostLogoutRedirectUris.UnionWith(options.PostLogoutRedirectUris.Select(static uri => new Uri(uri, UriKind.Absolute)));
+        descriptor.Permissions.UnionWith(
+        [
+            OpenIddictConstants.Permissions.Endpoints.Authorization,
+            OpenIddictConstants.Permissions.Endpoints.EndSession,
+            OpenIddictConstants.Permissions.Endpoints.Token,
+            OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+            OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
+            OpenIddictConstants.Permissions.ResponseTypes.Code,
+            OpenIddictConstants.Permissions.Scopes.Email,
+            OpenIddictConstants.Permissions.Scopes.Profile,
+            OpenIddictConstants.Permissions.Scopes.Roles,
+            OpenIddictConstants.Permissions.Prefixes.Scope + ScopeKeys.Api
+        ]);
+        descriptor.Requirements.Add(OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange);
+
+        if (application is null)
+        {
+            await applications.CreateAsync(descriptor, cancellationToken);
+            return;
+        }
+
+        // Descriptor replacement keeps redirect and permission changes declarative; the explicit
+        // secret update ensures a rotated deployment secret is applied on the next startup.
+        // Descriptor 替换使 URI/权限配置保持声明式；额外写入密钥保证部署轮换后下次启动即生效。
+        await applications.UpdateAsync(application, descriptor, cancellationToken);
+        await applications.UpdateAsync(application, options.ClientSecret, cancellationToken);
     }
 }

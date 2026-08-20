@@ -2899,14 +2899,16 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNotNull(emitterType);
         var constructor = emitterType!
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Single(candidate => candidate.GetParameters().Length == 5);
+            .Single(candidate => candidate.GetParameters().Length == 7);
         return constructor.Invoke(
         [
             fixture.Compilation,
             componentSymbol,
             null,
             null,
-            VueInjectRegistry.ForCompilation(fixture.Compilation)
+            VueInjectRegistry.ForCompilation(fixture.Compilation),
+            null,
+            null
         ]);
     }
 
@@ -3163,7 +3165,10 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNotNull(componentFrameType);
         var constructor = componentFrameType!
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Single(candidate => candidate.GetParameters().Length == 12);
+            .Single(candidate => candidate.GetParameters().Length == 15);
+        var adapterKind = Enum.Parse(
+            typeof(RenderEmitter).GetNestedType("StandardBlazorComponentAdapterKind", BindingFlags.NonPublic)!,
+            "None");
         return constructor.Invoke(
         [
             new Identifier("component"),
@@ -3177,7 +3182,10 @@ public sealed class RenderEmitterPrivateContractTests
             null,
             useWithCtx,
             useCreateSlots,
-            slotsAreInStableScope
+            slotsAreInStableScope,
+            false,
+            adapterKind,
+            null
         ]);
     }
 

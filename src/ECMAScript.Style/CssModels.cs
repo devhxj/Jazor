@@ -310,7 +310,7 @@ public sealed record CssContext
     internal HTMLStyleElement? DomStyle { get; set; }
 
     [Description("@#$domDocument")]
-    internal Document? DomDocument { get; set; }
+    internal JazorDocument? DomDocument { get; set; }
 
     [Description("@#$domHydrated")]
     internal bool DomHydrated { get; set; }

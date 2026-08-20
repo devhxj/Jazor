@@ -108,7 +108,11 @@ public sealed class ECMAScriptHostNamingAuditTest
     }
 
     private static bool IsCompilerManaged(MemberInfo member)
-        => HasAttribute(member, "JazorAttribute");
+        // Jazor-mapped members carry their own runtime contract, and inline-template members
+        // never emit a runtime member name at all (call sites lower to computed expressions),
+        // so the risky-spelling rule has no collision surface for either family.
+        => HasAttribute(member, "JazorAttribute") ||
+           HasAttribute(member, nameof(ECMAScriptInlineAttribute));
 
     private static bool HasExplicitRuntimeName(MemberInfo member)
     {

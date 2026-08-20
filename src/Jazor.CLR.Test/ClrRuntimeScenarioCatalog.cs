@@ -225,7 +225,8 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeTimeOnlyScenarios.All,
         .. ClrRuntimeDateOnlyScenarios.All,
         .. ClrRuntimeCalendarScenarios.All,
-        .. ClrRuntimeCultureInfoScenarios.All
+        .. ClrRuntimeCultureInfoScenarios.All,
+        .. ClrRuntimeNavigationScenarios.All
     ];
 
     public static ClrRuntimeScenario Get(string id)

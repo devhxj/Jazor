@@ -20,6 +20,13 @@ internal static class RenderEmitter
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
     private const string MarkupStringMetadataName = "Microsoft.AspNetCore.Components.MarkupString";
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
+    private const string CascadingValueRuntimeModuleSpecifier = "@jazor/vue-runtime/cascading.mjs";
+    private const string CascadingValueRuntimeExportName = "CascadingValue";
+    private const string CascadingValueMetadataName = "Microsoft.AspNetCore.Components.CascadingValue`1";
+    private const string CascadingValueTypePropName = "__jazorCascadeType";
+    private const string BlazorRoutingRuntimeModuleSpecifier = "@jazor/vue-runtime/blazor-routing.mjs";
+    private const string BlazorComponentsRuntimeModuleSpecifier = "@jazor/vue-runtime/blazor-components.mjs";
+    private const string StandardInputValueTypePropName = "__jazorValueType";
     private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
@@ -62,10 +69,41 @@ internal static class RenderEmitter
             declaredNames,
             reservedImportNames,
             injectRegistry,
+            parameterPropertiesUseState: false,
             out result,
             out var exception);
         failure = exception?.Message;
         return emitted;
+    }
+
+    /// <summary>
+    /// Lowers an inline <c>RenderFragment&lt;T&gt;</c> carried by a TDesign table-cell union into
+    /// TDesign's <c>cell(h, params) =&gt; VNode</c> runtime contract. The surrounding computed
+    /// member still belongs to <see cref="SemanticWalker"/>; this method only claims the
+    /// RenderTreeBuilder protocol nested inside the known table-cell conversion.
+    /// 普通成员中的表格 Cell 不是 BuildRenderTree 直通路径，但其内部仍是 Razor builder 协议；
+    /// 这里复用同一 VNode lowering，不能把 builder 回调泄漏到最终 JS。
+    /// </summary>
+    internal static Expression? TryEmitTDesignTableCell(
+        Compilation compilation,
+        INamedTypeSymbol componentSymbol,
+        IReadOnlyDictionary<ISymbol, string>? declaredNames,
+        VueInjectRegistry injectRegistry,
+        IConversionOperation operation,
+        SenseArgument argument,
+        VueRenderRuntimeFeatures runtimeFeatures)
+    {
+        if (!IsTDesignTableCellType(operation.Type))
+            return null;
+
+        var emitter = new Emitter(
+            compilation,
+            componentSymbol,
+            declaredNames,
+            reservedImportNames: null,
+            injectRegistry,
+            sharedArgument: argument);
+        return emitter.TryEmitTDesignTableCell(operation, runtimeFeatures);
     }
 
     /// <summary>
@@ -83,7 +121,8 @@ internal static class RenderEmitter
         IEnumerable<string>? reservedImportNames,
         VueInjectRegistry injectRegistry,
         out RenderResult result,
-        out RazorVueDiagnosticInfo? diagnostic)
+        out RazorVueDiagnosticInfo? diagnostic,
+        bool parameterPropertiesUseState = false)
     {
         var emitted = TryEmitCore(
             compilation,
@@ -93,6 +132,7 @@ internal static class RenderEmitter
             declaredNames,
             reservedImportNames,
             injectRegistry,
+            parameterPropertiesUseState,
             out result,
             out var exception);
         if (emitted)
@@ -137,6 +177,7 @@ internal static class RenderEmitter
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
         IEnumerable<string>? reservedImportNames,
         VueInjectRegistry injectRegistry,
+        bool parameterPropertiesUseState,
         out RenderResult result,
         out Exception? failure)
     {
@@ -168,7 +209,8 @@ internal static class RenderEmitter
                     componentSymbol,
                     declaredNames,
                     reservedImportNames,
-                    injectRegistry)
+                    injectRegistry,
+                    parameterPropertiesUseState)
                 // A concrete component can inherit BuildRenderTree from a generic base. Roslyn
                 // then supplies a constructed method symbol here, while the source body keeps
                 // the base declaration's parameter symbol. Bind the operation body by the
@@ -189,6 +231,7 @@ internal static class RenderEmitter
                 UsesRenderList: lowered.UsesRenderList,
                 UsesWithCtx: lowered.UsesWithCtx,
                 UsesCreateSlots: lowered.UsesCreateSlots,
+                UsesMergeProps: lowered.UsesMergeProps,
                 UsesHandlerCache: lowered.UsesHandlerCache,
                 UsesProps: AstReferenceAnalysis.ReferencesIdentifier(lowered.RenderExpression, "props") ||
                            lowered.PreludeStatements.Any(static statement => AstReferenceAnalysis.ReferencesIdentifier(statement, "props")),
@@ -274,7 +317,9 @@ internal static class RenderEmitter
             INamedTypeSymbol componentSymbol,
             IReadOnlyDictionary<ISymbol, string>? declaredNames,
             IEnumerable<string>? reservedImportNames,
-            VueInjectRegistry injectRegistry)
+            VueInjectRegistry injectRegistry,
+            bool parameterPropertiesUseState = false,
+            SenseArgument? sharedArgument = null)
         {
             _compilation = compilation;
             _componentSymbol = componentSymbol;
@@ -292,13 +337,14 @@ internal static class RenderEmitter
                     componentSymbol,
                     parameterRuntimeNames: BuildComponentParameterNameMap(componentSymbol),
                     memberRuntimeNames: declaredNames,
+                    parameterPropertiesUseState: parameterPropertiesUseState,
                     parameterReferenceRewriter: RewriteDirectParameterReference,
                     localReferenceRewriter: RewriteDirectLocalReference,
                     propertyReferenceRewriter: RewriteDirectRenderFragmentParameterReference,
                     directBinderHandlerObserver: (handler, valueKind) => _directBinderHandlers[handler] = valueKind)
             };
-            var argument = new SenseArgument(Sense.Any, UseImportAliases: true);
-            if (reservedImportNames is not null)
+            var argument = sharedArgument?.WithNewScope() ?? new SenseArgument(Sense.Any, UseImportAliases: true);
+            if (sharedArgument is null && reservedImportNames is not null)
             {
                 // Direct render is lowered after ordinary component members but uses a separate
                 // SemanticWalker. Seed it with compiler bindings so another module's same export
@@ -314,6 +360,61 @@ internal static class RenderEmitter
             _argument = argument;
             _componentSlotNames = BuildComponentSlotNameMap(componentSymbol);
             _injectRegistry = injectRegistry;
+        }
+
+        public Expression? TryEmitTDesignTableCell(
+            IConversionOperation operation,
+            VueRenderRuntimeFeatures runtimeFeatures)
+        {
+            if (!TryGetGenericRenderFragmentBody(operation.Operand, out var valueParameter, out var builder, out var body))
+                return null;
+
+            // TDesign invokes cell(h, params). `h` is intentionally ignored so the Vue framing
+            // helper remains visible to nested direct component lowering; `context` is the C#
+            // RenderFragment<T> value parameter and must be evaluated only at cell invocation.
+            // TDesign 的首参不能命名为 h，否则会遮蔽片段内部 Vue h helper。
+            const string renderFunctionParameterName = "__jazor$renderH";
+            const string contextParameterName = "context";
+            CollectMutableRenderLocals(body);
+            var context = new EmitContext(
+                BuilderBinding.ForSymbol(builder),
+                ImmutableDictionary<IParameterSymbol, IOperation>.Empty.WithComparers(SymbolComparer),
+                ImmutableDictionary<IParameterSymbol, string>.Empty
+                    .WithComparers(SymbolComparer)
+                    .SetItem(valueParameter, contextParameterName),
+                ImmutableDictionary<ILocalSymbol, string>.Empty.WithComparers(SymbolComparer),
+                ImmutableDictionary<ILocalSymbol, DirectRenderFragment>.Empty.WithComparers(SymbolComparer),
+                ImmutableDictionary<ILocalSymbol, DirectRenderObject>.Empty.WithComparers(SymbolComparer),
+                ImmutableDictionary<ILocalSymbol, INamedTypeSymbol>.Empty.WithComparers(SymbolComparer),
+                ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolComparer),
+                new List<Statement>(),
+                AllowPreludeDeclarations: true,
+                Argument: _argument.WithNewScope());
+            var lowered = EmitRenderFragmentBodyExpression(
+                builder,
+                body,
+                context,
+                operation,
+                "TDesign table-cell RenderFragment<T> content");
+            runtimeFeatures.Merge(
+                usesMergeProps: _usesMergeProps,
+                usesFragment: _usesFragment || lowered.UsesFragment,
+                usesRawMarkupRuntime: _usesRawMarkupRuntime,
+                usesSlots: _usesSlots,
+                usesBlockTree: _usesBlockTree,
+                usesTextVNode: _usesTextVNode,
+                usesRenderList: _usesRenderList,
+                usesWithCtx: _usesWithCtx,
+                usesCreateSlots: _usesCreateSlots,
+                usesHandlerCache: _usesHandlerCache,
+                usesProps: AstReferenceAnalysis.ReferencesIdentifier(lowered.RenderExpression, "props"));
+            return new ArrowFunctionExpression(
+                NodeList.From<Node>(
+                    new Identifier(renderFunctionParameterName),
+                    new Identifier(contextParameterName)),
+                lowered.RenderExpression,
+                expression: true,
+                async: false);
         }
 
         public LoweredRender EmitBlock(IBlockOperation block, BuilderBinding builder)
@@ -363,6 +464,7 @@ internal static class RenderEmitter
                 _usesRenderList,
                 _usesWithCtx,
                 _usesCreateSlots,
+                _usesMergeProps,
                 _usesHandlerCache,
                 _usesSlots,
                 BuildImportDeclarations(),
@@ -1924,12 +2026,26 @@ internal static class RenderEmitter
                     EnsureSignature(invocation, method.Name == "OpenComponent");
                     RequireOmittableSequence(invocation.Arguments[0].Value);
                     var componentType = ResolveOpenComponentType(invocation, context);
+                    var isCascadingValue = IsCascadingValueComponent(componentType);
+                    var hasStandardAdapter = TryGetStandardBlazorComponentAdapter(componentType, out var standardAdapter);
                     var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
-                    var componentExpression = BindComponentImport(componentType);
-                    var parameterNameMap = BuildComponentParameterNameMap(runtimeComponentType);
-                    var slotNameMap = BuildComponentSlotParameterNameMap(runtimeComponentType);
+                    var componentExpression = isCascadingValue
+                        ? _argument.BindImportSpecifier(
+                            CascadingValueRuntimeModuleSpecifier,
+                            CascadingValueRuntimeExportName)
+                        : hasStandardAdapter
+                            ? _argument.BindImportSpecifier(
+                                standardAdapter.ModuleSpecifier,
+                                standardAdapter.ExportName)
+                            : BindComponentImport(componentType);
+                    var parameterNameMap = isCascadingValue
+                        ? BuildCascadingValueParameterNameMap()
+                        : BuildComponentParameterNameMap(runtimeComponentType);
+                    var slotNameMap = isCascadingValue
+                        ? BuildCascadingValueSlotNameMap()
+                        : BuildComponentSlotParameterNameMap(runtimeComponentType);
                     state.StartChildren();
-                    state.Stack.Push(new ComponentFrame(
+                    var componentFrame = new ComponentFrame(
                         componentExpression,
                         parameterNameMap,
                         slotNameMap,
@@ -1941,7 +2057,27 @@ internal static class RenderEmitter
                         UseBlockTree,
                         UseWithCtx,
                         UseCreateSlots,
-                        slotsAreInStableScope: _nonHoistableRenderScopeDepth == 0));
+                        slotsAreInStableScope: _nonHoistableRenderScopeDepth == 0,
+                        isCascadingValue: isCascadingValue,
+                        standardAdapterKind: hasStandardAdapter
+                            ? standardAdapter.Kind
+                            : StandardBlazorComponentAdapterKind.None,
+                        standardValueType: hasStandardAdapter
+                            ? GetStandardBlazorComponentValueType(componentType)
+                            : null);
+                    if (hasStandardAdapter &&
+                        TryBuildStandardInputValueTypeDescriptor(
+                            standardAdapter.Kind,
+                            componentFrame.StandardValueType,
+                            out var standardInputValueTypeDescriptor))
+                    {
+                        // The closed InputBase<T> type is available when Razor opens the
+                        // component even if TypeInference later presents Value as an open T.
+                        // Install this framework-only prop at frame creation so descriptor
+                        // emission does not depend on the generated helper's local symbols.
+                        componentFrame.SetStandardInputValueTypeDescriptor(standardInputValueTypeDescriptor);
+                    }
+                    state.Stack.Push(componentFrame);
                     return true;
 
                 case "CloseComponent":
@@ -2189,6 +2325,17 @@ internal static class RenderEmitter
             if (!TryGetConstantString(nameOperation, out var name))
                 throw Unsupported(nameOperation, "Attribute names must be compile-time strings for direct render lowering.");
 
+            if (frame is ComponentFrame standardComponentFrame &&
+                invocation.Arguments.Length == 3 &&
+                TryEmitStandardBlazorComponentParameter(
+                    standardComponentFrame,
+                    name,
+                    invocation.Arguments[2].Value,
+                    context))
+            {
+                return;
+            }
+
             if (frame is ComponentFrame componentFrame &&
                 invocation.Arguments.Length == 3 &&
                 TryEmitComponentParameterValue(
@@ -2221,6 +2368,25 @@ internal static class RenderEmitter
 
             if (!TryGetConstantString(invocation.Arguments[1].Value, out var name))
                 throw Unsupported(invocation.Arguments[1].Value, "Component parameter names must be compile-time strings for direct render lowering.");
+
+            if (TryEmitStandardBlazorComponentParameter(
+                    frame,
+                    name,
+                    invocation.Arguments[2].Value,
+                    context))
+            {
+                return;
+            }
+
+            if (frame.IsCascadingValue && string.Equals(name, "Value", StringComparison.Ordinal))
+            {
+                // Razor SG's TypeInference helper keeps CascadingValue<TValue> open even when
+                // the authored Value expression is concrete. The expression operation carries
+                // the actual source type, which is the same type Blazor uses for cascade lookup.
+                // TypeInference 的 TValue 是开放泛型，真实 Value 表达式类型才是级联 key 来源。
+                var valueType = GetCascadingValueType(invocation.Arguments[2].Value, context);
+                frame.SetCascadingValueTypeKey(LibraryComponentConventions.GetCascadingTypeKey(valueType));
+            }
 
             if (TryEmitComponentParameterValue(
                     frame,
@@ -2265,6 +2431,90 @@ internal static class RenderEmitter
 
             if (IsRenderFragmentOperationValue(valueOperation) || IsGenericRenderFragmentOperationValue(valueOperation))
                 throw Unsupported(valueOperation, "RenderFragment component parameters require a resolvable inline, local, helper, or component-slot source.");
+
+            return false;
+        }
+
+        private bool TryEmitStandardBlazorComponentParameter(
+            ComponentFrame frame,
+            string name,
+            IOperation valueOperation,
+            EmitContext context)
+        {
+            if (frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.None)
+                return false;
+
+            // Router discovers its pages from the final generated route catalog. AppAssembly is
+            // still required by the standard Razor API, but it is intentionally not materialized
+            // as a browser reflection object.
+            // Router 页面从最终 catalog 发现；AppAssembly 保留标准作者面但不进入浏览器反射路径。
+            if (frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.Router &&
+                string.Equals(name, "AppAssembly", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            if (frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.DynamicComponent &&
+                string.Equals(name, "Type", StringComparison.Ordinal))
+            {
+                if (!TryResolveTypeOfExpression(valueOperation, context.LocalComponentTypes, out var targetComponent))
+                {
+                    throw Unsupported(
+                        valueOperation,
+                        "DynamicComponent.Type must be a statically discoverable RazorVue component type. " +
+                        "Use typeof(MyComponent) or a local initialized from typeof(MyComponent).");
+                }
+
+                frame.AddAttribute(new DirectAttribute(
+                    "__jazorComponent",
+                    BindComponentImport(targetComponent)));
+                return true;
+            }
+
+            if ((frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.RouteView &&
+                 string.Equals(name, "DefaultLayout", StringComparison.Ordinal)) ||
+                (frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.LayoutView &&
+                 string.Equals(name, "Layout", StringComparison.Ordinal)))
+            {
+                if (!TryResolveTypeOfExpression(valueOperation, context.LocalComponentTypes, out var layoutType))
+                {
+                    throw Unsupported(
+                        valueOperation,
+                        name + " must be a statically discoverable RazorVue layout component type.");
+                }
+
+                frame.AddAttribute(new DirectAttribute(
+                    frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.RouteView
+                        ? "__jazorDefaultLayout"
+                        : "__jazorLayout",
+                    BindComponentImport(layoutType)));
+                return true;
+            }
+
+            if (IsStandardInputAdapter(frame.StandardAdapterKind) &&
+                string.Equals(name, "ValueExpression", StringComparison.Ordinal))
+            {
+                // The input adapter receives the strongly typed Value/ValueChanged pair. Its
+                // browser parse path has no CLR Expression<TDelegate> reflection counterpart.
+                // Input adapter 使用 Value/ValueChanged；ValueExpression 不应落入浏览器反射。
+                return true;
+            }
+
+            if (IsStandardInputAdapter(frame.StandardAdapterKind) &&
+                string.Equals(name, "Value", StringComparison.Ordinal) &&
+                TryBuildStandardInputValueTypeDescriptor(
+                    frame.StandardAdapterKind,
+                    valueOperation.Type is { TypeKind: not TypeKind.TypeParameter }
+                        ? valueOperation.Type
+                        : frame.StandardValueType,
+                    out var valueTypeDescriptor))
+            {
+                // InputBase<T> normally uses Expression<T> and reflection to recover the
+                // parser. The browser adapter cannot materialize that server-side expression,
+                // so carry only the closed, compiler-known value contract as a hidden prop.
+                // 运行时只需要闭合后的值域描述，不把 Expression<T> 或反射对象带入浏览器。
+                frame.SetStandardInputValueTypeDescriptor(valueTypeDescriptor);
+            }
 
             return false;
         }
@@ -4353,6 +4603,13 @@ internal static class RenderEmitter
         return true;
     }
 
+    private static bool IsTDesignTableCellType(ITypeSymbol? type)
+        => type is INamedTypeSymbol named &&
+           named.OriginalDefinition.TypeParameters.Length == 1 &&
+           string.Equals(named.ContainingNamespace.ToDisplayString(), "ECMAScript.TDesign", StringComparison.Ordinal) &&
+           (string.Equals(named.Name, "TPrimaryTableColCell", StringComparison.Ordinal) ||
+            string.Equals(named.Name, "TBaseTableColCell", StringComparison.Ordinal));
+
     private static IOperation? TryGetSingleReturnedValue(IOperation operation)
         => operation is IBlockOperation
            {
@@ -4638,6 +4895,375 @@ internal static class RenderEmitter
         throw Unsupported(invocation, "OpenComponent must use a generic component type or typeof(T) for direct render lowering.");
     }
 
+    private static bool IsCascadingValueComponent(INamedTypeSymbol componentType)
+        => string.Equals(componentType.OriginalDefinition.MetadataName, "CascadingValue`1", StringComparison.Ordinal) &&
+           string.Equals(
+               componentType.OriginalDefinition.ContainingNamespace?.ToDisplayString(),
+               "Microsoft.AspNetCore.Components",
+               StringComparison.Ordinal);
+
+    /// <summary>
+    /// Identifies standard Blazor components whose public authoring contract is projected to a
+    /// browser runtime adapter. The enum is deliberately closed: an unregistered component must
+    /// continue through the normal generated-component path or fail at the existing boundary.
+    /// </summary>
+    private enum StandardBlazorComponentAdapterKind
+    {
+        None,
+        Router,
+        RouteView,
+        LayoutView,
+        NavLink,
+        DynamicComponent,
+        ErrorBoundary,
+        EditForm,
+        InputText,
+        InputTextArea,
+        InputCheckbox,
+        InputNumber,
+        InputDate,
+        InputSelect
+    }
+
+    private readonly record struct StandardBlazorComponentAdapter(
+        StandardBlazorComponentAdapterKind Kind,
+        string ModuleSpecifier,
+        string ExportName);
+
+    private static bool TryGetStandardBlazorComponentAdapter(
+        INamedTypeSymbol componentType,
+        out StandardBlazorComponentAdapter adapter)
+    {
+        var definition = componentType.OriginalDefinition;
+        var name = definition.MetadataName;
+        var namespaceName = definition.ContainingNamespace?.ToDisplayString();
+        if (string.Equals(namespaceName, "Microsoft.AspNetCore.Components.Routing", StringComparison.Ordinal))
+        {
+            adapter = name switch
+            {
+                "Router" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.Router,
+                    BlazorRoutingRuntimeModuleSpecifier,
+                    "Router"),
+                "NavLink" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.NavLink,
+                    BlazorRoutingRuntimeModuleSpecifier,
+                    "NavLink"),
+                _ => default
+            };
+            return adapter.Kind != StandardBlazorComponentAdapterKind.None;
+        }
+
+        if (string.Equals(namespaceName, "Microsoft.AspNetCore.Components.Forms", StringComparison.Ordinal))
+        {
+            adapter = name switch
+            {
+                "EditForm" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.EditForm,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "EditForm"),
+                "InputText" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.InputText,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "InputText"),
+                "InputTextArea" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.InputTextArea,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "InputTextArea"),
+                "InputCheckbox" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.InputCheckbox,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "InputCheckbox"),
+                "InputNumber`1" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.InputNumber,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "InputNumber"),
+                "InputDate`1" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.InputDate,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "InputDate"),
+                "InputSelect`1" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.InputSelect,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "InputSelect"),
+                _ => default
+            };
+            return adapter.Kind != StandardBlazorComponentAdapterKind.None;
+        }
+
+        if (string.Equals(namespaceName, "Microsoft.AspNetCore.Components", StringComparison.Ordinal))
+        {
+            adapter = name switch
+            {
+                "RouteView" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.RouteView,
+                    BlazorRoutingRuntimeModuleSpecifier,
+                    "RouteView"),
+                "LayoutView" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.LayoutView,
+                    BlazorRoutingRuntimeModuleSpecifier,
+                    "LayoutView"),
+                "DynamicComponent" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.DynamicComponent,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "DynamicComponent"),
+                "ErrorBoundary" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.ErrorBoundary,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "ErrorBoundary"),
+                _ => default
+            };
+            return adapter.Kind != StandardBlazorComponentAdapterKind.None;
+        }
+
+        if (string.Equals(namespaceName, "Microsoft.AspNetCore.Components.Web", StringComparison.Ordinal))
+        {
+            adapter = name switch
+            {
+                "ErrorBoundary" => new StandardBlazorComponentAdapter(
+                    StandardBlazorComponentAdapterKind.ErrorBoundary,
+                    BlazorComponentsRuntimeModuleSpecifier,
+                    "ErrorBoundary"),
+                _ => default
+            };
+            return adapter.Kind != StandardBlazorComponentAdapterKind.None;
+        }
+
+        adapter = default;
+        return false;
+    }
+
+    private static bool IsStandardInputAdapter(StandardBlazorComponentAdapterKind kind)
+        => kind is StandardBlazorComponentAdapterKind.InputText or
+            StandardBlazorComponentAdapterKind.InputTextArea or
+            StandardBlazorComponentAdapterKind.InputCheckbox or
+            StandardBlazorComponentAdapterKind.InputNumber or
+            StandardBlazorComponentAdapterKind.InputDate or
+            StandardBlazorComponentAdapterKind.InputSelect;
+
+    private static ITypeSymbol? GetStandardBlazorComponentValueType(INamedTypeSymbol componentType)
+        => componentType.TypeArguments.Length == 1
+            ? componentType.TypeArguments[0]
+            : null;
+
+    private static bool TryBuildStandardInputValueTypeDescriptor(
+        StandardBlazorComponentAdapterKind adapterKind,
+        ITypeSymbol? valueType,
+        out Expression descriptor)
+    {
+        descriptor = null!;
+        if (valueType is null)
+            return false;
+
+        var nullable = valueType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+        var effectiveType = nullable && valueType is INamedTypeSymbol nullableType
+            ? nullableType.TypeArguments[0]
+            : valueType;
+
+        var properties = new List<Node>
+        {
+            CreateObjectProperty("nullable", new BooleanLiteral(nullable, nullable ? "true" : "false"))
+        };
+
+        if (adapterKind == StandardBlazorComponentAdapterKind.InputDate)
+        {
+            var displayName = effectiveType.OriginalDefinition.ToDisplayString();
+            var kind = displayName switch
+            {
+                "System.DateOnly" => "dateonly",
+                "System.DateTimeOffset" => "datetimeoffset",
+                "System.DateTime" => "datetime",
+                _ => null
+            };
+            if (kind is null)
+                return false;
+
+            properties.Insert(0, CreateObjectProperty("kind", StringLiteral(kind)));
+            descriptor = new ObjectExpression(NodeList.From<Node>(properties));
+            return true;
+        }
+
+        if (adapterKind == StandardBlazorComponentAdapterKind.InputNumber)
+        {
+            var specialType = effectiveType.SpecialType;
+            var isBigInt = specialType is SpecialType.System_Int64 or SpecialType.System_UInt64 ||
+                           string.Equals(effectiveType.OriginalDefinition.ToDisplayString(), "System.Int128", StringComparison.Ordinal) ||
+                           string.Equals(effectiveType.OriginalDefinition.ToDisplayString(), "System.UInt128", StringComparison.Ordinal) ||
+                           string.Equals(effectiveType.OriginalDefinition.ToDisplayString(), "System.Numerics.BigInteger", StringComparison.Ordinal);
+            var isNumber = specialType is SpecialType.System_SByte or
+                SpecialType.System_Byte or
+                SpecialType.System_Int16 or
+                SpecialType.System_UInt16 or
+                SpecialType.System_Int32 or
+                SpecialType.System_UInt32 or
+                SpecialType.System_Single or
+                SpecialType.System_Double or
+                SpecialType.System_Decimal || isBigInt;
+            if (!isNumber)
+                return false;
+
+            properties.Insert(0, CreateObjectProperty("kind", StringLiteral(isBigInt ? "bigint" : "number")));
+            properties.Add(CreateObjectProperty(
+                "integer",
+                new BooleanLiteral(
+                    isBigInt || specialType is SpecialType.System_SByte or
+                        SpecialType.System_Byte or
+                        SpecialType.System_Int16 or
+                        SpecialType.System_UInt16 or
+                        SpecialType.System_Int32 or
+                        SpecialType.System_UInt32,
+                    (isBigInt || specialType is SpecialType.System_SByte or
+                        SpecialType.System_Byte or
+                        SpecialType.System_Int16 or
+                        SpecialType.System_UInt16 or
+                        SpecialType.System_Int32 or
+                        SpecialType.System_UInt32) ? "true" : "false")));
+            descriptor = new ObjectExpression(NodeList.From<Node>(properties));
+            return true;
+        }
+
+        if (adapterKind == StandardBlazorComponentAdapterKind.InputSelect)
+        {
+            if (effectiveType.TypeKind == TypeKind.Enum && effectiveType is INamedTypeSymbol enumType)
+            {
+                properties.Insert(0, CreateObjectProperty("kind", StringLiteral("enum")));
+                var values = enumType.GetMembers()
+                    .OfType<IFieldSymbol>()
+                    .Where(static field => field.HasConstantValue)
+                    .OrderBy(static field => field.Name, StringComparer.Ordinal)
+                    .Select(field => (Node)CreateObjectProperty(
+                        field.Name,
+                        CreateInputScalarLiteral(enumType.EnumUnderlyingType!, field.ConstantValue)));
+                properties.Add(CreateObjectProperty("values", new ObjectExpression(NodeList.From(values))));
+                descriptor = new ObjectExpression(NodeList.From<Node>(properties));
+                return true;
+            }
+
+            if (effectiveType.SpecialType == SpecialType.System_String)
+            {
+                properties.Insert(0, CreateObjectProperty("kind", StringLiteral("string")));
+                descriptor = new ObjectExpression(NodeList.From<Node>(properties));
+                return true;
+            }
+
+            if (effectiveType.SpecialType == SpecialType.System_Boolean)
+            {
+                properties.Insert(0, CreateObjectProperty("kind", StringLiteral("boolean")));
+                descriptor = new ObjectExpression(NodeList.From<Node>(properties));
+                return true;
+            }
+
+            if (effectiveType.SpecialType is SpecialType.System_SByte or
+                SpecialType.System_Byte or
+                SpecialType.System_Int16 or
+                SpecialType.System_UInt16 or
+                SpecialType.System_Int32 or
+                SpecialType.System_UInt32 or
+                SpecialType.System_Int64 or
+                SpecialType.System_UInt64 or
+                SpecialType.System_Single or
+                SpecialType.System_Double or
+                SpecialType.System_Decimal)
+            {
+                properties.Insert(0, CreateObjectProperty("kind", StringLiteral("number")));
+                properties.Add(CreateObjectProperty(
+                    "integer",
+                    new BooleanLiteral(
+                        effectiveType.SpecialType is SpecialType.System_SByte or
+                            SpecialType.System_Byte or
+                            SpecialType.System_Int16 or
+                            SpecialType.System_UInt16 or
+                            SpecialType.System_Int32 or
+                            SpecialType.System_UInt32 or
+                            SpecialType.System_Int64 or
+                            SpecialType.System_UInt64,
+                        effectiveType.SpecialType is SpecialType.System_SByte or
+                            SpecialType.System_Byte or
+                            SpecialType.System_Int16 or
+                            SpecialType.System_UInt16 or
+                            SpecialType.System_Int32 or
+                            SpecialType.System_UInt32 or
+                            SpecialType.System_Int64 or
+                            SpecialType.System_UInt64 ? "true" : "false")));
+                descriptor = new ObjectExpression(NodeList.From<Node>(properties));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static Expression CreateInputScalarLiteral(ITypeSymbol type, object? value)
+    {
+        if (value is null)
+            return Null();
+        if (value is bool boolean)
+            return new BooleanLiteral(boolean, boolean ? "true" : "false");
+        if (value is string text)
+            return StringLiteral(text);
+
+        var textValue = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "0";
+        if (type.SpecialType is SpecialType.System_Int64 or SpecialType.System_UInt64)
+        {
+            var bigInteger = System.Numerics.BigInteger.Parse(textValue, System.Globalization.CultureInfo.InvariantCulture);
+            return new BigIntLiteral(bigInteger, bigInteger.ToString(System.Globalization.CultureInfo.InvariantCulture) + "n");
+        }
+
+        return new NumericLiteral(Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture), textValue);
+    }
+
+    private static ITypeSymbol GetCascadingValueType(IOperation operation, EmitContext context)
+    {
+        while (operation is IConversionOperation conversion)
+            operation = conversion.Operand;
+
+        if (operation is IParameterReferenceOperation parameterReference &&
+            TryGetParameterSubstitution(context.Substitutions, parameterReference.Parameter, out var substituted))
+        {
+            // Razor's generated TypeInference helpers describe Value as TValue. Follow the
+            // existing direct-render parameter substitution instead of leaking that helper's
+            // open generic type into the browser runtime key.
+            // TypeInference 参数 TValue 只是一层生成 helper；沿用既有替换拿到作者实参类型。
+            return GetCascadingValueType(substituted, context);
+        }
+
+        if (operation.Type is null || operation.Type.TypeKind == TypeKind.TypeParameter)
+        {
+            throw Unsupported(
+                operation,
+                "CascadingValue requires a statically known Value type for browser cascade lookup. " +
+                "Pass a value with a concrete declared type rather than an unresolved generic type parameter.");
+        }
+
+        return operation.Type;
+    }
+
+    private static bool TryGetParameterSubstitution(
+        IReadOnlyDictionary<IParameterSymbol, IOperation> substitutions,
+        IParameterSymbol parameter,
+        out IOperation value)
+    {
+        if (substitutions.TryGetValue(parameter, out value!))
+            return true;
+
+        return substitutions.TryGetValue(parameter.OriginalDefinition, out value!);
+    }
+
+    private static ImmutableDictionary<string, string> BuildCascadingValueParameterNameMap()
+        => ImmutableDictionary.CreateRange(
+            StringComparer.Ordinal,
+            new[]
+            {
+                new KeyValuePair<string, string>("Value", "value"),
+                new KeyValuePair<string, string>("Name", "name"),
+                new KeyValuePair<string, string>("IsFixed", "isFixed")
+            });
+
+    private static ImmutableDictionary<string, string> BuildCascadingValueSlotNameMap()
+        => ImmutableDictionary.CreateRange(
+            StringComparer.Ordinal,
+            new[] { new KeyValuePair<string, string>("ChildContent", "default") });
+
     private static bool TryResolveTypeOfExpression(
         IOperation operation,
         IReadOnlyDictionary<ILocalSymbol, INamedTypeSymbol> localComponentTypes,
@@ -4646,6 +5272,17 @@ internal static class RenderEmitter
         componentType = null!;
         while (operation is IConversionOperation conversion)
             operation = conversion.Operand;
+
+        // Official Razor SG commonly wraps component type expressions in
+        // RuntimeHelpers.TypeCheck<T>(typeof(T)). The helper is compile-time only and must not
+        // force page authors to introduce a local or a RazorVue-specific token.
+        // Razor SG 的 TypeCheck 只是类型绑定协议，DynamicComponent 仍可直接使用 typeof(T)。
+        if (operation is IInvocationOperation typeCheck &&
+            string.Equals(typeCheck.TargetMethod.Name, "TypeCheck", StringComparison.Ordinal) &&
+            typeCheck.Arguments.Length == 1)
+        {
+            return TryResolveTypeOfExpression(typeCheck.Arguments[0].Value, localComponentTypes, out componentType);
+        }
 
         if (operation is ITypeOfOperation { TypeOperand: INamedTypeSymbol namedType })
         {
@@ -6042,6 +6679,10 @@ internal static class RenderEmitter
         private readonly Action? _useWithCtx;
         private readonly Action? _useCreateSlots;
         private readonly bool _slotsAreInStableScope;
+        private readonly bool _isCascadingValue;
+        private readonly StandardBlazorComponentAdapterKind _standardAdapterKind;
+        private bool _hasCascadingValueTypeKey;
+        private bool _hasStandardInputValueTypeDescriptor;
 
         public ComponentFrame(
             Expression componentExpression,
@@ -6070,7 +6711,10 @@ internal static class RenderEmitter
             Action? useBlockTree,
             Action? useWithCtx,
             Action? useCreateSlots,
-            bool slotsAreInStableScope)
+            bool slotsAreInStableScope,
+            bool isCascadingValue = false,
+            StandardBlazorComponentAdapterKind standardAdapterKind = StandardBlazorComponentAdapterKind.None,
+            ITypeSymbol? standardValueType = null)
             : base(
                 hoistStaticProps,
                 canHoistStaticProps,
@@ -6085,9 +6729,40 @@ internal static class RenderEmitter
             _useWithCtx = useWithCtx;
             _useCreateSlots = useCreateSlots;
             _slotsAreInStableScope = slotsAreInStableScope;
+            _isCascadingValue = isCascadingValue;
+            _standardAdapterKind = standardAdapterKind;
+            StandardValueType = standardValueType;
         }
 
         public List<DirectSlot> Slots { get; } = new();
+
+        public bool IsCascadingValue => _isCascadingValue;
+
+        public StandardBlazorComponentAdapterKind StandardAdapterKind => _standardAdapterKind;
+
+        public ITypeSymbol? StandardValueType { get; }
+
+        public void SetCascadingValueTypeKey(string typeKey)
+        {
+            if (!_isCascadingValue)
+                throw new InvalidOperationException("Only the CascadingValue runtime adapter can receive a cascade type key.");
+            if (_hasCascadingValueTypeKey)
+                return;
+
+            AddAttribute(new DirectAttribute(
+                CascadingValueTypePropName,
+                StringLiteral(typeKey)));
+            _hasCascadingValueTypeKey = true;
+        }
+
+        public void SetStandardInputValueTypeDescriptor(Expression descriptor)
+        {
+            if (!IsStandardInputAdapter(_standardAdapterKind) || _hasStandardInputValueTypeDescriptor)
+                return;
+
+            AddAttribute(new DirectAttribute(StandardInputValueTypePropName, descriptor));
+            _hasStandardInputValueTypeDescriptor = true;
+        }
 
         protected override bool CanUseRenderList
             => base.CanUseRenderList && Slots.Count == 0;
@@ -6112,6 +6787,12 @@ internal static class RenderEmitter
 
         public override VNodePlan ToVNodePlan()
         {
+            if (_isCascadingValue && !_hasCascadingValueTypeKey)
+            {
+                throw new InvalidOperationException(
+                    "RazorVue CascadingValue lowering requires a concrete Value parameter so the browser adapter can build its typed cascade key.");
+            }
+
             var props = FormatPropsExpression();
             Expression? children = null;
             var additionalFlags = 0;
@@ -6379,6 +7060,7 @@ internal static class RenderEmitter
         bool UsesRenderList,
         bool UsesWithCtx,
         bool UsesCreateSlots,
+        bool UsesMergeProps,
         bool UsesHandlerCache,
         bool UsesSlots,
         ImmutableArray<ImportDeclaration> ImportDeclarations,
@@ -6589,6 +7271,7 @@ internal sealed record RenderResult(
     bool UsesRenderList,
     bool UsesWithCtx,
     bool UsesCreateSlots,
+    bool UsesMergeProps,
     bool UsesHandlerCache,
     bool UsesProps,
     bool UsesSlots,
@@ -6599,3 +7282,60 @@ internal sealed record RenderResult(
 internal sealed record RenderModuleHoist(
     string Name,
     Expression Initializer);
+
+/// <summary>
+/// Accumulates Vue runtime requirements discovered while lowering RenderTreeBuilder fragments
+/// nested inside ordinary compiler members. The module builder owns the final imports because
+/// these fragments share the component's Vue framing rather than producing standalone modules.
+/// 普通成员片段与根 render 共用一个 Vue module，helper 导入必须在 framing 层统一落位。
+/// </summary>
+internal sealed class VueRenderRuntimeFeatures
+{
+    public bool UsesMergeProps { get; private set; }
+
+    public bool UsesFragment { get; private set; }
+
+    public bool UsesRawMarkupRuntime { get; private set; }
+
+    public bool UsesSlots { get; private set; }
+
+    public bool UsesBlockTree { get; private set; }
+
+    public bool UsesTextVNode { get; private set; }
+
+    public bool UsesRenderList { get; private set; }
+
+    public bool UsesWithCtx { get; private set; }
+
+    public bool UsesCreateSlots { get; private set; }
+
+    public bool UsesHandlerCache { get; private set; }
+
+    public bool UsesProps { get; private set; }
+
+    public void Merge(
+        bool usesMergeProps,
+        bool usesFragment,
+        bool usesRawMarkupRuntime,
+        bool usesSlots,
+        bool usesBlockTree,
+        bool usesTextVNode,
+        bool usesRenderList,
+        bool usesWithCtx,
+        bool usesCreateSlots,
+        bool usesHandlerCache,
+        bool usesProps)
+    {
+        UsesMergeProps |= usesMergeProps;
+        UsesFragment |= usesFragment;
+        UsesRawMarkupRuntime |= usesRawMarkupRuntime;
+        UsesSlots |= usesSlots;
+        UsesBlockTree |= usesBlockTree;
+        UsesTextVNode |= usesTextVNode;
+        UsesRenderList |= usesRenderList;
+        UsesWithCtx |= usesWithCtx;
+        UsesCreateSlots |= usesCreateSlots;
+        UsesHandlerCache |= usesHandlerCache;
+        UsesProps |= usesProps;
+    }
+}

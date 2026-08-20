@@ -37,8 +37,8 @@ public static class SByteModule
 				return false;
 		}
 
-		var parsed = NumberFn(trimmed);
-		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
+		var parsed = NumberValue(trimmed);
+		if (IsNaN(parsed) || Math.FloorFunc(parsed) != parsed)
 			return false;
 		if (parsed < -128 || parsed > 127)
 			return false;

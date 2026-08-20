@@ -1,6 +1,8 @@
 // Loads and mutates organization-scoped structure and membership state through the typed API bridge.
 // 通过强类型 API bridge 加载并修改组织范围内的架构与成员状态。
+using ECMAScript.TDesign;
 using JazorAdmin.Features.Organizations;
+using Microsoft.AspNetCore.Components;
 
 namespace JazorAdmin;
 
@@ -34,6 +36,44 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
     private string newMemberRoleId = string.Empty;
     private string? editingMembershipId;
     private string[] editingMemberRoleIds = [];
+
+    // 成员表列：成员列组合名称与邮箱，操作列进入角色编辑。
+    private TPrimaryTableCol<OrganizationMemberResponse>[] MemberColumns =>
+    [
+        new() { Title = (TPrimaryTableColTitle<OrganizationMemberResponse>)L("Member", "成员"), Cell = (TPrimaryTableColCell<OrganizationMemberResponse>)((RenderFragment<TPrimaryTableCellParams<OrganizationMemberResponse>>)(context => builder =>
+            {
+        builder.OpenElement(0, "div");
+        builder.OpenElement(1, "strong");
+        builder.AddContent(2, context.Row.DisplayName);
+        builder.CloseElement();
+        builder.OpenElement(3, "span");
+        builder.AddContent(4, context.Row.Email);
+        builder.CloseElement();
+        builder.CloseElement();
+            })) },
+        new() { Title = (TPrimaryTableColTitle<OrganizationMemberResponse>)L("Roles", "角色"), Cell = (TPrimaryTableColCell<OrganizationMemberResponse>)((RenderFragment<TPrimaryTableCellParams<OrganizationMemberResponse>>)(context => builder =>
+            {
+        builder.AddContent(0, GetRoleNames(context.Row.Roles));
+            })) },
+        new() { Title = (TPrimaryTableColTitle<OrganizationMemberResponse>)L("Actions", "操作"), Cell = (TPrimaryTableColCell<OrganizationMemberResponse>)((RenderFragment<TPrimaryTableCellParams<OrganizationMemberResponse>>)(context => builder =>
+            {
+        builder.OpenComponent<TButton>(0);
+        builder.AddComponentParameter(1, nameof(TButton.Variant), TButtonVariantValue.Text);
+        builder.AddComponentParameter(2, nameof(TButton.Size), TSizeEnum.Small);
+        builder.AddComponentParameter(3, "data-organization-command", "edit-roles");
+        builder.AddComponentParameter(4, nameof(TButton.OnClick),
+            EventCallback.Factory.Create(this, () => SelectMember(context.Row)));
+        builder.AddComponentParameter(5, nameof(TContentComponentBase.ChildContent),
+            (RenderFragment)(child => child.AddContent(0, L("Edit roles", "编辑角色"))));
+        builder.CloseComponent();
+            })) }
+    ];
+
+    private TTableRowClassNameValue<OrganizationMemberResponse> SelectedMemberRowClassName
+        => (TTableRowClassNameValueOption2<OrganizationMemberResponse>)SelectedMemberRowClass;
+
+    private TClassName SelectedMemberRowClass(TRowClassNameParams<OrganizationMemberResponse> parameters)
+        => parameters.Row.MembershipId == editingMembershipId ? (TClassName)"ja-table-row-selected" : (TClassName)string.Empty;
 
     protected override void OnParametersSet()
     {

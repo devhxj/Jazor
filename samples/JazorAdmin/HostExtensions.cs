@@ -2,6 +2,7 @@ using JazorAdmin.Authentication;
 using JazorAdmin.Authorization;
 using JazorAdmin.Data;
 using JazorAdmin.Features.Accounts;
+using JazorAdmin.Features.Audit;
 using JazorAdmin.Features.Identity;
 using JazorAdmin.Features.Notifications;
 using JazorAdmin.Features.Organizations;
@@ -30,10 +31,13 @@ public static class HostExtensions
     {
         services.Configure<OpenIddictOptions>(
             configuration.GetSection(OpenIddictOptions.SectionName));
+        services.Configure<DemoClientOptions>(
+            configuration.GetSection(DemoClientOptions.SectionName));
         services.Configure<BootstrapOptions>(
             configuration.GetSection(BootstrapOptions.SectionName));
         services.AddProblemDetails();
         services.AddHttpContextAccessor();
+        services.AddScoped<AuditSaveChangesInterceptor>();
         services.AddMemoryCache();
         services.AddSingleton<CaptchaService>();
         services.AddHealthChecks();
@@ -45,6 +49,7 @@ public static class HostExtensions
             var connectionString = currentConfiguration.GetConnectionString("JazorAdmin")
                 ?? throw new InvalidOperationException("Connection string 'JazorAdmin' is required.");
             options.UseSqlite(connectionString);
+            options.AddInterceptors(provider.GetRequiredService<AuditSaveChangesInterceptor>());
         });
 
         services.AddIdentity<AdminUser, IdentityRole>(options =>
@@ -180,6 +185,7 @@ public static class HostExtensions
         app.MapScheduleEndpoints();
         app.MapNotificationEndpoints();
         app.MapOverviewEndpoints();
+        app.MapAuditEndpoints();
         return app;
     }
 }

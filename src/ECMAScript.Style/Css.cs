@@ -367,7 +367,7 @@ public static partial class css
             if (value is null)
                 continue;
 
-            output.Push(key + ":" + StringFn(value) + ";");
+            output.Push(key + ":" + StringValue(value) + ";");
         }
 
         var additional = declarations.additional;
@@ -459,11 +459,11 @@ public static partial class css
         for (var index = 0; index < value.Length; index++)
         {
             var codeUnit = (int)value.CharCodeAt(index);
-            stateA = Math.ImulFn(stateA ^ codeUnit, 0x01000193);
-            stateB = Math.ImulFn(stateB, 33) ^ codeUnit;
+            stateA = Math.Imul(stateA ^ codeUnit, 0x01000193);
+            stateB = Math.Imul(stateB, 33) ^ codeUnit;
         }
 
-        return NumberFn(stateA >>> 0).ToString(36) + "-" + NumberFn(stateB >>> 0).ToString(36);
+        return NumberValue(stateA >>> 0).ToString(36) + "-" + NumberValue(stateB >>> 0).ToString(36);
     }
 
     private static void ValidateDeclarationName(string name)

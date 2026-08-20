@@ -148,6 +148,23 @@ internal static class RazorTailOutput
             return false;
         }
 
+        try
+        {
+            // The route catalog is an ordinary generated artifact, not a second router
+            // protocol. It keeps route discovery tied to the same final SG symbols and module
+            // paths as pages/layouts, while Emit remains responsible for materialization.
+            // 路由表与页面 artifact 使用同一最终符号/路径，不能另起页面侧注册协议。
+            builder.Add(RazorVueRouteCatalogBuilder.Build(binding, builder.ToImmutable()));
+        }
+        catch (Exception exception)
+        {
+            diagnostics = ImmutableArray.Create(RazorVueDiagnosticFactory.FromException(
+                exception,
+                RazorVueDiagnosticCategory.VueModule,
+                binding.Components[0].ComponentSymbol));
+            return false;
+        }
+
         artifacts = builder
             .OrderBy(static artifact => artifact.RelativePath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static artifact => artifact.ComponentId, StringComparer.Ordinal)

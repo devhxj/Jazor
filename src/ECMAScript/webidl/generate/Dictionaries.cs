@@ -2904,7 +2904,7 @@ public record AccelerometerSensorOptions(
 /// <summary>
 /// <see href="https://w3c.github.io/aria/#dom-arianotificationoptions">Accessible Rich Internet Applications (WAI-ARIA) 1.3: 10.2 Interface Mixin ARIANotifyMixin</see>
 /// </summary>
-/// <param name="Priority"><see href="https://w3c.github.io/aria/#dom-arianotificationoptions-priority">Accessible Rich Internet Applications (WAI-ARIA) 1.3: 10.2 Interface Mixin ARIANotifyMixin</see></param>
+/// <param name="Priority">Let priority be options[&quot;priority&quot;]. <see href="https://w3c.github.io/aria/#dom-arianotificationoptions-priority">Accessible Rich Internet Applications (WAI-ARIA) 1.3: 10.2 Interface Mixin ARIANotifyMixin</see></param>
 [ECMAScript]
 [Description("@#AriaNotificationOptions")]
 public record AriaNotificationOptions(
@@ -4068,7 +4068,7 @@ public record KeyboardEventInit(
 [Description("@#UIEventInit")]
 public record UIEventInit(
     [property: Description("@#sourceCapabilities")]InputDeviceCapabilities? SourceCapabilities = null,
-    [property: Description("@#view")]Window? View = null,
+    [property: Description("@#view")]JazorWindow? View = null,
     [property: Description("@#detail")]int Detail = 0,
     [property: Description("@#which")]uint Which = 0) : EventInit
 {
@@ -4078,7 +4078,7 @@ public record UIEventInit(
 
     [Category("optional")]
     public extern static UIEventInit OptionalViewDetail(
-        [Description("@#view")]Window? view = null,
+        [Description("@#view")]JazorWindow? view = null,
         [Description("@#detail")]int detail = 0);
 
     [Category("optional")]
@@ -4912,7 +4912,7 @@ public record CurrentUserDetailsOptions(
 /// <param name="Hints"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-hints">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4 Options for Credential Creation (dictionary PublicKeyCredentialCreationOptions)</see></param>
 /// <param name="Attestation"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-attestation">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4 Options for Credential Creation (dictionary PublicKeyCredentialCreationOptions)</see></param>
 /// <param name="AttestationFormats"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-attestationformats">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4 Options for Credential Creation (dictionary PublicKeyCredentialCreationOptions)</see></param>
-/// <param name="Extensions"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-extensions">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4 Options for Credential Creation (dictionary PublicKeyCredentialCreationOptions)</see></param>
+/// <param name="Extensions">If pkOptions.extensions is present, then map/for each extensionId → clientExtensionInput of pkOptions.extensions: 1. If extensionId is not supported by this client platform or is not a registration extension, then continue. <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-extensions">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4 Options for Credential Creation (dictionary PublicKeyCredentialCreationOptions)</see></param>
 [ECMAScript]
 [Description("@#PublicKeyCredentialCreationOptions")]
 public record PublicKeyCredentialCreationOptions(
@@ -4986,7 +4986,7 @@ public record PublicKeyCredentialDescriptorJSON(
 /// <summary>
 /// <see href="https://w3c.github.io/webauthn/#dictdef-publickeycredentialentity">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.1 Public Key Entity Description (dictionary PublicKeyCredentialEntity)</see>
 /// </summary>
-/// <param name="Name"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialentity-name">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.1 Public Key Entity Description (dictionary PublicKeyCredentialEntity)</see></param>
+/// <param name="Name">Collect an authorization gesture confirming user consent for creating a new credential. The prompt for the authorization gesture is shown by the authenticator if it has its own output capability, or by the user agent otherwise. The prompt SHOULD display rpEntity.id, rpEntity.name, userEntity.name and userEntity.displayName, if possible. <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialentity-name">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.1 Public Key Entity Description (dictionary PublicKeyCredentialEntity)</see></param>
 [ECMAScript]
 [Description("@#PublicKeyCredentialEntity")]
 public record PublicKeyCredentialEntity(
@@ -5008,7 +5008,7 @@ public record PublicKeyCredentialParameters(
 /// </summary>
 /// <param name="Challenge"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-challenge">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
 /// <param name="Timeout"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-timeout">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
-/// <param name="RpId"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-rpid">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
+/// <param name="RpId">If pkOptions.rpId <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-rpid">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
 /// <param name="AllowCredentials"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-allowcredentials">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
 /// <param name="UserVerification"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-userverification">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
 /// <param name="Hints"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-hints">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
@@ -5058,7 +5058,7 @@ public record PublicKeyCredentialRpEntity(
 /// <see href="https://w3c.github.io/webauthn/#dictdef-publickeycredentialuserentity">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.3 User Account Parameters for Credential Generation (dictionary PublicKeyCredentialUserEntity)</see>
 /// </summary>
 /// <param name="Id"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialuserentity-id">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.3 User Account Parameters for Credential Generation (dictionary PublicKeyCredentialUserEntity)</see></param>
-/// <param name="DisplayName"><see href="https://w3c.github.io/webauthn/#dom-publickeycredentialuserentity-displayname">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.3 User Account Parameters for Credential Generation (dictionary PublicKeyCredentialUserEntity)</see></param>
+/// <param name="DisplayName">Collect an authorization gesture confirming user consent for creating a new credential. The prompt for the authorization gesture is shown by the authenticator if it has its own output capability, or by the user agent otherwise. The prompt SHOULD display rpEntity.id, rpEntity.name, userEntity.name and userEntity.displayName, if possible. <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialuserentity-displayname">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.3 User Account Parameters for Credential Generation (dictionary PublicKeyCredentialUserEntity)</see></param>
 [ECMAScript]
 [Description("@#PublicKeyCredentialUserEntity")]
 public record PublicKeyCredentialUserEntity(
@@ -5798,57 +5798,6 @@ public record RTCIdentityProvider(
     [property: Description("@#validateAssertion")]ValidateAssertionCallback? ValidateAssertion = default);
 
 /// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcansweroptions">WebRTC: Real-Time Communication in Browsers: 4.2.6 Offer/Answer Options</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCAnswerOptions")]
-public abstract record RTCAnswerOptions();
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificateexpiration">WebRTC: Real-Time Communication in Browsers: 4.9.1 RTCCertificateExpiration Dictionary</see>
-/// </summary>
-/// <param name="Expires"><see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificateexpiration-expires">WebRTC: Real-Time Communication in Browsers: 4.9.1 RTCCertificateExpiration Dictionary</see></param>
-[ECMAScript]
-[Description("@#RTCCertificateExpiration")]
-public record RTCCertificateExpiration(
-    [property: Description("@#expires")]ulong Expires = default);
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration">WebRTC: Real-Time Communication in Browsers: 4.2.1 RTCConfiguration Dictionary</see>
-/// </summary>
-/// <param name="IceServers"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-iceservers">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
-/// <param name="IceTransportPolicy"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-icetransportpolicy">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
-/// <param name="BundlePolicy"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-bundlepolicy">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
-/// <param name="RtcpMuxPolicy"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-rtcpmuxpolicy">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
-/// <param name="Certificates"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-certificates">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
-/// <param name="IceCandidatePoolSize"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-icecandidatepoolsize">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
-/// <param name="PeerIdentity">The identity of the peer. For identity providers that bind their assertions to a particular pair of communication peers, this allows them to generate an assertion that includes both local and remote identities. If this value is omitted, but a value is provided for the peerIdentity member of RTCConfiguration !WEBRTC, the value from RTCConfiguration is used. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcconfiguration-peeridentity">Identity for WebRTC 1.0: Dictionary RTCConfiguration Members</see></param>
-[ECMAScript]
-[Description("@#RTCConfiguration")]
-public record RTCConfiguration(
-    [property: Description("@#iceServers")]RTCIceServer[]? IceServers = default,
-    [property: Description("@#iceTransportPolicy")]RTCIceTransportPolicy IceTransportPolicy = RTCIceTransportPolicy.All,
-    [property: Description("@#bundlePolicy")]RTCBundlePolicy BundlePolicy = RTCBundlePolicy.Balanced,
-    [property: Description("@#rtcpMuxPolicy")]RTCRtcpMuxPolicy RtcpMuxPolicy = RTCRtcpMuxPolicy.Require,
-    [property: Description("@#certificates")]RTCCertificate[]? Certificates = default,
-    [property: Description("@#iceCandidatePoolSize")]byte IceCandidatePoolSize = 0,
-    [property: Description("@#peerIdentity")]string? PeerIdentity = default)
-{
-    [Category("optional")]
-    public extern static RTCConfiguration OptionalIceServersIceTransportPolicyBundlePolicy6(
-        [Description("@#iceServers")]RTCIceServer[]? iceServers = default,
-        [Description("@#iceTransportPolicy")]RTCIceTransportPolicy iceTransportPolicy = RTCIceTransportPolicy.All,
-        [Description("@#bundlePolicy")]RTCBundlePolicy bundlePolicy = RTCBundlePolicy.Balanced,
-        [Description("@#rtcpMuxPolicy")]RTCRtcpMuxPolicy rtcpMuxPolicy = RTCRtcpMuxPolicy.Require,
-        [Description("@#certificates")]RTCCertificate[]? certificates = default,
-        [Description("@#iceCandidatePoolSize")]byte iceCandidatePoolSize = 0);
-
-    [Category("optional")]
-    public extern static RTCConfiguration OptionalPeerIdentity(
-        [Description("@#peerIdentity")]string? PeerIdentity = default);
-}
-
-/// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachanneleventinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelEventInit Members</see>
 /// </summary>
 /// <param name="Channel"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachanneleventinit-channel">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelEventInit Members</see></param>
@@ -5856,52 +5805,6 @@ public record RTCConfiguration(
 [Description("@#RTCDataChannelEventInit")]
 public record RTCDataChannelEventInit(
     [property: Description("@#channel")]RTCDataChannel? Channel = default) : EventInit;
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see>
-/// </summary>
-/// <param name="Ordered"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-ordered">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
-/// <param name="MaxPacketLifeTime"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-maxpacketlifetime">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
-/// <param name="MaxRetransmits"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-maxretransmits">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
-/// <param name="Protocol"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-protocol">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
-/// <param name="Negotiated"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-negotiated">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
-/// <param name="Id"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-id">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
-/// <param name="Priority"><see href="https://w3c.github.io/webrtc-priority/#dom-rtcdatachannelinit-priority">WebRTC Priority Control API: 4.2 New RTCDataChannelInit member</see></param>
-[ECMAScript]
-[Description("@#RTCDataChannelInit")]
-public record RTCDataChannelInit(
-    [property: Description("@#ordered")]bool Ordered = false,
-    [property: Description("@#maxPacketLifeTime")]ushort MaxPacketLifeTime = default,
-    [property: Description("@#maxRetransmits")]ushort MaxRetransmits = default,
-    [property: Description("@#protocol")]string? Protocol = default,
-    [property: Description("@#negotiated")]bool Negotiated = false,
-    [property: Description("@#id")]ushort Id = default,
-    [property: Description("@#priority")]RTCPriorityType Priority = RTCPriorityType.Low)
-{
-    [Category("optional")]
-    public extern static RTCDataChannelInit OptionalOrderedMaxPacketLifeTimeMaxRetransmits6(
-        [Description("@#ordered")]bool ordered = false,
-        [Description("@#maxPacketLifeTime")]ushort MaxPacketLifeTime = default,
-        [Description("@#maxRetransmits")]ushort MaxRetransmits = default,
-        [Description("@#protocol")]string? protocol = default,
-        [Description("@#negotiated")]bool negotiated = false,
-        [Description("@#id")]ushort Id = default);
-
-    [Category("optional")]
-    public extern static RTCDataChannelInit OptionalPriority(
-        [Description("@#priority")]RTCPriorityType priority = RTCPriorityType.Low);
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlsfingerprint">WebRTC: Real-Time Communication in Browsers: 5.5.2 RTCDtlsFingerprint Dictionary</see>
-/// </summary>
-/// <param name="Algorithm"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlsfingerprint-algorithm">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDtlsFingerprint Members</see></param>
-/// <param name="Value"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlsfingerprint-value">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDtlsFingerprint Members</see></param>
-[ECMAScript]
-[Description("@#RTCDtlsFingerprint")]
-public record RTCDtlsFingerprint(
-    [property: Description("@#algorithm")]string? Algorithm = default,
-    [property: Description("@#value")]string? Value = default);
 
 /// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeeventinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDTMFToneChangeEventInit Members</see>
@@ -5922,57 +5825,10 @@ public record RTCErrorEventInit(
     [property: Description("@#error")]RTCError? Error = default) : EventInit;
 
 /// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see>
-/// </summary>
-/// <param name="ErrorDetail"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-errordetail">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
-/// <param name="SdpLineNumber"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-sdplinenumber">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
-/// <param name="SctpCauseCode"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-sctpcausecode">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
-/// <param name="ReceivedAlert"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-receivedalert">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
-/// <param name="SentAlert"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-sentalert">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
-/// <param name="HttpRequestStatusCode">The httpRequestStatusCode member of RTCErrorInit has the same definition as the attribute of the same name of RTCError. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcerrorinit-httprequeststatuscode">Identity for WebRTC 1.0: RTCErrorInit Dictionary</see></param>
-[ECMAScript]
-[Description("@#RTCErrorInit")]
-public record RTCErrorInit(
-    [property: Description("@#errorDetail")]RTCErrorDetailType? ErrorDetail = default,
-    [property: Description("@#sdpLineNumber")]int SdpLineNumber = default,
-    [property: Description("@#sctpCauseCode")]int SctpCauseCode = default,
-    [property: Description("@#receivedAlert")]uint ReceivedAlert = default,
-    [property: Description("@#sentAlert")]uint SentAlert = default,
-    [property: Description("@#httpRequestStatusCode")]int HttpRequestStatusCode = default)
-{
-    [Category("optional")]
-    public extern static RTCErrorInit OptionalErrorDetailSdpLineNumberSctpCauseCode5(
-        [Description("@#errorDetail")]RTCErrorDetailType? ErrorDetail = default,
-        [Description("@#sdpLineNumber")]int SdpLineNumber = default,
-        [Description("@#sctpCauseCode")]int SctpCauseCode = default,
-        [Description("@#receivedAlert")]uint ReceivedAlert = default,
-        [Description("@#sentAlert")]uint SentAlert = default);
-
-    [Category("optional")]
-    public extern static RTCErrorInit OptionalHttpRequestStatusCode(
-        [Description("@#httpRequestStatusCode")]int HttpRequestStatusCode = default);
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see>
-/// </summary>
-/// <param name="Candidate"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-candidate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
-/// <param name="SdpMid"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-sdpmid">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
-/// <param name="SdpMLineIndex"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-sdpmlineindex">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
-/// <param name="UsernameFragment"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-usernamefragment">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
-[ECMAScript]
-[Description("@#RTCIceCandidateInit")]
-public record RTCIceCandidateInit(
-    [property: Description("@#candidate")]string? Candidate = default,
-    [property: Description("@#sdpMid")]string? SdpMid = null,
-    [property: Description("@#sdpMLineIndex")]ushort? SdpMLineIndex = null,
-    [property: Description("@#usernameFragment")]string? UsernameFragment = null);
-
-/// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceparameters">WebRTC: Real-Time Communication in Browsers: 5.6.1 RTCIceParameters Dictionary</see>
 /// </summary>
-/// <param name="UsernameFragment"><see href="https://w3c.github.io/webrtc-pc/#dom-rtciceparameters-usernamefragment">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceParameters Members</see></param>
-/// <param name="Password"><see href="https://w3c.github.io/webrtc-pc/#dom-rtciceparameters-password">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceParameters Members</see></param>
+/// <param name="UsernameFragment">The generated SDP will also contain the ICE agent &apos;s usernameFragment, password and ICE options (as defined in RFC5245, Section 14) and may also contain any local candidates that have been gathered by the agent. <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceparameters-usernamefragment">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceParameters Members</see></param>
+/// <param name="Password">The generated SDP will also contain the ICE agent &apos;s usernameFragment, password and ICE options (as defined in RFC5245, Section 14) and may also contain any local candidates that have been gathered by the agent. <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceparameters-password">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceParameters Members</see></param>
 /// <param name="IceLite">The RTCIceParameters dictionary is extended with an iceLite member. <see href="https://w3c.github.io/webrtc-ice/#dom-rtciceparameters-icelite">IceTransport Extensions for WebRTC: Dictionary RTCIceParameters Members</see></param>
 [ECMAScript]
 [Description("@#RTCIceParameters")]
@@ -5992,19 +5848,6 @@ public record RTCIceParameters(
 }
 
 /// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver">WebRTC: Real-Time Communication in Browsers: 4.2.2 RTCIceServer Dictionary</see>
-/// </summary>
-/// <param name="Urls"><see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver-urls">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceServer Members</see></param>
-/// <param name="Username"><see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver-username">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceServer Members</see></param>
-/// <param name="Credential"><see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver-credential">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceServer Members</see></param>
-[ECMAScript]
-[Description("@#RTCIceServer")]
-public record RTCIceServer(
-    [property: Description("@#urls")]RTCIceServerUrls? Urls = default,
-    [property: Description("@#username")]string? Username = default,
-    [property: Description("@#credential")]string? Credential = default);
-
-/// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalicecandidateinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalIceCandidateInit Members</see>
 /// </summary>
 /// <param name="RelayProtocol"><see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalicecandidateinit-relayprotocol">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalIceCandidateInit Members</see></param>
@@ -6014,17 +5857,6 @@ public record RTCIceServer(
 public record RTCLocalIceCandidateInit(
     [property: Description("@#relayProtocol")]RTCIceServerTransportProtocol? RelayProtocol = default,
     [property: Description("@#url")]string? Url = null) : RTCIceCandidateInit;
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalsessiondescriptioninit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalSessionDescriptionInit Members</see>
-/// </summary>
-/// <param name="Type"><see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalsessiondescriptioninit-type">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalSessionDescriptionInit Members</see></param>
-/// <param name="Sdp"><see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalsessiondescriptioninit-sdp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalSessionDescriptionInit Members</see></param>
-[ECMAScript]
-[Description("@#RTCLocalSessionDescriptionInit")]
-public record RTCLocalSessionDescriptionInit(
-    [property: Description("@#type")]RTCSdpType? Type = default,
-    [property: Description("@#sdp")]string? Sdp = default);
 
 /// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcofferansweroptions">WebRTC: Real-Time Communication in Browsers: Dictionary RTCOfferAnswerOptions Members</see>
@@ -6085,52 +5917,6 @@ public record RTCPeerConnectionIceEventInit(
     [property: Description("@#url")]string? Url = default) : EventInit;
 
 /// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpparameters">WebRTC: Real-Time Communication in Browsers: 5.2.6 RTCRtcpParameters Dictionary</see>
-/// </summary>
-/// <param name="Cname"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpparameters-cname">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtcpParameters Members</see></param>
-/// <param name="ReducedSize"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpparameters-reducedsize">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtcpParameters Members</see></param>
-[ECMAScript]
-[Description("@#RTCRtcpParameters")]
-public record RTCRtcpParameters(
-    [property: Description("@#cname")]string? Cname = default,
-    [property: Description("@#reducedSize")]bool ReducedSize = default);
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcapabilities">WebRTC: Real-Time Communication in Browsers: 5.2.10 RTCRtpCapabilities Dictionary</see>
-/// </summary>
-/// <param name="Codecs"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcapabilities-codecs">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCapabilities Members</see></param>
-/// <param name="HeaderExtensions"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcapabilities-headerextensions">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCapabilities Members</see></param>
-[ECMAScript]
-[Description("@#RTCRtpCapabilities")]
-public record RTCRtpCapabilities(
-    [property: Description("@#codecs")]RTCRtpCodec[]? Codecs = default,
-    [property: Description("@#headerExtensions")]RTCRtpHeaderExtensionCapability[]? HeaderExtensions = default);
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec">WebRTC: Real-Time Communication in Browsers: 5.2.8 RTCRtpCodec Dictionary</see>
-/// </summary>
-/// <param name="MimeType"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-mimetype">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
-/// <param name="ClockRate"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-clockrate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
-/// <param name="Channels"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-channels">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
-/// <param name="SdpFmtpLine"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-sdpfmtpline">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
-[ECMAScript]
-[Description("@#RTCRtpCodec")]
-public record RTCRtpCodec(
-    [property: Description("@#mimeType")]string? MimeType = default,
-    [property: Description("@#clockRate")]uint ClockRate = default,
-    [property: Description("@#channels")]ushort Channels = default,
-    [property: Description("@#sdpFmtpLine")]string? SdpFmtpLine = default);
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodecparameters">WebRTC: Real-Time Communication in Browsers: 5.2.9 RTCRtpCodecParameters Dictionary</see>
-/// </summary>
-/// <param name="PayloadType"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodecparameters-payloadtype">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodecParameters Members</see></param>
-[ECMAScript]
-[Description("@#RTCRtpCodecParameters")]
-public record RTCRtpCodecParameters(
-    [property: Description("@#payloadType")]byte PayloadType = default) : RTCRtpCodec;
-
-/// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodingparameters">WebRTC: Real-Time Communication in Browsers: 5.2.4 RTCRtpCodingParameters Dictionary</see>
 /// </summary>
 /// <param name="Rid"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodingparameters-rid">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodingParameters Members</see></param>
@@ -6138,71 +5924,6 @@ public record RTCRtpCodecParameters(
 [Description("@#RTCRtpCodingParameters")]
 public record RTCRtpCodingParameters(
     [property: Description("@#rid")]string? Rid = default);
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource">WebRTC: Real-Time Communication in Browsers: 5.3 RTCRtpReceiver Interface</see>
-/// </summary>
-/// <param name="Timestamp"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-timestamp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
-/// <param name="Source"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-source">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
-/// <param name="AudioLevel"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-audiolevel">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
-/// <param name="RtpTimestamp"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-rtptimestamp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
-[ECMAScript]
-[Description("@#RTCRtpContributingSource")]
-public record RTCRtpContributingSource(
-    [property: Description("@#timestamp")]double Timestamp = default,
-    [property: Description("@#source")]uint Source = default,
-    [property: Description("@#audioLevel")]double AudioLevel = default,
-    [property: Description("@#rtpTimestamp")]uint RtpTimestamp = default);
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters">WebRTC: Real-Time Communication in Browsers: 5.2.5 RTCRtpEncodingParameters Dictionary</see>
-/// </summary>
-/// <param name="Active"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-active">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
-/// <param name="Codec"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-codec">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
-/// <param name="MaxBitrate"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-maxbitrate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
-/// <param name="MaxFramerate"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-maxframerate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
-/// <param name="ScaleResolutionDownBy"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-scaleresolutiondownby">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
-/// <param name="Priority"><see href="https://w3c.github.io/webrtc-priority/#dom-rtcrtpencodingparameters-priority">WebRTC Priority Control API: 3.2 Extension to RTCRtpEncodingParameters</see></param>
-/// <param name="NetworkPriority">networkPriority <see href="https://w3c.github.io/webrtc-priority/#dom-rtcrtpencodingparameters-networkpriority">WebRTC Priority Control API: 3.2 Extension to RTCRtpEncodingParameters</see></param>
-/// <param name="ScalabilityMode">The term &quot;S mode&quot; refers to a scalability mode in which multiple encodings are sent on the same SSRC. This includes the &quot;S2T1&quot;, &quot;S2T1h&quot;, &quot;S2T2&quot;, &quot;S2T2h&quot;, &quot;S2T3&quot;, &quot;S2T3h&quot;, &quot;S3T1&quot;, &quot;S3T1h&quot;, &quot;S3T2&quot;, &quot;S3T2h&quot;, &quot;S3T3&quot; and &quot;S3T3h&quot; scalabilityMode values. <see href="https://w3c.github.io/webrtc-svc/#dom-rtcrtpencodingparameters-scalabilitymode">Scalable Video Coding (SVC) Extension for WebRTC: Dictionary RTCRtpEncodingParameters Members</see></param>
-[ECMAScript]
-[Description("@#RTCRtpEncodingParameters")]
-public record RTCRtpEncodingParameters(
-    [property: Description("@#active")]bool Active = false,
-    [property: Description("@#codec")]RTCRtpCodec? Codec = default,
-    [property: Description("@#maxBitrate")]uint MaxBitrate = default,
-    [property: Description("@#maxFramerate")]double MaxFramerate = default,
-    [property: Description("@#scaleResolutionDownBy")]double ScaleResolutionDownBy = default,
-    [property: Description("@#priority")]RTCPriorityType Priority = RTCPriorityType.Low,
-    [property: Description("@#networkPriority")]RTCPriorityType? NetworkPriority = default,
-    [property: Description("@#scalabilityMode")]string? ScalabilityMode = default) : RTCRtpCodingParameters
-{
-    [Category("optional")]
-    public extern static RTCRtpEncodingParameters OptionalActiveCodecMaxBitrate5(
-        [Description("@#active")]bool active = false,
-        [Description("@#codec")]RTCRtpCodec? Codec = default,
-        [Description("@#maxBitrate")]uint MaxBitrate = default,
-        [Description("@#maxFramerate")]double MaxFramerate = default,
-        [Description("@#scaleResolutionDownBy")]double ScaleResolutionDownBy = default);
-
-    [Category("optional")]
-    public extern static RTCRtpEncodingParameters OptionalPriorityNetworkPriority(
-        [Description("@#priority")]RTCPriorityType priority = RTCPriorityType.Low,
-        [Description("@#networkPriority")]RTCPriorityType? NetworkPriority = default);
-
-    [Category("optional")]
-    public extern static RTCRtpEncodingParameters OptionalScalabilityMode(
-        [Description("@#scalabilityMode")]string? ScalabilityMode = default);
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensioncapability">WebRTC: Real-Time Communication in Browsers: 5.2.11 RTCRtpHeaderExtensionCapability Dictionary</see>
-/// </summary>
-/// <param name="Uri"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensioncapability-uri">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpHeaderExtensionCapability Members</see></param>
-[ECMAScript]
-[Description("@#RTCRtpHeaderExtensionCapability")]
-public record RTCRtpHeaderExtensionCapability(
-    [property: Description("@#uri")]string? Uri = default);
 
 /// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensionparameters">WebRTC: Real-Time Communication in Browsers: 5.2.7 RTCRtpHeaderExtensionParameters Dictionary</see>
@@ -6220,9 +5941,9 @@ public record RTCRtpHeaderExtensionParameters(
 /// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters">WebRTC: Real-Time Communication in Browsers: 5.2.1 RTCRtpParameters Dictionary</see>
 /// </summary>
-/// <param name="HeaderExtensions"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters-headerextensions">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpParameters Members</see></param>
-/// <param name="Rtcp"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters-rtcp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpParameters Members</see></param>
-/// <param name="Codecs"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters-codecs">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpParameters Members</see></param>
+/// <param name="HeaderExtensions">The headerExtensions sequence is populated based on the header extensions that have been negotiated for sending. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters-headerextensions">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpParameters Members</see></param>
+/// <param name="Rtcp">rtcp.cname is set to the CNAME of the associated RTCPeerConnection. rtcp.reducedSize is set to true if reduced-size RTCP has been negotiated for sending, and false otherwise. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters-rtcp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpParameters Members</see></param>
+/// <param name="Codecs">Let codecs be parameters.codecs. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters-codecs">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpParameters Members</see></param>
 [ECMAScript]
 [Description("@#RTCRtpParameters")]
 public record RTCRtpParameters(
@@ -6238,93 +5959,17 @@ public record RTCRtpParameters(
 public abstract record RTCRtpReceiveParameters();
 
 /// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsendparameters">WebRTC: Real-Time Communication in Browsers: 5.2.2 RTCRtpSendParameters Dictionary</see>
-/// </summary>
-/// <param name="DegradationPreference">When bandwidth is constrained and the RTCRtpSender needs to choose between degrading resolution or degrading framerate, degradationPreference indicates which is preferred. <see href="https://w3c.github.io/mst-content-hint/#dom-rtcrtpsendparameters-degradationpreference">MediaStreamTrack Content Hints: 4.2 Degradation preference when encoding</see></param>
-/// <param name="TransactionId"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsendparameters-transactionid">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpSendParameters Members</see></param>
-/// <param name="Encodings"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsendparameters-encodings">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpSendParameters Members</see></param>
-[ECMAScript]
-[Description("@#RTCRtpSendParameters")]
-public record RTCRtpSendParameters(
-    [property: Description("@#degradationPreference")]RTCDegradationPreference? DegradationPreference = default,
-    [property: Description("@#transactionId")]string? TransactionId = default,
-    [property: Description("@#encodings")]RTCRtpEncodingParameters[]? Encodings = default) : RTCRtpParameters
-{
-    [Category("optional")]
-    public extern static RTCRtpSendParameters OptionalDegradationPreference(
-        [Description("@#degradationPreference")]RTCDegradationPreference? DegradationPreference = default);
-
-    [Category("optional")]
-    public extern static RTCRtpSendParameters OptionalTransactionIdEncodings(
-        [Description("@#transactionId")]string? TransactionId = default,
-        [Description("@#encodings")]RTCRtpEncodingParameters[]? Encodings = default);
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsynchronizationsource">WebRTC: Real-Time Communication in Browsers: 5.3 RTCRtpReceiver Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCRtpSynchronizationSource")]
-public abstract record RTCRtpSynchronizationSource();
-
-/// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see>
 /// </summary>
-/// <param name="Direction"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit-direction">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see></param>
-/// <param name="Streams"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit-streams">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see></param>
-/// <param name="SendEncodings"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit-sendencodings">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see></param>
+/// <param name="Direction">Let direction be init.direction. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit-direction">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see></param>
+/// <param name="Streams">Let streams be init.streams. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit-streams">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see></param>
+/// <param name="SendEncodings">The sendEncodings argument can be used to specify the number of offered simulcast encodings, and optionally their RIDs and encoding parameters. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit-sendencodings">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see></param>
 [ECMAScript]
 [Description("@#RTCRtpTransceiverInit")]
 public record RTCRtpTransceiverInit(
     [property: Description("@#direction")]RTCRtpTransceiverDirection Direction = RTCRtpTransceiverDirection.Sendrecv,
     [property: Description("@#streams")]MediaStream[]? Streams = default,
     [property: Description("@#sendEncodings")]RTCRtpEncodingParameters[]? SendEncodings = default);
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioninit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCSessionDescriptionInit Members</see>
-/// </summary>
-/// <param name="Type"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioninit-type">WebRTC: Real-Time Communication in Browsers: Dictionary RTCSessionDescriptionInit Members</see></param>
-/// <param name="Sdp"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioninit-sdp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCSessionDescriptionInit Members</see></param>
-[ECMAScript]
-[Description("@#RTCSessionDescriptionInit")]
-public record RTCSessionDescriptionInit(
-    [property: Description("@#type")]RTCSdpType? Type = default,
-    [property: Description("@#sdp")]string? Sdp = default);
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsetparameteroptions">WebRTC: Real-Time Communication in Browsers: 5.2.12 RTCSetParameterOptions Dictionary</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCSetParameterOptions")]
-public abstract record RTCSetParameterOptions();
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats">WebRTC: Real-Time Communication in Browsers: 8.4 RTCStats Dictionary</see>
-/// </summary>
-/// <param name="Timestamp"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats-timestamp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCStats Members</see></param>
-/// <param name="Type"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats-type">WebRTC: Real-Time Communication in Browsers: Dictionary RTCStats Members</see></param>
-/// <param name="Id"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats-id">WebRTC: Real-Time Communication in Browsers: Dictionary RTCStats Members</see></param>
-[ECMAScript]
-[Description("@#RTCStats")]
-public record RTCStats(
-    [property: Description("@#timestamp")]double Timestamp = default,
-    [property: Description("@#type")]RTCStatsType? Type = default,
-    [property: Description("@#id")]string? Id = default);
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see>
-/// </summary>
-/// <param name="Receiver"><see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-receiver">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
-/// <param name="Track"><see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-track">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
-/// <param name="Streams"><see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-streams">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
-/// <param name="Transceiver"><see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-transceiver">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
-[ECMAScript]
-[Description("@#RTCTrackEventInit")]
-public record RTCTrackEventInit(
-    [property: Description("@#receiver")]RTCRtpReceiver? Receiver = default,
-    [property: Description("@#track")]MediaStreamTrack? Track = default,
-    [property: Description("@#streams")]MediaStream[]? Streams = default,
-    [property: Description("@#transceiver")]RTCRtpTransceiver? Transceiver = default) : EventInit;
 
 /// <summary>
 /// <see href="https://w3c.github.io/webtransport/#dictdef-webtransportcloseinfo">WebTransport: 6.10 WebTransportCloseInfo Dictionary</see>
@@ -8879,7 +8524,7 @@ public record PurchaseDetails(
 [ECMAScript]
 [Description("@#DocumentPictureInPictureEventInit")]
 public record DocumentPictureInPictureEventInit(
-    [property: Description("@#window")]Window? Window = default) : EventInit;
+    [property: Description("@#window")]JazorWindow? Window = default) : EventInit;
 
 /// <summary>
 /// <see href="https://wicg.github.io/document-picture-in-picture/#dictdef-documentpictureinpictureoptions">Document Picture-in-Picture Specification: 5 API</see>
@@ -10261,7 +9906,7 @@ public record BluetoothDataFilterInit(
 [ECMAScript]
 [Description("@#ShareData")]
 public record ShareData(
-    [property: Description("@#files")]Files[]? Files = default,
+    [property: Description("@#files")]JSFile[]? Files = default,
     [property: Description("@#title")]string? Title = default,
     [property: Description("@#text")]string? Text = default,
     [property: Description("@#url")]string? Url = default);
@@ -10293,6 +9938,24 @@ public record URLPatternOptions(
     [property: Description("@#ignoreCase")]bool IgnoreCase = false);
 
 /// <summary>
+/// Create a new RTCTrackEventInit dictionary with receiver, track, streams and transceiver as members and add it to trackEventInits.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see>
+/// </remarks>
+/// <param name="Receiver">For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object. <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-receiver">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
+/// <param name="Track">For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object. <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-track">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
+/// <param name="Streams">For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object. <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-streams">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
+/// <param name="Transceiver">For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object. <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-transceiver">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
+[ECMAScript]
+[Description("@#RTCTrackEventInit")]
+public record RTCTrackEventInit(
+    [property: Description("@#receiver")]RTCRtpReceiver? Receiver = default,
+    [property: Description("@#track")]MediaStreamTrack? Track = default,
+    [property: Description("@#streams")]MediaStream[]? Streams = default,
+    [property: Description("@#transceiver")]RTCRtpTransceiver? Transceiver = default) : EventInit;
+
+/// <summary>
 /// Creates a new ClipboardItem object. items denote list of representations, each representation has a representation/mime type and a Promise to Blob or DOMString corresponding to the representation/mime type, options can be used to fill its ClipboardItemOptions, as per the example below.
 /// </summary>
 /// <remarks>
@@ -10303,6 +9966,44 @@ public record URLPatternOptions(
 [Description("@#ClipboardItemOptions")]
 public record ClipboardItemOptions(
     [property: Description("@#presentationStyle")]PresentationStyle PresentationStyle = PresentationStyle.Unspecified);
+
+/// <summary>
+/// Creates a new RTCDataChannel object with the given label. The RTCDataChannelInit dictionary can be used to configure properties of the underlying channel such as data reliability.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see>
+/// </remarks>
+/// <param name="Ordered">Initialize channel.Ordered to option.ordered. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-ordered">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
+/// <param name="MaxPacketLifeTime">Initialize channel.MaxPacketLifeTime to option.maxPacketLifeTime, if map/exists|present, otherwise null. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-maxpacketlifetime">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
+/// <param name="MaxRetransmits">Initialize channel.MaxRetransmits to option.maxRetransmits, if map/exists|present, otherwise null. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-maxretransmits">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
+/// <param name="Protocol">Initialize channel.DataChannelProtocol to option.protocol. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-protocol">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
+/// <param name="Negotiated">Initialize channel.Negotiated to option.negotiated. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-negotiated">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
+/// <param name="Id"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelinit-id">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelInit Members</see></param>
+/// <param name="Priority"><see href="https://w3c.github.io/webrtc-priority/#dom-rtcdatachannelinit-priority">WebRTC Priority Control API: 4.2 New RTCDataChannelInit member</see></param>
+[ECMAScript]
+[Description("@#RTCDataChannelInit")]
+public record RTCDataChannelInit(
+    [property: Description("@#ordered")]bool Ordered = false,
+    [property: Description("@#maxPacketLifeTime")]ushort MaxPacketLifeTime = default,
+    [property: Description("@#maxRetransmits")]ushort MaxRetransmits = default,
+    [property: Description("@#protocol")]string? Protocol = default,
+    [property: Description("@#negotiated")]bool Negotiated = false,
+    [property: Description("@#id")]ushort Id = default,
+    [property: Description("@#priority")]RTCPriorityType Priority = RTCPriorityType.Low)
+{
+    [Category("optional")]
+    public extern static RTCDataChannelInit OptionalOrderedMaxPacketLifeTimeMaxRetransmits6(
+        [Description("@#ordered")]bool ordered = false,
+        [Description("@#maxPacketLifeTime")]ushort MaxPacketLifeTime = default,
+        [Description("@#maxRetransmits")]ushort MaxRetransmits = default,
+        [Description("@#protocol")]string? protocol = default,
+        [Description("@#negotiated")]bool negotiated = false,
+        [Description("@#id")]ushort Id = default);
+
+    [Category("optional")]
+    public extern static RTCDataChannelInit OptionalPriority(
+        [Description("@#priority")]RTCPriorityType priority = RTCPriorityType.Low);
+}
 
 /// <summary>
 /// Each powerful feature can define zero or more additional aspects. An aspect is defined as WebIDL dictionary that dictionary/inherits from PermissionDescriptor and serves as a WebIDL interface&apos;s powerful feature/permission descriptor type.
@@ -10831,6 +10532,50 @@ public record SubscriptionObserver(
     [property: Description("@#complete")]Action? Complete = default);
 
 /// <summary>
+/// If the description is of type &quot;offer&quot; and the media description contains a request to receive simulcast, use the order of the rid values specified in the simulcast attribute to create an RTCRtpEncodingParameters dictionary for each of the simulcast layers, populating the rid member according to the corresponding rid value (using only the first value if comma-separated alternatives exist), and let proposedSendEncodings be the list containing the created dictionaries. Otherwise, let proposedSendEncodings be an empty list.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters">WebRTC: Real-Time Communication in Browsers: 5.2.5 RTCRtpEncodingParameters Dictionary</see>
+/// </remarks>
+/// <param name="Active">RTCRtpEncodingParameters dictionaries contain active members whose values are true by default. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-active">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
+/// <param name="Codec">For each encoding in transceiver.Sender.SendEncodings, if encoding.codec does not match any entry in codecs, using the codec dictionary match algorithm with ignoreAsymmetricalParameters set to true, map/remove encoding.codec. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-codec">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
+/// <param name="MaxBitrate">setParameters does not cause SDP renegotiation and can only be used to change what the media stack is sending or receiving within the envelope negotiated by Offer/Answer. The attributes in the RTCRtpSendParameters dictionary are designed to not enable this, so attributes like cname that cannot be changed are read-only. Other things, like bitrate, are controlled using limits such as maxBitrate, where the user agent needs to ensure it does not exceed the maximum bitrate specified by maxBitrate, while at the same time making sure it satisfies constraints on bitrate specified in other places such as the SDP. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-maxbitrate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
+/// <param name="MaxFramerate"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-maxframerate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
+/// <param name="ScaleResolutionDownBy">If proposedSendEncodings is non-empty, set each encoding&apos;s scaleResolutionDownBy to 2^(length of proposedSendEncodings - encoding index - 1). <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpencodingparameters-scaleresolutiondownby">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpEncodingParameters Members</see></param>
+/// <param name="Priority"><see href="https://w3c.github.io/webrtc-priority/#dom-rtcrtpencodingparameters-priority">WebRTC Priority Control API: 3.2 Extension to RTCRtpEncodingParameters</see></param>
+/// <param name="NetworkPriority">networkPriority <see href="https://w3c.github.io/webrtc-priority/#dom-rtcrtpencodingparameters-networkpriority">WebRTC Priority Control API: 3.2 Extension to RTCRtpEncodingParameters</see></param>
+/// <param name="ScalabilityMode">The term &quot;S mode&quot; refers to a scalability mode in which multiple encodings are sent on the same SSRC. This includes the &quot;S2T1&quot;, &quot;S2T1h&quot;, &quot;S2T2&quot;, &quot;S2T2h&quot;, &quot;S2T3&quot;, &quot;S2T3h&quot;, &quot;S3T1&quot;, &quot;S3T1h&quot;, &quot;S3T2&quot;, &quot;S3T2h&quot;, &quot;S3T3&quot; and &quot;S3T3h&quot; scalabilityMode values. <see href="https://w3c.github.io/webrtc-svc/#dom-rtcrtpencodingparameters-scalabilitymode">Scalable Video Coding (SVC) Extension for WebRTC: Dictionary RTCRtpEncodingParameters Members</see></param>
+[ECMAScript]
+[Description("@#RTCRtpEncodingParameters")]
+public record RTCRtpEncodingParameters(
+    [property: Description("@#active")]bool Active = false,
+    [property: Description("@#codec")]RTCRtpCodec? Codec = default,
+    [property: Description("@#maxBitrate")]uint MaxBitrate = default,
+    [property: Description("@#maxFramerate")]double MaxFramerate = default,
+    [property: Description("@#scaleResolutionDownBy")]double ScaleResolutionDownBy = default,
+    [property: Description("@#priority")]RTCPriorityType Priority = RTCPriorityType.Low,
+    [property: Description("@#networkPriority")]RTCPriorityType? NetworkPriority = default,
+    [property: Description("@#scalabilityMode")]string? ScalabilityMode = default) : RTCRtpCodingParameters
+{
+    [Category("optional")]
+    public extern static RTCRtpEncodingParameters OptionalActiveCodecMaxBitrate5(
+        [Description("@#active")]bool active = false,
+        [Description("@#codec")]RTCRtpCodec? Codec = default,
+        [Description("@#maxBitrate")]uint MaxBitrate = default,
+        [Description("@#maxFramerate")]double MaxFramerate = default,
+        [Description("@#scaleResolutionDownBy")]double ScaleResolutionDownBy = default);
+
+    [Category("optional")]
+    public extern static RTCRtpEncodingParameters OptionalPriorityNetworkPriority(
+        [Description("@#priority")]RTCPriorityType priority = RTCPriorityType.Low,
+        [Description("@#networkPriority")]RTCPriorityType? NetworkPriority = default);
+
+    [Category("optional")]
+    public extern static RTCRtpEncodingParameters OptionalScalabilityMode(
+        [Description("@#scalabilityMode")]string? ScalabilityMode = default);
+}
+
+/// <summary>
 /// Information about a certificate used by an RTCIceTransport. It is accessed by the RTCCertificateStats.
 /// </summary>
 /// <remarks>
@@ -10947,6 +10692,18 @@ public record PerformanceObserverCallbackOptions(
     [property: Description("@#droppedEntriesCount")]ulong DroppedEntriesCount = default);
 
 /// <summary>
+/// Let certificateExpiration be the result of converting the ECMAScript object represented by keygenAlgorithm to an RTCCertificateExpiration dictionary.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificateexpiration">WebRTC: Real-Time Communication in Browsers: 4.9.1 RTCCertificateExpiration Dictionary</see>
+/// </remarks>
+/// <param name="Expires">If certificateExpiration.expires is not undefined, set expires to certificateExpiration.expires. <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificateexpiration-expires">WebRTC: Real-Time Communication in Browsers: 4.9.1 RTCCertificateExpiration Dictionary</see></param>
+[ECMAScript]
+[Description("@#RTCCertificateExpiration")]
+public record RTCCertificateExpiration(
+    [property: Description("@#expires")]ulong Expires = default);
+
+/// <summary>
 /// Let collection:HIDCollectionInfo be a new HIDCollectionInfo dictionary.
 /// </summary>
 /// <remarks>
@@ -11033,6 +10790,24 @@ public record SerialPortInfo(
     [property: Description("@#bluetoothServiceClassId")]BluetoothServiceUUID? BluetoothServiceClassId = default);
 
 /// <summary>
+/// Let json be a new RTCIceCandidateInit dictionary.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see>
+/// </remarks>
+/// <param name="Candidate">This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-candidate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
+/// <param name="SdpMid">This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-sdpmid">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
+/// <param name="SdpMLineIndex">This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-sdpmlineindex">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
+/// <param name="UsernameFragment">This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-usernamefragment">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
+[ECMAScript]
+[Description("@#RTCIceCandidateInit")]
+public record RTCIceCandidateInit(
+    [property: Description("@#candidate")]string? Candidate = default,
+    [property: Description("@#sdpMid")]string? SdpMid = null,
+    [property: Description("@#sdpMLineIndex")]ushort? SdpMLineIndex = null,
+    [property: Description("@#usernameFragment")]string? UsernameFragment = null);
+
+/// <summary>
 /// Let json:PushSubscriptionJSON be a new PushSubscriptionJSON dictionary.
 /// </summary>
 /// <remarks>
@@ -11047,6 +10822,20 @@ public record PushSubscriptionJSON(
     [property: Description("@#endpoint")]string? Endpoint = default,
     [property: Description("@#expirationTime")]EpochTimeStamp? ExpirationTime = null,
     [property: Description("@#keys")]Dictionary<string, string>? Keys = default);
+
+/// <summary>
+/// Let offer be a newly created RTCSessionDescriptionInit dictionary with its type member initialized to the string &quot;offer&quot; and its sdp member initialized to sdpString.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioninit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCSessionDescriptionInit Members</see>
+/// </remarks>
+/// <param name="Type">If description.type is &quot;rollback&quot; and connection.SignalingState is either &quot;stable&quot;, &quot;have-local-pranswer&quot;, or &quot;have-remote-pranswer&quot;, then reject p with a newly exception/created InvalidStateError and abort these steps. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioninit-type">WebRTC: Real-Time Communication in Browsers: Dictionary RTCSessionDescriptionInit Members</see></param>
+/// <param name="Sdp">Note that CurrentLocalDescription.sdp and PendingLocalDescription.sdp need not be string-wise identical to the sdp value passed to the corresponding setLocalDescription call (i.e. SDP may be parsed and reformatted, and ICE candidates may be added). <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioninit-sdp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCSessionDescriptionInit Members</see></param>
+[ECMAScript]
+[Description("@#RTCSessionDescriptionInit")]
+public record RTCSessionDescriptionInit(
+    [property: Description("@#type")]RTCSdpType? Type = default,
+    [property: Description("@#sdp")]string? Sdp = default);
 
 /// <summary>
 /// Let options:NDEFMakeReadOnlyOptions be the second argument.
@@ -11610,6 +11399,16 @@ public record RTCSentRtpStreamStats(
     [property: Description("@#bytesSent")]ulong BytesSent = default) : RTCRtpStreamStats;
 
 /// <summary>
+/// RTCSetParameterOptions is defined as an empty dictionary to allow for extensibility.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsetparameteroptions">WebRTC: Real-Time Communication in Browsers: 5.2.12 RTCSetParameterOptions Dictionary</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCSetParameterOptions")]
+public abstract record RTCSetParameterOptions();
+
+/// <summary>
 /// Rename member output to outputs of MLLstmCellSupportLimits for consistency (#757)
 /// </summary>
 /// <remarks>
@@ -11638,6 +11437,38 @@ public record MLLstmCellSupportLimits(
     [property: Description("@#peepholeWeight")]MLTensorLimits? PeepholeWeight = default,
     [property: Description("@#output0")]MLTensorLimits? Output0 = default,
     [property: Description("@#output1")]MLTensorLimits? Output1 = default);
+
+/// <summary>
+/// Return a new RTCRtpCapabilities dictionary, with its codecs member initialized to the RTCRtpSender/list of implemented send codecs for kind, and its headerExtensions member initialized to the list of implemented header extensions for sending with kind.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcapabilities">WebRTC: Real-Time Communication in Browsers: 5.2.10 RTCRtpCapabilities Dictionary</see>
+/// </remarks>
+/// <param name="Codecs">Return a new RTCRtpCapabilities dictionary, with its codecs member initialized to the RTCRtpSender/list of implemented send codecs for kind, and its headerExtensions member initialized to the list of implemented header extensions for sending with kind. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcapabilities-codecs">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCapabilities Members</see></param>
+/// <param name="HeaderExtensions">Return a new RTCRtpCapabilities dictionary, with its codecs member initialized to the RTCRtpSender/list of implemented send codecs for kind, and its headerExtensions member initialized to the list of implemented header extensions for sending with kind. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcapabilities-headerextensions">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCapabilities Members</see></param>
+[ECMAScript]
+[Description("@#RTCRtpCapabilities")]
+public record RTCRtpCapabilities(
+    [property: Description("@#codecs")]RTCRtpCodec[]? Codecs = default,
+    [property: Description("@#headerExtensions")]RTCRtpHeaderExtensionCapability[]? HeaderExtensions = default);
+
+/// <summary>
+/// Returns an RTCRtpContributingSource for each unique CSRC identifier received by this RTCRtpReceiver in the last 10 seconds, in descending timestamp order.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource">WebRTC: Real-Time Communication in Browsers: 5.3 RTCRtpReceiver Interface</see>
+/// </remarks>
+/// <param name="Timestamp">Returns an RTCRtpContributingSource for each unique CSRC identifier received by this RTCRtpReceiver in the last 10 seconds, in descending timestamp order. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-timestamp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
+/// <param name="Source"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-source">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
+/// <param name="AudioLevel"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-audiolevel">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
+/// <param name="RtpTimestamp"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-rtptimestamp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
+[ECMAScript]
+[Description("@#RTCRtpContributingSource")]
+public record RTCRtpContributingSource(
+    [property: Description("@#timestamp")]double Timestamp = default,
+    [property: Description("@#source")]uint Source = default,
+    [property: Description("@#audioLevel")]double AudioLevel = default,
+    [property: Description("@#rtpTimestamp")]uint RtpTimestamp = default);
 
 /// <summary>
 /// Run handler with the details parameter set to: MediaSessionActionDetails.
@@ -12425,6 +12256,16 @@ public record PromptResponseObject(
     [property: Description("@#userChoice")]AppBannerPromptOutcome? UserChoice = default);
 
 /// <summary>
+/// The RTCAnswerOptions dictionary describe options specific to session description of type &quot;answer&quot; (none in this version of the specification).
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcansweroptions">WebRTC: Real-Time Communication in Browsers: 4.2.6 Offer/Answer Options</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCAnswerOptions")]
+public abstract record RTCAnswerOptions();
+
+/// <summary>
 /// The RTCAudioPlayoutStats dictionary and all of its metrics are features at risk due to lack of consensus.
 /// </summary>
 /// <remarks>
@@ -12445,6 +12286,74 @@ public record RTCAudioPlayoutStats(
     [property: Description("@#totalSamplesDuration")]double TotalSamplesDuration = default,
     [property: Description("@#totalPlayoutDelay")]double TotalPlayoutDelay = default,
     [property: Description("@#totalSamplesCount")]ulong TotalSamplesCount = default) : RTCStats;
+
+/// <summary>
+/// The RTCConfiguration defines a set of parameters to configure how the peer-to-peer communication established via RTCPeerConnection is established or re-established.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration">WebRTC: Real-Time Communication in Browsers: 4.2.1 RTCConfiguration Dictionary</see>
+/// </remarks>
+/// <param name="IceServers">iceServers of type sequence&lt;RTCIceServer&gt;, defaulting to []. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-iceservers">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
+/// <param name="IceTransportPolicy">iceTransportPolicy of type RTCIceTransportPolicy, defaulting to &quot;all&quot;. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-icetransportpolicy">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
+/// <param name="BundlePolicy">bundlePolicy of type RTCBundlePolicy, defaulting to &quot;balanced&quot;. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-bundlepolicy">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
+/// <param name="RtcpMuxPolicy">rtcpMuxPolicy of type RTCRtcpMuxPolicy, defaulting to &quot;require&quot;. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-rtcpmuxpolicy">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
+/// <param name="Certificates"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-certificates">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
+/// <param name="IceCandidatePoolSize">iceCandidatePoolSize of type octet, defaulting to 0 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-icecandidatepoolsize">WebRTC: Real-Time Communication in Browsers: Dictionary RTCConfiguration Members</see></param>
+/// <param name="PeerIdentity">The identity of the peer. For identity providers that bind their assertions to a particular pair of communication peers, this allows them to generate an assertion that includes both local and remote identities. If this value is omitted, but a value is provided for the peerIdentity member of RTCConfiguration !WEBRTC, the value from RTCConfiguration is used. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcconfiguration-peeridentity">Identity for WebRTC 1.0: Dictionary RTCConfiguration Members</see></param>
+[ECMAScript]
+[Description("@#RTCConfiguration")]
+public record RTCConfiguration(
+    [property: Description("@#iceServers")]RTCIceServer[]? IceServers = default,
+    [property: Description("@#iceTransportPolicy")]RTCIceTransportPolicy IceTransportPolicy = RTCIceTransportPolicy.All,
+    [property: Description("@#bundlePolicy")]RTCBundlePolicy BundlePolicy = RTCBundlePolicy.Balanced,
+    [property: Description("@#rtcpMuxPolicy")]RTCRtcpMuxPolicy RtcpMuxPolicy = RTCRtcpMuxPolicy.Require,
+    [property: Description("@#certificates")]RTCCertificate[]? Certificates = default,
+    [property: Description("@#iceCandidatePoolSize")]byte IceCandidatePoolSize = 0,
+    [property: Description("@#peerIdentity")]string? PeerIdentity = default)
+{
+    [Category("optional")]
+    public extern static RTCConfiguration OptionalIceServersIceTransportPolicyBundlePolicy6(
+        [Description("@#iceServers")]RTCIceServer[]? iceServers = default,
+        [Description("@#iceTransportPolicy")]RTCIceTransportPolicy iceTransportPolicy = RTCIceTransportPolicy.All,
+        [Description("@#bundlePolicy")]RTCBundlePolicy bundlePolicy = RTCBundlePolicy.Balanced,
+        [Description("@#rtcpMuxPolicy")]RTCRtcpMuxPolicy rtcpMuxPolicy = RTCRtcpMuxPolicy.Require,
+        [Description("@#certificates")]RTCCertificate[]? certificates = default,
+        [Description("@#iceCandidatePoolSize")]byte iceCandidatePoolSize = 0);
+
+    [Category("optional")]
+    public extern static RTCConfiguration OptionalPeerIdentity(
+        [Description("@#peerIdentity")]string? PeerIdentity = default);
+}
+
+/// <summary>
+/// The RTCDtlsFingerprint dictionary includes the hash function algorithm and certificate fingerprint as described in !RFC4572.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlsfingerprint">WebRTC: Real-Time Communication in Browsers: 5.5.2 RTCDtlsFingerprint Dictionary</see>
+/// </remarks>
+/// <param name="Algorithm">The RTCDtlsFingerprint dictionary includes the hash function algorithm and certificate fingerprint as described in !RFC4572. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlsfingerprint-algorithm">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDtlsFingerprint Members</see></param>
+/// <param name="Value"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlsfingerprint-value">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDtlsFingerprint Members</see></param>
+[ECMAScript]
+[Description("@#RTCDtlsFingerprint")]
+public record RTCDtlsFingerprint(
+    [property: Description("@#algorithm")]string? Algorithm = default,
+    [property: Description("@#value")]string? Value = default);
+
+/// <summary>
+/// The RTCIceServer dictionary is used to describe the STUN and TURN servers that can be used by the ICE Agent to establish a connection with a peer.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver">WebRTC: Real-Time Communication in Browsers: 4.2.2 RTCIceServer Dictionary</see>
+/// </remarks>
+/// <param name="Urls">Let urls be server.urls. <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver-urls">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceServer Members</see></param>
+/// <param name="Username">If this RTCIceServer object represents a TURN server, then this attribute specifies the username to use with that TURN server. <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver-username">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceServer Members</see></param>
+/// <param name="Credential">If this RTCIceServer object represents a TURN server, then this attribute specifies the credential to use with that TURN server. <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver-credential">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceServer Members</see></param>
+[ECMAScript]
+[Description("@#RTCIceServer")]
+public record RTCIceServer(
+    [property: Description("@#urls")]RTCIceServerUrls? Urls = default,
+    [property: Description("@#username")]string? Username = default,
+    [property: Description("@#credential")]string? Credential = default);
 
 /// <summary>
 /// The RTCInboundRtpStreamStats dictionary represents the measurement metrics for the incoming RTP media stream. The timestamp reported in the statistics object is the time at which the data was sampled.
@@ -12705,6 +12614,46 @@ public record RTCRemoteOutboundRtpStreamStats(
     [property: Description("@#roundTripTimeMeasurements")]ulong RoundTripTimeMeasurements = default) : RTCSentRtpStreamStats;
 
 /// <summary>
+/// The RTCRtpCodec dictionary provides information about codec objects.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec">WebRTC: Real-Time Communication in Browsers: 5.2.8 RTCRtpCodec Dictionary</see>
+/// </remarks>
+/// <param name="MimeType">A sequence containing the media codecs that an RTCRtpSender will choose from, as well as entries for RTX, RED and FEC mechanisms. Corresponding to each media codec where retransmission via RTX is enabled, there will be an entry in codecs with a mimeType attribute indicating retransmission via audio/rtx or video/rtx, and an sdpFmtpLine attribute (providing the &quot;apt&quot; and &quot;rtx-time&quot; parameters). Read-only parameter. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-mimetype">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
+/// <param name="ClockRate">If first.clockRate is different from second.clockRate, return false. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-clockrate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
+/// <param name="Channels">If either (but not both) of first.channels and second.channels are map/exist | missing , or if they both map/exist and first.channels is different from second.channels, return false. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-channels">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
+/// <param name="SdpFmtpLine">A sequence containing the media codecs that an RTCRtpSender will choose from, as well as entries for RTX, RED and FEC mechanisms. Corresponding to each media codec where retransmission via RTX is enabled, there will be an entry in codecs with a mimeType attribute indicating retransmission via audio/rtx or video/rtx, and an sdpFmtpLine attribute (providing the &quot;apt&quot; and &quot;rtx-time&quot; parameters). Read-only parameter. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-sdpfmtpline">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
+[ECMAScript]
+[Description("@#RTCRtpCodec")]
+public record RTCRtpCodec(
+    [property: Description("@#mimeType")]string? MimeType = default,
+    [property: Description("@#clockRate")]uint ClockRate = default,
+    [property: Description("@#channels")]ushort Channels = default,
+    [property: Description("@#sdpFmtpLine")]string? SdpFmtpLine = default);
+
+/// <summary>
+/// The RTCRtpCodecParameters dictionary provides information about the negotiated codecs. The fields inherited from RTCRtpCodec MUST all be Read-only parameters.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodecparameters">WebRTC: Real-Time Communication in Browsers: 5.2.9 RTCRtpCodecParameters Dictionary</see>
+/// </remarks>
+/// <param name="PayloadType"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodecparameters-payloadtype">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodecParameters Members</see></param>
+[ECMAScript]
+[Description("@#RTCRtpCodecParameters")]
+public record RTCRtpCodecParameters(
+    [property: Description("@#payloadType")]byte PayloadType = default) : RTCRtpCodec;
+
+/// <summary>
+/// The RTCRtpSynchronizationSource dictionary is expected to serve as an extension point for the specification to surface data only available in SSRCs.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsynchronizationsource">WebRTC: Real-Time Communication in Browsers: 5.3 RTCRtpReceiver Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCRtpSynchronizationSource")]
+public abstract record RTCRtpSynchronizationSource();
+
+/// <summary>
 /// The WebGLContextAttributes dictionary contains drawing surface attributes and is passed as the second parameter to getContext.
 /// </summary>
 /// <remarks>
@@ -12865,6 +12814,41 @@ public record PaymentDetailsInit(
     [property: Description("@#total")]PaymentItem? Total = default) : PaymentDetailsBase;
 
 /// <summary>
+/// The errorDetail, sdpLineNumber, sctpCauseCode, receivedAlert and sentAlert members of RTCErrorInit have the same definitions as the attributes of the same name of RTCError.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see>
+/// </remarks>
+/// <param name="ErrorDetail">The errorDetail, sdpLineNumber, sctpCauseCode, receivedAlert and sentAlert members of RTCErrorInit have the same definitions as the attributes of the same name of RTCError. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-errordetail">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
+/// <param name="SdpLineNumber">The errorDetail, sdpLineNumber, sctpCauseCode, receivedAlert and sentAlert members of RTCErrorInit have the same definitions as the attributes of the same name of RTCError. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-sdplinenumber">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
+/// <param name="SctpCauseCode">The errorDetail, sdpLineNumber, sctpCauseCode, receivedAlert and sentAlert members of RTCErrorInit have the same definitions as the attributes of the same name of RTCError. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-sctpcausecode">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
+/// <param name="ReceivedAlert">The errorDetail, sdpLineNumber, sctpCauseCode, receivedAlert and sentAlert members of RTCErrorInit have the same definitions as the attributes of the same name of RTCError. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-receivedalert">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
+/// <param name="SentAlert">The errorDetail, sdpLineNumber, sctpCauseCode, receivedAlert and sentAlert members of RTCErrorInit have the same definitions as the attributes of the same name of RTCError. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorinit-sentalert">WebRTC: Real-Time Communication in Browsers: 11.1.3 RTCErrorInit Dictionary</see></param>
+/// <param name="HttpRequestStatusCode">The httpRequestStatusCode member of RTCErrorInit has the same definition as the attribute of the same name of RTCError. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcerrorinit-httprequeststatuscode">Identity for WebRTC 1.0: RTCErrorInit Dictionary</see></param>
+[ECMAScript]
+[Description("@#RTCErrorInit")]
+public record RTCErrorInit(
+    [property: Description("@#errorDetail")]RTCErrorDetailType? ErrorDetail = default,
+    [property: Description("@#sdpLineNumber")]int SdpLineNumber = default,
+    [property: Description("@#sctpCauseCode")]int SctpCauseCode = default,
+    [property: Description("@#receivedAlert")]uint ReceivedAlert = default,
+    [property: Description("@#sentAlert")]uint SentAlert = default,
+    [property: Description("@#httpRequestStatusCode")]int HttpRequestStatusCode = default)
+{
+    [Category("optional")]
+    public extern static RTCErrorInit OptionalErrorDetailSdpLineNumberSctpCauseCode5(
+        [Description("@#errorDetail")]RTCErrorDetailType? ErrorDetail = default,
+        [Description("@#sdpLineNumber")]int SdpLineNumber = default,
+        [Description("@#sctpCauseCode")]int SctpCauseCode = default,
+        [Description("@#receivedAlert")]uint ReceivedAlert = default,
+        [Description("@#sentAlert")]uint SentAlert = default);
+
+    [Category("optional")]
+    public extern static RTCErrorInit OptionalHttpRequestStatusCode(
+        [Description("@#httpRequestStatusCode")]int HttpRequestStatusCode = default);
+}
+
+/// <summary>
 /// The input to the decoding capabilities is represented by a MediaDecodingConfiguration dictionary and the input to the encoding capabilities by a MediaEncodingConfiguration dictionary.
 /// </summary>
 /// <remarks>
@@ -12889,6 +12873,18 @@ public record MediaDecodingConfiguration(
 [Description("@#MediaEncodingConfiguration")]
 public record MediaEncodingConfiguration(
     [property: Description("@#type")]MediaEncodingType? Type = default) : MediaConfiguration;
+
+/// <summary>
+/// The list of implemented header extensions for sending, given kind, is an implementation-defined list of RTCRtpHeaderExtensionCapability dictionaries representing the most optimistic view of the header extensions the user agent supports for sending media of the given kind (video or audio).
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensioncapability">WebRTC: Real-Time Communication in Browsers: 5.2.11 RTCRtpHeaderExtensionCapability Dictionary</see>
+/// </remarks>
+/// <param name="Uri"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensioncapability-uri">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpHeaderExtensionCapability Members</see></param>
+[ECMAScript]
+[Description("@#RTCRtpHeaderExtensionCapability")]
+public record RTCRtpHeaderExtensionCapability(
+    [property: Description("@#uri")]string? Uri = default);
 
 /// <summary>
 /// The members of the RsaOtherPrimesInfo are defined in Section 6.3.2.7 of JSON Web Algorithms.
@@ -12975,6 +12971,36 @@ public record ProofreadCorrection(
     [property: Description("@#correction")]string? Correction = default,
     [property: Description("@#types")]CorrectionType[]? Types = default,
     [property: Description("@#explanation")]string? Explanation = default);
+
+/// <summary>
+/// The setLocalDescription method instructs the RTCPeerConnection to apply the supplied RTCLocalSessionDescriptionInit as the local description.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalsessiondescriptioninit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalSessionDescriptionInit Members</see>
+/// </remarks>
+/// <param name="Type">The RTCSdpType enum describes the type of an RTCSessionDescriptionInit, RTCLocalSessionDescriptionInit, or RTCSessionDescription instance. <see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalsessiondescriptioninit-type">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalSessionDescriptionInit Members</see></param>
+/// <param name="Sdp"><see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalsessiondescriptioninit-sdp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalSessionDescriptionInit Members</see></param>
+[ECMAScript]
+[Description("@#RTCLocalSessionDescriptionInit")]
+public record RTCLocalSessionDescriptionInit(
+    [property: Description("@#type")]RTCSdpType? Type = default,
+    [property: Description("@#sdp")]string? Sdp = default);
+
+/// <summary>
+/// The statistics returned in stats object s are designed in such a way that repeated queries can be linked by the RTCStats id dictionary member. Thus, a Web application can make measurements over a given time period by requesting measurements at the beginning and end of that period.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats">WebRTC: Real-Time Communication in Browsers: 8.4 RTCStats Dictionary</see>
+/// </remarks>
+/// <param name="Timestamp">An RTCStats dictionary represents the stats object constructed by inspecting a specific monitored object . The RTCStats dictionary is a base type that specifies as set of default attributes, such as timestamp and type. Specific stats are added by extending the RTCStats dictionary. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats-timestamp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCStats Members</see></param>
+/// <param name="Type">An RTCStatsReport may be composed of several RTCStats-derived dictionaries, each reporting stats for one underlying object that the implementation thinks is relevant for the selector . One achieves the total for the selector by summing over all the stats of a certain type; for instance, if an RTCRtpSender uses multiple SSRCs to carry its track over the network, the RTCStatsReport may contain one RTCStats-derived dictionary per SSRC (which can be distinguished by the value of the ssrc stats attribute). <see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats-type">WebRTC: Real-Time Communication in Browsers: Dictionary RTCStats Members</see></param>
+/// <param name="Id"><see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats-id">WebRTC: Real-Time Communication in Browsers: Dictionary RTCStats Members</see></param>
+[ECMAScript]
+[Description("@#RTCStats")]
+public record RTCStats(
+    [property: Description("@#timestamp")]double Timestamp = default,
+    [property: Description("@#type")]RTCStatsType? Type = default,
+    [property: Description("@#id")]string? Id = default);
 
 /// <summary>
 /// The type member, of type RTCStatsType, indicates the type of the object that the RTCStats object represents. An object with a given type can have only one IDL dictionary type, but multiple type values may indicate the same IDL dictionary type; for example, &quot;local-candidate&quot; and &quot;remote-candidate&quot; both use the IDL dictionary type RTCIceCandidateStats.
@@ -13231,6 +13257,46 @@ public record PayerErrors(
     [property: Description("@#email")]string? Email = default,
     [property: Description("@#name")]string? Name = default,
     [property: Description("@#phone")]string? Phone = default);
+
+/// <summary>
+/// rtcp of type RTCRtcpParameters, required
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpparameters">WebRTC: Real-Time Communication in Browsers: 5.2.6 RTCRtcpParameters Dictionary</see>
+/// </remarks>
+/// <param name="Cname">setParameters does not cause SDP renegotiation and can only be used to change what the media stack is sending or receiving within the envelope negotiated by Offer/Answer. The attributes in the RTCRtpSendParameters dictionary are designed to not enable this, so attributes like cname that cannot be changed are read-only. Other things, like bitrate, are controlled using limits such as maxBitrate, where the user agent needs to ensure it does not exceed the maximum bitrate specified by maxBitrate, while at the same time making sure it satisfies constraints on bitrate specified in other places such as the SDP. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpparameters-cname">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtcpParameters Members</see></param>
+/// <param name="ReducedSize">rtcp.cname is set to the CNAME of the associated RTCPeerConnection. rtcp.reducedSize is set to true if reduced-size RTCP has been negotiated for sending, and false otherwise. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpparameters-reducedsize">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtcpParameters Members</see></param>
+[ECMAScript]
+[Description("@#RTCRtcpParameters")]
+public record RTCRtcpParameters(
+    [property: Description("@#cname")]string? Cname = default,
+    [property: Description("@#reducedSize")]bool ReducedSize = default);
+
+/// <summary>
+/// setParameters does not cause SDP renegotiation and can only be used to change what the media stack is sending or receiving within the envelope negotiated by Offer/Answer. The attributes in the RTCRtpSendParameters dictionary are designed to not enable this, so attributes like cname that cannot be changed are read-only. Other things, like bitrate, are controlled using limits such as maxBitrate, where the user agent needs to ensure it does not exceed the maximum bitrate specified by maxBitrate, while at the same time making sure it satisfies constraints on bitrate specified in other places such as the SDP.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsendparameters">WebRTC: Real-Time Communication in Browsers: 5.2.2 RTCRtpSendParameters Dictionary</see>
+/// </remarks>
+/// <param name="DegradationPreference">When bandwidth is constrained and the RTCRtpSender needs to choose between degrading resolution or degrading framerate, degradationPreference indicates which is preferred. <see href="https://w3c.github.io/mst-content-hint/#dom-rtcrtpsendparameters-degradationpreference">MediaStreamTrack Content Hints: 4.2 Degradation preference when encoding</see></param>
+/// <param name="TransactionId">transactionId is set to a new unique identifier. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsendparameters-transactionid">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpSendParameters Members</see></param>
+/// <param name="Encodings">If the length of the SendEncodings slot of the RTCRtpSender is larger than 1, then for each encoding given in SendEncodings of the RTCRtpSender, add an a=rid send line to the corresponding media section, and add an a=simulcast:send line giving the RIDs in the same order as given in the encodings field. No RID restrictions are set. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsendparameters-encodings">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpSendParameters Members</see></param>
+[ECMAScript]
+[Description("@#RTCRtpSendParameters")]
+public record RTCRtpSendParameters(
+    [property: Description("@#degradationPreference")]RTCDegradationPreference? DegradationPreference = default,
+    [property: Description("@#transactionId")]string? TransactionId = default,
+    [property: Description("@#encodings")]RTCRtpEncodingParameters[]? Encodings = default) : RTCRtpParameters
+{
+    [Category("optional")]
+    public extern static RTCRtpSendParameters OptionalDegradationPreference(
+        [Description("@#degradationPreference")]RTCDegradationPreference? DegradationPreference = default);
+
+    [Category("optional")]
+    public extern static RTCRtpSendParameters OptionalTransactionIdEncodings(
+        [Description("@#transactionId")]string? TransactionId = default,
+        [Description("@#encodings")]RTCRtpEncodingParameters[]? Encodings = default);
+}
 
 /// <summary>
 /// width of type ULongRange

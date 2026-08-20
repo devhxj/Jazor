@@ -50,8 +50,8 @@ public static class Int32Module
 				return false;
 		}
 
-		var parsed = NumberFn(trimmed);
-		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
+		var parsed = NumberValue(trimmed);
+		if (IsNaN(parsed) || Math.FloorFunc(parsed) != parsed)
 			return false;
 		if (parsed < -2147483648 || parsed > 2147483647)
 		{
@@ -221,7 +221,7 @@ public static class Int32Module
 			throw new Error("DivideByZeroException");
 		if (left == -2147483648 && right == -1)
 			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
-		var quotient = Math.TruncFn(left / right);
+		var quotient = Math.Trunc(left / right);
 		var remainder = left - quotient * right;
 		return ((int)quotient, (int)remainder);
 	}
@@ -376,8 +376,8 @@ public static class Int32Module
 	[Jazor(Op.Import, "static int.MaxMagnitude(int, int)")]
 	public static Number _a36b4a6dbd50fa77(Number x, Number y)
 	{
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX > absY)
 			return x;
 		if (absX < absY)
@@ -393,8 +393,8 @@ public static class Int32Module
 	[Jazor(Op.Import, "static int.MinMagnitude(int, int)")]
 	public static Number _d0c6a74fd11d24bf(Number x, Number y)
 	{
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX < absY)
 			return x;
 		if (absX > absY)

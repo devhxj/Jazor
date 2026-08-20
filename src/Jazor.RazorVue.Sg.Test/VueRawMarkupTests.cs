@@ -33,7 +33,7 @@ public sealed class VueRawMarkupTests
     }
 
     [TestMethod]
-    public void RuntimeProviderCatalog_ExposesOnlyRawMarkupRuntime()
+    public void RuntimeProviderCatalog_ExposesBlazorAndCoreRuntimes()
     {
         var assembly = typeof(VueRawMarkup).Assembly;
         var catalog = assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: true)!;
@@ -41,9 +41,22 @@ public sealed class VueRawMarkupTests
         Assert.AreEqual("jazor.vue", ReadStatic<string>(catalog, "ProviderId"));
 
         var modules = InvokeEnumerable(catalog, "GetModules").Cast<object>().ToArray();
-        Assert.HasCount(1, modules);
-        Assert.AreEqual("@jazor/vue-runtime/raw-markup.mjs", ReadProperty<string>(modules[0], "RelativePath"));
-        Assert.AreEqual("Jazor.RazorVue.Runtime.raw-markup.mjs", ReadProperty<string>(modules[0], "ResourceName"));
+        Assert.HasCount(4, modules);
+        var rawMarkup = modules.Single(module =>
+            ReadProperty<string>(module, "RelativePath") == "@jazor/vue-runtime/raw-markup.mjs");
+        Assert.AreEqual("Jazor.RazorVue.Runtime.raw-markup.mjs", ReadProperty<string>(rawMarkup, "ResourceName"));
+        var cascading = modules.Single(module =>
+            ReadProperty<string>(module, "RelativePath") == "@jazor/vue-runtime/cascading.mjs");
+        Assert.AreEqual("Jazor.RazorVue.Runtime.cascading.mjs", ReadProperty<string>(cascading, "ResourceName"));
+        var routing = modules.Single(module =>
+            ReadProperty<string>(module, "RelativePath") == "@jazor/vue-runtime/blazor-routing.mjs");
+        Assert.AreEqual("Jazor.RazorVue.Runtime.blazor-routing.mjs", ReadProperty<string>(routing, "ResourceName"));
+        CollectionAssert.AreEquivalent(
+            new[] { "@jazor/vue-runtime/routes.mjs" },
+            ((IEnumerable)routing.GetType().GetProperty("Dependencies")!.GetValue(routing)!).Cast<string>().ToArray());
+        var components = modules.Single(module =>
+            ReadProperty<string>(module, "RelativePath") == "@jazor/vue-runtime/blazor-components.mjs");
+        Assert.AreEqual("Jazor.RazorVue.Runtime.blazor-components.mjs", ReadProperty<string>(components, "ResourceName"));
         Assert.IsFalse(
             assembly.GetManifestResourceNames().Any(static name => name.Contains("render-context", StringComparison.Ordinal)),
             "The retired render-context runtime must not return as a provider dependency.");

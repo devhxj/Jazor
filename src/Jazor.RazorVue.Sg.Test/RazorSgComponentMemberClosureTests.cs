@@ -802,6 +802,9 @@ public sealed class MemberClosureTests
                 export function reactive(value) {
                     return value;
                 }
+                export function watch() {
+                    return () => {};
+                }
                 export function openBlock() {
                     return null;
                 }

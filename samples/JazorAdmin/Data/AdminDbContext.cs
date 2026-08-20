@@ -28,6 +28,8 @@ public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options)
 
     public DbSet<ScheduleRun> ScheduleRuns => Set<ScheduleRun>();
 
+    public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -143,6 +145,21 @@ public sealed class AdminDbContext(DbContextOptions<AdminDbContext> options)
                 .WithMany(schedule => schedule.Runs)
                 .HasForeignKey(run => run.ScheduleKey)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<AuditEvent>(entity =>
+        {
+            entity.Property(item => item.ActorId).HasMaxLength(400);
+            entity.Property(item => item.ActorName).HasMaxLength(256);
+            entity.Property(item => item.Action).HasMaxLength(32);
+            entity.Property(item => item.ObjectType).HasMaxLength(64);
+            entity.Property(item => item.ObjectId).HasMaxLength(512);
+            entity.Property(item => item.Summary).HasMaxLength(512);
+            entity.Property(item => item.OccurredAtUtc).HasColumnType("TEXT");
+            entity.HasIndex(item => item.OccurredAtUtc);
+            entity.HasIndex(item => new { item.ActorId, item.OccurredAtUtc });
+            entity.HasIndex(item => new { item.Action, item.OccurredAtUtc });
+            entity.HasIndex(item => new { item.ObjectType, item.OccurredAtUtc });
         });
 
         // OpenIddict adds its canonical application, authorization, scope, and token mappings to this model.

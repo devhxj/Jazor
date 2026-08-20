@@ -364,20 +364,9 @@
                     {
                         <SchedulePage Language="@Language" />
                     }
-                    else if (IsStarterPage)
+                    else if (IsAuditPage)
                     {
-                        @if (SelectedKey == "starter.dashboard.base")
-                        {
-                            <DashboardPage Language="@Language"
-                                           Session="@session"
-                                           SelectedOrganization="@SelectedOrganization" />
-                        }
-                        else
-                        {
-                            <StarterPage Language="@Language"
-                                         Template="@SelectedStarterTemplate"
-                                         Session="@session" />
-                        }
+                        <AuditPage Language="@Language" />
                     }
                     else
                     {

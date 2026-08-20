@@ -61,6 +61,26 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     return value;
                 }
 
+                const provides = new Map();
+
+                export function provide(key, value) {
+                    provides.set(key, value);
+                }
+
+                export function inject(key, fallback) {
+                    return provides.has(key) ? provides.get(key) : fallback;
+                }
+
+                export function ref(value) {
+                    return { value };
+                }
+
+                export function onErrorCaptured(callback) {
+                    // The lightweight host does not run a component scheduler; retaining the
+                    // callback keeps adapter setup/import behavior executable in Deno fixtures.
+                    return () => {};
+                }
+
                 const mounted = [];
                 const updated = [];
                 const unmounted = [];
@@ -213,6 +233,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         var imports = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
             ["System/"] = "./System/",
+            ["Microsoft/"] = "./Microsoft/",
             ["@jazor/vue-runtime/"] = "./@jazor/vue-runtime/",
             ["vue"] = "./node_modules/vue/index.mjs",
         };
@@ -261,8 +282,9 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         string moduleText,
         IReadOnlyDictionary<string, string>? supportingModules)
     {
-        // 只从 JavaScript module AST 收集 System/ import；package.json 等 supporting file 不是 JS 输入。
-        var pendingPaths = new Queue<string>(GetSystemImportPaths(moduleText));
+        // Collect compiler-owned CLR imports from JavaScript module AST; package.json等
+        // supporting files are not JavaScript inputs.
+        var pendingPaths = new Queue<string>(GetCatalogImportPaths(moduleText));
         if (supportingModules is not null)
         {
             foreach (var supportingModule in supportingModules)
@@ -270,7 +292,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 if (!IsJavaScriptModulePath(supportingModule.Key))
                     continue;
 
-                foreach (var path in GetSystemImportPaths(supportingModule.Value))
+                foreach (var path in GetCatalogImportPaths(supportingModule.Value))
                     pendingPaths.Enqueue(path);
             }
         }
@@ -288,7 +310,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             }
 
             WriteFile(Path.Combine(root, relativePath), content);
-            foreach (var dependency in GetSystemImportPaths(content))
+            foreach (var dependency in GetCatalogImportPaths(content))
                 pendingPaths.Enqueue(dependency);
         }
     }
@@ -311,15 +333,24 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
 
         foreach (var importPath in imports)
         {
-            if (!string.Equals(importPath, "@jazor/vue-runtime/raw-markup.mjs", StringComparison.Ordinal))
+            var resourceName = importPath switch
             {
-                throw new InvalidOperationException(
-                    $"Official RazorVue Deno test host does not know runtime import '{importPath}'.");
-            }
+                "@jazor/vue-runtime/raw-markup.mjs" => "Jazor.RazorVue.Runtime.raw-markup.mjs",
+                "@jazor/vue-runtime/cascading.mjs" => "Jazor.RazorVue.Runtime.cascading.mjs",
+                "@jazor/vue-runtime/blazor-routing.mjs" => "Jazor.RazorVue.Runtime.blazor-routing.mjs",
+                "@jazor/vue-runtime/blazor-components.mjs" => "Jazor.RazorVue.Runtime.blazor-components.mjs",
+                _ => throw new InvalidOperationException(
+                    $"Official RazorVue Deno test host does not know runtime import '{importPath}'.")
+            };
 
+            var content = ReadRazorVueRuntimeResource(resourceName);
             WriteFile(
                 Path.Combine(root, importPath.Replace('/', Path.DirectorySeparatorChar)),
-                ReadRazorVueRuntimeResource("Jazor.RazorVue.Runtime.raw-markup.mjs"));
+                content);
+            // Runtime helpers can import CLR-owned modules directly (for example the
+            // NavigationManager adapter). Materialize those catalog dependencies from the
+            // helper content as well as from generated component modules.
+            MaterializeCatalogDependencies(root, content, supportingModules);
         }
     }
 
@@ -351,11 +382,13 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         => path.EndsWith(".js", StringComparison.OrdinalIgnoreCase) ||
            path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase);
 
-    private static IEnumerable<string> GetSystemImportPaths(string moduleText)
+    private static IEnumerable<string> GetCatalogImportPaths(string moduleText)
         => new Parser().ParseModule(moduleText).Body
             .OfType<ImportDeclaration>()
             .Select(static import => import.Source.Value)
-            .Where(static path => path.StartsWith("System/", StringComparison.Ordinal));
+            .Where(static path =>
+                path.StartsWith("System/", StringComparison.Ordinal) ||
+                path.StartsWith("Microsoft/", StringComparison.Ordinal));
 
     private static IReadOnlyDictionary<string, string> ReadCatalogModules()
     {
@@ -376,7 +409,8 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             var moduleType = module.GetType();
             var relativePath = ReadCatalogProperty(moduleType, module, "RelativePath");
             var content = ReadCatalogProperty(moduleType, module, "Content");
-            if (!relativePath.StartsWith("System/", StringComparison.Ordinal))
+            if (!relativePath.StartsWith("System/", StringComparison.Ordinal) &&
+                !relativePath.StartsWith("Microsoft/", StringComparison.Ordinal))
                 continue;
 
             if (!catalogModules.TryAdd(relativePath, content))

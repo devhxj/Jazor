@@ -33,8 +33,49 @@ RazorVue 的最终管线顺序是：组件发现 -> final Compilation binding ->
 | `JAZORVGA024` | member closure | `#member-closure` | 检查可达成员、constructor activation、lifecycle dispatch 和导出名；按本指南的 Support/Reject 子集调整源码。 |
 | `JAZORVGA025` | `[VueInject]` declaration | `#vue-inject` | 修正 container/implementation contract 和重复声明。 |
 | `JAZORVGA026` | Vue module/import/framing | `#vue-module` | 修正模块路径、导出名、import collision 或 runtime helper contract。 |
+| `JAZORVCA001` | authored `[Inject]`/`@inject` 使用了 `DbContext` | `#browser-services` | 把数据访问移到 typed endpoint；组件继续注入 browser client。 |
+| `JAZORVCA002` | authored `[Inject]`/`@inject` 使用了 server-only ASP.NET/Identity service | `#browser-services` | 把 request/identity 操作移到 server endpoint。 |
+| `JAZORVCA003`-`005` | authored `ParameterView` 的未物化枚举/查找操作 | `#parameter-lifecycle` | 使用声明的 typed `[Parameter]` 属性。 |
+| `JAZORVCA006` | authored `[Inject]` property 不是 writable auto-property | `#browser-services` | 改为普通 `get; set;` 属性。 |
+| `JAZORVCA007` | 已知 Blazor host service 没有 browser adapter | `#browser-services` | 注册 typed browser adapter，或把操作移到 endpoint；页面仍写标准 `[Inject]`。 |
+| `JAZORVCA008` | `[CascadingParameter]` 不是可激活的 writable auto-property | `#cascading-parameters` | 改为普通 `get; set;` 属性；标准 `CascadingValue`/命名级联由 browser adapter 自动处理。 |
+| `JAZORVCA009` | 保留的旧 route-host descriptor（当前生成 route catalog 的 `@page` 不触发） | `#routing` | 正常页面无需注册 route host；若未来使用未覆盖的 host profile，按诊断给出的宿主配置处理。 |
+| `JAZORVCA010` | 保留的标准组件 adapter descriptor（仅未适配形状可能触发） | `#component-adapters` | 已实现组件继续使用标准标签；未适配组件按作者位置给出的 typed adapter/guidance 处理。 |
 
 Razor SDK/Roslyn 的 `RZ****`、`CS****` 诊断仍由对应工具报告；RazorVue 不复制这些检查。
+
+<a id="browser-services"></a>
+## Browser Services
+
+页面和组件仍按标准 Blazor 的 `[Inject]` 或 `@inject` 写法请求服务。RazorVue 只会把可在浏览器执行的 client/service adapter 放入组件运行时，不会把数据库上下文或服务器进程能力复制到 bundle。
+
+| ID | 触发形状 | 最小动作 |
+| --- | --- | --- |
+| `JAZORVCA001` | `[Inject]` 或 `@inject` 的服务是 `DbContext` 或其派生类型 | 将数据访问放在 server endpoint，组件注入对应的强类型 browser client。无需改用 Vue、RenderTreeBuilder 或手写 JavaScript。 |
+| `JAZORVCA002` | `[Inject]` 或 `@inject` 的服务是 `HttpContext`/`IHttpContextAccessor`、ASP.NET host environment 或 ASP.NET Identity manager 等 server-only 类型 | 将读取/写入动作移到 server endpoint，组件只注入强类型 browser client；不要把 request、response 或 server identity manager 当作浏览器服务。 |
+| `JAZORVCA006` | `[Inject]` 属性不是可写 auto-property（readonly、`init`、custom setter 或 static） | 改为普通的 `get; set;` 属性；服务由宿主 provider 注册，页面不需要写 `provide`/`inject` 或 Vue glue。 |
+| `JAZORVCA007` | `IComponentActivator`、circuit/protected-storage 等已知 Blazor host service 没有 browser adapter | 注册 typed browser adapter，或将服务调用封装到 server endpoint；不要在页面中自行调用 Vue provide/inject。 |
+
+浏览器可执行服务的 `[Inject]`/`@inject` 属性会在 component 初始化和生命周期回调前自动解析。provider key、生命周期和缺失 provider 错误由宿主 adapter 负责；页面作者继续使用标准 Blazor 注入语法。当前 adapter 的服务入口是属性注入，参数化 constructor activation 仍按 `JAZORVGA024` 明确拒绝。
+
+这些规则只检查作者的 `.razor`、`.razor.cs` 和普通 C# component source；它们不分析 Razor SG 生成的 C#，因此不会复制 `JAZORVGA020`-`026` 的 final Compilation 诊断。其他服务在尚未能够静态证明其 browser contract 前不产生猜测性 warning；最终 lowering 失败仍由既有、唯一的 final diagnostic 报告。
+
+<a id="cascading-parameters"></a>
+### Cascading 参数
+
+`CascadingValue<T>` 与 `[CascadingParameter]` 已由 browser adapter 物化。页面作者继续使用标准 Blazor 写法，支持按类型或 `Name` 匹配、嵌套 provider 的最近值覆盖、显式 `null`、无 provider 时保留属性默认值，以及 `IsFixed` 对后续更新的语义。provider 更新会先同步级联属性，再运行 `OnParametersSet`/`OnParametersSetAsync`，最后请求渲染；不会只更新 DOM 而跳过生命周期。
+
+`JAZORVCA008` 只针对无法由 adapter 激活的属性形状（readonly、`init`、custom setter 或 static）。改为普通 writable auto-property 即可；不需要写 Vue `provide`/`inject`，也不需要增加 RazorVue 专属参数类型。
+
+<a id="routing"></a>
+### 路由
+
+`@page`、`@layout`、route parameter 和 `[SupplyParameterFromQuery]` 会由 official Razor SG symbols 自动生成稳定 route catalog；`Router`、`RouteView`、`LayoutView`、`NavLink` 和 `NavigationManager` 通过框架 runtime adapter 消费它。页面作者不需要注册 Vue Router、手写 route table 或添加 RazorVue 专属参数。当前实现已覆盖初始匹配、layout composition、query/route prop 映射、pushState 和 popstate；`replaceState`、LocationChanged 订阅、复杂 constraint/fragment/history state 和完整 SSR/hydration 证明仍在 M5 proof 阶段。
+
+<a id="component-adapters"></a>
+### 标准组件适配器
+
+`DynamicComponent`（静态可发现 `Type`）、`ErrorBoundary`、`EditForm` 以及 `InputText`、`InputTextArea`、`InputCheckbox`、`InputNumber`、`InputDate`、`InputSelect` 已由框架 adapter 接入；作者保持标准 Blazor 标签和 `Value`/`ValueChanged` binding。当前 forms adapter 还没有宣称完整 `EditContext`/validation、enum/date culture、InputBase 派生类、InputFile 或 server validation 等价性；这些形状会继续由明确 guidance/final diagnostic 处理，不会落成运行时 `undefined`。普通应用组件不会因名字相似而被扫描规则误报。
 
 <a id="component-logic"></a>
 ## Component C# Logic
@@ -50,7 +91,7 @@ Razor SDK/Roslyn 的 `RZ****`、`CS****` 诊断仍由对应工具报告；RazorV
 | 普通方法中的 local、赋值、条件、`for`/`foreach`/`while`/`do while`、非标签 `break`/`continue`、return、switch expression | **Support with compiler constraints** | 这些是 component logic，不受 direct-render 的 straight-line loop 限制。每个表达式、类型和 member 仍需可由 `Jazor.Compiler` 降低；官方运行时回归覆盖了 `@code` handler 中的 `foreach`、`break`、`continue`、helper 调用和 switch expression。 |
 | `goto`、无法投影的 labeled branch | **Reject** | 当前 compiler 没有跨 imperative/render fragment 边界的稳定目标协议；改为显式条件、返回或拆分 helper。普通 loop `break`/`continue` 不属于此行。 |
 | `async` handler、`Task`/`ValueTask` lifecycle、`EventCallback` | **Support with constraints** | 仅使用已有 CLR/host mapping；不要把任意 .NET task/service API 当作浏览器运行时 API。`EventCallback` 的 listener await 语义与 Razor SG 绑定形状一起覆盖。 |
-| `SetParametersAsync` override | **Reject (`JAZORVGA024`)** | Vue 参数协议只映射 `OnParametersSet`/`OnParametersSetAsync`。将 props reaction 移到后两者，不能依赖 Blazor 的 `ParameterView` entry point。 |
+| `SetParametersAsync(ParameterView)` override | **Compatibility Adapter (In proof)** | 保持标准 Blazor 写法。RazorVue 为该入口建立 per-instance ParameterView snapshot，按 source parameter name 应用 sparse overlay，再按 Blazor 顺序调用 `OnInitialized*`/`OnParametersSet*`；异步更新串行排队。未支持的 `ParameterView` API 会在作者源码处给出兼容性诊断。 |
 | 源码基类声明的 lifecycle/dispose entry point，或间接 lifecycle override | **Support with CLR dispatch constraints** | 当前组件及其源码基类属于同一 member closure；按真实 virtual/interface dispatch 选择最派生实现，再在 Vue setup/unmount 中执行。外部已编译基类仍不进入源码 closure。 |
 | static field、static auto-property、可达 static helper/accessor | **Support with module lifetime** | static storage、helper 和可达 nested runtime class 在 artifact module 作用域只初始化一次，不进入每个 setup 的 `reactive` state。不要把它们当作组件实例隔离状态。 |
 | 嵌套 non-record runtime class | **Support with constraints** | 可达的创建和成员会进入闭包。实例可能被 Vue deep Proxy 包装，因此 private storage 会降为 `$jazor$private$...` ordinary property；不要在作者代码中依赖该实现名。 |
@@ -99,9 +140,10 @@ Razor SDK/Roslyn 的 `RZ****`、`CS****` 诊断仍由对应工具报告；RazorV
 
 同一逻辑若写进包围标记的 `@for` 或手写 `BuildRenderTree`，就转入 [Direct Render](#direct-render) 约束：普通、绑定到当前 loop 且不跨 open frame 的 `break`/`continue` 可以保留，但其余复杂控制流不能直接照搬。
 
+<a id="parameter-lifecycle"></a>
 ### 生命周期与组件运行时入口
 
-RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，不会因一个普通方法恰好同名就赋予 lifecycle 语义。当前组件和源码基类的可达 hook 会按 CLR 的 virtual/interface dispatch 解析到实际目标；`SetParametersAsync` 仍不映射，因为它要求 `ParameterView` runtime carrier。
+RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，不会因一个普通方法恰好同名就赋予 lifecycle 语义。当前组件和源码基类的可达 hook 会按 CLR 的 virtual/interface dispatch 解析到实际目标。`SetParametersAsync(ParameterView)` 使用 per-instance compatibility adapter；页面作者仍只写标准 Blazor 入口，不需要接触 Vue props 或 generated C#。
 
 | C# 入口 | Vue 映射与约束 |
 | --- | --- |
@@ -116,11 +158,11 @@ RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，不会因�
 | `StateHasChanged` | 仅当前组件 receiver 的调用有 runtime 支持；unmount 后调用会失败。 |
 | `InvokeAsync(Action)` / `InvokeAsync(Func<Task>)` | 仅当前组件 receiver 的窄调用面有支持；unmount 后返回 rejected Promise。 |
 
-### 不是 RazorVue 的 ASP.NET Core 运行时契约
+### 仍有明确环境边界的标准 API
 
-Razor SDK 能编译不等于 RazorVue 能在浏览器执行。`[Inject]`、`[CascadingParameter]`、`NavigationManager`、`IJSRuntime`、认证/授权状态、服务器持久化状态和任意 DI service 目前都不是 RazorVue component logic 的支持承诺；不要因为它们出现在常规 Blazor 示例中就把它们放进可达闭包。它们可能先得到 `CS****`/`RZ****`，也可能在 compiler bridge 的实际使用点失败。
+Razor SDK 能编译不等于每个 ASP.NET Core runtime API 都能在浏览器执行。已注册、可执行的服务可直接使用标准 `[Inject]`/`@inject`；数据库上下文、请求上下文、服务器 host/Identity 服务由 `JAZORVCA001`/`JAZORVCA002` 在作者源码处拒绝，已知但没有 adapter 的 Blazor host service 由 `JAZORVCA007` 说明。`NavigationManager`、`IJSRuntime` 和 `AuthenticationStateProvider` 的属性注入已经有 browser service adapter；标准 cascading、基础 route catalog 和首批标准组件也已接入。复杂 forms/validation、LocationChanged 订阅、SSR/hydration 和其它未证明能力不会静默生成运行时 `undefined`，而由对应 guidance 或 final Compilation 在作者映射位置说明。
 
-需要声明式 Vue 侧注入时使用 [VueInject](#vue-inject) 的已定义 contract，而不是把 Blazor `[Inject]` 当作等价替代。
+`ParameterView` 的标准 `SetParametersAsync(ParameterView)` 入口已经由 compatibility adapter 支持；不要枚举参数、调用 `TryGetValue` 或 `ToDictionary`。这些未物化操作会分别报告 `JAZORVCA003`、`JAZORVCA004`、`JAZORVCA005`，建议改用已声明的 typed parameters。`[VueInject]` 仍是组件库级 contract（见 [VueInject](#vue-inject)），不是页面作者完成普通服务注入的前置知识。
 
 <a id="direct-render"></a>
 ## Direct Render
@@ -226,7 +268,7 @@ union 是 authoring/compile-time contract，运行时按其分支值擦除；保
 - `SemanticWalkerOrdinaryTest` 的 ordinary/labeled `IBranchOperation` 与 `BranchKind` gate；
 - official Razor `for`、`while`、`do while` runtime tests；
 - `RazorSgOfficialNativeUnionParameterAuthoringTests`，验证 native union 参数可由 Razor SG 绑定并进入最终模块；
-- `RazorSourceGeneratorBootstrapPatchTests` 的 mapped diagnostic 和无 partial catalog gate；
+- `BootstrapPatchTests`（文件 `RazorSourceGeneratorBootstrapPatchTests.cs`）的 mapped diagnostic 和无 partial catalog gate；
 - `RazorSgOfficialNestedRuntimeClassClosureRuntimeTests` 的 deep Proxy regression；
 - `MemberClosureBuilderContractTests` 的显式 component/source-base constructor、未映射 runtime entry 拒绝与 mapped diagnostic gate；
 - `RazorSgOfficialRuntimeAuthoringTests.BuildComponent_OfficialRazorCodeBlock_ExecutesComplexComponentLogicOnDenoHost`，验证 `@code` 业务循环与 direct-render 循环边界；

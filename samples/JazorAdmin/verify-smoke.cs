@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
@@ -118,6 +119,8 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var ssoGrantModulePath = RequireModulePath(modulePaths, "JazorAdmin.SsoGrantPage");
     var settingsModulePath = RequireModulePath(modulePaths, "JazorAdmin.SettingsPage");
     var schedulesModulePath = RequireModulePath(modulePaths, "JazorAdmin.SchedulePage");
+    var dashboardModulePath = RequireModulePath(modulePaths, "JazorAdmin.DashboardPage");
+    var auditModulePath = RequireModulePath(modulePaths, "JazorAdmin.AuditPage");
     var iconBarModulePath = RequireModulePath(modulePaths, "JazorAdmin.IconBar");
     var routeTabsModulePath = RequireModulePath(modulePaths, "JazorAdmin.RouteTabs");
     var routeBreadcrumbModulePath = RequireModulePath(modulePaths, "JazorAdmin.RouteBreadcrumb");
@@ -143,6 +146,8 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
         (ssoGrantModulePath, "SSO grant module"),
         (settingsModulePath, "configuration center module"),
         (schedulesModulePath, "task scheduling module"),
+        (dashboardModulePath, "administration dashboard module"),
+        (auditModulePath, "audit log module"),
         (iconBarModulePath, "JazorAdmin IconBar module"),
         (routeTabsModulePath, "JazorAdmin route tabs module"),
         (routeBreadcrumbModulePath, "JazorAdmin route breadcrumb module")
@@ -183,6 +188,8 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var ssoGrantModule = File.ReadAllText(Path.Combine(generatedOutputRoot, ssoGrantModulePath));
     var settingsModule = File.ReadAllText(Path.Combine(generatedOutputRoot, settingsModulePath));
     var schedulesModule = File.ReadAllText(Path.Combine(generatedOutputRoot, schedulesModulePath));
+    var dashboardModule = File.ReadAllText(Path.Combine(generatedOutputRoot, dashboardModulePath));
+    var auditModule = File.ReadAllText(Path.Combine(generatedOutputRoot, auditModulePath));
     var iconBarModule = File.ReadAllText(Path.Combine(generatedOutputRoot, iconBarModulePath));
     var routeTabsModule = File.ReadAllText(Path.Combine(generatedOutputRoot, routeTabsModulePath));
     var routeBreadcrumbModule = File.ReadAllText(Path.Combine(generatedOutputRoot, routeBreadcrumbModulePath));
@@ -267,6 +274,14 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(settingsModule, "UpdateSetting", "configuration center update command");
     AssertContains(schedulesModule, "TriggerSchedule", "task scheduling manual run command");
     AssertContains(schedulesModule, "GetScheduleRuns", "task scheduling history query");
+    AssertContains(dashboardModule, "SignInTrendItems", "audit-backed sign-in trend projection");
+    AssertContains(dashboardModule, "TokenIssuances", "dashboard token issuance KPI");
+    AssertContains(dashboardModule, "data-portal", "dashboard application portal marker");
+    AssertContains(dashboardModule, "PortalApplications", "dashboard portal application data");
+    AssertContains(auditModule, "GetAudit", "audit log query transport");
+    AssertContains(auditModule, "data-audit-filter", "audit filter markers");
+    AssertContains(auditModule, "data-audit-command", "audit filter commands");
+    AssertContains(auditModule, "data-audit-event", "audit row marker");
     foreach (var (relativePath, description) in componentModules)
         AssertContains(manifest, "\"" + relativePath + "\"", description + " manifest entry");
     // The manifest legitimately carries the "jazor.vue" runtime provider id; the retired-SFC
@@ -333,6 +348,57 @@ static string RequireModulePath(IReadOnlyDictionary<string, string> paths, strin
         ? path
         : throw new InvalidOperationException($"Generated manifest did not contain module type '{typeName}'.");
 
+static string ReadHarnessImportMap(string generatedOutputRoot)
+{
+    var path = Path.Combine(generatedOutputRoot, "importmap.json");
+    AssertPathExists(path, "generated JazorAdmin browser import map");
+
+    var importMap = JsonNode.Parse(File.ReadAllText(path))?.AsObject()
+        ?? throw new InvalidOperationException("Generated JazorAdmin browser import map is not a JSON object.");
+    var imports = importMap["imports"]?.AsObject()
+        ?? throw new InvalidOperationException("Generated JazorAdmin browser import map has no imports object.");
+
+    // The sample host serves artifacts under /jazor, while this isolated harness serves the same
+    // copied tree at its document root. Rewrite only URL targets, preserving every emitted specifier.
+    // 示例宿主从 /jazor 提供产物；隔离 harness 将同一份复制产物放在文档根目录，只改 URL
+    // 目标，完整保留 Emit 生成的 specifier 集合和按需依赖闭包。
+    foreach (var import in imports.ToArray())
+    {
+        var target = import.Value?.GetValue<string>()
+            ?? throw new InvalidOperationException("Generated JazorAdmin browser import map contains an empty target for '" + import.Key + "'.");
+        imports[import.Key] = RewriteHarnessArtifactPath(target);
+    }
+
+    return importMap.ToJsonString();
+}
+
+static string ReadHarnessStyleLinks(string generatedOutputRoot)
+{
+    var path = Path.Combine(generatedOutputRoot, "manifest.json");
+    AssertPathExists(path, "generated JazorAdmin browser manifest");
+
+    using var document = JsonDocument.Parse(File.ReadAllText(path));
+    if (!document.RootElement.TryGetProperty("styles", out var styles) || styles.ValueKind != JsonValueKind.Array)
+        return string.Empty;
+
+    return string.Join(
+        Environment.NewLine,
+        styles.EnumerateArray().Select(style =>
+        {
+            var href = style.GetString()
+                ?? throw new InvalidOperationException("Generated JazorAdmin browser manifest contains an empty stylesheet path.");
+            return "<link rel=\"stylesheet\" href=\"" + RewriteHarnessArtifactPath(href) + "\">";
+        }));
+}
+
+static string RewriteHarnessArtifactPath(string path)
+{
+    const string hostedArtifactRoot = "/jazor/";
+    return path.StartsWith(hostedArtifactRoot, StringComparison.Ordinal)
+        ? "/" + path[hostedArtifactRoot.Length..]
+        : path;
+}
+
 static async Task VerifyBrowserSmokeAsync(
     string repoRoot,
     string adminRoot,
@@ -352,16 +418,16 @@ static async Task VerifyBrowserSmokeAsync(
 
     var denoPath = ResolveDenoHostRuntime(repoRoot);
 
-    var vueRuntime = Path.Combine(repoRoot, "src", "ECMAScript.Vue", "dist", "vue.runtime.esm-browser.prod.js");
-    var vueRouterRuntime = Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "dist", "vue-router.esm-browser.prod.js");
-    var tDesignRuntime = Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "dist", "tdesign.mjs");
-    var tDesignStyle = Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "dist", "tdesign.css");
-    AssertPathExists(vueRuntime, "packaged Vue runtime");
-    AssertPathExists(vueRouterRuntime, "packaged Vue Router runtime");
-    AssertPathExists(tDesignRuntime, "packaged TDesign runtime");
-    AssertPathExists(tDesignStyle, "packaged TDesign stylesheet");
+    // Keep the browser harness on the exact materialized dependency closure. A hand-written map
+    // only covered Vue and TDesign, so newly used on-demand libraries such as VuIcons were never
+    // resolvable here even though the production artifact was complete.
+    // 浏览器 harness 必须消费物化产物本身的依赖闭包；手写 map 只覆盖 Vue/TDesign，会遗漏
+    // VuIcons 这类新加入的按需库，导致 harness 与真实产物脱节。
+    var browserImportMap = ReadHarnessImportMap(generatedOutputRoot);
+    var browserStyleLinks = ReadHarnessStyleLinks(generatedOutputRoot);
 
     var harnessRoot = Path.Combine(repoRoot, ".tmp", "sample-smoke", "JazorAdmin", "browser-" + Environment.ProcessId);
+    SweepStaleBrowserHarnessRoots(Path.GetDirectoryName(harnessRoot)!, repoRoot);
     CleanDirectory(harnessRoot, repoRoot);
     Directory.CreateDirectory(harnessRoot);
     try
@@ -374,24 +440,6 @@ static async Task VerifyBrowserSmokeAsync(
         var faviconPath = Path.Combine(adminRoot, "wwwroot", "favicon.ico");
         if (File.Exists(faviconPath))
             File.Copy(faviconPath, Path.Combine(harnessRoot, "favicon.ico"), overwrite: true);
-        var vendorRoot = Path.Combine(harnessRoot, "vendor");
-        Directory.CreateDirectory(vendorRoot);
-        File.Copy(vueRuntime, Path.Combine(vendorRoot, "vue.runtime.esm-browser.prod.js"), overwrite: true);
-        File.Copy(vueRouterRuntime, Path.Combine(vendorRoot, "vue-router.esm-browser.prod.js"), overwrite: true);
-        File.Copy(tDesignRuntime, Path.Combine(vendorRoot, "tdesign-vue-next.bundle.mjs"), overwrite: true);
-        File.Copy(tDesignStyle, Path.Combine(vendorRoot, "tdesign-vue-next.css"), overwrite: true);
-        // TDesign's browser ESM bundle imports this environment shim; Deno remains the smoke host.
-        var nodeRuntimeRoot = Path.Combine(harnessRoot, "node");
-        Directory.CreateDirectory(nodeRuntimeRoot);
-        await File.WriteAllTextAsync(
-            Path.Combine(nodeRuntimeRoot, "process.mjs"),
-            $$"""
-            const process = { env: Object.create(null) };
-            export { process };
-            export default process;
-            """,
-            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-
         var indexPath = Path.Combine(harnessRoot, "index.html");
         await File.WriteAllTextAsync(
             indexPath,
@@ -402,19 +450,9 @@ static async Task VerifyBrowserSmokeAsync(
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <title>JazorAdmin browser smoke</title>
-                <link rel="stylesheet" href="/vendor/tdesign-vue-next.css">
+                {{browserStyleLinks}}
                 <script type="importmap">
-                {
-                  "imports": {
-                    "vue": "/vendor/vue.runtime.esm-browser.prod.js",
-                    "vue-router": "/vendor/vue-router.esm-browser.prod.js",
-                    "tdesign-vue-next": "/vendor/tdesign-vue-next.bundle.mjs",
-                    "style.mjs": "/style.mjs",
-                    "components/": "/components/",
-                    "System/": "/System/",
-                    "@jazor/vue-runtime/": "/@jazor/vue-runtime/"
-                  }
-                }
+                {{browserImportMap}}
                 </script>
               </head>
               <body>
@@ -422,9 +460,17 @@ static async Task VerifyBrowserSmokeAsync(
                 <div id="inject-app"></div>
                 <script>
                   addEventListener("error", (event) => {
+                    // Chromium reports this asynchronous ResizeObserver delivery warning as a
+                    // window error while responsive chart layout settles. It has no exception
+                    // object or application stack and must not mask real browser failures.
+                    const message = event.error?.message ?? event.message ?? "";
+                    if (message === "ResizeObserver loop completed with undelivered notifications." ||
+                        message === "ResizeObserver loop limit exceeded") {
+                      return;
+                    }
                     globalThis.__jazorAdminBrowserSmoke = {
                       ok: false,
-                      message: event.error?.message ?? event.message ?? "Browser module error",
+                      message: message || "Browser module error",
                       stack: event.error?.stack ?? ""
                     };
                   });
@@ -516,6 +562,7 @@ static async Task VerifyBrowserSmokeAsync(
                     value: "25",
                     updatedAt: "2026-08-07T00:00:00Z"
                   }];
+                  const settingsRequests = [];
                   const schedules = [{
                     key: "openid-prune",
                     name: "Prune expired OpenID records",
@@ -528,6 +575,28 @@ static async Task VerifyBrowserSmokeAsync(
                     lastMessage: null
                   }];
                   const scheduleRuns = [];
+                  const auditEvents = [
+                    {
+                      id: "audit-created-application",
+                      occurredAt: "2026-08-19T08:30:00Z",
+                      actorId: "smoke-operator",
+                      actorName: "Smoke operator",
+                      action: "created",
+                      objectType: "sso-application",
+                      objectId: "audit-worker",
+                      summary: "Audit worker"
+                    },
+                    {
+                      id: "audit-issued-token",
+                      occurredAt: "2026-08-18T11:15:00Z",
+                      actorId: "smoke-operator",
+                      actorName: "Smoke operator",
+                      action: "issued",
+                      objectType: "oidc-token",
+                      objectId: "token-smoke",
+                      summary: "Authorization code"
+                    }
+                  ];
                   const json = (data, status = 200) => Promise.resolve(new Response(JSON.stringify(data), {
                     status,
                     headers: { "content-type": "application/json" }
@@ -552,6 +621,11 @@ static async Task VerifyBrowserSmokeAsync(
                           failed: index % 2
                         };
                       });
+                      const recentAudit = Array.from({ length: 7 }, (_, index) => ({
+                        date: new Date(Date.now() - (6 - index) * 86400000).toISOString().slice(0, 10),
+                        signIns: index + 1,
+                        tokenIssuances: index + 2
+                      }));
                       return json({
                         accounts: 12,
                         enabledAccounts: 11,
@@ -565,8 +639,26 @@ static async Task VerifyBrowserSmokeAsync(
                         settings: 8,
                         schedules: 2,
                         enabledSchedules: 2,
-                        recentRuns
+                        recentRuns,
+                        auditEvents: auditEvents.length,
+                        tokenIssuances: 9,
+                        recentAudit,
+                        portalApplications: [{
+                          clientId: "jazoradmin-demo-client",
+                          displayName: "JazorAdmin Operations Demo",
+                          launchUri: "http://127.0.0.1:49735"
+                        }]
                       });
+                    }
+                    if (url.pathname === "/api/audit/" && method === "GET") {
+                      const actor = url.searchParams.get("actor")?.trim().toLowerCase() ?? "";
+                      const objectType = url.searchParams.get("object")?.trim().toLowerCase() ?? "";
+                      const action = url.searchParams.get("action")?.trim().toLowerCase() ?? "";
+                      const values = auditEvents.filter((event) =>
+                        (!actor || event.actorName.toLowerCase().includes(actor) || event.actorId.toLowerCase().includes(actor)) &&
+                        (!objectType || event.objectType.toLowerCase().includes(objectType)) &&
+                        (!action || event.action.toLowerCase().includes(action)));
+                      return json(values);
                     }
                     if (url.pathname === "/api/notifications/") return json([{
                       id: "notification-smoke",
@@ -676,7 +768,10 @@ static async Task VerifyBrowserSmokeAsync(
                       tokens[0].status = "revoked";
                       return Promise.resolve(new Response(null, { status: 204 }));
                     }
-                    if (url.pathname === "/api/settings/" && method === "GET") return json(settings);
+                    if (url.pathname === "/api/settings/" && method === "GET") {
+                      settingsRequests.push({ method, keys: settings.map((item) => item.key) });
+                      return json(settings);
+                    }
                     if (url.pathname === "/api/settings/" && method === "POST") {
                       const setting = {
                         key: body.Key,
@@ -688,6 +783,7 @@ static async Task VerifyBrowserSmokeAsync(
                         updatedAt: "2026-08-07T00:00:00Z"
                       };
                       settings.push(setting);
+                      settingsRequests.push({ method, keys: settings.map((item) => item.key) });
                       return json(setting, 201);
                     }
                     if (url.pathname.startsWith("/api/settings/") && method === "PUT") {
@@ -707,6 +803,7 @@ static async Task VerifyBrowserSmokeAsync(
                     if (url.pathname.startsWith("/api/settings/") && method === "DELETE") {
                       const key = url.pathname.split("/").at(-1);
                       settings.splice(settings.findIndex((item) => item.key === key), 1);
+                      settingsRequests.push({ method, key, keys: settings.map((item) => item.key) });
                       return Promise.resolve(new Response(null, { status: 204 }));
                     }
                     if (url.pathname === "/api/schedules/" && method === "GET") return json(schedules);
@@ -792,24 +889,8 @@ static async Task VerifyBrowserSmokeAsync(
                         errorDescription,
                         returnPathname: location.pathname
                       };
-                    } else if (location.pathname.startsWith("/starter/")) {
-                      const starterPage = document.querySelector("[data-starter-page]");
-                      if (!starterPage) {
-                        throw new Error(`Starter page did not render for ${location.pathname}.`);
-                      }
-                      globalThis.__jazorAdminBrowserSmoke = {
-                        ok: true,
-                        mode: "starter",
-                        pathname: location.pathname,
-                        template: starterPage.getAttribute("data-starter-page") ?? "",
-                        pageTitleText: document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "",
-                        pageText: starterPage.textContent ?? "",
-                        contentElementCount: starterPage.querySelectorAll("article, button, input, select, textarea, table, img, svg, li").length,
-                        documentFitsViewport: document.documentElement.scrollWidth <= innerWidth,
-                        styleRuntimeLoaded: document.querySelector("style#ecmascript-style") !== null
-                      };
                     } else if (location.pathname === "/organizations/structure") {
-                      for (let attempt = 0; attempt < 100 && document.querySelector(".ja-management__loading"); attempt++) {
+                      for (let attempt = 0; attempt < 100 && document.querySelector(".t-loading"); attempt++) {
                         await new Promise((resolve) => setTimeout(resolve, 10));
                       }
                       globalThis.__jazorAdminBrowserSmoke = {
@@ -833,7 +914,7 @@ static async Task VerifyBrowserSmokeAsync(
                         organizationPanelVisible: document.querySelector('[data-management-area="organizations"]') !== null
                       };
                     } else if (location.pathname === "/sso/applications") {
-                      for (let attempt = 0; attempt < 100 && document.querySelector(".ja-management__loading"); attempt++) {
+                      for (let attempt = 0; attempt < 100 && document.querySelector(".t-loading"); attempt++) {
                         await new Promise((resolve) => setTimeout(resolve, 10));
                       }
                       globalThis.__jazorAdminBrowserSmoke = {
@@ -850,7 +931,8 @@ static async Task VerifyBrowserSmokeAsync(
                           if (predicate()) return;
                           await new Promise((resolve) => setTimeout(resolve, 10));
                         }
-                        throw new Error(`Timed out waiting for ${description}.`);
+                        const details = typeof description === "function" ? description() : description;
+                        throw new Error(`Timed out waiting for ${details}.`);
                       };
                       const click = async (selector, description) => {
                         const target = document.querySelector(selector);
@@ -878,9 +960,9 @@ static async Task VerifyBrowserSmokeAsync(
                         await nextTick();
                       };
 
-                      await waitFor(() => document.querySelectorAll(".ja-starter-metric").length === 4, "administration overview");
+                      await waitFor(() => document.querySelectorAll(".ja-metric").length === 4, "administration overview");
                       const dashboardText = document.querySelector('[data-page-region="body"]')?.textContent ?? "";
-                      const metricCount = document.querySelectorAll(".ja-starter-metric").length;
+                      const metricCount = document.querySelectorAll(".ja-metric").length;
                       const iconBarItemCount = document.querySelectorAll("[data-iconbar-key]").length;
                       const iconBarBrandCount = document.querySelectorAll('[data-iconbar-mode="rail"] .ja-iconbar__brand').length;
                       const headerBrandCount = document.querySelectorAll('[data-shell-region="head-menu"] .ja-brand-logo').length;
@@ -943,52 +1025,54 @@ static async Task VerifyBrowserSmokeAsync(
                       await click('[data-notification-command="toggle"]', "notification bell close");
                       const notificationPanelClosed = document.querySelector('[data-notifications-panel]') === null;
 
-                      await click('[data-iconbar-key="organizations"]', "organizations IconBar item");
+                      // Zones own the IconBar tier; module pages are reached through the scoped
+                      // secondary menu. Clicking a zone lands on its first leaf route.
+                      await click('[data-iconbar-key="iam"]', "identity zone IconBar item");
                       await waitForTitle("组织架构");
-                      await waitFor(() => document.querySelector(".ja-management__details") !== null, "organization details");
+                      await waitFor(() => document.querySelector('[data-management-area="organizations"] .ja-form__summary') !== null, "organization details");
                       const organizationPathname = location.pathname;
                       const organizationTitle = document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "";
                       const organizationText = document.querySelector('[data-management-area="organizations"]')?.textContent ?? "";
-                      const childOrganizationCount = document.querySelectorAll(".ja-management__item-list li").length;
+                      const childOrganizationCount = document.querySelectorAll(".ja-item-list li").length;
 
                       await click('[data-nav-key="organizations.members"] a', "members navigation item");
                       await waitForTitle("成员管理");
-                      await waitFor(() => document.querySelectorAll(".ja-management__table tbody tr").length === 1, "member table");
+                      await waitFor(() => document.querySelectorAll('[data-management-area="organizations"] .t-table tbody tr').length === 1, "member table");
                       const membersPathname = location.pathname;
-                      const memberRowText = document.querySelector(".ja-management__table tbody tr")?.textContent ?? "";
-                      await click(".ja-management__text-button", "member role editor command");
-                      const memberRoleEditorVisible = document.querySelector(".ja-management__role-editor") !== null;
+                      const memberRowText = document.querySelector('[data-management-area="organizations"] .t-table tbody tr')?.textContent ?? "";
+                      await click('[data-organization-command="edit-roles"]', "member role editor command");
+                      const memberRoleEditorVisible = document.querySelector('[data-organization-command="save-roles"]') !== null;
 
-                      await click('[data-iconbar-key="authorization"]', "authorization IconBar item");
+                      await click('[data-nav-key="authorization.roles"] a', "role grants navigation item");
                       await waitForTitle("角色与授权");
-                      await waitFor(() => document.querySelector(".ja-management__grant-list") !== null, "role grants");
+                      await waitFor(() => document.querySelector('[data-management-area="authorization"] .ja-option-list') !== null, "role grants");
                       const accessPathname = location.pathname;
-                      const roleCount = document.querySelectorAll(".ja-management__role-list li").length;
-                      const grantCount = document.querySelectorAll(".ja-management__grant-list .ja-management__check").length;
+                      const roleCount = document.querySelectorAll(".ja-role-list li").length;
+                      const grantCount = document.querySelectorAll('[data-management-area="authorization"] .ja-option-list .ja-form__option').length;
 
                       await click('[data-nav-key="authorization.resources"] a', "resource operations navigation item");
                       await waitForTitle("资源操作");
-                      await waitFor(() => document.querySelectorAll(".ja-management__table tbody tr").length === 4, "resource operation table");
+                      await waitFor(() => document.querySelectorAll('[data-management-area="authorization"] .t-table tbody tr').length === 4, "resource operation table");
                       const resourcesPathname = location.pathname;
-                      const resourceOperationCount = document.querySelectorAll(".ja-management__table tbody tr").length;
+                      const resourceOperationCount = document.querySelectorAll('[data-management-area="authorization"] .t-table tbody tr').length;
                       const resourceText = document.querySelector('[data-management-area="authorization"]')?.textContent ?? "";
 
-                      await click('[data-iconbar-key="accounts"]', "accounts IconBar item");
+                      await click('[data-nav-key="accounts"] a', "accounts navigation item");
                       await waitForTitle("账户管理");
-                      await waitFor(() => document.querySelectorAll('[data-management-area="accounts"] .ja-management__table tbody tr').length === 1, "account table");
+                      await waitFor(() => document.querySelectorAll('[data-management-area="accounts"] .t-table tbody tr').length === 1, "account table");
                       const accountsPathname = location.pathname;
-                      const accountRowText = document.querySelector('[data-management-area="accounts"] .ja-management__table tbody tr')?.textContent ?? "";
+                      const accountRowText = document.querySelector('[data-management-area="accounts"] .t-table tbody tr')?.textContent ?? "";
 
-                      await click('[data-iconbar-key="sso"]', "SSO IconBar item");
+                      await click('[data-nav-key="sso.applications"] a', "OpenIddict application navigation item");
                       await waitForTitle("OpenID 应用");
-                      await waitFor(() => document.querySelectorAll('[data-sso-view="applications"] .ja-management__table tbody tr').length === 1, "OpenIddict application table");
+                      await waitFor(() => document.querySelectorAll('[data-sso-view="applications"] .t-table tbody tr').length === 1, "OpenIddict application table");
                       const applicationsPathname = location.pathname;
-                      const applicationRowText = document.querySelector('[data-sso-view="applications"] .ja-management__table tbody tr')?.textContent ?? "";
+                      const applicationRowText = document.querySelector('[data-sso-view="applications"] .t-table tbody tr')?.textContent ?? "";
 
                       await click('[data-sso-command="new-application"]', "new OpenIddict application command");
-                      await click('.ja-management__profiles button:nth-child(2)', "machine application profile");
-                      await setInput('.ja-management__field-grid label:nth-child(1) input', "audit-worker");
-                      await setInput('.ja-management__field-grid label:nth-child(2) input', "Audit worker");
+                      await click('[data-sso-profile="machine"] label', "machine application profile");
+                      await setInput('[data-app-field="clientId"] input', "audit-worker");
+                      await setInput('[data-app-field="displayName"] input', "Audit worker");
                       await click('[data-sso-command="save-application"]', "save machine application command");
                       await waitFor(() => document.querySelector('[data-sso-application="audit-worker"]') !== null, "machine application row");
                       await waitFor(() => document.querySelector('[data-issued-secret] code')?.textContent?.includes("machine-secret-smoke") === true, "machine client secret");
@@ -997,19 +1081,19 @@ static async Task VerifyBrowserSmokeAsync(
                       await click('[data-sso-command="new-application"]', "new API application command");
                       // The profiles group only re-renders after the reset click flushes; wait for it
                       // explicitly instead of assuming the single click-helper tick is enough.
-                      await waitFor(() => document.querySelector('.ja-management__profiles') !== null, "API application profile group");
-                      await click('.ja-management__profiles button:nth-child(3)', "API application profile");
-                      await setInput('.ja-management__field-grid label:nth-child(1) input', "audit-api");
-                      await setInput('.ja-management__field-grid label:nth-child(2) input', "Audit API");
+                      await waitFor(() => document.querySelector('[data-sso-profile="api"]') !== null, "API application profile group");
+                      await click('[data-sso-profile="api"] label', "API application profile");
+                      await setInput('[data-app-field="clientId"] input', "audit-api");
+                      await setInput('[data-app-field="displayName"] input', "Audit API");
                       await click('[data-sso-command="save-application"]', "save API application command");
                       await waitFor(() => document.querySelector('[data-sso-application="audit-api"]') !== null, "API application row");
-                      const applicationCount = document.querySelectorAll('[data-sso-view="applications"] .ja-management__table tbody tr').length;
+                      const applicationCount = document.querySelectorAll('[data-sso-view="applications"] .t-table tbody tr').length;
 
                       await click('[data-nav-key="sso.scopes"] a', "OpenIddict scope navigation item");
                       await waitForTitle("OpenID Scope");
-                      await waitFor(() => document.querySelectorAll('[data-sso-view="scopes"] .ja-management__table tbody tr').length === 1, "OpenIddict scope table");
+                      await waitFor(() => document.querySelectorAll('[data-sso-view="scopes"] .t-table tbody tr').length === 1, "OpenIddict scope table");
                       const scopesPathname = location.pathname;
-                      await setInput('.ja-management__form > label:nth-child(2) input', "JazorAdmin API audited");
+                      await setInput('[data-scope-field="displayName"] input', "JazorAdmin API audited");
                       await click('[data-sso-command="save-scope"]', "save OpenIddict scope command");
                       await waitFor(() => document.querySelector('[data-sso-scope="jazoradmin_api"]')?.textContent?.includes("audited") === true, "updated OpenIddict scope row");
                       const scopeRowText = document.querySelector('[data-sso-scope="jazoradmin_api"]')?.textContent ?? "";
@@ -1018,53 +1102,107 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitForTitle("授权记录");
                       await waitFor(() => document.querySelector('[data-sso-view="authorizations"] [data-sso-authorization]') !== null, "OpenIddict authorization table");
                       const authorizationsPathname = location.pathname;
-                      await click('[data-sso-view="authorizations"] .ja-management__text-button', "revoke authorization command");
-                      await waitFor(() => document.querySelector('[data-sso-authorization]')?.textContent?.includes("revoked") === true, "revoked OpenIddict authorization");
-                      const authorizationRowText = document.querySelector('[data-sso-authorization]')?.textContent ?? "";
+                      await click('[data-sso-view="authorizations"] [data-sso-command="revoke-authorization"]', "revoke authorization command");
+                      // The data anchor identifies the first cell; status renders in a sibling
+                      // TDesign column, so assert the row rather than the anchor text itself.
+                      await waitFor(() => document.querySelector('[data-sso-authorization]')?.closest("tr")?.textContent?.includes("revoked") === true, "revoked OpenIddict authorization");
+                      const authorizationRowText = document.querySelector('[data-sso-authorization]')?.closest("tr")?.textContent ?? "";
 
                       await click('[data-nav-key="sso.tokens"] a', "OpenIddict token navigation item");
                       await waitForTitle("令牌");
                       await waitFor(() => document.querySelector('[data-sso-view="tokens"] [data-sso-token]') !== null, "OpenIddict token table");
                       const tokensPathname = location.pathname;
-                      await click('[data-sso-view="tokens"] .ja-management__text-button', "revoke token command");
-                      await waitFor(() => document.querySelector('[data-sso-token]')?.textContent?.includes("revoked") === true, "revoked OpenIddict token");
-                      const tokenRowText = document.querySelector('[data-sso-token]')?.textContent ?? "";
+                      await click('[data-sso-view="tokens"] [data-sso-command="revoke-token"]', "revoke token command");
+                      await waitFor(() => document.querySelector('[data-sso-token]')?.closest("tr")?.textContent?.includes("revoked") === true, "revoked OpenIddict token");
+                      const tokenRowText = document.querySelector('[data-sso-token]')?.closest("tr")?.textContent ?? "";
 
-                      await click('[data-iconbar-key="settings"]', "configuration center IconBar item");
+                      await click('[data-iconbar-key="operations"]', "platform operations zone IconBar item");
                       await waitForTitle("配置中心");
                       await waitFor(() => document.querySelector('[data-management-area="settings"]') !== null, "configuration center");
                       const settingsPathname = location.pathname;
                       await click('[data-settings-command="new"]', "new setting command");
-                      await setInput('[data-management-area="settings"] .ja-management__field-grid label:nth-child(1) input', "feature.smoke.enabled");
-                      await setInput('[data-management-area="settings"] .ja-management__field-grid label:nth-child(2) input', "feature");
-                      await setInput('[data-management-area="settings"] .ja-management__field-grid label:nth-child(3) input', "Smoke feature");
-                      await setTextArea('[data-management-area="settings"] textarea', "enabled");
+                      await setInput('[data-management-area="settings"] [data-setting-field="key"] input', "feature.smoke.enabled");
+                      await setInput('[data-management-area="settings"] [data-setting-field="group"] input', "feature");
+                      await setInput('[data-management-area="settings"] [data-setting-field="label"] input', "Smoke feature");
+                      await setTextArea('[data-management-area="settings"] [data-setting-field="value"] textarea', "enabled");
                       await click('[data-settings-command="save"]', "save setting command");
                       await waitFor(() => document.querySelector('[data-setting-key="feature.smoke.enabled"]') !== null, "created setting row");
                       const settingRowText = document.querySelector('[data-setting-key="feature.smoke.enabled"]')?.textContent ?? "";
 
-                      await click('[data-iconbar-key="schedules"]', "task scheduling IconBar item");
+                      // M2 empty-state acceptance: delete every setting (two-step confirm) and
+                      // wait for the TDesign empty state on the settings panel.
+                      for (let round = 0; round < 8; round++) {
+                        const settingRows = document.querySelectorAll('[data-management-area="settings"] [data-setting-key]');
+                        if (settingRows.length === 0) break;
+                        // TDesign may render fixed action columns in a sibling table, so the
+                        // selection editor is the stable source of the row being removed.
+                        const selectedKeyInput = document.querySelector('[data-management-area="settings"] [data-setting-field="key"] input');
+                        const settingKey = selectedKeyInput instanceof HTMLInputElement ? selectedKeyInput.value : "";
+                        if (!settingKey)
+                          throw new Error("Settings table did not select a row for deletion.");
+                        const deleteCommand = document.querySelector('[data-management-area="settings"] [data-settings-command="delete"]');
+                        if (!(deleteCommand instanceof HTMLElement)) throw new Error("Missing setting delete command.");
+                        const initialDeleteText = deleteCommand.textContent;
+                        await click('[data-management-area="settings"] [data-settings-command="delete"]', "arm setting delete");
+                        await waitFor(
+                          () => document.querySelector('[data-management-area="settings"] [data-settings-command="delete"]')?.textContent !== initialDeleteText,
+                          "setting delete confirmation");
+                        await click('[data-management-area="settings"] [data-settings-command="delete"]', "confirm setting delete");
+                        await waitFor(
+                          () => document.querySelector('[data-management-area="settings"] [data-setting-key="' + settingKey + '"]') === null,
+                          "settings row removed");
+                      }
+                      // This action exists only in the TEmpty branch. Do not couple the sample
+                      // contract to a third-party internal CSS class.
+                      await waitFor(
+                        () => document.querySelector('[data-management-area="settings"] [data-settings-command="new-empty"]') !== null,
+                        () => {
+                          const area = document.querySelector('[data-management-area="settings"]');
+                          return "settings empty state. State=" + JSON.stringify({
+                            editCount: area?.querySelectorAll('[data-settings-command="edit"]').length ?? -1,
+                            deleteCount: area?.querySelectorAll('[data-settings-command="delete"]').length ?? -1,
+                            emptyCount: area?.querySelectorAll('.t-empty').length ?? -1,
+                            loadingCount: area?.querySelectorAll('.t-loading').length ?? -1,
+                            requests: settingsRequests,
+                            text: area?.textContent?.replace(/\s+/g, " ").trim() ?? ""
+                          });
+                        });
+                      const settingsEmptyVisible = document.querySelector('[data-management-area="settings"] [data-settings-command="new-empty"]') !== null;
+
+                      await click('[data-nav-key="schedules"] a', "task scheduling navigation item");
                       await waitForTitle("任务调度");
                       await waitFor(() => document.querySelector('[data-management-area="schedules"]') !== null, "task scheduling center");
+                      await waitFor(() => document.querySelector('[data-management-area="schedules"] [data-schedule-key]') !== null, "scheduled task table");
+                      await waitFor(
+                        () => document.querySelector('[data-management-area="schedules"] [data-schedule-field="cron"] input')?.value.length > 0,
+                        "selected scheduled task");
                       const schedulesPathname = location.pathname;
                       await click('[data-schedule-command="run"]', "manual schedule run command");
-                      await waitFor(() => document.querySelector('[data-schedule-run]')?.textContent?.includes("succeeded") === true, "manual schedule execution");
-                      const scheduleRunText = document.querySelector('[data-schedule-run]')?.textContent ?? "";
+                      // The anchor belongs to the Started column; status is rendered in a
+                      // sibling TDesign column, so assert the entire execution row.
+                      await waitFor(() => document.querySelector('[data-schedule-run]')?.closest("tr")?.textContent?.includes("succeeded") === true, "manual schedule execution");
+                      const scheduleRunText = document.querySelector('[data-schedule-run]')?.closest("tr")?.textContent ?? "";
 
-                      await click('[data-iconbar-key="starter"]', "TDesign Starter IconBar item");
-                      await waitFor(() => location.pathname === "/starter/dashboard/base", "TDesign Starter default route");
-                      await waitForTitle("概览");
-                      const starterNavigationPathname = location.pathname;
-                      const starterNavigationTitle = document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "";
-                      const starterNavigationSelectedKey = document.querySelector('[data-navigation-selected-key]')?.getAttribute("data-navigation-selected-key") ?? "";
-                      const starterNavigationGroups = Array.from(document.querySelectorAll('[data-nav-key]'))
-                        .map((item) => item.getAttribute("data-nav-key") ?? "")
-                        .filter((key) => key.startsWith("starter."));
-                      for (const groupKey of ["starter.dashboard", "starter.list", "starter.form", "starter.detail", "starter.result", "starter.account"]) {
-                        if (!starterNavigationGroups.includes(groupKey)) {
-                          throw new Error(`Starter menu group is not visible after IconBar navigation: ${groupKey}.`);
-                        }
-                      }
+                      await click('[data-nav-key="audit"] a', "audit log navigation item");
+                      await waitForTitle("审计日志");
+                      await waitFor(
+                        () => document.querySelectorAll('[data-management-area="audit"] [data-audit-event]').length === 2,
+                        "audit event table");
+                      const auditPathname = location.pathname;
+                      const auditInitialCount = document.querySelectorAll('[data-management-area="audit"] [data-audit-event]').length;
+                      await setInput('[data-audit-filter="object"] input', "sso-application");
+                      await setInput('[data-audit-filter="action"] input', "created");
+                      await click('[data-audit-command="apply"]', "apply audit filters");
+                      await waitFor(
+                        () => document.querySelectorAll('[data-management-area="audit"] [data-audit-event]').length === 1,
+                        "filtered audit event table");
+                      const auditFilteredCount = document.querySelectorAll('[data-management-area="audit"] [data-audit-event]').length;
+                      const auditFilteredRowText = document.querySelector('[data-management-area="audit"] .t-table tbody tr')?.textContent ?? "";
+                      await click('[data-audit-command="clear"]', "clear audit filters");
+                      await waitFor(
+                        () => document.querySelectorAll('[data-management-area="audit"] [data-audit-event]').length === 2,
+                        "cleared audit event filters");
+                      const auditClearedCount = document.querySelectorAll('[data-management-area="audit"] [data-audit-event]').length;
 
                       await click('[data-iconbar-key="dashboard"]', "dashboard IconBar item");
                       await waitForTitle("工作台");
@@ -1112,12 +1250,14 @@ static async Task VerifyBrowserSmokeAsync(
                         tokenRowText,
                         settingsPathname,
                         settingRowText,
+                        settingsEmptyVisible,
                         schedulesPathname,
                         scheduleRunText,
-                        starterNavigationPathname,
-                        starterNavigationTitle,
-                        starterNavigationSelectedKey,
-                        starterNavigationGroups,
+                        auditPathname,
+                        auditInitialCount,
+                        auditFilteredCount,
+                        auditFilteredRowText,
+                        auditClearedCount,
                         dashboardReturnPathname,
                         searchResultKeys,
                         searchSelectedTitle,
@@ -1176,7 +1316,7 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("pageTitleText").GetString() ?? string.Empty, "工作台", "JazorAdmin browser dashboard title", root.GetRawText());
         AssertContains(root.GetProperty("dashboardText").GetString() ?? string.Empty, "组织访问", "JazorAdmin browser administration overview", root.GetRawText());
         AssertJsonInt(root, "metricCount", 4, "JazorAdmin administration metric count", root.GetRawText());
-        AssertJsonInt(root, "iconBarItemCount", 8, "JazorAdmin IconBar item count", root.GetRawText());
+        AssertJsonInt(root, "iconBarItemCount", 3, "JazorAdmin IconBar zone count", root.GetRawText());
         AssertJsonInt(root, "iconBarBrandCount", 1, "JazorAdmin IconBar single brand mark", root.GetRawText());
         AssertJsonInt(root, "headerBrandCount", 0, "JazorAdmin mixed layout header duplicate brand", root.GetRawText());
         foreach (var action in new[] { "文档", "助手", "账号", "退出登录" })
@@ -1226,21 +1366,22 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("tokenRowText").GetString() ?? string.Empty, "revoked", "JazorAdmin OpenIddict token revocation", root.GetRawText());
         AssertContains(root.GetProperty("settingsPathname").GetString() ?? string.Empty, "/settings", "JazorAdmin configuration center navigation", root.GetRawText());
         AssertContains(root.GetProperty("settingRowText").GetString() ?? string.Empty, "Smoke feature", "JazorAdmin configuration center create", root.GetRawText());
+        AssertJsonBoolean(root, "settingsEmptyVisible", true, "JazorAdmin configuration center empty state", root.GetRawText());
         AssertContains(root.GetProperty("schedulesPathname").GetString() ?? string.Empty, "/schedules", "JazorAdmin task scheduling navigation", root.GetRawText());
         AssertContains(root.GetProperty("scheduleRunText").GetString() ?? string.Empty, "succeeded", "JazorAdmin task scheduling manual run", root.GetRawText());
-        AssertContains(root.GetProperty("starterNavigationPathname").GetString() ?? string.Empty, "/starter/dashboard/base", "JazorAdmin Starter IconBar navigation", root.GetRawText());
-        AssertContains(root.GetProperty("starterNavigationTitle").GetString() ?? string.Empty, "概览", "JazorAdmin Starter default page title", root.GetRawText());
-        AssertContains(root.GetProperty("starterNavigationSelectedKey").GetString() ?? string.Empty, "starter.dashboard.base", "JazorAdmin Starter selected navigation key", root.GetRawText());
-        foreach (var groupKey in new[] { "starter.dashboard", "starter.list", "starter.form", "starter.detail", "starter.result", "starter.account" })
-            AssertJsonStringArrayContains(root, "starterNavigationGroups", groupKey, "JazorAdmin Starter visible menu group", root.GetRawText());
+        AssertContains(root.GetProperty("auditPathname").GetString() ?? string.Empty, "/audit", "JazorAdmin audit navigation", root.GetRawText());
+        AssertJsonInt(root, "auditInitialCount", 2, "JazorAdmin initial audit event count", root.GetRawText());
+        AssertJsonInt(root, "auditFilteredCount", 1, "JazorAdmin filtered audit event count", root.GetRawText());
+        AssertContains(root.GetProperty("auditFilteredRowText").GetString() ?? string.Empty, "sso-application", "JazorAdmin filtered audit object", root.GetRawText());
+        AssertContains(root.GetProperty("auditFilteredRowText").GetString() ?? string.Empty, "created", "JazorAdmin filtered audit action", root.GetRawText());
+        AssertJsonInt(root, "auditClearedCount", 2, "JazorAdmin cleared audit event count", root.GetRawText());
         AssertContains(root.GetProperty("dashboardReturnPathname").GetString() ?? string.Empty, "/", "JazorAdmin dashboard IconBar return", root.GetRawText());
         if (root.GetProperty("hasLegacyVueReference").GetBoolean())
             throw new InvalidOperationException("JazorAdmin browser smoke found a legacy .vue script reference.");
 
-        AssertStarterPageMatrix(root.GetProperty("starterPages"));
-        var starterEnglish = root.GetProperty("starterEnglish");
-        AssertContains(starterEnglish.GetProperty("value").GetString() ?? string.Empty, "en-US", "JazorAdmin Starter English language selection", starterEnglish.GetRawText());
-        AssertContains(starterEnglish.GetProperty("title").GetString() ?? string.Empty, "Base List", "JazorAdmin Starter localized title", starterEnglish.GetRawText());
+        var englishLanguage = root.GetProperty("englishLanguage");
+        AssertContains(englishLanguage.GetProperty("value").GetString() ?? string.Empty, "en-US", "JazorAdmin English language selection", englishLanguage.GetRawText());
+        AssertContains(englishLanguage.GetProperty("title").GetString() ?? string.Empty, "Accounts", "JazorAdmin English localized title", englishLanguage.GetRawText());
 
         var routeTabs = root.GetProperty("routeTabs");
         AssertJsonStringArrayContains(routeTabs, "before", "/", "JazorAdmin permanent home tab", routeTabs.GetRawText());
@@ -1322,14 +1463,7 @@ static async Task VerifyBrowserSmokeAsync(
     }
     finally
     {
-        try
-        {
-            if (Directory.Exists(harnessRoot))
-                Directory.Delete(harnessRoot, recursive: true);
-        }
-        catch
-        {
-        }
+        await TryDeleteHarnessRootAsync(harnessRoot);
     }
 }
 
@@ -1343,8 +1477,9 @@ static string BuildBrowserSmokeTestScript(string browserPath)
         async function run() {
           const server = await startServer(root);
           const browser = await startBrowser(browserPath);
+          let page = null;
           try {
-            const page = await connectToPage(browser.port);
+            page = await connectToPage(browser.port);
             try {
               await page.send("Page.enable");
               await page.send("Runtime.enable");
@@ -1361,48 +1496,13 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               result.desktopLayout = await page.readLayout();
               await page.navigate(`http://127.0.0.1:${server.port}/organizations/structure`);
               const deepLink = await page.waitForSmoke();
-              const starterRoutes = [
-                { path: "/starter/dashboard/base", template: "dashboard-base" },
-                { path: "/starter/dashboard/detail", template: "dashboard-detail" },
-                { path: "/starter/list/base", template: "list-base" },
-                { path: "/starter/list/card", template: "list-card" },
-                { path: "/starter/list/filter", template: "list-filter" },
-                { path: "/starter/list/tree", template: "list-tree" },
-                { path: "/starter/form/base", template: "form-base" },
-                { path: "/starter/form/step", template: "form-step" },
-                { path: "/starter/detail/base", template: "detail-base" },
-                { path: "/starter/detail/advanced", template: "detail-advanced" },
-                { path: "/starter/detail/deploy", template: "detail-deploy" },
-                { path: "/starter/detail/secondary", template: "detail-secondary" },
-                { path: "/starter/result/success", template: "result-success" },
-                { path: "/starter/result/fail", template: "result-fail" },
-                { path: "/starter/result/network-error", template: "result-network" },
-                { path: "/starter/result/403", template: "result-403" },
-                { path: "/starter/result/404", template: "result-404" },
-                { path: "/starter/result/500", template: "result-500" },
-                { path: "/starter/result/browser-incompatible", template: "result-browser" },
-                { path: "/starter/result/maintenance", template: "result-maintenance" },
-                { path: "/starter/user", template: "user" },
-                { path: "/starter/login", template: "login" }
-              ];
-              const starterPages = [];
-              for (const route of starterRoutes) {
-                await page.navigate(`http://127.0.0.1:${server.port}${route.path}`);
-                const starter = await page.waitForSmoke();
-                if (starter.mode !== "starter" || starter.pathname !== route.path || starter.template !== route.template) {
-                  throw new Error(`Starter route mismatch for ${route.path}: ${JSON.stringify(starter)}`);
-                }
-                if (!starter.pageTitleText.trim() || starter.pageText.trim().length < 12 || starter.contentElementCount === 0) {
-                  throw new Error(`Starter route rendered insufficient content for ${route.path}.`);
-                }
-                if (!starter.documentFitsViewport || !starter.styleRuntimeLoaded) {
-                  throw new Error(`Starter route layout/runtime check failed for ${route.path}.`);
-                }
-                starterPages.push({ path: route.path, template: route.template, title: starter.pageTitleText.trim() });
-              }
-              await page.navigate(`http://127.0.0.1:${server.port}/starter/list/base`);
-              await page.waitForSmoke();
-              const starterEnglish = await page.evaluate(`(async () => {
+              // Language switching is verified on a real module page: the header dropdown must
+              // relocalize navigation and breadcrumbs without a reload.
+              await page.navigate(`http://127.0.0.1:${server.port}/accounts`);
+              // Self-contained probe: waitForSmoke() would run the full app flow, which expects
+              // the dashboard metrics that do not exist on this page. Language state is not
+              // persisted, so the following full-page navigation resets the UI back to Chinese.
+              const englishLanguage = await page.evaluate(`(async () => {
                 const waitFor = async (predicate, message) => {
                   for (let attempt = 0; attempt < 100; attempt++) {
                     if (predicate()) return;
@@ -1410,6 +1510,9 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                   }
                   throw new Error(message);
                 };
+                await waitFor(
+                  () => document.querySelector('[data-preference="language"]') instanceof HTMLElement,
+                  "language menu trigger");
                 const trigger = document.querySelector('[data-preference="language"]');
                 if (!(trigger instanceof HTMLElement)) throw new Error("Language menu trigger is missing.");
                 trigger.click();
@@ -1421,7 +1524,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 if (!(english instanceof HTMLElement)) throw new Error("English language item is missing.");
                 english.click();
                 await waitFor(
-                  () => document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent?.includes("Base List") === true,
+                  () => document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent?.includes("Accounts") === true,
                   "English localized title");
                 return {
                   value: document.querySelector('.ja-application')?.getAttribute('lang') ?? "",
@@ -1441,9 +1544,9 @@ static string BuildBrowserSmokeTestScript(string browserPath)
                 const paths = () => Array.from(document.querySelectorAll('[data-route-tab-label]'))
                   .map((tab) => tab.getAttribute('data-route-tab-label'));
                 if (!document.querySelector('[data-route-tabs]')) throw new Error("Route tabs are missing.");
-                const organizations = document.querySelector('[data-iconbar-key="organizations"]');
-                if (!(organizations instanceof HTMLElement)) throw new Error("Organizations IconBar item is missing.");
-                organizations.click();
+                const identityZone = document.querySelector('[data-iconbar-key="iam"]');
+                if (!(identityZone instanceof HTMLElement)) throw new Error("Identity zone IconBar item is missing.");
+                identityZone.click();
                 await waitFor(() => location.pathname === "/organizations/structure", "organization route navigation");
                 const membersNavigation = document.querySelector('[data-nav-key="organizations.members"] a');
                 if (!(membersNavigation instanceof HTMLElement)) throw new Error("Members navigation item is missing.");
@@ -1518,8 +1621,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               await page.navigate(`http://127.0.0.1:${server.port}/missing/admin/page`);
               const notFound = await page.waitForSmoke();
               result.deepLink = deepLink;
-              result.starterPages = starterPages;
-              result.starterEnglish = starterEnglish;
+              result.englishLanguage = englishLanguage;
               result.internalError = internalError;
               result.notFound = notFound;
               result.diagnostics = page.diagnostics;
@@ -1530,7 +1632,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               throw new Error(`${message} Browser: ${JSON.stringify(page.diagnostics)} Server: ${JSON.stringify(server.diagnostics)}`);
             }
           } finally {
-            await browser.dispose();
+            await browser.dispose(page);
             await server.dispose();
           }
         }
@@ -1602,6 +1704,27 @@ static string BuildBrowserSmokeTestScript(string browserPath)
           return dot <= 0 ? "" : fileName.slice(dot);
         }
 
+        async function killBrowserProcessTree(process) {
+          // SIGKILL only terminates the root browser process; on Windows the Chromium
+          // child processes (crashpad handler, storage service, renderers, ...) can
+          // survive as orphans and keep profile file locks. / 只杀浏览器主进程会留下
+          // 持有 profile 文件锁的孤儿子进程，必须整树终止。
+          if (Deno.build.os === "windows") {
+            const killer = new Deno.Command("taskkill", {
+              args: ["/PID", String(process.pid), "/T", "/F"],
+              stdin: "null",
+              stdout: "null",
+              stderr: "null"
+            }).spawn();
+            await killer.status;
+            return;
+          }
+          try {
+            process.kill("SIGKILL");
+          } catch {
+          }
+        }
+
         async function startBrowser(browserPath) {
           const port = await reservePort();
           const userDataDir = `${Deno.cwd()}/.browser-profile`;
@@ -1637,9 +1760,19 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               if (response.ok) {
                 return {
                   port,
-                  dispose: async () => {
+                  dispose: async (page) => {
+                    if (!exited && page) {
+                      // Graceful CDP close lets Chromium stop its own child processes
+                      // (the crashpad handler holds profile file locks); tree-kill is
+                      // only the fallback. / 优雅关闭让 Chromium 自行收尾子进程，
+                      // 失败或超时再整树强杀，避免孤儿进程锁住 profile 目录。
+                      try {
+                        await Promise.race([page.send("Browser.close"), delay(2000)]);
+                      } catch {
+                      }
+                    }
                     if (!exited) {
-                      process.kill("SIGKILL");
+                      await killBrowserProcessTree(process);
                     }
                     await exitPromise;
                   }
@@ -1651,7 +1784,7 @@ static string BuildBrowserSmokeTestScript(string browserPath)
           }
 
           if (!exited) {
-            process.kill("SIGKILL");
+            await killBrowserProcessTree(process);
             await exitPromise;
           }
           throw new Error("Timed out waiting for browser CDP.");
@@ -1912,6 +2045,58 @@ static void CleanDirectory(string path, string repoRoot)
         Directory.Delete(fullPath, recursive: true);
 }
 
+// Stale browser-<pid> harness roots embed the dead run's PID, so no later run reclaims
+// them after an abnormal exit (zombie browser processes locking the profile, or a
+// swallowed delete failure); sweep them at startup. Locked ones usually belong to a
+// concurrent run or lingering browser processes and are skipped with a note.
+// 旧运行残留的 browser-<pid> 目录内嵌已退出运行的 PID，异常退出后不会再有人清理；
+// 启动时清扫一遍，仍被占用的目录（并发运行或残留浏览器进程）跳过并提示。
+static void SweepStaleBrowserHarnessRoots(string parent, string repoRoot)
+{
+    if (!Directory.Exists(parent))
+        return;
+
+    foreach (var directory in Directory.GetDirectories(parent, "browser-*"))
+    {
+        try
+        {
+            CleanDirectory(directory, repoRoot);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            Console.WriteLine("JazorAdmin browser smoke skipped a locked stale harness directory: " + directory + " (" + error.Message + ")");
+        }
+    }
+}
+
+// Profile handles are released asynchronously after the browser tree dies, so an
+// immediate delete can fail transiently; retry briefly and warn loudly instead of
+// silently leaking a 100+ MB harness directory.
+// 浏览器进程树终止后文件句柄异步释放，立即删除可能瞬时失败；重试几次，仍失败时
+// 明确告警而不是静默残留上百 MB 的 harness 目录。
+static async Task TryDeleteHarnessRootAsync(string harnessRoot)
+{
+    const int maxAttempts = 5;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            if (Directory.Exists(harnessRoot))
+                Directory.Delete(harnessRoot, recursive: true);
+            return;
+        }
+        catch (IOException) when (attempt < maxAttempts)
+        {
+            await Task.Delay(500);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            Console.WriteLine("JazorAdmin browser smoke could not remove the browser harness directory: " + harnessRoot + " (" + error.Message + ")");
+            return;
+        }
+    }
+}
+
 static void RunDotNet(string workdir, IReadOnlyList<string> arguments)
 {
     using var process = StartProcess("dotnet", arguments, workdir);
@@ -2049,51 +2234,6 @@ static void AssertJsonStringArrayContains(JsonElement root, string propertyName,
         throw new InvalidOperationException(
             $"Missing {description}: expected '{expected}'." +
             FormatDetails(details ?? actual.GetRawText()));
-    }
-}
-
-static void AssertStarterPageMatrix(JsonElement pages)
-{
-    var expected = new[]
-    {
-        ("/starter/dashboard/base", "dashboard-base"),
-        ("/starter/dashboard/detail", "dashboard-detail"),
-        ("/starter/list/base", "list-base"),
-        ("/starter/list/card", "list-card"),
-        ("/starter/list/filter", "list-filter"),
-        ("/starter/list/tree", "list-tree"),
-        ("/starter/form/base", "form-base"),
-        ("/starter/form/step", "form-step"),
-        ("/starter/detail/base", "detail-base"),
-        ("/starter/detail/advanced", "detail-advanced"),
-        ("/starter/detail/deploy", "detail-deploy"),
-        ("/starter/detail/secondary", "detail-secondary"),
-        ("/starter/result/success", "result-success"),
-        ("/starter/result/fail", "result-fail"),
-        ("/starter/result/network-error", "result-network"),
-        ("/starter/result/403", "result-403"),
-        ("/starter/result/404", "result-404"),
-        ("/starter/result/500", "result-500"),
-        ("/starter/result/browser-incompatible", "result-browser"),
-        ("/starter/result/maintenance", "result-maintenance"),
-        ("/starter/user", "user"),
-        ("/starter/login", "login")
-    };
-    if (pages.ValueKind != JsonValueKind.Array || pages.GetArrayLength() != expected.Length)
-        throw new InvalidOperationException($"Unexpected Starter page count: expected {expected.Length}." + Environment.NewLine + pages.GetRawText());
-
-    var actual = pages.EnumerateArray().ToDictionary(
-        page => page.GetProperty("path").GetString() ?? string.Empty,
-        page => (Template: page.GetProperty("template").GetString() ?? string.Empty, Title: page.GetProperty("title").GetString() ?? string.Empty),
-        StringComparer.Ordinal);
-    foreach (var (path, template) in expected)
-    {
-        if (!actual.TryGetValue(path, out var page) || page.Template != template || string.IsNullOrWhiteSpace(page.Title))
-        {
-            throw new InvalidOperationException(
-                $"Starter page coverage failed for '{path}': expected template '{template}'." +
-                Environment.NewLine + pages.GetRawText());
-        }
     }
 }
 

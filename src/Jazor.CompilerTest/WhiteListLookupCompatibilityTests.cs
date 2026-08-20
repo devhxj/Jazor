@@ -285,8 +285,8 @@ public sealed class WhiteListLookupCompatibilityTests
     }
 
     [TestMethod]
-    public void WhiteListLookup_ReducedExtensionInvocation_ResolvesStaticExtensionKey()
-    {
+	public void WhiteListLookup_ReducedExtensionInvocation_ResolvesStaticExtensionKey()
+	{
         const string source = """
             namespace LookupTests;
 
@@ -323,11 +323,55 @@ public sealed class WhiteListLookupCompatibilityTests
             out var matchedKey,
             out var matchedValue));
         Assert.AreEqual(staticKey, matchedKey);
-        Assert.AreEqual("measure", matchedValue);
-    }
+		Assert.AreEqual("measure", matchedValue);
+	}
 
-    [TestMethod]
-    public void WhiteListLookup_ReducedExternExtensionInvocation_ResolvesSynthesizedModifierOrder()
+	[TestMethod]
+	public void WhiteListLookup_ReducedExtensionInvocation_PrefersStaticContractOverReducedAlias()
+	{
+		const string source = """
+			namespace LookupTests;
+
+			public static class TextExtensions
+			{
+				public static int Measure(this string value, int offset)
+					=> value.Length + offset;
+			}
+
+			public sealed class Consumer
+			{
+				public int Read(string value)
+					=> value.Measure(2);
+			}
+			""";
+		var compilation = CreateCompilation(source, "WhiteListLookup.ReducedExtensionPrecedence");
+		var syntaxTree = compilation.SyntaxTrees.Single();
+		var model = compilation.GetSemanticModel(syntaxTree);
+		var invocation = syntaxTree.GetRoot()
+			.DescendantNodes()
+			.OfType<InvocationExpressionSyntax>()
+			.Single();
+		var reducedMethod = Assert.IsInstanceOfType<IMethodSymbol>(model.GetSymbolInfo(invocation).Symbol);
+		var extensionDefinition = reducedMethod.ReducedFrom!.OriginalDefinition;
+		var staticKey = extensionDefinition.ToDisplayString(Format.StaticExtensionNameFormat);
+		var reducedKey = reducedMethod.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		var mappings = new Dictionary<string, string>
+		{
+			[staticKey] = "static",
+			[reducedKey] = "reduced"
+		};
+
+		Assert.IsTrue(WhiteListLookup.TryGetValue(
+			mappings,
+			reducedMethod,
+			out var matchedKey,
+			out var matchedValue));
+		Assert.AreEqual(staticKey, matchedKey);
+		Assert.AreEqual("static", matchedValue);
+	}
+
+	[TestMethod]
+	public void WhiteListLookup_ReducedExternExtensionInvocation_ResolvesSynthesizedModifierOrder()
     {
         const string source = """
             namespace LookupTests;

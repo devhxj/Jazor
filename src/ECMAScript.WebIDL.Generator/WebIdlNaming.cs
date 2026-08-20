@@ -92,7 +92,20 @@ internal static class WebIdlNaming
     public static string ToTypeName(string input)
     {
         var typeName = ToPascalCase(input);
-        return typeName == "File" ? "Files" : typeName;
+        if (typeName == "File")
+            return "JazorFile";
+		else if (typeName == "Document")
+			return "JazorDocument";
+		else if (typeName == "Window")
+            return "JazorWindow";
+		else if (typeName == "History")
+			return "JazorHistory";
+		else if (typeName == "Event")
+			return "JazorEvent";
+		else if (typeName == "Location")
+			return "JazorLocation";
+		else
+            return typeName;
     }
 
     public static string ToCamelCase(string input)

@@ -1203,11 +1203,7 @@ public static partial class WikiHomeModule
         if (drawerElement == null)
             return;
 
-        var methodFunction = Reflect.Get(drawerElement, method);
-        if (methodFunction == null)
-            return;
-
-        Reflect.Apply(methodFunction, drawerElement, [slot]);
+        drawerElement.Invoke(method, slot);
     }
 
     // 段落链接复制反馈 / Section link copy feedback
@@ -1934,7 +1930,7 @@ public static partial class WikiHomeModule
 
     private static string ReadElementStringValue(Element element, string propertyName)
     {
-        var value = Reflect.Get(element, propertyName);
+        var value = element.Get(propertyName);
         return value == null ? "" : ECMAScript.Global.StringFn(value);
     }
 
@@ -2037,7 +2033,7 @@ public static partial class WikiHomeModule
         if (ECMAScript.Global.Document.GetElementById(elementId) is not Element fieldElement)
             return;
 
-        if (Reflect.Get(fieldElement, "native") is HTMLElement nativeInput)
+        if (fieldElement.Get("native") is HTMLElement nativeInput)
             nativeInput.Focus();
     }
 

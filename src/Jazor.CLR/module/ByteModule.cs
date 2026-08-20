@@ -48,8 +48,8 @@ public static class ByteModule
 				return false;
 		}
 
-		var parsed = NumberFn(trimmed);
-		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
+		var parsed = NumberValue(trimmed);
+		if (IsNaN(parsed) || Math.FloorFunc(parsed) != parsed)
 			return false;
 		if (parsed < 0 || parsed > 255)
 			return false;
@@ -84,8 +84,8 @@ public static class ByteModule
 				return false;
 		}
 
-		var parsed = NumberFn(trimmed);
-		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
+		var parsed = NumberValue(trimmed);
+		if (IsNaN(parsed) || Math.FloorFunc(parsed) != parsed)
 			return false;
 
 		return parsed < 0 || parsed > 255;
@@ -225,7 +225,7 @@ public static class ByteModule
 	{
 		if (right == 0)
 			throw new Error("DivideByZeroException");
-		var quotient = Math.FloorFn(left / right);
+		var quotient = Math.FloorFunc(left / right);
 		var remainder = left % right;
 		return (quotient, remainder);
 	}

@@ -69,7 +69,7 @@ Run from the repository root unless noted:
 
 - `dotnet restore Jazor.slnx` restores NuGet packages for the solution projects.
 - `dotnet build Jazor.slnx` builds the full solution targeting the current `net11.0` preview SDK.
-- `dotnet run --file scripts/csharp/test-dotnet.cs` builds once and runs the current compiler, CLR, Pinia, Pinia.Testing, VueRoute, Razor SG, and emit suites.
+- `dotnet run --file scripts/csharp/test-dotnet.cs` builds once and runs the current compiler, CLR, Style, Devtools, Vue Data UI, Vu Icons, Pinia, Pinia.Testing, VueRoute, Razor SG, and emit suites.
 - `dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg` runs the focused Razor SG suite.
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj` runs the compiler regression suite.
 - `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj` runs the Razor SG integration suite.

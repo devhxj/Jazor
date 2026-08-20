@@ -137,19 +137,20 @@ internal static class SharedGeneration
         };
 
     /// <summary>读取 Jazor 属性并按 contract 规则返回 Op、成员 key 和附加值。</summary>
-    public static (string Op, string? Member, string? Value) ReadJazorAttribute(AttributeSyntax attr, SemanticModel semanticModel)
+    public static (string Op, string? Member, string? Value, string? ModulePath) ReadJazorAttribute(AttributeSyntax attr, SemanticModel semanticModel)
     {
         var arguments = attr.ArgumentList?.Arguments;
         if (arguments is null || arguments.Value.Count == 0)
-            return (nameof(Op.Compile), null, null);
+            return (nameof(Op.Compile), null, null, null);
 
         if (arguments.Value.Count == 1)
-            return (nameof(Op.Inline), null, ReadString(arguments.Value[0].Expression, semanticModel));
+            return (nameof(Op.Inline), null, ReadString(arguments.Value[0].Expression, semanticModel), null);
 
         return (
             ReadOp(arguments.Value[0].Expression, semanticModel),
             ReadString(arguments.Value[1].Expression, semanticModel),
-            arguments.Value.Count > 2 ? ReadString(arguments.Value[2].Expression, semanticModel) : null);
+            arguments.Value.Count > 2 ? ReadString(arguments.Value[2].Expression, semanticModel) : null,
+            arguments.Value.Count > 3 ? ReadString(arguments.Value[3].Expression, semanticModel) : null);
     }
 
     /// <summary>读取当前声明上的 ECMAScript module 路径。</summary>

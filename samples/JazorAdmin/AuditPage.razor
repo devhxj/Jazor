@@ -1,0 +1,55 @@
+@* Provides the platform operation log with explicit, persistent query filters. *@
+@inherits AppComponentBase
+
+<section class="ja-page" data-management-area="audit" data-audit-view="events">
+    <TLoading Loading="@loading" TextValue="@L("Loading audit events", "正在加载审计日志")">
+        <ContentSlot>
+            @if (error is not null)
+            {
+                <TAlert Theme="@TAlertThemeValue.Error" MessageValue="@error" role="alert" />
+            }
+
+            <section class="ja-panel" aria-labelledby="audit-events-title">
+                <header class="ja-panel__header">
+                    <div>
+                        <h2 id="audit-events-title">@L("Operation audit log", "操作审计日志")</h2>
+                        <p>@L("The latest 200 management and OpenID protocol events", "最近 200 条管理操作与 OpenID 协议事件")</p>
+                    </div>
+                </header>
+
+                <AdminForm LabelAlign="@TFormLabelAlignValue.Top">
+                    <div class="ja-audit__filters">
+                        <TFormItem LabelValue="@L("From (UTC)", "开始时间（UTC）")" Name="from">
+                            <span data-audit-filter="from"><AdminInput Value="@from" Placeholder="2026-08-19T00:00:00Z" OnChange="@(value => from = value)" /></span>
+                        </TFormItem>
+                        <TFormItem LabelValue="@L("To (UTC)", "结束时间（UTC）")" Name="to">
+                            <span data-audit-filter="to"><AdminInput Value="@to" Placeholder="2026-08-19T23:59:59Z" OnChange="@(value => to = value)" /></span>
+                        </TFormItem>
+                        <TFormItem LabelValue="@L("Actor", "操作者")" Name="actor">
+                            <span data-audit-filter="actor"><AdminInput Value="@actor" Clearable="@true" Placeholder="admin@jazor.local" OnChange="@(value => actor = value)" /></span>
+                        </TFormItem>
+                        <TFormItem LabelValue="@L("Object", "对象")" Name="object">
+                            <span data-audit-filter="object"><AdminInput Value="@target" Clearable="@true" Placeholder="sso-application" OnChange="@(value => target = value)" /></span>
+                        </TFormItem>
+                        <TFormItem LabelValue="@L("Action", "操作类型")" Name="action">
+                            <span data-audit-filter="action"><AdminInput Value="@action" Clearable="@true" Placeholder="created / revoked" OnChange="@(value => action = value)" /></span>
+                        </TFormItem>
+                    </div>
+                    <div class="ja-form__commands">
+                        <TButton Theme="@TButtonThemeValue.Primary" data-audit-command="apply" OnClick="@(_ => Load())">@L("Apply filters", "应用筛选")</TButton>
+                        <TButton Variant="@TButtonVariantValue.Text" data-audit-command="clear" OnClick="@(_ => Clear())">@L("Clear", "清空")</TButton>
+                    </div>
+                </AdminForm>
+
+                @if (events.Length == 0)
+                {
+                    <TEmpty TitleValue="@L("No audit events match the current filters.", "当前筛选条件下没有审计日志。")" />
+                }
+                else
+                {
+                    <AdminAuditTable Data="@events" Columns="@Columns" RowKey="Id" />
+                }
+            </section>
+        </ContentSlot>
+    </TLoading>
+</section>

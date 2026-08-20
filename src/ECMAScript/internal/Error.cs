@@ -1,8 +1,4 @@
-﻿using System.Reflection;
-
-using System.Collections.Generic;
-
-namespace ECMAScript;
+﻿namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#")]
@@ -13,8 +9,8 @@ namespace ECMAScript;
 public sealed class ErrorOptions
 {
 	/// <summary>
-/// Gets or sets the optional value exposed on the created JavaScript error as <c>cause</c>.
-/// 获取或设置创建出的 JavaScript 错误以 <c>cause</c> 公开的可选值。
+	/// Gets or sets the optional value exposed on the created JavaScript error as <c>cause</c>.
+	/// 获取或设置创建出的 JavaScript 错误以 <c>cause</c> 公开的可选值。
 	/// </summary>
 	[Description("@#cause")]
 	public object? Cause { get; set; }
@@ -35,64 +31,64 @@ public sealed class ErrorOptions
 public class Error : System.Exception
 {
 	/// <summary>
-/// Gets the JavaScript <c>Error.prototype</c> object.
-/// This stays on the constructor host so the mapped surface remains recognizable from JavaScript.
-/// 获取 JavaScript <c>Error.prototype</c> 对象；保留在构造器宿主上使映射表面与 JavaScript 保持对应。
+	/// Gets the JavaScript <c>Error.prototype</c> object.
+	/// This stays on the constructor host so the mapped surface remains recognizable from JavaScript.
+	/// 获取 JavaScript <c>Error.prototype</c> 对象；保留在构造器宿主上使映射表面与 JavaScript 保持对应。
 	/// </summary>
 	[Description("@#prototype")]
 	public extern static Error Prototype { get; }
 
 	/// <summary>
-/// Returns whether the supplied value is a JavaScript error object.
-/// This mirrors JavaScript <c>Error.isError</c> and checks runtime error branding rather than CLR inheritance.
-/// 判断给定值是否为 JavaScript 错误对象；映射 <c>Error.isError</c>，检查运行时品牌而非 CLR 继承关系。
+	/// Returns whether the supplied value is a JavaScript error object.
+	/// This mirrors JavaScript <c>Error.isError</c> and checks runtime error branding rather than CLR inheritance.
+	/// 判断给定值是否为 JavaScript 错误对象；映射 <c>Error.isError</c>，检查运行时品牌而非 CLR 继承关系。
 	/// </summary>
 	[Description("@#isError")]
 	public extern static bool IsError(object? arg);
 
 	/// <summary>
-/// Gets the error message exposed by JavaScript <c>Error.prototype.message</c>.
-/// This stays as a mapped host member so reads observe the runtime error object rather than CLR exception text synthesis.
-/// 获取 JavaScript <c>Error.prototype.message</c> 公开的错误消息；读取的是运行时错误对象而非 CLR 合成的异常文本。
+	/// Gets the error message exposed by JavaScript <c>Error.prototype.message</c>.
+	/// This stays as a mapped host member so reads observe the runtime error object rather than CLR exception text synthesis.
+	/// 获取 JavaScript <c>Error.prototype.message</c> 公开的错误消息；读取的是运行时错误对象而非 CLR 合成的异常文本。
 	/// </summary>
 	[Description("@#message")]
 	public new extern string? Message { get; }
 
 	/// <summary>
-/// Gets JavaScript <c>Error.prototype.name</c>.
-/// This remains runtime-backed instead of hard-coded so custom error instances can still expose overridden names.
-/// 获取 JavaScript <c>Error.prototype.name</c>；保持运行时取值，令自定义错误实例仍可公开重写后的名称。
+	/// Gets JavaScript <c>Error.prototype.name</c>.
+	/// This remains runtime-backed instead of hard-coded so custom error instances can still expose overridden names.
+	/// 获取 JavaScript <c>Error.prototype.name</c>；保持运行时取值，令自定义错误实例仍可公开重写后的名称。
 	/// </summary>
 	[Description("@#name")]
 	public extern virtual string Name { get; }
 
 	/// <summary>
-/// Gets the optional value that caused this error.
-/// JavaScript permits any value, not only another <see cref="Error"/>.
-/// 获取导致此错误的可选值；JavaScript 允许任意值，而不限于另一个 <see cref="Error"/>。
+	/// Gets the optional value that caused this error.
+	/// JavaScript permits any value, not only another <see cref="Error"/>.
+	/// 获取导致此错误的可选值；JavaScript 允许任意值，而不限于另一个 <see cref="Error"/>。
 	/// </summary>
 	[Description("@#cause")]
 	public extern object? Cause { get; }
 
 	/// <summary>
-/// Gets JavaScript stack text when the runtime provides it.
-/// Stack formatting and availability are runtime-dependent rather than an ECMAScript language guarantee.
-/// 获取运行时提供的 JavaScript 堆栈文本；堆栈格式和可用性由运行时决定，并非 ECMAScript 语言保证。
+	/// Gets JavaScript stack text when the runtime provides it.
+	/// Stack formatting and availability are runtime-dependent rather than an ECMAScript language guarantee.
+	/// 获取运行时提供的 JavaScript 堆栈文本；堆栈格式和可用性由运行时决定，并非 ECMAScript 语言保证。
 	/// </summary>
 	[Description("@#stack")]
 	public extern string? Stack { get; }
 
 	/// <summary>
-/// Creates a JavaScript error without an explicit message.
-/// This overload exists because JavaScript allows <c>new Error()</c>.
-/// 创建不带显式消息的 JavaScript 错误；此重载对应 JavaScript 的 <c>new Error()</c>。
+	/// Creates a JavaScript error without an explicit message.
+	/// This overload exists because JavaScript allows <c>new Error()</c>.
+	/// 创建不带显式消息的 JavaScript 错误；此重载对应 JavaScript 的 <c>new Error()</c>。
 	/// </summary>
 	public extern Error();
 
 	/// <summary>
-/// Creates a JavaScript error with options but without an explicit message.
-/// This keeps the C# host surface aligned with JavaScript's optional-message constructor shape.
-/// 创建带 options 而不带显式消息的 JavaScript 错误，使 C# 宿主表面与 JavaScript 的可选消息构造形式保持一致。
+	/// Creates a JavaScript error with options but without an explicit message.
+	/// This keeps the C# host surface aligned with JavaScript's optional-message constructor shape.
+	/// 创建带 options 而不带显式消息的 JavaScript 错误，使 C# 宿主表面与 JavaScript 的可选消息构造形式保持一致。
 	/// </summary>
 	public extern Error(ErrorOptions? options);
 
@@ -322,31 +318,31 @@ public class AggregateError : Error
 	public extern override string Name { get; }
 
 	/// <summary>
-/// Gets JavaScript <c>AggregateError.prototype.errors</c> array.
-/// Values are preserved as arbitrary JavaScript values and are not coerced to <see cref="Error"/>.
-/// 获取 JavaScript <c>AggregateError.prototype.errors</c> 数组；值保留为任意 JavaScript 值，不会强制转换为 <see cref="Error"/>。
+	/// Gets JavaScript <c>AggregateError.prototype.errors</c> array.
+	/// Values are preserved as arbitrary JavaScript values and are not coerced to <see cref="Error"/>.
+	/// 获取 JavaScript <c>AggregateError.prototype.errors</c> 数组；值保留为任意 JavaScript 值，不会强制转换为 <see cref="Error"/>。
 	/// </summary>
 	[Description("@#errors")]
 	public extern Array<object?> Errors { get; }
 
 	/// <summary>
-/// Creates an <c>AggregateError</c> from a JavaScript iterable of error values.
-/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for arrays, lists, and read-only list families that map to JavaScript iterables.
-/// 从 JavaScript 错误值 iterable 创建 <c>AggregateError</c>；<see cref="IEnumerable{T}"/> 用作数组、列表和只读列表等映射为 JavaScript iterable 的通用 C# 输入表面。
+	/// Creates an <c>AggregateError</c> from a JavaScript iterable of error values.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for arrays, lists, and read-only list families that map to JavaScript iterables.
+	/// 从 JavaScript 错误值 iterable 创建 <c>AggregateError</c>；<see cref="IEnumerable{T}"/> 用作数组、列表和只读列表等映射为 JavaScript iterable 的通用 C# 输入表面。
 	/// </summary>
 	public extern AggregateError(IEnumerable<object?> errors, string? message = null);
 
 	/// <summary>
-/// Creates an <c>AggregateError</c> from a JavaScript iterable of error values with options but without an explicit message.
-/// This overload exists because JavaScript treats the message as optional.
-/// 从 JavaScript 错误值 iterable 创建带 options 而不带显式消息的 <c>AggregateError</c>；JavaScript 将消息视为可选项。
+	/// Creates an <c>AggregateError</c> from a JavaScript iterable of error values with options but without an explicit message.
+	/// This overload exists because JavaScript treats the message as optional.
+	/// 从 JavaScript 错误值 iterable 创建带 options 而不带显式消息的 <c>AggregateError</c>；JavaScript 将消息视为可选项。
 	/// </summary>
 	public extern AggregateError(IEnumerable<object?> errors, ErrorOptions? options);
 
 	/// <summary>
-/// Creates an <c>AggregateError</c> from a JavaScript iterable of error values with a message and options.
-/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for arrays, lists, and read-only list families that map to JavaScript iterables.
-/// 从 JavaScript 错误值 iterable 创建带消息和 options 的 <c>AggregateError</c>；<see cref="IEnumerable{T}"/> 用作映射为 JavaScript iterable 的通用 C# 输入表面。
+	/// Creates an <c>AggregateError</c> from a JavaScript iterable of error values with a message and options.
+	/// <see cref="IEnumerable{T}"/> is used as the common C# input surface for arrays, lists, and read-only list families that map to JavaScript iterables.
+	/// 从 JavaScript 错误值 iterable 创建带消息和 options 的 <c>AggregateError</c>；<see cref="IEnumerable{T}"/> 用作映射为 JavaScript iterable 的通用 C# 输入表面。
 	/// </summary>
 	public extern AggregateError(IEnumerable<object?> errors, string? message, ErrorOptions? options);
 }
@@ -372,30 +368,30 @@ public class SuppressedError : Error
 	public extern override string Name { get; }
 
 	/// <summary>
-/// Gets the later error value that replaced the previously active one during disposal.
-/// JavaScript allows any value here, not just <see cref="Error"/>.
-/// 获取释放期间替代先前活动错误的后续错误值；JavaScript 允许任意值，而不限于 <see cref="Error"/>。
+	/// Gets the later error value that replaced the previously active one during disposal.
+	/// JavaScript allows any value here, not just <see cref="Error"/>.
+	/// 获取释放期间替代先前活动错误的后续错误值；JavaScript 允许任意值，而不限于 <see cref="Error"/>。
 	/// </summary>
 	[Description("@#error")]
 	public extern object? Error { get; }
 
 	/// <summary>
-/// Gets the earlier error value that became suppressed by <see cref="Error"/>.
-/// JavaScript allows any value here, not just <see cref="Error"/>.
-/// 获取被后续 <see cref="Error"/> 抑制的较早错误值；JavaScript 允许任意值，而不限于 <see cref="Error"/>。
+	/// Gets the earlier error value that became suppressed by <see cref="Error"/>.
+	/// JavaScript allows any value here, not just <see cref="Error"/>.
+	/// 获取被后续 <see cref="Error"/> 抑制的较早错误值；JavaScript 允许任意值，而不限于 <see cref="Error"/>。
 	/// </summary>
 	[Description("@#suppressed")]
 	public extern object? Suppressed { get; }
 
 	/// <summary>
-/// Creates a JavaScript <c>SuppressedError</c> without an explicit message.
-/// 创建不带显式消息的 JavaScript <c>SuppressedError</c>。
+	/// Creates a JavaScript <c>SuppressedError</c> without an explicit message.
+	/// 创建不带显式消息的 JavaScript <c>SuppressedError</c>。
 	/// </summary>
 	public extern SuppressedError(object? error, object? suppressed);
 
 	/// <summary>
-/// Creates a JavaScript <c>SuppressedError</c> with an explicit message.
-/// 创建带显式消息的 JavaScript <c>SuppressedError</c>。
+	/// Creates a JavaScript <c>SuppressedError</c> with an explicit message.
+	/// 创建带显式消息的 JavaScript <c>SuppressedError</c>。
 	/// </summary>
 	public extern SuppressedError(object? error, object? suppressed, string? message);
 }

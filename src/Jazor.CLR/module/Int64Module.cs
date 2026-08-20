@@ -17,10 +17,10 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "long","BigInt")]
 public static class Int64Module
 {
-	private static BigInt RotateMask => BigIntFn("18446744073709551615");
-	private static BigInt RotateModulus => BigIntFn("18446744073709551616");
-	private static BigInt RotateSignBit => BigIntFn("9223372036854775808");
-	private static BigInt MinValueCore => BigIntFn("-9223372036854775808");
+	private static BigInt RotateMask => BigIntValue("18446744073709551615");
+	private static BigInt RotateModulus => BigIntValue("18446744073709551616");
+	private static BigInt RotateSignBit => BigIntValue("9223372036854775808");
+	private static BigInt MinValueCore => BigIntValue("-9223372036854775808");
 
 	/// <summary>
 	/// C#: long.MaxValue
@@ -110,7 +110,7 @@ public static class Int64Module
 		BigInt result;
 		try
 		{
-			result = BigIntFn(trimmed);
+			result = BigIntValue(trimmed);
 		}
 		catch
 		{
@@ -118,8 +118,8 @@ public static class Int64Module
 		}
 
 		// 仅转换失败属于 FormatException；范围验证必须保留 OverflowException。
-		var minValue = BigIntFn("-9223372036854775808");
-		var maxValue = BigIntFn("9223372036854775807");
+		var minValue = BigIntValue("-9223372036854775808");
+		var maxValue = BigIntValue("9223372036854775807");
 		if (result < minValue || result > maxValue)
 			throw new Error($"OverflowException: Value '{s}' was either too large or too small for an Int64.");
 		return result;
@@ -154,10 +154,10 @@ public static class Int64Module
 		var trimmed = s.Trim();
 		try
 		{
-			var parsed = BigIntFn(trimmed);
+			var parsed = BigIntValue(trimmed);
 			// Check long range
-			var minValue = BigIntFn("-9223372036854775808");
-			var maxValue = BigIntFn("9223372036854775807");
+			var minValue = BigIntValue("-9223372036854775808");
+			var maxValue = BigIntValue("9223372036854775807");
 			if (parsed < minValue || parsed > maxValue)
 				return [false, BigInt.Zero];
 			return [true, parsed];

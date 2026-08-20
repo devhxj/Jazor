@@ -26,7 +26,7 @@ public enum VuetifyJustify
 public sealed record VEmptyStateActionsProps
 {
     [Description("@#onClick")]
-    public Action<Event>? OnClick { get; init; }
+    public Action<JazorEvent>? OnClick { get; init; }
 }
 
 /// <summary>

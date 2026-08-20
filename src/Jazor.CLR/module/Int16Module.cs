@@ -47,8 +47,8 @@ public static class Int16Module
 				return false;
 		}
 
-		var parsed = NumberFn(trimmed);
-		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
+		var parsed = NumberValue(trimmed);
+		if (IsNaN(parsed) || Math.FloorFunc(parsed) != parsed)
 			return false;
 		if (parsed < -32768 || parsed > 32767)
 			return false;
@@ -59,8 +59,8 @@ public static class Int16Module
 
 	private static Number MaxMagnitudeCore(Number x, Number y)
 	{
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX > absY)
 			return x;
 		if (absX < absY)
@@ -71,8 +71,8 @@ public static class Int16Module
 
 	private static Number MinMagnitudeCore(Number x, Number y)
 	{
-		var absX = Math.AbsFn(x);
-		var absY = Math.AbsFn(y);
+		var absX = Math.Absolute(x);
+		var absY = Math.Absolute(y);
 		if (absX < absY)
 			return x;
 		if (absX > absY)
@@ -227,7 +227,7 @@ public static class Int16Module
 			throw new Error("DivideByZeroException");
 		if (left == -32768 && right == -1)
 			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
-		var quotient = Math.TruncFn(left / right);
+		var quotient = Math.Trunc(left / right);
 		var remainder = left - quotient * right;
 		return ((short)quotient, (short)remainder);
 	}

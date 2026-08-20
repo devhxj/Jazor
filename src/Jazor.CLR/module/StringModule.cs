@@ -19,7 +19,7 @@ public static class StringModule
 
 	private static void EnsureNonNegativeWholeNumber(Number value, string parameterName)
 	{
-		if (IsNaN(value) || Math.FloorFn(value) != value || value < 0)
+		if (IsNaN(value) || Math.FloorFunc(value) != value || value < 0)
 			throw new Error($"ArgumentOutOfRangeException: {parameterName} must be a non-negative whole number.");
 	}
 
@@ -1038,7 +1038,7 @@ public static class StringModule
 	///<summary>Splits a string into substrings based on a specified delimiting character and, optionally, options.</summary>
 	[Jazor(Op.Import ,"string.Split(char, System.StringSplitOptions)")]
 	public static string[] _d8080c573d45b4b4(string instance, Number separator, object options)
-		=> ApplySplitOptions(instance.Split(separator.ToString(), NumberFn(instance.Length + 1)), options);
+		=> ApplySplitOptions(instance.Split(separator.ToString(), NumberValue(instance.Length + 1)), options);
 
 	///<summary>Splits a string into a maximum number of substrings based on a specified delimiting character and, optionally, options.        Splits a string into a maximum number of substrings based on the provided character separator, optionally omitting empty substrings from the result.</summary>
 	[Jazor(Op.Import ,"string.Split(char, int, System.StringSplitOptions)")]
@@ -1339,7 +1339,7 @@ public static class StringModule
 		if (separator == null)
 			return ApplySplitOptions([instance], options);
 
-		return ApplySplitOptions(instance.Split(separator, NumberFn(instance.Length + 1)), options);
+		return ApplySplitOptions(instance.Split(separator, NumberValue(instance.Length + 1)), options);
 	}
 
 	///<summary>Splits a string into a maximum number of substrings based on a specified delimiting string and, optionally, options.</summary>
@@ -1756,7 +1756,7 @@ public static class StringModule
 	public static Number _dbdd57f8d259ce66(string instance, Number value, Number startIndex, Number count)
 	{
 		var target = value.ToString();
-		var end = startIndex >= instance.Length ? NumberFn(instance.Length - 1) : startIndex;
+		var end = startIndex >= instance.Length ? NumberValue(instance.Length - 1) : startIndex;
 		var begin = end - count + 1;
 		if (begin < 0)
 			begin = 0;
@@ -1843,7 +1843,7 @@ public static class StringModule
 	public static Number _c401e64318e768c4(string instance, object anyOf, Number startIndex)
 	{
 		var any = NormalizeCharSet(anyOf);
-		var index = startIndex >= instance.Length ? NumberFn(instance.Length - 1) : startIndex;
+		var index = startIndex >= instance.Length ? NumberValue(instance.Length - 1) : startIndex;
 		for (var i = index; i >= 0; i--)
 		{
 			var current = instance[i].ToString();
@@ -1859,7 +1859,7 @@ public static class StringModule
 	public static Number _3c17fcef5615e7a3(string instance, object anyOf, Number startIndex, Number count)
 	{
 		var any = NormalizeCharSet(anyOf);
-		var end = startIndex >= instance.Length ? NumberFn(instance.Length - 1) : startIndex;
+		var end = startIndex >= instance.Length ? NumberValue(instance.Length - 1) : startIndex;
 		var begin = end - count + 1;
 		if (begin < 0)
 			begin = 0;
@@ -1892,7 +1892,7 @@ public static class StringModule
 	[Jazor(Op.Import ,"string.LastIndexOf(string, int, int)")]
 	public static Number _c4ee024d06ee238c(string instance, string value, Number startIndex, Number count)
 	{
-		var end = startIndex >= instance.Length ? NumberFn(instance.Length - 1) : startIndex;
+		var end = startIndex >= instance.Length ? NumberValue(instance.Length - 1) : startIndex;
 		var begin = end - count + 1;
 		if (begin < 0)
 			begin = 0;

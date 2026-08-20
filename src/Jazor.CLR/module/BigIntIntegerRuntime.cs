@@ -32,7 +32,7 @@ internal static class BigIntIntegerRuntime
 		if (trimmed.Length == 0 || !DecimalIntegerPattern.Test(trimmed))
 			throw new Error($"FormatException: String '{text}' was not recognized as a valid {typeName}.");
 
-		var value = BigIntFn(trimmed);
+		var value = BigIntValue(trimmed);
 		if (value < minValue || value > maxValue)
 			throw new Error($"OverflowException: Value '{text}' was either too large or too small for a {typeName}.");
 
@@ -48,7 +48,7 @@ internal static class BigIntIntegerRuntime
 		if (trimmed.Length == 0 || !DecimalIntegerPattern.Test(trimmed))
 			return [false, BigInt.Zero];
 
-		var value = BigIntFn(trimmed);
+		var value = BigIntValue(trimmed);
 		if (value < minValue || value > maxValue)
 			return [false, BigInt.Zero];
 
@@ -64,14 +64,14 @@ internal static class BigIntIntegerRuntime
 	}
 
 	internal static Number ToCheckedNumber(BigInt value, BigInt minValue, BigInt maxValue)
-		=> NumberFn(EnsureRange(value, minValue, maxValue));
+		=> NumberValue(EnsureRange(value, minValue, maxValue));
 
 	internal static BigInt FromFloatingChecked(Number value, BigInt minValue, BigInt maxValue)
 	{
 		if (!DoubleModule.IsFiniteCore(value))
 			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
 
-		return EnsureRange(BigIntFn(Math.TruncFn(value)), minValue, maxValue);
+		return EnsureRange(BigIntValue(Math.Trunc(value)), minValue, maxValue);
 	}
 
 	internal static BigInt FromFloatingCheckedUInt128(Number value, BigInt maxValue)
@@ -90,7 +90,7 @@ internal static class BigIntIntegerRuntime
 		if (!DoubleModule.IsFiniteCore(value))
 			return value < 0 ? minValue : maxValue;
 
-		var integer = BigIntFn(Math.TruncFn(value));
+		var integer = BigIntValue(Math.Trunc(value));
 		return integer < minValue ? minValue : (integer > maxValue ? maxValue : integer);
 	}
 
@@ -101,7 +101,7 @@ internal static class BigIntIntegerRuntime
 		if (!DoubleModule.IsFiniteCore(value))
 			return maxValue;
 
-		var integer = BigIntFn(Math.TruncFn(value));
+		var integer = BigIntValue(Math.Trunc(value));
 		return integer > maxValue ? maxValue : integer;
 	}
 
@@ -110,7 +110,7 @@ internal static class BigIntIntegerRuntime
 
 	internal static BigInt FromDecimal(string value, BigInt minValue, BigInt maxValue)
 	{
-		var integral = BigIntFn(DecimalModule._be8b149ea0e1d76b(value));
+		var integral = BigIntValue(DecimalModule._be8b149ea0e1d76b(value));
 		return EnsureRange(integral, minValue, maxValue);
 	}
 
@@ -203,7 +203,7 @@ internal static class BigIntIntegerRuntime
 	{
 		var normalized = value & mask;
 		if (normalized == BigInt.Zero)
-			return BigIntFn(bitWidth);
+			return BigIntValue(bitWidth);
 
 		var significantBits = BigInt.Zero;
 		while (normalized > BigInt.Zero)
@@ -212,7 +212,7 @@ internal static class BigIntIntegerRuntime
 			significantBits = significantBits + BigInt.One;
 		}
 
-		return BigIntFn(bitWidth) - significantBits;
+		return BigIntValue(bitWidth) - significantBits;
 	}
 
 	internal static BigInt PopCount(BigInt value, BigInt mask)
@@ -238,11 +238,11 @@ internal static class BigIntIntegerRuntime
 		bool signed)
 	{
 		var amount = NormalizeRotateAmount(rotateAmount, bitWidth);
-		var shift = BigIntFn(amount);
+		var shift = BigIntValue(amount);
 		var normalized = value & mask;
 		if (shift != BigInt.Zero)
 		{
-			var width = BigIntFn(bitWidth);
+			var width = BigIntValue(bitWidth);
 			normalized = ((normalized << shift) | (normalized >> (width - shift))) & mask;
 		}
 
@@ -259,11 +259,11 @@ internal static class BigIntIntegerRuntime
 		bool signed)
 	{
 		var amount = NormalizeRotateAmount(rotateAmount, bitWidth);
-		var shift = BigIntFn(amount);
+		var shift = BigIntValue(amount);
 		var normalized = value & mask;
 		if (shift != BigInt.Zero)
 		{
-			var width = BigIntFn(bitWidth);
+			var width = BigIntValue(bitWidth);
 			normalized = ((normalized >> shift) | (normalized << (width - shift))) & mask;
 		}
 
@@ -274,7 +274,7 @@ internal static class BigIntIntegerRuntime
 	{
 		var normalized = value & mask;
 		if (normalized == BigInt.Zero)
-			return BigIntFn(bitWidth);
+			return BigIntValue(bitWidth);
 
 		var count = BigInt.Zero;
 		while ((normalized & BigInt.One) == BigInt.Zero)
@@ -311,13 +311,13 @@ internal static class BigIntIntegerRuntime
 
 		return value == BigInt.Zero
 			? BigInt.Zero
-			: BigIntFn(value.ToString().Length - 1);
+			: BigIntValue(value.ToString().Length - 1);
 	}
 
 	internal static Array<BigInt> BigMulSigned(BigInt left, BigInt right, Number bitWidth)
 	{
 		var product = left * right;
-		var shift = BigIntFn(bitWidth);
+		var shift = BigIntValue(bitWidth);
 		return [
 			BigInt.AsIntN(bitWidth, product >> shift),
 			BigInt.AsIntN(bitWidth, product)
@@ -327,7 +327,7 @@ internal static class BigIntIntegerRuntime
 	internal static Array<BigInt> BigMulUnsigned(BigInt left, BigInt right, Number bitWidth)
 	{
 		var product = left * right;
-		var shift = BigIntFn(bitWidth);
+		var shift = BigIntValue(bitWidth);
 		return [
 			BigInt.AsUintN(bitWidth, product >> shift),
 			BigInt.AsUintN(bitWidth, product)

@@ -1,5 +1,7 @@
 // Owns the editable projection of one OpenIddict application descriptor.
+using ECMAScript.TDesign;
 using JazorAdmin.Features.Sso;
+using Microsoft.AspNetCore.Components;
 
 namespace JazorAdmin;
 
@@ -36,6 +38,43 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
     private bool IsNew => selectedId is null;
 
     private bool IsConfidential => clientType == "confidential";
+
+    // TDesign 表格列：应用列承载 data-sso-application=ClientId 锚点，浏览器验证用它
+    // 断言新建的 machine/API 应用行与一次性密钥展示。
+    private TPrimaryTableCol<AppView>[] Columns =>
+    [
+        new() { Title = (TPrimaryTableColTitle<AppView>)L("Application", "应用"), Cell = (TPrimaryTableColCell<AppView>)((RenderFragment<TPrimaryTableCellParams<AppView>>)(context => builder =>
+            {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "data-sso-application", context.Row.ClientId);
+        builder.OpenElement(2, "strong");
+        builder.AddContent(3, context.Row.DisplayName);
+        builder.CloseElement();
+        builder.OpenElement(4, "span");
+        builder.AddContent(5, context.Row.ClientId);
+        builder.CloseElement();
+        builder.CloseElement();
+            })) },
+        new() { ColKey = "Profile", Title = (TPrimaryTableColTitle<AppView>)L("Profile", "配置") },
+        new() { ColKey = "ClientType", Title = (TPrimaryTableColTitle<AppView>)L("Client type", "客户端类型") },
+        new() { Title = (TPrimaryTableColTitle<AppView>)L("Actions", "操作"), Cell = (TPrimaryTableColCell<AppView>)((RenderFragment<TPrimaryTableCellParams<AppView>>)(context => builder =>
+            {
+        builder.OpenComponent<TButton>(0);
+        builder.AddComponentParameter(1, nameof(TButton.Variant), TButtonVariantValue.Text);
+        builder.AddComponentParameter(2, nameof(TButton.Size), TSizeEnum.Small);
+        builder.AddComponentParameter(3, nameof(TButton.OnClick),
+            EventCallback.Factory.Create(this, () => Select(context.Row)));
+        builder.AddComponentParameter(4, nameof(TContentComponentBase.ChildContent),
+            (RenderFragment)(child => child.AddContent(0, L("Manage", "管理"))));
+        builder.CloseComponent();
+            })) }
+    ];
+
+    private TTableRowClassNameValue<AppView> SelectedRowClassName
+        => (TTableRowClassNameValueOption2<AppView>)SelectedRowClass;
+
+    private TClassName SelectedRowClass(TRowClassNameParams<AppView> parameters)
+        => parameters.Row.Id == selectedId ? (TClassName)"ja-table-row-selected" : (TClassName)string.Empty;
 
     protected override void OnInitialized() => Load();
 
@@ -139,6 +178,26 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
         clientType = "confidential";
         consentType = "implicit";
         endpointIntrospection = true;
+    }
+
+    // 单选预设入口：仅在新建态由 profile 单选组触发，复用既有预设方法避免双份默认值。
+    private void SelectProfile(string value)
+    {
+        if (selectedId is not null)
+            return;
+
+        switch (value)
+        {
+            case "machine":
+                NewMachine();
+                break;
+            case "api":
+                NewApi();
+                break;
+            default:
+                NewInteractive();
+                break;
+        }
     }
 
     private void Reset(string value)

@@ -1,74 +1,70 @@
 @* Presents Quartz schedule configuration and execution history for registered administration tasks. *@
 @inherits AppComponentBase
 
-<section class="ja-management ja-schedules" data-management-area="schedules">
-    @if (loading)
-    {
-        <p class="ja-management__loading" aria-live="polite">@L("Loading scheduled tasks", "正在加载计划任务")</p>
-    }
-    else
-    {
-        @if (error is not null)
-        {
-            <p class="ja-management__error" role="alert">@error</p>
-        }
+<section class="ja-page" data-management-area="schedules">
+    <TLoading Loading="@loading" TextValue="@L("Loading scheduled tasks", "正在加载计划任务")">
+        <ContentSlot>
+            @if (error is not null)
+            {
+                <TAlert Theme="@TAlertThemeValue.Error" MessageValue="@error" role="alert" />
+            }
 
-        <div class="ja-management__split ja-management__split--editor">
-            <section class="ja-management__panel" aria-labelledby="schedule-list-title">
-                <header class="ja-management__panel-header"><div><h2 id="schedule-list-title">@L("Scheduled tasks", "计划任务")</h2><p>@L("Quartz triggers registered application maintenance tasks", "Quartz 触发器注册的应用维护任务")</p></div></header>
-                <div class="ja-management__table-wrap">
-                    <table class="ja-management__table">
-                        <thead><tr><th>@L("Task", "任务")</th><th>@L("Schedule", "调度表达式")</th><th>@L("Status", "状态")</th><th></th></tr></thead>
-                        <tbody>
-                            @foreach (var schedule in schedules)
+            <div class="ja-page__split">
+                <section class="ja-panel" aria-labelledby="schedule-list-title">
+                    <header class="ja-panel__header"><div><h2 id="schedule-list-title">@L("Scheduled tasks", "计划任务")</h2><p>@L("Quartz triggers registered application maintenance tasks", "Quartz 触发器注册的应用维护任务")</p></div></header>
+                    @if (schedules.Length == 0)
+                    {
+                        <TEmpty TitleValue="@L("No scheduled tasks are registered.", "尚未注册计划任务。")" />
+                    }
+                    else
+                    {
+                        <AdminScheduleTable Data="@schedules"
+                                    Columns="@Columns"
+                                    RowKey="Key"
+                                    RowClassName="@SelectedRowClassName" />
+                    }
+                </section>
+
+                <section class="ja-panel" aria-labelledby="schedule-editor-title">
+                    <header class="ja-panel__header"><div><h2 id="schedule-editor-title">@name</h2><p>@description</p></div></header>
+                    <AdminForm LabelAlign="@TFormLabelAlignValue.Top">
+                        <TFormItem LabelValue="@L("Quartz Cron (UTC)", "Quartz Cron（UTC）")" Name="cron">
+                            <span data-schedule-field="cron"><AdminInput Value="@cron" OnChange="@(value => cron = value)" /></span>
+                        </TFormItem>
+                        <TFormItem Name="enabled">
+                            <AdminToggle Value="@enabled" OnChange="@(value => enabled = value)" />
+                            <span class="ja-form__inline-label">@L("Enable scheduled execution", "启用定时执行")</span>
+                        </TFormItem>
+                        <dl class="ja-form__summary">
+                            <div><dt>@L("Next run", "下次执行")</dt><dd>@(nextRunAt ?? L("Paused", "已暂停"))</dd></div>
+                            <div><dt>@L("Last result", "上次结果")</dt><dd>@(lastStatus ?? L("Not run", "尚未执行"))</dd></div>
+                            @if (lastMessage is not null)
                             {
-                                <tr class="@(schedule.Key == selectedKey ? "is-selected" : string.Empty)" data-schedule-key="@schedule.Key">
-                                    <td><strong>@schedule.Name</strong><span>@schedule.Description</span></td>
-                                    <td><code>@schedule.Cron</code></td>
-                                    <td><span class="@(schedule.Enabled ? "ja-schedules__status is-enabled" : "ja-schedules__status is-disabled")">@(schedule.Enabled ? L("Enabled", "已启用") : L("Paused", "已暂停"))</span></td>
-                                    <td><button type="button" class="ja-management__text-button" @onclick="() => Select(schedule)">@L("Manage", "管理")</button></td>
-                                </tr>
+                                <div><dt>@L("Last message", "上次消息")</dt><dd>@lastMessage</dd></div>
                             }
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section class="ja-management__panel" aria-labelledby="schedule-editor-title">
-                <header class="ja-management__panel-header"><div><h2 id="schedule-editor-title">@name</h2><p>@description</p></div></header>
-                <form class="ja-management__form" @onsubmit="Save" @onsubmit:preventDefault>
-                    <label><span>@L("Quartz Cron (UTC)", "Quartz Cron（UTC）")</span><input required autocomplete="off" @bind="cron" @bind:event="oninput" /></label>
-                    <label class="ja-management__check"><input type="checkbox" @bind="enabled" /><span>@L("Enable scheduled execution", "启用定时执行")</span></label>
-                    <dl class="ja-schedules__summary">
-                        <div><dt>@L("Next run", "下次执行")</dt><dd>@(nextRunAt ?? L("Paused", "已暂停"))</dd></div>
-                        <div><dt>@L("Last result", "上次结果")</dt><dd>@(lastStatus ?? L("Not run", "尚未执行"))</dd></div>
-                        @if (lastMessage is not null)
-                        {
-                            <div><dt>@L("Last message", "上次消息")</dt><dd>@lastMessage</dd></div>
-                        }
-                    </dl>
-                    <div class="ja-management__commands">
-                        <button type="submit" data-schedule-command="save">@L("Save schedule", "保存调度")</button>
-                        <button type="button" class="ja-management__text-button" data-schedule-command="run" @onclick="RunNow">@L("Run now", "立即执行")</button>
-                        <button type="button" class="ja-management__text-button" data-schedule-command="refresh-runs" @onclick="LoadRuns">@L("Refresh history", "刷新历史")</button>
-                    </div>
-                </form>
-            </section>
-        </div>
-
-        <section class="ja-management__panel ja-schedules__runs" aria-labelledby="schedule-runs-title">
-            <header class="ja-management__panel-header"><div><h2 id="schedule-runs-title">@L("Execution history", "执行历史")</h2><p>@L("Most recent 100 runs for the selected task", "所选任务最近 100 次执行")</p></div></header>
-            <div class="ja-management__table-wrap">
-                <table class="ja-management__table">
-                    <thead><tr><th>@L("Started", "开始时间")</th><th>@L("Trigger", "触发方式")</th><th>@L("Status", "状态")</th><th>@L("Message", "消息")</th></tr></thead>
-                    <tbody>
-                        @foreach (var run in runs)
-                        {
-                            <tr data-schedule-run="@run.Id"><td>@run.StartedAt</td><td>@run.Trigger</td><td>@run.Status</td><td>@(run.Message ?? "-")</td></tr>
-                        }
-                    </tbody>
-                </table>
+                        </dl>
+                        <div class="ja-form__commands">
+                            <TButton Theme="@TButtonThemeValue.Primary" data-schedule-command="save" OnClick="@(_ => Save())">@L("Save schedule", "保存调度")</TButton>
+                            <TButton Variant="@TButtonVariantValue.Outline" data-schedule-command="run" OnClick="@(_ => RunNow())">@L("Run now", "立即执行")</TButton>
+                            <TButton Variant="@TButtonVariantValue.Text" data-schedule-command="refresh-runs" OnClick="@(_ => LoadRuns())">@L("Refresh history", "刷新历史")</TButton>
+                        </div>
+                    </AdminForm>
+                </section>
             </div>
-        </section>
-    }
+
+            <section class="ja-panel" aria-labelledby="schedule-runs-title">
+                <header class="ja-panel__header"><div><h2 id="schedule-runs-title">@L("Execution history", "执行历史")</h2><p>@L("Most recent 100 runs for the selected task", "所选任务最近 100 次执行")</p></div></header>
+                @if (runs.Length == 0)
+                {
+                    <TEmpty TitleValue="@L("This task has not run yet.", "该任务尚未执行。")" />
+                }
+                else
+                {
+                    <AdminScheduleRunTable Data="@runs"
+                                Columns="@RunColumns"
+                                RowKey="Id" />
+                }
+            </section>
+        </ContentSlot>
+    </TLoading>
 </section>

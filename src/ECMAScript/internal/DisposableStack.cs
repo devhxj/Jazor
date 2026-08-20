@@ -86,9 +86,9 @@ public sealed class DisposableStack
 public sealed class AsyncDisposableStack
 {
 	/// <summary>
-/// Gets JavaScript <c>AsyncDisposableStack.prototype</c> object.
-/// Keeping this on the constructor host preserves the recognizable JavaScript runtime shape.
-/// 获取 JavaScript <c>AsyncDisposableStack.prototype</c> 对象；保留在构造器宿主上可维持可辨识的 JavaScript 运行时形状。
+	/// Gets JavaScript <c>AsyncDisposableStack.prototype</c> object.
+	/// Keeping this on the constructor host preserves the recognizable JavaScript runtime shape.
+	/// 获取 JavaScript <c>AsyncDisposableStack.prototype</c> 对象；保留在构造器宿主上可维持可辨识的 JavaScript 运行时形状。
 	/// </summary>
 	[Description("@#prototype")]
 	public extern static AsyncDisposableStack Prototype { get; }
@@ -97,79 +97,79 @@ public sealed class AsyncDisposableStack
 	public extern AsyncDisposableStack();
 
 	/// <summary>
-/// Gets whether this stack has already been disposed or moved.
-/// 获取此栈是否已被释放或移动。
+	/// Gets whether this stack has already been disposed or moved.
+	/// 获取此栈是否已被释放或移动。
 	/// </summary>
 	[Description("@#disposed")]
 	public extern bool Disposed { get; }
 
 	/// <summary>
-/// Registers a value whose JavaScript runtime object participates in async disposal and returns that same value.
-/// 向栈注册参与异步释放的 JavaScript 运行时对象值，并返回该值。
+	/// Registers a value whose JavaScript runtime object participates in async disposal and returns that same value.
+	/// 向栈注册参与异步释放的 JavaScript 运行时对象值，并返回该值。
 	/// </summary>
 	[Description("@#use")]
 	public extern T Use<T>(T value);
 
 	/// <summary>
-/// Registers a value together with a synchronous cleanup callback and returns that same value.
-/// JavaScript async disposal also accepts synchronous cleanup functions.
-/// 向栈注册值及同步清理回调并返回该值；JavaScript 异步释放同样接受同步清理函数。
+	/// Registers a value together with a synchronous cleanup callback and returns that same value.
+	/// JavaScript async disposal also accepts synchronous cleanup functions.
+	/// 向栈注册值及同步清理回调并返回该值；JavaScript 异步释放同样接受同步清理函数。
 	/// </summary>
 	[Description("@#adopt")]
 	public extern T Adopt<T>(T value, Action<T> onDisposeAsync);
 
 	/// <summary>
-/// Registers a value together with an asynchronous cleanup callback and returns that same value.
-/// <see cref="IPromise"/> is used as the common host surface for JavaScript promises.
-/// 向栈注册值及异步清理回调并返回该值；<see cref="IPromise"/> 作为 JavaScript Promise 的通用宿主表面。
+	/// Registers a value together with an asynchronous cleanup callback and returns that same value.
+	/// <see cref="IPromise"/> is used as the common host surface for JavaScript promises.
+	/// 向栈注册值及异步清理回调并返回该值；<see cref="IPromise"/> 作为 JavaScript Promise 的通用宿主表面。
 	/// </summary>
 	[Description("@#adopt")]
 	public extern T Adopt<T>(T value, Func<T, IPromise> onDisposeAsync);
 
 	/// <summary>
-/// Registers a value together with an asynchronous cleanup callback and returns that same value.
-/// <see cref="PromiseResult"/> is included for compiler-lowered async methods that do not surface an explicit promise object.
-/// 向栈注册值及异步清理回调并返回该值；<see cref="PromiseResult"/> 用于编译器 lowering 后未公开显式 Promise 对象的异步方法。
+	/// Registers a value together with an asynchronous cleanup callback and returns that same value.
+	/// <see cref="PromiseResult"/> is included for compiler-lowered async methods that do not surface an explicit promise object.
+	/// 向栈注册值及异步清理回调并返回该值；<see cref="PromiseResult"/> 用于编译器 lowering 后未公开显式 Promise 对象的异步方法。
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Description("@#adopt")]
 	public extern T Adopt<T>(T value, Func<T, PromiseResult> onDisposeAsync);
 
 	/// <summary>
-/// Registers a synchronous cleanup callback to run when the stack is asynchronously disposed.
-/// 注册在栈异步释放时执行的同步清理回调。
+	/// Registers a synchronous cleanup callback to run when the stack is asynchronously disposed.
+	/// 注册在栈异步释放时执行的同步清理回调。
 	/// </summary>
 	[Description("@#defer")]
 	public extern void Defer(Action onDisposeAsync);
 
 	/// <summary>
-/// Registers an asynchronous cleanup callback to run when the stack is asynchronously disposed.
-/// 注册在栈异步释放时执行的异步清理回调。
+	/// Registers an asynchronous cleanup callback to run when the stack is asynchronously disposed.
+	/// 注册在栈异步释放时执行的异步清理回调。
 	/// </summary>
 	[Description("@#defer")]
 	public extern void Defer(Func<IPromise> onDisposeAsync);
 
 	/// <summary>
-/// Registers an asynchronous cleanup callback to run when the stack is asynchronously disposed.
-/// <see cref="PromiseResult"/> is included for compiler-lowered async methods that do not surface an explicit promise object.
-/// 注册在栈异步释放时执行的异步清理回调；<see cref="PromiseResult"/> 用于未公开显式 Promise 对象的编译器 lowering 异步方法。
+	/// Registers an asynchronous cleanup callback to run when the stack is asynchronously disposed.
+	/// <see cref="PromiseResult"/> is included for compiler-lowered async methods that do not surface an explicit promise object.
+	/// 注册在栈异步释放时执行的异步清理回调；<see cref="PromiseResult"/> 用于未公开显式 Promise 对象的编译器 lowering 异步方法。
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Description("@#defer")]
 	public extern void Defer(Func<PromiseResult> onDisposeAsync);
 
 	/// <summary>
-/// Transfers all registered resources into a new JavaScript <see cref="AsyncDisposableStack"/>.
-/// The current stack becomes unusable after the move, matching JavaScript runtime semantics.
-/// 将所有已注册资源转移到新的 JavaScript <see cref="AsyncDisposableStack"/>；移动后当前栈不可再用，符合 JavaScript 运行时语义。
+	/// Transfers all registered resources into a new JavaScript <see cref="AsyncDisposableStack"/>.
+	/// The current stack becomes unusable after the move, matching JavaScript runtime semantics.
+	/// 将所有已注册资源转移到新的 JavaScript <see cref="AsyncDisposableStack"/>；移动后当前栈不可再用，符合 JavaScript 运行时语义。
 	/// </summary>
 	[Description("@#move")]
 	public extern AsyncDisposableStack Move();
 
 	/// <summary>
-/// Asynchronously disposes the registered resources in LIFO order.
-/// <see cref="IPromise"/> is used because JavaScript resolves this operation through a promise.
-/// 以后进先出顺序异步释放已注册资源；使用 <see cref="IPromise"/> 是因为 JavaScript 通过 Promise 解析此操作。
+	/// Asynchronously disposes the registered resources in LIFO order.
+	/// <see cref="IPromise"/> is used because JavaScript resolves this operation through a promise.
+	/// 以后进先出顺序异步释放已注册资源；使用 <see cref="IPromise"/> 是因为 JavaScript 通过 Promise 解析此操作。
 	/// </summary>
 	[Description("@#disposeAsync")]
 	public extern IPromise DisposeAsync();

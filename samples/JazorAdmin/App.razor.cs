@@ -92,9 +92,6 @@ public partial class App : ComponentBase, IVueComponent
     private AdminNavItems NavigationItems
         => AdminRouteCatalog.BuildNavigation(LocalizedItems);
 
-    private string SelectedStarterTemplate
-        => StarterCatalog.GetTemplate(SelectedKey);
-
     private AdminRouteDefinition SelectedRoute
         => AdminRouteCatalog.Resolve(LocalizedItems, currentRoute.Path, DashboardKey);
 
@@ -159,7 +156,7 @@ public partial class App : ComponentBase, IVueComponent
 
     private bool IsSchedulesPage => SelectedKey == SchedulesKey;
 
-    private bool IsStarterPage => StarterCatalog.IsStarter(SelectedKey);
+    private bool IsAuditPage => SelectedKey == AuditKey;
 
     private AdminBreadcrumbItem[] SelectedBreadcrumbItems
         => AdminRouteCatalog.BuildBreadcrumbs(LocalizedItems, SelectedKey);

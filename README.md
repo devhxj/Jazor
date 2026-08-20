@@ -87,22 +87,22 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 | `ECMAScript.VuIcons` | Typed `vu-icons` RazorVue icons with static per-icon and dynamic catalog paths |
 | `Jazor.Admin` | UI-library-neutral admin-shell library and RazorVue components |
 
-`samples/JazorAdmin` is an example application that consumes `Jazor.Admin`; it is not part of the library's public contract.
+`samples/JazorAdmin` is the production-grade admin reference application that consumes `Jazor.Admin`; it is not part of the library's public contract.
 
 ## Install
 
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.16.0
+dotnet add package Jazor --version 0.17.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.16.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.16.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.17.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.17.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

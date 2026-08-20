@@ -23,6 +23,7 @@ internal static class VueModuleBuilder
     private const string EventCallbackMetadataName = "Microsoft.AspNetCore.Components.EventCallback";
     private const string EventCallbackOfTMetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
     private const string HmrComponentVariableName = "__jazorComponent";
+    private const string CascadingMissingLocalName = "__jazor$cascade$missing";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
     private static readonly ImmutableHashSet<string> FramingReservedNames =
     new[]
@@ -39,13 +40,19 @@ internal static class VueModuleBuilder
         "renderList",
         "withCtx",
         "createSlots",
+        "mergeProps",
         "onMounted",
         "onUnmounted",
         "onUpdated",
         "reactive",
         "watch",
+        "inject",
+        "unref",
+        CascadingMissingLocalName,
         "props",
         "slots",
+        "attrs",
+        "parameterProps",
         "state",
         "scope",
         "invalidate",
@@ -60,6 +67,11 @@ internal static class VueModuleBuilder
         "parametersSetAsyncTail",
         "runOnParametersSetAsync",
         "parameterWatchSource",
+        "parameterAdapter",
+        "parameterSnapshot",
+        "parameterUpdateTail",
+        "runSetParametersAsync",
+        "initialized",
         HmrComponentVariableName
     }.ToImmutableHashSet(StringComparer.Ordinal);
 
@@ -93,10 +105,12 @@ internal static class VueModuleBuilder
             semanticModel,
             relativePath,
             declaredNames,
+            injectRegistry,
             cancellationToken).ConfigureAwait(false);
         var directRender = BuildOperationDirectRender(
             binding,
             component,
+            closure,
             declaredNames,
             CollectCompilerImportLocalNames(
                 compilerOutput.Module,
@@ -119,10 +133,12 @@ internal static class VueModuleBuilder
                 semanticModel,
                 relativePath,
                 declaredNames,
+                injectRegistry,
                 cancellationToken).ConfigureAwait(false);
             directRender = BuildOperationDirectRender(
                 binding,
                 component,
+                closure,
                 declaredNames,
                 CollectCompilerImportLocalNames(
                     compilerOutput.Module,
@@ -138,6 +154,7 @@ internal static class VueModuleBuilder
             compilerOutput.Module,
             compilerOutput.Layout?.NodePositions,
             compilerOutput.Initialization,
+            compilerOutput.OrdinaryRenderFeatures,
             relativePath,
             declaredNames,
             hmr.ModuleId);
@@ -170,17 +187,22 @@ internal static class VueModuleBuilder
         SemanticModel semanticModel,
         string relativePath,
         IReadOnlyDictionary<ISymbol, string> declaredNames,
+        VueInjectRegistry injectRegistry,
         CancellationToken cancellationToken)
     {
         // Delegate all C# semantics, import discovery, and source origins to AstConverter. This
         // builder only frames its module output into Vue setup/render conventions.
         // C# lowering 绝不能在此手工重建；本层只消费 compiler 的 AST 结果。
+        var ordinaryRenderFeatures = new VueRenderRuntimeFeatures();
         var converter = new AstConverter(
             component.ComponentSymbol,
             semanticModel,
             closure.CreateAstConverterOptions(
                 declaredNames: declaredNames,
-                propertyReferenceRewriter: CreateDirectRenderSlotParameterPropertyReferenceRewriter(closure)));
+                propertyReferenceRewriter: CreateDirectRenderSlotParameterPropertyReferenceRewriter(closure),
+                compilation: binding.Compilation,
+                injectRegistry: injectRegistry,
+                ordinaryRenderFeatures: ordinaryRenderFeatures));
         var module = await converter.Convert(cancellationToken).ConfigureAwait(false);
         module = AppendFlattenedRuntimeClasses(module, converter, component, closure, cancellationToken);
         var initialization = ComponentInitializationLowerer.Build(
@@ -197,7 +219,7 @@ internal static class VueModuleBuilder
                 includeSourcesContent: false,
                 sourceRootPath: TryGetCompilationSourceRoot(binding.Compilation, component.Document),
                 readSourceContent: null);
-        return new CompilerOutput(module, layout, initialization);
+        return new CompilerOutput(module, layout, initialization, ordinaryRenderFeatures);
     }
 
     private static Module? AppendFlattenedRuntimeClasses(
@@ -297,6 +319,7 @@ internal static class VueModuleBuilder
     private static DirectRenderBuildResult BuildOperationDirectRender(
         GeneratedCSharpBinding binding,
         BoundComponent component,
+        MemberClosure closure,
         IReadOnlyDictionary<ISymbol, string> declaredNames,
         IEnumerable<string> reservedImportNames,
         VueInjectRegistry injectRegistry)
@@ -304,6 +327,7 @@ internal static class VueModuleBuilder
         if (TryBuildOperationDirectRender(
                 binding,
                 component,
+                closure,
                 declaredNames,
                 reservedImportNames,
                 injectRegistry,
@@ -466,6 +490,7 @@ internal static class VueModuleBuilder
         Module? compilerModule,
         IReadOnlyDictionary<Node, GeneratedNodePosition>? compilerNodePositions,
         ComponentInitializationBuildResult initialization,
+        VueRenderRuntimeFeatures ordinaryRenderFeatures,
         string relativePath,
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
         string hmrModuleId)
@@ -507,6 +532,15 @@ internal static class VueModuleBuilder
         returnedMembers = returnedMembers
             .RemoveAll(member => string.Equals(member, buildRenderTreeMemberName, StringComparison.Ordinal))
             .Add(directRender.MemberName);
+        if (lifecycleMembers.HasSetParametersAsync &&
+            !returnedMembers.Contains("parameterAdapter", StringComparer.Ordinal))
+        {
+            // The adapter is setup-instance state. Expose only its snapshot seam to the outer
+            // Vue setup closure through the existing scope object; never reference the local
+            // adapter binding from module-level framing code.
+            // 适配器属于 setup 实例，外层只通过 scope 访问，避免跨 lexical scope 的自由变量。
+            returnedMembers = returnedMembers.Add("parameterAdapter");
+        }
         setupParts = setupParts with
         {
             SetupStatements = RemoveDirectRenderOnlyFunctions(
@@ -520,7 +554,15 @@ internal static class VueModuleBuilder
         var usesInvokeAsync = ReferencesIdentifier(setupParts.SetupStatements, "invokeAsync") ||
                               ReferencesIdentifier(setupParts.InitializationPhases, "invokeAsync");
 
+        var parameterBindings = BuildParameterBindings(closure);
+        var injectBindings = BuildInjectBindings(closure);
+        var cascadingBindings = BuildCascadingBindings(closure);
+        var usesUnmatchedAttributes = parameterBindings.Any(static binding => binding.CapturesUnmatchedValues);
+        var usesParameterViewSlots = lifecycleMembers.HasSetParametersAsync &&
+                                     parameterBindings.Any(static binding => binding.IsSlot);
         var usesFactorySlots = directRender.UsesSlots ||
+                               ordinaryRenderFeatures.UsesSlots ||
+                               usesParameterViewSlots ||
                                 ReferencesIdentifier(setupParts.SetupStatements, "slots") ||
                                 ReferencesIdentifier(setupParts.InitializationPhases, "slots") ||
                                 setupParts.StateSlots.Any(static slot =>
@@ -529,7 +571,10 @@ internal static class VueModuleBuilder
         var usesSlots = usesFactorySlots;
         var usesFactoryProps = ReferencesIdentifier(setupParts.SetupStatements, "props") ||
                                ReferencesIdentifier(setupParts.InitializationPhases, "props") ||
-                               directRender.UsesProps;
+                               directRender.UsesProps ||
+                               ordinaryRenderFeatures.UsesProps ||
+                               lifecycleMembers.HasSetParametersAsync ||
+                               usesUnmatchedAttributes;
         var usesSetupProps = usesFactoryProps ||
                              usesSlots ||
                              lifecycleMembers.HasOnParametersSet ||
@@ -537,8 +582,11 @@ internal static class VueModuleBuilder
         var usesState = setupParts.StateSlots.Length > 0;
         var usesStateHasChanged = lifecycleMembers.HasOnInitializedAsync ||
                                    lifecycleMembers.HasOnParametersSetAsync ||
+                                   lifecycleMembers.HasSetParametersAsync ||
+                                   !cascadingBindings.IsDefaultOrEmpty ||
                                    ReferencesIdentifier(setupParts.SetupStatements, "stateHasChanged") ||
                                    ReferencesIdentifier(setupParts.InitializationPhases, "stateHasChanged");
+        var propNames = GetVuePropNames(closure);
         var features = new VueModuleFeatures(
             lifecycleMembers,
             usesSlots,
@@ -547,9 +595,17 @@ internal static class VueModuleBuilder
             usesSetupProps,
             usesState,
             usesStateHasChanged,
-            usesInvokeAsync);
+            usesInvokeAsync,
+            propNames,
+            parameterBindings,
+            usesParameterViewSlots,
+            usesUnmatchedAttributes,
+            injectBindings,
+            cascadingBindings,
+            component.ComponentSymbol.ToDisplayString(Format.NameFormat));
         var moduleStatements = new List<Statement>();
         var assets = ImmutableArray.CreateBuilder<VueAsset>();
+        var usesMergeProps = directRender.UsesMergeProps || ordinaryRenderFeatures.UsesMergeProps;
         // Local bindings are the module-scope uniqueness contract. Compiler lowering and direct
         // render lowering can contribute different specifiers for one module, so dedupe must be
         // performed per specifier instead of dropping the whole import declaration on one match.
@@ -561,16 +617,19 @@ internal static class VueModuleBuilder
             features.UsesUpdated,
             features.UsesReactive,
             features.UsesWatch,
-            directRender.UsesFragment,
+            directRender.UsesFragment || ordinaryRenderFeatures.UsesFragment,
             directRender.UsesStaticVNode,
-            directRender.UsesRawMarkupRuntime,
-            directRender.UsesBlockTree,
-            directRender.UsesTextVNode,
-            directRender.UsesRenderList,
-            directRender.UsesWithCtx,
-            directRender.UsesCreateSlots));
+            directRender.UsesRawMarkupRuntime || ordinaryRenderFeatures.UsesRawMarkupRuntime,
+            directRender.UsesBlockTree || ordinaryRenderFeatures.UsesBlockTree,
+            directRender.UsesTextVNode || ordinaryRenderFeatures.UsesTextVNode,
+            directRender.UsesRenderList || ordinaryRenderFeatures.UsesRenderList,
+            directRender.UsesWithCtx || ordinaryRenderFeatures.UsesWithCtx,
+            directRender.UsesCreateSlots || ordinaryRenderFeatures.UsesCreateSlots,
+            usesMergeProps,
+            usesInject: features.UsesInject,
+            usesCascading: !cascadingBindings.IsDefaultOrEmpty));
 
-        if (directRender.UsesRawMarkupRuntime)
+        if (directRender.UsesRawMarkupRuntime || ordinaryRenderFeatures.UsesRawMarkupRuntime)
         {
             moduleStatements.AddRange(ImportDeclarationFactory.Create(
                 VueRawMarkup.RuntimeModuleSpecifier,
@@ -597,6 +656,11 @@ internal static class VueModuleBuilder
 
         foreach (var importDeclaration in directRender.ImportDeclarations)
         {
+            // Vue helpers are framed above as one deterministic import. RenderEmitter's direct
+            // collector contributes mergeProps for the same module, so do not emit a duplicate
+            // local binding after ordinary-member fragments have joined the feature set.
+            if (IsVueFramingImport(importDeclaration))
+                continue;
             var rebasedImport = RebaseImportDeclaration(importDeclaration, relativePath);
             var importToEmit = FilterEmittedImportSpecifiers(rebasedImport, emittedImportBindings);
             if (importToEmit is null)
@@ -632,17 +696,23 @@ internal static class VueModuleBuilder
             returnedMembers,
             setupParts,
             directRender,
+            ordinaryRenderFeatures,
             features));
         moduleStatements.Add(BuildVueComponentDeclaration(
             closure,
             setupFactoryName,
             directRender,
             features,
-            GetVuePropNames(closure)));
+            propNames));
         moduleStatements.Add(BuildVueHmrRegistration(hmrModuleId));
         moduleStatements.Add(new ExportDefaultDeclaration(new Identifier(HmrComponentVariableName)));
 
         var vueModule = new Module(NodeList.From(moduleStatements));
+        // Validate the complete AST after compiler/direct-render/framing composition. This is
+        // intentionally before text serialization so property keys, labels, and declarations
+        // retain their ESTree meaning and future helper/import regressions fail as JAZORVGA026.
+        // 组合完成后立即检查自由标识符，禁止生成能编译却在浏览器留下 undefined 的模块。
+        VueModuleIntegrityValidator.Validate(vueModule);
         var moduleLayout = vueModule.ToKnRECMAScriptWithNodePositions();
         var moduleText = Util.NormalizeLineEndingsToLf(moduleLayout.Content);
         var lineMappings = BuildCompiledLineMappings(moduleLayout.NodePositions, parts);
@@ -671,6 +741,7 @@ internal static class VueModuleBuilder
         ImmutableArray<string> returnedMembers,
         CompilerModuleParts parts,
         DirectRenderBuildResult directRender,
+        VueRenderRuntimeFeatures ordinaryRenderFeatures,
         VueModuleFeatures features)
     {
         var statements = new List<Statement>();
@@ -695,10 +766,86 @@ internal static class VueModuleBuilder
             parts.StateSlots,
             parts.InitializationPhases));
 
+        // Blazor resolves [Inject] properties after construction/field initializers and before
+        // OnInitialized/parameter callbacks. Assign the resolved Vue service into the same
+        // reactive state carrier used by normal component members so authored getters, methods,
+        // and later renders all observe one value.
+        // Blazor 的注入时序位于构造完成之后、生命周期之前；不能把服务塞进构造函数或 props。
+        foreach (var binding in features.InjectBindings)
+        {
+            statements.Add(CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                CreateMemberAccess(new Identifier("state"), binding.StateName),
+                new Identifier(binding.LocalName))));
+        }
+
+        // Cascading values arrive as Vue refs from the provider adapter. Unwrap once for the
+        // authored CLR property, then keep the same state slot synchronized as the nearest
+        // provider changes. A unique sentinel preserves the distinction between “no provider”
+        // (Blazor leaves the default value intact) and an explicitly supplied null/undefined.
+        // 级联值由 provider 以 ref 提供；这里映射回普通 C# 属性并监听后续更新。
+        foreach (var binding in features.CascadingBindings)
+        {
+            var resolved = new Identifier(binding.LocalName);
+            var missing = new Identifier(CascadingMissingLocalName);
+            if (!features.UsesParameterViewState)
+            {
+                statements.Add(new IfStatement(
+                    new NonLogicalBinaryExpression(
+                        Operator.StrictInequality,
+                        resolved,
+                        missing),
+                    CreateBlock(CreateExpressionStatement(new AssignmentExpression(
+                        Operator.Assignment,
+                        CreateMemberAccess(new Identifier("state"), binding.StateName),
+                        CreateCall("unref", resolved)))),
+                    null));
+            }
+
+            var cascadeUpdateStatements = new List<Statement>();
+            if (!features.UsesParameterViewState)
+            {
+                cascadeUpdateStatements.Add(CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    CreateMemberAccess(new Identifier("state"), binding.StateName),
+                    new Identifier("value"))));
+            }
+            cascadeUpdateStatements.Add(CreateExpressionStatement(CreateCall("cascadeChanged")));
+
+            statements.Add(CreateExpressionStatement(CreateCall(
+                "watch",
+                CreateArrowExpression(CreateCall("unref", new Identifier(binding.LocalName))),
+                CreateArrowFunction(
+                    ["value"],
+                    [
+                        new IfStatement(
+                            new NonLogicalBinaryExpression(
+                                Operator.StrictInequality,
+                                new Identifier("value"),
+                                missing),
+                            CreateBlock(cascadeUpdateStatements.ToArray()),
+                            null)
+                    ]))));
+        }
+
+        if (features.UsesParameterViewState)
+        {
+            // This object lives beside reactive state and lifecycle functions, so the lowered
+            // authored SetParametersAsync body can call it through its normal compiler host seam.
+            // 参数适配器必须与 state 同一 setup factory 实例，不能成为模块共享对象。
+            statements.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Let,
+                "initialized",
+                BooleanLiteral(false)));
+            statements.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "parameterAdapter",
+                BuildParameterAdapterExpression(features)));
+        }
         statements.AddRange(parts.SetupStatements
             .Where(static item => item.Statement is not ClassDeclaration)
             .Select(static item => item.Statement));
-        if (directRender.UsesHandlerCache)
+        if (directRender.UsesHandlerCache || ordinaryRenderFeatures.UsesHandlerCache)
         {
             // Vue's compiler cache is instance-owned: a module-level array would retain the
             // first component's state/props closure and break instance isolation.
@@ -874,31 +1021,63 @@ internal static class VueModuleBuilder
             yield return new Identifier("stateHasChanged");
         if (features.UsesInvokeAsync)
             yield return new Identifier("invokeAsync");
+        foreach (var binding in features.InjectResolutions)
+            yield return new Identifier(binding.LocalName);
+        foreach (var binding in features.CascadingResolutions)
+            yield return new Identifier(binding.LocalName);
+        if (!features.CascadingBindings.IsDefaultOrEmpty)
+            yield return new Identifier(CascadingMissingLocalName);
+        if (!features.CascadingBindings.IsDefaultOrEmpty)
+            yield return new Identifier("cascadeChanged");
     }
 
     private static IEnumerable<Expression> BuildSetupFactoryArguments(VueModuleFeatures features)
     {
         if (features.UsesFactoryProps)
-            yield return new Identifier("props");
+            yield return new Identifier(features.UsesUnmatchedAttributes ? "parameterProps" : "props");
         if (features.UsesFactorySlots)
             yield return new Identifier("slots");
         if (features.UsesStateHasChanged)
             yield return new Identifier("stateHasChanged");
         if (features.UsesInvokeAsync)
             yield return new Identifier("invokeAsync");
+        foreach (var binding in features.InjectResolutions)
+            yield return new Identifier(binding.LocalName);
+        foreach (var binding in features.CascadingResolutions)
+            yield return new Identifier(binding.LocalName);
+        if (!features.CascadingBindings.IsDefaultOrEmpty)
+            yield return new Identifier(CascadingMissingLocalName);
+        if (!features.CascadingBindings.IsDefaultOrEmpty)
+            yield return new Identifier("cascadeChanged");
     }
 
     private static IEnumerable<Node> BuildVueSetupParameters(VueModuleFeatures features)
     {
-        if (features.UsesSlots)
+        if (features.UsesSlots || features.UsesUnmatchedAttributes)
         {
             yield return new Identifier("props");
-            var slots = new Identifier("slots");
-            yield return new ObjectPattern(NodeList.From<Node>(new AssignmentProperty(
-                slots,
-                new Identifier("slots"),
-                computed: false,
-                shorthand: true)));
+            var contextProperties = new List<Node>();
+            if (features.UsesSlots)
+            {
+                var slots = new Identifier("slots");
+                contextProperties.Add(new AssignmentProperty(
+                    slots,
+                    new Identifier("slots"),
+                    computed: false,
+                    shorthand: true));
+            }
+
+            if (features.UsesUnmatchedAttributes)
+            {
+                var attrs = new Identifier("attrs");
+                contextProperties.Add(new AssignmentProperty(
+                    attrs,
+                    new Identifier("attrs"),
+                    computed: false,
+                    shorthand: true));
+            }
+
+            yield return new ObjectPattern(NodeList.From<Node>(contextProperties));
             yield break;
         }
 
@@ -930,12 +1109,100 @@ internal static class VueModuleBuilder
         if (features.UsesInvokeAsync)
             statements.Add(BuildInvokeAsyncDeclaration(features.UsesUnmounted));
 
-        statements.Add(CreateVariableDeclaration(
-            VariableDeclarationKind.Const,
-            "scope",
-            CreateCall(
-                setupFactoryName,
-                BuildSetupFactoryArguments(features))));
+        foreach (var binding in features.InjectBindings)
+        {
+            statements.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                binding.LocalName,
+                CreateCall("inject", StringLiteral(binding.ServiceKey))));
+            statements.Add(new IfStatement(
+                new NonLogicalBinaryExpression(
+                    Operator.StrictEquality,
+                    new NonUpdateUnaryExpression(
+                        Operator.TypeOf,
+                        new Identifier(binding.LocalName)),
+                    StringLiteral("undefined")),
+                CreateBlock(new ThrowStatement(new NewExpression(
+                    new Identifier("Error"),
+                    NodeList.From<Expression>(StringLiteral(
+                        "RazorVue could not resolve injected service '" +
+                        binding.ServiceTypeDisplay +
+                        "' for component '" +
+                        features.ComponentDisplayName +
+                        "'. Register it with the Vue app provider key '" +
+                        binding.ServiceKey + "'."))))),
+                null));
+        }
+
+        if (!features.CascadingBindings.IsDefaultOrEmpty)
+        {
+            statements.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                CascadingMissingLocalName,
+                new ObjectExpression(NodeList.Empty<Node>())));
+            foreach (var binding in features.CascadingResolutions)
+            {
+                statements.Add(CreateVariableDeclaration(
+                    VariableDeclarationKind.Const,
+                    binding.LocalName,
+                    CreateCall(
+                        "inject",
+                        StringLiteral(binding.ServiceKey),
+                        new Identifier(CascadingMissingLocalName))));
+            }
+        }
+
+        if (features.UsesUnmatchedAttributes)
+        {
+            // Vue keeps undeclared component attributes in setup context.attrs. A Blazor
+            // CaptureUnmatchedValues parameter must see those values through the ordinary
+            // authored property, while declared props remain on Vue's reactive props proxy.
+            // 未匹配属性只在 framing 层合并，作者仍然只接触标准 AdditionalAttributes 属性。
+            statements.AddRange(BuildUnmatchedAttributeSetupStatements(features));
+        }
+
+        if (features.UsesParameterViewState && !features.CascadingBindings.IsDefaultOrEmpty)
+        {
+            // ParameterView needs the current cascade values as sparse entries, but the
+            // custom SetParametersAsync implementation remains responsible for applying them.
+            // ParameterView 以稀疏项携带当前级联值；何时写入属性仍由作者的 SetParametersAsync 决定。
+            statements.Add(BuildCascadingParameterSnapshotDeclaration(features.CascadingBindings));
+        }
+
+        if (!features.CascadingBindings.IsDefaultOrEmpty)
+        {
+            // The cascade provider installs its watcher while the setup factory is created.
+            // Keep the callback instance-scoped and let it observe the completed scope after
+            // setup assignment, so a provider update runs the same parameter lifecycle as a
+            // normal Blazor parameter update instead of only invalidating the DOM.
+            // 级联 watcher 在 factory 内注册；callback 通过 let scope 延迟绑定，确保更新时复用
+            // 标准参数生命周期，而不是只调用 StateHasChanged。
+            statements.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Let,
+                "scope",
+                NullLiteral()));
+            statements.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "cascadeChanged",
+                CreateArrowFunction(
+                    [],
+                    BuildCascadeChangedStatements(features))));
+            statements.Add(CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("scope"),
+                CreateCall(
+                    setupFactoryName,
+                    BuildSetupFactoryArguments(features)))));
+        }
+        else
+        {
+            statements.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "scope",
+                CreateCall(
+                    setupFactoryName,
+                    BuildSetupFactoryArguments(features))));
+        }
 
         if (features.UsesStateHasChanged)
         {
@@ -949,10 +1216,10 @@ internal static class VueModuleBuilder
                         new Identifier("pendingInvalidations"))))))));
         }
 
-        if (features.OnInitialized is { } onInitialized)
+        if (!features.UsesParameterViewState && features.OnInitialized is { } onInitialized)
             statements.Add(CreateExpressionStatement(CreateScopeCall(onInitialized)));
 
-        if (features.OnInitializedAsync is { } onInitializedAsync)
+        if (!features.UsesParameterViewState && features.OnInitializedAsync is { } onInitializedAsync)
         {
             statements.Add(CreateExpressionStatement(CreateCallMember(
                 CreateCallMember(new Identifier("Promise"), "resolve", CreateScopeCall(onInitializedAsync)),
@@ -961,14 +1228,35 @@ internal static class VueModuleBuilder
                 CreateStateHasChangedCallback())));
         }
 
-        if (features.OnParametersSet is { } onParametersSet)
+        if (!features.UsesParameterViewState && features.OnParametersSet is { } onParametersSet)
         {
             statements.Add(CreateExpressionStatement(CreateScopeCall(onParametersSet)));
-            statements.Add(CreateWatchStatement(onParametersSet, propNames));
+            statements.AddRange(CreateWatchStatements(
+                onParametersSet,
+                propNames,
+                features.UsesUnmatchedAttributes));
         }
 
-        if (features.OnParametersSetAsync is { } onParametersSetAsync)
-            statements.AddRange(BuildOnParametersSetAsyncStatements(onParametersSetAsync, propNames));
+        if (!features.UsesParameterViewState && features.OnParametersSetAsync is { } onParametersSetAsync)
+            statements.AddRange(BuildOnParametersSetAsyncStatements(
+                onParametersSetAsync,
+                propNames,
+                features.UsesUnmatchedAttributes));
+
+        if (features.UsesParameterViewState)
+        {
+            // setup cannot await a ComponentBase.SetParametersAsync Task. Keep a rejected task
+            // observable by the next render so Vue's regular error boundary/application error
+            // path receives the authored exception instead of a swallowed queue rejection.
+            // setup 无法 await 参数 Task；下一次 render 必须重新抛出作者异常，不能吞掉队列 rejection。
+            statements.Add(CreateVariableDeclaration(VariableDeclarationKind.Let, "hasParameterFailure", BooleanLiteral(false)));
+            statements.Add(CreateVariableDeclaration(VariableDeclarationKind.Let, "parameterFailure", NullLiteral()));
+            statements.AddRange(BuildParameterViewSetupStatements(
+                features.ParameterBindings,
+                features.UsesParameterViewSlots,
+                features.UsesUnmatchedAttributes,
+                !features.CascadingBindings.IsDefaultOrEmpty));
+        }
 
         if (features.OnAfterRender is { } onAfterRender)
         {
@@ -994,6 +1282,453 @@ internal static class VueModuleBuilder
         statements.Add(new ReturnStatement(BuildRenderClosure(directRender, features)));
         return statements;
     }
+
+    private static IEnumerable<Statement> BuildUnmatchedAttributeSetupStatements(
+        VueModuleFeatures features)
+    {
+        var capture = features.ParameterBindings
+            .Where(static binding => binding.CapturesUnmatchedValues)
+            .ToArray();
+        if (capture.Length == 0)
+            yield break;
+        if (capture.Length != 1)
+        {
+            throw new InvalidOperationException(
+                "A Razor component can declare at most one CaptureUnmatchedValues parameter.");
+        }
+
+        var binding = capture[0];
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "parameterProps",
+            CreateCallMember(
+                new Identifier("Object"),
+                "create",
+                new Identifier("props")));
+
+        var capturedValue = CreateMemberAccess(new Identifier("props"), binding.RuntimeName);
+        var attrsValue = new Identifier("attrs");
+        var merged = CreateCallMember(
+            new Identifier("Object"),
+            "assign",
+            new ObjectExpression(NodeList.Empty<Node>()),
+            new LogicalExpression(
+                Operator.LogicalOr,
+                capturedValue,
+                new ObjectExpression(NodeList.Empty<Node>())),
+            new LogicalExpression(
+                Operator.LogicalOr,
+                attrsValue,
+                new ObjectExpression(NodeList.Empty<Node>())));
+        var descriptor = new ObjectExpression(NodeList.From<Node>(
+            CreateObjectProperty("enumerable", BooleanLiteral(true)),
+            CreateObjectProperty("configurable", BooleanLiteral(true)),
+            CreateObjectProperty("get", CreateArrowExpression(merged))));
+
+        // Keep the wrapper stable so compiler-generated `props.OtherParameter` reads remain
+        // reactive through the prototype, while the capture getter always sees current attrs.
+        // wrapper 保持稳定，普通 props 仍走 Vue proxy；capture getter 每次读取最新 attrs。
+        yield return CreateExpressionStatement(CreateCallMember(
+            new Identifier("Object"),
+            "defineProperty",
+            new Identifier("parameterProps"),
+            StringLiteral(binding.RuntimeName),
+            descriptor));
+
+        // Vue's attrs object is reactive but intentionally shallow. Deep watch is scoped to
+        // this adapter source so ordinary Blazor parameters retain their reference semantics.
+        // 只有 unmatched attrs 使用 deep watch，避免普通参数因嵌套变化误触生命周期。
+    }
+
+    private static IEnumerable<Statement> BuildCascadeChangedStatements(VueModuleFeatures features)
+    {
+        // A provider watcher can be registered before the outer setup scope is assigned. The
+        // guard is only for eager test/runtime adapters; Vue's normal watch callback runs after
+        // setup has completed. Once available, preserve Blazor's parameter-update ordering:
+        // apply the new cascading value, run OnParametersSet* and then invalidate the render.
+        yield return new IfStatement(
+            new NonLogicalBinaryExpression(
+                Operator.StrictEquality,
+                new Identifier("scope"),
+                NullLiteral()),
+            CreateBlock(new ReturnStatement(null)),
+            null);
+
+        if (features.UsesParameterViewState)
+        {
+            // A custom SetParametersAsync controls when its properties are applied. Feed the
+            // changed cascade through its normal serialized ParameterView queue so code before
+            // base.SetParametersAsync still observes the old value, just as it does in Blazor.
+            // 自定义 SetParametersAsync 必须经 ParameterView 队列；不能提前写 state 绕过作者逻辑。
+            yield return CreateExpressionStatement(new CallExpression(
+                new Identifier("runSetParametersAsync"),
+                NodeList.From<Expression>(CreateParameterViewSnapshotExpression(
+                    features.UsesParameterViewSlots,
+                    features.UsesUnmatchedAttributes,
+                    hasCascadingParameters: true)),
+                optional: false));
+            yield break;
+        }
+
+        if (features.OnParametersSet is { } onParametersSet)
+        {
+            yield return CreateExpressionStatement(CreateScopeCall(onParametersSet));
+            if (features.OnParametersSetAsync is null)
+                yield return CreateExpressionStatement(CreateCall("stateHasChanged"));
+        }
+
+        if (features.OnParametersSetAsync is not null)
+        {
+            // `runOnParametersSetAsync` is declared later in setup, but the callback is invoked
+            // only after the factory returns, so the lexical binding is initialized by then.
+            yield return CreateExpressionStatement(CreateCall("runOnParametersSetAsync"));
+        }
+        else if (features.OnParametersSet is null)
+        {
+            yield return CreateExpressionStatement(CreateCall("stateHasChanged"));
+        }
+    }
+
+    private static VariableDeclaration BuildCascadingParameterSnapshotDeclaration(
+        ImmutableArray<CascadingBinding> cascadingBindings)
+    {
+        var statements = new List<Statement>
+        {
+            CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "cascadeParameters",
+                new ObjectExpression(NodeList.Empty<Node>()))
+        };
+
+        foreach (var binding in cascadingBindings)
+        {
+            statements.Add(new IfStatement(
+                new NonLogicalBinaryExpression(
+                    Operator.StrictInequality,
+                    new Identifier(binding.LocalName),
+                    new Identifier(CascadingMissingLocalName)),
+                CreateBlock(CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    CreateMemberAccess(new Identifier("cascadeParameters"), binding.Property.Name),
+                    CreateCall("unref", new Identifier(binding.LocalName))))),
+                null));
+        }
+
+        statements.Add(new ReturnStatement(new Identifier("cascadeParameters")));
+        return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "cascadingParameterSnapshot",
+            CreateArrowFunction([], statements));
+    }
+
+    private static ObjectExpression BuildParameterAdapterExpression(VueModuleFeatures features)
+    {
+        var properties = new List<Node>();
+        properties.Add(CreateObjectProperty(
+            "applyParameterProperties",
+            CreateArrowFunction(
+                ["parameters"],
+                BuildParameterOverlayStatements(
+                    features.ParameterBindings,
+                    features.CascadingBindings))));
+        properties.Add(CreateObjectProperty(
+            "createSnapshot",
+            CreateArrowFunction(
+                ["parameters", "slotValues", "rawParameters", "cascadingParameters"],
+                BuildParameterSnapshotStatements(features.ParameterBindings))));
+        properties.Add(CreateObjectProperty(
+            "applyComponentBaseParameters",
+            CreateArrowFunction(
+                ["parameters"],
+                BuildComponentBaseParameterStatements(features))));
+        return new ObjectExpression(NodeList.From(properties));
+    }
+
+    private static List<Statement> BuildParameterOverlayStatements(
+        ImmutableArray<ParameterBinding> parameterBindings,
+        ImmutableArray<CascadingBinding> cascadingBindings)
+    {
+        var statements = new List<Statement>();
+        foreach (var binding in parameterBindings)
+        {
+            // Presence, rather than value, is the ParameterView contract: an explicitly supplied
+            // undefined must overwrite the old value, while an omitted parameter must not.
+            // 必须区分“显式 undefined”和“参数缺失”，否则会破坏 Blazor 的旧值保留语义。
+            var hasParameter = CreateHasOwnExpression(new Identifier("parameters"), binding.SourceName);
+            statements.Add(new IfStatement(
+                hasParameter,
+                CreateBlock(CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    CreateMemberAccess(new Identifier("state"), binding.StateName),
+                    CreateMemberAccess(new Identifier("parameters"), binding.SourceName)))),
+                null));
+        }
+
+        foreach (var binding in cascadingBindings)
+        {
+            var sourceName = binding.Property.Name;
+            statements.Add(new IfStatement(
+                CreateHasOwnExpression(new Identifier("parameters"), sourceName),
+                CreateBlock(CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    CreateMemberAccess(new Identifier("state"), binding.StateName),
+                    CreateMemberAccess(new Identifier("parameters"), sourceName)))),
+                null));
+        }
+
+        return statements;
+    }
+
+    private static List<Statement> BuildParameterSnapshotStatements(
+        ImmutableArray<ParameterBinding> parameterBindings)
+    {
+        var statements = new List<Statement>
+        {
+            CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "snapshot",
+                CreateCallMember(
+                    new Identifier("Object"),
+                    "assign",
+                    new ObjectExpression(NodeList.Empty<Node>()),
+                    new LogicalExpression(
+                        Operator.LogicalOr,
+                        new Identifier("rawParameters"),
+                        new ObjectExpression(NodeList.Empty<Node>())),
+                    new Identifier("parameters"),
+                    new LogicalExpression(
+                        Operator.LogicalOr,
+                        new Identifier("cascadingParameters"),
+                        new ObjectExpression(NodeList.Empty<Node>()))))
+        };
+
+        foreach (var binding in parameterBindings)
+        {
+            var source = binding.IsSlot
+                ? (Expression)new LogicalExpression(
+                    Operator.LogicalAnd,
+                    new NonLogicalBinaryExpression(
+                        Operator.StrictInequality,
+                        new Identifier("slotValues"),
+                        NullLiteral()),
+                    CreateHasOwnExpression(new Identifier("slotValues"), binding.RuntimeName))
+                : CreateHasOwnExpression(
+                    binding.CapturesUnmatchedValues
+                        ? new Identifier("parameters")
+                        : new LogicalExpression(
+                            Operator.LogicalOr,
+                            new Identifier("rawParameters"),
+                            new Identifier("parameters")),
+                    binding.RuntimeName);
+            var value = binding.IsSlot
+                ? CreateMemberAccess(new Identifier("slotValues"), binding.RuntimeName)
+                : CreateMemberAccess(
+                    binding.CapturesUnmatchedValues
+                        ? new Identifier("parameters")
+                        : new LogicalExpression(
+                            Operator.LogicalOr,
+                            new Identifier("rawParameters"),
+                            new Identifier("parameters")),
+                    binding.RuntimeName);
+            statements.Add(new IfStatement(
+                source,
+                CreateBlock(CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    CreateMemberAccess(new Identifier("snapshot"), binding.SourceName),
+                    value))),
+                null));
+        }
+
+        statements.Add(new ReturnStatement(new Identifier("snapshot")));
+        return statements;
+    }
+
+    private static CallExpression CreateHasOwnExpression(Expression source, string name)
+        => new(
+            CreateMemberAccess(
+                CreateMemberAccess(
+                    CreateMemberAccess(new Identifier("Object"), "prototype"),
+                    "hasOwnProperty"),
+                "call"),
+            NodeList.From<Expression>(source, StringLiteral(name)),
+            optional: false);
+
+    private static List<Statement> BuildComponentBaseParameterStatements(VueModuleFeatures features)
+    {
+        var statements = new List<Statement>
+        {
+            CreateExpressionStatement(CreateCallMember(
+                new Identifier("parameterAdapter"),
+                "applyParameterProperties",
+                new Identifier("parameters")))
+        };
+
+        var firstInitialization = new List<Statement>
+        {
+            CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("initialized"),
+                BooleanLiteral(true)))
+        };
+        if (features.OnInitialized is { } onInitialized)
+            firstInitialization.Add(CreateExpressionStatement(CreateCall(onInitialized)));
+
+        Expression initializationTask = CreateCallMember(
+            new Identifier("Promise"),
+            "resolve");
+        if (features.OnInitializedAsync is { } onInitializedAsync)
+        {
+            initializationTask = CreateCallMember(
+                new Identifier("Promise"),
+                "resolve",
+                CreateCall(onInitializedAsync));
+        }
+
+        var parameterPhaseStatements = new List<Statement>();
+        if (features.OnParametersSet is { } onParametersSet)
+            parameterPhaseStatements.Add(CreateExpressionStatement(CreateCall(onParametersSet)));
+        parameterPhaseStatements.Add(new ReturnStatement(BuildParameterAsyncResult(features)));
+
+        var continueWithParameters = CreateCallMember(
+            initializationTask,
+            "then",
+            CreateArrowFunction([], parameterPhaseStatements));
+        firstInitialization.Add(new ReturnStatement(continueWithParameters));
+
+        var subsequent = new List<Statement>();
+        if (features.OnParametersSet is { } subsequentOnParametersSet)
+            subsequent.Add(CreateExpressionStatement(CreateCall(subsequentOnParametersSet)));
+        subsequent.Add(new ReturnStatement(BuildParameterAsyncResult(features)));
+
+        statements.Add(new IfStatement(
+            new NonLogicalBinaryExpression(
+                Operator.StrictEquality,
+                new Identifier("initialized"),
+                BooleanLiteral(false)),
+            CreateBlock(firstInitialization.ToArray()),
+            CreateBlock(subsequent.ToArray())));
+        return statements;
+    }
+
+    private static IEnumerable<Statement> BuildParameterViewSetupStatements(
+        ImmutableArray<ParameterBinding> parameterBindings,
+        bool usesSlots,
+        bool usesUnmatchedAttributes,
+        bool hasCascadingParameters)
+    {
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "parameterSnapshot",
+            CreateParameterViewSnapshotExpression(
+                usesSlots,
+                usesUnmatchedAttributes,
+                hasCascadingParameters));
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Let,
+            "parameterUpdateTail",
+            CreateCallMember(new Identifier("Promise"), "resolve"));
+
+        var task = new Identifier("task");
+        var queueBody = new List<Statement>
+        {
+            CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("hasParameterFailure"),
+                BooleanLiteral(false))),
+            CreateVariableDeclaration(
+                VariableDeclarationKind.Const,
+                "task",
+                CreateCallMember(
+                    new Identifier("parameterUpdateTail"),
+                    "then",
+                    CreateArrowFunction(
+                        [],
+                        [new ReturnStatement(CreateScopeCall("SetParametersAsync", new Identifier("parameters")))]))),
+            CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("parameterUpdateTail"),
+                CreateCallMember(
+                    task,
+                    "then",
+                    CreateArrowFunction([], []),
+                    CreateArrowFunction(
+                        ["error"],
+                        [
+                            CreateExpressionStatement(new AssignmentExpression(
+                                Operator.Assignment,
+                                new Identifier("hasParameterFailure"),
+                                BooleanLiteral(true))),
+                            CreateExpressionStatement(new AssignmentExpression(
+                                Operator.Assignment,
+                                new Identifier("parameterFailure"),
+                                new Identifier("error"))),
+                            CreateExpressionStatement(CreateCall("stateHasChanged"))
+                        ])))),
+            new ReturnStatement(task)
+        };
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Const,
+            "runSetParametersAsync",
+            CreateArrowFunction(["parameters"], queueBody));
+        yield return CreateExpressionStatement(new CallExpression(
+            new Identifier("runSetParametersAsync"),
+            NodeList.From<Expression>(new Identifier("parameterSnapshot")),
+            optional: false));
+        if (!parameterBindings.IsDefaultOrEmpty)
+        {
+            yield return CreateExpressionStatement(CreateCall(
+                "watch",
+                 CreateParameterWatchSource(parameterBindings),
+                CreateArrowFunction(
+                    [],
+                    [CreateExpressionStatement(new CallExpression(
+                        new Identifier("runSetParametersAsync"),
+                        NodeList.From<Expression>(CreateParameterViewSnapshotExpression(
+                            usesSlots,
+                            usesUnmatchedAttributes,
+                            hasCascadingParameters)),
+                        optional: false))])));
+        }
+
+        if (usesUnmatchedAttributes)
+        {
+            // Vue exposes undeclared attrs through a reactive setup-context object. Keep this
+            // watcher separate from the shallow declared-prop watcher so nested ordinary props
+            // do not accidentally become Blazor parameter assignments.
+            yield return CreateUnmatchedAttributesWatchStatement(
+                CreateArrowFunction(
+                    [],
+                    [CreateExpressionStatement(new CallExpression(
+                        new Identifier("runSetParametersAsync"),
+                        NodeList.From<Expression>(CreateParameterViewSnapshotExpression(
+                            usesSlots,
+                            usesUnmatchedAttributes,
+                            hasCascadingParameters)),
+                        optional: false))]));
+        }
+    }
+
+    private static CallExpression CreateParameterViewSnapshotExpression(
+        bool usesSlots,
+        bool usesUnmatchedAttributes,
+        bool hasCascadingParameters)
+        => CreateCallMember(
+            CreateMemberAccess(new Identifier("scope"), "parameterAdapter"),
+            "createSnapshot",
+            new Identifier(usesUnmatchedAttributes ? "parameterProps" : "props"),
+            usesSlots ? new Identifier("slots") : NullLiteral(),
+            new Identifier("props"),
+            hasCascadingParameters
+                ? CreateCall("cascadingParameterSnapshot")
+                : NullLiteral());
+
+    private static Expression BuildParameterAsyncResult(VueModuleFeatures features)
+        => features.OnParametersSetAsync is { } onParametersSetAsync
+            ? CreateCallMember(
+                new Identifier("Promise"),
+                "resolve",
+                CreateCall(onParametersSetAsync))
+            : new Identifier("undefined");
 
     private static VariableDeclaration BuildStateHasChangedDeclaration(bool usesUnmounted)
     {
@@ -1074,19 +1809,47 @@ internal static class VueModuleBuilder
             [],
             [CreateExpressionStatement(CreateCall("stateHasChanged"))]);
 
-    private static Statement CreateWatchStatement(
+    private static IEnumerable<Statement> CreateWatchStatements(
         string scopeMethod,
-        ImmutableArray<string> propNames)
+        ImmutableArray<string> propNames,
+        bool usesUnmatchedAttributes)
+    {
+        // Do not register an empty array source. Vue correctly treats it as stable, but test
+        // adapters and custom schedulers may still invoke its callback and create a spurious
+        // OnParametersSet pass for cascade-only components.
+        // 无普通参数时不注册空 watcher，避免级联组件出现额外的 OnParametersSet。
+        if (!propNames.IsDefaultOrEmpty)
+        {
+            yield return CreateExpressionStatement(CreateCall(
+                "watch",
+                CreateParameterWatchSource(propNames),
+                CreateArrowFunction(
+                    [],
+                    [CreateExpressionStatement(CreateScopeCall(scopeMethod))])));
+        }
+
+        if (usesUnmatchedAttributes)
+        {
+            yield return CreateUnmatchedAttributesWatchStatement(
+                CreateArrowFunction(
+                    [],
+                    [CreateExpressionStatement(CreateScopeCall(scopeMethod))]));
+        }
+    }
+
+    private static Statement CreateUnmatchedAttributesWatchStatement(
+        ArrowFunctionExpression callback)
         => CreateExpressionStatement(CreateCall(
             "watch",
-            CreateParameterWatchSource(propNames),
-            CreateArrowFunction(
-                [],
-                [CreateExpressionStatement(CreateScopeCall(scopeMethod))])));
+            CreateArrowExpression(new Identifier("attrs")),
+            callback,
+            new ObjectExpression(NodeList.From<Node>(
+                CreateObjectProperty("deep", BooleanLiteral(true))))));
 
     private static IEnumerable<Statement> BuildOnParametersSetAsyncStatements(
         string scopeMethod,
-        ImmutableArray<string> propNames)
+        ImmutableArray<string> propNames,
+        bool usesUnmatchedAttributes)
     {
         // Serialize parameter callbacks and version each run. Vue may publish newer props while
         // an earlier Task is pending; only the newest completion may request a rerender.
@@ -1146,12 +1909,23 @@ internal static class VueModuleBuilder
             "runOnParametersSetAsync",
             CreateArrowFunction([], runBody));
         yield return CreateExpressionStatement(CreateCall("runOnParametersSetAsync"));
-        yield return CreateExpressionStatement(CreateCall(
-            "watch",
-            CreateParameterWatchSource(propNames),
-            CreateArrowFunction(
-                [],
-                [CreateExpressionStatement(CreateCall("runOnParametersSetAsync"))])));
+        if (!propNames.IsDefaultOrEmpty)
+        {
+            yield return CreateExpressionStatement(CreateCall(
+                "watch",
+                CreateParameterWatchSource(propNames),
+                CreateArrowFunction(
+                    [],
+                    [CreateExpressionStatement(CreateCall("runOnParametersSetAsync"))])));
+        }
+
+        if (usesUnmatchedAttributes)
+        {
+            yield return CreateUnmatchedAttributesWatchStatement(
+                CreateArrowFunction(
+                    [],
+                    [CreateExpressionStatement(CreateCall("runOnParametersSetAsync"))]));
+        }
     }
 
     private static ArrowFunctionExpression CreateParametersSetCompletionCallback()
@@ -1165,13 +1939,29 @@ internal static class VueModuleBuilder
                 CreateBlock(CreateExpressionStatement(CreateCall("stateHasChanged"))),
                 null)]);
 
-    private static ArrowFunctionExpression CreateParameterWatchSource(ImmutableArray<string> propNames)
+    private static ArrowFunctionExpression CreateParameterWatchSource(
+        ImmutableArray<ParameterBinding> parameterBindings)
     {
         // ComponentBase parameter lifecycle is keyed by the parent's supplied parameter values.
         // Vue mutates the stable props proxy in place, so watching `props` itself cannot observe
         // replacement. Project declared props into a shallow array: value/reference replacement
         // triggers once, while nested mutation of the same object is explicitly not a new parameter set.
         // 只观察声明参数的浅层 value/reference；同一引用内部变更不属于参数重新赋值。
+        var values = parameterBindings.SelectMany(binding =>
+        {
+            var source = new Identifier(binding.IsSlot ? "slots" : "props");
+            return new Expression?[]
+            {
+                CreateHasOwnExpression(source, binding.RuntimeName),
+                CreateMemberAccess(source, binding.RuntimeName)
+            };
+        });
+        return CreateArrowExpression(new ArrayExpression(NodeList.From(values)));
+    }
+
+    private static ArrowFunctionExpression CreateParameterWatchSource(
+        ImmutableArray<string> propNames)
+    {
         var values = propNames.Select(static name => (Expression?)CreateMemberAccess(
             new Identifier("props"),
             name));
@@ -1237,6 +2027,14 @@ internal static class VueModuleBuilder
                 "tick")));
         }
 
+        if (features.UsesParameterViewState)
+        {
+            body.Add(new IfStatement(
+                new Identifier("hasParameterFailure"),
+                CreateBlock(new ThrowStatement(new Identifier("parameterFailure"))),
+                null));
+        }
+
         if (features.ShouldRender is { } shouldRender)
         {
             body.Add(new IfStatement(
@@ -1284,6 +2082,88 @@ internal static class VueModuleBuilder
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToImmutableArray();
+
+    private static ImmutableArray<ParameterBinding> BuildParameterBindings(MemberClosure closure)
+        => closure.ParameterProperties
+            .Select(property =>
+            {
+                var isSlot = IsAnyRenderFragmentType(property.Type);
+                var runtimeName = isSlot
+                    ? LibraryComponentConventions.GetSlotRuntimeName(closure.ComponentSymbol, property)
+                    : IsEventCallbackType(property.Type)
+                        ? LibraryComponentConventions.GetEventListenerRuntimeName(closure.ComponentSymbol, property)
+                        : LibraryComponentConventions.GetPropRuntimeName(property);
+                return new ParameterBinding(
+                    property.Name,
+                    runtimeName,
+                    Util.GetConfigOrSymbolName(property),
+                    isSlot,
+                    LibraryComponentConventions.CapturesUnmatchedValues(property));
+            })
+            .ToImmutableArray();
+
+    private static ImmutableArray<InjectBinding> BuildInjectBindings(MemberClosure closure)
+    {
+        var bindings = ImmutableArray.CreateBuilder<InjectBinding>();
+        var localsByServiceKey = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var property in closure.InjectProperties)
+        {
+            var serviceKey = LibraryComponentConventions.GetInjectServiceKey(property);
+            if (!localsByServiceKey.TryGetValue(serviceKey, out var localName))
+            {
+                localName = GetInjectLocalName(serviceKey);
+                localsByServiceKey.Add(serviceKey, localName);
+                bindings.Add(new InjectBinding(
+                    property,
+                    serviceKey,
+                    localName,
+                    Util.GetConfigOrSymbolName(property),
+                    property.Type.ToDisplayString(Format.NameFormat)));
+                continue;
+            }
+
+            // Multiple [Inject] properties of the same service type share one Vue inject call,
+            // matching a DI provider lookup while keeping setup deterministic and inexpensive.
+            // 同类型服务只解析一次，多个属性仍各自写入自己的 state slot。
+            bindings.Add(new InjectBinding(
+                property,
+                serviceKey,
+                localName,
+                Util.GetConfigOrSymbolName(property),
+                property.Type.ToDisplayString(Format.NameFormat)));
+        }
+
+        return bindings.ToImmutable();
+    }
+
+    private static ImmutableArray<CascadingBinding> BuildCascadingBindings(MemberClosure closure)
+    {
+        var bindings = ImmutableArray.CreateBuilder<CascadingBinding>();
+        var localsByServiceKey = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var property in closure.CascadingParameterProperties)
+        {
+            var serviceKey = LibraryComponentConventions.GetCascadingServiceKey(property);
+            if (!localsByServiceKey.TryGetValue(serviceKey, out var localName))
+            {
+                localName = GetCascadingLocalName(serviceKey);
+                localsByServiceKey.Add(serviceKey, localName);
+            }
+
+            bindings.Add(new CascadingBinding(
+                property,
+                serviceKey,
+                localName,
+                Util.GetConfigOrSymbolName(property)));
+        }
+
+        return bindings.ToImmutable();
+    }
+
+    private static string GetInjectLocalName(string serviceKey)
+        => "__jazor$inject$" + Format.HashName(serviceKey).TrimStart('_');
+
+    private static string GetCascadingLocalName(string serviceKey)
+        => "__jazor$cascade$" + Format.HashName(serviceKey).TrimStart('_');
 
     private static ImmutableArray<CompiledLineMapping> BuildCompiledLineMappings(
         IReadOnlyDictionary<Node, GeneratedNodePosition> generatedNodePositions,
@@ -1448,6 +2328,7 @@ internal static class VueModuleBuilder
     private static bool TryBuildOperationDirectRender(
         GeneratedCSharpBinding binding,
         BoundComponent component,
+        MemberClosure closure,
         IReadOnlyDictionary<ISymbol, string>? declaredNames,
         IEnumerable<string>? reservedImportNames,
         VueInjectRegistry injectRegistry,
@@ -1465,7 +2346,8 @@ internal static class VueModuleBuilder
                 reservedImportNames,
                 injectRegistry,
                 out var operationResult,
-                out diagnostic))
+                out diagnostic,
+                parameterPropertiesUseState: closure.UsesParameterViewState))
         {
             return false;
         }
@@ -1483,6 +2365,7 @@ internal static class VueModuleBuilder
             operationResult.UsesRenderList,
             operationResult.UsesWithCtx,
             operationResult.UsesCreateSlots,
+            operationResult.UsesMergeProps,
             operationResult.UsesHandlerCache,
             operationResult.UsesProps,
             operationResult.UsesSlots,
@@ -1498,6 +2381,8 @@ internal static class VueModuleBuilder
     {
         var directLocalNames = CollectDirectRenderLocalNames(component.BuildRenderTreeBody);
         directLocalNames.UnionWith(FramingReservedNames);
+        directLocalNames.UnionWith(
+            BuildInjectBindings(closure).Select(static binding => binding.LocalName));
         if (importLocalNames is not null)
             directLocalNames.UnionWith(importLocalNames);
         var declaredNames = new Dictionary<ISymbol, string>(SymbolComparer);
@@ -2100,7 +2985,10 @@ internal static class VueModuleBuilder
         bool usesTextVNode,
         bool usesRenderList,
         bool usesWithCtx,
-        bool usesCreateSlots)
+        bool usesCreateSlots,
+        bool usesMergeProps,
+        bool usesInject,
+        bool usesCascading)
     {
         var imports = new List<string>
         {
@@ -2126,6 +3014,12 @@ internal static class VueModuleBuilder
             imports.Add("withCtx");
         if (usesCreateSlots)
             imports.Add("createSlots");
+        if (usesMergeProps)
+            imports.Add("mergeProps");
+        if (usesInject || usesCascading)
+            imports.Add("inject");
+        if (usesCascading)
+            imports.Add("unref");
 
         if (usesMounted)
             imports.Add("onMounted");
@@ -2347,6 +3241,51 @@ internal static class VueModuleBuilder
                 property.Type,
                 null,
                 HasExplicitStateInitializer(property)));
+        }
+
+        foreach (var property in closure.InjectProperties)
+        {
+            if (slots.Any(slot => SymbolComparer.Equals(slot.Member, property)))
+                continue;
+
+            slots.Add(new StateSlot(
+                property,
+                Util.GetConfigOrSymbolName(property),
+                GetPropertyBackingFieldName(closure.ComponentSymbol, property),
+                property.Type,
+                null,
+                HasExplicitStateInitializer(property)));
+        }
+
+        foreach (var property in closure.CascadingParameterProperties)
+        {
+            if (slots.Any(slot => SymbolComparer.Equals(slot.Member, property)))
+                continue;
+
+            slots.Add(new StateSlot(
+                property,
+                Util.GetConfigOrSymbolName(property),
+                GetPropertyBackingFieldName(closure.ComponentSymbol, property),
+                property.Type,
+                null,
+                HasExplicitStateInitializer(property)));
+        }
+
+        if (closure.UsesParameterViewState)
+        {
+            foreach (var property in closure.ParameterProperties)
+            {
+                if (slots.Any(slot => SymbolComparer.Equals(slot.Member, property)))
+                    continue;
+
+                slots.Add(new StateSlot(
+                    property,
+                    Util.GetConfigOrSymbolName(property),
+                    GetPropertyBackingFieldName(closure.ComponentSymbol, property),
+                    property.Type,
+                    null,
+                    HasExplicitStateInitializer(property)));
+            }
         }
 
         return slots;
@@ -3187,6 +4126,7 @@ internal static class VueModuleBuilder
         string? OnInitializedAsync,
         string? OnParametersSet,
         string? OnParametersSetAsync,
+        string? SetParametersAsync,
         string? OnAfterRender,
         string? OnAfterRenderAsync,
         string? ShouldRender,
@@ -3200,6 +4140,8 @@ internal static class VueModuleBuilder
         public bool HasOnParametersSet => OnParametersSet is not null;
 
         public bool HasOnParametersSetAsync => OnParametersSetAsync is not null;
+
+        public bool HasSetParametersAsync => SetParametersAsync is not null;
 
         public bool HasOnAfterRender => OnAfterRender is not null;
 
@@ -3215,6 +4157,7 @@ internal static class VueModuleBuilder
             string? onInitializedAsync = null;
             string? onParametersSet = null;
             string? onParametersSetAsync = null;
+            string? setParametersAsync = null;
             string? onAfterRender = null;
             string? onAfterRenderAsync = null;
             string? shouldRender = null;
@@ -3239,6 +4182,10 @@ internal static class VueModuleBuilder
                 else if (string.Equals(method.Name, "OnParametersSetAsync", StringComparison.Ordinal))
                 {
                     onParametersSetAsync = runtimeName;
+                }
+                else if (string.Equals(method.Name, "SetParametersAsync", StringComparison.Ordinal))
+                {
+                    setParametersAsync = runtimeName;
                 }
                 else if (string.Equals(method.Name, "OnAfterRender", StringComparison.Ordinal))
                 {
@@ -3267,6 +4214,7 @@ internal static class VueModuleBuilder
                 onInitializedAsync,
                 onParametersSet,
                 onParametersSetAsync,
+                setParametersAsync,
                 onAfterRender,
                 onAfterRenderAsync,
                 shouldRender,
@@ -3290,7 +4238,14 @@ internal static class VueModuleBuilder
         bool UsesSetupProps,
         bool UsesState,
         bool UsesStateHasChanged,
-        bool UsesInvokeAsync)
+        bool UsesInvokeAsync,
+        ImmutableArray<string> ParameterNames,
+        ImmutableArray<ParameterBinding> ParameterBindings,
+        bool UsesParameterViewSlots,
+        bool UsesUnmatchedAttributes,
+        ImmutableArray<InjectBinding> InjectBindings,
+        ImmutableArray<CascadingBinding> CascadingBindings,
+        string ComponentDisplayName)
     {
         public string? OnInitialized => LifecycleMembers.OnInitialized;
 
@@ -3299,6 +4254,8 @@ internal static class VueModuleBuilder
         public string? OnParametersSet => LifecycleMembers.OnParametersSet;
 
         public string? OnParametersSetAsync => LifecycleMembers.OnParametersSetAsync;
+
+        public string? SetParametersAsync => LifecycleMembers.SetParametersAsync;
 
         public string? OnAfterRender => LifecycleMembers.OnAfterRender;
 
@@ -3312,7 +4269,29 @@ internal static class VueModuleBuilder
 
         public ImmutableArray<string> DisposeAsyncMemberNames => LifecycleMembers.DisposeAsyncMemberNames;
 
-        public bool UsesWatch => LifecycleMembers.HasOnParametersSet || LifecycleMembers.HasOnParametersSetAsync;
+        public bool UsesWatch => LifecycleMembers.HasOnParametersSet ||
+                                  LifecycleMembers.HasOnParametersSetAsync ||
+                                  LifecycleMembers.HasSetParametersAsync ||
+                                  UsesUnmatchedAttributes ||
+                                  UsesCascading;
+
+        public bool UsesParameterViewState => LifecycleMembers.HasSetParametersAsync;
+
+        public bool UsesInject => !InjectBindings.IsDefaultOrEmpty;
+
+        public bool UsesCascading => !CascadingBindings.IsDefaultOrEmpty;
+
+        public ImmutableArray<InjectBinding> InjectResolutions
+            => InjectBindings
+                .GroupBy(static binding => binding.LocalName, StringComparer.Ordinal)
+                .Select(static group => group.First())
+                .ToImmutableArray();
+
+        public ImmutableArray<CascadingBinding> CascadingResolutions
+            => CascadingBindings
+                .GroupBy(static binding => binding.LocalName, StringComparer.Ordinal)
+                .Select(static group => group.First())
+                .ToImmutableArray();
 
         public bool UsesMounted => LifecycleMembers.HasOnAfterRender || LifecycleMembers.HasOnAfterRenderAsync;
 
@@ -3363,7 +4342,8 @@ internal static class VueModuleBuilder
     private sealed record CompilerOutput(
         Module? Module,
         GeneratedJavaScriptLayout? Layout,
-        ComponentInitializationBuildResult Initialization);
+        ComponentInitializationBuildResult Initialization,
+        VueRenderRuntimeFeatures OrdinaryRenderFeatures);
 
     /// <summary>Separates imports, declarations, and executable statements for deterministic framing.</summary>
     private sealed record CompilerModuleParts(
@@ -3388,11 +4368,35 @@ internal static class VueModuleBuilder
         bool UsesRenderList,
         bool UsesWithCtx,
         bool UsesCreateSlots,
+        bool UsesMergeProps,
         bool UsesHandlerCache,
         bool UsesProps,
         bool UsesSlots,
         ImmutableArray<ImportDeclaration> ImportDeclarations,
         ImmutableArray<ISymbol> ReferenceCaptureStateMembers);
+
+    /// <summary>Maps one Blazor parameter name to its Vue carrier and component state slot.</summary>
+    private sealed record ParameterBinding(
+        string SourceName,
+        string RuntimeName,
+        string StateName,
+        bool IsSlot,
+        bool CapturesUnmatchedValues);
+
+    /// <summary>One standard Blazor [Inject] property projected to a Vue provider lookup.</summary>
+    private sealed record InjectBinding(
+        IPropertySymbol Property,
+        string ServiceKey,
+        string LocalName,
+        string StateName,
+        string ServiceTypeDisplay);
+
+    /// <summary>One [CascadingParameter] projected to a typed Vue provide/inject ref.</summary>
+    private sealed record CascadingBinding(
+        IPropertySymbol Property,
+        string ServiceKey,
+        string LocalName,
+        string StateName);
 
     /// <summary>Represents one component field/property projected into Vue reactive state.</summary>
     private sealed record StateSlot(

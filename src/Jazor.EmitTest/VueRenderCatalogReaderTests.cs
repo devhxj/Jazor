@@ -322,30 +322,53 @@ public sealed class ArtifactCatalogReaderTests
     }
 
     [TestMethod]
-    public void RazorVueRawMarkupRuntime_IsRetainedAndMaterializedOnlyWhenReferenced()
+    public void RazorVueRuntimeModules_AreRetainedAndMaterializedOnlyWhenReferenced()
     {
         var catalog = CatalogReader.TryReadCatalogs(typeof(VueRawMarkup).Assembly);
 
-        Assert.HasCount(1, catalog.Modules);
-        var runtime = catalog.Modules[0];
-        Assert.AreEqual("jazor.vue", runtime.RuntimeProviderId);
-        Assert.AreEqual("@jazor/vue-runtime/raw-markup.mjs", runtime.RelativePath);
-        StringAssert.Contains(runtime.Content, "export function createRawMarkup", StringComparison.Ordinal);
+        Assert.HasCount(4, catalog.Modules);
+        var rawMarkupRuntime = catalog.Modules.Single(static module =>
+            module.RelativePath == "@jazor/vue-runtime/raw-markup.mjs");
+        var cascadingRuntime = catalog.Modules.Single(static module =>
+            module.RelativePath == "@jazor/vue-runtime/cascading.mjs");
+        var routingRuntime = catalog.Modules.Single(static module =>
+            module.RelativePath == "@jazor/vue-runtime/blazor-routing.mjs");
+        var componentsRuntime = catalog.Modules.Single(static module =>
+            module.RelativePath == "@jazor/vue-runtime/blazor-components.mjs");
+        Assert.AreEqual("jazor.vue", rawMarkupRuntime.RuntimeProviderId);
+        Assert.AreEqual("jazor.vue", cascadingRuntime.RuntimeProviderId);
+        Assert.AreEqual("jazor.vue", routingRuntime.RuntimeProviderId);
+        Assert.AreEqual("jazor.vue", componentsRuntime.RuntimeProviderId);
+        StringAssert.Contains(rawMarkupRuntime.Content, "export function createRawMarkup", StringComparison.Ordinal);
+        StringAssert.Contains(cascadingRuntime.Content, "export const CascadingValue", StringComparison.Ordinal);
+        StringAssert.Contains(routingRuntime.Content, "export const Router", StringComparison.Ordinal);
+        StringAssert.Contains(componentsRuntime.Content, "export const DynamicComponent", StringComparison.Ordinal);
         Assert.HasCount(1, catalog.ImportMapEntries);
         Assert.AreEqual("@jazor/vue-runtime/", catalog.ImportMapEntries[0].Specifier);
 
         var inactiveComponent = CreateModule("components/plain.mjs", "export default {};\n");
-        var inactive = ModuleCollector.RetainReferencedRuntimeProviderModules([inactiveComponent, runtime]);
+        var inactive = ModuleCollector.RetainReferencedRuntimeProviderModules(
+            [inactiveComponent, rawMarkupRuntime, cascadingRuntime, routingRuntime, componentsRuntime]);
         Assert.HasCount(1, inactive);
         Assert.AreEqual("components/plain.mjs", inactive[0].RelativePath);
 
         var activeComponent = CreateModule(
             "components/raw-markup.mjs",
             "import { createRawMarkup } from \"@jazor/vue-runtime/raw-markup.mjs\";\nexport default createRawMarkup;\n");
-        var active = ModuleCollector.RetainReferencedRuntimeProviderModules([activeComponent, runtime]);
+        var active = ModuleCollector.RetainReferencedRuntimeProviderModules(
+            [activeComponent, rawMarkupRuntime, cascadingRuntime, routingRuntime, componentsRuntime]);
         CollectionAssert.AreEquivalent(
             new[] { "components/raw-markup.mjs", "@jazor/vue-runtime/raw-markup.mjs" },
             active.Select(static module => module.RelativePath).ToArray());
+
+        var cascadingComponent = CreateModule(
+            "components/cascading-value.mjs",
+            "import { CascadingValue } from \"@jazor/vue-runtime/cascading.mjs\";\nexport default CascadingValue;\n");
+        var cascading = ModuleCollector.RetainReferencedRuntimeProviderModules(
+            [cascadingComponent, rawMarkupRuntime, cascadingRuntime, routingRuntime, componentsRuntime]);
+        CollectionAssert.AreEquivalent(
+            new[] { "components/cascading-value.mjs", "@jazor/vue-runtime/cascading.mjs" },
+            cascading.Select(static module => module.RelativePath).ToArray());
 
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         try
@@ -370,6 +393,19 @@ public sealed class ArtifactCatalogReaderTests
                 importMapEntries: catalog.ImportMapEntries);
             Assert.IsTrue(activeWrite.IsSuccess, activeWrite.Error);
             Assert.IsTrue(File.Exists(Path.Combine(activeOutput, "@jazor", "vue-runtime", "raw-markup.mjs")));
+            Assert.IsFalse(File.Exists(Path.Combine(activeOutput, "@jazor", "vue-runtime", "cascading.mjs")));
+
+            var cascadingOutput = Path.Combine(root, "cascading");
+            var cascadingWrite = ModuleWriter.Write(
+                "Cascading.Provider.Tests.dll",
+                cascadingOutput,
+                Path.Combine(cascadingOutput, "jazor-manifest.json"),
+                cascading,
+                clean: true,
+                importMapEntries: catalog.ImportMapEntries);
+            Assert.IsTrue(cascadingWrite.IsSuccess, cascadingWrite.Error);
+            Assert.IsTrue(File.Exists(Path.Combine(cascadingOutput, "@jazor", "vue-runtime", "cascading.mjs")));
+            Assert.IsFalse(File.Exists(Path.Combine(cascadingOutput, "@jazor", "vue-runtime", "raw-markup.mjs")));
 
             var manifest = ManifestModel.TryLoad(Path.Combine(activeOutput, "jazor-manifest.json"));
             Assert.IsNotNull(manifest);

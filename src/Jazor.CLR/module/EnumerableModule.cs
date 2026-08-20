@@ -1068,7 +1068,7 @@ public static class EnumerableModule<TSource>
 		if (source == null)
 			throw new Error("ArgumentNullException: source is null");
 
-		var maximum = BigIntFn("9223372036854775807");
+		var maximum = BigIntValue("9223372036854775807");
 		var count = BigInt.Zero;
 		foreach (var _ in source)
 		{
@@ -1087,7 +1087,7 @@ public static class EnumerableModule<TSource>
 		if (predicate == null)
 			throw new Error("ArgumentNullException: predicate is null");
 
-		var maximum = BigIntFn("9223372036854775807");
+		var maximum = BigIntValue("9223372036854775807");
 		var count = BigInt.Zero;
 		foreach (var item in source)
 		{
@@ -1148,8 +1148,8 @@ public static class EnumerableModule<TSource>
 
 	private static void EnsureInt64AdditionInRange(BigInt total, BigInt value, string operation)
 	{
-		var maximum = BigIntFn("9223372036854775807");
-		var minimum = BigIntFn("-9223372036854775808");
+		var maximum = BigIntValue("9223372036854775807");
+		var minimum = BigIntValue("-9223372036854775808");
 		if ((value > BigInt.Zero && total > maximum - value) ||
 			(value < BigInt.Zero && total < minimum - value))
 		{
@@ -1175,7 +1175,7 @@ public static class EnumerableModule<TSource>
 		}
 
 		// Enumerable.Sum(float) accumulates at wider precision and converts once on return.
-		return singlePrecision ? Math.FroundFn(sum) : sum;
+		return singlePrecision ? Math.Fround(sum) : sum;
 	}
 
 	private static decimal SumDecimalCore<TValue>(IEnumerable<TValue> source, Func<TValue, decimal> selector)
@@ -1208,7 +1208,7 @@ public static class EnumerableModule<TSource>
 		foreach (var sourceItem in source)
 		{
 			var item = selector(sourceItem);
-			var value = BigIntFn(item);
+			var value = BigIntValue(item);
 			EnsureInt64AdditionInRange(sum, value, "Average");
 			EnsureInt64AdditionInRange(count, BigInt.One, "Average count");
 			sum += value;
@@ -1218,7 +1218,7 @@ public static class EnumerableModule<TSource>
 		if (count == BigInt.Zero)
 			throw new Error("InvalidOperationException: Sequence contains no elements");
 
-		return NumberFn(sum) / NumberFn(count);
+		return NumberValue(sum) / NumberValue(count);
 	}
 
 	private static Number AverageInt64Core<TValue>(IEnumerable<TValue> source, Func<TValue, BigInt> selector)
@@ -1242,7 +1242,7 @@ public static class EnumerableModule<TSource>
 		if (count == BigInt.Zero)
 			throw new Error("InvalidOperationException: Sequence contains no elements");
 
-		return NumberFn(sum) / NumberFn(count);
+		return NumberValue(sum) / NumberValue(count);
 	}
 
 	private static Number AverageNumberCore<TValue>(
@@ -1268,8 +1268,8 @@ public static class EnumerableModule<TSource>
 		if (count == BigInt.Zero)
 			throw new Error("InvalidOperationException: Sequence contains no elements");
 
-		var average = sum / NumberFn(count);
-		return singlePrecision ? Math.FroundFn(average) : average;
+		var average = sum / NumberValue(count);
+		return singlePrecision ? Math.Fround(average) : average;
 	}
 
 	private static decimal AverageDecimalCore<TValue>(IEnumerable<TValue> source, Func<TValue, decimal> selector)
@@ -1353,7 +1353,7 @@ public static class EnumerableModule<TSource>
 				sum += selected.Value;
 		}
 
-		return singlePrecision ? Math.FroundFn(sum) : sum;
+		return singlePrecision ? Math.Fround(sum) : sum;
 	}
 
 	private static decimal SumNullableDecimalCore<TValue>(IEnumerable<TValue> source, Func<TValue, decimal?> selector)
@@ -1389,14 +1389,14 @@ public static class EnumerableModule<TSource>
 			if (!selected.HasValue)
 				continue;
 
-			var item = BigIntFn(selected.Value);
+			var item = BigIntValue(selected.Value);
 			EnsureInt64AdditionInRange(sum, item, "Average");
 			EnsureInt64AdditionInRange(count, BigInt.One, "Average count");
 			sum += item;
 			count += BigInt.One;
 		}
 
-		return count == BigInt.Zero ? null : NumberFn(sum) / NumberFn(count);
+		return count == BigInt.Zero ? null : NumberValue(sum) / NumberValue(count);
 	}
 
 	private static Number? AverageNullableInt64Core<TValue>(IEnumerable<TValue> source, Func<TValue, BigInt?> selector)
@@ -1420,7 +1420,7 @@ public static class EnumerableModule<TSource>
 			count += BigInt.One;
 		}
 
-		return count == BigInt.Zero ? null : NumberFn(sum) / NumberFn(count);
+		return count == BigInt.Zero ? null : NumberValue(sum) / NumberValue(count);
 	}
 
 	private static Number? AverageNullableNumberCore<TValue>(IEnumerable<TValue> source, Func<TValue, Number?> selector, bool singlePrecision)
@@ -1446,8 +1446,8 @@ public static class EnumerableModule<TSource>
 		if (count == BigInt.Zero)
 			return null;
 
-		var average = sum / NumberFn(count);
-		return singlePrecision ? Math.FroundFn(average) : average;
+		var average = sum / NumberValue(count);
+		return singlePrecision ? Math.Fround(average) : average;
 	}
 
 	private static decimal? AverageNullableDecimalCore<TValue>(IEnumerable<TValue> source, Func<TValue, decimal?> selector)

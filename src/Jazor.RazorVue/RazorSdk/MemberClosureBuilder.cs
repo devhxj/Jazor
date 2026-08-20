@@ -22,9 +22,7 @@ internal static class MemberClosureBuilder
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
     private const string IDisposableMetadataName = "System.IDisposable";
     private const string IAsyncDisposableMetadataName = "System.IAsyncDisposable";
-    private const string UnsupportedSetParametersAsyncFailure =
-        "RazorVue does not map ComponentBase.SetParametersAsync. " +
-        "React to Vue props in OnParametersSet or OnParametersSetAsync instead.";
+    private const string ParameterViewMetadataName = "Microsoft.AspNetCore.Components.ParameterView";
 
     private static readonly ImmutableHashSet<string> SupportedLifecycleMethods =
         ImmutableHashSet.Create(
@@ -83,25 +81,64 @@ internal static class MemberClosureBuilder
             return false;
         }
 
-        // SetParametersAsync needs a real ParameterView projection. Lifecycle/dispose do not:
-        // their virtual/interface dispatch target is known statically and maps directly to Vue.
-        // 不能把缺少 ParameterView carrier 的入口伪装成普通 props watch；其余可保真的 hook
-        // 则应解析到源码层级的实际 dispatch target，而不是笼统拒绝。
-        if (FindUnsupportedComponentRuntimeEntry(binding.Compilation, component.ComponentSymbol) is { } entry)
+        var setParametersAsyncRoot = FindEffectiveSetParametersAsyncOverride(
+            binding.Compilation,
+            component.ComponentSymbol);
+        var injectProperties = LibraryComponentConventions
+            .GetEffectiveInjectProperties(component.ComponentSymbol);
+        foreach (var property in injectProperties)
         {
-            failure = UnsupportedSetParametersAsyncFailure;
-            failureSubject = entry;
-            return false;
+            if (!IsAutoProperty(property) || property.SetMethod is null)
+            {
+                failure = "RazorVue can activate [Inject] properties only when they are writable auto-properties. " +
+                          "Use a normal settable property so the browser service adapter can assign the resolved service before component lifecycle callbacks.";
+                failureSubject = property;
+                return false;
+            }
         }
-
+        var cascadingProperties = LibraryComponentConventions
+            .GetEffectiveCascadingParameterProperties(component.ComponentSymbol);
+        foreach (var property in cascadingProperties)
+        {
+            if (!IsAutoProperty(property) || property.SetMethod is null)
+            {
+                failure = "RazorVue can activate [CascadingParameter] properties only when they are writable auto-properties. " +
+                          "Use a normal settable property so the browser cascade adapter can assign the nearest value before component lifecycle callbacks.";
+                failureSubject = property;
+                return false;
+            }
+        }
         var lifecycleRoots = GetSupportedLifecycleRoots(binding.Compilation, component.ComponentSymbol);
+        if (setParametersAsyncRoot is not null)
+            lifecycleRoots = lifecycleRoots.Add(setParametersAsyncRoot);
         var roots = ImmutableArray.CreateBuilder<ISymbol>(
-            1 + lifecycleRoots.Length + initializationPlan.Constructors.Length);
+            1 + lifecycleRoots.Length + initializationPlan.Constructors.Length +
+            (setParametersAsyncRoot is null ? 0 : 1));
         roots.Add(component.BuildRenderTreeMethod);
         roots.AddRange(lifecycleRoots);
+        // Property injection is an activation root even when the authored component never reads
+        // the property during its first render. Blazor still initializes the property, and a
+        // later callback/render must observe the same value rather than a default null slot.
+        // 即使首帧未读取，Blazor 也会完成注入；必须把属性纳入 closure 才能保留后续可观察行为。
+        roots.AddRange(injectProperties);
+        // Cascading parameters are activated by the browser provide/inject adapter. Keep them
+        // in the closure even when the first render does not read the property, matching
+        // Blazor's activation timing and allowing later lifecycle callbacks to observe updates.
+        // 级联参数和 [Inject] 一样属于激活根，不能等到首帧读取后才加入 state。
+        roots.AddRange(cascadingProperties);
+        if (setParametersAsyncRoot is not null)
+            roots.Add(setParametersAsyncRoot);
         roots.AddRange(initializationPlan.Constructors);
-        if (initializationPlan.HasExplicitConstructors)
-            roots.AddRange(GetInstanceStorageMembers(component.ComponentSymbol));
+        if (initializationPlan.HasExplicitConstructors || setParametersAsyncRoot is not null)
+        {
+            // ParameterView overlays component storage rather than Vue's read-only props. Its
+            // auto-property backing fields must therefore participate even when render code has
+            // not read a parameter yet, otherwise a missing parameter loses its CLR initializer.
+            // ParameterView 模式需要保留所有参数 storage，缺失参数才能维持默认/旧值。
+            roots.AddRange(GetInstanceStorageMembers(
+                component.ComponentSymbol,
+                includeParameterProperties: setParametersAsyncRoot is not null));
+        }
 
         var compilerClosure = CurrentComponentMemberClosure.Create(
             component.ComponentSymbol,
@@ -113,7 +150,9 @@ internal static class MemberClosureBuilder
             component.BuildRenderTreeMethod,
             compilerClosure,
             lifecycleRoots,
-            initializationPlan);
+            initializationPlan,
+            setParametersAsyncRoot,
+            cascadingProperties);
         return true;
     }
 
@@ -152,7 +191,7 @@ internal static class MemberClosureBuilder
                RenderTreeBuilderMetadataName,
                StringComparison.Ordinal);
 
-    private static IMethodSymbol? FindUnsupportedComponentRuntimeEntry(
+    private static IMethodSymbol? FindEffectiveSetParametersAsyncOverride(
         Compilation compilation,
         INamedTypeSymbol componentSymbol)
     {
@@ -161,7 +200,7 @@ internal static class MemberClosureBuilder
         {
             var entry = current.GetMembers()
                 .OfType<IMethodSymbol>()
-                .Where(method => IsUnsupportedComponentRuntimeEntry(
+                .Where(method => IsSetParametersAsyncOverride(
                     method,
                     componentBase))
                 .OrderBy(static method => GetStableMemberKey(method), StringComparer.Ordinal)
@@ -173,7 +212,7 @@ internal static class MemberClosureBuilder
         return null;
     }
 
-    private static bool IsUnsupportedComponentRuntimeEntry(
+    private static bool IsSetParametersAsyncOverride(
         IMethodSymbol method,
         INamedTypeSymbol? componentBase)
     {
@@ -182,6 +221,11 @@ internal static class MemberClosureBuilder
 
         if (string.Equals(method.Name, "SetParametersAsync", StringComparison.Ordinal) &&
             method.IsOverride &&
+            method.Parameters.Length == 1 &&
+            string.Equals(
+                method.Parameters[0].Type.OriginalDefinition.ToDisplayString(),
+                ParameterViewMetadataName,
+                StringComparison.Ordinal) &&
             OverridesComponentBase(method, componentBase))
         {
             return true;
@@ -291,7 +335,15 @@ internal static class MemberClosureBuilder
         return true;
     }
 
+    // Keep the original one-argument reflection/test seam stable while allowing the
+    // ParameterView adapter to opt into parameter storage explicitly.
+    // 保留旧的单参数契约，ParameterView 仅在调用处显式开启参数 storage。
     private static IEnumerable<ISymbol> GetInstanceStorageMembers(INamedTypeSymbol componentSymbol)
+        => GetInstanceStorageMembers(componentSymbol, includeParameterProperties: false);
+
+    private static IEnumerable<ISymbol> GetInstanceStorageMembers(
+        INamedTypeSymbol componentSymbol,
+        bool includeParameterProperties)
     {
         foreach (var current in GetSourceComponentHierarchy(componentSymbol))
         {
@@ -303,7 +355,9 @@ internal static class MemberClosureBuilder
 
             foreach (var property in current.GetMembers().OfType<IPropertySymbol>())
             {
-                if (!property.IsStatic && !IsParameterProperty(property) && IsAutoProperty(property))
+                if (!property.IsStatic &&
+                    (includeParameterProperties || !IsParameterProperty(property)) &&
+                    IsAutoProperty(property))
                     yield return property;
             }
         }
@@ -653,7 +707,9 @@ internal sealed record MemberClosure(
     IMethodSymbol BuildRenderTreeMethod,
     CurrentComponentMemberClosure CompilerClosure,
     ImmutableArray<IMethodSymbol> LifecycleRoots,
-    ComponentInitializationPlan InitializationPlan)
+    ComponentInitializationPlan InitializationPlan,
+    IMethodSymbol? SetParametersAsyncRoot,
+    ImmutableArray<IPropertySymbol> CascadingParameterProperties)
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
@@ -691,12 +747,35 @@ internal sealed record MemberClosure(
                 .GetEffectiveParameterProperties(ComponentSymbol)
                 .Select(static property => property.OriginalDefinition)
                 .ToImmutableHashSet(Comparer);
-            return OrderedMembers
-                .OfType<IPropertySymbol>()
+            // Normal components only need parameter storage already reached by the closure:
+            // rendering reads Vue props directly. A SetParametersAsync override is different:
+            // ComponentBase applies every supplied parameter to instance storage, including a
+            // parameter not rendered by this component. Keep that complete surface so an omitted
+            // value preserves its existing CLR default or prior assignment.
+            // 自定义 SetParametersAsync 需要完整参数 surface，不能只看 render 可达成员。
+            var candidates = UsesParameterViewState
+                ? LibraryComponentConventions.GetEffectiveParameterProperties(ComponentSymbol)
+                : OrderedMembers.OfType<IPropertySymbol>();
+            return candidates
                 .Where(property => effectiveParameters.Contains(property.OriginalDefinition))
                 .ToImmutableArray();
         }
     }
+
+    /// <summary>
+    /// A custom ComponentBase.SetParametersAsync override changes the parameter carrier from
+    /// Vue's immutable props proxy to component instance state. The runtime bridge owns the
+    /// snapshot/overlay protocol; authored code retains the standard Blazor entry point.
+    /// 自定义参数入口启用真实 ParameterView state adapter，而不是 props watch 伪装。
+    /// </summary>
+    public bool UsesParameterViewState
+        => SetParametersAsyncRoot is not null;
+
+    /// <summary>Effective standard Blazor property-injection contract for this component.</summary>
+    public ImmutableArray<IPropertySymbol> InjectProperties
+        => LibraryComponentConventions.GetEffectiveInjectProperties(ComponentSymbol)
+            .Where(static property => property.SetMethod is not null)
+            .ToImmutableArray();
 
     public ImmutableArray<IPropertySymbol> StateProperties
         => OrderedMembers
@@ -733,7 +812,9 @@ internal sealed record MemberClosure(
                 IsComponentSurfaceMember(method) &&
                 method.MethodKind == MethodKind.Ordinary &&
                 !Comparer.Equals(method.OriginalDefinition, BuildRenderTreeMethod.OriginalDefinition) &&
-                !LifecycleRoots.Any(lifecycle => Comparer.Equals(lifecycle.OriginalDefinition, method.OriginalDefinition)))
+                !LifecycleRoots.Any(lifecycle => Comparer.Equals(lifecycle.OriginalDefinition, method.OriginalDefinition)) &&
+                (SetParametersAsyncRoot is null ||
+                 !Comparer.Equals(method.OriginalDefinition, SetParametersAsyncRoot.OriginalDefinition)))
             .ToImmutableArray();
 
     private bool IsComponentSurfaceMember(ISymbol member)
@@ -748,8 +829,22 @@ internal sealed record MemberClosure(
         string stateIdentifier = "state",
         string propsIdentifier = "props",
         IReadOnlyDictionary<ISymbol, string>? declaredNames = null,
-        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null)
-        => new(
+        Func<IPropertyReferenceOperation, SenseArgument, Expression?>? propertyReferenceRewriter = null,
+        Compilation? compilation = null,
+        VueInjectRegistry? injectRegistry = null,
+        VueRenderRuntimeFeatures? ordinaryRenderFeatures = null)
+    {
+        SemanticWalkerHost? tableCellHost = compilation is not null &&
+                                             injectRegistry is not null &&
+                                             ordinaryRenderFeatures is not null
+            ? new TDesignTableCellSemanticWalkerHost(
+                compilation,
+                ComponentSymbol,
+                declaredNames,
+                injectRegistry,
+                ordinaryRenderFeatures)
+            : null;
+        return new AstConverterOptions(
             AstConverterProfile.Standard,
             MemberFilter: ShouldIncludeCompilerMember,
             DeclaredNames: declaredNames,
@@ -759,9 +854,12 @@ internal sealed record MemberClosure(
                 propsIdentifier,
                 BuildParameterRuntimeNameMap(ComponentSymbol),
                 declaredNames,
-                propertyReferenceRewriter: propertyReferenceRewriter),
+                parameterPropertiesUseState: UsesParameterViewState,
+                propertyReferenceRewriter: propertyReferenceRewriter,
+                tableCellHost: tableCellHost),
             ModulePolicy: VueModulePolicy.Instance,
             RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+    }
 
     private bool ShouldIncludeCompilerMember(ISymbol symbol)
     {

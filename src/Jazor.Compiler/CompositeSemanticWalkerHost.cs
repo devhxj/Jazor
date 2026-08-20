@@ -142,6 +142,16 @@ public class CompositeSemanticWalkerHost : SemanticWalkerHost
         SenseArgument argument)
         => First(host => host.RewriteInstanceReference(operation, argument));
 
+    public override Expression? RewriteEventAssignment(
+        IEventAssignmentOperation operation,
+        SenseArgument argument)
+        => First(host => host.RewriteEventAssignment(operation, argument));
+
+    public override Expression? RewriteEventReference(
+        IEventReferenceOperation operation,
+        SenseArgument argument)
+        => First(host => host.RewriteEventReference(operation, argument));
+
     private TNode? First<TNode>(Func<SemanticWalkerHost, TNode?> rewrite)
         where TNode : Node
     {

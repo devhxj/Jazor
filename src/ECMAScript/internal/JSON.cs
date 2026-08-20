@@ -26,8 +26,8 @@ public static class JSON
 	{
 		/// <summary>
 		/// Source text for the current primitive parse node when JavaScript provides it.
-	/// When the runtime leaves this field absent, the C# projection surfaces that absence as <see langword="null" />.
-	/// JavaScript 提供时，获取当前原始解析节点的 source 文本；运行时缺少字段时投影为 <see langword="null"/>。
+		/// When the runtime leaves this field absent, the C# projection surfaces that absence as <see langword="null" />.
+		/// JavaScript 提供时，获取当前原始解析节点的 source 文本；运行时缺少字段时投影为 <see langword="null"/>。
 		/// </summary>
 		[Description("@#source")]
 		public extern string? Source { get; }
@@ -42,8 +42,8 @@ public static class JSON
 	public sealed class RawValue
 	{
 		/// <summary>
-	/// Underlying raw JSON text carried by the runtime object.
-	/// 运行时 raw JSON 对象承载的原始 JSON 文本。
+		/// Underlying raw JSON text carried by the runtime object.
+		/// 运行时 raw JSON 对象承载的原始 JSON 文本。
 		/// </summary>
 		[Description("@#rawJSON")]
 		public extern string RawJSON { get; }

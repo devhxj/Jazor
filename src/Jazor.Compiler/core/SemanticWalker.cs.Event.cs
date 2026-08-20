@@ -26,6 +26,9 @@ public sealed partial class SemanticWalker
 
     public override Node? VisitEventReference(IEventReferenceOperation operation, SenseArgument argument)
     {
+        if (Host?.RewriteEventReference(operation, argument) is Expression hostExpression)
+            return WithOriginIfMissing(hostExpression, operation);
+
         if (!TryValidateEventProtocol(operation, operation.Event, out var failure))
             return HandleTransformationFailure<Node>(operation, failure);
 
@@ -38,6 +41,9 @@ public sealed partial class SemanticWalker
 
     public override Node? VisitEventAssignment(IEventAssignmentOperation operation, SenseArgument argument)
     {
+        if (Host?.RewriteEventAssignment(operation, argument) is Expression hostExpression)
+            return WithOriginIfMissing(hostExpression, operation);
+
         // Roslyn types EventReference as IOperation on the public interface, but valid event
         // assignments always bind that child as IEventReferenceOperation.
         var eventReference = (IEventReferenceOperation)operation.EventReference;

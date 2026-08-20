@@ -48,6 +48,7 @@ public sealed class ClrRuntimeBehaviorTests
         }
 
         var uncoveredMembers = ClrRuntimeMappingCatalog.Imports
+            .Where(static mapping => !mapping.IsExternalRuntime)
             .Select(static mapping => mapping.Member)
             .Where(member => !coveredMembers.Contains(member))
             .OrderBy(static member => member, StringComparer.Ordinal)

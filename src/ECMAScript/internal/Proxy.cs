@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using PropertyKey = ECMAScript.PropertyKey;
+using PropertyKey = ECMAScript.JPropertyKey;
 
 namespace ECMAScript;
 
@@ -14,15 +14,15 @@ namespace ECMAScript;
 public sealed class RevocableProxy<TTarget> where TTarget : class
 {
 	/// <summary>
-/// Gets the revocable JavaScript proxy instance.
-/// 获取可撤销的 JavaScript 代理实例。
+	/// Gets the revocable JavaScript proxy instance.
+	/// 获取可撤销的 JavaScript 代理实例。
 	/// </summary>
 	[Description("@#proxy")]
 	public extern Proxy<TTarget> Proxy { get; }
 
 	/// <summary>
-/// Gets the action that revokes the proxy so future operations fail according to JavaScript proxy semantics.
-/// 获取撤销代理的操作；撤销后续操作会按 JavaScript 代理语义失败。
+	/// Gets the action that revokes the proxy so future operations fail according to JavaScript proxy semantics.
+	/// 获取撤销代理的操作；撤销后续操作会按 JavaScript 代理语义失败。
 	/// </summary>
 	[Description("@#revoke")]
 	public extern Action Revoke { get; }
@@ -38,9 +38,9 @@ public sealed class RevocableProxy<TTarget> where TTarget : class
 public static class Proxy
 {
 	/// <summary>
-/// Creates a revocable JavaScript proxy together with its paired revoke callback.
-/// This models JavaScript <c>Proxy.revocable(target, handler)</c> directly on the <c>Proxy</c> host.
-/// 创建可撤销 JavaScript 代理及其配对 revoke 回调；直接在 <c>Proxy</c> 宿主上映射 <c>Proxy.revocable(target, handler)</c>。
+	/// Creates a revocable JavaScript proxy together with its paired revoke callback.
+	/// This models JavaScript <c>Proxy.revocable(target, handler)</c> directly on the <c>Proxy</c> host.
+	/// 创建可撤销 JavaScript 代理及其配对 revoke 回调；直接在 <c>Proxy</c> 宿主上映射 <c>Proxy.revocable(target, handler)</c>。
 	/// </summary>
 	[Description("@#revocable")]
 	public extern static RevocableProxy<TTarget> Revocable<TTarget>(TTarget target, ProxyHandler<TTarget> handler) where TTarget : class;
@@ -56,16 +56,16 @@ public static class Proxy
 public sealed class Proxy<TTarget> where TTarget : class
 {
 	/// <summary>
-/// Creates a JavaScript proxy for the supplied target and handler.
-/// Proxy traps must preserve JavaScript proxy invariants for non-configurable and non-extensible target state.
-/// 使用给定目标和 handler 创建 JavaScript 代理；代理 trap 必须保持 JavaScript 对不可配置及不可扩展目标状态的约束。
+	/// Creates a JavaScript proxy for the supplied target and handler.
+	/// Proxy traps must preserve JavaScript proxy invariants for non-configurable and non-extensible target state.
+	/// 使用给定目标和 handler 创建 JavaScript 代理；代理 trap 必须保持 JavaScript 对不可配置及不可扩展目标状态的约束。
 	/// </summary>
 	public extern Proxy(TTarget target, ProxyHandler<TTarget> handler);
 
 	/// <summary>
-/// Creates a JavaScript proxy with an object-shaped mutation handler.
-/// This form avoids external host inheritance when callers only need to guard writes.
-/// 使用对象形状的修改 handler 创建 JavaScript 代理；调用方仅需控制写入时，此形式避免外部宿主继承。
+	/// Creates a JavaScript proxy with an object-shaped mutation handler.
+	/// This form avoids external host inheritance when callers only need to guard writes.
+	/// 使用对象形状的修改 handler 创建 JavaScript 代理；调用方仅需控制写入时，此形式避免外部宿主继承。
 	/// </summary>
 	public extern Proxy(TTarget target, ProxyMutationHandler<TTarget> handler);
 }
@@ -81,23 +81,23 @@ public sealed class Proxy<TTarget> where TTarget : class
 public sealed class ProxyMutationHandler<TTarget> where TTarget : class
 {
 	/// <summary>
-/// Gets the optional trap for property reads so mutation-only handlers remain compact.
-/// 获取可选的属性读取 trap，使仅修改的 handler 保持精简。
+	/// Gets the optional trap for property reads so mutation-only handlers remain compact.
+	/// 获取可选的属性读取 trap，使仅修改的 handler 保持精简。
 	/// </summary>
 	[Description("@#get")]
-	public Func<TTarget, PropertyKey, object, object?>? Get { get; init; }
+	public Func<TTarget, JPropertyKey, object, object?>? Get { get; init; }
 
 	/// <summary>Gets the optional trap for property writes. 获取可选的属性写入 trap。</summary>
 	[Description("@#set")]
-	public Func<TTarget, PropertyKey, object?, object, bool>? Set { get; init; }
+	public Func<TTarget, JPropertyKey, object?, object, bool>? Set { get; init; }
 
 	/// <summary>Gets the optional trap for deleting an own property. 获取可选的删除自身属性 trap。</summary>
 	[Description("@#deleteProperty")]
-	public Func<TTarget, PropertyKey, bool>? DeleteProperty { get; init; }
+	public Func<TTarget, JPropertyKey, bool>? DeleteProperty { get; init; }
 
 	/// <summary>Gets the optional trap for defining or reconfiguring an own property. 获取可选的定义或重新配置自身属性 trap。</summary>
 	[Description("@#defineProperty")]
-	public Func<TTarget, PropertyKey, PropertyDescriptor, bool>? DefineProperty { get; init; }
+	public Func<TTarget, JPropertyKey, JSPropertyDescriptor, bool>? DefineProperty { get; init; }
 }
 
 /// <summary>
@@ -112,83 +112,83 @@ public sealed class ProxyMutationHandler<TTarget> where TTarget : class
 public abstract class ProxyHandler<TTarget> where TTarget : class
 {
 	/// <summary>
-/// Trap for property reads. 属性读取 trap。
+	/// Trap for property reads. 属性读取 trap。
 	/// </summary>
 	[Description("@#get")]
-	public extern virtual object? Get(TTarget target, PropertyKey property, object receiver);
+	public extern virtual object? Get(TTarget target, JPropertyKey property, object receiver);
 
 	/// <summary>
-/// Trap for property writes. 属性写入 trap。
+	/// Trap for property writes. 属性写入 trap。
 	/// </summary>
 	[Description("@#set")]
-	public extern virtual bool Set(TTarget target, PropertyKey property, object? value, object receiver);
+	public extern virtual bool Set(TTarget target, JPropertyKey property, object? value, object receiver);
 
 	/// <summary>
-/// Trap for deleting an own property. 删除自身属性 trap。
+	/// Trap for deleting an own property. 删除自身属性 trap。
 	/// </summary>
 	[Description("@#deleteProperty")]
-	public extern virtual bool DeleteProperty(TTarget target, PropertyKey property);
+	public extern virtual bool DeleteProperty(TTarget target, JPropertyKey property);
 
 	/// <summary>
-/// Trap for defining or reconfiguring an own property. 定义或重新配置自身属性 trap。
+	/// Trap for defining or reconfiguring an own property. 定义或重新配置自身属性 trap。
 	/// </summary>
 	[Description("@#defineProperty")]
-	public extern virtual bool DefineProperty(TTarget target, PropertyKey property, PropertyDescriptor attributes);
+	public extern virtual bool DefineProperty(TTarget target, JPropertyKey property, JSPropertyDescriptor attributes);
 
 	/// <summary>
-/// Trap for reading an own property descriptor. 读取自身属性描述符 trap。
+	/// Trap for reading an own property descriptor. 读取自身属性描述符 trap。
 	/// </summary>
 	[Description("@#getOwnPropertyDescriptor")]
-	public extern virtual PropertyDescriptor? GetOwnPropertyDescriptor(TTarget target, PropertyKey property);
+	public extern virtual JSPropertyDescriptor? GetOwnPropertyDescriptor(TTarget target, JPropertyKey property);
 
 	/// <summary>
-/// Trap for enumerating own property keys, including symbols. 枚举自身属性键（包括 Symbol）的 trap。
+	/// Trap for enumerating own property keys, including symbols. 枚举自身属性键（包括 Symbol）的 trap。
 	/// </summary>
 	[Description("@#ownKeys")]
-	public extern virtual Array<PropertyKey> OwnKeys(TTarget target);
+	public extern virtual Array<JPropertyKey> OwnKeys(TTarget target);
 
 	/// <summary>
-/// Trap for reading the proxy target prototype. 读取代理目标原型 trap。
+	/// Trap for reading the proxy target prototype. 读取代理目标原型 trap。
 	/// </summary>
 	[Description("@#getPrototypeOf")]
 	public extern virtual IObject? GetPrototypeOf(TTarget target);
 
 	/// <summary>
-/// Trap for updating the proxy target prototype. 更新代理目标原型 trap。
+	/// Trap for updating the proxy target prototype. 更新代理目标原型 trap。
 	/// </summary>
 	[Description("@#setPrototypeOf")]
 	public extern virtual bool SetPrototypeOf(TTarget target, object? prototype);
 
 	/// <summary>
-/// Trap for checking whether the target remains extensible. 检查目标是否仍可扩展的 trap。
+	/// Trap for checking whether the target remains extensible. 检查目标是否仍可扩展的 trap。
 	/// </summary>
 	[Description("@#isExtensible")]
 	public extern virtual bool IsExtensible(TTarget target);
 
 	/// <summary>
-/// Trap for preventing extensions on the target. 阻止目标扩展的 trap。
+	/// Trap for preventing extensions on the target. 阻止目标扩展的 trap。
 	/// </summary>
 	[Description("@#preventExtensions")]
 	public extern virtual bool PreventExtensions(TTarget target);
 
 	/// <summary>
-/// Trap for the JavaScript <c>in</c> operator. JavaScript <c>in</c> 运算符的 trap。
+	/// Trap for the JavaScript <c>in</c> operator. JavaScript <c>in</c> 运算符的 trap。
 	/// </summary>
 	[Description("@#has")]
-	public extern virtual bool Has(TTarget target, PropertyKey property);
+	public extern virtual bool Has(TTarget target, JPropertyKey property);
 
 	/// <summary>
-/// Trap for function invocation.
-/// The receiver and argument list stay nullable because JavaScript call sites may supply any runtime values there.
-/// 函数调用 trap；receiver 和参数列表保持可空，因为 JavaScript 调用点可传入任意运行时值。
+	/// Trap for function invocation.
+	/// The receiver and argument list stay nullable because JavaScript call sites may supply any runtime values there.
+	/// 函数调用 trap；receiver 和参数列表保持可空，因为 JavaScript 调用点可传入任意运行时值。
 	/// </summary>
 	[Description("@#apply")]
 	public extern virtual object? Apply(TTarget target, object? thisArg, object?[] argumentsList);
 
 	/// <summary>
-/// Trap for constructor invocation with <c>new</c>.
-/// The argument list stays nullable because JavaScript constructor calls may supply any runtime values there.
-/// 通过 <c>new</c> 调用构造器的 trap；参数列表保持可空，因为 JavaScript 构造器调用可传入任意运行时值。
+	/// Trap for constructor invocation with <c>new</c>.
+	/// The argument list stays nullable because JavaScript constructor calls may supply any runtime values there.
+	/// 通过 <c>new</c> 调用构造器的 trap；参数列表保持可空，因为 JavaScript 构造器调用可传入任意运行时值。
 	/// </summary>
 	[Description("@#construct")]
 	public extern virtual object? Construct(TTarget target, object?[] argumentsList, object newTarget);

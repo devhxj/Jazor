@@ -201,28 +201,28 @@ public static class HashSetT1Module<T>
 
 		var state = (Comparer: comparer, ValuesByHash: new Map<Number, Array<T>>());
 		States.Set(instance, state);
-		Object.DefineProperty(instance, "add", new ECMAScript.PropertyDescriptor
+		Object.DefineProperty(instance, "add", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Func<T, Set<T>>)(item => AddCore(instance, item, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "has", new ECMAScript.PropertyDescriptor
+		Object.DefineProperty(instance, "has", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Func<T, bool>)(item => HasCore(instance, item, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "delete", new ECMAScript.PropertyDescriptor
+		Object.DefineProperty(instance, "delete", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Func<T, bool>)(item => DeleteCore(instance, item, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "clear", new ECMAScript.PropertyDescriptor
+		Object.DefineProperty(instance, "clear", new ECMAScript.JSPropertyDescriptor
 		{
 			Value = (Action)(() => ClearCore(instance, state)),
 			Enumerable = false,

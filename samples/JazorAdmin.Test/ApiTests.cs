@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using JazorAdmin.Authorization;
 using JazorAdmin.Data;
 using JazorAdmin.Features.Accounts;
+using JazorAdmin.Features.Audit;
 using JazorAdmin.Features.Notifications;
 using JazorAdmin.Features.Overview;
 using JazorAdmin.Features.Sso;
@@ -749,6 +750,100 @@ public sealed class ApiTests
     }
 
     [TestMethod]
+    public async Task Audit_WhenFeatureIsEnabled_RecordsManagementAndOpenIddictEventsAndSupportsFilters()
+    {
+        await using var factory = new TestHost();
+        var administrator = await factory.CreateUserAsync("audit@example.test", platformAdministrator: true);
+        var operatorUser = await factory.CreateUserAsync("audit-operator@example.test", platformAdministrator: false);
+        await factory.EnableAuditAsync();
+        using var client = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password, allowAutoRedirect: false);
+        using var operatorClient = await factory.CreateAuthenticatedClientAsync(operatorUser.Email, operatorUser.Password);
+
+        // The query surface is platform-admin only even though ordinary resource APIs may be
+        // granted separately. 审计查询属于平台管理员边界，普通用户不能读取操作历史。
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await operatorClient.GetAsync("/api/audit/")).StatusCode);
+
+        var organizationId = await CreateOrganizationAsync(client, "audit-org", "Audit organization");
+        Assert.AreNotEqual(Guid.Empty, organizationId);
+
+        const string verifier = "xDgrVVNbOy-cYM.hNzhRmWpAPRs4yqse2iz-BT9rmZfSRa2tkkxfabHfAzun8mWw";
+        var challenge = Base64Url(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
+        var authorizationPath = "/connect/authorize?client_id=jazoradmin-spa"
+                                + "&response_type=code"
+                                + "&redirect_uri=" + Uri.EscapeDataString("http://localhost/auth/callback")
+                                + "&scope=" + Uri.EscapeDataString("openid profile offline_access jazoradmin_api")
+                                + "&code_challenge_method=S256"
+                                + "&code_challenge=" + Uri.EscapeDataString(challenge)
+                                + "&state=audit-test";
+        using var authorization = await client.GetAsync(authorizationPath);
+        Assert.AreEqual(HttpStatusCode.Redirect, authorization.StatusCode);
+        var code = GetQueryValue(authorization.Headers.Location, "code");
+        using var exchange = await client.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["client_id"] = "jazoradmin-spa",
+            ["grant_type"] = "authorization_code",
+            ["redirect_uri"] = "http://localhost/auth/callback",
+            ["code"] = code,
+            ["code_verifier"] = verifier
+        }));
+        Assert.AreEqual(HttpStatusCode.OK, exchange.StatusCode);
+
+        using var tokenResponse = await client.GetAsync("/api/sso/tokens");
+        var tokens = await tokenResponse.Content.ReadFromJsonAsync<TokenView[]>();
+        Assert.IsNotNull(tokens);
+        var accessToken = tokens.First(item => item.ClientId == "jazoradmin-spa" && item.Type == "access_token");
+        using var revoked = await client.PostAsync("/api/sso/tokens/" + accessToken.Id + "/revoke", content: null);
+        Assert.AreEqual(HttpStatusCode.NoContent, revoked.StatusCode);
+
+        using var allResponse = await client.GetAsync("/api/audit/");
+        Assert.AreEqual(HttpStatusCode.OK, allResponse.StatusCode);
+        var allEvents = await allResponse.Content.ReadFromJsonAsync<AuditEventView[]>();
+        Assert.IsNotNull(allEvents);
+        Assert.IsTrue(allEvents.Any(item =>
+            item.Action == AuditSaveChangesInterceptor.Created &&
+            item.ObjectType == "organization" &&
+            item.Summary == "Audit organization" &&
+            !string.IsNullOrWhiteSpace(item.ActorId)));
+        Assert.IsTrue(allEvents.Any(item =>
+            item.Action == AuditSaveChangesInterceptor.Issued &&
+            item.ObjectType == "oidc-token"));
+        Assert.IsTrue(allEvents.Any(item =>
+            item.Action == AuditSaveChangesInterceptor.Revoked &&
+            item.ObjectType == "oidc-token"));
+
+        var from = DateTimeOffset.UtcNow.AddMinutes(-5).ToString("O");
+        var filteredPath = "/api/audit/?from=" + Uri.EscapeDataString(from)
+                           + "&actor=" + Uri.EscapeDataString(administrator.Email)
+                           + "&object=organization&action=created";
+        using var filteredResponse = await client.GetAsync(filteredPath);
+        Assert.AreEqual(HttpStatusCode.OK, filteredResponse.StatusCode);
+        var filtered = await filteredResponse.Content.ReadFromJsonAsync<AuditEventView[]>();
+        Assert.IsNotNull(filtered);
+        Assert.AreEqual(1, filtered.Length);
+        Assert.AreEqual("organization", filtered[0].ObjectType);
+        Assert.AreEqual(AuditSaveChangesInterceptor.Created, filtered[0].Action);
+
+        using var invalidRange = await client.GetAsync(
+            "/api/audit/?from=" + Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(1).ToString("O")) +
+            "&to=" + Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(-1).ToString("O")));
+        Assert.AreEqual(HttpStatusCode.BadRequest, invalidRange.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task Audit_WhenFeatureIsDisabled_DoesNotPersistManagementEvents()
+    {
+        await using var factory = new TestHost();
+        var administrator = await factory.CreateUserAsync("audit-disabled@example.test", platformAdministrator: true);
+        using var client = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
+
+        await CreateOrganizationAsync(client, "audit-disabled", "Disabled audit organization");
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var database = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+        Assert.AreEqual(0, await database.AuditEvents.CountAsync());
+    }
+
+    [TestMethod]
     public async Task Notifications_WhenSignedIn_ReturnRecentFailedScheduleRunsOnly()
     {
         await using var factory = new TestHost();
@@ -809,7 +904,13 @@ public sealed class ApiTests
     [TestMethod]
     public async Task Overview_WhenSignedIn_ReturnsPlatformStatisticsAndSevenDaySeries()
     {
-        await using var factory = new TestHost();
+        await using var factory = new TestHost(
+            additionalConfiguration: new Dictionary<string, string?>
+            {
+                ["JazorAdmin:DemoClient:LaunchUri"] = "http://localhost:49735",
+                ["JazorAdmin:DemoClient:RedirectUris:0"] = "http://localhost:49735/signin-oidc",
+                ["JazorAdmin:DemoClient:PostLogoutRedirectUris:0"] = "http://localhost:49735/signout-callback-oidc"
+            });
         var administrator = await factory.CreateUserAsync("overview@example.test", platformAdministrator: true);
         using var client = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
         await CreateOrganizationAsync(client, "overview-org", "Overview organization");
@@ -845,6 +946,9 @@ public sealed class ApiTests
         Assert.AreEqual(1, overview.OrganizationRoles);
         Assert.IsTrue(overview.Schedules >= 1, "The seeded Quartz catalog must be counted.");
         Assert.AreEqual(7, overview.RecentRuns.Length);
+        Assert.AreEqual(7, overview.RecentAudit.Length);
+        Assert.AreEqual(0, overview.PortalApplications.Length,
+            "A launch URI without a confidential client secret must not expose a dead portal entry.");
         var previousDay = overview.RecentRuns.Single(run => run.Date == recentStartedAt.UtcDateTime.ToString("yyyy-MM-dd"));
         Assert.AreEqual(1, previousDay.Succeeded);
         Assert.AreEqual(0, previousDay.Failed);
@@ -854,6 +958,43 @@ public sealed class ApiTests
                 string.CompareOrdinal(overview.RecentRuns[index - 1].Date, overview.RecentRuns[index].Date) < 0,
                 "The 7-day series must be ordered by ascending UTC date.");
         }
+    }
+
+    [TestMethod]
+    public async Task Overview_WhenDemoClientIsConfigured_RegistersPkceClientAndExposesPortal()
+    {
+        const string clientId = "jazoradmin-demo-client";
+        const string clientSecret = "test-demo-client-secret";
+        const string launchUri = "http://localhost:49735";
+        await using var factory = new TestHost(
+            additionalConfiguration: new Dictionary<string, string?>
+            {
+                ["JazorAdmin:DemoClient:ClientId"] = clientId,
+                ["JazorAdmin:DemoClient:ClientSecret"] = clientSecret,
+                ["JazorAdmin:DemoClient:LaunchUri"] = launchUri,
+                ["JazorAdmin:DemoClient:RedirectUris:0"] = launchUri + "/signin-oidc",
+                ["JazorAdmin:DemoClient:PostLogoutRedirectUris:0"] = launchUri + "/signout-callback-oidc"
+            });
+        var administrator = await factory.CreateUserAsync("portal@example.test", platformAdministrator: true);
+        await factory.EnableAuditAsync();
+        using var client = await factory.CreateAuthenticatedClientAsync(administrator.Email, administrator.Password);
+
+        await CreateOrganizationAsync(client, "portal-audit", "Portal audit organization");
+        var overview = await client.GetFromJsonAsync<OverviewView>("/api/overview/");
+        var applications = await client.GetFromJsonAsync<AppView[]>("/api/sso/applications");
+
+        Assert.IsNotNull(overview);
+        Assert.IsTrue(overview.AuditEvents >= 1, "A management write must feed the operational audit count.");
+        Assert.AreEqual(1, overview.PortalApplications.Length);
+        Assert.AreEqual(clientId, overview.PortalApplications[0].ClientId);
+        Assert.AreEqual(launchUri, overview.PortalApplications[0].LaunchUri);
+
+        Assert.IsNotNull(applications);
+        var demo = applications.Single(item => item.ClientId == clientId);
+        Assert.AreEqual("confidential", demo.ClientType);
+        Assert.IsTrue(demo.RequirePkce);
+        CollectionAssert.Contains(demo.GrantTypes, "authorization_code");
+        CollectionAssert.Contains(demo.GrantTypes, "refresh_token");
     }
 
     [TestMethod]
@@ -960,15 +1101,18 @@ public sealed class ApiTests
         private readonly string databasePath;
         private readonly string? bootstrapEmail;
         private readonly string? bootstrapPassword;
+        private readonly IReadOnlyDictionary<string, string?>? additionalConfiguration;
 
         public TestHost(
             string? bootstrapEmail = null,
             string? bootstrapPassword = null,
-            string? existingDatabasePath = null)
+            string? existingDatabasePath = null,
+            IReadOnlyDictionary<string, string?>? additionalConfiguration = null)
         {
             databasePath = existingDatabasePath ?? Path.Combine(Path.GetTempPath(), "jazoradmin-test-" + Guid.NewGuid() + ".db");
             this.bootstrapEmail = bootstrapEmail;
             this.bootstrapPassword = bootstrapPassword;
+            this.additionalConfiguration = additionalConfiguration;
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -997,6 +1141,11 @@ public sealed class ApiTests
                 {
                     values["JazorAdmin:Bootstrap:Email"] = bootstrapEmail;
                     values["JazorAdmin:Bootstrap:Password"] = bootstrapPassword;
+                }
+                if (additionalConfiguration is not null)
+                {
+                    foreach (var (key, value) in additionalConfiguration)
+                        values[key] = value;
                 }
 
                 configuration.AddInMemoryCollection(values);
@@ -1057,6 +1206,23 @@ public sealed class ApiTests
                 new LoginRequest(email, password, CaptchaId: challenge.Id, CaptchaAnswer: answer));
             Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
             return client;
+        }
+
+        public async Task EnableAuditAsync()
+        {
+            await using var scope = Services.CreateAsyncScope();
+            var database = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+            database.Settings.Add(new Setting
+            {
+                Key = AuditSaveChangesInterceptor.FeatureKey,
+                Group = "feature",
+                Label = "Audit events",
+                Description = "Enables audit integration coverage.",
+                Kind = "boolean",
+                Value = "true",
+                UpdatedAt = DateTimeOffset.UtcNow
+            });
+            await database.SaveChangesAsync();
         }
 
         public new async ValueTask DisposeAsync()

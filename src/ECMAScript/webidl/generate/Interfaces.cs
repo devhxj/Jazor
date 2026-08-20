@@ -84,7 +84,7 @@ public class DecompressionStream
 /// </summary>
 [ECMAScript]
 [Description("@#CookieChangeEvent")]
-public class CookieChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class CookieChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://cookiestore.spec.whatwg.org/#dom-cookiechangeevent-cookiechangeevent">Cookie Store API Standard: 5.1 The CookieChangeEvent interface</see>
@@ -373,7 +373,7 @@ public class Comment : CharacterData
 /// </summary>
 [ECMAScript]
 [Description("@#CustomEvent")]
-public class CustomEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class CustomEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-customevent-customevent">DOM Standard: 2.4 Interface CustomEvent</see>
@@ -1845,7 +1845,7 @@ public partial class Element : Node
 /// </summary>
 [ECMAScript]
 [Description("@#Event")]
-public class Event
+public class JazorEvent
 {
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-event-event">DOM Standard: 2.2 Interface Event</see>
@@ -1855,7 +1855,7 @@ public class Event
     /// </example>
     /// <param name="type">Returns a new event whose type attribute value is set to type. The eventInitDict argument allows for setting the bubbles and cancelable attributes via object members of the same name. <see href="https://dom.spec.whatwg.org/#dom-event-event-type-eventinitdict-type">DOM Standard: 2.2 Interface Event</see></param>
     /// <param name="eventInitDict">Returns a new event whose type attribute value is set to type. The eventInitDict argument allows for setting the bubbles and cancelable attributes via object members of the same name. <see href="https://dom.spec.whatwg.org/#dom-event-event-type-eventinitdict-eventinitdict">DOM Standard: 2.2 Interface Event</see></param>
-    public extern Event(string type, EventInit? eventInitDict = default);
+    public extern JazorEvent(string type, EventInit? eventInitDict = default);
 
     /// <summary>
     /// Returns a new event whose type attribute value is set to type. The eventInitDict argument allows for setting the bubbles and cancelable attributes via object members of the same name.
@@ -2722,7 +2722,7 @@ public class StaticRange : AbstractRange
 /// </summary>
 [ECMAScript]
 [Description("@#XMLDocument")]
-public class XMLDocument : Document
+public class XMLDocument : JazorDocument
 {
 }
 
@@ -2891,14 +2891,14 @@ public class XSLTProcessor
     /// <param name="source"><see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-transformtofragment-source-output-source">DOM Standard: 9.1 Interface XSLTProcessor</see></param>
     /// <param name="output"><see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-transformtofragment-source-output-output">DOM Standard: 9.1 Interface XSLTProcessor</see></param>
     [Description("@#transformToFragment")]
-    public extern DocumentFragment TransformToFragment(Node source, Document output);
+    public extern DocumentFragment TransformToFragment(Node source, JazorDocument output);
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-transformtodocument">DOM Standard: 9.1 Interface XSLTProcessor</see>
     /// </summary>
     /// <param name="source"><see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-transformtodocument-source-source">DOM Standard: 9.1 Interface XSLTProcessor</see></param>
     [Description("@#transformToDocument")]
-    public extern Document TransformToDocument(Node source);
+    public extern JazorDocument TransformToDocument(Node source);
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-setparameter">DOM Standard: 9.1 Interface XSLTProcessor</see>
@@ -3337,7 +3337,7 @@ public class CSSScopeRule : CSSGroupingRule
 /// </summary>
 [ECMAScript]
 [Description("@#ContentVisibilityAutoStateChangeEvent")]
-public class ContentVisibilityAutoStateChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class ContentVisibilityAutoStateChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-contain-2/#dom-contentvisibilityautostatechangeevent-contentvisibilityautostatechangeevent">CSS Containment Module Level 2: 4.4 Detecting content-visibility: auto state changes: the contentvisibilityautostatechange event</see>
@@ -3493,7 +3493,7 @@ public class FontFacePalettes : IEnumerable<FontFacePalette>
 /// </summary>
 [ECMAScript]
 [Description("@#FontFaceSetLoadEvent")]
-public class FontFaceSetLoadEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class FontFaceSetLoadEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-font-loading-3/#dom-fontfacesetloadevent-fontfacesetloadevent">CSS Font Loading Module Level 3: 3 The FontFaceSet Interface</see>
@@ -3579,6 +3579,57 @@ public class FontFaceVariations : ISet<FontFaceVariationAxis>
     extern void ICollection<FontFaceVariationAxis>.Add(FontFaceVariationAxis item);
     extern IEnumerator IEnumerable.GetEnumerator();
     #endregion
+}
+
+/// <summary>
+/// <see href="https://drafts.csswg.org/css-fonts-4/#cssfontfeaturevaluesmap">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+/// </summary>
+[ECMAScript]
+[Description("@#CSSFontFeatureValuesMap")]
+public class CSSFontFeatureValuesMap : IDictionary<string, uint[]>
+{
+    #region Dictionary
+    extern uint[] IDictionary<string, uint[]>.this[string key] { get; set; }
+    extern ICollection<string> IDictionary<string, uint[]>.Keys { get; }
+    extern ICollection<uint[]> IDictionary<string, uint[]>.Values { get; }
+    extern int ICollection<KeyValuePair<string, uint[]>>.Count { get; }
+    extern bool ICollection<KeyValuePair<string, uint[]>>.IsReadOnly { get; }
+    extern void IDictionary<string, uint[]>.Add(string key, uint[] value);
+    extern void ICollection<KeyValuePair<string, uint[]>>.Add(KeyValuePair<string, uint[]> item);
+    extern void ICollection<KeyValuePair<string, uint[]>>.Clear();
+    extern bool ICollection<KeyValuePair<string, uint[]>>.Contains(KeyValuePair<string, uint[]> item);
+    extern bool IDictionary<string, uint[]>.ContainsKey(string key);
+    extern void ICollection<KeyValuePair<string, uint[]>>.CopyTo(KeyValuePair<string, uint[]>[] array, int arrayIndex);
+    extern IEnumerator<KeyValuePair<string, uint[]>> IEnumerable<KeyValuePair<string, uint[]>>.GetEnumerator();
+    extern bool IDictionary<string, uint[]>.Remove(string key);
+    extern bool ICollection<KeyValuePair<string, uint[]>>.Remove(KeyValuePair<string, uint[]> item);
+    extern bool IDictionary<string, uint[]>.TryGetValue(string key, [MaybeNullWhen(false)] out uint[] value);
+    extern IEnumerator IEnumerable.GetEnumerator();
+    #endregion
+
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    /// <param name="featureValueName"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-featurevaluename">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
+    /// <param name="values"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-values">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
+    [Description("@#set")]
+    public extern void Set(string featureValueName, CSSFontFeatureValuesMapSetValues values);
+
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    /// <param name="featureValueName"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-featurevaluename">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
+    /// <param name="values"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-values">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
+    [Description("@#set")]
+    public extern void Set(string featureValueName, uint values);
+
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    /// <param name="featureValueName"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-featurevaluename">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
+    /// <param name="values"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-values">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
+    [Description("@#set")]
+    public extern void Set(string featureValueName, uint[] values);
 }
 
 /// <summary>
@@ -4044,7 +4095,7 @@ public class NamedFlow : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#SnapEvent")]
-public class SnapEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class SnapEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-scroll-snap-2/#dom-snapevent-snapevent">CSS Scroll Snap Module Level 2: 5.2 SnapEvent interface</see>
@@ -4098,7 +4149,7 @@ public class NavigationEvent(string type, UIEventInit eventInitDict) : UIEvent(t
 /// </summary>
 [ECMAScript]
 [Description("@#TransitionEvent")]
-public partial class TransitionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public partial class TransitionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-transitions-1/#dom-transitionevent-transitionevent">CSS Transitions Module Level 1: 6.1.2 Attributes</see>
@@ -7320,7 +7371,7 @@ public class AnimationNodeList
 /// </summary>
 [ECMAScript]
 [Description("@#AnimationPlaybackEvent")]
-public class AnimationPlaybackEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class AnimationPlaybackEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/web-animations-2/#dom-animationplaybackevent-animationplaybackevent">Web Animations Module Level 2: 4.15 The AnimationPlaybackEvent interface</see>
@@ -7571,7 +7622,7 @@ public class FileSystemFileHandle : FileSystemHandle
     /// <code>file = await fileHandle.getFile()</code>
     /// </example>
     [Description("@#getFile")]
-    public extern PromiseResult<Files> GetFile();
+    public extern PromiseResult<JSFile> GetFile();
 
     /// <summary>
     /// <see href="https://fs.spec.whatwg.org/#dom-filesystemfilehandle-createwritable">File System Standard: 2.3.2 The createWritable() method</see>
@@ -9995,7 +10046,7 @@ public class RadioNodeList : NodeList
 /// </summary>
 [ECMAScript]
 [Description("@#MessageEvent")]
-public class MessageEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class MessageEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern MessageEvent(string type, MessageEventInit? eventInitDict = default);
 
@@ -10178,7 +10229,7 @@ public class ElementInternals
     /// <code>internals.setFormValue(value)</code>
     /// </example>
     [Description("@#setFormValue")]
-    public extern void SetFormValue(ElementInternalsSetFormValue? value, Files state);
+    public extern void SetFormValue(ElementInternalsSetFormValue? value, JSFile state);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/custom-elements.html#dom-elementinternals-setformvalue">HTML Standard: 4.13.7.3 Form-associated custom elements</see>
@@ -10723,7 +10774,7 @@ public partial class DataTransferItem
     /// <code>file = item.getAsFile()✔MDNDataTransferItem/getAsFileSupport in all current engines.Firefox50+Safari5.1+Chrome11+Opera12+Edge79+Edge (Legacy)12+Internet ExplorerNoFirefox Android?Safari iOS?Chrome Android?WebView Android4+Samsung Internet?Opera Android14+</code>
     /// </example>
     [Description("@#getAsFile")]
-    public extern Files? GetAsFile();
+    public extern JSFile? GetAsFile();
 }
 
 /// <summary>
@@ -10761,7 +10812,7 @@ public class DataTransferItemList
     /// <code>items.add(data)✔MDNDataTransferItemList/addSupport in all current engines.Firefox50+Safari6+Chrome13+Opera12+Edge79+Edge (Legacy)12+Internet ExplorerNoFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android14+</code>
     /// </example>
     [Description("@#add")]
-    public extern DataTransferItem? Add(Files data);
+    public extern DataTransferItem? Add(JSFile data);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransferitemlist-remove">HTML Standard: 6.11.3.1 The DataTransferItemList interface</see>
@@ -11811,7 +11862,7 @@ public class DOMParser
     /// <code>document = parser.parseFromString(string, type)✔MDNDOMParser/parseFromStringSupport in all current engines.Firefox1+Safari1.3+Chrome1+Opera8+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android10.1+</code>
     /// </example>
     [Description("@#parseFromString")]
-    public extern Document ParseFromString(DOMParserParseFromString @string, DOMParserSupportedType type);
+    public extern JazorDocument ParseFromString(DOMParserParseFromString @string, DOMParserSupportedType type);
 }
 
 /// <summary>
@@ -12230,7 +12281,7 @@ public class HTMLSourceElement : HTMLElement
 /// </summary>
 [ECMAScript]
 [Description("@#FormDataEvent")]
-public class FormDataEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class FormDataEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern FormDataEvent(string type, FormDataEventInit eventInitDict);
 
@@ -12249,7 +12300,7 @@ public class FormDataEvent(string type, EventInit eventInitDict) : Event(type, e
 /// </summary>
 [ECMAScript]
 [Description("@#SubmitEvent")]
-public class SubmitEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class SubmitEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern SubmitEvent(string type, SubmitEventInit? eventInitDict = default);
 
@@ -13897,7 +13948,7 @@ public partial class HTMLEmbedElement : HTMLElement
     /// <code>doc = iframe.getSVGDocument()</code>
     /// </example>
     [Description("@#getSVGDocument")]
-    public extern Document? GetSVGDocument();
+    public extern JazorDocument? GetSVGDocument();
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/obsolete.html#dom-embed-align">HTML Standard: 16.3.3 Other elements, attributes and APIs</see>
@@ -14000,7 +14051,7 @@ public partial class HTMLIFrameElement : HTMLElement
     /// <see href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#dom-iframe-contentdocument">HTML Standard: 4.8.5 The iframe element</see>
     /// </summary>
     [Description("@#contentDocument")]
-    public extern Document? ContentDocument { get; }
+    public extern JazorDocument? ContentDocument { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#dom-iframe-contentwindow">HTML Standard: 4.8.5 The iframe element</see>
@@ -14015,7 +14066,7 @@ public partial class HTMLIFrameElement : HTMLElement
     /// <code>doc = iframe.getSVGDocument()</code>
     /// </example>
     [Description("@#getSVGDocument")]
-    public extern Document? GetSVGDocument();
+    public extern JazorDocument? GetSVGDocument();
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/obsolete.html#dom-iframe-align">HTML Standard: 16.3.3 Other elements, attributes and APIs</see>
@@ -14121,7 +14172,7 @@ public partial class HTMLObjectElement : HTMLElement
     /// <see href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#dom-object-contentdocument">HTML Standard: 4.8.7 The object element</see>
     /// </summary>
     [Description("@#contentDocument")]
-    public extern Document? ContentDocument { get; }
+    public extern JazorDocument? ContentDocument { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#dom-object-contentwindow">HTML Standard: 4.8.7 The object element</see>
@@ -14136,7 +14187,7 @@ public partial class HTMLObjectElement : HTMLElement
     /// <code>doc = iframe.getSVGDocument()</code>
     /// </example>
     [Description("@#getSVGDocument")]
-    public extern Document? GetSVGDocument();
+    public extern JazorDocument? GetSVGDocument();
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-cva-willvalidate">HTML Standard: 4.10.21.3 The constraint validation API</see>
@@ -15074,7 +15125,7 @@ public class CloseWatcher : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#CommandEvent")]
-public class CommandEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class CommandEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern CommandEvent(string type, CommandEventInit? eventInitDict = default);
 
@@ -15102,7 +15153,7 @@ public class CommandEvent(string type, EventInit eventInitDict) : Event(type, ev
 /// </summary>
 [ECMAScript]
 [Description("@#ToggleEvent")]
-public class ToggleEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class ToggleEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern ToggleEvent(string type, ToggleEventInit? eventInitDict = default);
 
@@ -16344,7 +16395,7 @@ public class TimeRanges
 /// </summary>
 [ECMAScript]
 [Description("@#TrackEvent")]
-public class TrackEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class TrackEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern TrackEvent(string type, TrackEventInit? eventInitDict = default);
 
@@ -16498,7 +16549,7 @@ public class BarProp
 /// </summary>
 [ECMAScript]
 [Description("@#BeforeUnloadEvent")]
-public class BeforeUnloadEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class BeforeUnloadEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-beforeunloadevent-returnvalue">HTML Standard: 7.2.7.7 The BeforeUnloadEvent interface</see>
@@ -16512,7 +16563,7 @@ public class BeforeUnloadEvent(string type, EventInit eventInitDict) : Event(typ
 /// </summary>
 [ECMAScript]
 [Description("@#HashChangeEvent")]
-public class HashChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class HashChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern HashChangeEvent(string type, HashChangeEventInit? eventInitDict = default);
 
@@ -16540,7 +16591,7 @@ public class HashChangeEvent(string type, EventInit eventInitDict) : Event(type,
 /// </summary>
 [ECMAScript]
 [Description("@#History")]
-public class History
+public class JazorHistory
 {
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-history-length">HTML Standard: 7.2.5 The History interface</see>
@@ -16620,7 +16671,7 @@ public class History
 /// </summary>
 [ECMAScript]
 [Description("@#Location")]
-public class Location
+public class JazorLocation
 {
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-location-href">HTML Standard: 7.2.4 The Location interface</see>
@@ -16745,7 +16796,7 @@ public class Location
 /// </summary>
 [ECMAScript]
 [Description("@#NavigateEvent")]
-public class NavigateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class NavigateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern NavigateEvent(string type, NavigateEventInit eventInitDict);
 
@@ -17047,7 +17098,7 @@ public class NavigationActivation
 /// </summary>
 [ECMAScript]
 [Description("@#NavigationCurrentEntryChangeEvent")]
-public class NavigationCurrentEntryChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class NavigationCurrentEntryChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern NavigationCurrentEntryChangeEvent(string type, NavigationCurrentEntryChangeEventInit eventInitDict);
 
@@ -17369,7 +17420,7 @@ public class NotRestoredReasons
 /// </summary>
 [ECMAScript]
 [Description("@#PageRevealEvent")]
-public class PageRevealEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PageRevealEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern PageRevealEvent(string type, PageRevealEventInit? eventInitDict = default);
 
@@ -17388,7 +17439,7 @@ public class PageRevealEvent(string type, EventInit eventInitDict) : Event(type,
 /// </summary>
 [ECMAScript]
 [Description("@#PageSwapEvent")]
-public class PageSwapEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PageSwapEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern PageSwapEvent(string type, PageSwapEventInit? eventInitDict = default);
 
@@ -17416,7 +17467,7 @@ public class PageSwapEvent(string type, EventInit eventInitDict) : Event(type, e
 /// </summary>
 [ECMAScript]
 [Description("@#PageTransitionEvent")]
-public class PageTransitionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PageTransitionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern PageTransitionEvent(string type, PageTransitionEventInit? eventInitDict = default);
 
@@ -17435,7 +17486,7 @@ public class PageTransitionEvent(string type, EventInit eventInitDict) : Event(t
 /// </summary>
 [ECMAScript]
 [Description("@#PopStateEvent")]
-public class PopStateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PopStateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern PopStateEvent(string type, PopStateEventInit? eventInitDict = default);
 
@@ -17463,7 +17514,7 @@ public class PopStateEvent(string type, EventInit eventInitDict) : Event(type, e
 /// </summary>
 [ECMAScript]
 [Description("@#Window")]
-public partial class Window : EventTarget
+public partial class JazorWindow : EventTarget
 {
     /// <summary>
     /// The credentialless flag to impose on the new Window
@@ -17512,7 +17563,7 @@ public partial class Window : EventTarget
     public extern void RequestResize();
 
     /// <summary>
-    /// This refers to the viewport before any UA or author styles have overridden the viewport given by the window or viewing area of the UA. Note that the initial viewport size will change with the size of the window or viewing area.
+    /// This refers to the viewport before any UA or author styles have overridden the viewport given by the window or viewing area of the UA. Note: The initial viewport size will change with the size of the window or viewing area.
     /// </summary>
     /// <remarks>
     /// <see href="https://drafts.csswg.org/css-viewport/#dom-window-viewport">CSS Viewport Module Level 1: 5 Extensions to the Window Interface</see>
@@ -17714,7 +17765,7 @@ public partial class Window : EventTarget
     /// <see href="https://dom.spec.whatwg.org/#dom-window-event">DOM Standard: 2.3 Legacy extensions to the Window interface</see>
     /// </remarks>
     [Description("@#event")]
-    public extern Event? Event { get; }
+    public extern JazorEvent? Event { get; }
 
     /// <summary>
     /// <see href="https://wicg.github.io/fenced-frame/#dom-window-fence">Fenced Frame: 3.1 Extensions to the Window interface</see>
@@ -17767,7 +17818,7 @@ public partial class Window : EventTarget
     /// <code>window.window✔MDNWindow/windowSupport in all current engines.Firefox1+Safari3+Chrome1+Opera12.1+Edge79+Edge (Legacy)12+Internet Explorer4+Firefox Android?Safari iOS1+Chrome Android?WebView Android?Samsung Internet?Opera Android12.1+</code>
     /// </example>
     [Description("@#window")]
-    public extern WindowProxy Window_ { get; }
+    public extern WindowProxy Window { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-self">HTML Standard: 7.2.2 The Window object</see>
@@ -17785,7 +17836,7 @@ public partial class Window : EventTarget
     /// <code>window.document✔MDNWindow/documentSupport in all current engines.Firefox1+Safari1+Chrome1+Opera12.1+Edge79+Edge (Legacy)12+Internet Explorer4+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android12.1+</code>
     /// </example>
     [Description("@#document")]
-    public extern Document Document { get; }
+    public extern JazorDocument Document { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-name">HTML Standard: 7.2.2.1 Opening and closing windows</see>
@@ -17803,7 +17854,7 @@ public partial class Window : EventTarget
     /// <code>window.location [ = value ]</code>
     /// </example>
     [Description("@#location")]
-    public extern Location Location { get; }
+    public extern JazorLocation Location { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-history">HTML Standard: 7.2.5 The History interface</see>
@@ -17812,7 +17863,7 @@ public partial class Window : EventTarget
     /// <code>history.length✔MDNHistory/lengthSupport in all current engines.Firefox1+Safari1+Chrome1+Opera12.1+Edge79+Edge (Legacy)12+Internet Explorer10+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android12.1+</code>
     /// </example>
     [Description("@#history")]
-    public extern History History { get; }
+    public extern JazorHistory History { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigation">HTML Standard: 7.2.6.2 The Navigation interface</see>
@@ -19314,7 +19365,7 @@ public class HTMLFrameElement : HTMLElement
     /// <see href="https://html.spec.whatwg.org/multipage/obsolete.html#dom-frame-contentdocument">HTML Standard: 16.3.2 Frames</see>
     /// </summary>
     [Description("@#contentDocument")]
-    public extern Document? ContentDocument { get; }
+    public extern JazorDocument? ContentDocument { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/obsolete.html#dom-frame-contentwindow">HTML Standard: 16.3.2 Frames</see>
@@ -22049,7 +22100,7 @@ public class MessagePort : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#ErrorEvent")]
-public class ErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class ErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern ErrorEvent(string type, ErrorEventInit? eventInitDict = default);
 
@@ -22089,7 +22140,7 @@ public class ErrorEvent(string type, EventInit eventInitDict) : Event(type, even
 /// </summary>
 [ECMAScript]
 [Description("@#PromiseRejectionEvent")]
-public class PromiseRejectionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PromiseRejectionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern PromiseRejectionEvent(string type, PromiseRejectionEventInit eventInitDict);
 
@@ -22173,7 +22224,7 @@ public class Storage
 /// </summary>
 [ECMAScript]
 [Description("@#StorageEvent")]
-public class StorageEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class StorageEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern StorageEvent(string type, StorageEventInit? eventInitDict = default);
 
@@ -23495,7 +23546,7 @@ public class XREquirectLayer : XRCompositionLayer
 /// </summary>
 [ECMAScript]
 [Description("@#XRLayerEvent")]
-public class XRLayerEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class XRLayerEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/layers/#dom-xrlayerevent-xrlayerevent">WebXR Layers API Level 1: 8.1 XRLayerEvent</see>
@@ -24342,7 +24393,7 @@ public class XRInputSourceArray : IEnumerable<XRInputSource>
 /// </summary>
 [ECMAScript]
 [Description("@#XRInputSourceEvent")]
-public class XRInputSourceEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class XRInputSourceEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrinputsourceevent-xrinputsourceevent">WebXR Device API: 12.2 XRInputSourceEvent</see>
@@ -24369,7 +24420,7 @@ public class XRInputSourceEvent(string type, EventInit eventInitDict) : Event(ty
 /// </summary>
 [ECMAScript]
 [Description("@#XRInputSourcesChangeEvent")]
-public class XRInputSourcesChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class XRInputSourcesChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrinputsourceschangeevent-xrinputsourceschangeevent">WebXR Device API: 12.3 XRInputSourcesChangeEvent</see>
@@ -24478,7 +24529,7 @@ public class XRReferenceSpace : XRSpace
 /// </summary>
 [ECMAScript]
 [Description("@#XRReferenceSpaceEvent")]
-public class XRReferenceSpaceEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class XRReferenceSpaceEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrreferencespaceevent-xrreferencespaceevent">WebXR Device API: 12.4 XRReferenceSpaceEvent</see>
@@ -24588,7 +24639,7 @@ public class XRRigidTransform
 /// </summary>
 [ECMAScript]
 [Description("@#XRSessionEvent")]
-public class XRSessionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class XRSessionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrsessionevent-xrsessionevent">WebXR Device API: 12.1 XRSessionEvent</see>
@@ -24755,7 +24806,7 @@ public class XRViewport
 /// </summary>
 [ECMAScript]
 [Description("@#XRVisibilityMaskChangeEvent")]
-public class XRVisibilityMaskChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class XRVisibilityMaskChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrvisibilitymaskchangeevent-xrvisibilitymaskchangeevent">WebXR Device API: 12.5 XRVisibilityMaskChangeEvent</see>
@@ -25923,7 +25974,7 @@ public class NavigatorLogin
 /// </summary>
 [ECMAScript]
 [Description("@#File")]
-public partial class Files(BlobPart[] blobParts, BlobPropertyBag options) : Blob(blobParts, options)
+public partial class JSFile(BlobPart[] blobParts, BlobPropertyBag options) : Blob(blobParts, options)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/entries-api/#dom-file-webkitrelativepath">File and Directory Entries API: 4 The File Interface</see>
@@ -25940,7 +25991,7 @@ public partial class Files(BlobPart[] blobParts, BlobPropertyBag options) : Blob
     /// <param name="fileBits"><see href="https://w3c.github.io/FileAPI/#dfn-fileBits">File API: 4.1.1 Constructor Parameters</see></param>
     /// <param name="fileName"><see href="https://w3c.github.io/FileAPI/#dfn-fileName">File API: 4.1.1 Constructor Parameters</see></param>
     /// <param name="options"><see href="https://w3c.github.io/FileAPI/#dom-file-file-filebits-filename-options-options">File API: 4 The File Interface</see></param>
-    public extern Files(BlobPart[] fileBits, string fileName, FilePropertyBag? options = default);
+    public extern JSFile(BlobPart[] fileBits, string fileName, FilePropertyBag? options = default);
 
     /// <summary>
     /// The name of the file. On getting, this must return the name of the file as a string. There are numerous file name variations and conventions used by different underlying OS file systems; this is merely the name of the file, without path information. On getting, if user agents cannot make this information available, they must return the empty string. If a File object is created using a constructor, further normative conditions for this attribute are found in #file-constructor.
@@ -26892,7 +26943,7 @@ public class IDBTransaction : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#IDBVersionChangeEvent")]
-public class IDBVersionChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class IDBVersionChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/IndexedDB/#dom-idbversionchangeevent-idbversionchangeevent">Indexed Database API 3.0: 4.2 Event interfaces</see>
@@ -27113,7 +27164,7 @@ public class Clients
 /// </summary>
 [ECMAScript]
 [Description("@#ExtendableEvent")]
-public class ExtendableEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class ExtendableEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/ServiceWorker/#dom-extendableevent-extendableevent">Service Workers Nightly: 4.4 ExtendableEvent</see>
@@ -27653,7 +27704,7 @@ public class AttributionAggregationServices : IDictionary<string, AttributionAgg
 /// </summary>
 [ECMAScript]
 [Description("@#ClipboardChangeEvent")]
-public class ClipboardChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class ClipboardChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardchangeevent-clipboardchangeevent">Clipboard API and events: 5.2.1.2 Document focus steps</see>
@@ -27683,7 +27734,7 @@ public class ClipboardChangeEvent(string type, EventInit eventInitDict) : Event(
 /// </summary>
 [ECMAScript]
 [Description("@#ClipboardEvent")]
-public class ClipboardEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class ClipboardEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardevent-clipboardevent">Clipboard API and events: 5.1 Clipboard event interfaces</see>
@@ -27826,7 +27877,7 @@ public class DevicePosture : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#DeviceMotionEvent")]
-public class DeviceMotionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class DeviceMotionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/deviceorientation/#dom-devicemotionevent-devicemotionevent">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see>
@@ -27923,7 +27974,7 @@ public class DeviceMotionEventRotationRate
 /// </summary>
 [ECMAScript]
 [Description("@#DeviceOrientationEvent")]
-public class DeviceOrientationEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class DeviceOrientationEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/deviceorientation/#dom-deviceorientationevent-deviceorientationevent">Device Orientation and Motion: 6.1 deviceorientation Event</see>
@@ -28468,7 +28519,7 @@ public class GamepadButton
 /// </summary>
 [ECMAScript]
 [Description("@#GamepadEvent")]
-public class GamepadEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class GamepadEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/gamepad/#dom-gamepadevent-constructor">Gamepad: 13. GamepadEvent Interface</see>
@@ -28739,7 +28790,7 @@ public class PerformanceScriptTiming : PerformanceEntry
     /// <see href="https://w3c.github.io/long-animation-frames/#dom-performancescripttiming-window">Long Animation Frames API: 2.2 PerformanceScriptTiming interface</see>
     /// </summary>
     [Description("@#window")]
-    public extern Window? Window { get; }
+    public extern JazorWindow? Window { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/long-animation-frames/#dom-performancescripttiming-windowattribution">Long Animation Frames API: 2.2 PerformanceScriptTiming interface</see>
@@ -29189,7 +29240,7 @@ public class SourceBuffer : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#CaptureActionEvent")]
-public class CaptureActionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class CaptureActionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/mediacapture-handle/actions/#dom-captureactionevent-constructor">The Capture-Handle Actions Mechanism: 3.1.2.1 CaptureActionEvent</see>
@@ -29336,7 +29387,7 @@ public partial class MediaDevices : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#BlobEvent")]
-public class BlobEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class BlobEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/mediacapture-record/#dom-blobevent-blobevent">MediaStream Recording: 3.1 Constructors</see>
@@ -30037,7 +30088,7 @@ public class PermissionStatus : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#PictureInPictureEvent")]
-public class PictureInPictureEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PictureInPictureEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/picture-in-picture/#dom-pictureinpictureevent-pictureinpictureevent">Picture-in-Picture: 4.5 Event types</see>
@@ -30251,7 +30302,7 @@ public partial class MouseEvent(string type, UIEventInit eventInitDict) : UIEven
     /// <see href="https://w3c.github.io/pointerevents/#dom-mouseevent-initmouseevent">Pointer Events: 16.1 Initializers for interface MouseEvent</see>
     /// </remarks>
     [Description("@#initMouseEvent")]
-    public extern void InitMouseEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Window? viewArg = default, int detailArg = 0, int screenXArg = 0, int screenYArg = 0, int clientXArg = 0, int clientYArg = 0, bool ctrlKeyArg = false, bool altKeyArg = false, bool shiftKeyArg = false, bool metaKeyArg = false, short buttonArg = 0, EventTarget? relatedTargetArg = default);
+    public extern void InitMouseEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, JazorWindow? viewArg = default, int detailArg = 0, int screenXArg = 0, int screenYArg = 0, int clientXArg = 0, int clientYArg = 0, bool ctrlKeyArg = false, bool altKeyArg = false, bool shiftKeyArg = false, bool metaKeyArg = false, short buttonArg = 0, EventTarget? relatedTargetArg = default);
 
     /// <summary>
     /// <see href="https://w3c.github.io/pointerlock/#dom-mouseevent-movementx">Pointer Lock 2.0: 6 Extensions to the MouseEvent Interface</see>
@@ -30980,7 +31031,7 @@ public class Sensor : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#SensorErrorEvent")]
-public class SensorErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class SensorErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/sensors/#dom-sensorerrorevent-sensorerrorevent">Generic Sensor API: 7.2 The SensorErrorEvent Interface</see>
@@ -31434,7 +31485,7 @@ public partial class KeyboardEvent(string type, UIEventInit eventInitDict) : UIE
     /// <param name="shiftKey"><see href="https://w3c.github.io/uievents/#dom-keyboardevent-initkeyboardevent-typearg-bubblesarg-cancelablearg-viewarg-keyarg-locationarg-ctrlkey-altkey-shiftkey-metakey-shiftkey">UI Events: 6.1.2 Initializers for interface KeyboardEvent</see></param>
     /// <param name="metaKey"><see href="https://w3c.github.io/uievents/#dom-keyboardevent-initkeyboardevent-typearg-bubblesarg-cancelablearg-viewarg-keyarg-locationarg-ctrlkey-altkey-shiftkey-metakey-metakey">UI Events: 6.1.2 Initializers for interface KeyboardEvent</see></param>
     [Description("@#initKeyboardEvent")]
-    public extern void InitKeyboardEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Window? viewArg = default, string keyArg = "", uint locationArg = 0, bool ctrlKey = false, bool altKey = false, bool shiftKey = false, bool metaKey = false);
+    public extern void InitKeyboardEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, JazorWindow? viewArg = default, string keyArg = "", uint locationArg = 0, bool ctrlKey = false, bool altKey = false, bool shiftKey = false, bool metaKey = false);
 
     /// <summary>
     /// <see href="https://w3c.github.io/uievents/#dom-keyboardevent-charcode">UI Events: 7.2.1 Interface KeyboardEvent (supplemental)</see>
@@ -31471,7 +31522,7 @@ public class TextEvent(string type, UIEventInit eventInitDict) : UIEvent(type, e
     /// <param name="view"><see href="https://w3c.github.io/uievents/#dom-textevent-inittextevent-type-bubbles-cancelable-view-data-view">UI Events: 8.4 Legacy TextEvent events</see></param>
     /// <param name="data"><see href="https://w3c.github.io/uievents/#dom-textevent-inittextevent-type-bubbles-cancelable-view-data-data">UI Events: 8.4 Legacy TextEvent events</see></param>
     [Description("@#initTextEvent")]
-    public extern void InitTextEvent(string type, bool bubbles = false, bool cancelable = false, Window? view = default, string data = "undefined");
+    public extern void InitTextEvent(string type, bool bubbles = false, bool cancelable = false, JazorWindow? view = default, string data = "undefined");
 }
 
 /// <summary>
@@ -31479,7 +31530,7 @@ public class TextEvent(string type, UIEventInit eventInitDict) : UIEvent(type, e
 /// </summary>
 [ECMAScript]
 [Description("@#UIEvent")]
-public partial class UIEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public partial class UIEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// Indicates the InputDeviceCapabilities responsible for the generation of this event, or null if no input device was responsible. When a single user interaction with an input device generates a series of different input events, all events in the series should have the same sourceCapabilities. For example, when a user lifts their finger off of a touchscreen, several UIEvents may be generated including touchend, mousedown, click, and focus. All of these events must have the same sourceCapabilities representing the touchscreen.
@@ -31501,7 +31552,7 @@ public partial class UIEvent(string type, EventInit eventInitDict) : Event(type,
     /// <see href="https://w3c.github.io/uievents/#dom-uievent-view">UI Events: 3.2.1.1 UIEvent</see>
     /// </summary>
     [Description("@#view")]
-    public extern Window? View { get; }
+    public extern JazorWindow? View { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/uievents/#dom-uievent-detail">UI Events: 3.2.1.1 UIEvent</see>
@@ -31518,7 +31569,7 @@ public partial class UIEvent(string type, EventInit eventInitDict) : Event(type,
     /// <param name="viewArg"><see href="https://w3c.github.io/uievents/#dom-uievent-inituievent-typearg-bubblesarg-cancelablearg-viewarg-detailarg-viewarg">UI Events: 6.1.1 Initializers for interface UIEvent</see></param>
     /// <param name="detailArg"><see href="https://w3c.github.io/uievents/#dom-uievent-inituievent-typearg-bubblesarg-cancelablearg-viewarg-detailarg-detailarg">UI Events: 6.1.1 Initializers for interface UIEvent</see></param>
     [Description("@#initUIEvent")]
-    public extern void InitUIEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, Window? viewArg = default, int detailArg = 0);
+    public extern void InitUIEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, JazorWindow? viewArg = default, int detailArg = 0);
 
     /// <summary>
     /// <see href="https://w3c.github.io/uievents/#dom-uievent-which">UI Events: 7.1.1 Interface UIEvent (supplemental)</see>
@@ -31733,7 +31784,7 @@ public class PasswordCredential : Credential
 /// </summary>
 [ECMAScript]
 [Description("@#SecurityPolicyViolationEvent")]
-public class SecurityPolicyViolationEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class SecurityPolicyViolationEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webappsec-csp/#dom-securitypolicyviolationevent-securitypolicyviolationevent">Content Security Policy Level 3: 5.1 Violation DOM Events</see>
@@ -32755,7 +32806,7 @@ public class VideoFrame
 /// </summary>
 [ECMAScript]
 [Description("@#KeyFrameRequestEvent")]
-public class KeyFrameRequestEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class KeyFrameRequestEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-keyframerequestevent-keyframerequestevent">WebRTC Encoded Transform: 6.4 Events</see>
@@ -32958,7 +33009,7 @@ public class RTCRtpSFrameEncryptor
 /// </summary>
 [ECMAScript]
 [Description("@#RTCTransformEvent")]
-public class RTCTransformEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class RTCTransformEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtctransformevent-transformer">WebRTC Encoded Transform: 6.4 Events</see>
@@ -33061,7 +33112,7 @@ public class SFrameEncryptorStream
 /// </summary>
 [ECMAScript]
 [Description("@#SFrameTransformErrorEvent")]
-public class SFrameTransformErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class SFrameTransformErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-sframetransformerrorevent-sframetransformerrorevent">WebRTC Encoded Transform: 3 SFrame transforms</see>
@@ -33118,283 +33169,6 @@ public class RTCIdentityAssertion
 }
 
 /// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificate">WebRTC: Real-Time Communication in Browsers: 4.9.2 RTCCertificate Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCCertificate")]
-public class RTCCertificate
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificate-expires">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#expires")]
-    public extern EpochTimeStamp Expires { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificate-getfingerprints">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getFingerprints")]
-    public extern RTCDtlsFingerprint[] GetFingerprints();
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCDataChannel")]
-public partial class RTCDataChannel : EventTarget
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-label">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#label")]
-    public extern string Label { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-ordered">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#ordered")]
-    public extern bool Ordered { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-maxpacketlifetime">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#maxPacketLifeTime")]
-    public extern ushort? MaxPacketLifeTime { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-maxretransmits">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#maxRetransmits")]
-    public extern ushort? MaxRetransmits { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-protocol">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#protocol")]
-    public extern string Protocol { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-negotiated">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#negotiated")]
-    public extern bool Negotiated { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-id">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#id")]
-    public extern ushort? Id { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-readystate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#readyState")]
-    public extern RTCDataChannelState ReadyState { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-bufferedamount">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#bufferedAmount")]
-    public extern uint BufferedAmount { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-bufferedamountlowthreshold">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#bufferedAmountLowThreshold")]
-    public extern uint BufferedAmountLowThreshold { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onopen">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onopen")]
-    public extern EventHandler Onopen { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onbufferedamountlow">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onbufferedamountlow")]
-    public extern EventHandler Onbufferedamountlow { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onerror">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onerror")]
-    public extern EventHandler Onerror { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onclosing">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onclosing")]
-    public extern EventHandler Onclosing { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onclose">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onclose")]
-    public extern EventHandler Onclose { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-close">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#close")]
-    public extern void Close();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onmessage">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onmessage")]
-    public extern EventHandler Onmessage { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-binarytype">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#binaryType")]
-    public extern BinaryType BinaryType { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-send">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#send")]
-    public extern void Send(string data);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-send">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#send")]
-    public extern void Send(Blob data);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-send">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#send")]
-    public extern void Send(ArrayBuffer data);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-send">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#send")]
-    public extern void Send(IArrayBufferView data);
-
-    /// <summary>
-    /// The priority attribute returns the priority for this RTCDataChannel. The priority is assigned by the user agent at channel creation time. On getting, the attribute MUST return the value of the \DataChannelPriority slot.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/webrtc-priority/#dom-rtcdatachannel-priority">WebRTC Priority Control API: 4.1 New RTCDataChannel attribute</see>
-    /// </remarks>
-    [Description("@#priority")]
-    public extern RTCPriorityType Priority { get; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelevent">WebRTC: Real-Time Communication in Browsers: 6.3 RTCDataChannelEvent</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCDataChannelEvent")]
-public class RTCDataChannelEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
-    /// </summary>
-    public extern RTCDataChannelEvent(string type, RTCDataChannelEventInit eventInitDict);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannelevent-channel">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#channel")]
-    public extern RTCDataChannel Channel { get; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport">WebRTC: Real-Time Communication in Browsers: 5.5 RTCDtlsTransport Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCDtlsTransport")]
-public class RTCDtlsTransport : EventTarget
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-icetransport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#iceTransport")]
-    public extern RTCIceTransport IceTransport { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#state")]
-    public extern RTCDtlsTransportState State { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-getremotecertificates">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getRemoteCertificates")]
-    public extern ArrayBuffer[] GetRemoteCertificates();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-onstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onstatechange")]
-    public extern EventHandler Onstatechange { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-onerror">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onerror")]
-    public extern EventHandler Onerror { get; set; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmfsender">WebRTC: Real-Time Communication in Browsers: 7.2 RTCDTMFSender</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCDTMFSender")]
-public class RTCDTMFSender : EventTarget
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-RTCDTMFSender-insertDTMF">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#insertDTMF")]
-    public extern void InsertDTMF(string tones, uint duration = 100, uint interToneGap = 70);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmfsender-ontonechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#ontonechange")]
-    public extern EventHandler Ontonechange { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmfsender-caninsertdtmf">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#canInsertDTMF")]
-    public extern bool CanInsertDTMF { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-RTCDTMFSender-tonebuffer">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#toneBuffer")]
-    public extern string ToneBuffer { get; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeevent">WebRTC: Real-Time Communication in Browsers: 7.4 RTCDTMFToneChangeEvent</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCDTMFToneChangeEvent")]
-public class RTCDTMFToneChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
-    /// </summary>
-    public extern RTCDTMFToneChangeEvent(string type, RTCDTMFToneChangeEventInit? eventInitDict = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeevent-tone">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#tone")]
-    public extern string Tone { get; }
-}
-
-/// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror">WebRTC: Real-Time Communication in Browsers: 11.1 RTCError Interface</see>
 /// </summary>
 [ECMAScript]
@@ -33407,32 +33181,47 @@ public partial class RTCError(string message, string name) : DOMException(messag
     public extern RTCError(RTCErrorInit init, string message = "");
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-errordetail">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// If the process to apply description failed to parse the SDP as defined in !RFC9429 Section 5.8. including session-level parsing (5.8.1.) and media-level parsing (5.8.2.), but excluding semantics verification (5.8.3.), then reject p with an RTCError (with errorDetail set to &quot;sdp-syntax-error&quot; and the sdpLineNumber attribute set to the line number in the SDP where the syntax error was detected) and abort these steps.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-errordetail">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// </remarks>
     [Description("@#errorDetail")]
     public extern RTCErrorDetailType ErrorDetail { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-sdplinenumber">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// If the process to apply description failed to parse the SDP as defined in !RFC9429 Section 5.8. including session-level parsing (5.8.1.) and media-level parsing (5.8.2.), but excluding semantics verification (5.8.3.), then reject p with an RTCError (with errorDetail set to &quot;sdp-syntax-error&quot; and the sdpLineNumber attribute set to the line number in the SDP where the syntax error was detected) and abort these steps.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-sdplinenumber">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// </remarks>
     [Description("@#sdpLineNumber")]
     public extern int? SdpLineNumber { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-sctpcausecode">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// All attributes defined in RTCError are marked at risk due to lack of implementation (errorDetail, sdpLineNumber, sctpCauseCode, receivedAlert and sentAlert). This does not include attributes inherited from DOMException.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-sctpcausecode">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// </remarks>
     [Description("@#sctpCauseCode")]
     public extern int? SctpCauseCode { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-receivedalert">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// All attributes defined in RTCError are marked at risk due to lack of implementation (errorDetail, sdpLineNumber, sctpCauseCode, receivedAlert and sentAlert). This does not include attributes inherited from DOMException.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-receivedalert">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// </remarks>
     [Description("@#receivedAlert")]
     public extern uint? ReceivedAlert { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-sentalert">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// All attributes defined in RTCError are marked at risk due to lack of implementation (errorDetail, sdpLineNumber, sctpCauseCode, receivedAlert and sentAlert). This does not include attributes inherited from DOMException.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerror-sentalert">WebRTC: Real-Time Communication in Browsers: 11.1.2 Attributes</see>
+    /// </remarks>
     [Description("@#sentAlert")]
     public extern uint? SentAlert { get; }
 
@@ -33447,25 +33236,6 @@ public partial class RTCError(string message, string name) : DOMException(messag
 }
 
 /// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorevent">WebRTC: Real-Time Communication in Browsers: 11.3 RTCErrorEvent Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCErrorEvent")]
-public class RTCErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorevent-constructor">WebRTC: Real-Time Communication in Browsers: 11.3.1 Constructors</see>
-    /// </summary>
-    public extern RTCErrorEvent(string type, RTCErrorEventInit eventInitDict);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorevent-error">WebRTC: Real-Time Communication in Browsers: 11.3.2 Attributes</see>
-    /// </summary>
-    [Description("@#error")]
-    public extern RTCError Error { get; }
-}
-
-/// <summary>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate">WebRTC: Real-Time Communication in Browsers: 4.8.1 RTCIceCandidate Interface</see>
 /// </summary>
 [ECMAScript]
@@ -33473,49 +33243,73 @@ public class RTCErrorEvent(string type, EventInit eventInitDict) : Event(type, e
 public class RTCIceCandidate
 {
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-constructor">WebRTC: Real-Time Communication in Browsers: Constructor</see>
+    /// The RTCIceCandidate() constructor takes a dictionary argument, candidateInitDict, whose content is used to initialize the new RTCIceCandidate object.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-constructor">WebRTC: Real-Time Communication in Browsers: Constructor</see>
+    /// </remarks>
     public extern RTCIceCandidate(RTCLocalIceCandidateInit? candidateInitDict = default);
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-candidate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-candidate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#candidate")]
     public extern string Candidate { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-sdpmid">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-sdpmid">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#sdpMid")]
     public extern string? SdpMid { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-sdpmlineindex">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-sdpmlineindex">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#sdpMLineIndex")]
     public extern ushort? SdpMLineIndex { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-foundation">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// To maintain backward compatibility, any error on parsing the candidate attribute is ignored. In such case, the candidate attribute holds the raw candidate string given in candidateInitDict, but derivative attributes such as foundation, priority, etc are set to null.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-foundation">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#foundation")]
     public extern string? Foundation { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-component">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// component of type RTCIceComponent, readonly, nullable
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-component">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#component")]
     public extern RTCIceComponent? Component { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-priority">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// To maintain backward compatibility, any error on parsing the candidate attribute is ignored. In such case, the candidate attribute holds the raw candidate string given in candidateInitDict, but derivative attributes such as foundation, priority, etc are set to null.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-priority">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#priority")]
     public extern uint? Priority { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-address">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// Remote candidates may be exposed, for instance via SelectedCandidatePair.remote. By default, the user agent MUST leave the address attribute as null for any exposed remote candidate. Once a RTCPeerConnection instance learns on an address by the web application using addIceCandidate, the user agent can expose the address attribute value in any RTCIceCandidate of the RTCPeerConnection instance representing a remote candidate with that newly learnt address.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-address">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#address")]
     public extern string? Address { get; }
 
@@ -33538,38 +33332,56 @@ public class RTCIceCandidate
     public extern RTCIceCandidateType? Type { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-tcptype">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// tcpType of type RTCIceTcpCandidateType, readonly, nullable
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-tcptype">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#tcpType")]
     public extern RTCIceTcpCandidateType? TcpType { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-relatedaddress">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// relatedAddress of type DOMString, readonly, nullable
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-relatedaddress">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#relatedAddress")]
     public extern string? RelatedAddress { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-relatedport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// relatedPort of type unsigned short, readonly, nullable
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-relatedport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#relatedPort")]
     public extern ushort? RelatedPort { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-usernamefragment">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-usernamefragment">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#usernameFragment")]
     public extern string? UsernameFragment { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-relayprotocol">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-relayprotocol">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#relayProtocol")]
     public extern RTCIceServerTransportProtocol? RelayProtocol { get; }
 
     /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-url">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidate-url">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
     [Description("@#url")]
     public extern string? Url { get; }
 
@@ -33578,856 +33390,6 @@ public class RTCIceCandidate
     /// </summary>
     [Description("@#toJSON")]
     public extern RTCIceCandidateInit ToJSON();
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatepair">WebRTC: Real-Time Communication in Browsers: 5.6.2 RTCIceCandidatePair Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCIceCandidatePair")]
-public class RTCIceCandidatePair
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatepair-local">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#local")]
-    public extern RTCIceCandidate Local { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatepair-remote">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#remote")]
-    public extern RTCIceCandidate Remote { get; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport">WebRTC: Real-Time Communication in Browsers: 5.6 RTCIceTransport Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCIceTransport")]
-public partial class RTCIceTransport : EventTarget
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-icetransport-role">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#role")]
-    public extern RTCIceRole Role { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-icetransport-component">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#component")]
-    public extern RTCIceComponent Component { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-icetransport-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#state")]
-    public extern RTCIceTransportState State { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-icetransport-gatheringstate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#gatheringState")]
-    public extern RTCIceGathererState GatheringState { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getlocalcandidates">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getLocalCandidates")]
-    public extern RTCIceCandidate[] GetLocalCandidates();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getremotecandidates">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getRemoteCandidates")]
-    public extern RTCIceCandidate[] GetRemoteCandidates();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getselectedcandidatepair">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getSelectedCandidatePair")]
-    public extern RTCIceCandidatePair? GetSelectedCandidatePair();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getlocalparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getLocalParameters")]
-    public extern RTCIceParameters? GetLocalParameters();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getremoteparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getRemoteParameters")]
-    public extern RTCIceParameters? GetRemoteParameters();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-onstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onstatechange")]
-    public extern EventHandler Onstatechange { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-ongatheringstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#ongatheringstatechange")]
-    public extern EventHandler Ongatheringstatechange { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-onselectedcandidatepairchange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onselectedcandidatepairchange")]
-    public extern EventHandler Onselectedcandidatepairchange { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-constructor">IceTransport Extensions for WebRTC: Constructors</see>
-    /// </summary>
-    public extern RTCIceTransport();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-gather">IceTransport Extensions for WebRTC: Methods</see>
-    /// </summary>
-    [Description("@#gather")]
-    public extern void Gather(RTCIceGatherOptions? options = default);
-
-    /// <summary>
-    /// The RTCIceTransport extensions allow construction of an RTCIceTransport without offer/answer. This specification differs from the approach taken in ORTC in that it does not define a distinct RTCIceGatherer object, instead adding methods for control of ICE candidate gathering to RTCIceTransport. As a result, an application can test for support of this specification by checking for the RTCIceTransport.start() method, and the absence of an RTCIceGatherer object.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-start">IceTransport Extensions for WebRTC: Methods</see>
-    /// </remarks>
-    [Description("@#start")]
-    public extern void Start(RTCIceParameters? remoteParameters = default, RTCIceRole role = RTCIceRole.Controlled);
-
-    /// <summary>
-    /// Let iceTransport be the RTCIceTransport object on which the stop method is invoked.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-stop">IceTransport Extensions for WebRTC: Methods</see>
-    /// </remarks>
-    [Description("@#stop")]
-    public extern void Stop();
-
-    /// <summary>
-    /// Add a remote candidate associated with the remote RTCIceTransport. If state is &quot;closed&quot;, exception/throw an InvalidStateError. If remoteCandidate is malformed, exception/throw an OperationError. When the remote RTCIceTransport emits its end-of-candidates indication (as described in WEBRTC Section 4.8.2), addRemoteCandidate() should be called with the end-of-candidates indication as an argument, so that the local RTCIceTransport can know there are no more remote candidates expected, and can enter the &quot;completed&quot; state.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-addremotecandidate">IceTransport Extensions for WebRTC: Methods</see>
-    /// </remarks>
-    [Description("@#addRemoteCandidate")]
-    public extern void AddRemoteCandidate(RTCIceCandidateInit? remoteCandidate = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-onerror">IceTransport Extensions for WebRTC: Attributes</see>
-    /// </summary>
-    [Description("@#onerror")]
-    public extern EventHandler Onerror { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-onicecandidate">IceTransport Extensions for WebRTC: Attributes</see>
-    /// </summary>
-    [Description("@#onicecandidate")]
-    public extern EventHandler Onicecandidate { get; set; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection">WebRTC: Real-Time Communication in Browsers: 4.4.2 Interface Definition</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCPeerConnection")]
-public partial class RTCPeerConnection : EventTarget
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection">WebRTC: Real-Time Communication in Browsers: 4.4.1.1 Constructor</see>
-    /// </summary>
-    public extern RTCPeerConnection(RTCConfiguration? configuration = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-createoffer">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#createOffer")]
-    public extern PromiseResult<RTCSessionDescriptionInit> CreateOffer(RTCOfferOptions? options = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-createanswer">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#createAnswer")]
-    public extern PromiseResult<RTCSessionDescriptionInit> CreateAnswer(RTCAnswerOptions? options = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-setlocaldescription">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#setLocalDescription")]
-    public extern PromiseResult SetLocalDescription(RTCLocalSessionDescriptionInit? description = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-localdescription">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#localDescription")]
-    public extern RTCSessionDescription? LocalDescription { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-currentlocaldesc">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#currentLocalDescription")]
-    public extern RTCSessionDescription? CurrentLocalDescription { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-pendinglocaldesc">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#pendingLocalDescription")]
-    public extern RTCSessionDescription? PendingLocalDescription { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-setremotedescription">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#setRemoteDescription")]
-    public extern PromiseResult SetRemoteDescription(RTCSessionDescriptionInit description);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-remotedescription">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#remoteDescription")]
-    public extern RTCSessionDescription? RemoteDescription { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-currentremotedesc">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#currentRemoteDescription")]
-    public extern RTCSessionDescription? CurrentRemoteDescription { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-pendingremotedesc">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#pendingRemoteDescription")]
-    public extern RTCSessionDescription? PendingRemoteDescription { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-addicecandidate">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#addIceCandidate")]
-    public extern PromiseResult AddIceCandidate(RTCIceCandidateInit? candidate = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-signaling-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#signalingState")]
-    public extern RTCSignalingState SignalingState { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-ice-gathering-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#iceGatheringState")]
-    public extern RTCIceGatheringState IceGatheringState { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-ice-connection-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#iceConnectionState")]
-    public extern RTCIceConnectionState IceConnectionState { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-connection-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#connectionState")]
-    public extern RTCPeerConnectionState ConnectionState { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-cantrickleicecandidates">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#canTrickleIceCandidates")]
-    public extern bool? CanTrickleIceCandidates { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-restartice">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#restartIce")]
-    public extern void RestartIce();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getconfiguration">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getConfiguration")]
-    public extern RTCConfiguration GetConfiguration();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-setconfiguration">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#setConfiguration")]
-    public extern void SetConfiguration(RTCConfiguration? configuration = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-close">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#close")]
-    public extern void Close();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onnegotiationneeded">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onnegotiationneeded")]
-    public extern EventHandler Onnegotiationneeded { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onicecandidate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onicecandidate")]
-    public extern EventHandler Onicecandidate { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onicecandidateerror">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onicecandidateerror")]
-    public extern EventHandler Onicecandidateerror { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onsignalingstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onsignalingstatechange")]
-    public extern EventHandler Onsignalingstatechange { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-oniceconnectionstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#oniceconnectionstatechange")]
-    public extern EventHandler Oniceconnectionstatechange { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onicegatheringstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onicegatheringstatechange")]
-    public extern EventHandler Onicegatheringstatechange { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onconnectionstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onconnectionstatechange")]
-    public extern EventHandler Onconnectionstatechange { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-createoffer">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#createOffer")]
-    public extern PromiseResult CreateOffer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, RTCOfferOptions? options = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-setlocaldescription">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#setLocalDescription")]
-    public extern PromiseResult SetLocalDescription(RTCLocalSessionDescriptionInit description, Action successCallback, RTCPeerConnectionErrorCallback failureCallback);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-createanswer">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#createAnswer")]
-    public extern PromiseResult CreateAnswer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-setremotedescription">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#setRemoteDescription")]
-    public extern PromiseResult SetRemoteDescription(RTCSessionDescriptionInit description, Action successCallback, RTCPeerConnectionErrorCallback failureCallback);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-addicecandidate">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#addIceCandidate")]
-    public extern PromiseResult AddIceCandidate(RTCIceCandidateInit candidate, Action successCallback, RTCPeerConnectionErrorCallback failureCallback);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-generatecertificate">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#generateCertificate")]
-    public static extern PromiseResult<RTCCertificate> GenerateCertificate(AlgorithmIdentifier keygenAlgorithm);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-getsenders">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getSenders")]
-    public extern RTCRtpSender[] GetSenders();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-getreceivers">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getReceivers")]
-    public extern RTCRtpReceiver[] GetReceivers();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-gettranseceivers">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getTransceivers")]
-    public extern RTCRtpTransceiver[] GetTransceivers();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-addtrack">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#addTrack")]
-    public extern RTCRtpSender AddTrack(MediaStreamTrack track, params MediaStream[] streams);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-removetrack">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#removeTrack")]
-    public extern void RemoveTrack(RTCRtpSender sender);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-addtransceiver">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#addTransceiver")]
-    public extern RTCRtpTransceiver AddTransceiver(RTCPeerConnectionAddTransceiverTrackOrKind trackOrKind, RTCRtpTransceiverInit? init = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-ontrack">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#ontrack")]
-    public extern EventHandler Ontrack { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-sctp">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#sctp")]
-    public extern RTCSctpTransport? Sctp { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-createdatachannel">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#createDataChannel")]
-    public extern RTCDataChannel CreateDataChannel(string label, RTCDataChannelInit? dataChannelDict = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-ondatachannel">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#ondatachannel")]
-    public extern EventHandler Ondatachannel { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#widl-RTCPeerConnection-getStats-Promise-RTCStatsReport--MediaStreamTrack-selector">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getStats")]
-    public extern PromiseResult<RTCStatsReport> GetStats(MediaStreamTrack? selector = default);
-
-    /// <summary>
-    /// The RTCPeerConnection generates the contents parameter to this method as described in !RTCWEB-SECURITY-ARCH. The value of contents includes the fingerprint of the certificate that was selected or generated during the construction of the RTCPeerConnection. The origin parameter contains the origin of the script that calls the RTCPeerConnection method that triggers this behavior. The usernameHint value is the same value that is provided to setIdentityProvider, if any such value was provided.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-setidentityprovider">Identity for WebRTC 1.0: Methods</see>
-    /// </remarks>
-    [Description("@#setIdentityProvider")]
-    public extern void SetIdentityProvider(string provider, RTCIdentityProviderOptions? options = default);
-
-    /// <summary>
-    /// Errors in IdP processing will - in most cases - result in the failure of the procedure that invoked the IdP proxy. This will result in the reject | rejection of the promise returned by getIdentityAssertion(), createOffer(), or createAnswer(). An IdP proxy error causes a setRemoteDescription() promise to be reject | rejected if there is a target peer identity; IdP errors in calls to setRemoteDescription() where there is no target peer identity cause the peerIdentity promise to be reject | rejected instead.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-getidentityassertion">Identity for WebRTC 1.0: Methods</see>
-    /// </remarks>
-    [Description("@#getIdentityAssertion")]
-    public extern PromiseResult<string> GetIdentityAssertion();
-
-    /// <summary>
-    /// The RTCPeerConnection resolves the peerIdentity attribute with a new instance of RTCIdentityAssertion that includes the IdP domain and peer identity.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-peeridentity">Identity for WebRTC 1.0: Attributes</see>
-    /// </remarks>
-    [Description("@#peerIdentity")]
-    public extern PromiseResult<RTCIdentityAssertion> PeerIdentity { get; }
-
-    /// <summary>
-    /// The URL to login at will be passed to the application in the idpLoginUrl attribute of the RTCPeerConnection.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-idploginurl">Identity for WebRTC 1.0: Attributes</see>
-    /// </remarks>
-    [Description("@#idpLoginUrl")]
-    public extern string? IdpLoginUrl { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-idperrorinfo">Identity for WebRTC 1.0: Attributes</see>
-    /// </summary>
-    [Description("@#idpErrorInfo")]
-    public extern string? IdpErrorInfo { get; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent">WebRTC: Real-Time Communication in Browsers: 4.8.3 RTCPeerConnectionIceErrorEvent</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCPeerConnectionIceErrorEvent")]
-public class RTCPeerConnectionIceErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
-    /// </summary>
-    public extern RTCPeerConnectionIceErrorEvent(string type, RTCPeerConnectionIceErrorEventInit eventInitDict);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-address">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#address")]
-    public extern string? Address { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-port">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#port")]
-    public extern ushort? Port { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-url">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#url")]
-    public extern string Url { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-errorcode">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#errorCode")]
-    public extern ushort ErrorCode { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-errortext">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#errorText")]
-    public extern string ErrorText { get; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceevent">WebRTC: Real-Time Communication in Browsers: 4.8.2 RTCPeerConnectionIceEvent</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCPeerConnectionIceEvent")]
-public class RTCPeerConnectionIceEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
-    /// </summary>
-    public extern RTCPeerConnectionIceEvent(string type, RTCPeerConnectionIceEventInit? eventInitDict = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceevent-candidate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#candidate")]
-    public extern RTCIceCandidate? Candidate { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceevent-url">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#url")]
-    public extern string? Url { get; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver">WebRTC: Real-Time Communication in Browsers: 5.3 RTCRtpReceiver Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCRtpReceiver")]
-public partial class RTCRtpReceiver
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtpreceiver-track">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#track")]
-    public extern MediaStreamTrack Track { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-transport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#transport")]
-    public extern RTCDtlsTransport? Transport { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-getcapabilities">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getCapabilities")]
-    public static extern RTCRtpCapabilities? GetCapabilities(string kind);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-getparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getParameters")]
-    public extern RTCRtpReceiveParameters GetParameters();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-getcontributingsources">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getContributingSources")]
-    public extern RTCRtpContributingSource[] GetContributingSources();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-getsynchronizationsources">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getSynchronizationSources")]
-    public extern RTCRtpSynchronizationSource[] GetSynchronizationSources();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#widl-RTCRtpReceiver-getStats-Promise-RTCStatsReport">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getStats")]
-    public extern PromiseResult<RTCStatsReport> GetStats();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-jitterbuffertarget">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#jitterBufferTarget")]
-    public extern double? JitterBufferTarget { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcrtpsender-transform">WebRTC Encoded Transform: 2.2 Extension attribute</see>
-    /// </summary>
-    [Description("@#transform")]
-    public extern RTCRtpReceiverTransform? Transform { get; set; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender">WebRTC: Real-Time Communication in Browsers: 5.2 RTCRtpSender Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCRtpSender")]
-public partial class RTCRtpSender
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-track">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#track")]
-    public extern MediaStreamTrack? Track { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-transport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#transport")]
-    public extern RTCDtlsTransport? Transport { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-getcapabilities">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getCapabilities")]
-    public static extern RTCRtpCapabilities? GetCapabilities(string kind);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-setparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#setParameters")]
-    public extern PromiseResult SetParameters(RTCRtpSendParameters parameters, RTCSetParameterOptions? setParameterOptions = default);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-getparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getParameters")]
-    public extern RTCRtpSendParameters GetParameters();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-replacetrack">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#replaceTrack")]
-    public extern PromiseResult ReplaceTrack(MediaStreamTrack? withTrack);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-setstreams">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#setStreams")]
-    public extern void SetStreams(params MediaStream[] streams);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#widl-RTCRtpSender-getStats-Promise-RTCStatsReport">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#getStats")]
-    public extern PromiseResult<RTCStatsReport> GetStats();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-dtmf">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#dtmf")]
-    public extern RTCDTMFSender? Dtmf { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcrtpsender-transform">WebRTC Encoded Transform: 2.2 Extension attribute</see>
-    /// </summary>
-    [Description("@#transform")]
-    public extern RTCRtpSenderTransform? Transform { get; set; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver">WebRTC: Real-Time Communication in Browsers: 5.4 RTCRtpTransceiver Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCRtpTransceiver")]
-public class RTCRtpTransceiver
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtptransceiver-mid">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#mid")]
-    public extern string? Mid { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-sender">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#sender")]
-    public extern RTCRtpSender Sender { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-receiver">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#receiver")]
-    public extern RTCRtpReceiver Receiver { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-direction">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#direction")]
-    public extern RTCRtpTransceiverDirection Direction { get; set; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-currentdirection">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#currentDirection")]
-    public extern RTCRtpTransceiverDirection? CurrentDirection { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-stop">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#stop")]
-    public extern void Stop();
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-setcodecpreferences">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#setCodecPreferences")]
-    public extern void SetCodecPreferences(RTCRtpCodec[] codecs);
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport">WebRTC: Real-Time Communication in Browsers: 6.1.1 RTCSctpTransport Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCSctpTransport")]
-public class RTCSctpTransport : EventTarget
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-transport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#transport")]
-    public extern RTCDtlsTransport Transport { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#state")]
-    public extern RTCSctpTransportState State { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-maxmessagesize">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#maxMessageSize")]
-    public extern double? MaxMessageSize { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-maxchannels">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#maxChannels")]
-    public extern ushort? MaxChannels { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-onstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#onstatechange")]
-    public extern EventHandler Onstatechange { get; set; }
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescription">WebRTC: Real-Time Communication in Browsers: 4.6.2 RTCSessionDescription Class</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCSessionDescription")]
-public class RTCSessionDescription
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-sessiondescription">WebRTC: Real-Time Communication in Browsers: Constructors</see>
-    /// </summary>
-    public extern RTCSessionDescription(RTCSessionDescriptionInit descriptionInitDict);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescription-type">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#type")]
-    public extern RTCSdpType Type { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescription-sdp">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#sdp")]
-    public extern string Sdp { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescription-tojson">WebRTC: Real-Time Communication in Browsers: Methods</see>
-    /// </summary>
-    [Description("@#toJSON")]
-    public extern RTCSessionDescriptionInit ToJSON();
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcstatsreport">WebRTC: Real-Time Communication in Browsers: 8.3 RTCStatsReport Object</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCStatsReport")]
-public class RTCStatsReport : IDictionary<string, object>
-{
-    #region Dictionary
-    extern object IDictionary<string, object>.this[string key] { get; set; }
-    extern ICollection<string> IDictionary<string, object>.Keys { get; }
-    extern ICollection<object> IDictionary<string, object>.Values { get; }
-    extern int ICollection<KeyValuePair<string, object>>.Count { get; }
-    extern bool ICollection<KeyValuePair<string, object>>.IsReadOnly { get; }
-    extern void IDictionary<string, object>.Add(string key, object value);
-    extern void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item);
-    extern void ICollection<KeyValuePair<string, object>>.Clear();
-    extern bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item);
-    extern bool IDictionary<string, object>.ContainsKey(string key);
-    extern void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex);
-    extern IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator();
-    extern bool IDictionary<string, object>.Remove(string key);
-    extern bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item);
-    extern bool IDictionary<string, object>.TryGetValue(string key, [MaybeNullWhen(false)] out object value);
-    extern IEnumerator IEnumerable.GetEnumerator();
-    #endregion
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackevent">WebRTC: Real-Time Communication in Browsers: 5.7 RTCTrackEvent</see>
-/// </summary>
-[ECMAScript]
-[Description("@#RTCTrackEvent")]
-public class RTCTrackEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
-    /// </summary>
-    public extern RTCTrackEvent(string type, RTCTrackEventInit eventInitDict);
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-trackevent-receiver">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#receiver")]
-    public extern RTCRtpReceiver Receiver { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackevent-track">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#track")]
-    public extern MediaStreamTrack Track { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackevent-streams">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#streams")]
-    public extern FrozenSet<MediaStream> Streams { get; }
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-trackevent-transceiver">WebRTC: Real-Time Communication in Browsers: Attributes</see>
-    /// </summary>
-    [Description("@#transceiver")]
-    public extern RTCRtpTransceiver Transceiver { get; }
 }
 
 /// <summary>
@@ -35138,69 +34100,6 @@ public class AnalyserNode : AudioNode
 }
 
 /// <summary>
-/// <see href="https://webaudio.github.io/web-audio-api/#AudioBuffer">Web Audio API 1.1: 1.4 The AudioBuffer Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#AudioBuffer")]
-public class AudioBuffer
-{
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-audiobuffer">Web Audio API 1.1: 1.4.1 Constructors</see>
-    /// </summary>
-    /// <param name="options"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-audiobuffer-options-options">Web Audio API 1.1: 1.4 The AudioBuffer Interface</see></param>
-    public extern AudioBuffer(AudioBufferOptions options);
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-samplerate">Web Audio API 1.1: 1.4.2 Attributes</see>
-    /// </summary>
-    [Description("@#sampleRate")]
-    public extern float SampleRate { get; }
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-length">Web Audio API 1.1: 1.4.2 Attributes</see>
-    /// </summary>
-    [Description("@#length")]
-    public extern uint Length { get; }
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-duration">Web Audio API 1.1: 1.4.2 Attributes</see>
-    /// </summary>
-    [Description("@#duration")]
-    public extern double Duration { get; }
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-numberofchannels">Web Audio API 1.1: 1.4.2 Attributes</see>
-    /// </summary>
-    [Description("@#numberOfChannels")]
-    public extern uint NumberOfChannels { get; }
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-getchanneldata">Web Audio API 1.1: 1.4.3 Methods</see>
-    /// </summary>
-    /// <param name="channel"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-getchanneldata-channel">Web Audio API 1.1: 1.4.3 Methods</see></param>
-    [Description("@#getChannelData")]
-    public extern Float32Array GetChannelData(uint channel);
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copyfromchannel">Web Audio API 1.1: 1.4.3 Methods</see>
-    /// </summary>
-    /// <param name="destination"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copyfromchannel-destination">Web Audio API 1.1: 1.4.3 Methods</see></param>
-    /// <param name="channelNumber"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copyfromchannel-channelnumber">Web Audio API 1.1: 1.4.3 Methods</see></param>
-    /// <param name="bufferOffset"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copyfromchannel-bufferoffset">Web Audio API 1.1: 1.4.3 Methods</see></param>
-    [Description("@#copyFromChannel")]
-    public extern void CopyFromChannel(Float32Array destination, uint channelNumber, uint bufferOffset = 0);
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copytochannel">Web Audio API 1.1: 1.4.3 Methods</see>
-    /// </summary>
-    /// <param name="source"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copytochannel-source">Web Audio API 1.1: 1.4.3 Methods</see></param>
-    /// <param name="channelNumber"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copytochannel-channelnumber">Web Audio API 1.1: 1.4.3 Methods</see></param>
-    /// <param name="bufferOffset"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copytochannel-bufferoffset">Web Audio API 1.1: 1.4.3 Methods</see></param>
-    [Description("@#copyToChannel")]
-    public extern void CopyToChannel(Float32Array source, uint channelNumber, uint bufferOffset = 0);
-}
-
-/// <summary>
 /// <see href="https://webaudio.github.io/web-audio-api/#AudioBufferSourceNode">Web Audio API 1.1: 1.9 The AudioBufferSourceNode Interface</see>
 /// </summary>
 [ECMAScript]
@@ -35322,8 +34221,11 @@ public class AudioContext : BaseAudioContext
     public extern PromiseResult Resume();
 
     /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiocontext-suspend">Web Audio API 1.1: 1.2.3 Methods</see>
+    /// For every render quantum, check and suspend rendering if necessary.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiocontext-suspend">Web Audio API 1.1: 1.2.3 Methods</see>
+    /// </remarks>
     [Description("@#suspend")]
     public extern PromiseResult Suspend();
 
@@ -35747,7 +34649,7 @@ public class AudioPlaybackStats
 /// </summary>
 [ECMAScript]
 [Description("@#AudioProcessingEvent")]
-public class AudioProcessingEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class AudioProcessingEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-audio-api/#dom-audioprocessingevent-audioprocessingevent">Web Audio API 1.1: 1.12 The AudioProcessingEvent Interface - DEPRECATED</see>
@@ -36449,7 +35351,7 @@ public class MediaStreamTrackAudioSourceNode : AudioNode
 /// </summary>
 [ECMAScript]
 [Description("@#OfflineAudioCompletionEvent")]
-public class OfflineAudioCompletionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class OfflineAudioCompletionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocompletionevent-offlineaudiocompletionevent">Web Audio API 1.1: 1.3.5 The OfflineAudioCompletionEvent Interface</see>
@@ -36463,59 +35365,6 @@ public class OfflineAudioCompletionEvent(string type, EventInit eventInitDict) :
     /// </summary>
     [Description("@#renderedBuffer")]
     public extern AudioBuffer RenderedBuffer { get; }
-}
-
-/// <summary>
-/// <see href="https://webaudio.github.io/web-audio-api/#OfflineAudioContext">Web Audio API 1.1: 1.3 The OfflineAudioContext Interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#OfflineAudioContext")]
-public class OfflineAudioContext : BaseAudioContext
-{
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-offlineaudiocontext">Web Audio API 1.1: 1.3.1 Constructors</see>
-    /// </summary>
-    /// <param name="contextOptions"><see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-constructor-contextoptions-contextoptions">Web Audio API 1.1: 1.3.1 Constructors</see></param>
-    public extern OfflineAudioContext(OfflineAudioContextOptions contextOptions);
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-offlineaudiocontext-numberofchannels-length-samplerate">Web Audio API 1.1: 1.3.1 Constructors</see>
-    /// </summary>
-    /// <param name="numberOfChannels"><see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-constructor-numberofchannels-length-samplerate-numberofchannels">Web Audio API 1.1: 1.3.1 Constructors</see></param>
-    /// <param name="length"><see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-constructor-numberofchannels-length-samplerate-length">Web Audio API 1.1: 1.3.1 Constructors</see></param>
-    /// <param name="sampleRate"><see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-constructor-numberofchannels-length-samplerate-samplerate">Web Audio API 1.1: 1.3.1 Constructors</see></param>
-    public extern OfflineAudioContext(uint numberOfChannels, uint length, float sampleRate);
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-startrendering">Web Audio API 1.1: 1.3.3 Methods</see>
-    /// </summary>
-    [Description("@#startRendering")]
-    public extern PromiseResult<AudioBuffer> StartRendering();
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-resume">Web Audio API 1.1: 1.3.3 Methods</see>
-    /// </summary>
-    [Description("@#resume")]
-    public extern PromiseResult Resume();
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-suspend">Web Audio API 1.1: 1.3.3 Methods</see>
-    /// </summary>
-    /// <param name="suspendTime"><see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-suspend-suspendtime">Web Audio API 1.1: 1.3.3 Methods</see></param>
-    [Description("@#suspend")]
-    public extern PromiseResult Suspend(double suspendTime);
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-length">Web Audio API 1.1: 1.3.2 Attributes</see>
-    /// </summary>
-    [Description("@#length")]
-    public extern uint Length { get; }
-
-    /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-oncomplete">Web Audio API 1.1: 1.3.2 Attributes</see>
-    /// </summary>
-    [Description("@#oncomplete")]
-    public extern EventHandler Oncomplete { get; set; }
 }
 
 /// <summary>
@@ -37224,7 +36073,7 @@ public class SpeechRecognitionAlternative
 /// </summary>
 [ECMAScript]
 [Description("@#SpeechRecognitionEvent")]
-public class SpeechRecognitionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class SpeechRecognitionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-speech-api/#dom-speechrecognitionevent-speechrecognitionevent">Web Speech API: 4.1 The SpeechRecognition Interface</see>
@@ -37326,7 +36175,7 @@ public class SpeechRecognitionResult
 /// </summary>
 [ECMAScript]
 [Description("@#SpeechSynthesisEvent")]
-public class SpeechSynthesisEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class SpeechSynthesisEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-speech-api/#dom-speechsynthesisevent-speechsynthesisevent">Web Speech API: 4.2 The SpeechSynthesis Interface</see>
@@ -37436,7 +36285,7 @@ public class SpeechSynthesisVoice
 /// </summary>
 [ECMAScript]
 [Description("@#BluetoothAdvertisingEvent")]
-public class BluetoothAdvertisingEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class BluetoothAdvertisingEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothadvertisingevent-bluetoothadvertisingevent">Web Bluetooth: 5.2.3 Responding to Advertising Events</see>
@@ -37759,7 +36608,7 @@ public class BluetoothUUID
 /// </summary>
 [ECMAScript]
 [Description("@#ValueEvent")]
-public class ValueEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class ValueEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-valueevent-valueevent">Web Bluetooth: 4.2 Overall Bluetooth availability</see>
@@ -37819,216 +36668,6 @@ public class BluetoothLEScanPermissionResult : PermissionStatus
     /// </summary>
     [Description("@#scans")]
     public extern FrozenSet<BluetoothLEScan> Scans { get; set; }
-}
-
-/// <summary>
-/// <see href="https://webidl.spec.whatwg.org/#idl-DOMException">Web IDL Standard: 4.4 DOMException</see>
-/// </summary>
-[ECMAScript]
-[Description("@#DOMException")]
-public class DOMException
-{
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-domexception">Web IDL Standard: 4.4 DOMException</see>
-    /// </summary>
-    /// <param name="message"><see href="https://webidl.spec.whatwg.org/#dom-domexception-domexception-message-name-message">Web IDL Standard: 4.4 DOMException</see></param>
-    /// <param name="name"><see href="https://webidl.spec.whatwg.org/#dom-domexception-domexception-message-name-name">Web IDL Standard: 4.4 DOMException</see></param>
-    public extern DOMException(string message = "", string name = "Error");
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-name">Web IDL Standard: 4.4 DOMException</see>
-    /// </summary>
-    [Description("@#name")]
-    public extern string Name { get; }
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-message">Web IDL Standard: 4.4 DOMException</see>
-    /// </summary>
-    [Description("@#message")]
-    public extern string Message { get; }
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-code">Web IDL Standard: 4.4 DOMException</see>
-    /// </summary>
-    [Description("@#code")]
-    public extern ushort Code { get; }
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-index_size_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#INDEX_SIZE_ERR")]
-    public const ushort INDEX_SIZE_ERR = 1;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-domstring_size_err">Web IDL Standard: 4.4 DOMException</see>
-    /// </summary>
-    [Description("@#DOMSTRING_SIZE_ERR")]
-    public const ushort DOMSTRING_SIZE_ERR = 2;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-hierarchy_request_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#HIERARCHY_REQUEST_ERR")]
-    public const ushort HIERARCHY_REQUEST_ERR = 3;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-wrong_document_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#WRONG_DOCUMENT_ERR")]
-    public const ushort WRONG_DOCUMENT_ERR = 4;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_character_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#INVALID_CHARACTER_ERR")]
-    public const ushort INVALID_CHARACTER_ERR = 5;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-no_data_allowed_err">Web IDL Standard: 4.4 DOMException</see>
-    /// </summary>
-    [Description("@#NO_DATA_ALLOWED_ERR")]
-    public const ushort NO_DATA_ALLOWED_ERR = 6;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-no_modification_allowed_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#NO_MODIFICATION_ALLOWED_ERR")]
-    public const ushort NO_MODIFICATION_ALLOWED_ERR = 7;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-not_found_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#NOT_FOUND_ERR")]
-    public const ushort NOT_FOUND_ERR = 8;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-not_supported_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#NOT_SUPPORTED_ERR")]
-    public const ushort NOT_SUPPORTED_ERR = 9;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-inuse_attribute_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#INUSE_ATTRIBUTE_ERR")]
-    public const ushort INUSE_ATTRIBUTE_ERR = 10;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_state_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#INVALID_STATE_ERR")]
-    public const ushort INVALID_STATE_ERR = 11;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-syntax_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#SYNTAX_ERR")]
-    public const ushort SYNTAX_ERR = 12;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_modification_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#INVALID_MODIFICATION_ERR")]
-    public const ushort INVALID_MODIFICATION_ERR = 13;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-namespace_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#NAMESPACE_ERR")]
-    public const ushort NAMESPACE_ERR = 14;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_access_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#INVALID_ACCESS_ERR")]
-    public const ushort INVALID_ACCESS_ERR = 15;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-validation_err">Web IDL Standard: 4.4 DOMException</see>
-    /// </summary>
-    [Description("@#VALIDATION_ERR")]
-    public const ushort VALIDATION_ERR = 16;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-type_mismatch_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#TYPE_MISMATCH_ERR")]
-    public const ushort TYPE_MISMATCH_ERR = 17;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-security_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#SECURITY_ERR")]
-    public const ushort SECURITY_ERR = 18;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-network_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#NETWORK_ERR")]
-    public const ushort NETWORK_ERR = 19;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-abort_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#ABORT_ERR")]
-    public const ushort ABORT_ERR = 20;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-url_mismatch_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#URL_MISMATCH_ERR")]
-    public const ushort URL_MISMATCH_ERR = 21;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-quota_exceeded_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#QUOTA_EXCEEDED_ERR")]
-    public const ushort QUOTA_EXCEEDED_ERR = 22;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-timeout_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#TIMEOUT_ERR")]
-    public const ushort TIMEOUT_ERR = 23;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_node_type_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#INVALID_NODE_TYPE_ERR")]
-    public const ushort INVALID_NODE_TYPE_ERR = 24;
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-data_clone_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
-    /// </summary>
-    [Description("@#DATA_CLONE_ERR")]
-    public const ushort DATA_CLONE_ERR = 25;
-}
-
-/// <summary>
-/// <see href="https://webidl.spec.whatwg.org/#quotaexceedederror">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see>
-/// </summary>
-[ECMAScript]
-[Description("@#QuotaExceededError")]
-public class QuotaExceededError(string message, string name) : DOMException(message, name)
-{
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-quotaexceedederror">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see>
-    /// </summary>
-    /// <param name="message"><see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-quotaexceedederror-message-options-message">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see></param>
-    /// <param name="options"><see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-quotaexceedederror-message-options-options">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see></param>
-    public extern QuotaExceededError(string message = "", QuotaExceededErrorOptions? options = default);
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-quota">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see>
-    /// </summary>
-    [Description("@#quota")]
-    public extern double? Quota { get; }
-
-    /// <summary>
-    /// <see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-requested">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see>
-    /// </summary>
-    [Description("@#requested")]
-    public extern double? Requested { get; }
 }
 
 /// <summary>
@@ -38350,7 +36989,7 @@ public class CreateMonitor : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#CloseEvent")]
-public class CloseEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class CloseEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://websockets.spec.whatwg.org/#dom-closeevent-closeevent">WebSockets Standard: 6 The CloseEvent interface</see>
@@ -38443,7 +37082,7 @@ public partial class NavigatorManagedData : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#AutofillEvent")]
-public class AutofillEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class AutofillEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/autofill-event/#dom-autofillevent-autofillevent">Autofill Event: 3 The AutofillEvent Interface</see>
@@ -38870,13 +37509,13 @@ public class DocumentPictureInPicture : EventTarget
     /// </summary>
     /// <param name="options"><see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpicture-requestwindow-options-options">Document Picture-in-Picture Specification: 5 API</see></param>
     [Description("@#requestWindow")]
-    public extern PromiseResult<Window> RequestWindow(DocumentPictureInPictureOptions? options = default);
+    public extern PromiseResult<JazorWindow> RequestWindow(DocumentPictureInPictureOptions? options = default);
 
     /// <summary>
     /// <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpicture-window">Document Picture-in-Picture Specification: 5 API</see>
     /// </summary>
     [Description("@#window")]
-    public extern Window Window { get; }
+    public extern JazorWindow Window { get; }
 
     /// <summary>
     /// <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpicture-onenter">Document Picture-in-Picture Specification: 5 API</see>
@@ -38890,7 +37529,7 @@ public class DocumentPictureInPicture : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#DocumentPictureInPictureEvent")]
-public class DocumentPictureInPictureEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class DocumentPictureInPictureEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpictureevent-documentpictureinpictureevent">Document Picture-in-Picture Specification: 5 API</see>
@@ -38903,7 +37542,7 @@ public class DocumentPictureInPictureEvent(string type, EventInit eventInitDict)
     /// <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpictureevent-window">Document Picture-in-Picture Specification: 5 API</see>
     /// </summary>
     [Description("@#window")]
-    public extern Window Window { get; }
+    public extern JazorWindow Window { get; }
 }
 
 /// <summary>
@@ -39098,7 +37737,7 @@ public class Fence
     /// </summary>
     /// <param name="event"><see href="https://wicg.github.io/fenced-frame/#dom-fence-notifyevent-event-event">Fenced Frame: 2.4 The Fence interface</see></param>
     [Description("@#notifyEvent")]
-    public extern void NotifyEvent(Event @event);
+    public extern void NotifyEvent(JazorEvent @event);
 }
 
 /// <summary>
@@ -39388,7 +38027,7 @@ public class FontData
 /// </summary>
 [ECMAScript]
 [Description("@#BeforeInstallPromptEvent")]
-public class BeforeInstallPromptEvent : Event
+public class BeforeInstallPromptEvent : JazorEvent
 {
     /// <summary>
     /// <see href="https://wicg.github.io/manifest-incubations/#dom-beforeinstallpromptevent-constructor">Manifest Incubations: 16.1 BeforeInstallPromptEvent Interface</see>
@@ -39769,7 +38408,7 @@ public class HTMLPortalElement : HTMLElement
 /// </summary>
 [ECMAScript]
 [Description("@#PortalActivateEvent")]
-public class PortalActivateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PortalActivateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/portals/#dom-portalactivateevent-portalactivateevent">Portals: 3.2 The PortalActivateEvent interface</see>
@@ -39879,7 +38518,7 @@ public class TaskController : AbortController
 /// </summary>
 [ECMAScript]
 [Description("@#TaskPriorityChangeEvent")]
-public class TaskPriorityChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class TaskPriorityChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/scheduling-apis/#dom-taskprioritychangeevent-taskprioritychangeevent">Prioritized Task Scheduling: 3.1 The TaskPriorityChangeEvent Interface</see>
@@ -40392,7 +39031,7 @@ public class USBConfiguration
 /// </summary>
 [ECMAScript]
 [Description("@#USBConnectionEvent")]
-public class USBConnectionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class USBConnectionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/webusb/#dom-usbconnectionevent-usbconnectionevent">WebUSB API: 5.1 Events</see>
@@ -40907,7 +39546,7 @@ public class WindowControlsOverlay : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#WindowControlsOverlayGeometryChangeEvent")]
-public class WindowControlsOverlayGeometryChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class WindowControlsOverlayGeometryChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/window-controls-overlay/#dom-windowcontrolsoverlaygeometrychangeevent-constructor">Window Controls Overlay: 5 WindowControlsOverlay interface</see>
@@ -41087,7 +39726,7 @@ public partial class XMLHttpRequest : XMLHttpRequestEventTarget
     /// </example>
     /// <param name="body"><see href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send-body-body">XMLHttpRequest Standard: 3 Interface XMLHttpRequest</see></param>
     [Description("@#send")]
-    public extern void Send(Document body);
+    public extern void Send(JazorDocument body);
 
     /// <summary>
     /// <see href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send">XMLHttpRequest Standard: 3.5.6 The send() method</see>
@@ -41186,7 +39825,7 @@ public partial class XMLHttpRequest : XMLHttpRequestEventTarget
     /// <code>client.responseXML</code>
     /// </example>
     [Description("@#responseXML")]
-    public extern Document? ResponseXML { get; }
+    public extern JazorDocument? ResponseXML { get; }
 }
 
 /// <summary>
@@ -41642,7 +40281,7 @@ public class NamedNodeMap
 /// </example>
 [ECMAScript]
 [Description("@#Document")]
-public partial class Document : Node
+public partial class JazorDocument : Node
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-regions-1/#dom-document-namedflows">CSS Regions Module Level 1: 4.1 The NamedFlow interface</see>
@@ -41723,7 +40362,7 @@ public partial class Document : Node
     /// <example>
     /// <code>document = new Document()</code>
     /// </example>
-    public extern Document();
+    public extern JazorDocument();
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-document-implementation">DOM Standard: 4.5 Interface Document</see>
@@ -42028,7 +40667,7 @@ public partial class Document : Node
     /// </summary>
     /// <param name="interface"><see href="https://dom.spec.whatwg.org/#dom-document-createevent-interface-interface">DOM Standard: 4.5 Interface Document</see></param>
     [Description("@#createEvent")]
-    public extern Event CreateEvent(string @interface);
+    public extern JazorEvent CreateEvent(string @interface);
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-document-createrange">DOM Standard: 4.5 Interface Document</see>
@@ -42112,7 +40751,7 @@ public partial class Document : Node
     /// <code>doc = Document.parseHTMLUnsafe(html, options)</code>
     /// </example>
     [Description("@#parseHTMLUnsafe")]
-    public static extern Document ParseHTMLUnsafe(DocumentParseHTMLUnsafeHtml html, ParseHTMLUnsafeOptions? options = default);
+    public static extern JazorDocument ParseHTMLUnsafe(DocumentParseHTMLUnsafeHtml html, ParseHTMLUnsafeOptions? options = default);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsehtml">HTML Standard: 8.5.2 HTML parsing methods</see>
@@ -42121,7 +40760,7 @@ public partial class Document : Node
     /// <code>doc = Document.parseHTML(html, options)</code>
     /// </example>
     [Description("@#parseHTML")]
-    public static extern Document ParseHTML(string html, SetHTMLOptions? options = default);
+    public static extern JazorDocument ParseHTML(string html, SetHTMLOptions? options = default);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-document-location">HTML Standard: 7.2.4 The Location interface</see>
@@ -42130,7 +40769,7 @@ public partial class Document : Node
     /// <code>document.location [ = value ]</code>
     /// </example>
     [Description("@#location")]
-    public extern Location? Location { get; }
+    public extern JazorLocation? Location { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/browsers.html#dom-document-domain">HTML Standard: 7.1.1.2 Relaxing the same-origin restriction</see>
@@ -42292,7 +40931,7 @@ public partial class Document : Node
     /// <code>document = document.open()✔MDNDocument/openSupport in all current engines.Firefox1+Safari11+Chrome64+Opera51+Edge79+Edge (Legacy)12+Internet Explorer4+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android47+</code>
     /// </example>
     [Description("@#open")]
-    public extern Document Open(string? unused1 = default, string? unused2 = default);
+    public extern JazorDocument Open(string? unused1 = default, string? unused2 = default);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-document-open-window">HTML Standard: 8.4.1 Opening the input stream</see>
@@ -44186,7 +42825,7 @@ public class CSSSupportsConditionRule : CSSGroupingRule
 /// </remarks>
 [ECMAScript]
 [Description("@#AnimationEvent")]
-public partial class AnimationEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public partial class AnimationEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// Added constructor type on AnimationEvent&apos;s definition
@@ -45544,7 +44183,7 @@ public partial class EventTarget
     /// </example>
     /// <param name="event"><see href="https://dom.spec.whatwg.org/#dom-eventtarget-dispatchevent-event-event">DOM Standard: 2.7 Interface EventTarget</see></param>
     [Description("@#dispatchEvent")]
-    public extern bool DispatchEvent(Event @event);
+    public extern bool DispatchEvent(JazorEvent @event);
 
     /// <summary>
     /// <see href="https://wicg.github.io/observable/#dom-eventtarget-when">Observable: 3 EventTarget integration</see>
@@ -45864,7 +44503,7 @@ public class PaymentManager
 }
 
 /// <summary>
-/// An optional piece of metadata associated with the impression. The value can be used to identify which impressions may receive attribution from a conversion.
+/// An optional piece of metadata associated with the impression. The value can be used to identify which impressions could receive attribution from a conversion.
 /// </summary>
 /// <remarks>
 /// <see href="https://w3c.github.io/attribution/#attribution">Attribution Level 1: 3.3 Finding a Supported Aggregation Service</see>
@@ -45893,7 +44532,7 @@ public partial class Attribution
     public extern PromiseResult<AttributionImpressionResult> SaveImpression(AttributionImpressionOptions options);
 
     /// <summary>
-    /// The top-level conversion sites where conversions for this impression may occur, identified by their domain names. The measureConversion() method will only attribute to this impression when called by one of the indicated sites. If empty, any conversion site will match.
+    /// The top-level conversion sites where conversions for this impression can occur, identified by their domain names. The measureConversion() method will only attribute to this impression when called by one of the indicated sites. If empty, any conversion site will match.
     /// </summary>
     /// <remarks>
     /// <see href="https://w3c.github.io/attribution/#dom-attribution-measureconversion">Attribution Level 1: 4.4 Measure Conversion Algorithm</see>
@@ -46477,6 +45116,84 @@ public class FaceDetector
 }
 
 /// <summary>
+/// Create a new AudioBuffer buffer, with a number of channels and sample rate equal respectively to the numberOfChannels and sampleRate values passed to this instance&apos;s constructor in the contextOptions parameter; and length equal to bufferLength.
+/// </summary>
+/// <remarks>
+/// <see href="https://webaudio.github.io/web-audio-api/#AudioBuffer">Web Audio API 1.1: 1.4 The AudioBuffer Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#AudioBuffer")]
+public class AudioBuffer
+{
+    /// <summary>
+    /// Create a new AudioBuffer buffer, with a number of channels and sample rate equal respectively to the numberOfChannels and sampleRate values passed to this instance&apos;s constructor in the contextOptions parameter; and length equal to bufferLength.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-audiobuffer">Web Audio API 1.1: 1.4.1 Constructors</see>
+    /// </remarks>
+    /// <param name="options"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-audiobuffer-options-options">Web Audio API 1.1: 1.4 The AudioBuffer Interface</see></param>
+    public extern AudioBuffer(AudioBufferOptions options);
+
+    /// <summary>
+    /// Create a new AudioBuffer buffer, with a number of channels and sample rate equal respectively to the numberOfChannels and sampleRate values passed to this instance&apos;s constructor in the contextOptions parameter; and length equal to bufferLength.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-samplerate">Web Audio API 1.1: 1.4.2 Attributes</see>
+    /// </remarks>
+    [Description("@#sampleRate")]
+    public extern float SampleRate { get; }
+
+    /// <summary>
+    /// Create a new AudioBuffer buffer, with a number of channels and sample rate equal respectively to the numberOfChannels and sampleRate values passed to this instance&apos;s constructor in the contextOptions parameter; and length equal to bufferLength.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-length">Web Audio API 1.1: 1.4.2 Attributes</see>
+    /// </remarks>
+    [Description("@#length")]
+    public extern uint Length { get; }
+
+    /// <summary>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-duration">Web Audio API 1.1: 1.4.2 Attributes</see>
+    /// </summary>
+    [Description("@#duration")]
+    public extern double Duration { get; }
+
+    /// <summary>
+    /// Create a new AudioBuffer buffer, with a number of channels and sample rate equal respectively to the numberOfChannels and sampleRate values passed to this instance&apos;s constructor in the contextOptions parameter; and length equal to bufferLength.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-numberofchannels">Web Audio API 1.1: 1.4.2 Attributes</see>
+    /// </remarks>
+    [Description("@#numberOfChannels")]
+    public extern uint NumberOfChannels { get; }
+
+    /// <summary>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-getchanneldata">Web Audio API 1.1: 1.4.3 Methods</see>
+    /// </summary>
+    /// <param name="channel"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-getchanneldata-channel">Web Audio API 1.1: 1.4.3 Methods</see></param>
+    [Description("@#getChannelData")]
+    public extern Float32Array GetChannelData(uint channel);
+
+    /// <summary>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copyfromchannel">Web Audio API 1.1: 1.4.3 Methods</see>
+    /// </summary>
+    /// <param name="destination"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copyfromchannel-destination">Web Audio API 1.1: 1.4.3 Methods</see></param>
+    /// <param name="channelNumber"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copyfromchannel-channelnumber">Web Audio API 1.1: 1.4.3 Methods</see></param>
+    /// <param name="bufferOffset"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copyfromchannel-bufferoffset">Web Audio API 1.1: 1.4.3 Methods</see></param>
+    [Description("@#copyFromChannel")]
+    public extern void CopyFromChannel(Float32Array destination, uint channelNumber, uint bufferOffset = 0);
+
+    /// <summary>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copytochannel">Web Audio API 1.1: 1.4.3 Methods</see>
+    /// </summary>
+    /// <param name="source"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copytochannel-source">Web Audio API 1.1: 1.4.3 Methods</see></param>
+    /// <param name="channelNumber"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copytochannel-channelnumber">Web Audio API 1.1: 1.4.3 Methods</see></param>
+    /// <param name="bufferOffset"><see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffer-copytochannel-bufferoffset">Web Audio API 1.1: 1.4.3 Methods</see></param>
+    [Description("@#copyToChannel")]
+    public extern void CopyToChannel(Float32Array source, uint channelNumber, uint bufferOffset = 0);
+}
+
+/// <summary>
 /// Creates a ReadableStreamBYOBReader and locked to a reader|locks the stream to the new reader.
 /// </summary>
 /// <remarks>
@@ -46785,6 +45502,68 @@ public class CropTarget
     /// </remarks>
     [Description("@#fromElement")]
     public static extern PromiseResult<CropTarget> FromElement(Element element);
+}
+
+/// <summary>
+/// Defined CSSFontFeatureValuesRule.historicalForms
+/// </summary>
+/// <remarks>
+/// <see href="https://drafts.csswg.org/css-fonts-4/#cssfontfeaturevaluesrule">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#CSSFontFeatureValuesRule")]
+public class CSSFontFeatureValuesRule : CSSRule
+{
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-fontfamily">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    [Description("@#fontFamily")]
+    public extern string FontFamily { get; set; }
+
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-annotation">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    [Description("@#annotation")]
+    public extern CSSFontFeatureValuesMap Annotation { get; }
+
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-ornaments">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    [Description("@#ornaments")]
+    public extern CSSFontFeatureValuesMap Ornaments { get; }
+
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-stylistic">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    [Description("@#stylistic")]
+    public extern CSSFontFeatureValuesMap Stylistic { get; }
+
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-swash">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    [Description("@#swash")]
+    public extern CSSFontFeatureValuesMap Swash { get; }
+
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-charactervariant">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    [Description("@#characterVariant")]
+    public extern CSSFontFeatureValuesMap CharacterVariant { get; }
+
+    /// <summary>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-styleset">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </summary>
+    [Description("@#styleset")]
+    public extern CSSFontFeatureValuesMap Styleset { get; }
+
+    /// <summary>
+    /// Defined CSSFontFeatureValuesRule.historicalForms
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-historicalforms">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
+    /// </remarks>
+    [Description("@#historicalForms")]
+    public extern CSSFontFeatureValuesMap HistoricalForms { get; }
 }
 
 /// <summary>
@@ -49560,7 +48339,7 @@ public partial class StorageManager
 /// </remarks>
 [ECMAScript]
 [Description("@#ProgressEvent")]
-public class ProgressEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class ProgressEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://xhr.spec.whatwg.org/#dom-progressevent-progressevent">XMLHttpRequest Standard: 5 Interface ProgressEvent</see>
@@ -49692,7 +48471,7 @@ public class CSSPseudoElement
 /// </remarks>
 [ECMAScript]
 [Description("@#CharacterBoundsUpdateEvent")]
-public class CharacterBoundsUpdateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class CharacterBoundsUpdateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/edit-context/#dom-characterboundsupdateevent-constructor">EditContext API: 4.3 CharacterBoundsUpdateEvent</see>
@@ -49726,7 +48505,7 @@ public class CharacterBoundsUpdateEvent(string type, EventInit eventInitDict) : 
 /// </remarks>
 [ECMAScript]
 [Description("@#TextUpdateEvent")]
-public class TextUpdateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class TextUpdateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/edit-context/#dom-textupdateevent-constructor">EditContext API: 4.1 TextUpdateEvent</see>
@@ -49780,6 +48559,31 @@ public class TextUpdateEvent(string type, EventInit eventInitDict) : Event(type,
 }
 
 /// <summary>
+/// Fire an event named datachannel using the RTCDataChannelEvent interface with the channel attribute set to channel at connection.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelevent">WebRTC: Real-Time Communication in Browsers: 6.3 RTCDataChannelEvent</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCDataChannelEvent")]
+public class RTCDataChannelEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
+    /// </summary>
+    public extern RTCDataChannelEvent(string type, RTCDataChannelEventInit eventInitDict);
+
+    /// <summary>
+    /// channel of type RTCDataChannel, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannelevent-channel">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#channel")]
+    public extern RTCDataChannel Channel { get; }
+}
+
+/// <summary>
 /// Fired when a speech recognition error occurs. The event must use the SpeechRecognitionErrorEvent interface.
 /// </summary>
 /// <remarks>
@@ -49787,7 +48591,7 @@ public class TextUpdateEvent(string type, EventInit eventInitDict) : Event(type,
 /// </remarks>
 [ECMAScript]
 [Description("@#SpeechRecognitionErrorEvent")]
-public class SpeechRecognitionErrorEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class SpeechRecognitionErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// Fired when a speech recognition error occurs. The event must use the SpeechRecognitionErrorEvent interface.
@@ -49816,6 +48620,83 @@ public class SpeechRecognitionErrorEvent(string type, EventInit eventInitDict) :
     /// </remarks>
     [Description("@#message")]
     public extern string Message { get; }
+}
+
+/// <summary>
+/// For each channel in errorList, fire an event named error using the RTCErrorEvent interface with the errorDetail attribute set to &quot;data-channel-failure&quot; at channel.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorevent">WebRTC: Real-Time Communication in Browsers: 11.3 RTCErrorEvent Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCErrorEvent")]
+public class RTCErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorevent-constructor">WebRTC: Real-Time Communication in Browsers: 11.3.1 Constructors</see>
+    /// </summary>
+    public extern RTCErrorEvent(string type, RTCErrorEventInit eventInitDict);
+
+    /// <summary>
+    /// For each channel in errorList, fire an event named error using the RTCErrorEvent interface with the errorDetail attribute set to &quot;data-channel-failure&quot; at channel.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorevent-error">WebRTC: Real-Time Communication in Browsers: 11.3.2 Attributes</see>
+    /// </remarks>
+    [Description("@#error")]
+    public extern RTCError Error { get; }
+}
+
+/// <summary>
+/// For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackevent">WebRTC: Real-Time Communication in Browsers: 5.7 RTCTrackEvent</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCTrackEvent")]
+public class RTCTrackEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
+    /// </summary>
+    public extern RTCTrackEvent(string type, RTCTrackEventInit eventInitDict);
+
+    /// <summary>
+    /// receiver of type RTCRtpReceiver, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-trackevent-receiver">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#receiver")]
+    public extern RTCRtpReceiver Receiver { get; }
+
+    /// <summary>
+    /// For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackevent-track">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#track")]
+    public extern MediaStreamTrack Track { get; }
+
+    /// <summary>
+    /// For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackevent-streams">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#streams")]
+    public extern FrozenSet<MediaStream> Streams { get; }
+
+    /// <summary>
+    /// transceiver of type RTCRtpTransceiver, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-trackevent-transceiver">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#transceiver")]
+    public extern RTCRtpTransceiver Transceiver { get; }
 }
 
 /// <summary>
@@ -50125,6 +49006,49 @@ public class HTMLGeolocationElement : HTMLElement
 }
 
 /// <summary>
+/// If description is of type &quot;offer&quot;, set connection.PendingLocalDescription to a new RTCSessionDescription object constructed from description, set connection.SignalingState to &quot;have-local-offer&quot;, and release early candidates .
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescription">WebRTC: Real-Time Communication in Browsers: 4.6.2 RTCSessionDescription Class</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCSessionDescription")]
+public class RTCSessionDescription
+{
+    /// <summary>
+    /// The RTCSessionDescription() constructor takes a dictionary argument, description, whose content is used to initialize the new RTCSessionDescription object. This constructor is deprecated; it exists for legacy compatibility reasons only.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-sessiondescription">WebRTC: Real-Time Communication in Browsers: Constructors</see>
+    /// </remarks>
+    public extern RTCSessionDescription(RTCSessionDescriptionInit descriptionInitDict);
+
+    /// <summary>
+    /// If description is of type &quot;offer&quot;, set connection.PendingRemoteDescription attribute to a new RTCSessionDescription object constructed from description, and set connection.SignalingState to &quot;have-remote-offer&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescription-type">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#type")]
+    public extern RTCSdpType Type { get; }
+
+    /// <summary>
+    /// Note that CurrentLocalDescription.sdp and PendingLocalDescription.sdp need not be string-wise identical to the sdp value passed to the corresponding setLocalDescription call (i.e. SDP may be parsed and reformatted, and ICE candidates may be added).
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescription-sdp">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#sdp")]
+    public extern string Sdp { get; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescription-tojson">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </summary>
+    [Description("@#toJSON")]
+    public extern RTCSessionDescriptionInit ToJSON();
+}
+
+/// <summary>
 /// If sourceBuffer is in activeSourceBuffers, then remove sourceBuffer from activeSourceBuffers and queue a task to fire an event named removesourcebuffer at the SourceBufferList returned by activeSourceBuffers.
 /// </summary>
 /// <remarks>
@@ -50167,7 +49091,7 @@ public class SourceBufferList : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#MediaQueryListEvent")]
-public class MediaQueryListEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class MediaQueryListEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// If target&apos;s matches state has changed since the last time these steps were run, fire an event named change at target using MediaQueryListEvent, with its isTrusted attribute initialized to true, its media attribute initialized to target&apos;s media, and its matches attribute initialized to target&apos;s matches state.
@@ -50335,6 +49259,75 @@ public class MediaDeviceInfo
 }
 
 /// <summary>
+/// If the ToneBuffer slot is the empty string, fire an event named tonechange using the RTCDTMFToneChangeEvent interface with the tone attribute set to an empty string at the RTCDTMFSender object and abort these steps.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmfsender">WebRTC: Real-Time Communication in Browsers: 7.2 RTCDTMFSender</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCDTMFSender")]
+public class RTCDTMFSender : EventTarget
+{
+    /// <summary>
+    /// An RTCDTMFSender object&apos;s insertDTMF method is used to send DTMF tones.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-RTCDTMFSender-insertDTMF">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#insertDTMF")]
+    public extern void InsertDTMF(string tones, uint duration = 100, uint interToneGap = 70);
+
+    /// <summary>
+    /// ontonechange of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmfsender-ontonechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#ontonechange")]
+    public extern EventHandler Ontonechange { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmfsender-caninsertdtmf">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#canInsertDTMF")]
+    public extern bool CanInsertDTMF { get; }
+
+    /// <summary>
+    /// toneBuffer of type DOMString, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-RTCDTMFSender-tonebuffer">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#toneBuffer")]
+    public extern string ToneBuffer { get; }
+}
+
+/// <summary>
+/// If the ToneBuffer slot is the empty string, fire an event named tonechange using the RTCDTMFToneChangeEvent interface with the tone attribute set to an empty string at the RTCDTMFSender object and abort these steps.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeevent">WebRTC: Real-Time Communication in Browsers: 7.4 RTCDTMFToneChangeEvent</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCDTMFToneChangeEvent")]
+public class RTCDTMFToneChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
+    /// </summary>
+    public extern RTCDTMFToneChangeEvent(string type, RTCDTMFToneChangeEventInit? eventInitDict = default);
+
+    /// <summary>
+    /// If the ToneBuffer slot is the empty string, fire an event named tonechange using the RTCDTMFToneChangeEvent interface with the tone attribute set to an empty string at the RTCDTMFSender object and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeevent-tone">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#tone")]
+    public extern string Tone { get; }
+}
+
+/// <summary>
 /// If the Web-based payment handler supports CanMakePaymentEvent, the user agent may use it to help with filtering of the available web-based payment handlers.
 /// </summary>
 /// <remarks>
@@ -50357,6 +49350,74 @@ public class CanMakePaymentEvent(string type, ExtendableEventInit eventInitDict)
 }
 
 /// <summary>
+/// If the control thread state on the OfflineAudioContext is closed, reject promise with InvalidStateError and abort these steps.
+/// </summary>
+/// <remarks>
+/// <see href="https://webaudio.github.io/web-audio-api/#OfflineAudioContext">Web Audio API 1.1: 1.3 The OfflineAudioContext Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#OfflineAudioContext")]
+public class OfflineAudioContext : BaseAudioContext
+{
+    /// <summary>
+    /// If the control thread state on the OfflineAudioContext is closed, reject promise with InvalidStateError and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-offlineaudiocontext">Web Audio API 1.1: 1.3.1 Constructors</see>
+    /// </remarks>
+    /// <param name="contextOptions"><see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-constructor-contextoptions-contextoptions">Web Audio API 1.1: 1.3.1 Constructors</see></param>
+    public extern OfflineAudioContext(OfflineAudioContextOptions contextOptions);
+
+    /// <summary>
+    /// If the control thread state on the OfflineAudioContext is closed, reject promise with InvalidStateError and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-offlineaudiocontext-numberofchannels-length-samplerate">Web Audio API 1.1: 1.3.1 Constructors</see>
+    /// </remarks>
+    /// <param name="numberOfChannels"><see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-constructor-numberofchannels-length-samplerate-numberofchannels">Web Audio API 1.1: 1.3.1 Constructors</see></param>
+    /// <param name="length">If the OfflineAudioContext&apos;s length is not null and committed frames is greater than or equal to OfflineAudioContext&apos;s length, reject promise with InvalidStateError and abort these steps. <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-constructor-numberofchannels-length-samplerate-length">Web Audio API 1.1: 1.3.1 Constructors</see></param>
+    /// <param name="sampleRate"><see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-constructor-numberofchannels-length-samplerate-samplerate">Web Audio API 1.1: 1.3.1 Constructors</see></param>
+    public extern OfflineAudioContext(uint numberOfChannels, uint length, float sampleRate);
+
+    /// <summary>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-startrendering">Web Audio API 1.1: 1.3.3 Methods</see>
+    /// </summary>
+    [Description("@#startRendering")]
+    public extern PromiseResult<AudioBuffer> StartRendering();
+
+    /// <summary>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-resume">Web Audio API 1.1: 1.3.3 Methods</see>
+    /// </summary>
+    [Description("@#resume")]
+    public extern PromiseResult Resume();
+
+    /// <summary>
+    /// For every render quantum, check and suspend rendering if necessary.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-suspend">Web Audio API 1.1: 1.3.3 Methods</see>
+    /// </remarks>
+    /// <param name="suspendTime"><see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-suspend-suspendtime">Web Audio API 1.1: 1.3.3 Methods</see></param>
+    [Description("@#suspend")]
+    public extern PromiseResult Suspend(double suspendTime);
+
+    /// <summary>
+    /// If the OfflineAudioContext&apos;s length is not null and committed frames is greater than or equal to OfflineAudioContext&apos;s length, reject promise with InvalidStateError and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-length">Web Audio API 1.1: 1.3.2 Attributes</see>
+    /// </remarks>
+    [Description("@#length")]
+    public extern uint Length { get; }
+
+    /// <summary>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontext-oncomplete">Web Audio API 1.1: 1.3.2 Attributes</see>
+    /// </summary>
+    [Description("@#oncomplete")]
+    public extern EventHandler Oncomplete { get; set; }
+}
+
+/// <summary>
 /// If the user has allowed the site to access device as the result of a previous call to requestDevice(), then queue a global task on the relevant global object of hid using the HID device task source to fire an event named connect at hid using HIDConnectionEvent with its device attribute initialized to device.
 /// </summary>
 /// <remarks>
@@ -50364,7 +49425,7 @@ public class CanMakePaymentEvent(string type, ExtendableEventInit eventInitDict)
 /// </remarks>
 [ECMAScript]
 [Description("@#HIDConnectionEvent")]
-public class HIDConnectionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class HIDConnectionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/webhid/#dom-hidconnectionevent-constructor">WebHID API: 8 HIDConnectionEvent interface</see>
@@ -50471,6 +49532,201 @@ public class BluetoothServiceDataFilter : IDictionary<UUID, BluetoothDataFilter>
     extern bool IDictionary<UUID, BluetoothDataFilter>.TryGetValue(UUID key, [MaybeNullWhen(false)] out BluetoothDataFilter value);
     extern IEnumerator IEnumerable.GetEnumerator();
     #endregion
+}
+
+/// <summary>
+/// Interfaces interface/inheriting from DOMException, in the manner described in #idl-DOMException-derived-interfaces, will have their own names, not listed in this table.
+/// </summary>
+/// <remarks>
+/// <see href="https://webidl.spec.whatwg.org/#idl-DOMException">Web IDL Standard: 4.4 DOMException</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#DOMException")]
+public class DOMException
+{
+    /// <summary>
+    /// As DOMException is an interface type, it can be used as a type in IDL. This allows for example an operation to be declared to have a DOMException return type. This is generally a bad pattern, however, as exceptions are meant to be thrown and not returned.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-domexception">Web IDL Standard: 4.4 DOMException</see>
+    /// </remarks>
+    /// <param name="message">Such additional context is most helpful to implementers when it is not immediately obvious why the exception is being thrown, e.g., because there are many different steps in the algorithm which throw a &quot;SyntaxError&quot; DOMException. In contrast, if your specification throws a &quot;NotAllowedError&quot; DOMException immediately after checking if the user has provided permission to use a given feature, it&apos;s fairly obvious what sort of message the implementation ought to construct, and so specifying it is not necessary. <see href="https://webidl.spec.whatwg.org/#dom-domexception-domexception-message-name-message">Web IDL Standard: 4.4 DOMException</see></param>
+    /// <param name="name"><see href="https://webidl.spec.whatwg.org/#dom-domexception-domexception-message-name-name">Web IDL Standard: 4.4 DOMException</see></param>
+    public extern DOMException(string message = "", string name = "Error");
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-name">Web IDL Standard: 4.4 DOMException</see>
+    /// </summary>
+    [Description("@#name")]
+    public extern string Name { get; }
+
+    /// <summary>
+    /// Such additional context is most helpful to implementers when it is not immediately obvious why the exception is being thrown, e.g., because there are many different steps in the algorithm which throw a &quot;SyntaxError&quot; DOMException. In contrast, if your specification throws a &quot;NotAllowedError&quot; DOMException immediately after checking if the user has provided permission to use a given feature, it&apos;s fairly obvious what sort of message the implementation ought to construct, and so specifying it is not necessary.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-message">Web IDL Standard: 4.4 DOMException</see>
+    /// </remarks>
+    [Description("@#message")]
+    public extern string Message { get; }
+
+    /// <summary>
+    /// These requirements mean that the inherited code property of these interfaces will always return 0.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-code">Web IDL Standard: 4.4 DOMException</see>
+    /// </remarks>
+    [Description("@#code")]
+    public extern ushort Code { get; }
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-index_size_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#INDEX_SIZE_ERR")]
+    public const ushort INDEX_SIZE_ERR = 1;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-domstring_size_err">Web IDL Standard: 4.4 DOMException</see>
+    /// </summary>
+    [Description("@#DOMSTRING_SIZE_ERR")]
+    public const ushort DOMSTRING_SIZE_ERR = 2;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-hierarchy_request_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#HIERARCHY_REQUEST_ERR")]
+    public const ushort HIERARCHY_REQUEST_ERR = 3;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-wrong_document_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#WRONG_DOCUMENT_ERR")]
+    public const ushort WRONG_DOCUMENT_ERR = 4;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_character_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#INVALID_CHARACTER_ERR")]
+    public const ushort INVALID_CHARACTER_ERR = 5;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-no_data_allowed_err">Web IDL Standard: 4.4 DOMException</see>
+    /// </summary>
+    [Description("@#NO_DATA_ALLOWED_ERR")]
+    public const ushort NO_DATA_ALLOWED_ERR = 6;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-no_modification_allowed_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#NO_MODIFICATION_ALLOWED_ERR")]
+    public const ushort NO_MODIFICATION_ALLOWED_ERR = 7;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-not_found_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#NOT_FOUND_ERR")]
+    public const ushort NOT_FOUND_ERR = 8;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-not_supported_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#NOT_SUPPORTED_ERR")]
+    public const ushort NOT_SUPPORTED_ERR = 9;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-inuse_attribute_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#INUSE_ATTRIBUTE_ERR")]
+    public const ushort INUSE_ATTRIBUTE_ERR = 10;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_state_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#INVALID_STATE_ERR")]
+    public const ushort INVALID_STATE_ERR = 11;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-syntax_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#SYNTAX_ERR")]
+    public const ushort SYNTAX_ERR = 12;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_modification_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#INVALID_MODIFICATION_ERR")]
+    public const ushort INVALID_MODIFICATION_ERR = 13;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-namespace_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#NAMESPACE_ERR")]
+    public const ushort NAMESPACE_ERR = 14;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_access_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#INVALID_ACCESS_ERR")]
+    public const ushort INVALID_ACCESS_ERR = 15;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-validation_err">Web IDL Standard: 4.4 DOMException</see>
+    /// </summary>
+    [Description("@#VALIDATION_ERR")]
+    public const ushort VALIDATION_ERR = 16;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-type_mismatch_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#TYPE_MISMATCH_ERR")]
+    public const ushort TYPE_MISMATCH_ERR = 17;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-security_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#SECURITY_ERR")]
+    public const ushort SECURITY_ERR = 18;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-network_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#NETWORK_ERR")]
+    public const ushort NETWORK_ERR = 19;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-abort_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#ABORT_ERR")]
+    public const ushort ABORT_ERR = 20;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-url_mismatch_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#URL_MISMATCH_ERR")]
+    public const ushort URL_MISMATCH_ERR = 21;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-quota_exceeded_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#QUOTA_EXCEEDED_ERR")]
+    public const ushort QUOTA_EXCEEDED_ERR = 22;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-timeout_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#TIMEOUT_ERR")]
+    public const ushort TIMEOUT_ERR = 23;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-invalid_node_type_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#INVALID_NODE_TYPE_ERR")]
+    public const ushort INVALID_NODE_TYPE_ERR = 24;
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-domexception-data_clone_err">Web IDL Standard: 2.8.1 Base DOMException error names</see>
+    /// </summary>
+    [Description("@#DATA_CLONE_ERR")]
+    public const ushort DATA_CLONE_ERR = 25;
 }
 
 /// <summary>
@@ -50682,7 +49938,7 @@ public class HIDDevice : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#PaymentRequestUpdateEvent")]
-public class PaymentRequestUpdateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PaymentRequestUpdateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent-constructor">Payment Request API: 17.3.1 Constructor</see>
@@ -51154,7 +50410,7 @@ public class DOMPoint : DOMPointReadOnly
 /// </remarks>
 [ECMAScript]
 [Description("@#MIDIMessageEvent")]
-public class MIDIMessageEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class MIDIMessageEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-midi-api/#dom-midimessageevent-constructor">Web MIDI API: 5.5 MIDIMessageEvent Interface</see>
@@ -51929,7 +51185,7 @@ public class Node : EventTarget
     /// <code>node.ownerDocument</code>
     /// </example>
     [Description("@#ownerDocument")]
-    public extern Document? OwnerDocument { get; }
+    public extern JazorDocument? OwnerDocument { get; }
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-node-getrootnode">DOM Standard: 4.4 Interface Node</see>
@@ -52309,6 +51565,39 @@ public class AudioData
 }
 
 /// <summary>
+/// Previous versions of this standard defined &quot;QuotaExceededError&quot; as one of the base DOMException error names. It has been upgraded to a full interface to support including such information.
+/// </summary>
+/// <remarks>
+/// <see href="https://webidl.spec.whatwg.org/#quotaexceedederror">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#QuotaExceededError")]
+public class QuotaExceededError(string message, string name) : DOMException(message, name)
+{
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-quotaexceedederror">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see>
+    /// </summary>
+    /// <param name="message"><see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-quotaexceedederror-message-options-message">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see></param>
+    /// <param name="options"><see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-quotaexceedederror-message-options-options">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see></param>
+    public extern QuotaExceededError(string message = "", QuotaExceededErrorOptions? options = default);
+
+    /// <summary>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-quota">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see>
+    /// </summary>
+    [Description("@#quota")]
+    public extern double? Quota { get; }
+
+    /// <summary>
+    /// exception/Throw a QuotaExceededError whose QuotaExceededError/quota is 42 and QuotaExceededError/requested is 50.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederror-requested">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see>
+    /// </remarks>
+    [Description("@#requested")]
+    public extern double? Requested { get; }
+}
+
+/// <summary>
 /// ProcessingInstruction nodes have an associated target.
 /// </summary>
 /// <remarks>
@@ -52547,6 +51836,36 @@ public class PushMessageData
 }
 
 /// <summary>
+/// Queue a global task on the networking task source given the current realm&apos;s global object as global to resolve p with the resulting RTCStatsReport object, containing the gathered stats.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcstatsreport">WebRTC: Real-Time Communication in Browsers: 8.3 RTCStatsReport Object</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCStatsReport")]
+public class RTCStatsReport : IDictionary<string, object>
+{
+    #region Dictionary
+    extern object IDictionary<string, object>.this[string key] { get; set; }
+    extern ICollection<string> IDictionary<string, object>.Keys { get; }
+    extern ICollection<object> IDictionary<string, object>.Values { get; }
+    extern int ICollection<KeyValuePair<string, object>>.Count { get; }
+    extern bool ICollection<KeyValuePair<string, object>>.IsReadOnly { get; }
+    extern void IDictionary<string, object>.Add(string key, object value);
+    extern void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item);
+    extern void ICollection<KeyValuePair<string, object>>.Clear();
+    extern bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item);
+    extern bool IDictionary<string, object>.ContainsKey(string key);
+    extern void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex);
+    extern IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator();
+    extern bool IDictionary<string, object>.Remove(string key);
+    extern bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item);
+    extern bool IDictionary<string, object>.TryGetValue(string key, [MaybeNullWhen(false)] out object value);
+    extern IEnumerator IEnumerable.GetEnumerator();
+    #endregion
+}
+
+/// <summary>
 /// Queue a global task on the relevant global object of this using the HID device task source to fire an event named inputreport at device using HIDInputReportEvent with its device attribute initialized to device, its reportId attribute initialized to reportId, and its data attribute initialized to data.
 /// </summary>
 /// <remarks>
@@ -52554,7 +51873,7 @@ public class PushMessageData
 /// </remarks>
 [ECMAScript]
 [Description("@#HIDInputReportEvent")]
-public class HIDInputReportEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class HIDInputReportEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/webhid/#dom-hidinputreportevent-constructor">WebHID API: 9 HIDInputReportEvent interface</see>
@@ -52597,7 +51916,7 @@ public class HIDInputReportEvent(string type, EventInit eventInitDict) : Event(t
 /// </remarks>
 [ECMAScript]
 [Description("@#MediaEncryptedEvent")]
-public class MediaEncryptedEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class MediaEncryptedEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/encrypted-media/#dom-mediaencryptedevent-constructor">Encrypted Media Extensions: 7.3 MediaEncryptedEvent Interface</see>
@@ -52628,7 +51947,7 @@ public class MediaEncryptedEvent(string type, EventInit eventInitDict) : Event(t
 /// </remarks>
 [ECMAScript]
 [Description("@#MediaKeyMessageEvent")]
-public class MediaKeyMessageEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class MediaKeyMessageEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/encrypted-media/#dom-mediakeymessageevent-constructor">Encrypted Media Extensions: 6.4 MediaKeyMessageEvent</see>
@@ -53810,68 +53129,6 @@ public class CSSAnimation(AnimationEffect? effect, AnimationTimeline? timeline) 
 }
 
 /// <summary>
-/// The CSSFontFeatureValuesRule interface represents a @font-feature-values rule.
-/// </summary>
-/// <remarks>
-/// <see href="https://drafts.csswg.org/css-fonts-4/#cssfontfeaturevaluesrule">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-/// </remarks>
-[ECMAScript]
-[Description("@#CSSFontFeatureValuesRule")]
-public class CSSFontFeatureValuesRule : CSSRule
-{
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-fontfamily">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    [Description("@#fontFamily")]
-    public extern string FontFamily { get; set; }
-
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-annotation">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    [Description("@#annotation")]
-    public extern CSSFontFeatureValuesMap Annotation { get; }
-
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-ornaments">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    [Description("@#ornaments")]
-    public extern CSSFontFeatureValuesMap Ornaments { get; }
-
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-stylistic">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    [Description("@#stylistic")]
-    public extern CSSFontFeatureValuesMap Stylistic { get; }
-
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-swash">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    [Description("@#swash")]
-    public extern CSSFontFeatureValuesMap Swash { get; }
-
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-charactervariant">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    [Description("@#characterVariant")]
-    public extern CSSFontFeatureValuesMap CharacterVariant { get; }
-
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-styleset">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    [Description("@#styleset")]
-    public extern CSSFontFeatureValuesMap Styleset { get; }
-
-    /// <summary>
-    /// Defined CSSFontFeatureValuesRule.historicalForms
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesrule-historicalforms">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </remarks>
-    [Description("@#historicalForms")]
-    public extern CSSFontFeatureValuesMap HistoricalForms { get; }
-}
-
-/// <summary>
 /// The CSSTransition interface is defined.
 /// </summary>
 /// <remarks>
@@ -54254,7 +53511,7 @@ public class MediaSourceHandle
 /// </remarks>
 [ECMAScript]
 [Description("@#NDEFReadingEvent")]
-public class NDEFReadingEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class NDEFReadingEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefreadingevent-constructor">Web NFC: 9 The NDEFReader object</see>
@@ -54457,6 +53714,1148 @@ public class PushManager
     /// </summary>
     [Description("@#permissionState")]
     public extern PromiseResult<PermissionState> PermissionState(PushSubscriptionOptionsInit? options = default);
+}
+
+/// <summary>
+/// The RTCDataChannel interface represents a bi-directional data channel between two peers. An RTCDataChannel is created via a factory method on an RTCPeerConnection object. The messages sent between the browsers are described in RFC8831 and RFC8832.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCDataChannel")]
+public partial class RTCDataChannel : EventTarget
+{
+    /// <summary>
+    /// label of type USVString, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-label">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#label")]
+    public extern string Label { get; }
+
+    /// <summary>
+    /// ordered of type boolean, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-ordered">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#ordered")]
+    public extern bool Ordered { get; }
+
+    /// <summary>
+    /// maxPacketLifeTime of type unsigned short, readonly, nullable
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-maxpacketlifetime">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#maxPacketLifeTime")]
+    public extern ushort? MaxPacketLifeTime { get; }
+
+    /// <summary>
+    /// maxRetransmits of type unsigned short, readonly, nullable
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-maxretransmits">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#maxRetransmits")]
+    public extern ushort? MaxRetransmits { get; }
+
+    /// <summary>
+    /// protocol of type USVString, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-protocol">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#protocol")]
+    public extern string Protocol { get; }
+
+    /// <summary>
+    /// negotiated of type boolean, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-negotiated">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#negotiated")]
+    public extern bool Negotiated { get; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-id">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#id")]
+    public extern ushort? Id { get; }
+
+    /// <summary>
+    /// readyState of type RTCDataChannelState, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-readystate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#readyState")]
+    public extern RTCDataChannelState ReadyState { get; }
+
+    /// <summary>
+    /// bufferedAmount of type unsigned long, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-bufferedamount">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#bufferedAmount")]
+    public extern uint BufferedAmount { get; }
+
+    /// <summary>
+    /// The bufferedAmountLowThreshold attribute sets the threshold at which the bufferedAmount is considered to be low. When the bufferedAmount decreases from above this threshold to equal or below it, the bufferedamountlow event fires. The bufferedAmountLowThreshold is initially zero on each new RTCDataChannel, but the application may change its value at any time.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-bufferedamountlowthreshold">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#bufferedAmountLowThreshold")]
+    public extern uint BufferedAmountLowThreshold { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onopen">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#onopen")]
+    public extern EventHandler Onopen { get; set; }
+
+    /// <summary>
+    /// onbufferedamountlow of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onbufferedamountlow">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#onbufferedamountlow")]
+    public extern EventHandler Onbufferedamountlow { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onerror">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#onerror")]
+    public extern EventHandler Onerror { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onclosing">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#onclosing")]
+    public extern EventHandler Onclosing { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onclose">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#onclose")]
+    public extern EventHandler Onclose { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-close">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </summary>
+    [Description("@#close")]
+    public extern void Close();
+
+    /// <summary>
+    /// onmessage of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-onmessage">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#onmessage")]
+    public extern EventHandler Onmessage { get; set; }
+
+    /// <summary>
+    /// binaryType of type BinaryType
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-datachannel-binarytype">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#binaryType")]
+    public extern BinaryType BinaryType { get; set; }
+
+    /// <summary>
+    /// The maximum size of data that can be passed to RTCDataChannel&apos;s send() method. The attribute MUST, on getting, return the value of the MaxMessageSize slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-send">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#send")]
+    public extern void Send(string data);
+
+    /// <summary>
+    /// The maximum size of data that can be passed to RTCDataChannel&apos;s send() method. The attribute MUST, on getting, return the value of the MaxMessageSize slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-send">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#send")]
+    public extern void Send(Blob data);
+
+    /// <summary>
+    /// The maximum size of data that can be passed to RTCDataChannel&apos;s send() method. The attribute MUST, on getting, return the value of the MaxMessageSize slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-send">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#send")]
+    public extern void Send(ArrayBuffer data);
+
+    /// <summary>
+    /// The maximum size of data that can be passed to RTCDataChannel&apos;s send() method. The attribute MUST, on getting, return the value of the MaxMessageSize slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannel-send">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#send")]
+    public extern void Send(IArrayBufferView data);
+
+    /// <summary>
+    /// The priority attribute returns the priority for this RTCDataChannel. The priority is assigned by the user agent at channel creation time. On getting, the attribute MUST return the value of the \DataChannelPriority slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-priority/#dom-rtcdatachannel-priority">WebRTC Priority Control API: 4.1 New RTCDataChannel attribute</see>
+    /// </remarks>
+    [Description("@#priority")]
+    public extern RTCPriorityType Priority { get; }
+}
+
+/// <summary>
+/// The RTCDtlsTransport interface allows an application access to information about the Datagram Transport Layer Security (DTLS) transport over which RTP and RTCP packets are sent and received by RTCRtpSender and RTCRtpReceiver objects, as well other data such as SCTP packets sent and received by data channels. In particular, DTLS adds security to an underlying transport, and the RTCDtlsTransport interface allows access to information about the underlying transport and the security added. RTCDtlsTransport objects are constructed as a result of calls to setLocalDescription() and setRemoteDescription()....
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport">WebRTC: Real-Time Communication in Browsers: 5.5 RTCDtlsTransport Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCDtlsTransport")]
+public class RTCDtlsTransport : EventTarget
+{
+    /// <summary>
+    /// The iceTransport attribute is the underlying transport that is used to send and receive packets. The underlying transport may not be shared between multiple active RTCDtlsTransport objects.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-icetransport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#iceTransport")]
+    public extern RTCIceTransport IceTransport { get; }
+
+    /// <summary>
+    /// The state attribute MUST, on getting, return the value of the DtlsTransportState slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#state")]
+    public extern RTCDtlsTransportState State { get; }
+
+    /// <summary>
+    /// getRemoteCertificates
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-getremotecertificates">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getRemoteCertificates")]
+    public extern ArrayBuffer[] GetRemoteCertificates();
+
+    /// <summary>
+    /// onstatechange of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-onstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#onstatechange")]
+    public extern EventHandler Onstatechange { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransport-onerror">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#onerror")]
+    public extern EventHandler Onerror { get; set; }
+}
+
+/// <summary>
+/// The RTCIceTransport interface allows an application access to information about the ICE transport over which packets are sent and received. In particular, ICE manages peer-to-peer connections which involve state which the application may want to access. RTCIceTransport objects are constructed as a result of calls to setLocalDescription() and setRemoteDescription(). The underlying ICE state is managed by the ICE agent; as such, the state of an RTCIceTransport changes when the ICE Agent provides indications to the user agent as described below....
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport">WebRTC: Real-Time Communication in Browsers: 5.6 RTCIceTransport Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCIceTransport")]
+public partial class RTCIceTransport : EventTarget
+{
+    /// <summary>
+    /// role of type RTCIceRole, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-icetransport-role">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#role")]
+    public extern RTCIceRole Role { get; }
+
+    /// <summary>
+    /// component of type RTCIceComponent, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-icetransport-component">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#component")]
+    public extern RTCIceComponent Component { get; }
+
+    /// <summary>
+    /// state of type RTCIceTransportState, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-icetransport-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#state")]
+    public extern RTCIceTransportState State { get; }
+
+    /// <summary>
+    /// gatheringState of type RTCIceGathererState, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-icetransport-gatheringstate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#gatheringState")]
+    public extern RTCIceGathererState GatheringState { get; }
+
+    /// <summary>
+    /// getLocalCandidates
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getlocalcandidates">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getLocalCandidates")]
+    public extern RTCIceCandidate[] GetLocalCandidates();
+
+    /// <summary>
+    /// getRemoteCandidates
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getremotecandidates">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getRemoteCandidates")]
+    public extern RTCIceCandidate[] GetRemoteCandidates();
+
+    /// <summary>
+    /// Returns the selected candidate pair on which packets are sent. This method MUST return the value of the SelectedCandidatePair slot. When RTCIceTransport.state is &quot;new&quot; or &quot;closed&quot; getSelectedCandidatePair returns null.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getselectedcandidatepair">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getSelectedCandidatePair")]
+    public extern RTCIceCandidatePair? GetSelectedCandidatePair();
+
+    /// <summary>
+    /// getLocalParameters
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getlocalparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getLocalParameters")]
+    public extern RTCIceParameters? GetLocalParameters();
+
+    /// <summary>
+    /// getRemoteParameters
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-getremoteparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getRemoteParameters")]
+    public extern RTCIceParameters? GetRemoteParameters();
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-onstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#onstatechange")]
+    public extern EventHandler Onstatechange { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-ongatheringstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#ongatheringstatechange")]
+    public extern EventHandler Ongatheringstatechange { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransport-onselectedcandidatepairchange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#onselectedcandidatepairchange")]
+    public extern EventHandler Onselectedcandidatepairchange { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-constructor">IceTransport Extensions for WebRTC: Constructors</see>
+    /// </summary>
+    public extern RTCIceTransport();
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-gather">IceTransport Extensions for WebRTC: Methods</see>
+    /// </summary>
+    [Description("@#gather")]
+    public extern void Gather(RTCIceGatherOptions? options = default);
+
+    /// <summary>
+    /// The RTCIceTransport extensions allow construction of an RTCIceTransport without offer/answer. This specification differs from the approach taken in ORTC in that it does not define a distinct RTCIceGatherer object, instead adding methods for control of ICE candidate gathering to RTCIceTransport. As a result, an application can test for support of this specification by checking for the RTCIceTransport.start() method, and the absence of an RTCIceGatherer object.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-start">IceTransport Extensions for WebRTC: Methods</see>
+    /// </remarks>
+    [Description("@#start")]
+    public extern void Start(RTCIceParameters? remoteParameters = default, RTCIceRole role = RTCIceRole.Controlled);
+
+    /// <summary>
+    /// Let iceTransport be the RTCIceTransport object on which the stop method is invoked.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-stop">IceTransport Extensions for WebRTC: Methods</see>
+    /// </remarks>
+    [Description("@#stop")]
+    public extern void Stop();
+
+    /// <summary>
+    /// Add a remote candidate associated with the remote RTCIceTransport. If state is &quot;closed&quot;, exception/throw an InvalidStateError. If remoteCandidate is malformed, exception/throw an OperationError. When the remote RTCIceTransport emits its end-of-candidates indication (as described in WEBRTC Section 4.8.2), addRemoteCandidate() should be called with the end-of-candidates indication as an argument, so that the local RTCIceTransport can know there are no more remote candidates expected, and can enter the &quot;completed&quot; state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-addremotecandidate">IceTransport Extensions for WebRTC: Methods</see>
+    /// </remarks>
+    [Description("@#addRemoteCandidate")]
+    public extern void AddRemoteCandidate(RTCIceCandidateInit? remoteCandidate = default);
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-onerror">IceTransport Extensions for WebRTC: Attributes</see>
+    /// </summary>
+    [Description("@#onerror")]
+    public extern EventHandler Onerror { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicetransport-onicecandidate">IceTransport Extensions for WebRTC: Attributes</see>
+    /// </summary>
+    [Description("@#onicecandidate")]
+    public extern EventHandler Onicecandidate { get; set; }
+}
+
+/// <summary>
+/// The RTCPeerConnection interface presented in this section is extended by several partial interfaces throughout this specification. Notably, the RTP Media API section, which adds the APIs to send and receive MediaStreamTrack objects.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection">WebRTC: Real-Time Communication in Browsers: 4.4.2 Interface Definition</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCPeerConnection")]
+public partial class RTCPeerConnection : EventTarget
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection">WebRTC: Real-Time Communication in Browsers: 4.4.1.1 Constructor</see>
+    /// </summary>
+    public extern RTCPeerConnection(RTCConfiguration? configuration = default);
+
+    /// <summary>
+    /// The createOffer method generates a blob of SDP that contains an RFC 3264 offer with the supported configurations for the session, including descriptions of the local MediaStreamTracks attached to this RTCPeerConnection, the codec/RTP/RTCP capabilities supported by this implementation, and parameters of the ICE agent and the DTLS connection. The options parameter may be supplied to provide additional control over the offer generated.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-createoffer">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#createOffer")]
+    public extern PromiseResult<RTCSessionDescriptionInit> CreateOffer(RTCOfferOptions? options = default);
+
+    /// <summary>
+    /// The createAnswer method generates an !SDP answer with the supported configuration for the session that is compatible with the parameters in the remote configuration. Like createOffer, the returned blob of SDP contains descriptions of the local MediaStreamTracks attached to this RTCPeerConnection, the codec/RTP/RTCP options negotiated for this session, and any candidates that have been gathered by the ICE Agent . The options parameter may be supplied to provide additional control over the generated answer.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-createanswer">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#createAnswer")]
+    public extern PromiseResult<RTCSessionDescriptionInit> CreateAnswer(RTCAnswerOptions? options = default);
+
+    /// <summary>
+    /// setLocalDescription
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-setlocaldescription">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#setLocalDescription")]
+    public extern PromiseResult SetLocalDescription(RTCLocalSessionDescriptionInit? description = default);
+
+    /// <summary>
+    /// localDescription of type RTCSessionDescription, readonly, nullable
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-localdescription">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#localDescription")]
+    public extern RTCSessionDescription? LocalDescription { get; }
+
+    /// <summary>
+    /// currentLocalDescription of type RTCSessionDescription, readonly, nullable
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-currentlocaldesc">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#currentLocalDescription")]
+    public extern RTCSessionDescription? CurrentLocalDescription { get; }
+
+    /// <summary>
+    /// pendingLocalDescription of type RTCSessionDescription, readonly, nullable
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-pendinglocaldesc">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#pendingLocalDescription")]
+    public extern RTCSessionDescription? PendingLocalDescription { get; }
+
+    /// <summary>
+    /// setRemoteDescription
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-setremotedescription">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#setRemoteDescription")]
+    public extern PromiseResult SetRemoteDescription(RTCSessionDescriptionInit description);
+
+    /// <summary>
+    /// remoteDescription of type RTCSessionDescription, readonly, nullable
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-remotedescription">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#remoteDescription")]
+    public extern RTCSessionDescription? RemoteDescription { get; }
+
+    /// <summary>
+    /// currentRemoteDescription of type RTCSessionDescription, readonly, nullable
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-currentremotedesc">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#currentRemoteDescription")]
+    public extern RTCSessionDescription? CurrentRemoteDescription { get; }
+
+    /// <summary>
+    /// pendingRemoteDescription of type RTCSessionDescription, readonly, nullable
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-pendingremotedesc">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#pendingRemoteDescription")]
+    public extern RTCSessionDescription? PendingRemoteDescription { get; }
+
+    /// <summary>
+    /// addIceCandidate
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-addicecandidate">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#addIceCandidate")]
+    public extern PromiseResult AddIceCandidate(RTCIceCandidateInit? candidate = default);
+
+    /// <summary>
+    /// signalingState of type RTCSignalingState, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-signaling-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#signalingState")]
+    public extern RTCSignalingState SignalingState { get; }
+
+    /// <summary>
+    /// iceGatheringState of type RTCIceGatheringState, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-ice-gathering-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#iceGatheringState")]
+    public extern RTCIceGatheringState IceGatheringState { get; }
+
+    /// <summary>
+    /// iceConnectionState of type RTCIceConnectionState, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-ice-connection-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#iceConnectionState")]
+    public extern RTCIceConnectionState IceConnectionState { get; }
+
+    /// <summary>
+    /// connectionState of type RTCPeerConnectionState, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-connection-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#connectionState")]
+    public extern RTCPeerConnectionState ConnectionState { get; }
+
+    /// <summary>
+    /// The canTrickleIceCandidates attribute indicates whether the remote peer is able to accept trickled ICE candidates RFC8838. The value is determined based on whether a remote description indicates support for trickle ICE, as defined in !RFC9429. Prior to the completion of setRemoteDescription, this value is null.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-cantrickleicecandidates">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#canTrickleIceCandidates")]
+    public extern bool? CanTrickleIceCandidates { get; }
+
+    /// <summary>
+    /// The restartIce method tells the RTCPeerConnection that ICE should be restarted. Subsequent calls to createOffer will create descriptions that will restart ICE, as described in section 9.1.1.1 of RFC5245.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-restartice">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#restartIce")]
+    public extern void RestartIce();
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-getconfiguration">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </summary>
+    [Description("@#getConfiguration")]
+    public extern RTCConfiguration GetConfiguration();
+
+    /// <summary>
+    /// The ICE protocol implementation of an RTCPeerConnection is represented by an ICE agent RFC5245. Certain RTCPeerConnection methods involve interactions with the ICE Agent , namely addIceCandidate, setConfiguration, setLocalDescription, setRemoteDescription and close. These interactions are described in the relevant sections in this document and in !RFC9429. The ICE Agent also provides indications to the user agent when the state of its internal representation of an RTCIceTransport changes, as described in .
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-setconfiguration">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#setConfiguration")]
+    public extern void SetConfiguration(RTCConfiguration? configuration = default);
+
+    /// <summary>
+    /// The ICE protocol implementation of an RTCPeerConnection is represented by an ICE agent RFC5245. Certain RTCPeerConnection methods involve interactions with the ICE Agent , namely addIceCandidate, setConfiguration, setLocalDescription, setRemoteDescription and close. These interactions are described in the relevant sections in this document and in !RFC9429. The ICE Agent also provides indications to the user agent when the state of its internal representation of an RTCIceTransport changes, as described in .
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-close">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#close")]
+    public extern void Close();
+
+    /// <summary>
+    /// onnegotiationneeded of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onnegotiationneeded">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#onnegotiationneeded")]
+    public extern EventHandler Onnegotiationneeded { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onicecandidate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#onicecandidate")]
+    public extern EventHandler Onicecandidate { get; set; }
+
+    /// <summary>
+    /// onicecandidateerror of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onicecandidateerror">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#onicecandidateerror")]
+    public extern EventHandler Onicecandidateerror { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onsignalingstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#onsignalingstatechange")]
+    public extern EventHandler Onsignalingstatechange { get; set; }
+
+    /// <summary>
+    /// oniceconnectionstatechange of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-oniceconnectionstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#oniceconnectionstatechange")]
+    public extern EventHandler Oniceconnectionstatechange { get; set; }
+
+    /// <summary>
+    /// onicegatheringstatechange of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onicegatheringstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#onicegatheringstatechange")]
+    public extern EventHandler Onicegatheringstatechange { get; set; }
+
+    /// <summary>
+    /// onconnectionstatechange of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-onconnectionstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#onconnectionstatechange")]
+    public extern EventHandler Onconnectionstatechange { get; set; }
+
+    /// <summary>
+    /// The createOffer method generates a blob of SDP that contains an RFC 3264 offer with the supported configurations for the session, including descriptions of the local MediaStreamTracks attached to this RTCPeerConnection, the codec/RTP/RTCP capabilities supported by this implementation, and parameters of the ICE agent and the DTLS connection. The options parameter may be supplied to provide additional control over the offer generated.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-createoffer">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#createOffer")]
+    public extern PromiseResult CreateOffer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, RTCOfferOptions? options = default);
+
+    /// <summary>
+    /// setLocalDescription
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-setlocaldescription">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#setLocalDescription")]
+    public extern PromiseResult SetLocalDescription(RTCLocalSessionDescriptionInit description, Action successCallback, RTCPeerConnectionErrorCallback failureCallback);
+
+    /// <summary>
+    /// The createAnswer method generates an !SDP answer with the supported configuration for the session that is compatible with the parameters in the remote configuration. Like createOffer, the returned blob of SDP contains descriptions of the local MediaStreamTracks attached to this RTCPeerConnection, the codec/RTP/RTCP options negotiated for this session, and any candidates that have been gathered by the ICE Agent . The options parameter may be supplied to provide additional control over the generated answer.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-createanswer">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#createAnswer")]
+    public extern PromiseResult CreateAnswer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback);
+
+    /// <summary>
+    /// setRemoteDescription
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-setremotedescription">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#setRemoteDescription")]
+    public extern PromiseResult SetRemoteDescription(RTCSessionDescriptionInit description, Action successCallback, RTCPeerConnectionErrorCallback failureCallback);
+
+    /// <summary>
+    /// addIceCandidate
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-addicecandidate">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#addIceCandidate")]
+    public extern PromiseResult AddIceCandidate(RTCIceCandidateInit candidate, Action successCallback, RTCPeerConnectionErrorCallback failureCallback);
+
+    /// <summary>
+    /// The certificates that RTCPeerConnection instances use to authenticate with peers use the RTCCertificate interface. These objects can be explicitly generated by applications using the generateCertificate method and can be provided in the RTCConfiguration when constructing a new RTCPeerConnection instance.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-generatecertificate">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#generateCertificate")]
+    public static extern PromiseResult<RTCCertificate> GenerateCertificate(AlgorithmIdentifier keygenAlgorithm);
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-getsenders">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </summary>
+    [Description("@#getSenders")]
+    public extern RTCRtpSender[] GetSenders();
+
+    /// <summary>
+    /// getReceivers
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-getreceivers">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getReceivers")]
+    public extern RTCRtpReceiver[] GetReceivers();
+
+    /// <summary>
+    /// getTransceivers
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-gettranseceivers">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getTransceivers")]
+    public extern RTCRtpTransceiver[] GetTransceivers();
+
+    /// <summary>
+    /// If remote is true and description is of type &quot;offer&quot;, then if any addTrack() methods on connection succeeded during the process to apply description, abort these steps and start the process over as if they had succeeded prior, to include the extra transceiver(s) in the process.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-addtrack">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#addTrack")]
+    public extern RTCRtpSender AddTrack(MediaStreamTrack track, params MediaStream[] streams);
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-removetrack">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </summary>
+    [Description("@#removeTrack")]
+    public extern void RemoveTrack(RTCRtpSender sender);
+
+    /// <summary>
+    /// An RTCPeerConnection object contains a set of RTCRtpTransceivers, representing the paired senders and receivers with some shared state. This set is initialized to the empty set when the RTCPeerConnection object is created. RTCRtpSenders and RTCRtpReceivers are always created at the same time as an RTCRtpTransceiver, which they will remain attached to for their lifetime. RTCRtpTransceivers are created implicitly when the application attaches a MediaStreamTrack to an RTCPeerConnection via the addTrack() method, or explicitly when the application uses the addTransceiver method....
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-addtransceiver">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#addTransceiver")]
+    public extern RTCRtpTransceiver AddTransceiver(RTCPeerConnectionAddTransceiverTrackOrKind trackOrKind, RTCRtpTransceiverInit? init = default);
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-ontrack">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#ontrack")]
+    public extern EventHandler Ontrack { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-sctp">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#sctp")]
+    public extern RTCSctpTransport? Sctp { get; }
+
+    /// <summary>
+    /// createDataChannel
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-createdatachannel">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#createDataChannel")]
+    public extern RTCDataChannel CreateDataChannel(string label, RTCDataChannelInit? dataChannelDict = default);
+
+    /// <summary>
+    /// ondatachannel of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-ondatachannel">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#ondatachannel")]
+    public extern EventHandler Ondatachannel { get; set; }
+
+    /// <summary>
+    /// A group of related objects may be referenced by a selector. The selector may, for example, be a MediaStreamTrack. For a track to be a valid selector, it MUST be a MediaStreamTrack that is sent or received by the RTCPeerConnection object on which the stats request was issued. The calling Web application provides the selector to the getStats() method and the browser emits (in the JavaScript) a set of statistics that are relevant to the selector, according to the stats selection algorithm . Note that that algorithm takes the sender or receiver of a selector.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#widl-RTCPeerConnection-getStats-Promise-RTCStatsReport--MediaStreamTrack-selector">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getStats")]
+    public extern PromiseResult<RTCStatsReport> GetStats(MediaStreamTrack? selector = default);
+
+    /// <summary>
+    /// The RTCPeerConnection generates the contents parameter to this method as described in !RTCWEB-SECURITY-ARCH. The value of contents includes the fingerprint of the certificate that was selected or generated during the construction of the RTCPeerConnection. The origin parameter contains the origin of the script that calls the RTCPeerConnection method that triggers this behavior. The usernameHint value is the same value that is provided to setIdentityProvider, if any such value was provided.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-setidentityprovider">Identity for WebRTC 1.0: Methods</see>
+    /// </remarks>
+    [Description("@#setIdentityProvider")]
+    public extern void SetIdentityProvider(string provider, RTCIdentityProviderOptions? options = default);
+
+    /// <summary>
+    /// Errors in IdP processing will - in most cases - result in the failure of the procedure that invoked the IdP proxy. This will result in the reject | rejection of the promise returned by getIdentityAssertion(), createOffer(), or createAnswer(). An IdP proxy error causes a setRemoteDescription() promise to be reject | rejected if there is a target peer identity; IdP errors in calls to setRemoteDescription() where there is no target peer identity cause the peerIdentity promise to be reject | rejected instead.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-getidentityassertion">Identity for WebRTC 1.0: Methods</see>
+    /// </remarks>
+    [Description("@#getIdentityAssertion")]
+    public extern PromiseResult<string> GetIdentityAssertion();
+
+    /// <summary>
+    /// The RTCPeerConnection resolves the peerIdentity attribute with a new instance of RTCIdentityAssertion that includes the IdP domain and peer identity.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-peeridentity">Identity for WebRTC 1.0: Attributes</see>
+    /// </remarks>
+    [Description("@#peerIdentity")]
+    public extern PromiseResult<RTCIdentityAssertion> PeerIdentity { get; }
+
+    /// <summary>
+    /// The URL to login at will be passed to the application in the idpLoginUrl attribute of the RTCPeerConnection.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-idploginurl">Identity for WebRTC 1.0: Attributes</see>
+    /// </remarks>
+    [Description("@#idpLoginUrl")]
+    public extern string? IdpLoginUrl { get; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcpeerconnection-idperrorinfo">Identity for WebRTC 1.0: Attributes</see>
+    /// </summary>
+    [Description("@#idpErrorInfo")]
+    public extern string? IdpErrorInfo { get; }
+}
+
+/// <summary>
+/// The RTCRtpReceiver interface allows an application to inspect the receipt of a MediaStreamTrack.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver">WebRTC: Real-Time Communication in Browsers: 5.3 RTCRtpReceiver Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCRtpReceiver")]
+public partial class RTCRtpReceiver
+{
+    /// <summary>
+    /// track of type MediaStreamTrack, readonly
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtpreceiver-track">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#track")]
+    public extern MediaStreamTrack Track { get; }
+
+    /// <summary>
+    /// The transport attribute is the transport over which media for the receiver&apos;s track is received in the form of RTP packets. Prior to construction of the RTCDtlsTransport object, the transport attribute will be null. When bundling is used, multiple RTCRtpReceiver objects will share one transport and will all receive RTP and RTCP over the same transport.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-transport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#transport")]
+    public extern RTCDtlsTransport? Transport { get; }
+
+    /// <summary>
+    /// The static RTCRtpReceiver.getCapabilities() method provides a way to discover the types of capabilities the user agent supports for receiving media of the given kind, without reserving any resources, ports, or other state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-getcapabilities">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getCapabilities")]
+    public static extern RTCRtpCapabilities? GetCapabilities(string kind);
+
+    /// <summary>
+    /// The getParameters() method returns the RTCRtpSender object&apos;s current parameters for how track is encoded and transmitted to a remote RTCRtpReceiver.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-getparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getParameters")]
+    public extern RTCRtpReceiveParameters GetParameters();
+
+    /// <summary>
+    /// getContributingSources
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-getcontributingsources">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getContributingSources")]
+    public extern RTCRtpContributingSource[] GetContributingSources();
+
+    /// <summary>
+    /// getSynchronizationSources
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-getsynchronizationsources">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getSynchronizationSources")]
+    public extern RTCRtpSynchronizationSource[] GetSynchronizationSources();
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#widl-RTCRtpReceiver-getStats-Promise-RTCStatsReport">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </summary>
+    [Description("@#getStats")]
+    public extern PromiseResult<RTCStatsReport> GetStats();
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-jitterbuffertarget">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#jitterBufferTarget")]
+    public extern double? JitterBufferTarget { get; set; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcrtpsender-transform">WebRTC Encoded Transform: 2.2 Extension attribute</see>
+    /// </summary>
+    [Description("@#transform")]
+    public extern RTCRtpReceiverTransform? Transform { get; set; }
+}
+
+/// <summary>
+/// The RTCRtpSender interface allows an application to control how a given MediaStreamTrack is encoded and transmitted to a remote peer. When setParameters is called on an RTCRtpSender object, the encoding is changed appropriately.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender">WebRTC: Real-Time Communication in Browsers: 5.2 RTCRtpSender Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCRtpSender")]
+public partial class RTCRtpSender
+{
+    /// <summary>
+    /// The track attribute is the track that is associated with this RTCRtpSender object. If track is ended, or if the track&apos;s output is disabled, i.e. the track is disabled and/or muted, the RTCRtpSender MUST send black frames (video) and MUST NOT send (audio). In the case of video, the RTCRtpSender SHOULD send one black frame per second. If track is null then the RTCRtpSender does not send. On getting, the attribute MUST return the value of the SenderTrack slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-track">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#track")]
+    public extern MediaStreamTrack? Track { get; }
+
+    /// <summary>
+    /// The transport attribute is the transport over which media from track is sent in the form of RTP packets. Prior to construction of the RTCDtlsTransport object, the transport attribute will be null. When bundling is used, multiple RTCRtpSender objects will share one transport and will all send RTP and RTCP over the same transport.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-transport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#transport")]
+    public extern RTCDtlsTransport? Transport { get; }
+
+    /// <summary>
+    /// The static RTCRtpSender.getCapabilities() method provides a way to discover the types of capabilities the user agent supports for sending media of the given kind, without reserving any resources, ports, or other state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-getcapabilities">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getCapabilities")]
+    public static extern RTCRtpCapabilities? GetCapabilities(string kind);
+
+    /// <summary>
+    /// If any promises from setParameters methods on RTCRtpSenders associated with connection are not settled, abort these steps and start the process over.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-setparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#setParameters")]
+    public extern PromiseResult SetParameters(RTCRtpSendParameters parameters, RTCSetParameterOptions? setParameterOptions = default);
+
+    /// <summary>
+    /// The getParameters() method returns the RTCRtpSender object&apos;s current parameters for how track is encoded and transmitted to a remote RTCRtpReceiver.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-getparameters">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getParameters")]
+    public extern RTCRtpSendParameters GetParameters();
+
+    /// <summary>
+    /// Together, the direction attribute and the replaceTrack method enable developers to implement &quot;hold&quot; scenarios.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-replacetrack">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#replaceTrack")]
+    public extern PromiseResult ReplaceTrack(MediaStreamTrack? withTrack);
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-setstreams">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </summary>
+    [Description("@#setStreams")]
+    public extern void SetStreams(params MediaStream[] streams);
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#widl-RTCRtpSender-getStats-Promise-RTCStatsReport">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </summary>
+    [Description("@#getStats")]
+    public extern PromiseResult<RTCStatsReport> GetStats();
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsender-dtmf">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#dtmf")]
+    public extern RTCDTMFSender? Dtmf { get; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcrtpsender-transform">WebRTC Encoded Transform: 2.2 Extension attribute</see>
+    /// </summary>
+    [Description("@#transform")]
+    public extern RTCRtpSenderTransform? Transform { get; set; }
+}
+
+/// <summary>
+/// The RTCRtpTransceiver interface represents a combination of an RTCRtpSender and an RTCRtpReceiver that share a common media stream &quot;identification-tag&quot; . As defined in !RFC9429, an RTCRtpTransceiver is said to be associated with a media description if its &quot;mid&quot; property is non-null and matches a media stream &quot;identification-tag&quot; in the media description ; otherwise it is said to be disassociated with that media description .
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver">WebRTC: Real-Time Communication in Browsers: 5.4 RTCRtpTransceiver Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCRtpTransceiver")]
+public class RTCRtpTransceiver
+{
+    /// <summary>
+    /// mid of type DOMString, readonly, nullable
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtptransceiver-mid">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#mid")]
+    public extern string? Mid { get; }
+
+    /// <summary>
+    /// The sender attribute exposes the RTCRtpSender corresponding to the RTP media that may be sent with mid = Mid. On getting, the attribute MUST return the value of the Sender slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-sender">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#sender")]
+    public extern RTCRtpSender Sender { get; }
+
+    /// <summary>
+    /// The receiver attribute is the RTCRtpReceiver corresponding to the RTP media that may be received with mid = Mid. On getting the attribute MUST return the value of the Receiver slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-receiver">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#receiver")]
+    public extern RTCRtpReceiver Receiver { get; }
+
+    /// <summary>
+    /// As defined in !RFC9429, the currentDirection attribute indicates the current direction negotiated for this transceiver. The value of currentDirection is independent of the value of RTCRtpEncodingParameters.active since one cannot be deduced from the other. If this transceiver has never been represented in an offer/answer exchange, the value is null. If the transceiver is stopped, the value is &quot;stopped&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-direction">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#direction")]
+    public extern RTCRtpTransceiverDirection Direction { get; set; }
+
+    /// <summary>
+    /// As defined in !RFC9429, the currentDirection attribute indicates the current direction negotiated for this transceiver. The value of currentDirection is independent of the value of RTCRtpEncodingParameters.active since one cannot be deduced from the other. If this transceiver has never been represented in an offer/answer exchange, the value is null. If the transceiver is stopped, the value is &quot;stopped&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-currentdirection">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#currentDirection")]
+    public extern RTCRtpTransceiverDirection? CurrentDirection { get; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-stop">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </summary>
+    [Description("@#stop")]
+    public extern void Stop();
+
+    /// <summary>
+    /// The setCodecPreferences method overrides the default codec preferences used by the user agent as input to negotiation. When generating a session description using either createOffer or createAnswer, the user agent MUST filter the preferred codecs on direction and, if this results in a non-empty list, it MUST use the specified codecs in the order of the codecs argument, for the media section corresponding to this RTCRtpTransceiver.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiver-setcodecpreferences">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#setCodecPreferences")]
+    public extern void SetCodecPreferences(RTCRtpCodec[] codecs);
+}
+
+/// <summary>
+/// The RTCSctpTransport interface allows an application access to information about the SCTP data channels tied to a particular SCTP association.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport">WebRTC: Real-Time Communication in Browsers: 6.1.1 RTCSctpTransport Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCSctpTransport")]
+public class RTCSctpTransport : EventTarget
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-transport">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#transport")]
+    public extern RTCDtlsTransport Transport { get; }
+
+    /// <summary>
+    /// The current state of the SCTP transport. On getting, this attribute MUST return the value of the SctpTransportState slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-state">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#state")]
+    public extern RTCSctpTransportState State { get; }
+
+    /// <summary>
+    /// The maximum size of data that can be passed to RTCDataChannel&apos;s send() method. The attribute MUST, on getting, return the value of the MaxMessageSize slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-maxmessagesize">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#maxMessageSize")]
+    public extern double? MaxMessageSize { get; }
+
+    /// <summary>
+    /// The maximum amount of RTCDataChannel&apos;s that can be used simultaneously. The attribute MUST, on getting, return the value of the MaxChannels slot.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-maxchannels">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#maxChannels")]
+    public extern ushort? MaxChannels { get; }
+
+    /// <summary>
+    /// onstatechange of type EventHandler
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransport-onstatechange">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#onstatechange")]
+    public extern EventHandler Onstatechange { get; set; }
 }
 
 /// <summary>
@@ -55339,7 +55738,7 @@ public class FencedFrameConfig
 /// </remarks>
 [ECMAScript]
 [Description("@#MediaStreamTrackEvent")]
-public class MediaStreamTrackEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class MediaStreamTrackEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediastreamtrackevent-constructor">Media Capture and Streams: Constructors</see>
@@ -55412,6 +55811,32 @@ public class CanvasCaptureMediaStreamTrack : MediaStreamTrack
 }
 
 /// <summary>
+/// The certificates that RTCPeerConnection instances use to authenticate with peers use the RTCCertificate interface. These objects can be explicitly generated by applications using the generateCertificate method and can be provided in the RTCConfiguration when constructing a new RTCPeerConnection instance.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificate">WebRTC: Real-Time Communication in Browsers: 4.9.2 RTCCertificate Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCCertificate")]
+public class RTCCertificate
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificate-expires">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#expires")]
+    public extern EpochTimeStamp Expires { get; }
+
+    /// <summary>
+    /// getFingerprints
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificate-getfingerprints">WebRTC: Real-Time Communication in Browsers: Methods</see>
+    /// </remarks>
+    [Description("@#getFingerprints")]
+    public extern RTCDtlsFingerprint[] GetFingerprints();
+}
+
+/// <summary>
 /// The context object (i.e. this CSSKeyframeRule).
 /// </summary>
 /// <remarks>
@@ -55442,7 +55867,7 @@ public class CSSKeyframeRule : CSSRule
 /// </remarks>
 [ECMAScript]
 [Description("@#DeviceChangeEvent")]
-public class DeviceChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class DeviceChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// Queue a task that fire an event | fires an event named devicechange, using the DeviceChangeEvent constructor with devices initialized to newExposedDevices, at mediaDevices.
@@ -55495,6 +55920,86 @@ public class SpeechGrammar
     /// </remarks>
     [Description("@#weight")]
     public extern float Weight { get; set; }
+}
+
+/// <summary>
+/// The icecandidate event of the RTCPeerConnection uses the RTCPeerConnectionIceEvent interface.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceevent">WebRTC: Real-Time Communication in Browsers: 4.8.2 RTCPeerConnectionIceEvent</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCPeerConnectionIceEvent")]
+public class RTCPeerConnectionIceEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
+    /// </summary>
+    public extern RTCPeerConnectionIceEvent(string type, RTCPeerConnectionIceEventInit? eventInitDict = default);
+
+    /// <summary>
+    /// This attribute is deprecated; it exists for legacy compatibility reasons only. Prefer the candidate url.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceevent-candidate">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#candidate")]
+    public extern RTCIceCandidate? Candidate { get; }
+
+    /// <summary>
+    /// This attribute is deprecated; it exists for legacy compatibility reasons only. Prefer the candidate url.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceevent-url">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#url")]
+    public extern string? Url { get; }
+}
+
+/// <summary>
+/// The icecandidateerror event of the RTCPeerConnection uses the RTCPeerConnectionIceErrorEvent interface.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent">WebRTC: Real-Time Communication in Browsers: 4.8.3 RTCPeerConnectionIceErrorEvent</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCPeerConnectionIceErrorEvent")]
+public class RTCPeerConnectionIceErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
+    /// </summary>
+    public extern RTCPeerConnectionIceErrorEvent(string type, RTCPeerConnectionIceErrorEventInit eventInitDict);
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-address">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#address")]
+    public extern string? Address { get; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-port">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#port")]
+    public extern ushort? Port { get; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-url">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#url")]
+    public extern string Url { get; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-errorcode">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#errorCode")]
+    public extern ushort ErrorCode { get; }
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-errortext">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#errorText")]
+    public extern string ErrorText { get; }
 }
 
 /// <summary>
@@ -56390,7 +56895,7 @@ public partial class MediaStreamTrack : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#TextFormatUpdateEvent")]
-public class TextFormatUpdateEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class TextFormatUpdateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/edit-context/#dom-textformatupdateevent-constructor">EditContext API: 4.2 TextFormatUpdateEvent</see>
@@ -56672,7 +57177,7 @@ public class HID : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#MIDIConnectionEvent")]
-public class MIDIConnectionEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class MIDIConnectionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-midi-api/#dom-midiconnectionevent-constructor">Web MIDI API: 5.6 MIDIConnectionEvent Interface</see>
@@ -56710,6 +57215,32 @@ public class TouchList
     /// </summary>
     [Description("@#item")]
     public extern Touch? GetItem(uint index);
+}
+
+/// <summary>
+/// This interface represents an ICE candidate pair, described in Section 4 in RFC8445. An RTCIceCandidatePair is a pairing of a local and a remote RTCIceCandidate.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatepair">WebRTC: Real-Time Communication in Browsers: 5.6.2 RTCIceCandidatePair Interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#RTCIceCandidatePair")]
+public class RTCIceCandidatePair
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatepair-local">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </summary>
+    [Description("@#local")]
+    public extern RTCIceCandidate Local { get; }
+
+    /// <summary>
+    /// Remote candidates may be exposed, for instance via SelectedCandidatePair.remote. By default, the user agent MUST leave the address attribute as null for any exposed remote candidate. Once a RTCPeerConnection instance learns on an address by the web application using addIceCandidate, the user agent can expose the address attribute value in any RTCIceCandidate of the RTCPeerConnection instance representing a remote candidate with that newly learnt address.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatepair-remote">WebRTC: Real-Time Communication in Browsers: Attributes</see>
+    /// </remarks>
+    [Description("@#remote")]
+    public extern RTCIceCandidate Remote { get; }
 }
 
 /// <summary>
@@ -57432,7 +57963,7 @@ public class CDATASection(string data) : Text(data)
 /// </remarks>
 [ECMAScript]
 [Description("@#WebGLContextEvent")]
-public class WebGLContextEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class WebGLContextEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     public extern WebGLContextEvent(string type, WebGLContextEventInit? eventInit = default);
 
@@ -58665,7 +59196,7 @@ public class DOMImplementation
     /// </example>
     /// <param name="title"><see href="https://dom.spec.whatwg.org/#dom-domimplementation-createhtmldocument-title-title">DOM Standard: 4.5.1 Interface DOMImplementation</see></param>
     [Description("@#createHTMLDocument")]
-    public extern Document CreateHTMLDocument(string? title = default);
+    public extern JazorDocument CreateHTMLDocument(string? title = default);
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-domimplementation-hasfeature">DOM Standard: 4.5.1 Interface DOMImplementation</see>
@@ -58912,7 +59443,7 @@ public partial class PerformanceResourceTiming : PerformanceEntry
 /// </remarks>
 [ECMAScript]
 [Description("@#CapturedMouseEvent")]
-public class CapturedMouseEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class CapturedMouseEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// If any of CapturedMouseEventInit.surfaceX or CapturedMouseEventInit.surfaceY is negative, and they are not both equal to -1, then the constructor throws a RangeError exception.
@@ -59114,7 +59645,7 @@ public class PresentationConnection : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#PresentationConnectionAvailableEvent")]
-public class PresentationConnectionAvailableEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PresentationConnectionAvailableEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// When the PresentationConnectionAvailableEvent constructor is called, the user agent MUST construct a new PresentationConnectionAvailableEvent object with its connection attribute set to the connection member of the PresentationConnectionAvailableEventInit object passed to the constructor.
@@ -59142,7 +59673,7 @@ public class PresentationConnectionAvailableEvent(string type, EventInit eventIn
 /// </remarks>
 [ECMAScript]
 [Description("@#PresentationConnectionCloseEvent")]
-public class PresentationConnectionCloseEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class PresentationConnectionCloseEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// When the PresentationConnectionCloseEvent constructor is called, the user agent MUST construct a new PresentationConnectionCloseEvent object, with its reason attribute set to the reason member of the PresentationConnectionCloseEventInit object passed to the constructor, and its message attribute set to the message member of this PresentationConnectionCloseEventInit object if set, to an empty string otherwise.
@@ -61099,7 +61630,7 @@ public class FileList
     /// </summary>
     /// <param name="index"><see href="https://w3c.github.io/FileAPI/#dfn-index">File API: 5.2 Methods and Parameters</see></param>
     [Description("@#item")]
-    public extern Files? GetItem(uint index);
+    public extern JSFile? GetItem(uint index);
 
     /// <summary>
     /// <see href="https://w3c.github.io/FileAPI/#dfn-length">File API: 5.1 Attributes</see>
@@ -61306,7 +61837,7 @@ public class BluetoothDevice : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#BufferedChangeEvent")]
-public class BufferedChangeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class BufferedChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/media-source/#dom-bufferedchangeevent-constructor">Media Source Extensions™: 8 BufferedChangeEvent interface</see>
@@ -61381,60 +61912,6 @@ public class ManagedSourceBuffer : SourceBuffer
     /// </summary>
     [Description("@#onbufferedchange")]
     public extern EventHandler Onbufferedchange { get; set; }
-}
-
-/// <summary>
-/// value maps of type CSSFontFeatureValuesMap, readonly
-/// </summary>
-/// <remarks>
-/// <see href="https://drafts.csswg.org/css-fonts-4/#cssfontfeaturevaluesmap">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-/// </remarks>
-[ECMAScript]
-[Description("@#CSSFontFeatureValuesMap")]
-public class CSSFontFeatureValuesMap : IDictionary<string, uint[]>
-{
-    #region Dictionary
-    extern uint[] IDictionary<string, uint[]>.this[string key] { get; set; }
-    extern ICollection<string> IDictionary<string, uint[]>.Keys { get; }
-    extern ICollection<uint[]> IDictionary<string, uint[]>.Values { get; }
-    extern int ICollection<KeyValuePair<string, uint[]>>.Count { get; }
-    extern bool ICollection<KeyValuePair<string, uint[]>>.IsReadOnly { get; }
-    extern void IDictionary<string, uint[]>.Add(string key, uint[] value);
-    extern void ICollection<KeyValuePair<string, uint[]>>.Add(KeyValuePair<string, uint[]> item);
-    extern void ICollection<KeyValuePair<string, uint[]>>.Clear();
-    extern bool ICollection<KeyValuePair<string, uint[]>>.Contains(KeyValuePair<string, uint[]> item);
-    extern bool IDictionary<string, uint[]>.ContainsKey(string key);
-    extern void ICollection<KeyValuePair<string, uint[]>>.CopyTo(KeyValuePair<string, uint[]>[] array, int arrayIndex);
-    extern IEnumerator<KeyValuePair<string, uint[]>> IEnumerable<KeyValuePair<string, uint[]>>.GetEnumerator();
-    extern bool IDictionary<string, uint[]>.Remove(string key);
-    extern bool ICollection<KeyValuePair<string, uint[]>>.Remove(KeyValuePair<string, uint[]> item);
-    extern bool IDictionary<string, uint[]>.TryGetValue(string key, [MaybeNullWhen(false)] out uint[] value);
-    extern IEnumerator IEnumerable.GetEnumerator();
-    #endregion
-
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    /// <param name="featureValueName"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-featurevaluename">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
-    /// <param name="values"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-values">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
-    [Description("@#set")]
-    public extern void Set(string featureValueName, CSSFontFeatureValuesMapSetValues values);
-
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    /// <param name="featureValueName"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-featurevaluename">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
-    /// <param name="values"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-values">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
-    [Description("@#set")]
-    public extern void Set(string featureValueName, uint values);
-
-    /// <summary>
-    /// <see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see>
-    /// </summary>
-    /// <param name="featureValueName"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-featurevaluename">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
-    /// <param name="values"><see href="https://drafts.csswg.org/css-fonts-4/#dom-cssfontfeaturevaluesmap-set-featurevaluename-values-values">CSS Fonts Module Level 4: 12.2 The CSSFontFeatureValuesRule interface</see></param>
-    [Description("@#set")]
-    public extern void Set(string featureValueName, uint[] values);
 }
 
 [ECMAScript]
@@ -66510,7 +66987,7 @@ public class ShadowAnimation(AnimationEffect? effect, AnimationTimeline? timelin
 
 [ECMAScript]
 [Description("@#TimeEvent")]
-public class TimeEvent(string type, EventInit eventInitDict) : Event(type, eventInitDict)
+public class TimeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
 {
     [Description("@#view")]
     public extern WindowProxy? View { get; }
@@ -66519,7 +66996,7 @@ public class TimeEvent(string type, EventInit eventInitDict) : Event(type, event
     public extern int Detail { get; }
 
     [Description("@#initTimeEvent")]
-    public extern void InitTimeEvent(string typeArg, Window? viewArg = default, int detailArg = 0);
+    public extern void InitTimeEvent(string typeArg, JazorWindow? viewArg = default, int detailArg = 0);
 }
 
 [ECMAScript]

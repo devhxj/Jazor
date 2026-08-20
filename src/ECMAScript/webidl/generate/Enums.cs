@@ -3909,7 +3909,7 @@ public enum AriaNotifyPriority
 public enum AttributionAggregationProtocol
 {
     /// <summary>
-    /// The URL for &quot;dap-18-histogram&quot; is expected to identify the DAP Leader role. Implementations need to obtain HPKE configuration for both Aggregators statically; see #unconfigured. The HPKE configuration must not be fetched on demand, as the time that takes will leak information to callers of measureConversion().
+    /// The URL for &quot;dap-18-histogram&quot; is expected to identify the DAP Leader role. Implementations need to obtain HPKE configuration for both Aggregators statically; see #unconfigured.
     /// </summary>
     /// <remarks>
     /// <see href="https://w3c.github.io/attribution/#dom-attributionaggregationprotocol-dap-18-histogram">Attribution Level 1: 3.3 Finding a Supported Aggregation Service</see>
@@ -6331,693 +6331,6 @@ public enum RTCErrorDetailTypeIdp
 }
 
 /// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy">WebRTC: Real-Time Communication in Browsers: 4.2.4 RTCBundlePolicy Enum</see>
-/// </summary>
-[Description("@#RTCBundlePolicy")]
-[ECMAScript]
-[String]
-public enum RTCBundlePolicy
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy-balanced">WebRTC: Real-Time Communication in Browsers: 4.2.4 RTCBundlePolicy Enum</see>
-    /// </summary>
-    [Description("@#balanced")]
-    Balanced = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy-max-compat">WebRTC: Real-Time Communication in Browsers: 4.2.4 RTCBundlePolicy Enum</see>
-    /// </summary>
-    [Description("@#max-compat")]
-    MaxCompat = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy-max-bundle">WebRTC: Real-Time Communication in Browsers: 4.2.4 RTCBundlePolicy Enum</see>
-    /// </summary>
-    [Description("@#max-bundle")]
-    MaxBundle = 2
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
-/// </summary>
-[Description("@#RTCDataChannelState")]
-[ECMAScript]
-[String]
-public enum RTCDataChannelState
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate-connecting">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
-    /// </summary>
-    [Description("@#connecting")]
-    Connecting = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate-open">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
-    /// </summary>
-    [Description("@#open")]
-    Open = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate-closing">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
-    /// </summary>
-    [Description("@#closing")]
-    Closing = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate-closed">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
-    /// </summary>
-    [Description("@#closed")]
-    Closed = 3
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
-/// </summary>
-[Description("@#RTCDtlsTransportState")]
-[ECMAScript]
-[String]
-public enum RTCDtlsTransportState
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-new">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
-    /// </summary>
-    [Description("@#new")]
-    New = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-connecting">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
-    /// </summary>
-    [Description("@#connecting")]
-    Connecting = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-connected">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
-    /// </summary>
-    [Description("@#connected")]
-    Connected = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-closed">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
-    /// </summary>
-    [Description("@#closed")]
-    Closed = 3,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-failed">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
-    /// </summary>
-    [Description("@#failed")]
-    Failed = 4
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
-/// </summary>
-[Description("@#RTCErrorDetailType")]
-[ECMAScript]
-[String]
-public enum RTCErrorDetailType
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-data-channel-failure">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
-    /// </summary>
-    [Description("@#data-channel-failure")]
-    DataChannelFailure = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-dtls-failure">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
-    /// </summary>
-    [Description("@#dtls-failure")]
-    DtlsFailure = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-fingerprint-failure">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
-    /// </summary>
-    [Description("@#fingerprint-failure")]
-    FingerprintFailure = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-sctp-failure">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
-    /// </summary>
-    [Description("@#sctp-failure")]
-    SctpFailure = 3,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-sdp-syntax-error">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
-    /// </summary>
-    [Description("@#sdp-syntax-error")]
-    SdpSyntaxError = 4,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-hardware-encoder-not-available">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
-    /// </summary>
-    [Description("@#hardware-encoder-not-available")]
-    HardwareEncoderNotAvailable = 5,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-hardware-encoder-error">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
-    /// </summary>
-    [Description("@#hardware-encoder-error")]
-    HardwareEncoderError = 6
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
-/// </summary>
-[Description("@#RTCIceCandidateType")]
-[ECMAScript]
-[String]
-public enum RTCIceCandidateType
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype-host">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
-    /// </summary>
-    [Description("@#host")]
-    Host = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype-srflx">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
-    /// </summary>
-    [Description("@#srflx")]
-    Srflx = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype-prflx">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
-    /// </summary>
-    [Description("@#prflx")]
-    Prflx = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype-relay">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
-    /// </summary>
-    [Description("@#relay")]
-    Relay = 3
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecomponent">WebRTC: Real-Time Communication in Browsers: 5.6.6 RTCIceComponent Enum</see>
-/// </summary>
-[Description("@#RTCIceComponent")]
-[ECMAScript]
-[String]
-public enum RTCIceComponent
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecomponent-rtp">WebRTC: Real-Time Communication in Browsers: 5.6.6 RTCIceComponent Enum</see>
-    /// </summary>
-    [Description("@#rtp")]
-    Rtp = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecomponent-rtcp">WebRTC: Real-Time Communication in Browsers: 5.6.6 RTCIceComponent Enum</see>
-    /// </summary>
-    [Description("@#rtcp")]
-    Rtcp = 1
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
-/// </summary>
-[Description("@#RTCIceConnectionState")]
-[ECMAScript]
-[String]
-public enum RTCIceConnectionState
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-closed">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
-    /// </summary>
-    [Description("@#closed")]
-    Closed = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-failed">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
-    /// </summary>
-    [Description("@#failed")]
-    Failed = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-disconnected">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
-    /// </summary>
-    [Description("@#disconnected")]
-    Disconnected = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-new">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
-    /// </summary>
-    [Description("@#new")]
-    New = 3,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-checking">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
-    /// </summary>
-    [Description("@#checking")]
-    Checking = 4,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-completed">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
-    /// </summary>
-    [Description("@#completed")]
-    Completed = 5,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-connected">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
-    /// </summary>
-    [Description("@#connected")]
-    Connected = 6
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegathererstate">WebRTC: Real-Time Communication in Browsers: 5.6.3 RTCIceGathererState Enum</see>
-/// </summary>
-[Description("@#RTCIceGathererState")]
-[ECMAScript]
-[String]
-public enum RTCIceGathererState
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegathererstate-new">WebRTC: Real-Time Communication in Browsers: 5.6.3 RTCIceGathererState Enum</see>
-    /// </summary>
-    [Description("@#new")]
-    New = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegathererstate-gathering">WebRTC: Real-Time Communication in Browsers: 5.6.3 RTCIceGathererState Enum</see>
-    /// </summary>
-    [Description("@#gathering")]
-    Gathering = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegathererstate-complete">WebRTC: Real-Time Communication in Browsers: 5.6.3 RTCIceGathererState Enum</see>
-    /// </summary>
-    [Description("@#complete")]
-    Complete = 2
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate">WebRTC: Real-Time Communication in Browsers: 4.3.2 RTCIceGatheringState Enum</see>
-/// </summary>
-[Description("@#RTCIceGatheringState")]
-[ECMAScript]
-[String]
-public enum RTCIceGatheringState
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate-new">WebRTC: Real-Time Communication in Browsers: 4.3.2 RTCIceGatheringState Enum</see>
-    /// </summary>
-    [Description("@#new")]
-    New = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate-gathering">WebRTC: Real-Time Communication in Browsers: 4.3.2 RTCIceGatheringState Enum</see>
-    /// </summary>
-    [Description("@#gathering")]
-    Gathering = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate-complete">WebRTC: Real-Time Communication in Browsers: 4.3.2 RTCIceGatheringState Enum</see>
-    /// </summary>
-    [Description("@#complete")]
-    Complete = 2
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceprotocol">WebRTC: Real-Time Communication in Browsers: 4.8.1.2 RTCIceProtocol Enum</see>
-/// </summary>
-[Description("@#RTCIceProtocol")]
-[ECMAScript]
-[String]
-public enum RTCIceProtocol
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceprotocol-udp">WebRTC: Real-Time Communication in Browsers: 4.8.1.2 RTCIceProtocol Enum</see>
-    /// </summary>
-    [Description("@#udp")]
-    Udp = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceprotocol-tcp">WebRTC: Real-Time Communication in Browsers: 4.8.1.2 RTCIceProtocol Enum</see>
-    /// </summary>
-    [Description("@#tcp")]
-    Tcp = 1
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicerole">WebRTC: Real-Time Communication in Browsers: 5.6.5 RTCIceRole Enum</see>
-/// </summary>
-[Description("@#RTCIceRole")]
-[ECMAScript]
-[String]
-public enum RTCIceRole
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicerole-unknown">WebRTC: Real-Time Communication in Browsers: 5.6.5 RTCIceRole Enum</see>
-    /// </summary>
-    [Description("@#unknown")]
-    Unknown = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicerole-controlling">WebRTC: Real-Time Communication in Browsers: 5.6.5 RTCIceRole Enum</see>
-    /// </summary>
-    [Description("@#controlling")]
-    Controlling = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicerole-controlled">WebRTC: Real-Time Communication in Browsers: 5.6.5 RTCIceRole Enum</see>
-    /// </summary>
-    [Description("@#controlled")]
-    Controlled = 2
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceservertransportprotocol">WebRTC: Real-Time Communication in Browsers: 4.8.1.5 RTCIceServerTransportProtocol Enum</see>
-/// </summary>
-[Description("@#RTCIceServerTransportProtocol")]
-[ECMAScript]
-[String]
-public enum RTCIceServerTransportProtocol
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceservertransportprotocol-udp">WebRTC: Real-Time Communication in Browsers: 4.8.1.5 RTCIceServerTransportProtocol Enum</see>
-    /// </summary>
-    [Description("@#udp")]
-    Udp = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceservertransportprotocol-tcp">WebRTC: Real-Time Communication in Browsers: 4.8.1.5 RTCIceServerTransportProtocol Enum</see>
-    /// </summary>
-    [Description("@#tcp")]
-    Tcp = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceservertransportprotocol-tls">WebRTC: Real-Time Communication in Browsers: 4.8.1.5 RTCIceServerTransportProtocol Enum</see>
-    /// </summary>
-    [Description("@#tls")]
-    Tls = 2
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetcpcandidatetype">WebRTC: Real-Time Communication in Browsers: 4.8.1.3 RTCIceTcpCandidateType Enum</see>
-/// </summary>
-[Description("@#RTCIceTcpCandidateType")]
-[ECMAScript]
-[String]
-public enum RTCIceTcpCandidateType
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetcpcandidatetype-active">WebRTC: Real-Time Communication in Browsers: 4.8.1.3 RTCIceTcpCandidateType Enum</see>
-    /// </summary>
-    [Description("@#active")]
-    Active = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetcpcandidatetype-passive">WebRTC: Real-Time Communication in Browsers: 4.8.1.3 RTCIceTcpCandidateType Enum</see>
-    /// </summary>
-    [Description("@#passive")]
-    Passive = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetcpcandidatetype-so">WebRTC: Real-Time Communication in Browsers: 4.8.1.3 RTCIceTcpCandidateType Enum</see>
-    /// </summary>
-    [Description("@#so")]
-    So = 2
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportpolicy">WebRTC: Real-Time Communication in Browsers: 4.2.3 RTCIceTransportPolicy Enum</see>
-/// </summary>
-[Description("@#RTCIceTransportPolicy")]
-[ECMAScript]
-[String]
-public enum RTCIceTransportPolicy
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportpolicy-relay">WebRTC: Real-Time Communication in Browsers: 4.2.3 RTCIceTransportPolicy Enum</see>
-    /// </summary>
-    [Description("@#relay")]
-    Relay = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportpolicy-all">WebRTC: Real-Time Communication in Browsers: 4.2.3 RTCIceTransportPolicy Enum</see>
-    /// </summary>
-    [Description("@#all")]
-    All = 1
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
-/// </summary>
-[Description("@#RTCIceTransportState")]
-[ECMAScript]
-[String]
-public enum RTCIceTransportState
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-closed">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
-    /// </summary>
-    [Description("@#closed")]
-    Closed = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-failed">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
-    /// </summary>
-    [Description("@#failed")]
-    Failed = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-disconnected">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
-    /// </summary>
-    [Description("@#disconnected")]
-    Disconnected = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-new">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
-    /// </summary>
-    [Description("@#new")]
-    New = 3,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-checking">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
-    /// </summary>
-    [Description("@#checking")]
-    Checking = 4,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-completed">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
-    /// </summary>
-    [Description("@#completed")]
-    Completed = 5,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-connected">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
-    /// </summary>
-    [Description("@#connected")]
-    Connected = 6
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
-/// </summary>
-[Description("@#RTCPeerConnectionState")]
-[ECMAScript]
-[String]
-public enum RTCPeerConnectionState
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-closed">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
-    /// </summary>
-    [Description("@#closed")]
-    Closed = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-failed">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
-    /// </summary>
-    [Description("@#failed")]
-    Failed = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-disconnected">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
-    /// </summary>
-    [Description("@#disconnected")]
-    Disconnected = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-new">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
-    /// </summary>
-    [Description("@#new")]
-    New = 3,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-connecting">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
-    /// </summary>
-    [Description("@#connecting")]
-    Connecting = 4,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-connected">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
-    /// </summary>
-    [Description("@#connected")]
-    Connected = 5
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpmuxpolicy">WebRTC: Real-Time Communication in Browsers: 4.2.5 RTCRtcpMuxPolicy Enum</see>
-/// </summary>
-[Description("@#RTCRtcpMuxPolicy")]
-[ECMAScript]
-[String]
-public enum RTCRtcpMuxPolicy
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpmuxpolicy-require">WebRTC: Real-Time Communication in Browsers: 4.2.5 RTCRtcpMuxPolicy Enum</see>
-    /// </summary>
-    [Description("@#require")]
-    Require = 0
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
-/// </summary>
-[Description("@#RTCRtpTransceiverDirection")]
-[ECMAScript]
-[String]
-public enum RTCRtpTransceiverDirection
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-sendrecv">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
-    /// </summary>
-    [Description("@#sendrecv")]
-    Sendrecv = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-sendonly">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
-    /// </summary>
-    [Description("@#sendonly")]
-    Sendonly = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-recvonly">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
-    /// </summary>
-    [Description("@#recvonly")]
-    Recvonly = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-inactive">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
-    /// </summary>
-    [Description("@#inactive")]
-    Inactive = 3,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-stopped">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
-    /// </summary>
-    [Description("@#stopped")]
-    Stopped = 4
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransportstate">WebRTC: Real-Time Communication in Browsers: 6.1.2 RTCSctpTransportState Enum</see>
-/// </summary>
-[Description("@#RTCSctpTransportState")]
-[ECMAScript]
-[String]
-public enum RTCSctpTransportState
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#idl-def-RTCSctpTransportState.connecting">WebRTC: Real-Time Communication in Browsers: 6.1.2 RTCSctpTransportState Enum</see>
-    /// </summary>
-    [Description("@#connecting")]
-    Connecting = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#idl-def-RTCSctpTransportState.connected">WebRTC: Real-Time Communication in Browsers: 6.1.2 RTCSctpTransportState Enum</see>
-    /// </summary>
-    [Description("@#connected")]
-    Connected = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#idl-def-RTCSctpTransportState.closed">WebRTC: Real-Time Communication in Browsers: 6.1.2 RTCSctpTransportState Enum</see>
-    /// </summary>
-    [Description("@#closed")]
-    Closed = 2
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
-/// </summary>
-[Description("@#RTCSdpType")]
-[ECMAScript]
-[String]
-public enum RTCSdpType
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype-offer">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
-    /// </summary>
-    [Description("@#offer")]
-    Offer = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype-pranswer">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
-    /// </summary>
-    [Description("@#pranswer")]
-    Pranswer = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype-answer">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
-    /// </summary>
-    [Description("@#answer")]
-    Answer = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype-rollback">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
-    /// </summary>
-    [Description("@#rollback")]
-    Rollback = 3
-}
-
-/// <summary>
-/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
-/// </summary>
-[Description("@#RTCSignalingState")]
-[ECMAScript]
-[String]
-public enum RTCSignalingState
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-stable">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
-    /// </summary>
-    [Description("@#stable")]
-    Stable = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-have-local-offer">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
-    /// </summary>
-    [Description("@#have-local-offer")]
-    HaveLocalOffer = 1,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-have-remote-offer">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
-    /// </summary>
-    [Description("@#have-remote-offer")]
-    HaveRemoteOffer = 2,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-have-local-pranswer">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
-    /// </summary>
-    [Description("@#have-local-pranswer")]
-    HaveLocalPranswer = 3,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-have-remote-pranswer">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
-    /// </summary>
-    [Description("@#have-remote-pranswer")]
-    HaveRemotePranswer = 4,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-closed">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
-    /// </summary>
-    [Description("@#closed")]
-    Closed = 5
-}
-
-/// <summary>
 /// <see href="https://w3c.github.io/webrtc-priority/#enumdef-rtcprioritytype">WebRTC Priority Control API: 3.1 RTCPriorityType Enum</see>
 /// </summary>
 [Description("@#RTCPriorityType")]
@@ -7350,8 +6663,11 @@ public enum AudioContextState
     Running = 1,
 
     /// <summary>
-    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiocontextstate-closed">Web Audio API 1.1: 1.1 The BaseAudioContext Interface</see>
+    /// If the control thread state on the OfflineAudioContext is closed, reject promise with InvalidStateError and abort these steps.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://webaudio.github.io/web-audio-api/#dom-audiocontextstate-closed">Web Audio API 1.1: 1.1 The BaseAudioContext Interface</see>
+    /// </remarks>
     [Description("@#closed")]
     Closed = 2,
 
@@ -10327,6 +9643,81 @@ public enum PushEncryptionKeyName
 }
 
 /// <summary>
+/// Fire an event named error using the RTCErrorEvent interface with its errorDetail attribute set to either &quot;dtls-failure&quot; or &quot;fingerprint-failure&quot;, as appropriate, and other fields set as described under the RTCErrorDetailType enum description, at transport.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
+/// </remarks>
+[Description("@#RTCErrorDetailType")]
+[ECMAScript]
+[String]
+public enum RTCErrorDetailType
+{
+    /// <summary>
+    /// For each channel in errorList, fire an event named error using the RTCErrorEvent interface with the errorDetail attribute set to &quot;data-channel-failure&quot; at channel.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-data-channel-failure">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
+    /// </remarks>
+    [Description("@#data-channel-failure")]
+    DataChannelFailure = 0,
+
+    /// <summary>
+    /// Fire an event named error using the RTCErrorEvent interface with its errorDetail attribute set to either &quot;dtls-failure&quot; or &quot;fingerprint-failure&quot;, as appropriate, and other fields set as described under the RTCErrorDetailType enum description, at transport.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-dtls-failure">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
+    /// </remarks>
+    [Description("@#dtls-failure")]
+    DtlsFailure = 1,
+
+    /// <summary>
+    /// Fire an event named error using the RTCErrorEvent interface with its errorDetail attribute set to either &quot;dtls-failure&quot; or &quot;fingerprint-failure&quot;, as appropriate, and other fields set as described under the RTCErrorDetailType enum description, at transport.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-fingerprint-failure">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
+    /// </remarks>
+    [Description("@#fingerprint-failure")]
+    FingerprintFailure = 2,
+
+    /// <summary>
+    /// If the underlying data transport | transport was closed with an error, fire an event named error using the RTCErrorEvent interface with its errorDetail attribute set to &quot;sctp-failure&quot; at channel.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-sctp-failure">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
+    /// </remarks>
+    [Description("@#sctp-failure")]
+    SctpFailure = 3,
+
+    /// <summary>
+    /// If the process to apply description failed to parse the SDP as defined in !RFC9429 Section 5.8. including session-level parsing (5.8.1.) and media-level parsing (5.8.2.), but excluding semantics verification (5.8.3.), then reject p with an RTCError (with errorDetail set to &quot;sdp-syntax-error&quot; and the sdpLineNumber attribute set to the line number in the SDP where the syntax error was detected) and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-sdp-syntax-error">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
+    /// </remarks>
+    [Description("@#sdp-syntax-error")]
+    SdpSyntaxError = 4,
+
+    /// <summary>
+    /// If an error occurred due to hardware resources not being available, reject p with a newly created RTCError whose errorDetail is set to &quot;hardware-encoder-not-available&quot; and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-hardware-encoder-not-available">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
+    /// </remarks>
+    [Description("@#hardware-encoder-not-available")]
+    HardwareEncoderNotAvailable = 5,
+
+    /// <summary>
+    /// If an error occurred due to a hardware encoder not supporting parameters, reject p with a newly created RTCError whose errorDetail is set to &quot;hardware-encoder-error&quot; and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype-hardware-encoder-error">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
+    /// </remarks>
+    [Description("@#hardware-encoder-error")]
+    HardwareEncoderError = 6
+}
+
+/// <summary>
 /// If an optional member is specified for a MediaDecodingType or MediaEncodingType to which it&apos;s not applicable, return false and abort these steps. See applicability rules in the member definitions below.
 /// </summary>
 /// <remarks>
@@ -10672,6 +10063,63 @@ public enum WakeLockType
 }
 
 /// <summary>
+/// Let direction be an RTCRtpTransceiverDirection value representing the direction from the media description .
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
+/// </remarks>
+[Description("@#RTCRtpTransceiverDirection")]
+[ECMAScript]
+[String]
+public enum RTCRtpTransceiverDirection
+{
+    /// <summary>
+    /// If direction is &quot;sendrecv&quot; or &quot;recvonly&quot;, set transceiver.Receptive to true, otherwise set it to false.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-sendrecv">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
+    /// </remarks>
+    [Description("@#sendrecv")]
+    Sendrecv = 0,
+
+    /// <summary>
+    /// If the direction is &quot;sendonly&quot; or &quot;inactive&quot;, the receiver is not prepared to receive anything, and the list will be empty.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-sendonly">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
+    /// </remarks>
+    [Description("@#sendonly")]
+    Sendonly = 1,
+
+    /// <summary>
+    /// If direction is &quot;sendrecv&quot; or &quot;recvonly&quot;, set transceiver.Receptive to true, otherwise set it to false.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-recvonly">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
+    /// </remarks>
+    [Description("@#recvonly")]
+    Recvonly = 2,
+
+    /// <summary>
+    /// If the direction is &quot;sendonly&quot; or &quot;inactive&quot;, the receiver is not prepared to receive anything, and the list will be empty.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-inactive">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
+    /// </remarks>
+    [Description("@#inactive")]
+    Inactive = 3,
+
+    /// <summary>
+    /// For each non-stopped &quot;sendrecv&quot; transceiver of RTCRtpTransceiver/transceiver kind kind, set transceiver.Direction to &quot;sendonly&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection-stopped">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
+    /// </remarks>
+    [Description("@#stopped")]
+    Stopped = 4
+}
+
+/// <summary>
 /// Let message type be the appropriate MediaKeyMessageType for the message.
 /// </summary>
 /// <remarks>
@@ -10714,6 +10162,66 @@ public enum MediaKeyMessageType
     /// </remarks>
     [Description("@#individualization-request")]
     IndividualizationRequest = 3
+}
+
+/// <summary>
+/// Let newState be the value of deriving a new state value as described by the RTCPeerConnectionState enum.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
+/// </remarks>
+[Description("@#RTCPeerConnectionState")]
+[ECMAScript]
+[String]
+public enum RTCPeerConnectionState
+{
+    /// <summary>
+    /// Set connection.ConnectionState to &quot;closed&quot;. This does not fire any event.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-closed">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
+    /// </remarks>
+    [Description("@#closed")]
+    Closed = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-failed">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
+    /// </summary>
+    [Description("@#failed")]
+    Failed = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-disconnected">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
+    /// </summary>
+    [Description("@#disconnected")]
+    Disconnected = 2,
+
+    /// <summary>
+    /// In the &quot;connecting&quot; state, one or more RTCIceTransports are in the &quot;new&quot; or &quot;checking&quot; state, or one or more RTCDtlsTransports are in the &quot;new&quot; or &quot;connecting&quot; state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-new">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
+    /// </remarks>
+    [Description("@#new")]
+    New = 3,
+
+    /// <summary>
+    /// In the &quot;connecting&quot; state, one or more RTCIceTransports are in the &quot;new&quot; or &quot;checking&quot; state, or one or more RTCDtlsTransports are in the &quot;new&quot; or &quot;connecting&quot; state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-connecting">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
+    /// </remarks>
+    [Description("@#connecting")]
+    Connecting = 4,
+
+    /// <summary>
+    /// If connection&apos;s RTCPeerConnectionState is not &quot;connected&quot; return false.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate-connected">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
+    /// </remarks>
+    [Description("@#connected")]
+    Connected = 5
 }
 
 /// <summary>
@@ -10849,6 +10357,102 @@ public enum EncodedVideoChunkType
     /// </summary>
     [Description("@#delta")]
     Delta = 1
+}
+
+/// <summary>
+/// Set connection.IceConnectionState to the value of deriving a new state value as described by the RTCIceConnectionState enum.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
+/// </remarks>
+[Description("@#RTCIceConnectionState")]
+[ECMAScript]
+[String]
+public enum RTCIceConnectionState
+{
+    /// <summary>
+    /// Set connection.IceConnectionState to &quot;closed&quot;. This does not fire any event.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-closed">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
+    /// </remarks>
+    [Description("@#closed")]
+    Closed = 0,
+
+    /// <summary>
+    /// Performing an ICE restart is recommended when iceConnectionState transitions to &quot;failed&quot;. An application may additionally choose to listen for the iceConnectionState transition to &quot;disconnected&quot; and then use other sources of information (such as using getStats to measure if the number of bytes sent or received over the next couple of seconds increases) to determine whether an ICE restart is advisable.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-failed">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
+    /// </remarks>
+    [Description("@#failed")]
+    Failed = 1,
+
+    /// <summary>
+    /// Performing an ICE restart is recommended when iceConnectionState transitions to &quot;failed&quot;. An application may additionally choose to listen for the iceConnectionState transition to &quot;disconnected&quot; and then use other sources of information (such as using getStats to measure if the number of bytes sent or received over the next couple of seconds increases) to determine whether an ICE restart is advisable.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-disconnected">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
+    /// </remarks>
+    [Description("@#disconnected")]
+    Disconnected = 2,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-new">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
+    /// </summary>
+    [Description("@#new")]
+    New = 3,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-checking">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
+    /// </summary>
+    [Description("@#checking")]
+    Checking = 4,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-completed">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
+    /// </summary>
+    [Description("@#completed")]
+    Completed = 5,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate-connected">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
+    /// </summary>
+    [Description("@#connected")]
+    Connected = 6
+}
+
+/// <summary>
+/// Set connection.IceGatheringState to the value of deriving a new state value as described by the RTCIceGatheringState enum.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate">WebRTC: Real-Time Communication in Browsers: 4.3.2 RTCIceGatheringState Enum</see>
+/// </remarks>
+[Description("@#RTCIceGatheringState")]
+[ECMAScript]
+[String]
+public enum RTCIceGatheringState
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate-new">WebRTC: Real-Time Communication in Browsers: 4.3.2 RTCIceGatheringState Enum</see>
+    /// </summary>
+    [Description("@#new")]
+    New = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate-gathering">WebRTC: Real-Time Communication in Browsers: 4.3.2 RTCIceGatheringState Enum</see>
+    /// </summary>
+    [Description("@#gathering")]
+    Gathering = 1,
+
+    /// <summary>
+    /// All RTCIceTransports have finished gathering candidates, and the RTCPeerConnection&apos;s RTCIceGatheringState has transitioned to &quot;complete&quot;. This is indicated by the candidate member of the event being set to null. This only exists for backwards compatibility, and this event does not need to be signaled to the remote peer. It&apos;s equivalent to an icegatheringstatechange event with the &quot;complete&quot; state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate-complete">WebRTC: Real-Time Communication in Browsers: 4.3.2 RTCIceGatheringState Enum</see>
+    /// </remarks>
+    [Description("@#complete")]
+    Complete = 2
 }
 
 /// <summary>
@@ -11119,6 +10723,129 @@ public enum OrientationType
     /// </summary>
     [Description("@#landscape-secondary")]
     LandscapeSecondary = 3
+}
+
+/// <summary>
+/// The RTCIceTransportState of an RTCIceTransport may change because a candidate pair with a usable connection was found and selected or it may change without the selected candidate pair changing. The selected pair and RTCIceTransportState are related and are handled in the same task.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
+/// </remarks>
+[Description("@#RTCIceTransportState")]
+[ECMAScript]
+[String]
+public enum RTCIceTransportState
+{
+    /// <summary>
+    /// Set the IceTransportState slot of each of connection&apos;s RTCIceTransports to &quot;closed&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-closed">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
+    /// </remarks>
+    [Description("@#closed")]
+    Closed = 0,
+
+    /// <summary>
+    /// The &quot;failed&quot; and &quot;completed&quot; states require an indication that there are no additional remote candidates. This can be indicated by calling addIceCandidate with a candidate value whose candidate property is set to an empty string or by canTrickleIceCandidates being set to false.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-failed">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
+    /// </remarks>
+    [Description("@#failed")]
+    Failed = 1,
+
+    /// <summary>
+    /// An ICE restart causes candidate gathering and connectivity checks to begin anew, causing a transition to &quot;connected&quot; if begun in the &quot;completed&quot; state. If begun in the transient &quot;disconnected&quot; state, it causes a transition to &quot;checking&quot;, effectively forgetting that connectivity was previously lost.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-disconnected">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
+    /// </remarks>
+    [Description("@#disconnected")]
+    Disconnected = 2,
+
+    /// <summary>
+    /// In the &quot;connecting&quot; state, one or more RTCIceTransports are in the &quot;new&quot; or &quot;checking&quot; state, or one or more RTCDtlsTransports are in the &quot;new&quot; or &quot;connecting&quot; state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-new">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
+    /// </remarks>
+    [Description("@#new")]
+    New = 3,
+
+    /// <summary>
+    /// In the &quot;connecting&quot; state, one or more RTCIceTransports are in the &quot;new&quot; or &quot;checking&quot; state, or one or more RTCDtlsTransports are in the &quot;new&quot; or &quot;connecting&quot; state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-checking">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
+    /// </remarks>
+    [Description("@#checking")]
+    Checking = 4,
+
+    /// <summary>
+    /// The most common transitions for a successful call will be new -&gt; checking -&gt; connected -&gt; completed, but under specific circumstances (only the last checked candidate succeeds, and gathering and the no-more candidates indication both occur prior to success), the state can transition directly from &quot;checking&quot; to &quot;completed&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-completed">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
+    /// </remarks>
+    [Description("@#completed")]
+    Completed = 5,
+
+    /// <summary>
+    /// The most common transitions for a successful call will be new -&gt; checking -&gt; connected -&gt; completed, but under specific circumstances (only the last checked candidate succeeds, and gathering and the no-more candidates indication both occur prior to success), the state can transition directly from &quot;checking&quot; to &quot;completed&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate-connected">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
+    /// </remarks>
+    [Description("@#connected")]
+    Connected = 6
+}
+
+/// <summary>
+/// The RTCSdpType enum describes the type of an RTCSessionDescriptionInit, RTCLocalSessionDescriptionInit, or RTCSessionDescription instance.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
+/// </remarks>
+[Description("@#RTCSdpType")]
+[ECMAScript]
+[String]
+public enum RTCSdpType
+{
+    /// <summary>
+    /// If remote is true and description is of type &quot;offer&quot;, then if any addTrack() methods on connection succeeded during the process to apply description, abort these steps and start the process over as if they had succeeded prior, to include the extra transceiver(s) in the process.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype-offer">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
+    /// </remarks>
+    [Description("@#offer")]
+    Offer = 0,
+
+    /// <summary>
+    /// If description.type is &quot;rollback&quot; and connection.SignalingState is either &quot;stable&quot;, &quot;have-local-pranswer&quot;, or &quot;have-remote-pranswer&quot;, then reject p with a newly exception/created InvalidStateError and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype-pranswer">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
+    /// </remarks>
+    [Description("@#pranswer")]
+    Pranswer = 1,
+
+    /// <summary>
+    /// The RTCAnswerOptions dictionary describe options specific to session description of type &quot;answer&quot; (none in this version of the specification).
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype-answer">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
+    /// </remarks>
+    [Description("@#answer")]
+    Answer = 2,
+
+    /// <summary>
+    /// If description.type is &quot;rollback&quot; and connection.SignalingState is either &quot;stable&quot;, &quot;have-local-pranswer&quot;, or &quot;have-remote-pranswer&quot;, then reject p with a newly exception/created InvalidStateError and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype-rollback">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
+    /// </remarks>
+    [Description("@#rollback")]
+    Rollback = 3
 }
 
 /// <summary>
@@ -11503,6 +11230,69 @@ public enum AudioSelectionPreferenceEnum
 }
 
 /// <summary>
+/// bundlePolicy of type RTCBundlePolicy, defaulting to &quot;balanced&quot;.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy">WebRTC: Real-Time Communication in Browsers: 4.2.4 RTCBundlePolicy Enum</see>
+/// </remarks>
+[Description("@#RTCBundlePolicy")]
+[ECMAScript]
+[String]
+public enum RTCBundlePolicy
+{
+    /// <summary>
+    /// bundlePolicy of type RTCBundlePolicy, defaulting to &quot;balanced&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy-balanced">WebRTC: Real-Time Communication in Browsers: 4.2.4 RTCBundlePolicy Enum</see>
+    /// </remarks>
+    [Description("@#balanced")]
+    Balanced = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy-max-compat">WebRTC: Real-Time Communication in Browsers: 4.2.4 RTCBundlePolicy Enum</see>
+    /// </summary>
+    [Description("@#max-compat")]
+    MaxCompat = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy-max-bundle">WebRTC: Real-Time Communication in Browsers: 4.2.4 RTCBundlePolicy Enum</see>
+    /// </summary>
+    [Description("@#max-bundle")]
+    MaxBundle = 2
+}
+
+/// <summary>
+/// component of type RTCIceComponent, readonly, nullable
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecomponent">WebRTC: Real-Time Communication in Browsers: 5.6.6 RTCIceComponent Enum</see>
+/// </remarks>
+[Description("@#RTCIceComponent")]
+[ECMAScript]
+[String]
+public enum RTCIceComponent
+{
+    /// <summary>
+    /// The assigned network component of the candidate (&quot;rtp&quot; or &quot;rtcp&quot;). This corresponds to the component-id field in candidate-attribute , decoded to the string representation as defined in RTCIceComponent.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecomponent-rtp">WebRTC: Real-Time Communication in Browsers: 5.6.6 RTCIceComponent Enum</see>
+    /// </remarks>
+    [Description("@#rtp")]
+    Rtp = 0,
+
+    /// <summary>
+    /// The assigned network component of the candidate (&quot;rtp&quot; or &quot;rtcp&quot;). This corresponds to the component-id field in candidate-attribute , decoded to the string representation as defined in RTCIceComponent.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecomponent-rtcp">WebRTC: Real-Time Communication in Browsers: 5.6.6 RTCIceComponent Enum</see>
+    /// </remarks>
+    [Description("@#rtcp")]
+    Rtcp = 1
+}
+
+/// <summary>
 /// degradationPreference of type RTCDegradationPreference.
 /// </summary>
 /// <remarks>
@@ -11617,6 +11407,42 @@ public enum FillLightMode
 }
 
 /// <summary>
+/// gatheringState of type RTCIceGathererState, readonly
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegathererstate">WebRTC: Real-Time Communication in Browsers: 5.6.3 RTCIceGathererState Enum</see>
+/// </remarks>
+[Description("@#RTCIceGathererState")]
+[ECMAScript]
+[String]
+public enum RTCIceGathererState
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegathererstate-new">WebRTC: Real-Time Communication in Browsers: 5.6.3 RTCIceGathererState Enum</see>
+    /// </summary>
+    [Description("@#new")]
+    New = 0,
+
+    /// <summary>
+    /// Set transport.IceGathererState to gathering.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegathererstate-gathering">WebRTC: Real-Time Communication in Browsers: 5.6.3 RTCIceGathererState Enum</see>
+    /// </remarks>
+    [Description("@#gathering")]
+    Gathering = 1,
+
+    /// <summary>
+    /// Set transport.IceGathererState to complete.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegathererstate-complete">WebRTC: Real-Time Communication in Browsers: 5.6.3 RTCIceGathererState Enum</see>
+    /// </remarks>
+    [Description("@#complete")]
+    Complete = 2
+}
+
+/// <summary>
 /// hardwareAcceleration
 /// </summary>
 /// <remarks>
@@ -11653,6 +11479,36 @@ public enum HardwareAcceleration
     /// </remarks>
     [Description("@#prefer-software")]
     PreferSoftware = 2
+}
+
+/// <summary>
+/// iceTransportPolicy of type RTCIceTransportPolicy, defaulting to &quot;all&quot;.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportpolicy">WebRTC: Real-Time Communication in Browsers: 4.2.3 RTCIceTransportPolicy Enum</see>
+/// </remarks>
+[Description("@#RTCIceTransportPolicy")]
+[ECMAScript]
+[String]
+public enum RTCIceTransportPolicy
+{
+    /// <summary>
+    /// If the iceTransportPolicy member of the RTCConfiguration is relay, candidates requiring external resolution, such as mDNS candidates and DNS candidates, MUST be prohibited.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportpolicy-relay">WebRTC: Real-Time Communication in Browsers: 4.2.3 RTCIceTransportPolicy Enum</see>
+    /// </remarks>
+    [Description("@#relay")]
+    Relay = 0,
+
+    /// <summary>
+    /// iceTransportPolicy of type RTCIceTransportPolicy, defaulting to &quot;all&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportpolicy-all">WebRTC: Real-Time Communication in Browsers: 4.2.3 RTCIceTransportPolicy Enum</see>
+    /// </remarks>
+    [Description("@#all")]
+    All = 1
 }
 
 /// <summary>
@@ -11707,6 +11563,36 @@ public enum MonitorTypeSurfacesEnum
     /// </summary>
     [Description("@#exclude")]
     Exclude = 1
+}
+
+/// <summary>
+/// protocol of type RTCIceProtocol, readonly, nullable
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceprotocol">WebRTC: Real-Time Communication in Browsers: 4.8.1.2 RTCIceProtocol Enum</see>
+/// </remarks>
+[Description("@#RTCIceProtocol")]
+[ECMAScript]
+[String]
+public enum RTCIceProtocol
+{
+    /// <summary>
+    /// The protocol of the candidate (&quot;udp&quot;/&quot;tcp&quot;). This corresponds to the transport field in candidate-attribute .
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceprotocol-udp">WebRTC: Real-Time Communication in Browsers: 4.8.1.2 RTCIceProtocol Enum</see>
+    /// </remarks>
+    [Description("@#udp")]
+    Udp = 0,
+
+    /// <summary>
+    /// The protocol of the candidate (&quot;udp&quot;/&quot;tcp&quot;). This corresponds to the transport field in candidate-attribute .
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceprotocol-tcp">WebRTC: Real-Time Communication in Browsers: 4.8.1.2 RTCIceProtocol Enum</see>
+    /// </remarks>
+    [Description("@#tcp")]
+    Tcp = 1
 }
 
 /// <summary>
@@ -11782,6 +11668,54 @@ public enum MediaStreamTrackState
 }
 
 /// <summary>
+/// readyState of type RTCDataChannelState, readonly
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
+/// </remarks>
+[Description("@#RTCDataChannelState")]
+[ECMAScript]
+[String]
+public enum RTCDataChannelState
+{
+    /// <summary>
+    /// An RTCDataChannel, created with createDataChannel or dispatched via an RTCDataChannelEvent, MUST initially be in the &quot;connecting&quot; state. When the RTCDataChannel object&apos;s underlying data transport is ready, the user agent MUST announce the RTCDataChannel as open .
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate-connecting">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
+    /// </remarks>
+    [Description("@#connecting")]
+    Connecting = 0,
+
+    /// <summary>
+    /// An RTCDataChannel, created with createDataChannel or dispatched via an RTCDataChannelEvent, MUST initially be in the &quot;connecting&quot; state. When the RTCDataChannel object&apos;s underlying data transport is ready, the user agent MUST announce the RTCDataChannel as open .
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate-open">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
+    /// </remarks>
+    [Description("@#open")]
+    Open = 1,
+
+    /// <summary>
+    /// If channel.ReadyState is &quot;closing&quot; or &quot;closed&quot;, abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate-closing">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
+    /// </remarks>
+    [Description("@#closing")]
+    Closing = 2,
+
+    /// <summary>
+    /// Give channel a new ID generated according to RFC8832. If no available ID could be generated, set channel.ReadyState to &quot;closed&quot;, and add channnel to errorList.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate-closed">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
+    /// </remarks>
+    [Description("@#closed")]
+    Closed = 3
+}
+
+/// <summary>
 /// redEyeReduction
 /// </summary>
 /// <remarks>
@@ -11818,6 +11752,96 @@ public enum RedEyeReduction
 }
 
 /// <summary>
+/// relayProtocol of type RTCIceServerTransportProtocol, readonly, nullable
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceservertransportprotocol">WebRTC: Real-Time Communication in Browsers: 4.8.1.5 RTCIceServerTransportProtocol Enum</see>
+/// </remarks>
+[Description("@#RTCIceServerTransportProtocol")]
+[ECMAScript]
+[String]
+public enum RTCIceServerTransportProtocol
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceservertransportprotocol-udp">WebRTC: Real-Time Communication in Browsers: 4.8.1.5 RTCIceServerTransportProtocol Enum</see>
+    /// </summary>
+    [Description("@#udp")]
+    Udp = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceservertransportprotocol-tcp">WebRTC: Real-Time Communication in Browsers: 4.8.1.5 RTCIceServerTransportProtocol Enum</see>
+    /// </summary>
+    [Description("@#tcp")]
+    Tcp = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceservertransportprotocol-tls">WebRTC: Real-Time Communication in Browsers: 4.8.1.5 RTCIceServerTransportProtocol Enum</see>
+    /// </summary>
+    [Description("@#tls")]
+    Tls = 2
+}
+
+/// <summary>
+/// role of type RTCIceRole, readonly
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicerole">WebRTC: Real-Time Communication in Browsers: 5.6.5 RTCIceRole Enum</see>
+/// </remarks>
+[Description("@#RTCIceRole")]
+[ECMAScript]
+[String]
+public enum RTCIceRole
+{
+    /// <summary>
+    /// If IceRole is not unknown, do not modify IceRole.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicerole-unknown">WebRTC: Real-Time Communication in Browsers: 5.6.5 RTCIceRole Enum</see>
+    /// </remarks>
+    [Description("@#unknown")]
+    Unknown = 0,
+
+    /// <summary>
+    /// If description is a local offer, set it to controlling.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicerole-controlling">WebRTC: Real-Time Communication in Browsers: 5.6.5 RTCIceRole Enum</see>
+    /// </remarks>
+    [Description("@#controlling")]
+    Controlling = 1,
+
+    /// <summary>
+    /// If description is a remote offer, and does not contain a=ice-lite, set IceRole to controlled.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicerole-controlled">WebRTC: Real-Time Communication in Browsers: 5.6.5 RTCIceRole Enum</see>
+    /// </remarks>
+    [Description("@#controlled")]
+    Controlled = 2
+}
+
+/// <summary>
+/// rtcpMuxPolicy of type RTCRtcpMuxPolicy, defaulting to &quot;require&quot;.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpmuxpolicy">WebRTC: Real-Time Communication in Browsers: 4.2.5 RTCRtcpMuxPolicy Enum</see>
+/// </remarks>
+[Description("@#RTCRtcpMuxPolicy")]
+[ECMAScript]
+[String]
+public enum RTCRtcpMuxPolicy
+{
+    /// <summary>
+    /// rtcpMuxPolicy of type RTCRtcpMuxPolicy, defaulting to &quot;require&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpmuxpolicy-require">WebRTC: Real-Time Communication in Browsers: 4.2.5 RTCRtcpMuxPolicy Enum</see>
+    /// </remarks>
+    [Description("@#require")]
+    Require = 0
+}
+
+/// <summary>
 /// selfBrowserSurface of type SelfCapturePreferenceEnum
 /// </summary>
 /// <remarks>
@@ -11839,6 +11863,165 @@ public enum SelfCapturePreferenceEnum
     /// </summary>
     [Description("@#exclude")]
     Exclude = 1
+}
+
+/// <summary>
+/// signalingState of type RTCSignalingState, readonly
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
+/// </remarks>
+[Description("@#RTCSignalingState")]
+[ECMAScript]
+[String]
+public enum RTCSignalingState
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-stable">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
+    /// </summary>
+    [Description("@#stable")]
+    Stable = 0,
+
+    /// <summary>
+    /// If description is of type &quot;offer&quot;, set connection.PendingLocalDescription to a new RTCSessionDescription object constructed from description, set connection.SignalingState to &quot;have-local-offer&quot;, and release early candidates .
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-have-local-offer">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
+    /// </remarks>
+    [Description("@#have-local-offer")]
+    HaveLocalOffer = 1,
+
+    /// <summary>
+    /// If description is of type &quot;offer&quot;, set connection.PendingRemoteDescription attribute to a new RTCSessionDescription object constructed from description, and set connection.SignalingState to &quot;have-remote-offer&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-have-remote-offer">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
+    /// </remarks>
+    [Description("@#have-remote-offer")]
+    HaveRemoteOffer = 2,
+
+    /// <summary>
+    /// If description.type is &quot;rollback&quot; and connection.SignalingState is either &quot;stable&quot;, &quot;have-local-pranswer&quot;, or &quot;have-remote-pranswer&quot;, then reject p with a newly exception/created InvalidStateError and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-have-local-pranswer">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
+    /// </remarks>
+    [Description("@#have-local-pranswer")]
+    HaveLocalPranswer = 3,
+
+    /// <summary>
+    /// If description.type is &quot;rollback&quot; and connection.SignalingState is either &quot;stable&quot;, &quot;have-local-pranswer&quot;, or &quot;have-remote-pranswer&quot;, then reject p with a newly exception/created InvalidStateError and abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-have-remote-pranswer">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
+    /// </remarks>
+    [Description("@#have-remote-pranswer")]
+    HaveRemotePranswer = 4,
+
+    /// <summary>
+    /// Set connection.SignalingState to &quot;closed&quot;. This does not fire any event.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate-closed">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
+    /// </remarks>
+    [Description("@#closed")]
+    Closed = 5
+}
+
+/// <summary>
+/// state of type RTCDtlsTransportState, readonly
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
+/// </remarks>
+[Description("@#RTCDtlsTransportState")]
+[ECMAScript]
+[String]
+public enum RTCDtlsTransportState
+{
+    /// <summary>
+    /// In the &quot;connecting&quot; state, one or more RTCIceTransports are in the &quot;new&quot; or &quot;checking&quot; state, or one or more RTCDtlsTransports are in the &quot;new&quot; or &quot;connecting&quot; state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-new">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
+    /// </remarks>
+    [Description("@#new")]
+    New = 0,
+
+    /// <summary>
+    /// In the &quot;connecting&quot; state, one or more RTCIceTransports are in the &quot;new&quot; or &quot;checking&quot; state, or one or more RTCDtlsTransports are in the &quot;new&quot; or &quot;connecting&quot; state.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-connecting">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
+    /// </remarks>
+    [Description("@#connecting")]
+    Connecting = 1,
+
+    /// <summary>
+    /// If newState is connected then let newRemoteCertificates be the certificate chain in use by the remote side, with each certificate encoded in binary Distinguished Encoding Rules (DER) !X690, and set transport.RemoteCertificates to newRemoteCertificates.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-connected">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
+    /// </remarks>
+    [Description("@#connected")]
+    Connected = 2,
+
+    /// <summary>
+    /// Set the DtlsTransportState slot of each of connection&apos;s RTCDtlsTransports to &quot;closed&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-closed">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
+    /// </remarks>
+    [Description("@#closed")]
+    Closed = 3,
+
+    /// <summary>
+    /// If the state of transport is already &quot;failed&quot;, abort these steps.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate-failed">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
+    /// </remarks>
+    [Description("@#failed")]
+    Failed = 4
+}
+
+/// <summary>
+/// state of type RTCSctpTransportState, readonly
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransportstate">WebRTC: Real-Time Communication in Browsers: 6.1.2 RTCSctpTransportState Enum</see>
+/// </remarks>
+[Description("@#RTCSctpTransportState")]
+[ECMAScript]
+[String]
+public enum RTCSctpTransportState
+{
+    /// <summary>
+    /// If description is of type &quot;offer&quot;, and it describes an SCTP association as defined in RFC8841 Section 10.2, and connection.SctpTransport is null, set connection.SctpTransport to the result of create an RTCSctpTransport|creating an RTCSctpTransport with an initial state of &quot;connecting&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#idl-def-RTCSctpTransportState.connecting">WebRTC: Real-Time Communication in Browsers: 6.1.2 RTCSctpTransportState Enum</see>
+    /// </remarks>
+    [Description("@#connecting")]
+    Connecting = 0,
+
+    /// <summary>
+    /// If the DataChannelId slot is not null, transport is in the &quot;connected&quot; state and DataChannelId is greater or equal to transport.MaxChannels, exception/throw an OperationError.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#idl-def-RTCSctpTransportState.connected">WebRTC: Real-Time Communication in Browsers: 6.1.2 RTCSctpTransportState Enum</see>
+    /// </remarks>
+    [Description("@#connected")]
+    Connected = 1,
+
+    /// <summary>
+    /// If connection.SctpTransport is not null, tear down the underlying SCTP association by sending an SCTP ABORT chunk and set the SctpTransportState to &quot;closed&quot;.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#idl-def-RTCSctpTransportState.closed">WebRTC: Real-Time Communication in Browsers: 6.1.2 RTCSctpTransportState Enum</see>
+    /// </remarks>
+    [Description("@#closed")]
+    Closed = 2
 }
 
 /// <summary>
@@ -11929,6 +12112,75 @@ public enum SystemAudioPreferenceEnum
     /// </summary>
     [Description("@#exclude")]
     Exclude = 1
+}
+
+/// <summary>
+/// tcpType of type RTCIceTcpCandidateType, readonly, nullable
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetcpcandidatetype">WebRTC: Real-Time Communication in Browsers: 4.8.1.3 RTCIceTcpCandidateType Enum</see>
+/// </remarks>
+[Description("@#RTCIceTcpCandidateType")]
+[ECMAScript]
+[String]
+public enum RTCIceTcpCandidateType
+{
+    /// <summary>
+    /// The user agent will typically only gather active ICE TCP candidates.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetcpcandidatetype-active">WebRTC: Real-Time Communication in Browsers: 4.8.1.3 RTCIceTcpCandidateType Enum</see>
+    /// </remarks>
+    [Description("@#active")]
+    Active = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetcpcandidatetype-passive">WebRTC: Real-Time Communication in Browsers: 4.8.1.3 RTCIceTcpCandidateType Enum</see>
+    /// </summary>
+    [Description("@#passive")]
+    Passive = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetcpcandidatetype-so">WebRTC: Real-Time Communication in Browsers: 4.8.1.3 RTCIceTcpCandidateType Enum</see>
+    /// </summary>
+    [Description("@#so")]
+    So = 2
+}
+
+/// <summary>
+/// type of type RTCIceCandidateType, readonly, nullable
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
+/// </remarks>
+[Description("@#RTCIceCandidateType")]
+[ECMAScript]
+[String]
+public enum RTCIceCandidateType
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype-host">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
+    /// </summary>
+    [Description("@#host")]
+    Host = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype-srflx">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
+    /// </summary>
+    [Description("@#srflx")]
+    Srflx = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype-prflx">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
+    /// </summary>
+    [Description("@#prflx")]
+    Prflx = 2,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype-relay">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
+    /// </summary>
+    [Description("@#relay")]
+    Relay = 3
 }
 
 /// <summary>

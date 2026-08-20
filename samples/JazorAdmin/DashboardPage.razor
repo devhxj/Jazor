@@ -1,113 +1,119 @@
 @* Administration overview with real session and platform statistics. 管理首页：会话与平台两级真实统计数据。 *@
 @inherits AppComponentBase
 
-<section class="ja-starter-dashboard" data-dashboard="administration" data-starter-page="dashboard-base">
+<section class="ja-page" data-dashboard="administration">
     @if (error is not null)
     {
-        <p class="ja-management__error" role="alert">@error</p>
+        <TAlert Theme="@TAlertThemeValue.Error" MessageValue="@error" role="alert" />
     }
-    <div class="ja-starter-dashboard__metrics" aria-label="@L("Administration overview", "管理概览")">
-        <TCard Bordered="false" CssClass="@(C("ja-starter-metric"))">
-            <div class="ja-starter-metric__label"><span>@L("Organizations", "组织总数")</span><TIcon Name="tree-square-dot" Size="20px" /></div>
-            <strong>@(overview?.Organizations ?? 0)</strong>
-            <div class="ja-starter-metric__footer"><span>@(Session?.Organizations.Length ?? 0) @L("in this session", "当前会话可用")</span></div>
-        </TCard>
-        <TCard Bordered="false" CssClass="@(C("ja-starter-metric"))">
-            <div class="ja-starter-metric__label"><span>@L("Platform roles", "平台角色")</span><TIcon Name="secured" Size="20px" /></div>
-            <strong>@(overview?.PlatformRoles ?? 0)</strong>
-            <div class="ja-starter-metric__footer"><span>@(overview?.OrganizationRoles ?? 0) @L("organization roles", "组织角色")</span></div>
-        </TCard>
-        <TCard Bordered="false" CssClass="@(C("ja-starter-metric"))">
-            <div class="ja-starter-metric__label"><span>@L("Accounts", "平台账户")</span><TIcon Name="usergroup" Size="20px" /></div>
-            <strong>@(overview?.Accounts ?? 0)</strong>
-            <div class="ja-starter-metric__footer"><span>@(overview?.EnabledAccounts ?? 0) @L("enabled", "已启用")</span></div>
-        </TCard>
-        <TCard Bordered="false" CssClass="@(C("ja-starter-metric"))">
-            <div class="ja-starter-metric__label"><span>@L("Current organization", "当前组织")</span><TIcon Name="location" Size="20px" /></div>
-            <strong class="is-code">@(SelectedOrganization?.Code ?? L("None", "未选择"))</strong>
-            <div class="ja-starter-metric__footer"><span>@(SelectedOrganization?.DisplayName ?? L("Choose from the header", "请从页头选择"))</span></div>
-        </TCard>
-    </div>
 
-    <div class="ja-starter-dashboard__analysis">
-        <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-chart-card"))">
-            <header class="ja-starter-card__header">
-                <div><h2>@L("Administration activity", "管理活动趋势")</h2><p>@L("Quartz task executions over the last 7 days (UTC)", "近 7 天 Quartz 任务执行情况（UTC）")</p></div>
-                <div class="ja-starter-segments" role="group" aria-label="@L("Period", "统计周期")"><button class="is-selected">@L("Last 7 days", "近 7 天")</button></div>
-            </header>
-            <div class="ja-starter-chart" role="img" aria-label="@L("Administration activity bar chart", "管理活动柱状图")">
-                <div class="ja-starter-chart__axis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
-                <div class="ja-starter-chart__plot" data-chart-loading="@(loading ? "true" : "false")">
-                    @if (loading)
-                    {
-                        <p class="ja-management__loading" aria-live="polite">@L("Loading execution history", "正在加载执行记录")</p>
-                    }
-                    else if (overview?.RecentRuns is { Length: > 0 } runs)
-                    {
-                        @foreach (var run in runs)
-                        {
-                            <div><i style="height:@(ToChartHeight(run.Succeeded))%"></i><b style="height:@(ToChartHeight(run.Failed))%"></b><span>@ToDayLabel(run.Date)</span></div>
-                        }
-                    }
-                </div>
-            </div>
-            <div class="ja-starter-chart__legend"><span><i class="is-primary"></i>@L("Succeeded", "成功")</span><span><i class="is-secondary"></i>@L("Failed", "失败")</span></div>
-        </TCard>
-
-        <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-distribution"))">
-            <header class="ja-starter-card__header"><div><h2>@L("Access distribution", "访问分布")</h2><p>@L("Platform resource dimensions", "平台资源维度")</p></div></header>
-            <div class="ja-starter-donut" aria-hidden="true"><span>@((overview?.Organizations ?? 0) + (overview?.PlatformRoles ?? 0) + (overview?.Applications ?? 0))<small>@L("items", "项")</small></span></div>
-            <dl>
-                <div><dt><i class="is-brand"></i>@L("Organizations", "组织")</dt><dd>@(overview?.Organizations ?? 0)</dd></div>
-                <div><dt><i class="is-cyan"></i>@L("OpenID applications", "OpenID 应用")</dt><dd>@(overview?.Applications ?? 0)</dd></div>
-                <div><dt><i class="is-gray"></i>@L("Scopes", "Scope")</dt><dd>@(overview?.Scopes ?? 0)</dd></div>
-            </dl>
-        </TCard>
-    </div>
-
-    <div class="ja-starter-dashboard__rankings">
-        <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-rank"))">
-            <header class="ja-starter-card__header"><div><h2>@L("Organization access", "组织访问")</h2><p>@L("Organizations available to this account", "当前账号可管理的组织")</p></div><TIcon Name="more" Size="20px" /></header>
-            <table><thead><tr><th>#</th><th>@L("Organization", "组织")</th><th>@L("Code", "编码")</th><th>@L("Status", "状态")</th></tr></thead><tbody>
-                @if (Session?.Organizations is { Length: > 0 } organizations)
-                {
-                    @foreach (var organization in organizations)
-                    {
-                        <tr><td><span class="ja-starter-rank__index">#</span></td><td>@organization.DisplayName</td><td><code>@organization.Code</code></td><td><span class="ja-starter-status is-success">@L("Available", "可用")</span></td></tr>
-                    }
-                }
-                else
-                {
-                    <tr><td colspan="4" class="ja-starter-empty">@L("No organizations assigned", "尚未分配组织")</td></tr>
-                }
-            </tbody></table>
-        </TCard>
-
-        <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-rank"))">
-            <header class="ja-starter-card__header"><div><h2>@L("Access profile", "访问配置")</h2><p>@L("Effective platform roles", "当前生效的平台角色")</p></div><TIcon Name="more" Size="20px" /></header>
-            <table><thead><tr><th>#</th><th>@L("Role", "角色")</th><th>@L("Scope", "范围")</th><th>@L("Status", "状态")</th></tr></thead><tbody>
-                @if (Session?.Roles is { Length: > 0 } roles)
-                {
-                    @foreach (var role in roles)
-                    {
-                        <tr><td><span class="ja-starter-rank__index">#</span></td><td>@role</td><td>@L("Platform", "平台")</td><td><span class="ja-starter-status is-success">@L("Effective", "生效")</span></td></tr>
-                    }
-                }
-                else
-                {
-                    <tr><td colspan="4" class="ja-starter-empty">@L("No platform roles assigned", "尚未分配平台角色")</td></tr>
-                }
-            </tbody></table>
-        </TCard>
-    </div>
-
-    <TCard Bordered="false" CssClass="@(C("ja-starter-card", "ja-starter-output"))">
-        <header class="ja-starter-card__header"><div><h2>@L("Service overview", "服务概览")</h2><p>@L("Production paths exercised by JazorAdmin", "JazorAdmin 已接入的生产链路")</p></div></header>
-        <div class="ja-starter-output__grid">
-            <article><TIcon Name="user-safety" Size="22px" /><div><strong>Identity</strong><span>@L("Local accounts and sessions", "本地账号与会话")</span></div><em>@(overview is null ? "--" : (overview.EnabledAccounts + "/" + overview.Accounts))</em></article>
-            <article><TIcon Name="link" Size="22px" /><div><strong>OpenIddict</strong><span>@L("SSO applications and grants", "SSO 应用与授权")</span></div><em>@(overview is null ? "--" : overview.Applications.ToString())</em></article>
-            <article><TIcon Name="setting-1" Size="22px" /><div><strong>Quartz</strong><span>@L("Scheduled operations", "计划任务与执行记录")</span></div><em>@(overview is null ? "--" : (overview.EnabledSchedules + "/" + overview.Schedules))</em></article>
-            <article><TIcon Name="server" Size="22px" /><div><strong>RazorVue</strong><span>@L("Package-contained frontend", "包内自包含前端")</span></div><em>@L("Online", "在线")</em></article>
+    <div class="ja-dash__metrics" aria-label="@L("Platform operations", "平台运营")" data-metric-count="4">
+        <div class="ja-metric" data-metric="active-applications">
+            <VueUiKpi Dataset="@(overview?.Applications ?? 0)" Config="@ApplicationKpiConfig" />
+            <div class="ja-metric__footer"><span>@(overview?.PortalApplications.Length ?? 0) @L("portal entries enabled", "个门户入口已启用")</span></div>
         </div>
-    </TCard>
+        <div class="ja-metric" data-metric="sign-ins">
+            <VueUiKpi Dataset="@TotalSignIns" Config="@SignInKpiConfig" />
+            <div class="ja-metric__footer"><span>@L("interactive authorization-code requests", "交互式授权码请求")</span></div>
+        </div>
+        <div class="ja-metric" data-metric="token-issuances">
+            <VueUiKpi Dataset="@(overview?.TokenIssuances ?? 0)" Config="@TokenKpiConfig" />
+            <div class="ja-metric__footer"><span>@L("access, refresh, and authorization code", "访问、刷新与授权码")</span></div>
+        </div>
+        <div class="ja-metric" data-metric="audit-events">
+            <VueUiKpi Dataset="@(overview?.AuditEvents ?? 0)" Config="@AuditKpiConfig" />
+            <div class="ja-metric__footer"><span>@L("recorded in the last 7 days", "近 7 天已记录")</span></div>
+        </div>
+    </div>
+
+    <div class="ja-dash__analysis">
+        <section class="ja-panel">
+            <header class="ja-panel__header">
+                <div><h2>@L("Sign-in trend", "登录趋势")</h2><p>@L("Interactive authorization-code events over the last 7 days (UTC)", "近 7 天交互式授权码事件（UTC）")</p></div>
+            </header>
+            <div class="ja-chart-host" role="img" aria-label="@L("Sign-in trend bar chart", "登录趋势柱状图")" data-login-trend="true">
+                <TLoading Loading="@loading" TextValue="@L("Loading audit history", "正在加载审计记录")">
+                    <ContentSlot>
+                        <VueUiVerticalBar Dataset="@SignInTrendItems" Config="@SignInTrendConfig" />
+                    </ContentSlot>
+                </TLoading>
+            </div>
+        </section>
+
+        <section class="ja-panel">
+            <header class="ja-panel__header"><div><h2>@L("Platform inventory", "平台资源概览")</h2><p>@L("Accounts, applications, and issued tokens", "账号、应用与已签发令牌")</p></div></header>
+            <div class="ja-chart-host">
+                <VueUiDonut Dataset="@DistributionItems" Config="@DistributionConfig" />
+            </div>
+        </section>
+    </div>
+
+    @if (overview?.PortalApplications is { Length: > 0 } portalApplications)
+    {
+        <section class="ja-portal" aria-labelledby="portal-applications-title" data-portal="applications">
+            <header class="ja-panel__header">
+                <div><h2 id="portal-applications-title">@L("Application portal", "应用门户")</h2><p>@L("Registered downstream applications available to this platform session", "当前平台会话可进入的已注册下游应用")</p></div>
+            </header>
+            <div class="ja-portal__grid">
+                @foreach (var application in portalApplications)
+                {
+                    <TCard CssClass="@("ja-portal__card")"
+                           TitleValue="@application.DisplayName"
+                           SubtitleValue="@application.ClientId"
+                           Bordered="@true"
+                           HoverShadow="@true"
+                           data-portal-app="@application.ClientId">
+                        <ContentSlot>
+                            <div class="ja-portal__body">
+                                <VuAppWindow Size="24px" />
+                                <span>@L("Single sign-on with authorization code + PKCE", "通过授权码 + PKCE 单点登录")</span>
+                                <a class="ja-portal__launch"
+                                   data-portal-launch="@application.ClientId"
+                                   href="@application.LaunchUri"
+                                   target="_blank"
+                                   rel="noreferrer">
+                                    <span>@L("Open application", "打开应用")</span>
+                                    <VuArrowUpRight Size="16px" />
+                                </a>
+                            </div>
+                        </ContentSlot>
+                    </TCard>
+                }
+            </div>
+        </section>
+    }
+
+    <div class="ja-dash__rankings">
+        <section class="ja-panel">
+            <header class="ja-panel__header"><div><h2>@L("Organization access", "组织访问")</h2><p>@L("Organizations available to this account", "当前账号可管理的组织")</p></div></header>
+            <TLoading Loading="@loading" TextValue="@L("Loading organization access", "正在加载组织访问")">
+                <ContentSlot>
+                    <AdminOrganizationSummaryTable Data="@OrganizationRows"
+                                Columns="@OrganizationColumns"
+                                RowKey="Id" />
+                </ContentSlot>
+            </TLoading>
+        </section>
+
+        <section class="ja-panel">
+            <header class="ja-panel__header"><div><h2>@L("Access profile", "访问配置")</h2><p>@L("Effective platform roles", "当前生效的平台角色")</p></div></header>
+            <TLoading Loading="@loading" TextValue="@L("Loading access profile", "正在加载访问配置")">
+                <ContentSlot>
+                    <AdminDashboardRoleTable Data="@RoleRows"
+                                             Columns="@RoleColumns"
+                                             RowKey="Code" />
+                </ContentSlot>
+            </TLoading>
+        </section>
+    </div>
+
+    <section class="ja-panel">
+        <header class="ja-panel__header"><div><h2>@L("Service overview", "服务概览")</h2><p>@L("Production paths exercised by JazorAdmin", "JazorAdmin 已接入的生产链路")</p></div></header>
+        <div class="ja-dash__output">
+            <article><VuUser Size="22px" /><div><strong>Identity</strong><span>@L("Local accounts and sessions", "本地账号与会话")</span></div><em>@(overview is null ? "--" : (overview.EnabledAccounts + "/" + overview.Accounts))</em></article>
+            <article><VuAppWindow Size="22px" /><div><strong>Applications</strong><span>@L("Registered OpenID clients", "已注册 OpenID 客户端")</span></div><em>@(overview is null ? "--" : overview.Applications.ToString())</em></article>
+            <article><VuChartLine Size="22px" /><div><strong>Audit</strong><span>@L("Protocol and management activity", "协议与管理操作")</span></div><em>@(overview is null ? "--" : overview.AuditEvents.ToString())</em></article>
+            <article><VuServer Size="22px" /><div><strong>RazorVue</strong><span>@L("Package-contained frontend", "包内自包含前端")</span></div><em>@L("Online", "在线")</em></article>
+        </div>
+    </section>
 </section>

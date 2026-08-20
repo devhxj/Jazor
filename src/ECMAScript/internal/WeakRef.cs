@@ -16,9 +16,9 @@ namespace ECMAScript;
 public sealed class WeakRef
 {
 	/// <summary>
-/// Gets JavaScript <c>WeakRef.prototype</c> object.
-/// This stays on the constructor host to preserve the runtime host boundary in the public API.
-/// 获取 JavaScript <c>WeakRef.prototype</c> 对象；保留在构造器宿主上以维持公开 API 的运行时宿主边界。
+	/// Gets JavaScript <c>WeakRef.prototype</c> object.
+	/// This stays on the constructor host to preserve the runtime host boundary in the public API.
+	/// 获取 JavaScript <c>WeakRef.prototype</c> 对象；保留在构造器宿主上以维持公开 API 的运行时宿主边界。
 	/// </summary>
 	[Description("@#prototype")]
 	public extern static WeakRef Prototype { get; }
@@ -27,9 +27,9 @@ public sealed class WeakRef
 	public extern WeakRef(object target);
 
 	/// <summary>
-/// Returns the weak-reference target when it remains available.
-/// JavaScript returns <c>undefined</c> after collection; this C# projection represents that absent value as <see langword="null"/>.
-/// 当弱引用目标仍可用时返回它；JavaScript 在回收后返回 <c>undefined</c>，此 C# 投影将该缺失值表示为 <see langword="null"/>。
+	/// Returns the weak-reference target when it remains available.
+	/// JavaScript returns <c>undefined</c> after collection; this C# projection represents that absent value as <see langword="null"/>.
+	/// 当弱引用目标仍可用时返回它；JavaScript 在回收后返回 <c>undefined</c>，此 C# 投影将该缺失值表示为 <see langword="null"/>。
 	/// </summary>
 	/// <returns>The target, or <see langword="null"/> when unavailable. 目标；不可用时为 <see langword="null"/>。</returns>
 	[Description("@#deref")]
@@ -49,9 +49,9 @@ public sealed class WeakRef<T> where T : class
 	public extern WeakRef(T target);
 
 	/// <summary>
-/// Returns the weak-reference target when it remains available.
-/// JavaScript returns <c>undefined</c> after collection; this C# projection represents that absent value as <see langword="null"/>.
-/// 当弱引用目标仍可用时返回它；JavaScript 在回收后返回 <c>undefined</c>，此 C# 投影将该缺失值表示为 <see langword="null"/>。
+	/// Returns the weak-reference target when it remains available.
+	/// JavaScript returns <c>undefined</c> after collection; this C# projection represents that absent value as <see langword="null"/>.
+	/// 当弱引用目标仍可用时返回它；JavaScript 在回收后返回 <c>undefined</c>，此 C# 投影将该缺失值表示为 <see langword="null"/>。
 	/// </summary>
 	/// <returns>The target, or <see langword="null"/> when unavailable. 目标；不可用时为 <see langword="null"/>。</returns>
 	[Description("@#deref")]
