@@ -41,6 +41,8 @@ public enum Sense
     // ===== Block 上下文 =====
     /// <summary>函数体上下文（方法、Lambda、局部函数、构造函数）</summary>
     FunctionBody,
+    /// <summary>表达式体成员根；保留表达式 lowering 的根作用域，同时标记可直接物化的根语句。</summary>
+    ExpressionBody,
     /// <summary>静态初始化块上下文</summary>
     StaticBlock,
     /// <summary>嵌套块上下文</summary>

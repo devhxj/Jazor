@@ -7622,7 +7622,7 @@ public class FileSystemFileHandle : FileSystemHandle
     /// <code>file = await fileHandle.getFile()</code>
     /// </example>
     [Description("@#getFile")]
-    public extern PromiseResult<JSFile> GetFile();
+    public extern PromiseResult<JazorFile> GetFile();
 
     /// <summary>
     /// <see href="https://fs.spec.whatwg.org/#dom-filesystemfilehandle-createwritable">File System Standard: 2.3.2 The createWritable() method</see>
@@ -10229,7 +10229,7 @@ public class ElementInternals
     /// <code>internals.setFormValue(value)</code>
     /// </example>
     [Description("@#setFormValue")]
-    public extern void SetFormValue(ElementInternalsSetFormValue? value, JSFile state);
+    public extern void SetFormValue(ElementInternalsSetFormValue? value, JazorFile state);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/custom-elements.html#dom-elementinternals-setformvalue">HTML Standard: 4.13.7.3 Form-associated custom elements</see>
@@ -10774,7 +10774,7 @@ public partial class DataTransferItem
     /// <code>file = item.getAsFile()✔MDNDataTransferItem/getAsFileSupport in all current engines.Firefox50+Safari5.1+Chrome11+Opera12+Edge79+Edge (Legacy)12+Internet ExplorerNoFirefox Android?Safari iOS?Chrome Android?WebView Android4+Samsung Internet?Opera Android14+</code>
     /// </example>
     [Description("@#getAsFile")]
-    public extern JSFile? GetAsFile();
+    public extern JazorFile? GetAsFile();
 }
 
 /// <summary>
@@ -10812,7 +10812,7 @@ public class DataTransferItemList
     /// <code>items.add(data)✔MDNDataTransferItemList/addSupport in all current engines.Firefox50+Safari6+Chrome13+Opera12+Edge79+Edge (Legacy)12+Internet ExplorerNoFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android14+</code>
     /// </example>
     [Description("@#add")]
-    public extern DataTransferItem? Add(JSFile data);
+    public extern DataTransferItem? Add(JazorFile data);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransferitemlist-remove">HTML Standard: 6.11.3.1 The DataTransferItemList interface</see>
@@ -25974,7 +25974,7 @@ public class NavigatorLogin
 /// </summary>
 [ECMAScript]
 [Description("@#File")]
-public partial class JSFile(BlobPart[] blobParts, BlobPropertyBag options) : Blob(blobParts, options)
+public partial class JazorFile(BlobPart[] blobParts, BlobPropertyBag options) : Blob(blobParts, options)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/entries-api/#dom-file-webkitrelativepath">File and Directory Entries API: 4 The File Interface</see>
@@ -25991,7 +25991,7 @@ public partial class JSFile(BlobPart[] blobParts, BlobPropertyBag options) : Blo
     /// <param name="fileBits"><see href="https://w3c.github.io/FileAPI/#dfn-fileBits">File API: 4.1.1 Constructor Parameters</see></param>
     /// <param name="fileName"><see href="https://w3c.github.io/FileAPI/#dfn-fileName">File API: 4.1.1 Constructor Parameters</see></param>
     /// <param name="options"><see href="https://w3c.github.io/FileAPI/#dom-file-file-filebits-filename-options-options">File API: 4 The File Interface</see></param>
-    public extern JSFile(BlobPart[] fileBits, string fileName, FilePropertyBag? options = default);
+    public extern JazorFile(BlobPart[] fileBits, string fileName, FilePropertyBag? options = default);
 
     /// <summary>
     /// The name of the file. On getting, this must return the name of the file as a string. There are numerous file name variations and conventions used by different underlying OS file systems; this is merely the name of the file, without path information. On getting, if user agents cannot make this information available, they must return the empty string. If a File object is created using a constructor, further normative conditions for this attribute are found in #file-constructor.
@@ -61630,7 +61630,7 @@ public class FileList
     /// </summary>
     /// <param name="index"><see href="https://w3c.github.io/FileAPI/#dfn-index">File API: 5.2 Methods and Parameters</see></param>
     [Description("@#item")]
-    public extern JSFile? GetItem(uint index);
+    public extern JazorFile? GetItem(uint index);
 
     /// <summary>
     /// <see href="https://w3c.github.io/FileAPI/#dfn-length">File API: 5.1 Attributes</see>

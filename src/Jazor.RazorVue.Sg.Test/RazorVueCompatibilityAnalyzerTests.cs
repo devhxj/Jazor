@@ -553,6 +553,229 @@ public sealed class RazorVueCompatibilityAnalyzerTests
     }
 
     [TestMethod]
+    public async Task RazorAuthoringScanner_HandlesDirectiveClassificationMarkupBoundariesAndComponentContracts()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/Scanner.razor.cs",
+                """
+                using System;
+
+                namespace Microsoft.AspNetCore.Components
+                {
+                    [AttributeUsage(AttributeTargets.Property)]
+                    public sealed class InjectAttribute : Attribute;
+
+                    [AttributeUsage(AttributeTargets.Property)]
+                    public sealed class CascadingParameterAttribute : Attribute;
+
+                    public abstract class ComponentBase;
+
+                    public interface IComponent;
+
+                    public class NavigationManager;
+
+                    public interface IComponentActivator;
+
+                    public struct ParameterView
+                    {
+                        public bool TryGetValue<T>(string name, out T value)
+                        {
+                            value = default!;
+                            return false;
+                        }
+
+                        public object ToDictionary() => new object();
+
+                        public Enumerator GetEnumerator() => default;
+
+                        public struct Enumerator
+                        {
+                            public object Current => new object();
+
+                            public bool MoveNext() => false;
+                        }
+                    }
+                }
+
+                namespace Microsoft.AspNetCore.Http
+                {
+                    public abstract class HttpContext;
+
+                    public interface IHttpContextAccessor;
+                }
+
+                namespace Microsoft.EntityFrameworkCore
+                {
+                    public abstract class DbContext;
+                }
+
+                namespace Microsoft.AspNetCore.Components.Forms
+                {
+                    public sealed class InputFile;
+
+                    public abstract class InputBase<T>;
+                }
+
+                namespace Demo
+                {
+                    public sealed class Db : Microsoft.EntityFrameworkCore.DbContext;
+
+                    public sealed class DerivedContext : Microsoft.AspNetCore.Http.HttpContext;
+
+                    public sealed class Accessor : Microsoft.AspNetCore.Http.IHttpContextAccessor;
+
+                    public sealed class BrowserAdapter : Microsoft.AspNetCore.Components.NavigationManager;
+
+                    public sealed class BrowserUnavailable : Microsoft.AspNetCore.Components.IComponentActivator;
+
+                    public sealed class OtherParameterView
+                    {
+                        public bool TryGetValue<T>(string name, out T value)
+                        {
+                            value = default!;
+                            return false;
+                        }
+                    }
+
+                    public sealed class BranchComponent : Microsoft.AspNetCore.Components.ComponentBase
+                    {
+                        private Microsoft.AspNetCore.Components.ParameterView Values { get; set; }
+
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public Db Database { get; set; } = null!;
+
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public BrowserAdapter Adapter { get; set; } = null!;
+
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public BrowserAdapter ReadOnlyAdapter { get; } = null!;
+
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public BrowserAdapter InitOnlyAdapter { get; init; } = null!;
+
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public static BrowserAdapter StaticAdapter { get; set; } = null!;
+
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public DerivedContext ServerContext { get; set; } = null!;
+
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public Accessor ServerAccessor { get; set; } = null!;
+
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public BrowserUnavailable Unavailable { get; set; } = null!;
+
+                        [Microsoft.AspNetCore.Components.CascadingParameter]
+                        public string InitOnlyCascade { get; init; } = string.Empty;
+
+                        [Microsoft.AspNetCore.Components.CascadingParameter]
+                        public static string StaticCascade { get; set; } = string.Empty;
+
+                        private void Inspect()
+                        {
+                            Values.TryGetValue<string>("name", out _);
+                            Values.ToDictionary();
+                            foreach (var value in (Values))
+                            {
+                            }
+                        }
+                    }
+
+                    public sealed class ContractOnly : Microsoft.AspNetCore.Components.IComponent
+                    {
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public BrowserAdapter ReadOnlyAdapter { get; } = null!;
+                    }
+
+                    public sealed class NotAComponent
+                    {
+                        private Microsoft.AspNetCore.Components.ParameterView Values { get; set; }
+
+                        [Microsoft.AspNetCore.Components.Inject]
+                        public BrowserAdapter ReadOnlyAdapter { get; } = null!;
+
+                        private void Inspect()
+                        {
+                            Values.TryGetValue<string>("name", out _);
+                            foreach (var value in Values)
+                            {
+                            }
+                        }
+                    }
+
+                    public sealed class SameNameComponent : Microsoft.AspNetCore.Components.ComponentBase
+                    {
+                        private OtherParameterView Values { get; set; } = new();
+
+                        private void Inspect()
+                            => Values.TryGetValue<string>("name", out _);
+                    }
+                }
+
+                namespace Demo.First
+                {
+                    public sealed class Duplicate : Microsoft.EntityFrameworkCore.DbContext;
+                }
+
+                namespace Demo.Second
+                {
+                    public sealed class Duplicate : Microsoft.EntityFrameworkCore.DbContext;
+                }
+                """),
+            additionalFiles:
+            [
+                new InMemoryAdditionalText(
+                    "Pages/Scanner.razor",
+                    """
+                       @inject Demo.Db QualifiedDatabase
+                    @inject global::Demo.Db GlobalDatabase
+                    @inject Db SimpleDatabase
+                    @inject\tDemo.Db TabDatabase
+                    @inject Demo.DerivedContext ServerContext
+                    @inject Demo.Accessor ServerAccessor
+                    @inject Demo.BrowserAdapter BrowserAdapter
+                    @inject Demo.BrowserUnavailable BrowserUnavailable
+                    @inject Duplicate AmbiguousDatabase
+                    @inject Demo.Missing UnknownDatabase
+                    @inject System.Collections.Generic.List<Demo.Db> GenericDatabase
+                    @inject Db[] ArrayDatabase
+                    @inject
+                    @injectX Demo.Db NotADirective
+                    <InputFile />
+                    <Demo.InputFile />
+                    <InputBase />
+                    <div title="<InputFile />" data='<InputFile />'>content</div>
+                    @{ var inline = "<InputFile />"; }
+                    @code { var quoted = "{ <InputFile /> }"; }
+                    @functions { var escaped = "\\\"<InputFile />"; }
+                    </InputFile>
+                    <!InputFile>
+                    <?InputFile>
+                    <1InputFile>
+                    """),
+                new InMemoryAdditionalText("Pages/Comment.razor", "<!-- <InputFile /> -->\n@* <InputFile /> *@"),
+                new InMemoryAdditionalText("Pages/UnterminatedHtmlComment.razor", "<!-- <InputFile />"),
+                new InMemoryAdditionalText("Pages/UnterminatedRazorComment.razor", "@* <InputFile />")
+            ],
+            references: RazorSgTestHost.CreateMetadataReferences()
+                .Where(static reference =>
+                    !Path.GetFileName(reference.Display ?? string.Empty)
+                        .StartsWith("Microsoft.AspNetCore", StringComparison.OrdinalIgnoreCase))
+                .ToArray());
+
+        Assert.HasCount(4, diagnostics.Where(static item => item.Id == "JAZORVCA001"));
+        Assert.HasCount(4, diagnostics.Where(static item => item.Id == "JAZORVCA002"));
+        Assert.HasCount(1, diagnostics.Where(static item => item.Id == "JAZORVCA003"));
+        Assert.HasCount(1, diagnostics.Where(static item => item.Id == "JAZORVCA004"));
+        Assert.HasCount(1, diagnostics.Where(static item => item.Id == "JAZORVCA005"));
+        Assert.HasCount(4, diagnostics.Where(static item => item.Id == "JAZORVCA006"));
+        Assert.HasCount(2, diagnostics.Where(static item => item.Id == "JAZORVCA007"));
+        Assert.HasCount(2, diagnostics.Where(static item => item.Id == "JAZORVCA008"));
+        Assert.HasCount(3, diagnostics.Where(static item => item.Id == "JAZORVCA010"));
+    }
+
+    [TestMethod]
     public void DescriptorContract_IsStableAndLinksToBrowserServicesGuidance()
     {
         var descriptor = RazorVueCompatibilityAnalyzer.BrowserIneligibleDbContext;
@@ -575,6 +798,54 @@ public sealed class RazorVueCompatibilityAnalyzerTests
         Assert.HasCount(10, new RazorVueCompatibilityAnalyzer().SupportedDiagnostics);
     }
 
+    [TestMethod]
+    public void RazorDirectiveScanners_KeepWhitespaceAndMarkupBoundariesExplicit()
+    {
+        var source = SourceText.From(
+            """
+               @page /leading
+            @page	/tab
+            @page
+            @pageX /not-a-page
+            @page/without-space
+
+            @inject Demo.Service Service
+            @inject	Demo.OtherService Other
+            @inject
+            @injectX Demo.Ignored Ignored
+            """);
+
+        var pages = InvokeScanner("EnumeratePageDirectives", source)
+            .Select(value => GetScannerProperty<string>(value, "RouteText"))
+            .ToArray();
+        CollectionAssert.AreEqual(new[] { "/leading", "/tab" }, pages);
+
+        var injections = InvokeScanner("EnumerateInjectDirectives", source)
+            .Select(value => GetScannerProperty<string>(value, "TypeName"))
+            .ToArray();
+        CollectionAssert.AreEqual(new[] { "Demo.Service", "Demo.OtherService" }, injections);
+
+        var tags = InvokeScanner(
+                "EnumerateRazorComponentTags",
+                SourceText.From(
+                    """
+                    <InputFile />
+                    <Demo.InputFile />
+                    <InputBase />
+                    <!-- <InputFile /> -->
+                    @* <InputFile /> *@
+                    @code { var ignored = "<InputFile />"; }
+                    <div title="<InputFile />"></div>
+                    </InputFile>
+                    <!InputFile>
+                    <?InputFile>
+                    <1InputFile>
+                    """))
+            .Select(value => GetScannerProperty<string>(value, "TagName"))
+            .ToArray();
+        CollectionAssert.AreEqual(new[] { "InputFile", "InputFile", "InputBase" }, tags);
+    }
+
     private static RazorVueCompatibilityAnalyzerDiagnostic AssertSingleDbContextDiagnostic(
         ImmutableArray<Diagnostic> diagnostics)
     {
@@ -584,6 +855,18 @@ public sealed class RazorVueCompatibilityAnalyzerTests
         Assert.HasCount(1, matches, string.Join(Environment.NewLine, diagnostics));
         return new RazorVueCompatibilityAnalyzerDiagnostic(matches[0]);
     }
+
+    private static IEnumerable<object> InvokeScanner(string methodName, SourceText source)
+    {
+        var method = typeof(RazorVueCompatibilityAnalyzer)
+            .GetMethods(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+            .Single(candidate => candidate.Name == methodName && candidate.GetParameters().Length == 1);
+        return ((System.Collections.IEnumerable)method.Invoke(null, [source])!)
+            .Cast<object>();
+    }
+
+    private static T GetScannerProperty<T>(object value, string propertyName)
+        => (T)value.GetType().GetProperty(propertyName)!.GetValue(value)!;
 
     private static async Task<ImmutableArray<Diagnostic>> AnalyzeAsync(
         SourceFile first,

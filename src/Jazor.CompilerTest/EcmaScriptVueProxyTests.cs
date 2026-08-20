@@ -3763,7 +3763,7 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void ElUploadBeforeUploadResult_TaggedUnion_PreservesExactFileAndBlobBranches()
     {
-        var file = (ECMAScript.Files)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(ECMAScript.Files));
+        var file = (ECMAScript.JazorFile)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(ECMAScript.JazorFile));
         var blob = (Blob)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(Blob));
 
         var boolResult = new ElUploadBeforeUploadResult(true);
@@ -3954,8 +3954,8 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(string), typeof(VuetifyRoundedValue).GetProperty(nameof(VuetifyRoundedValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), typeof(VuetifyProgressCircularIndeterminateValue).GetProperty(nameof(VuetifyProgressCircularIndeterminateValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyProgressCircularIndeterminateMode), typeof(VuetifyProgressCircularIndeterminateValue).GetProperty(nameof(VuetifyProgressCircularIndeterminateValue.AsMode), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(ECMAScript.Files), typeof(VuetifyFileModelValue).GetProperty(nameof(VuetifyFileModelValue.AsFile), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(ECMAScript.Files[]), typeof(VuetifyFileModelValue).GetProperty(nameof(VuetifyFileModelValue.AsFiles), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.JazorFile), typeof(VuetifyFileModelValue).GetProperty(nameof(VuetifyFileModelValue.AsFile), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(ECMAScript.JazorFile[]), typeof(VuetifyFileModelValue).GetProperty(nameof(VuetifyFileModelValue.AsFiles), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
         Assert.AreEqual(typeof(Number[]), typeof(VuetifyRangeSliderModelValue).GetProperty(nameof(VuetifyRangeSliderModelValue.AsArray), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
         Assert.AreEqual(typeof(string[]), typeof(VuetifyRangeSliderModelValue).GetProperty(nameof(VuetifyRangeSliderModelValue.AsStrings), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
         AssertNet11UnionContract(typeof(VuetifyRangeSliderModelValue), typeof(Number[]), typeof(string[]));

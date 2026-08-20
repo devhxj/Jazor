@@ -252,6 +252,73 @@ public sealed class LibraryComponentConventionsTests
         Assert.IsFalse(InvokePrivate<bool>("IsRenderFragment", lookalikeRenderFragment));
     }
 
+    [TestMethod]
+    public void ActivationAndCascadeContracts_HandleNullsInheritanceAndNamedMetadata()
+    {
+        var compilation = CreateCompilation(
+            """
+            #nullable enable
+            using System.Collections.Generic;
+            using Microsoft.AspNetCore.Components;
+
+            namespace Demo;
+
+            public abstract class BaseComponent : ComponentBase
+            {
+                [Inject] public string InheritedService { get; set; } = string.Empty;
+                [CascadingParameter(Name = "named")] public int NamedCascade { get; set; }
+                [CascadingParameter(Name = " ")] public string BlankCascade { get; set; } = string.Empty;
+            }
+
+            public sealed class ChildComponent : BaseComponent
+            {
+                [Inject] public new string InheritedService { get; set; } = string.Empty;
+                [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? Attributes { get; set; }
+                [Parameter(CaptureUnmatchedValues = false)] public string? Normal { get; set; }
+                [Parameter] public string? Unspecified { get; set; }
+                public string Plain { get; set; } = string.Empty;
+            }
+            """);
+        var component = GetNamedType(compilation, "Demo.ChildComponent");
+        var attributes = GetDeclaredProperty(component, "Attributes");
+        var normal = GetDeclaredProperty(component, "Normal");
+        var unspecified = GetDeclaredProperty(component, "Unspecified");
+        var plain = GetDeclaredProperty(component, "Plain");
+        var inheritedInject = LibraryComponentConventions.GetEffectiveInjectProperties(component);
+        var cascades = LibraryComponentConventions.GetEffectiveCascadingParameterProperties(component);
+
+        Assert.IsTrue(LibraryComponentConventions.CapturesUnmatchedValues(attributes));
+        Assert.IsFalse(LibraryComponentConventions.CapturesUnmatchedValues(normal));
+        Assert.IsFalse(LibraryComponentConventions.CapturesUnmatchedValues(unspecified));
+        Assert.IsFalse(LibraryComponentConventions.CapturesUnmatchedValues(plain));
+        Assert.ThrowsExactly<ArgumentNullException>(() => LibraryComponentConventions.CapturesUnmatchedValues(null!));
+
+        Assert.HasCount(1, inheritedInject);
+        Assert.AreEqual("ChildComponent", inheritedInject[0].ContainingType.Name);
+        Assert.IsTrue(LibraryComponentConventions.IsInjectProperty(inheritedInject[0]));
+        Assert.IsFalse(LibraryComponentConventions.IsInjectProperty(plain));
+
+        Assert.HasCount(2, cascades);
+        var named = cascades.Single(static property => property.Name == "NamedCascade");
+        var blank = cascades.Single(static property => property.Name == "BlankCascade");
+        Assert.IsTrue(LibraryComponentConventions.IsCascadingParameterProperty(named));
+        Assert.IsFalse(LibraryComponentConventions.IsCascadingParameterProperty(plain));
+        Assert.AreEqual("named", LibraryComponentConventions.GetCascadingParameterName(named));
+        Assert.IsNull(LibraryComponentConventions.GetCascadingParameterName(blank));
+        Assert.IsNull(LibraryComponentConventions.GetCascadingParameterName(plain));
+        Assert.AreEqual(
+            "jazor:cascade:int:named",
+            LibraryComponentConventions.GetCascadingServiceKey(named));
+        Assert.AreEqual(
+            "jazor:cascade:string:",
+            LibraryComponentConventions.GetCascadingServiceKey(plain.Type));
+        Assert.AreEqual("string", LibraryComponentConventions.GetCascadingTypeKey(plain.Type));
+        Assert.ThrowsExactly<ArgumentNullException>(() => LibraryComponentConventions.GetCascadingServiceKey(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => LibraryComponentConventions.GetCascadingTypeKey(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => LibraryComponentConventions.GetInjectServiceKey(null!));
+        Assert.AreEqual("jazor:service:string", LibraryComponentConventions.GetInjectServiceKey(inheritedInject[0]));
+    }
+
     private static T InvokePrivate<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(LibraryComponentConventions)

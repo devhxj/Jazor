@@ -2576,7 +2576,7 @@ public partial class Element
 
 [ECMAScript]
 [Description("@#Window")]
-public partial class JSWindow
+public partial class JazorWindow
 {
     /// <summary>
     /// The getComputedStyle() method exposes information from CSS style sheets with the origin-clean flag unset.

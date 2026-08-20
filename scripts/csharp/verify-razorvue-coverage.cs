@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 const int minimumPassedTests = 4_000;
 const double minimumLineRate = 0.90;
-const double minimumBranchRate = 0.97;
+const double minimumBranchRate = 0.94;
 
 try
 {

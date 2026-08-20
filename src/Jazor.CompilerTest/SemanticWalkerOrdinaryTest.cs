@@ -2352,6 +2352,31 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   /// <summary>
+  /// 测试 Global.IsUndefined 会保持 JavaScript 严格 undefined 判定。
+  /// </summary>
+  [TestMethod]
+  public void Visit_Invocation_GlobalIsUndefined_InlinesStrictUndefinedComparison()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                bool TestMethod(object? value)
+                {
+                    return IsUndefined(value);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  return value === undefined;
+}", script);
+  }
+
+  /// <summary>
   /// 测试 Task 状态属性会映射到 Promise 状态跟踪 helper
   /// </summary>
   [TestMethod]

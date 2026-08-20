@@ -231,7 +231,7 @@ public sealed class VFileUpload : ComponentBase
     /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
-    public EventCallback<Files[]?> ModelValueChanged { get; set; }
+    public EventCallback<JazorFile[]?> ModelValueChanged { get; set; }
 
     /// <summary>
     /// 是否显示清除按钮。

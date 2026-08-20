@@ -251,13 +251,13 @@ public readonly struct TAttachNodeReturnValue : IUnion
 
     public HTMLElement? AsHTMLElement => _kind == 1 ? _value1 : default;
     public Element? AsElement => _kind == 2 ? _value2 : default;
-    public JazorDocument? AsDocument => _kind == 3 ? _value3 : default;
+    public JazorDocument? AsJazorDocument => _kind == 3 ? _value3 : default;
 
     public object? Value => _kind switch
     {
         1 => AsHTMLElement,
         2 => AsElement,
-        3 => AsDocument,
+        3 => AsJazorDocument,
         _ => default
     };
 
@@ -9791,12 +9791,12 @@ public record TImageInfo : VueProps
 }
 
 [ECMAScript]
-public readonly union TImageInfoMainImage(string, Files)
+public readonly union TImageInfoMainImage(string, JazorFile)
 {
 }
 
 [ECMAScript]
-public readonly union TImageInfoThumbnail(string, Files)
+public readonly union TImageInfoThumbnail(string, JazorFile)
 {
 }
 
@@ -9869,7 +9869,7 @@ public enum TImageShapeValue
 }
 
 [ECMAScript]
-public readonly union TImageSrcValue(string, Files)
+public readonly union TImageSrcValue(string, JazorFile)
 {
 }
 
@@ -9932,7 +9932,7 @@ public record TImageViewerConfig : VueProps
 }
 
 [ECMAScript]
-public readonly union TImageViewerDownloadEventUrl(string, Files)
+public readonly union TImageViewerDownloadEventUrl(string, JazorFile)
 {
 }
 
@@ -9959,7 +9959,7 @@ public enum TImageViewerImageReferrerpolicyValue
 }
 
 [ECMAScript]
-public readonly union TImageViewerImagesValueItem(string, Files, TImageInfo)
+public readonly union TImageViewerImagesValueItem(string, JazorFile, TImageInfo)
 {
 }
 
@@ -10679,12 +10679,12 @@ public readonly struct TListScrollEventOptionsE : IUnion
         _value2 = value;
     }
 
-    public JazorEvent? AsEvent => _kind == 1 ? _value1 : default;
+    public JazorEvent? AsJazorEvent => _kind == 1 ? _value1 : default;
     public WheelEvent? AsWheelEvent => _kind == 2 ? _value2 : default;
 
     public object? Value => _kind switch
     {
-        1 => AsEvent,
+        1 => AsJazorEvent,
         2 => AsWheelEvent,
         _ => default
     };
@@ -12811,7 +12811,7 @@ public readonly union TScrollContainer(TScrollContainerOption1, string)
 }
 
 [ECMAScript]
-public readonly union TScrollContainerElement(Window, HTMLElement)
+public readonly union TScrollContainerElement(JazorWindow, HTMLElement)
 {
 }
 
@@ -13251,7 +13251,7 @@ public readonly struct TSelectInputValueChangeContextE : IUnion
         _value6 = value;
     }
 
-    public JazorEvent? AsEvent => _kind == 1 ? _value1 : default;
+    public JazorEvent? AsJazorEvent => _kind == 1 ? _value1 : default;
     public InputEvent? AsInputEvent => _kind == 2 ? _value2 : default;
     public MouseEvent? AsMouseEvent => _kind == 3 ? _value3 : default;
     public FocusEvent? AsFocusEvent => _kind == 4 ? _value4 : default;
@@ -13260,7 +13260,7 @@ public readonly struct TSelectInputValueChangeContextE : IUnion
 
     public object? Value => _kind switch
     {
-        1 => AsEvent,
+        1 => AsJazorEvent,
         2 => AsInputEvent,
         3 => AsMouseEvent,
         4 => AsFocusEvent,
@@ -14002,12 +14002,12 @@ public readonly struct TSortableOptionsFilterOption2Event : IUnion
         _value2 = value;
     }
 
-    public JazorEvent? AsEvent => _kind == 1 ? _value1 : default;
+    public JazorEvent? AsJazorEvent => _kind == 1 ? _value1 : default;
     public TouchEvent? AsTouchEvent => _kind == 2 ? _value2 : default;
 
     public object? Value => _kind switch
     {
-        1 => AsEvent,
+        1 => AsJazorEvent,
         2 => AsTouchEvent,
         _ => default
     };
@@ -17474,13 +17474,13 @@ public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
 
     public MouseEvent? AsMouseEvent => _kind == 1 ? _value1 : default;
     public KeyboardEvent? AsKeyboardEvent => _kind == 2 ? _value2 : default;
-    public JazorEvent? AsEvent => _kind == 3 ? _value3 : default;
+    public JazorEvent? AsJazorEvent => _kind == 3 ? _value3 : default;
 
     public object? Value => _kind switch
     {
         1 => AsMouseEvent,
         2 => AsKeyboardEvent,
-        3 => AsEvent,
+        3 => AsJazorEvent,
         _ => default
     };
 
@@ -18022,7 +18022,7 @@ public record TUploadFile : VueProps
     public Number? Percent { get; init; }
 
     [ECMAScriptName("raw")]
-    public Files? Raw { get; init; }
+    public JazorFile? Raw { get; init; }
 
     [ECMAScriptName("response")]
     public TJsonObject? Response { get; init; }
@@ -18075,7 +18075,7 @@ public delegate TJsonObject TUploadFormatRequestValue<T>(TJsonObject requestData
 public delegate TResponseType TUploadFormatResponseValue<T>(TJsonValue response, TFormatResponseContext context);
 
 [ECMAScript]
-public delegate TUploadFile TUploadFormatValue<T>(Files @file);
+public delegate TUploadFile TUploadFormatValue<T>(JazorFile @file);
 
 [ECMAScript]
 public record TUploadHeadersValue<T> : VueDictionary<string>
@@ -19604,7 +19604,7 @@ public enum TdImagePropsShape
 }
 
 [ECMAScript]
-public readonly union TdImagePropsSrc(string, Files)
+public readonly union TdImagePropsSrc(string, JazorFile)
 {
 }
 
@@ -19709,7 +19709,7 @@ public enum TdImageViewerPropsImageReferrerpolicy
 }
 
 [ECMAScript]
-public readonly union TdImageViewerPropsImagesItem(string, Files, TImageInfo)
+public readonly union TdImageViewerPropsImagesItem(string, JazorFile, TImageInfo)
 {
 }
 
@@ -19762,7 +19762,7 @@ public enum TdImageViewerPropsOnCloseContextTrigger
 public delegate void TdImageViewerPropsOnDownload(TdImageViewerPropsOnDownloadUrl url);
 
 [ECMAScript]
-public readonly union TdImageViewerPropsOnDownloadUrl(string, Files)
+public readonly union TdImageViewerPropsOnDownloadUrl(string, JazorFile)
 {
 }
 
@@ -32923,7 +32923,7 @@ public class TUpload<T> : TContentComponentBase
 
     [Parameter]
     [ECMAScriptName("onSelectChange")]
-    public EventCallback<Files[]> OnSelectChange { get; set; }
+    public EventCallback<JazorFile[]> OnSelectChange { get; set; }
 
     [Parameter]
     [ECMAScriptName("onSuccess")]

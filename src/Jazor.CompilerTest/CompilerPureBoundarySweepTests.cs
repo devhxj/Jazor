@@ -601,7 +601,7 @@ public sealed class CompilerPureBoundarySweepTests
         Assert.IsNull(extensionTarget.Invoke(walker, [methodSymbol, null]));
         Assert.IsNull(extensionTarget.Invoke(walker, [staticMethodSymbol, null]));
         var globalType = compilation.GetTypeByMetadataName("ECMAScript.Global");
-        var globalMethod = globalType?.GetMembers("NumberFn").OfType<IMethodSymbol>().FirstOrDefault();
+        var globalMethod = globalType?.GetMembers("NumberValue").OfType<IMethodSymbol>().FirstOrDefault();
         if (globalMethod is not null)
             Assert.IsNull(extensionTarget.Invoke(walker, [globalMethod, null]));
 
@@ -736,7 +736,7 @@ public sealed class CompilerPureBoundarySweepTests
         Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors.Select(static error => error.ToString())));
 
         var global = ecmaCompilation.GetTypeByMetadataName("ECMAScript.Global")!;
-        var numberFn = global.GetMembers("NumberFn")
+        var numberFn = global.GetMembers("NumberValue")
             .OfType<IMethodSymbol>()
             .Single(static method => method.Parameters.Length == 0);
         var extensionTarget = GetPrivateInstance(

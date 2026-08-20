@@ -13,6 +13,7 @@ internal static class ClrRuntimeNavigationScenarios
     private const string NavigateToOptions = "Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string, Microsoft.AspNetCore.Components.NavigationOptions)";
     private const string NavigateToForceLoad = "Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string, bool)";
     private const string NavigateToForceLoadReplace = "Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string, bool, bool)";
+    private const string Refresh = "virtual Microsoft.AspNetCore.Components.NavigationManager.Refresh(bool)";
     private const string ToAbsoluteUri = "Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string)";
     private const string ToBaseRelativePath = "Microsoft.AspNetCore.Components.NavigationManager.ToBaseRelativePath(string)";
     private const string Uri = "Microsoft.AspNetCore.Components.NavigationManager.Uri.get";
@@ -39,6 +40,7 @@ internal static class ClrRuntimeNavigationScenarios
             ("replaceHistoryEntry", ClrRuntimeValue.Boolean(true)),
             ("historyEntryState", ClrRuntimeValue.Text("next-state")))], ClrRuntimeValue.Undefined()),
         Success("navigation.to-absolute-uri", ToAbsoluteUri, NavigationModule, [Navigation, ClrRuntimeValue.Text("orders")], ClrRuntimeValue.Text("https://example.test/app/orders")),
+        Success("navigation.refresh", Refresh, NavigationModule, [Navigation, ClrRuntimeValue.Boolean(false)], ClrRuntimeValue.Undefined()),
         Success("navigation.to-base-relative-path", ToBaseRelativePath, NavigationModule, [Navigation, ClrRuntimeValue.Text("https://example.test/app/orders?x=1")], ClrRuntimeValue.Text("orders?x=1")),
         Success("navigation.location-changed-event-args", LocationChangedConstructor, LocationChangedModule, [ClrRuntimeValue.Text("https://example.test/app/orders"), ClrRuntimeValue.Boolean(true)], ClrRuntimeValue.Record(
             ("historyEntryState", ClrRuntimeValue.Text("history-state")),
@@ -46,25 +48,25 @@ internal static class ClrRuntimeNavigationScenarios
             ("location", ClrRuntimeValue.Text("https://example.test/app/orders")))),
 
         QueryParameter("bool", "bool"),
-        QueryParameter("nullable-bool", "System.Nullable<bool>"),
+        QueryParameter("nullable-bool", "bool?"),
         QueryParameter("date-time", "System.DateTime"),
-        QueryParameter("nullable-date-time", "System.Nullable<System.DateTime>"),
+        QueryParameter("nullable-date-time", "System.DateTime?"),
         QueryParameter("date-only", "System.DateOnly"),
-        QueryParameter("nullable-date-only", "System.Nullable<System.DateOnly>"),
+        QueryParameter("nullable-date-only", "System.DateOnly?"),
         QueryParameter("time-only", "System.TimeOnly"),
-        QueryParameter("nullable-time-only", "System.Nullable<System.TimeOnly>"),
-        QueryParameter("decimal", "System.Decimal"),
-        QueryParameter("nullable-decimal", "System.Nullable<System.Decimal>"),
+        QueryParameter("nullable-time-only", "System.TimeOnly?"),
+        QueryParameter("decimal", "decimal"),
+        QueryParameter("nullable-decimal", "decimal?"),
         QueryParameter("double", "double"),
-        QueryParameter("nullable-double", "System.Nullable<double>"),
+        QueryParameter("nullable-double", "double?"),
         QueryParameter("float", "float"),
-        QueryParameter("nullable-float", "System.Nullable<float>"),
+        QueryParameter("nullable-float", "float?"),
         QueryParameter("guid", "System.Guid"),
-        QueryParameter("nullable-guid", "System.Nullable<System.Guid>"),
+        QueryParameter("nullable-guid", "System.Guid?"),
         QueryParameter("int", "int"),
-        QueryParameter("nullable-int", "System.Nullable<int>"),
+        QueryParameter("nullable-int", "int?"),
         QueryParameter("long", "long"),
-        QueryParameter("nullable-long", "System.Nullable<long>"),
+        QueryParameter("nullable-long", "long?"),
         QueryParameter("string", "string"),
         Success("navigation.query-parameters", QueryParameters, ExtensionsModule, [Navigation, ClrRuntimeValue.Map((ClrRuntimeValue.Text("filter"), ClrRuntimeValue.Text("open")))], ClrRuntimeValue.Text("https://example.test/app/start?filter=open")),
         Success("navigation.query-parameters-from-uri", QueryParametersFromUri, ExtensionsModule, [Navigation, ClrRuntimeValue.Text("https://example.test/app/start"), ClrRuntimeValue.Map((ClrRuntimeValue.Text("filter"), ClrRuntimeValue.Text("open")))], ClrRuntimeValue.Text("https://example.test/app/start?filter=open")),

@@ -2852,6 +2852,103 @@ public sealed class RenderEmitterPrivateContractTests
             StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void StandardBlazorAdapterContracts_MapEverySupportedFamilyAndClosedValueDomain()
+    {
+        var fixture = CreateFixture();
+        var compilation = fixture.Compilation;
+        var routingModule = "@jazor/vue-runtime/blazor-routing.mjs";
+        var componentsModule = "@jazor/vue-runtime/blazor-components.mjs";
+        var adapters = new[]
+        {
+            ("Microsoft.AspNetCore.Components.Routing.Router", "Router", routingModule, "Router"),
+            ("Microsoft.AspNetCore.Components.Routing.NavLink", "NavLink", routingModule, "NavLink"),
+            ("Microsoft.AspNetCore.Components.Forms.EditForm", "EditForm", componentsModule, "EditForm"),
+            ("Microsoft.AspNetCore.Components.Forms.InputText", "InputText", componentsModule, "InputText"),
+            ("Microsoft.AspNetCore.Components.Forms.InputTextArea", "InputTextArea", componentsModule, "InputTextArea"),
+            ("Microsoft.AspNetCore.Components.Forms.InputCheckbox", "InputCheckbox", componentsModule, "InputCheckbox"),
+            ("Microsoft.AspNetCore.Components.Forms.InputNumber`1", "InputNumber", componentsModule, "InputNumber"),
+            ("Microsoft.AspNetCore.Components.Forms.InputDate`1", "InputDate", componentsModule, "InputDate"),
+            ("Microsoft.AspNetCore.Components.Forms.InputSelect`1", "InputSelect", componentsModule, "InputSelect"),
+            ("Microsoft.AspNetCore.Components.RouteView", "RouteView", routingModule, "RouteView"),
+            ("Microsoft.AspNetCore.Components.LayoutView", "LayoutView", routingModule, "LayoutView"),
+            ("Microsoft.AspNetCore.Components.DynamicComponent", "DynamicComponent", componentsModule, "DynamicComponent"),
+            ("Microsoft.AspNetCore.Components.Web.ErrorBoundary", "ErrorBoundary", componentsModule, "ErrorBoundary")
+        };
+
+        foreach (var (metadataName, expectedKind, expectedModule, expectedExport) in adapters)
+        {
+            var type = compilation.GetTypeByMetadataName(metadataName);
+            Assert.IsNotNull(type, metadataName);
+            var arguments = new object?[] { type, null };
+            Assert.IsTrue(Invoke<bool>("TryGetStandardBlazorComponentAdapter", arguments), metadataName);
+            var adapter = arguments[1]!;
+            Assert.AreEqual(expectedKind, adapter.GetType().GetProperty("Kind")!.GetValue(adapter)!.ToString());
+            Assert.AreEqual(expectedModule, adapter.GetType().GetProperty("ModuleSpecifier")!.GetValue(adapter));
+            Assert.AreEqual(expectedExport, adapter.GetType().GetProperty("ExportName")!.GetValue(adapter));
+        }
+
+        var unknown = GetNamedType(fixture, "ModuleComponent");
+        Assert.IsFalse(Invoke<bool>("TryGetStandardBlazorComponentAdapter", new object?[] { unknown, null }));
+        var cascadingDefinition = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.CascadingValue`1");
+        Assert.IsNotNull(cascadingDefinition);
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var cascading = cascadingDefinition!.Construct(intType);
+        Assert.IsTrue(Invoke<bool>("IsCascadingValueComponent", cascading));
+        Assert.IsFalse(Invoke<bool>("IsCascadingValueComponent", unknown));
+
+        var adapterKindType = typeof(RenderEmitter).GetNestedType("StandardBlazorComponentAdapterKind", BindingFlags.NonPublic)!;
+        object AdapterKind(string name) => Enum.Parse(adapterKindType, name);
+        void AssertDescriptor(string kind, ITypeSymbol? type, bool expected)
+        {
+            var arguments = new object?[] { AdapterKind(kind), type, null };
+            Assert.AreEqual(expected, Invoke<bool>("TryBuildStandardInputValueTypeDescriptor", arguments), kind);
+            if (expected)
+                Assert.IsInstanceOfType<Expression>(arguments[2]);
+        }
+
+        var nullable = compilation.GetSpecialType(SpecialType.System_Nullable_T);
+        var longType = compilation.GetSpecialType(SpecialType.System_Int64);
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var boolType = compilation.GetSpecialType(SpecialType.System_Boolean);
+        var dateOnly = compilation.GetTypeByMetadataName("System.DateOnly");
+        var dateTimeOffset = compilation.GetTypeByMetadataName("System.DateTimeOffset");
+        var dateTime = compilation.GetSpecialType(SpecialType.System_DateTime);
+        var dayOfWeek = compilation.GetTypeByMetadataName("System.DayOfWeek");
+        Assert.IsNotNull(dateOnly);
+        Assert.IsNotNull(dateTimeOffset);
+        Assert.IsNotNull(dayOfWeek);
+
+        AssertDescriptor("InputNumber", null, false);
+        AssertDescriptor("InputNumber", intType, true);
+        AssertDescriptor("InputNumber", nullable.Construct(intType), true);
+        AssertDescriptor("InputNumber", longType, true);
+        AssertDescriptor("InputNumber", stringType, false);
+        AssertDescriptor("InputDate", dateOnly, true);
+        AssertDescriptor("InputDate", dateTimeOffset, true);
+        AssertDescriptor("InputDate", dateTime, true);
+        AssertDescriptor("InputDate", nullable.Construct(dateOnly!), true);
+        AssertDescriptor("InputDate", stringType, false);
+        AssertDescriptor("InputSelect", dayOfWeek, true);
+        AssertDescriptor("InputSelect", stringType, true);
+        AssertDescriptor("InputSelect", boolType, true);
+        AssertDescriptor("InputSelect", intType, true);
+        AssertDescriptor("InputSelect", dateTime, false);
+
+        var inputNumber = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.Forms.InputNumber`1")!.Construct(intType);
+        Assert.AreEqual(intType, Invoke<ITypeSymbol?>("GetStandardBlazorComponentValueType", inputNumber));
+        Assert.IsNull(Invoke<ITypeSymbol?>("GetStandardBlazorComponentValueType", unknown));
+        Assert.IsTrue(Invoke<bool>("IsStandardInputAdapter", AdapterKind("InputText")));
+        Assert.IsTrue(Invoke<bool>("IsStandardInputAdapter", AdapterKind("InputSelect")));
+        Assert.IsFalse(Invoke<bool>("IsStandardInputAdapter", AdapterKind("Router")));
+
+        Assert.IsInstanceOfType<NullLiteral>(Invoke<Expression>("CreateInputScalarLiteral", intType, null));
+        Assert.IsInstanceOfType<BooleanLiteral>(Invoke<Expression>("CreateInputScalarLiteral", boolType, true));
+        Assert.IsInstanceOfType<StringLiteral>(Invoke<Expression>("CreateInputScalarLiteral", stringType, "value"));
+        Assert.IsInstanceOfType<BigIntLiteral>(Invoke<Expression>("CreateInputScalarLiteral", longType, 42L));
+        Assert.IsInstanceOfType<NumericLiteral>(Invoke<Expression>("CreateInputScalarLiteral", intType, 42));
+    }
+
     private static void AssertResolvedLoopVariable(IOperation operation, ILocalSymbol expected)
     {
         var arguments = new object?[] { operation, null };

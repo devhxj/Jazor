@@ -32,11 +32,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### 2026-08-19
+### 2026-08-20
 
-- Jazor 0.17.0 supports official Razor Source Generator generic component type inference and open generic `OpenComponent<T>` lowering without leaking render-builder state into generated modules.
-- Reachable component `RenderFragment` helpers now remain in the artifact closure, and invalid Vue injection metadata fails before partial artifacts are emitted.
-- Indexed nested C# initializers are lowered correctly, and checked-in sample manifests no longer embed machine-specific assembly paths.
+- Jazor 0.18.0 adds RazorVue browser navigation support for `NavigationManager.Refresh(false)` and reliable query-parameter replacement.
+- Browser `File` and `Window` bindings use the clear C# authoring names `JazorFile` and `JazorWindow`, while retaining their standard JavaScript ABI names.
+- `Global.IsUndefined(value)` distinguishes JavaScript `undefined` from `null`; RazorVue's active integration gate currently requires 94% branch coverage while the remaining work continues.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -71,7 +71,7 @@ flowchart LR
 The badges above show maintained acceptance thresholds rather than a stale one-off result. The repository verifies the following minimums through repeatable scripts:
 
 - Core compiler: at least 10,000 passing `IOperation` scenarios, 98% line coverage, and 97% branch coverage.
-- Current Razor-to-Vue integration: at least 4,000 passing scenarios, 90% line coverage, and 97% branch coverage.
+- Current Razor-to-Vue integration: at least 4,000 passing scenarios, 90% line coverage, and 94% branch coverage while the integration work continues.
 - Vue ecosystem bindings: at least 90% audited public binding-contract coverage per target.
 
 Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue-binding-coverage.cs` under `scripts/csharp/` to reproduce the relevant gate. The active scope and test entry points are listed in [Current Status](docs/04-roadmap/current-status.md).
@@ -94,15 +94,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.17.0
+dotnet add package Jazor --version 0.18.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.17.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.17.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.18.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.18.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

@@ -4481,6 +4481,28 @@ export function Increment() {
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithNestedExpressionBodiedThrow_PreservesThrowingIife()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static string Require(string? value)
+                    => value ?? throw new System.Exception("missing");
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var module = await new AstConverter(classSymbol, semanticModel).Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "return value ?? (() => {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "throw new Error(\"missing\");", StringComparison.Ordinal);
+        StringAssert.Contains(script, "})();", StringComparison.Ordinal);
+        _ = new Acornima.Parser().ParseModule(script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithExpressionBodyMethodThatNeedsGeneratedTemporaries_EmitsThemInsideFunctionBody()
     {
         var code = """
@@ -6975,13 +6997,13 @@ function OnMouseMove(mouseEvent) { }
                             Spellcheck = false,
                             Rows = 18,
                             Value = "demo",
-                            Events = new VueEventHandlers<Event>
+                            Events = new VueEventHandlers<JazorEvent>
                             {
                                 ["onInput"] = OnInput
                             }
                         });
 
-                    private static void OnInput(Event @event)
+                    private static void OnInput(JazorEvent @event)
                     {
                     }
                 }
@@ -7488,7 +7510,7 @@ export function CreateFacingMode() {
                     public static string? ReadValue(FormDataEntryValue value)
                         => value.AsString;
 
-                    public static Files? ReadFile(FormDataEntryValue value)
+                    public static JazorFile? ReadFile(FormDataEntryValue value)
                         => value.AsFile;
                 }
             }
@@ -7664,13 +7686,13 @@ export function ReadValue(value) {
 
                     public static TMenuWidthValue CreateMenuWidth(TMenuWidthValueOption3Item[] values) => values;
 
-                    public static ElUploadBeforeUploadResult CreateUploadFile(Files value) => value;
+                    public static ElUploadBeforeUploadResult CreateUploadFile(JazorFile value) => value;
 
                     public static ElUploadBeforeUploadResult CreateUploadBlob(Blob value) => value;
 
                     public static ElUploadBeforeUploadResult CreateUploadPromise(IPromise<VueValue?> value) => new(value);
 
-                    public static Files? ReadUploadFile(ElUploadBeforeUploadResult value) => value.AsFile;
+                    public static JazorFile? ReadUploadFile(ElUploadBeforeUploadResult value) => value.AsFile;
 
                     public static Blob? ReadUploadBlob(ElUploadBeforeUploadResult value) => value.AsBlob;
                 }
@@ -8948,7 +8970,7 @@ export function Render() {
                 [ECMAScriptModule("components/typed-panel.mjs")]
                 public static class PanelModule
                 {
-                    private static readonly VueInjectionKey<int> CountKey = Global.SymbolFn("count");
+                    private static readonly VueInjectionKey<int> CountKey = Global.SymbolValue("count");
 
                     public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
@@ -9208,7 +9230,7 @@ export function Render() {
                 [ECMAScriptModule("components/provider-panel.mjs")]
                 public static class PanelModule
                 {
-                    private static readonly Vue.VueInjectionKey<int> CountKey = Global.SymbolFn("count");
+                    private static readonly Vue.VueInjectionKey<int> CountKey = Global.SymbolValue("count");
 
                     public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
                     {
@@ -13517,7 +13539,7 @@ function ConfigureElementApp(app) {
                         var propsRefs = Vue.ToRefs<LocalRefs>(state);
                         Vue.Provide("count", normalizedRef);
                         var injected = Vue.Inject("count", 1);
-                        Vue.VueInjectionKey<int> countKey = Global.SymbolFn("count");
+                        Vue.VueInjectionKey<int> countKey = Global.SymbolValue("count");
                         Vue.Provide(countKey, normalizedRef);
                         var typedInjected = Vue.Inject(countKey, Read, true);
                         var asyncChild = Vue.DefineAsyncComponent(LoadChild);

@@ -402,10 +402,13 @@ public partial class SemanticWalker
         }
 
 		// C# also permits throw in expression position (`value ?? throw ...`).
-		// JavaScript's throw is statement-only, so preserve the expression contract with
-		// a zero-argument IIFE. The exception expression is still evaluated exactly once
-		// and only when the surrounding expression selects this branch.
-		if (operation.Syntax is ThrowExpressionSyntax)
+		// A direct expression-bodied function is the one statement-position exception:
+		// its root is anchored to this operation by AstConverter. Nested throw expressions
+		// keep a different root anchor and must retain the value-producing IIFE.
+		var isDirectFunctionExpressionBody =
+			argument.Sense == Sense.ExpressionBody &&
+			ReferenceEquals(argument.ScopeContext?.Anchor, operation);
+		if (operation.Syntax is ThrowExpressionSyntax && !isDirectFunctionExpressionBody)
 		{
 			var throwBody = new FunctionBody(
 				NodeList.From<Statement>(new ThrowStatement(expr)),

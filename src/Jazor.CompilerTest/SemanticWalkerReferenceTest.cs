@@ -222,7 +222,7 @@ public sealed class SemanticWalkerReferenceTest
                 {
                     var element = Global.Document.CreateElement(""button"", new ElementCreationOptions(Is: ""x-button""));
                     element.AddEventListener(""click"", null, new AddEventListenerOptions(Once: true));
-                    var evt = new Event(""click"", new EventInit(Bubbles: true, Cancelable: true));
+                    var evt = new JazorEvent(""click"", new EventInit(Bubbles: true, Cancelable: true));
                 }
             }
         ");
@@ -5101,7 +5101,7 @@ public sealed class SemanticWalkerReferenceTest
             {
                 void TestMethod()
                 {
-                    var shared = Random.Shared;
+                    var shared = global::System.Random.Shared;
                 }
             }
         ");
@@ -7784,7 +7784,7 @@ public sealed class SemanticWalkerReferenceTest
             {
                 void TestMethod()
                 {
-                    Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+                    Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
                     {
                         Value = (global::System.Func<string?, object>)ToPrimitive,
                         Configurable = true
@@ -9125,7 +9125,7 @@ public sealed class SemanticWalkerReferenceTest
             {
                 void TestMethod()
                 {
-                    var token = SymbolFn(""value"");
+                    var token = SymbolValue(""value"");
                 }
             }
         ");
@@ -10422,8 +10422,8 @@ public sealed class SemanticWalkerReferenceTest
                 void TestMethod()
                 {
                     var values = new Number[] { 3, 4 };
-                    var literal = Math.HypotFn(1, 2);
-                    var spread = Math.HypotFn(values);
+                    var literal = Math.Hypot(1, 2);
+                    var spread = Math.Hypot(values);
                 }
             }
             """);

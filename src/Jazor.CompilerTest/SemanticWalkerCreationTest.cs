@@ -1792,7 +1792,7 @@ public sealed class SemanticWalkerCreationTest
             {
                 void TestMethod()
                 {
-                    var countKey = SymbolFn(""count"");
+                    var countKey = SymbolValue(""count"");
                     var obj = new Bag
                     {
                         [countKey] = 1
@@ -1826,7 +1826,7 @@ public sealed class SemanticWalkerCreationTest
             {
                 void TestMethod()
                 {
-                    var countKey = SymbolFn(""count"");
+                    var countKey = SymbolValue(""count"");
                     var obj = new Bag
                     {
                         { countKey, 1 }

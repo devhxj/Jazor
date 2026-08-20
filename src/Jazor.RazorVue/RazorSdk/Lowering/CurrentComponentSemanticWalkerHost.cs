@@ -934,7 +934,11 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             return false;
         }
 
-        if (!IsCurrentComponentReceiver(instance) && instance is not null)
+        // ComponentBase is intentionally outside the source-member projection, but its
+        // lifecycle protocol still executes against this component's base receiver.
+        if (!IsCurrentComponentReceiver(instance) &&
+            !IsCurrentComponentBaseReceiver(instance) &&
+            instance is not null)
             return false;
 
         // Invocation targets in a bound C# operation are always owned by a named type.
@@ -972,7 +976,9 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             return false;
         }
 
-        if (!IsCurrentComponentReceiver(instance) && instance is not null)
+        if (!IsCurrentComponentReceiver(instance) &&
+            !IsCurrentComponentBaseReceiver(instance) &&
+            instance is not null)
             return false;
 
         // Component-declared InvokeAsync overloads stay on the normal
@@ -1210,6 +1216,33 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             } instanceReference => IsComponentHierarchyType(instanceReference.Type),
             _ => false
         };
+
+    private bool IsCurrentComponentBaseReceiver(IOperation? operation)
+        => operation switch
+        {
+            IConversionOperation conversion => IsCurrentComponentBaseReceiver(conversion.Operand),
+            IInstanceReferenceOperation
+            {
+                ReferenceKind: InstanceReferenceKind.ContainingTypeInstance or
+                    InstanceReferenceKind.ImplicitReceiver
+            } instanceReference => IsTypeInCurrentComponentBaseChain(instanceReference.Type),
+            _ => false
+        };
+
+    private bool IsTypeInCurrentComponentBaseChain(ITypeSymbol? type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        var originalType = namedType.OriginalDefinition;
+        for (var current = _componentType; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, originalType))
+                return true;
+        }
+
+        return false;
+    }
 
     private bool IsComponentHierarchyType(ITypeSymbol? type)
         => ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(

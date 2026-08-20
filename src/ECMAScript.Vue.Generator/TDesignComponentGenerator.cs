@@ -1717,13 +1717,18 @@ internal static class TDesignComponentGenerator
             type = name switch
             {
                 "bigint" => new MappedType("BigInt", IsReference: false),
-                // Browser File is exposed as ECMAScript.Files to avoid colliding with
+                // Browser File is exposed as ECMAScript.JazorFile to avoid colliding with
                 // System.IO.File in consumer projects; its JavaScript ABI remains File.
-                // 浏览器 File 在作者侧使用 ECMAScript.Files，避免与 consumer 项目的
+                // 浏览器 File 在作者侧使用 ECMAScript.JazorFile，避免与 consumer 项目的
                 // System.IO.File 冲突；JavaScript ABI 仍然是 File。
-                "File" => new MappedType("Files", IsReference: true),
-                "Date" or "Blob" or "FormData" or "HTMLElement" or "Element" or "Document" or "Window" or
-                    "Event" or "MouseEvent" or "KeyboardEvent" or "WheelEvent" or "DragEvent" or "ProgressEvent" or
+                "File" => new MappedType("JazorFile", IsReference: true),
+                "Document" => new MappedType("JazorDocument", IsReference: true),
+                "Window" => new MappedType("JazorWindow", IsReference: true),
+                "Event" => new MappedType("JazorEvent", IsReference: true),
+                "History" => new MappedType("JazorHistory", IsReference: true),
+                "Location" => new MappedType("JazorLocation", IsReference: true),
+                "Date" or "Blob" or "FormData" or "HTMLElement" or "Element" or
+                    "MouseEvent" or "KeyboardEvent" or "WheelEvent" or "DragEvent" or "ProgressEvent" or
                     "TouchEvent" or "FocusEvent" or "ClipboardEvent" or "InputEvent" or "CompositionEvent" or
                     "TransitionEvent" or "DataTransfer" or "XMLHttpRequest" or "Error" or "RegExp" => new MappedType(name, IsReference: true),
                 _ => default!

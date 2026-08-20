@@ -57,7 +57,7 @@ public sealed record VFileUploadItemSlotProps
 public sealed record VFileUploadItemSlotContext
 {
     [Description("@#file")]
-    public Files? File { get; init; }
+    public JazorFile? File { get; init; }
 
     [Description("@#props")]
     public VFileUploadItemSlotProps? Props { get; init; }

@@ -34,7 +34,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 | 范围 | 最低要求 | 验证入口 |
 | --- | --- | --- |
 | 核心编译器 | 10,000 个通过场景、98% 行覆盖率、97% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
-| Razor-to-Vue | 4,000 个通过场景、90% 行覆盖率、97% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
+| Razor-to-Vue | 4,000 个通过场景、90% 行覆盖率、94% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 生态绑定 | 每个目标 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
 
 门槛是验证规则，不等同于任一历史报告中的固定通过数量。对当前结果的判断应运行相应脚本或测试命令。

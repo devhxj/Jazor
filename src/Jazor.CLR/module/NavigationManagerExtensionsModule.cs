@@ -13,80 +13,80 @@ public static class NavigationManagerExtensionsModule
 	public static string _8720819619ae9428(Object navigationManager, string name, bool value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<bool>)", "getUriWithQueryParameterNullableBoolean")]
-	public static string _52e23125e9521a7d(Object navigationManager, string name, global::System.Nullable<bool> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, bool?)", "getUriWithQueryParameterNullableBoolean")]
+	public static string _5f4e9c804a2995f4(Object navigationManager, string name, bool? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.DateTime)", "getUriWithQueryParameterDateTime")]
-	public static string _358e0048ee85ca2b(Object navigationManager, string name, Date value)
+	public static string _358e0048ee85ca2b(Object navigationManager, string name, RuntimeModule.JDateTime value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<System.DateTime>)", "getUriWithQueryParameterNullableDateTime")]
-	public static string _c1b655a289091719(Object navigationManager, string name, global::System.Nullable<global::System.DateTime> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.DateTime?)", "getUriWithQueryParameterNullableDateTime")]
+	public static string _42e7e2e28e0d59a4(Object navigationManager, string name, RuntimeModule.JDateTime? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.DateOnly)", "getUriWithQueryParameterDateOnly")]
-	public static string _4819d8e198612d04(Object navigationManager, string name, Date value)
+	public static string _4819d8e198612d04(Object navigationManager, string name, RuntimeModule.JDateOnly value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<System.DateOnly>)", "getUriWithQueryParameterNullableDateOnly")]
-	public static string _244e9d6f2a9a8d34(Object navigationManager, string name, global::System.Nullable<global::System.DateOnly> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.DateOnly?)", "getUriWithQueryParameterNullableDateOnly")]
+	public static string _3f6959c32360ddee(Object navigationManager, string name, RuntimeModule.JDateOnly? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.TimeOnly)", "getUriWithQueryParameterTimeOnly")]
-	public static string _f7518749c0fbde0e(Object navigationManager, string name, Number value)
+	public static string _f7518749c0fbde0e(Object navigationManager, string name, RuntimeModule.JTimeOnly value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<System.TimeOnly>)", "getUriWithQueryParameterNullableTimeOnly")]
-	public static string _dd29f9f26b8fe6d9(Object navigationManager, string name, global::System.Nullable<global::System.TimeOnly> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.TimeOnly?)", "getUriWithQueryParameterNullableTimeOnly")]
+	public static string _bd718956c8d5a0fa(Object navigationManager, string name, RuntimeModule.JTimeOnly? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Decimal)", "getUriWithQueryParameterDecimal")]
-	public static string _649e04e13cebef8d(Object navigationManager, string name, global::System.Decimal value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, decimal)", "getUriWithQueryParameterDecimal")]
+	public static string _ea495945165508e8(Object navigationManager, string name, string value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<System.Decimal>)", "getUriWithQueryParameterNullableDecimal")]
-	public static string _cc93afe61e6163b0(Object navigationManager, string name, global::System.Nullable<global::System.Decimal> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, decimal?)", "getUriWithQueryParameterNullableDecimal")]
+	public static string _cfecf461739424ac(Object navigationManager, string name, string? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, double)", "getUriWithQueryParameterDouble")]
 	public static string _a3e6f1023a4a8ed0(Object navigationManager, string name, Number value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<double>)", "getUriWithQueryParameterNullableDouble")]
-	public static string _b03081c6e70b5165(Object navigationManager, string name, global::System.Nullable<double> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, double?)", "getUriWithQueryParameterNullableDouble")]
+	public static string _a16f375580881e61(Object navigationManager, string name, Number? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, float)", "getUriWithQueryParameterSingle")]
 	public static string _5ccede8eae0c50f9(Object navigationManager, string name, Number value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<float>)", "getUriWithQueryParameterNullableSingle")]
-	public static string _bc66306f5b2f3448(Object navigationManager, string name, global::System.Nullable<float> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, float?)", "getUriWithQueryParameterNullableSingle")]
+	public static string _420cd589903285a8(Object navigationManager, string name, Number? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Guid)", "getUriWithQueryParameterGuid")]
-	public static string _f383fb37fdc30f79(Object navigationManager, string name, global::System.Guid value)
+	public static string _f383fb37fdc30f79(Object navigationManager, string name, string value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<System.Guid>)", "getUriWithQueryParameterNullableGuid")]
-	public static string _2182cc40807b7375(Object navigationManager, string name, global::System.Nullable<global::System.Guid> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Guid?)", "getUriWithQueryParameterNullableGuid")]
+	public static string _09d1de29ce131e66(Object navigationManager, string name, string? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, int)", "getUriWithQueryParameterInt32")]
 	public static string _e5ca53d24b3aa589(Object navigationManager, string name, Number value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<int>)", "getUriWithQueryParameterNullableInt32")]
-	public static string _3953d1713cede17e(Object navigationManager, string name, global::System.Nullable<int> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, int?)", "getUriWithQueryParameterNullableInt32")]
+	public static string _ee9e0bc4c70a695c(Object navigationManager, string name, Number? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, long)", "getUriWithQueryParameterInt64")]
 	public static string _cbfa3c2aa4c34896(Object navigationManager, string name, BigInt value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
-	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, System.Nullable<long>)", "getUriWithQueryParameterNullableInt64")]
-	public static string _bc85b3da550a58e1(Object navigationManager, string name, global::System.Nullable<long> value)
+	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, long?)", "getUriWithQueryParameterNullableInt64")]
+	public static string _1810512344eecce0(Object navigationManager, string name, BigInt? value)
 		=> GetUriWithQueryParameterCore(GetUri(navigationManager), name, value);
 
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, string)", "getUriWithQueryParameterString")]
@@ -101,11 +101,8 @@ public static class NavigationManagerExtensionsModule
 	public static string _bdf7b3d5908d7ee9(Object navigationManager, string uri, global::System.Collections.Generic.IReadOnlyDictionary<string, object> parameters)
 		=> GetUriWithQueryParametersCore(uri, parameters);
 
-	// .NET's current package does not expose this helper on the extension symbol yet, but
-	// Blazor authoring already relies on it. Keep its canonical contract here so callers
-	// receive the same full-URI behavior as the browser adapter.
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithFragment(Microsoft.AspNetCore.Components.NavigationManager, string)", "getUriWithFragment")]
-	public static string GetUriWithFragment(Object navigationManager, string? fragment)
+	public static string _fbe7cf6b33853a04(Object navigationManager, string? fragment)
 		=> GetUriWithFragmentCore(GetUri(navigationManager), fragment);
 
 	internal static string GetUri(object navigationManager)
@@ -186,6 +183,10 @@ public static class NavigationManagerExtensionsModule
 		var query = queryIndex < 0 ? "" : beforeHash[(queryIndex + 1)..];
 		var emitted = new Array<string>();
 		var consumed = new Array<Number>();
+		// JavaScript sparse-array reads produce undefined. Each update must start at the
+		// numeric offset zero so a newly supplied scalar is emitted on its first pass.
+		for (var updateIndex = 0; updateIndex < updates.Length; updateIndex++)
+			consumed.Push(0);
 
 		if (query.Length != 0)
 		{

@@ -220,9 +220,15 @@ public static class NavigationManagerModule
 			? GetBool(options, "forceLoad")
 			: IsBooleanTrue(optionsOrForceLoad);
 		var replace = options is not null
-			? GetBool(options, "replaceHistoryEntry") || GetBool(options, "replace")
+			? GetBool(options, "replaceHistoryEntry")
 			: IsBooleanTrue(replaceArgument);
-		var historyState = options is null ? null : ECMAScript.Reflect.Get(options, "historyEntryState");
+		var historyState = options is null
+			? null
+			: ECMAScript.Reflect.Get(options, "historyEntryState");
+		// A missing property is JavaScript undefined, while the CLR NavigationOptions
+		// default is null. Keep an explicit string state unchanged before pushState.
+		if (ECMAScript.Global.IsUndefined(historyState))
+			historyState = null;
 
 		var target = URL.Parse(uri ?? "", options is not null && GetBool(options, "relativeToCurrentUri")
 			? GetUri()
@@ -246,11 +252,10 @@ public static class NavigationManagerModule
 
 		var route = target.Pathname + target.Search + target.Hash;
 		var history = GetWindowHistory();
-		var state = historyState ?? ECMAScript.Global.Undefined<object>();
 		if (replace)
-			history.ReplaceState(state, "", route);
+			history.ReplaceState(historyState!, "", route);
 		else
-			history.PushState(state, "", route);
+			history.PushState(historyState!, "", route);
 		NotifyLocationChanged(instance, true);
 	}
 

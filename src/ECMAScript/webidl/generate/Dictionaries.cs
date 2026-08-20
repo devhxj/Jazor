@@ -9906,7 +9906,7 @@ public record BluetoothDataFilterInit(
 [ECMAScript]
 [Description("@#ShareData")]
 public record ShareData(
-    [property: Description("@#files")]JSFile[]? Files = default,
+    [property: Description("@#files")]JazorFile[]? Files = default,
     [property: Description("@#title")]string? Title = default,
     [property: Description("@#text")]string? Text = default,
     [property: Description("@#url")]string? Url = default);

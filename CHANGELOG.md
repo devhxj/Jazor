@@ -4,9 +4,15 @@
 
 ## Unreleased
 
-## 2026-08-19
+## 2026-08-20
 
 ### Jazor 0.18.0
+
+- ECMAScript browser bindings now use `JazorFile` and `JazorWindow` as their C# authoring names for the browser `File` and `Window` interfaces. Generated JavaScript ABI names remain `File` and `Window`; update source references from the retired `Files` and `Window` names.
+- The ECMAScript host now exposes `Global.IsUndefined(value)` for strict JavaScript `undefined` checks. It remains distinct from C# null checks, so authors can distinguish an omitted browser value from an explicit `null`.
+- RazorVue browser navigation now supports `NavigationManager.Refresh(false)` and reliably appends or replaces query parameters through `NavigationManagerExtensions`.
+- RazorVue continues to lower `base.StateHasChanged()` and `base.InvokeAsync(...)` as component lifecycle protocol calls while leaving unrelated framework base members on the normal CLR whitelist path.
+- The RazorVue acceptance gate temporarily requires 94% branch coverage while its active integration work continues; the core compiler gate remains at 97%.
 
 - **Breaking:** JazorAdmin retires the 22 upstream TDesign Starter replica/result routes and their branded result assets, and adds an audit trail plus a `JazorAdmin.DemoClient` sample. Migrate bookmarks and demos to the portal, IAM, and platform-operations routes documented by the JazorAdmin reference application; the retained shell, appearance drawer, and dashboard are not replacement route aliases.
 - RazorVue member closure now overlays `ParameterView` state: an effective `SetParametersAsync` override participates in component initialization, and parameter auto-property storage is retained even before render code reads it, so missing parameters keep their CLR default or previous value.

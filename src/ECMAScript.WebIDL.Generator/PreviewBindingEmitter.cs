@@ -2202,12 +2202,12 @@ internal sealed class PreviewBindingEmitter
             }
 
             var segment = displayTypeName[start..index];
-            // `Files` is the C# authoring projection of the browser's singular
+            // `JazorFile` is the C# authoring projection of the browser's singular
             // File type. Keep generated union accessors as AsFile so the member
             // still describes the runtime value rather than the C# collision fix.
-            // `Files` 是浏览器单数 File 类型的 C# 作者侧投影。联合类型访问器仍应
+            // `JazorFile` 是浏览器单数 File 类型的 C# 作者侧投影。联合类型访问器仍应
             // 使用 AsFile，描述运行时值本身，而不能泄露为规避命名冲突而做的 C# 改名。
-            builder.Append(segment == "Files" ? "File" : WebIdlNaming.ToPascalCase(segment));
+            builder.Append(segment == "JazorFile" ? "File" : WebIdlNaming.ToPascalCase(segment));
             index--;
         }
 

@@ -32,11 +32,11 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-19
+### 2026-08-20
 
-- Jazor 0.17.0 支持 official Razor Source Generator 的泛型组件类型推断和开放泛型 `OpenComponent<T>` lowering，不会把 render-builder 状态泄漏到生成模块。
-- 普通组件成员可达的 `RenderFragment` helper 会保留在产物闭包中；无效的 Vue injection metadata 会在生成 partial artifact 之前失败。
-- 已支持 indexed nested C# initializer 的正确 lowering，且仓库内示例 manifest 不再包含机器相关的绝对程序集路径。
+- Jazor 0.18.0 支持 RazorVue 浏览器导航的 `NavigationManager.Refresh(false)`，并可靠地追加或替换 query 参数。
+- 浏览器 `File` 与 `Window` 绑定在 C# 编写侧使用更清晰的 `JazorFile` 和 `JazorWindow` 名称，同时保留标准 JavaScript ABI 名称。
+- `Global.IsUndefined(value)` 可区分 JavaScript `undefined` 与 `null`；RazorVue 集成仍在持续完善，当前分支覆盖率门槛暂定为 94%。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -71,7 +71,7 @@ flowchart LR
 顶部徽标展示持续适用的验收门槛，而非会过期的单次构建结果。仓库通过可复现脚本验证以下最低要求：
 
 - 核心编译器：至少 10,000 个通过的 `IOperation` 场景、98% 行覆盖率和 97% 分支覆盖率。
-- 当前 Razor-to-Vue 集成：至少 4,000 个通过场景、90% 行覆盖率和 97% 分支覆盖率。
+- 当前 Razor-to-Vue 集成：至少 4,000 个通过场景、90% 行覆盖率和 94% 分支覆盖率；该门槛会在集成完善后再提高。
 - Vue 生态绑定：每个目标至少 90% 的已审计公共绑定契约覆盖率。
 
 可在 `scripts/csharp/` 下运行 `verify-compiler-coverage.cs`、`verify-razorvue-coverage.cs` 或 `verify-vue-binding-coverage.cs` 复现相应门槛。当前范围与测试入口见[当前状态](docs/04-roadmap/current-status.md)。
@@ -94,15 +94,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.17.0
+dotnet add package Jazor --version 0.18.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.17.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.17.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.18.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.18.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

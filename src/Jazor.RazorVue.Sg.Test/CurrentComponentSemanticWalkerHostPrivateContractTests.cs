@@ -122,12 +122,15 @@ public sealed class CurrentComponentSemanticWalkerHostPrivateContractTests
         var invokeAsyncInvocation = GetSingleInvocation(fixture, "ComponentUnderTest", "InvokeAsyncCaller");
         Assert.IsTrue(InvokeInstance<bool>(host, "IsComponentBaseInvokeAsyncInvocation", invokeAsyncInvocation.TargetMethod, invokeAsyncInvocation.Instance));
         Assert.IsFalse(InvokeInstance<bool>(host, "IsComponentBaseInvokeAsyncInvocation", GetMethodSymbol(fixture, "ComponentUnderTest", "InvokeAsync", 1), invokeAsyncInvocation.Instance));
-        Assert.IsTrue(InvokeInstance<bool>(host, "IsCurrentComponentReceiver", stateChangedInvocation.Instance));
+        // Framework base receivers are excluded from source-member projection, but remain
+        // valid for ComponentBase lifecycle protocol rewrites such as StateHasChanged.
+        Assert.IsFalse(InvokeInstance<bool>(host, "IsCurrentComponentReceiver", stateChangedInvocation.Instance));
+        Assert.IsTrue(InvokeInstance<bool>(host, "IsCurrentComponentBaseReceiver", stateChangedInvocation.Instance));
         Assert.IsFalse(InvokeInstance<bool>(host, "IsCurrentComponentReceiver", literal));
         Assert.IsTrue(InvokeInstance<bool>(host, "IsCurrentComponentInstance", true, null));
         Assert.IsFalse(InvokeInstance<bool>(host, "IsCurrentComponentInstance", true, stateChangedInvocation.Instance));
         Assert.IsTrue(InvokeInstance<bool>(host, "IsCurrentComponentInstance", false, null));
-        Assert.IsTrue(InvokeInstance<bool>(host, "IsCurrentComponentInstance", false, stateChangedInvocation.Instance));
+        Assert.IsFalse(InvokeInstance<bool>(host, "IsCurrentComponentInstance", false, stateChangedInvocation.Instance));
 
         var fieldBinderInvocation = GetSingleInvocation(fixture, "ComponentUnderTest", "BinderFactoryWithField");
         var binderArguments = new object?[] { fieldBinderInvocation, null, null };

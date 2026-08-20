@@ -468,7 +468,7 @@ public delegate void ErrorCallback(DOMException err);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate void FileCallback(JSFile file);
+public delegate void FileCallback(JazorFile file);
 
 /// <summary>
 /// <see href="https://wicg.github.io/entries-api/#callbackdef-filesystementriescallback">File and Directory Entries API: 7.3 The FileSystemDirectoryReader Interface</see>

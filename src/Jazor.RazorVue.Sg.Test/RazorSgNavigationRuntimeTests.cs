@@ -194,14 +194,16 @@ public sealed class RazorSgNavigationRuntimeTests
                     constructor() {
                         this.state = null;
                     }
-                    replaceState(_state, _title, target) {
-                        historyCalls.push(["replace", target]);
+                    replaceState(state, _title, target) {
+                        this.state = state;
+                        historyCalls.push(["replace", target, state]);
                         globalThis.location.pathname = target.split("?")[0];
                         globalThis.location.search = target.includes("?") ? "?" + target.split("?")[1] : "";
                         globalThis.location.href = "https://example.test" + target;
                     }
-                    pushState(_state, _title, target) {
-                        historyCalls.push(["push", target]);
+                    pushState(state, _title, target) {
+                        this.state = state;
+                        historyCalls.push(["push", target, state]);
                         globalThis.location.pathname = target.split("?")[0];
                         globalThis.location.search = target.includes("?") ? "?" + target.split("?")[1] : "";
                         globalThis.location.href = "https://example.test" + target;
@@ -226,16 +228,21 @@ public sealed class RazorSgNavigationRuntimeTests
                 const events = [];
                 navigation.addLocationChanged((_sender, args) => events.push(args));
                 navigation.navigateTo("/app/next?x=1", { replace: true });
-                assert.deepEqual(historyCalls, [["replace", "/app/next?x=1"]]);
+                assert.deepEqual(historyCalls, [["replace", "/app/next?x=1", null]]);
                 assert.equal(events[0].location, "https://example.test/app/next?x=1");
                 assert.equal(events[0].isNavigationIntercepted, true);
+                assert.equal(events[0].historyEntryState, null);
+
+                navigation.navigateTo("/app/state", { historyEntryState: "detail" });
+                assert.deepEqual(historyCalls[1], ["push", "/app/state", "detail"]);
+                assert.equal(events[1].historyEntryState, "detail");
 
                 globalThis.location.pathname = "/app/back";
                 globalThis.location.search = "";
                 globalThis.location.href = "https://example.test/app/back";
                 listeners.popstate();
-                assert.equal(events[1].location, "https://example.test/app/back");
-                assert.equal(events[1].isNavigationIntercepted, false);
+                assert.equal(events[2].location, "https://example.test/app/back");
+                assert.equal(events[2].isNavigationIntercepted, false);
             });
             """,
             supportingModules: new Dictionary<string, string>

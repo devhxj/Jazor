@@ -223,6 +223,16 @@ public static partial class Global
 	public extern static bool IsFinite(object? value);
 
 	/// <summary>
+	/// Checks whether a value is the JavaScript <c>undefined</c> value.
+	/// This is intentionally distinct from a C# null check: it uses strict equality,
+	/// keeps JavaScript <c>null</c> separate, and performs no value coercion.
+	/// 判断值是否为 JavaScript <c>undefined</c>。它不同于 C# 的 null 判断：使用严格相等，
+	/// 与 JavaScript <c>null</c> 保持区分，且不会执行值转换。
+	/// </summary>
+	[ECMAScriptInline("__arg1 === undefined")]
+	public extern static bool IsUndefined(object? value);
+
+	/// <summary>
 	/// C# host projection of JavaScript global <c>eval</c>.
 	/// The result stays as <see cref="object"/> because JavaScript can evaluate to any runtime value shape.
 	/// JavaScript 全局 <c>eval</c> 的 C# 投影。结果保持为 <see cref="object"/>，因为 JavaScript 可计算出任意运行时值形状。

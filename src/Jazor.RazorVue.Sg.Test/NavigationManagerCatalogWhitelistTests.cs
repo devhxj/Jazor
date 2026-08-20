@@ -34,7 +34,7 @@ public sealed class NavigationManagerCatalogWhitelistTests
     }
 
     [TestMethod]
-    public void LocationChangedPayload_UsesPlainBrowserObjectAliases()
+    public void LocationChangedPayload_UsesPlainBrowserObjectInlineAccessors()
     {
         var typeAttribute = typeof(LocationChangedEventArgsModule)
             .GetCustomAttribute<JazorAttribute>();
@@ -49,7 +49,16 @@ public sealed class NavigationManagerCatalogWhitelistTests
             .OfType<JazorAttribute>()
             .ToDictionary(static attribute => attribute.Member!, static attribute => attribute);
 
-        Assert.AreEqual("location", members["Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.Location.get"].Value);
-        Assert.AreEqual("isNavigationIntercepted", members["Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.IsNavigationIntercepted.get"].Value);
+        var location = members["Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.Location.get"];
+        Assert.AreEqual(Op.Inline, location.Op);
+        Assert.AreEqual("__arg1.location", location.Value);
+
+        var intercepted = members["Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.IsNavigationIntercepted.get"];
+        Assert.AreEqual(Op.Inline, intercepted.Op);
+        Assert.AreEqual("__arg1.isNavigationIntercepted", intercepted.Value);
+
+        var historyEntryState = members["Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.HistoryEntryState.get"];
+        Assert.AreEqual(Op.Inline, historyEntryState.Op);
+        Assert.AreEqual("__arg1.historyEntryState", historyEntryState.Value);
     }
 }

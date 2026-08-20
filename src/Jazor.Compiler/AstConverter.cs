@@ -518,7 +518,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = GetSemanticModel(expressionSyntax).GetOperation(expressionSyntax)!;
             functionOperation = operation;
             var walker = CreateSemanticWalker(cancellationToken);
-            var argument = CreateImportAwareArgument(Sense.Any);
+            // Keep the historic expression-root scope key stable. The marker only distinguishes
+            // a root `=> throw ...` from a nested throw expression during materialization.
+            var argument = CreateImportAwareArgument(Sense.ExpressionBody);
             var visited = walker.Visit(operation, argument)!;
             MergeImports(argument);
             body = MaterializeFunctionBody(visited, argument, symbol.ReturnsVoid);
@@ -740,7 +742,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         CancellationToken cancellationToken,
         SemanticWalkerHost? host = null,
         INamedTypeSymbol? runtimeType = null,
-        bool rewritePrimaryConstructorParameters = true)
+        bool rewritePrimaryConstructorParameters = true,
+        bool isExpressionBody = false)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -749,7 +752,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             host,
             runtimeType,
             rewritePrimaryConstructorParameters);
-        var argument = CreateImportAwareArgument(Sense.Any);
+        var argument = CreateImportAwareArgument(isExpressionBody ? Sense.ExpressionBody : Sense.Any);
         var visited = walker.Visit(operation, argument)!;
         MergeImports(argument);
 
@@ -764,6 +767,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException($"Jazor member class does not support abstract method {symbol.Name}.");
 
         IOperation operation = null!;
+        var isExpressionBody = false;
         foreach (var reference in symbol.DeclaringSyntaxReferences)
         {
             var syntax = reference.GetSyntax();
@@ -777,6 +781,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 else if (methodDecl.ExpressionBody is not null)
                 {
                     operation = GetSemanticModel(methodDecl.ExpressionBody).GetOperation(methodDecl.ExpressionBody)!;
+                    isExpressionBody = true;
                     break;
                 }
             }
@@ -790,12 +795,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 else if (accessorDecl.ExpressionBody is not null)
                 {
                     operation = GetSemanticModel(accessorDecl.ExpressionBody).GetOperation(accessorDecl.ExpressionBody)!;
+                    isExpressionBody = true;
                     break;
                 }
             }
             else if (syntax is ArrowExpressionClauseSyntax arrowExpr)
             {
                 operation = GetSemanticModel(arrowExpr.Expression).GetOperation(arrowExpr.Expression)!;
+                isExpressionBody = true;
                 break;
             }
         }
@@ -809,7 +816,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 operation,
                 symbol.ReturnsVoid,
                 cancellationToken,
-                runtimeType: symbol.ContainingType);
+                runtimeType: symbol.ContainingType,
+                isExpressionBody: isExpressionBody);
         }
         // Body-less property accessors only map to auto-properties.
         else if (isProperty)
@@ -1691,6 +1699,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             throw new NotSupportedException($"Jazor member class constructor {symbol.Name} has no supported source declaration.");
 
         var declaredConstructor = constructorSyntax;
+        var isExpressionBody = declaredConstructor.Body is null;
         var operation = declaredConstructor.Body is { } bodySyntax
             ? GetSemanticModel(bodySyntax).GetOperation(bodySyntax)!
             : GetSemanticModel(declaredConstructor.ExpressionBody!).GetOperation(declaredConstructor.ExpressionBody!)!;
@@ -1698,7 +1707,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             operation,
             returnsVoid: true,
             cancellationToken,
-            runtimeType: symbol.ContainingType);
+            runtimeType: symbol.ContainingType,
+            isExpressionBody: isExpressionBody);
 
         return new MemberConstructorLowering(
             Symbol: symbol,
