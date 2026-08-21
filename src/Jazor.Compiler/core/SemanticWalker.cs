@@ -268,18 +268,46 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private void RejectAmbiguousRuntimeTypeFilter(IOperation operation, ITypeSymbol typeSymbol, string usage)
     {
-        if (GetMapperType(typeSymbol).Mapper != TypeMapper.Class ||
-            !TryGetWhiteListTypeAlias(typeSymbol, out var runtimeAlias))
-            return;
-
-        var conflicts = FindIncompatibleWhiteListAliasTypes(operation, typeSymbol, runtimeAlias);
-        if (conflicts.Count == 0)
+        // catch 过滤与 typeof 令牌没有单一被测操作数，按最保守的方式判定歧义。
+        if (!HasAmbiguousRuntimeTypeFilter(operation, typeSymbol, operandType: null, out var runtimeAlias, out var conflicts))
             return;
 
         HandleTransformationFailure<Node>(
             operation,
-            $"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot be used for {usage} because its runtime alias '{runtimeAlias}' is shared with incompatible supported types: {string.Join(", ", conflicts)}. Configure distinct runtime types in Jazor.CLR if precise runtime filtering is required.");
+            BuildAmbiguousRuntimeTypeFilterMessage(typeSymbol, usage, runtimeAlias, conflicts));
     }
+
+    /// <summary>
+    /// 判断目标类型的运行时别名是否与其它不兼容的白名单类型共用，使 instanceof 过滤不可判定。
+    /// </summary>
+    /// <remarks>
+    /// <paramref name="operandType"/> 是被测值的静态类型（无法确定操作数时传 <see langword="null"/>）。
+    /// 候选类型无法隐式落入该槽位时，它就不可能在此处造成假阳性，因此不计入歧义。
+    /// </remarks>
+    private bool HasAmbiguousRuntimeTypeFilter(
+        IOperation operation,
+        ITypeSymbol typeSymbol,
+        ITypeSymbol? operandType,
+        out string runtimeAlias,
+        out List<string> conflicts)
+    {
+        runtimeAlias = string.Empty;
+        conflicts = new List<string>();
+
+        if (GetMapperType(typeSymbol).Mapper != TypeMapper.Class ||
+            !TryGetWhiteListTypeAlias(typeSymbol, out runtimeAlias))
+            return false;
+
+        conflicts = FindIncompatibleWhiteListAliasTypes(operation, typeSymbol, runtimeAlias, operandType);
+        return conflicts.Count > 0;
+    }
+
+    private static string BuildAmbiguousRuntimeTypeFilterMessage(
+        ITypeSymbol typeSymbol,
+        string usage,
+        string runtimeAlias,
+        List<string> conflicts)
+        => $"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot be used for {usage} because its runtime alias '{runtimeAlias}' is shared with incompatible supported types: {string.Join(", ", conflicts)}. Configure distinct runtime types in Jazor.CLR if precise runtime filtering is required.";
 
     private void RejectUnsupportedRuntimeFallback(IOperation operation, ISymbol symbol, string usage, ITypeSymbol hostType)
     {
@@ -542,7 +570,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return false;
     }
 
-    private List<string> FindIncompatibleWhiteListAliasTypes(IOperation operation, ITypeSymbol targetType, string runtimeAlias)
+    private List<string> FindIncompatibleWhiteListAliasTypes(
+        IOperation operation,
+        ITypeSymbol targetType,
+        string runtimeAlias,
+        ITypeSymbol? operandType)
     {
         var conflicts = new List<string>();
         var targetDisplayName = targetType.OriginalDefinition.ToDisplayString(Format.NameFormat);
@@ -562,8 +594,16 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             if (string.Equals(EraseGenericDisplayArguments(candidateDisplayName), targetErasedDisplayName, StringComparison.Ordinal))
                 continue;
 
-            if (TryResolveWhiteListAliasType(compilation, candidateDisplayName) is ITypeSymbol candidateType &&
-                IsRuntimeAliasAssignableToTarget(candidateType, targetType))
+            if (TryResolveWhiteListAliasType(compilation, candidateDisplayName) is not ITypeSymbol candidateType)
+            {
+                conflicts.Add(candidateDisplayName);
+                continue;
+            }
+
+            if (IsRuntimeAliasAssignableToTarget(candidateType, targetType))
+                continue;
+
+            if (!CanCandidateReachOperandSlot(compilation, candidateType, operandType))
                 continue;
 
             conflicts.Add(candidateDisplayName);
@@ -571,6 +611,23 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
         conflicts.Sort(StringComparer.Ordinal);
         return conflicts;
+    }
+
+    /// <summary>
+    /// 判断候选类型的值是否可能出现在被测操作数的静态类型槽位里。
+    /// </summary>
+    /// <remarks>
+    /// 只有 identity / 引用转换 / 装箱这类隐式转换才能让候选值真正落入该槽位，因此
+    /// <c>ValueTask</c>（结构体，无到 <c>Task</c> 的隐式转换）不会让 <c>Task</c> 槽位上的检查变得不可判定。
+    /// 类型参数按最保守处理：<c>T</c> 的实参在编译期未定，任何候选都可能是它的运行时类型。
+    /// </remarks>
+    private static bool CanCandidateReachOperandSlot(Compilation compilation, ITypeSymbol candidateType, ITypeSymbol? operandType)
+    {
+        if (operandType is null or ITypeParameterSymbol)
+            return true;
+
+        var conversion = compilation.ClassifyCommonConversion(candidateType, operandType);
+        return conversion.Exists && conversion.IsImplicit;
     }
 
     private static string EraseGenericDisplayArguments(string displayName)

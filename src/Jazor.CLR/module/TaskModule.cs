@@ -12,36 +12,36 @@ namespace Jazor.CLR;
 public static class TaskModule
 {
 	///<summary>Initializes a new <see cref="T:System.Threading.Tasks.Task" /> with the specified action.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action)", "(() => { const starters = globalThis.__jazorTaskStarters ??= new WeakMap(); const entry = { started: false, start: null }; const task = new Promise((resolve, reject) => { entry.start = () => { if (entry.started) { return; } entry.started = true; starters.delete(task); Promise.resolve().then(() => __arg1()).then(resolve, reject); }; }); starters.set(task, entry); return task; })()")]
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action)", TaskInlineTemplates.ColdTask)]
 	public extern static System.Threading.Tasks.Task _54056395d4c60189(object action);
 
 	///<summary>Initializes a new <see cref="T:System.Threading.Tasks.Task" /> with the specified action and <see cref="T:System.Threading.CancellationToken" />.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action, System.Threading.CancellationToken)", "(() => { const starters = globalThis.__jazorTaskStarters ??= new WeakMap(); const entry = { started: false, start: null }; const task = new Promise((resolve, reject) => { entry.start = () => { if (entry.started) { return; } entry.started = true; starters.delete(task); Promise.resolve().then(() => __arg1()).then(resolve, reject); }; }); starters.set(task, entry); return task; })()")]
-	public extern static System.Threading.Tasks.Task _85cc61f0768e2467(object action, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action, System.Threading.CancellationToken)", TaskInlineTemplates.ColdTaskCancellation)]
+	public extern static System.Threading.Tasks.Task _85cc61f0768e2467(object action, AbortSignal cancellationToken);
 
 	///<summary>Initializes a new <see cref="T:System.Threading.Tasks.Task" /> with the specified action and creation options.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action, System.Threading.Tasks.TaskCreationOptions)", "(() => { const starters = globalThis.__jazorTaskStarters ??= new WeakMap(); const entry = { started: false, start: null }; const task = new Promise((resolve, reject) => { entry.start = () => { if (entry.started) { return; } entry.started = true; starters.delete(task); Promise.resolve().then(() => __arg1()).then(resolve, reject); }; }); starters.set(task, entry); return task; })()")]
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action, System.Threading.Tasks.TaskCreationOptions)", TaskInlineTemplates.ColdTask)]
 	public extern static System.Threading.Tasks.Task _eff8e21064439c38(object action, object creationOptions);
 
 	///<summary>Initializes a new <see cref="T:System.Threading.Tasks.Task" /> with the specified action and creation options.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action, System.Threading.CancellationToken, System.Threading.Tasks.TaskCreationOptions)", "(() => { const starters = globalThis.__jazorTaskStarters ??= new WeakMap(); const entry = { started: false, start: null }; const task = new Promise((resolve, reject) => { entry.start = () => { if (entry.started) { return; } entry.started = true; starters.delete(task); Promise.resolve().then(() => __arg1()).then(resolve, reject); }; }); starters.set(task, entry); return task; })()")]
-	public extern static System.Threading.Tasks.Task _cec1128f4e8dc68a(object action, object cancellationToken, object creationOptions);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action, System.Threading.CancellationToken, System.Threading.Tasks.TaskCreationOptions)", TaskInlineTemplates.ColdTaskCancellation)]
+	public extern static System.Threading.Tasks.Task _cec1128f4e8dc68a(object action, AbortSignal cancellationToken, object creationOptions);
 
 	///<summary>Initializes a new <see cref="T:System.Threading.Tasks.Task" /> with the specified action and state.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action<object>, object)", "(() => { const starters = globalThis.__jazorTaskStarters ??= new WeakMap(); const entry = { started: false, start: null }; const task = new Promise((resolve, reject) => { entry.start = () => { if (entry.started) { return; } entry.started = true; starters.delete(task); Promise.resolve().then(() => __arg1(__arg2)).then(resolve, reject); }; }); starters.set(task, entry); (globalThis.__jazorTaskAsyncStates ??= new WeakMap()).set(task, __arg2); return task; })()")]
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action<object>, object)", TaskInlineTemplates.ColdTaskWithState)]
 	public extern static System.Threading.Tasks.Task _0be51a2dc3255844(object action, object? state);
 
 	///<summary>Initializes a new <see cref="T:System.Threading.Tasks.Task" /> with the specified action, state, and <see cref="T:System.Threading.CancellationToken" />.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action<object>, object, System.Threading.CancellationToken)", "(() => { const starters = globalThis.__jazorTaskStarters ??= new WeakMap(); const entry = { started: false, start: null }; const task = new Promise((resolve, reject) => { entry.start = () => { if (entry.started) { return; } entry.started = true; starters.delete(task); Promise.resolve().then(() => __arg1(__arg2)).then(resolve, reject); }; }); starters.set(task, entry); (globalThis.__jazorTaskAsyncStates ??= new WeakMap()).set(task, __arg2); return task; })()")]
-	public extern static System.Threading.Tasks.Task _9fcd22dde0dcd8a7(object action, object? state, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action<object>, object, System.Threading.CancellationToken)", TaskInlineTemplates.ColdTaskWithStateCancellation)]
+	public extern static System.Threading.Tasks.Task _9fcd22dde0dcd8a7(object action, object? state, AbortSignal cancellationToken);
 
 	///<summary>Initializes a new <see cref="T:System.Threading.Tasks.Task" /> with the specified action, state, and options.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action<object>, object, System.Threading.Tasks.TaskCreationOptions)", "(() => { const starters = globalThis.__jazorTaskStarters ??= new WeakMap(); const entry = { started: false, start: null }; const task = new Promise((resolve, reject) => { entry.start = () => { if (entry.started) { return; } entry.started = true; starters.delete(task); Promise.resolve().then(() => __arg1(__arg2)).then(resolve, reject); }; }); starters.set(task, entry); (globalThis.__jazorTaskAsyncStates ??= new WeakMap()).set(task, __arg2); return task; })()")]
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action<object>, object, System.Threading.Tasks.TaskCreationOptions)", TaskInlineTemplates.ColdTaskWithState)]
 	public extern static System.Threading.Tasks.Task _751384169b9f00a5(object action, object? state, object creationOptions);
 
 	///<summary>Initializes a new <see cref="T:System.Threading.Tasks.Task" /> with the specified action, state, and options.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action<object>, object, System.Threading.CancellationToken, System.Threading.Tasks.TaskCreationOptions)", "(() => { const starters = globalThis.__jazorTaskStarters ??= new WeakMap(); const entry = { started: false, start: null }; const task = new Promise((resolve, reject) => { entry.start = () => { if (entry.started) { return; } entry.started = true; starters.delete(task); Promise.resolve().then(() => __arg1(__arg2)).then(resolve, reject); }; }); starters.set(task, entry); (globalThis.__jazorTaskAsyncStates ??= new WeakMap()).set(task, __arg2); return task; })()")]
-	public extern static System.Threading.Tasks.Task _1e1dc0b6a7d9ae5a(object action, object? state, object cancellationToken, object creationOptions);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Task(System.Action<object>, object, System.Threading.CancellationToken, System.Threading.Tasks.TaskCreationOptions)", TaskInlineTemplates.ColdTaskWithStateCancellation)]
+	public extern static System.Threading.Tasks.Task _1e1dc0b6a7d9ae5a(object action, object? state, AbortSignal cancellationToken, object creationOptions);
 
 	///<summary>Starts the <see cref="T:System.Threading.Tasks.Task" />, scheduling it for execution to the current <see cref="T:System.Threading.Tasks.TaskScheduler" />.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Start()", "((entry => { if (entry && entry.start) { entry.start(); const state = globalThis.__jazorTaskStates?.get(__arg1); if (state && state.status === \"created\") { state.status = \"pending\"; } } return undefined; })(globalThis.__jazorTaskStarters?.get(__arg1)))")]
@@ -124,24 +124,24 @@ public static class TaskModule
 	public extern static bool _591f7e80884826c4(System.Threading.Tasks.Task instance, RuntimeModule.JTimeSpan timeout);
 
 	///<summary>Waits for the <see cref="T:System.Threading.Tasks.Task" /> to complete execution.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Wait(System.TimeSpan, System.Threading.CancellationToken)", TaskInlineTemplates.WaitTimeSpan)]
-	public extern static bool _f5ac6969a7868bed(System.Threading.Tasks.Task instance, RuntimeModule.JTimeSpan timeout, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Wait(System.TimeSpan, System.Threading.CancellationToken)", TaskInlineTemplates.WaitTimeSpanCancellation)]
+	public extern static bool _f5ac6969a7868bed(System.Threading.Tasks.Task instance, RuntimeModule.JTimeSpan timeout, AbortSignal cancellationToken);
 
 	///<summary>Waits for the <see cref="T:System.Threading.Tasks.Task" /> to complete execution. The wait terminates if a cancellation token is canceled before the task completes.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Wait(System.Threading.CancellationToken)", "Promise.resolve(__arg1)")]
-	public extern static void _0ae24698cd349db7(System.Threading.Tasks.Task instance, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Wait(System.Threading.CancellationToken)", TaskInlineTemplates.WaitCancellation)]
+	public extern static void _0ae24698cd349db7(System.Threading.Tasks.Task instance, AbortSignal cancellationToken);
 
 	///<summary>Waits for the <see cref="T:System.Threading.Tasks.Task" /> to complete execution within a specified number of milliseconds.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Wait(int)", "Promise.race([Promise.resolve(__arg1).then(() => true), (__arg2 === -1 ? new Promise(() => {}) : new Promise((resolve) => setTimeout(() => resolve(false), __arg2)))])")]
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Wait(int)", TaskInlineTemplates.WaitMilliseconds)]
 	public extern static bool _31c9338e14c100f0(System.Threading.Tasks.Task instance, Number millisecondsTimeout);
 
 	///<summary>Waits for the <see cref="T:System.Threading.Tasks.Task" /> to complete execution. The wait terminates if a timeout interval elapses or a cancellation token is canceled before the task completes.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Wait(int, System.Threading.CancellationToken)", "Promise.race([Promise.resolve(__arg1).then(() => true), (__arg2 === -1 ? new Promise(() => {}) : new Promise((resolve) => setTimeout(() => resolve(false), __arg2)))])")]
-	public extern static bool _3abcae6b9f17598c(System.Threading.Tasks.Task instance, Number millisecondsTimeout, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.Wait(int, System.Threading.CancellationToken)", TaskInlineTemplates.WaitMillisecondsCancellation)]
+	public extern static bool _3abcae6b9f17598c(System.Threading.Tasks.Task instance, Number millisecondsTimeout, AbortSignal cancellationToken);
 
 	///<summary>Gets a <see cref="T:System.Threading.Tasks.Task" /> that will complete when this <see cref="T:System.Threading.Tasks.Task" /> completes or when the specified <see cref="P:System.Threading.CancellationToken" /> has cancellation requested.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.WaitAsync(System.Threading.CancellationToken)", "Promise.resolve(__arg1)")]
-	public extern static System.Threading.Tasks.Task _ad9afc914886a128(System.Threading.Tasks.Task instance, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.WaitAsync(System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncCancellation)]
+	public extern static System.Threading.Tasks.Task _ad9afc914886a128(System.Threading.Tasks.Task instance, AbortSignal cancellationToken);
 
 	///<summary>Gets a <see cref="T:System.Threading.Tasks.Task" /> that will complete when this <see cref="T:System.Threading.Tasks.Task" /> completes or when the specified timeout expires.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.WaitAsync(System.TimeSpan)", TaskInlineTemplates.WaitAsyncTimeSpan)]
@@ -152,20 +152,20 @@ public static class TaskModule
 	public extern static System.Threading.Tasks.Task _263b4b628e4d1a20(System.Threading.Tasks.Task instance, RuntimeModule.JTimeSpan timeout, object timeProvider);
 
 	///<summary>Gets a <see cref="T:System.Threading.Tasks.Task" /> that will complete when this <see cref="T:System.Threading.Tasks.Task" /> completes, when the specified timeout expires, or when the specified <see cref="P:System.Threading.CancellationToken" /> has cancellation requested.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.WaitAsync(System.TimeSpan, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncTimeSpan)]
-	public extern static System.Threading.Tasks.Task _d36be122fd9a52dd(System.Threading.Tasks.Task instance, RuntimeModule.JTimeSpan timeout, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.WaitAsync(System.TimeSpan, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncTimeSpanCancellation)]
+	public extern static System.Threading.Tasks.Task _d36be122fd9a52dd(System.Threading.Tasks.Task instance, RuntimeModule.JTimeSpan timeout, AbortSignal cancellationToken);
 
 	///<summary>Gets a <see cref="T:System.Threading.Tasks.Task" /> that will complete when this <see cref="T:System.Threading.Tasks.Task" /> completes, when the specified timeout expires, or when the specified <see cref="T:System.Threading.CancellationToken" /> has cancellation requested.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.WaitAsync(System.TimeSpan, System.TimeProvider, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncTimeSpan)]
-	public extern static System.Threading.Tasks.Task _c5cedb48e708d62d(System.Threading.Tasks.Task instance, RuntimeModule.JTimeSpan timeout, object timeProvider, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.WaitAsync(System.TimeSpan, System.TimeProvider, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncTimeSpanProviderCancellation)]
+	public extern static System.Threading.Tasks.Task _c5cedb48e708d62d(System.Threading.Tasks.Task instance, RuntimeModule.JTimeSpan timeout, object timeProvider, AbortSignal cancellationToken);
 
 	///<summary>Creates a continuation that executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task>)", "Promise.resolve(__arg1).then(() => __arg2(__arg1), () => __arg2(__arg1))")]
 	public extern static System.Threading.Tasks.Task _42870c69dd0eb9d8(System.Threading.Tasks.Task instance, object continuationAction);
 
 	///<summary>Creates a continuation that receives a cancellation token and executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task>, System.Threading.CancellationToken)", "Promise.resolve(__arg1).then(() => __arg2(__arg1), () => __arg2(__arg1))")]
-	public extern static System.Threading.Tasks.Task _f6aaa640c4977029(System.Threading.Tasks.Task instance, object continuationAction, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task>, System.Threading.CancellationToken)", TaskInlineTemplates.ContinueWithCancellation)]
+	public extern static System.Threading.Tasks.Task _f6aaa640c4977029(System.Threading.Tasks.Task instance, object continuationAction, AbortSignal cancellationToken);
 
 	///<summary>Creates a continuation that executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes. The continuation uses a specified scheduler.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task>, System.Threading.Tasks.TaskScheduler)", "Promise.resolve(__arg1).then(() => __arg2(__arg1), () => __arg2(__arg1))")]
@@ -176,16 +176,16 @@ public static class TaskModule
 	public extern static System.Threading.Tasks.Task _e479b4b2988a20a4(System.Threading.Tasks.Task instance, object continuationAction, object continuationOptions);
 
 	///<summary>Creates a continuation that executes when the target task competes according to the specified <see cref="T:System.Threading.Tasks.TaskContinuationOptions" />. The continuation receives a cancellation token and uses a specified scheduler.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task>, System.Threading.CancellationToken, System.Threading.Tasks.TaskContinuationOptions, System.Threading.Tasks.TaskScheduler)", "Promise.resolve(__arg1).then(() => __arg2(__arg1), () => __arg2(__arg1))")]
-	public extern static System.Threading.Tasks.Task _6798878bd9396e39(System.Threading.Tasks.Task instance, object continuationAction, object cancellationToken, object continuationOptions, object scheduler);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task>, System.Threading.CancellationToken, System.Threading.Tasks.TaskContinuationOptions, System.Threading.Tasks.TaskScheduler)", TaskInlineTemplates.ContinueWithCancellation)]
+	public extern static System.Threading.Tasks.Task _6798878bd9396e39(System.Threading.Tasks.Task instance, object continuationAction, AbortSignal cancellationToken, object continuationOptions, object scheduler);
 
 	///<summary>Creates a continuation that receives caller-supplied state information and executes when the target <see cref="T:System.Threading.Tasks.Task" /> completes.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task, object>, object)", "Promise.resolve(__arg1).then(() => __arg2(__arg1, __arg3), () => __arg2(__arg1, __arg3))")]
 	public extern static System.Threading.Tasks.Task _c0b1f1737fb5274e(System.Threading.Tasks.Task instance, object continuationAction, object? state);
 
 	///<summary>Creates a continuation that receives caller-supplied state information and a cancellation token and that executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task, object>, object, System.Threading.CancellationToken)", "Promise.resolve(__arg1).then(() => __arg2(__arg1, __arg3), () => __arg2(__arg1, __arg3))")]
-	public extern static System.Threading.Tasks.Task _a1c3856bf9ec7f94(System.Threading.Tasks.Task instance, object continuationAction, object? state, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task, object>, object, System.Threading.CancellationToken)", TaskInlineTemplates.ContinueWithStateCancellation)]
+	public extern static System.Threading.Tasks.Task _a1c3856bf9ec7f94(System.Threading.Tasks.Task instance, object continuationAction, object? state, AbortSignal cancellationToken);
 
 	///<summary>Creates a continuation that receives caller-supplied state information and executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes. The continuation uses a specified scheduler.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task, object>, object, System.Threading.Tasks.TaskScheduler)", "Promise.resolve(__arg1).then(() => __arg2(__arg1, __arg3), () => __arg2(__arg1, __arg3))")]
@@ -196,16 +196,16 @@ public static class TaskModule
 	public extern static System.Threading.Tasks.Task _6276124cb311c12a(System.Threading.Tasks.Task instance, object continuationAction, object? state, object continuationOptions);
 
 	///<summary>Creates a continuation that receives caller-supplied state information and a cancellation token and that executes when the target <see cref="T:System.Threading.Tasks.Task" /> completes. The continuation executes based on a set of specified conditions and uses a specified scheduler.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task, object>, object, System.Threading.CancellationToken, System.Threading.Tasks.TaskContinuationOptions, System.Threading.Tasks.TaskScheduler)", "Promise.resolve(__arg1).then(() => __arg2(__arg1, __arg3), () => __arg2(__arg1, __arg3))")]
-	public extern static System.Threading.Tasks.Task _bf9404373dee65a3(System.Threading.Tasks.Task instance, object continuationAction, object? state, object cancellationToken, object continuationOptions, object scheduler);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith(System.Action<System.Threading.Tasks.Task, object>, object, System.Threading.CancellationToken, System.Threading.Tasks.TaskContinuationOptions, System.Threading.Tasks.TaskScheduler)", TaskInlineTemplates.ContinueWithStateCancellation)]
+	public extern static System.Threading.Tasks.Task _bf9404373dee65a3(System.Threading.Tasks.Task instance, object continuationAction, object? state, AbortSignal cancellationToken, object continuationOptions, object scheduler);
 
 	///<summary>Creates a continuation that executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task`1" /> completes and returns a value.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, TResult>)", "Promise.resolve(__arg1).then(() => __arg2(__arg1), () => __arg2(__arg1))")]
 	public extern static System.Threading.Tasks.Task<TResult> _7d7b67122a4ac6c2<TResult>(System.Threading.Tasks.Task instance, object continuationFunction);
 
 	///<summary>Creates a continuation that executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes and returns a value. The continuation receives a cancellation token.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, TResult>, System.Threading.CancellationToken)", "Promise.resolve(__arg1).then(() => __arg2(__arg1), () => __arg2(__arg1))")]
-	public extern static System.Threading.Tasks.Task<TResult> _27c27506d65c32ef<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, TResult>, System.Threading.CancellationToken)", TaskInlineTemplates.ContinueWithCancellation)]
+	public extern static System.Threading.Tasks.Task<TResult> _27c27506d65c32ef<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, AbortSignal cancellationToken);
 
 	///<summary>Creates a continuation that executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes and returns a value. The continuation uses a specified scheduler.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, TResult>, System.Threading.Tasks.TaskScheduler)", "Promise.resolve(__arg1).then(() => __arg2(__arg1), () => __arg2(__arg1))")]
@@ -216,16 +216,16 @@ public static class TaskModule
 	public extern static System.Threading.Tasks.Task<TResult> _ca92ad467c5ad377<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, object continuationOptions);
 
 	///<summary>Creates a continuation that executes according to the specified continuation options and returns a value. The continuation is passed a cancellation token and uses a specified scheduler.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, TResult>, System.Threading.CancellationToken, System.Threading.Tasks.TaskContinuationOptions, System.Threading.Tasks.TaskScheduler)", "Promise.resolve(__arg1).then(() => __arg2(__arg1), () => __arg2(__arg1))")]
-	public extern static System.Threading.Tasks.Task<TResult> _a91194cd6fe4a804<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, object cancellationToken, object continuationOptions, object scheduler);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, TResult>, System.Threading.CancellationToken, System.Threading.Tasks.TaskContinuationOptions, System.Threading.Tasks.TaskScheduler)", TaskInlineTemplates.ContinueWithCancellation)]
+	public extern static System.Threading.Tasks.Task<TResult> _a91194cd6fe4a804<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, AbortSignal cancellationToken, object continuationOptions, object scheduler);
 
 	///<summary>Creates a continuation that receives caller-supplied state information and executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes and returns a value.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, object, TResult>, object)", "Promise.resolve(__arg1).then(() => __arg2(__arg1, __arg3), () => __arg2(__arg1, __arg3))")]
 	public extern static System.Threading.Tasks.Task<TResult> _c90ac65203d1352e<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, object? state);
 
 	///<summary>Creates a continuation that executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes and returns a value. The continuation receives caller-supplied state information and a cancellation token.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, object, TResult>, object, System.Threading.CancellationToken)", "Promise.resolve(__arg1).then(() => __arg2(__arg1, __arg3), () => __arg2(__arg1, __arg3))")]
-	public extern static System.Threading.Tasks.Task<TResult> _68bee76bd94d95ee<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, object? state, object cancellationToken);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, object, TResult>, object, System.Threading.CancellationToken)", TaskInlineTemplates.ContinueWithStateCancellation)]
+	public extern static System.Threading.Tasks.Task<TResult> _68bee76bd94d95ee<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, object? state, AbortSignal cancellationToken);
 
 	///<summary>Creates a continuation that executes asynchronously when the target <see cref="T:System.Threading.Tasks.Task" /> completes. The continuation receives caller-supplied state information and uses a specified scheduler.</summary>
 	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, object, TResult>, object, System.Threading.Tasks.TaskScheduler)", "Promise.resolve(__arg1).then(() => __arg2(__arg1, __arg3), () => __arg2(__arg1, __arg3))")]
@@ -236,8 +236,8 @@ public static class TaskModule
 	public extern static System.Threading.Tasks.Task<TResult> _81acb4f27ed5b790<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, object? state, object continuationOptions);
 
 	///<summary>Creates a continuation that executes based on the specified task continuation options when the target <see cref="T:System.Threading.Tasks.Task" /> completes and returns a value. The continuation receives caller-supplied state information and a cancellation token and uses the specified scheduler.</summary>
-	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, object, TResult>, object, System.Threading.CancellationToken, System.Threading.Tasks.TaskContinuationOptions, System.Threading.Tasks.TaskScheduler)", "Promise.resolve(__arg1).then(() => __arg2(__arg1, __arg3), () => __arg2(__arg1, __arg3))")]
-	public extern static System.Threading.Tasks.Task<TResult> _e31e78776c233392<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, object? state, object cancellationToken, object continuationOptions, object scheduler);
+	[Jazor(Op.Inline ,"System.Threading.Tasks.Task.ContinueWith<TResult>(System.Func<System.Threading.Tasks.Task, object, TResult>, object, System.Threading.CancellationToken, System.Threading.Tasks.TaskContinuationOptions, System.Threading.Tasks.TaskScheduler)", TaskInlineTemplates.ContinueWithStateCancellation)]
+	public extern static System.Threading.Tasks.Task<TResult> _e31e78776c233392<TResult>(System.Threading.Tasks.Task instance, object continuationFunction, object? state, AbortSignal cancellationToken, object continuationOptions, object scheduler);
 
 	///<summary>Waits for all of the provided <see cref="T:System.Threading.Tasks.Task" /> objects to complete execution.</summary>
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAll(params System.Threading.Tasks.Task[])", "Promise.all(__arg1)")]
@@ -252,20 +252,20 @@ public static class TaskModule
 	public extern static bool _f8fce6748b855ce2(object tasks, RuntimeModule.JTimeSpan timeout);
 
 	///<summary>Waits for all of the provided <see cref="T:System.Threading.Tasks.Task" /> objects to complete execution within a specified number of milliseconds.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[], int)", "Promise.race([Promise.all(__arg1).then(() => true), (__arg2 === -1 ? new Promise(() => {}) : new Promise((resolve) => setTimeout(() => resolve(false), __arg2)))])")]
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[], int)", TaskInlineTemplates.WaitAllMilliseconds)]
 	public extern static bool _daa1f706f69a1f60(object tasks, Number millisecondsTimeout);
 
 	///<summary>Waits for all of the provided <see cref="T:System.Threading.Tasks.Task" /> objects to complete execution unless the wait is cancelled.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[], System.Threading.CancellationToken)", "Promise.all(__arg1)")]
-	public extern static void _8f55779be329115b(object tasks, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[], System.Threading.CancellationToken)", TaskInlineTemplates.WaitAllCancellation)]
+	public extern static void _8f55779be329115b(object tasks, AbortSignal cancellationToken);
 
 	///<summary>Waits for all of the provided <see cref="T:System.Threading.Tasks.Task" /> objects to complete execution within a specified number of milliseconds or until the wait is cancelled.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[], int, System.Threading.CancellationToken)", "Promise.race([Promise.all(__arg1).then(() => true), (__arg2 === -1 ? new Promise(() => {}) : new Promise((resolve) => setTimeout(() => resolve(false), __arg2)))])")]
-	public extern static bool _d7522c9a3480bafa(object tasks, Number millisecondsTimeout, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAll(System.Threading.Tasks.Task[], int, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAllMillisecondsCancellation)]
+	public extern static bool _d7522c9a3480bafa(object tasks, Number millisecondsTimeout, AbortSignal cancellationToken);
 
 	///<summary>Waits for all of the provided <see cref="T:System.Threading.Tasks.Task" /> objects to complete execution unless the wait is cancelled.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAll(System.Collections.Generic.IEnumerable<System.Threading.Tasks.Task>, System.Threading.CancellationToken)", "Promise.all(Array.from(__arg1))")]
-	public extern static void _6bcdad547747a518(object tasks, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAll(System.Collections.Generic.IEnumerable<System.Threading.Tasks.Task>, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAllEnumerableCancellation)]
+	public extern static void _6bcdad547747a518(object tasks, AbortSignal cancellationToken);
 
 	///<summary>Waits for any of the provided <see cref="T:System.Threading.Tasks.Task" /> objects to complete execution.</summary>
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAny(params System.Threading.Tasks.Task[])", "Promise.race(Array.from(__arg1).map((task, index) => Promise.resolve(task).then(() => index, () => index)))")]
@@ -276,16 +276,16 @@ public static class TaskModule
 	public extern static Number _4aa06494e0b5a7e1(object tasks, RuntimeModule.JTimeSpan timeout);
 
 	///<summary>Waits for any of the provided <see cref="T:System.Threading.Tasks.Task" /> objects to complete execution unless the wait is cancelled.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[], System.Threading.CancellationToken)", "Promise.race(Array.from(__arg1).map((task, index) => Promise.resolve(task).then(() => index, () => index)))")]
-	public extern static Number _d6006967fd3ff1ae(object tasks, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[], System.Threading.CancellationToken)", TaskInlineTemplates.WaitAnyCancellation)]
+	public extern static Number _d6006967fd3ff1ae(object tasks, AbortSignal cancellationToken);
 
 	///<summary>Waits for any of the provided <see cref="T:System.Threading.Tasks.Task" /> objects to complete execution within a specified number of milliseconds.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[], int)", "Promise.race([Promise.race(Array.from(__arg1).map((task, index) => Promise.resolve(task).then(() => index, () => index))), (__arg2 === -1 ? new Promise(() => {}) : new Promise((resolve) => setTimeout(() => resolve(-1), __arg2)))])")]
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[], int)", TaskInlineTemplates.WaitAnyMilliseconds)]
 	public extern static Number _2291d9e80a279f88(object tasks, Number millisecondsTimeout);
 
 	///<summary>Waits for any of the provided <see cref="T:System.Threading.Tasks.Task" /> objects to complete execution within a specified number of milliseconds or until a cancellation token is cancelled.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[], int, System.Threading.CancellationToken)", "Promise.race([Promise.race(Array.from(__arg1).map((task, index) => Promise.resolve(task).then(() => index, () => index))), (__arg2 === -1 ? new Promise(() => {}) : new Promise((resolve) => setTimeout(() => resolve(-1), __arg2)))])")]
-	public extern static Number _a2afaebb710c2e05(object tasks, Number millisecondsTimeout, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WaitAny(System.Threading.Tasks.Task[], int, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAnyMillisecondsCancellation)]
+	public extern static Number _a2afaebb710c2e05(object tasks, Number millisecondsTimeout, AbortSignal cancellationToken);
 
 	///<summary>Creates a <see cref="T:System.Threading.Tasks.Task`1" /> that's completed successfully with the specified result.</summary>
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.FromResult<TResult>(TResult)", "Promise.resolve(__arg1)")]
@@ -300,44 +300,48 @@ public static class TaskModule
 	public extern static System.Threading.Tasks.Task<TResult> _f14ed013f26abbfe<TResult>(object exception);
 
 	///<summary>Creates a <see cref="T:System.Threading.Tasks.Task" /> that's completed due to cancellation with a specified cancellation token.</summary>
+	// token 在这里被有意忽略：结果 Task 一开始就是 Canceled，取消已经发生完了，signal 不再驱动任何状态转换。
+	// CLR 下 token 唯一可观察的去处是 OperationCanceledException.CancellationToken，那个面没有映射；
+	// "token 必须已取消"是调用方保证的前置条件，不在运行时复查。
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.FromCanceled(System.Threading.CancellationToken)", "Promise.reject(new Error(\"TaskCanceledException\"))")]
-	public extern static System.Threading.Tasks.Task _2a2b8d828dc4e32b(object cancellationToken);
+	public extern static System.Threading.Tasks.Task _2a2b8d828dc4e32b(AbortSignal cancellationToken);
 
 	///<summary>Creates a <see cref="T:System.Threading.Tasks.Task`1" /> that's completed due to cancellation with a specified cancellation token.</summary>
+	// 同上：已取消的结果不需要再监听 signal。
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.FromCanceled<TResult>(System.Threading.CancellationToken)", "Promise.reject(new Error(\"TaskCanceledException\"))")]
-	public extern static System.Threading.Tasks.Task<TResult> _84bf39167a494585<TResult>(object cancellationToken);
+	public extern static System.Threading.Tasks.Task<TResult> _84bf39167a494585<TResult>(AbortSignal cancellationToken);
 
 	///<summary>Queues the specified work to run on the thread pool and returns a <see cref="T:System.Threading.Tasks.Task" /> object that represents that work.</summary>
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run(System.Action)", "Promise.resolve().then(__arg1)")]
 	public extern static System.Threading.Tasks.Task _da51a19b5762a1f4(object action);
 
 	///<summary>Queues the specified work to run on the thread pool and returns a <see cref="T:System.Threading.Tasks.Task" /> object that represents that work. A cancellation token allows the work to be cancelled if it has not yet started.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run(System.Action, System.Threading.CancellationToken)", "Promise.resolve().then(__arg1)")]
-	public extern static System.Threading.Tasks.Task _a3df9536862f3937(object action, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run(System.Action, System.Threading.CancellationToken)", TaskInlineTemplates.RunCancellation)]
+	public extern static System.Threading.Tasks.Task _a3df9536862f3937(object action, AbortSignal cancellationToken);
 
 	///<summary>Queues the specified work to run on the thread pool and returns a <see cref="T:System.Threading.Tasks.Task`1" /> object that represents that work. A cancellation token allows the work to be cancelled if it has not yet started.</summary>
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run<TResult>(System.Func<TResult>)", "Promise.resolve().then(__arg1)")]
 	public extern static System.Threading.Tasks.Task<TResult> _d928ffeaf8804ba2<TResult>(object function);
 
 	///<summary>Queues the specified work to run on the thread pool and returns a <see langword="Task(TResult)" /> object that represents that work.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run<TResult>(System.Func<TResult>, System.Threading.CancellationToken)", "Promise.resolve().then(__arg1)")]
-	public extern static System.Threading.Tasks.Task<TResult> _38b8d80dd098c8e1<TResult>(object function, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run<TResult>(System.Func<TResult>, System.Threading.CancellationToken)", TaskInlineTemplates.RunCancellation)]
+	public extern static System.Threading.Tasks.Task<TResult> _38b8d80dd098c8e1<TResult>(object function, AbortSignal cancellationToken);
 
 	///<summary>Queues the specified work to run on the thread pool and returns a proxy for the task returned by <paramref name="function" />.</summary>
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run(System.Func<System.Threading.Tasks.Task>)", "Promise.resolve().then(__arg1)")]
 	public extern static System.Threading.Tasks.Task _62a7e2b729db2d93(object function);
 
 	///<summary>Queues the specified work to run on the thread pool and returns a proxy for the task returned by <paramref name="function" />. A cancellation token allows the work to be cancelled if it has not yet started.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run(System.Func<System.Threading.Tasks.Task>, System.Threading.CancellationToken)", "Promise.resolve().then(__arg1)")]
-	public extern static System.Threading.Tasks.Task _cdbfa5101a0dad37(object function, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run(System.Func<System.Threading.Tasks.Task>, System.Threading.CancellationToken)", TaskInlineTemplates.RunCancellation)]
+	public extern static System.Threading.Tasks.Task _cdbfa5101a0dad37(object function, AbortSignal cancellationToken);
 
 	///<summary>Queues the specified work to run on the thread pool and returns a proxy for the <see langword="Task(TResult)" /> returned by <paramref name="function" />. A cancellation token allows the work to be cancelled if it has not yet started.</summary>
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run<TResult>(System.Func<System.Threading.Tasks.Task<TResult>>)", "Promise.resolve().then(__arg1)")]
 	public extern static System.Threading.Tasks.Task<TResult> _452c2b887d5a1fc3<TResult>(object function);
 
 	///<summary>Queues the specified work to run on the thread pool and returns a proxy for the <see langword="Task(TResult)" /> returned by <paramref name="function" />.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run<TResult>(System.Func<System.Threading.Tasks.Task<TResult>>, System.Threading.CancellationToken)", "Promise.resolve().then(__arg1)")]
-	public extern static System.Threading.Tasks.Task<TResult> _da50521c9500efbd<TResult>(object function, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Run<TResult>(System.Func<System.Threading.Tasks.Task<TResult>>, System.Threading.CancellationToken)", TaskInlineTemplates.RunCancellation)]
+	public extern static System.Threading.Tasks.Task<TResult> _da50521c9500efbd<TResult>(object function, AbortSignal cancellationToken);
 
 	///<summary>Creates a task that completes after a specified time interval.</summary>
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Delay(System.TimeSpan)", TaskInlineTemplates.DelayTimeSpan)]
@@ -348,20 +352,20 @@ public static class TaskModule
 	public extern static System.Threading.Tasks.Task _c515b64b763bdb72(RuntimeModule.JTimeSpan delay, object timeProvider);
 
 	///<summary>Creates a cancellable task that completes after a specified time interval.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Delay(System.TimeSpan, System.Threading.CancellationToken)", TaskInlineTemplates.DelayTimeSpan)]
-	public extern static System.Threading.Tasks.Task _1dd519d143fccf61(RuntimeModule.JTimeSpan delay, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Delay(System.TimeSpan, System.Threading.CancellationToken)", TaskInlineTemplates.DelayTimeSpanCancellation)]
+	public extern static System.Threading.Tasks.Task _1dd519d143fccf61(RuntimeModule.JTimeSpan delay, AbortSignal cancellationToken);
 
 	///<summary>Creates a cancellable task that completes after a specified time interval.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Delay(System.TimeSpan, System.TimeProvider, System.Threading.CancellationToken)", TaskInlineTemplates.DelayTimeSpan)]
-	public extern static System.Threading.Tasks.Task _c16542532f5bf55f(RuntimeModule.JTimeSpan delay, object timeProvider, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Delay(System.TimeSpan, System.TimeProvider, System.Threading.CancellationToken)", TaskInlineTemplates.DelayTimeSpanProviderCancellation)]
+	public extern static System.Threading.Tasks.Task _c16542532f5bf55f(RuntimeModule.JTimeSpan delay, object timeProvider, AbortSignal cancellationToken);
 
 	///<summary>Creates a task that completes after a specified number of milliseconds.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Delay(int)", "(__arg1 === -1 ? new Promise(() => {}) : new Promise((resolve) => setTimeout(resolve, __arg1)))")]
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Delay(int)", TaskInlineTemplates.DelayMilliseconds)]
 	public extern static System.Threading.Tasks.Task _3da1cdb174644ada(Number millisecondsDelay);
 
 	///<summary>Creates a cancellable task that completes after a specified number of milliseconds.</summary>
-	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Delay(int, System.Threading.CancellationToken)", "(__arg1 === -1 ? new Promise(() => {}) : new Promise((resolve) => setTimeout(resolve, __arg1)))")]
-	public extern static System.Threading.Tasks.Task _34c332c06d4d985b(Number millisecondsDelay, object cancellationToken);
+	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.Delay(int, System.Threading.CancellationToken)", TaskInlineTemplates.DelayMillisecondsCancellation)]
+	public extern static System.Threading.Tasks.Task _34c332c06d4d985b(Number millisecondsDelay, AbortSignal cancellationToken);
 
 	///<summary>Creates a task that will complete when all of the <see cref="T:System.Threading.Tasks.Task" /> objects in an enumerable collection have completed.</summary>
 	[Jazor(Op.Inline ,"static System.Threading.Tasks.Task.WhenAll(System.Collections.Generic.IEnumerable<System.Threading.Tasks.Task>)", "Promise.all(__arg1)")]

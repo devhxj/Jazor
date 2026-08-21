@@ -2622,10 +2622,15 @@ public sealed class SemanticWalkerPatternTest
   }
 
   /// <summary>
-  /// 测试 Visit - IsType Task&lt;T&gt; 类型检查（映射为 Promise）
+  /// 测试共用 Promise carrier 的 Task&lt;T&gt; 检查在源可证明时折叠为非空判断
   /// </summary>
+  /// <remarks>
+  /// ValueTask 与 Task 家族共用同一个 Promise carrier，装箱后的 ValueTask 在 JS 下同样是 Promise，
+  /// 因此不能发射 instanceof Promise。这里 obj 的单赋值源静态类型就是 Task&lt;int&gt;，
+  /// Roslyn 可以证明结果，于是只保留 CLR 语义所需的非空判断。
+  /// </remarks>
   [TestMethod]
-  public void Visit_IsType_TaskOfT()
+  public void Visit_IsType_TaskOfT_ProvableSource_FoldsToNonNullCheck()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -2644,7 +2649,114 @@ public sealed class SemanticWalkerPatternTest
 
     AssertScriptEqual(@"{
   let obj = Promise.resolve(42);
-  let result = obj instanceof Promise;
+  let result = obj != null;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task 静态类型的槽位不受 ValueTask 共用 carrier 影响，仍然发射 instanceof Promise
+  /// </summary>
+  /// <remarks>
+  /// ValueTask 是结构体，没有到 Task 引用槽位的隐式转换，所以该位置不可能出现装箱的 ValueTask，
+  /// 运行时过滤依然可判定。
+  /// </remarks>
+  [TestMethod]
+  public void Visit_IsType_TaskOfT_TaskTypedOperand_KeepsPromiseInstanceOf()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task task)
+                {
+                    bool result = task is System.Threading.Tasks.Task<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let result = task instanceof Promise;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 object 槽位上不可证明的 Task&lt;T&gt; 检查仍然显式失败
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_TaskOfT_UnprovableObjectOperand_Throws()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object obj)
+                {
+                    bool result = obj is System.Threading.Tasks.Task<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+    StringAssert.Contains(exception.Message, "System.Threading.Tasks.Task<TResult>");
+    StringAssert.Contains(exception.Message, "System.Threading.Tasks.ValueTask");
+  }
+
+  /// <summary>
+  /// 测试类型实参参与折叠证明：Task&lt;int&gt; 源不能证明 Task&lt;string&gt; 检查
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_TaskOfMismatchedTypeArgument_Throws()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = System.Threading.Tasks.Task.FromResult(42);
+                    bool result = obj is System.Threading.Tasks.Task<string>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+
+    StringAssert.Contains(exception.Message, "System.Threading.Tasks.Task<TResult>");
+    StringAssert.Contains(exception.Message, "System.Threading.Tasks.ValueTask");
+  }
+
+  /// <summary>
+  /// 测试确定性运行时值可以把共用 carrier 的检查折叠为 false
+  /// </summary>
+  /// <remarks>
+  /// 装箱的 ValueTask 在 CLR 下不是 Task，运行时又和 Promise 无法区分，
+  /// 只有编译期证据能给出正确答案。
+  /// </remarks>
+  [TestMethod]
+  public void Visit_IsType_Task_BoxedValueTaskSource_FoldsToFalse()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new System.Threading.Tasks.ValueTask();
+                    bool result = obj is System.Threading.Tasks.Task;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let obj = Promise.resolve();
+  let result = false;
 }", script);
   }
 

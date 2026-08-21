@@ -28,8 +28,8 @@ public static class TaskT1Module<TResult>
 	public extern static System.Runtime.CompilerServices.ConfiguredTaskAwaitable<TResult> _e315c5cff004ed53(System.Threading.Tasks.Task<TResult> instance, object options);
 
 	///<summary>Gets a task that completes when this task completes or when cancellation is requested.</summary>
-	[Jazor(Op.Inline, "System.Threading.Tasks.Task<TResult>.WaitAsync(System.Threading.CancellationToken)", "Promise.resolve(__arg1)")]
-	public extern static System.Threading.Tasks.Task<TResult> _a5adb3e12ef3a8bb(System.Threading.Tasks.Task<TResult> instance, object cancellationToken);
+	[Jazor(Op.Inline, "System.Threading.Tasks.Task<TResult>.WaitAsync(System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncCancellation)]
+	public extern static System.Threading.Tasks.Task<TResult> _a5adb3e12ef3a8bb(System.Threading.Tasks.Task<TResult> instance, AbortSignal cancellationToken);
 
 	///<summary>Gets a task that completes when this task completes or when the specified timeout expires.</summary>
 	[Jazor(Op.Inline, "System.Threading.Tasks.Task<TResult>.WaitAsync(System.TimeSpan)", TaskInlineTemplates.WaitAsyncTimeSpan)]
@@ -40,10 +40,10 @@ public static class TaskT1Module<TResult>
 	public extern static System.Threading.Tasks.Task<TResult> _35ae1f6899303439(System.Threading.Tasks.Task<TResult> instance, RuntimeModule.JTimeSpan timeout, object timeProvider);
 
 	///<summary>Gets a task that completes when this task completes, when timeout expires, or when cancellation is requested.</summary>
-	[Jazor(Op.Inline, "System.Threading.Tasks.Task<TResult>.WaitAsync(System.TimeSpan, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncTimeSpan)]
-	public extern static System.Threading.Tasks.Task<TResult> _05fbcc037540ba42(System.Threading.Tasks.Task<TResult> instance, RuntimeModule.JTimeSpan timeout, object cancellationToken);
+	[Jazor(Op.Inline, "System.Threading.Tasks.Task<TResult>.WaitAsync(System.TimeSpan, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncTimeSpanCancellation)]
+	public extern static System.Threading.Tasks.Task<TResult> _05fbcc037540ba42(System.Threading.Tasks.Task<TResult> instance, RuntimeModule.JTimeSpan timeout, AbortSignal cancellationToken);
 
 	///<summary>Gets a task that completes when this task completes, when timeout expires, or when cancellation is requested.</summary>
-	[Jazor(Op.Inline, "System.Threading.Tasks.Task<TResult>.WaitAsync(System.TimeSpan, System.TimeProvider, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncTimeSpan)]
-	public extern static System.Threading.Tasks.Task<TResult> _4b5b887e2099f8dd(System.Threading.Tasks.Task<TResult> instance, RuntimeModule.JTimeSpan timeout, object timeProvider, object cancellationToken);
+	[Jazor(Op.Inline, "System.Threading.Tasks.Task<TResult>.WaitAsync(System.TimeSpan, System.TimeProvider, System.Threading.CancellationToken)", TaskInlineTemplates.WaitAsyncTimeSpanProviderCancellation)]
+	public extern static System.Threading.Tasks.Task<TResult> _4b5b887e2099f8dd(System.Threading.Tasks.Task<TResult> instance, RuntimeModule.JTimeSpan timeout, object timeProvider, AbortSignal cancellationToken);
 }

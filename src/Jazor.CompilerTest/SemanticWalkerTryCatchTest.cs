@@ -378,10 +378,10 @@ public sealed class SemanticWalkerTryCatchTest
     }
 
     /// <summary>
-    /// 测试多个 typed catch 在共享运行时别名时拒绝生成
+    /// 测试多个 typed catch 在异常类型不受支持时拒绝生成
     /// </summary>
     [TestMethod]
-    public void VisitTry_MultipleCatches_WithAmbiguousRuntimeAlias_Throws()
+    public void VisitTry_MultipleCatches_WithUnsupportedExceptionTypes_Throws()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -414,8 +414,8 @@ public sealed class SemanticWalkerTryCatchTest
         var tryOp = GetOperationAt<ITryOperation>(block, 0);
         var exception = Assert.Throws<OperationTransformationException>(() => walker.VisitTry(tryOp, new()));
 
-        StringAssert.Contains(exception.Message, "runtime alias 'Error'");
-        StringAssert.Contains(exception.Message, "System.DivideByZeroException");
+        StringAssert.Contains(exception.Message, "System.InvalidOperationException");
+        StringAssert.Contains(exception.Message, "is not supported");
     }
 
     /// <summary>
@@ -1108,10 +1108,11 @@ catch (ex) {
     #region 扩展测试用例 - 更多异常类型
 
     /// <summary>
-    /// 测试 throw 预定义异常
+    /// DivideByZeroException 在 JavaScript 侧没有对应的内建错误类型，不纳入支持范围。
+    /// 若强行别名回 Error 就会与 System.Exception 共用运行时形状，令 catch/is 判别不可判定。
     /// </summary>
     [TestMethod]
-    public void VisitThrow_DivideByZeroException()
+    public void VisitThrow_DivideByZeroException_RejectsUnsupportedExceptionType()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -1125,17 +1126,18 @@ catch (ex) {
 
         var walker = new SemanticWalker(true);
         var throwOp = GetOperationAt<IThrowOperation>(block, 0);
-        var node = walker.VisitThrow(throwOp, new());
-        var script = node?.ToKnRECMAScript();
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.VisitThrow(throwOp, new()));
 
-        Assert.AreEqual(@"throw new Error('DivideByZeroException')", script);
+        StringAssert.Contains(exception.Message, "System.DivideByZeroException");
+        StringAssert.Contains(exception.Message, "is not supported");
     }
 
     /// <summary>
-    /// 测试 throw InvalidOperationException
+    /// InvalidOperationException 同理没有 JavaScript 对应物，不纳入支持范围；
+    /// 需要抛出带消息的异常时使用 System.Exception。
     /// </summary>
     [TestMethod]
-    public void VisitThrow_InvalidOperationException()
+    public void VisitThrow_InvalidOperationException_RejectsUnsupportedExceptionType()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -1143,6 +1145,30 @@ catch (ex) {
                 void TestMethod()
                 {
                     throw new InvalidOperationException(""Invalid state"");
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var throwOp = GetOperationAt<IThrowOperation>(block, 0);
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.VisitThrow(throwOp, new()));
+
+        StringAssert.Contains(exception.Message, "System.InvalidOperationException");
+        StringAssert.Contains(exception.Message, "is not supported");
+    }
+
+    /// <summary>
+    /// 带消息的异常抛出走 System.Exception -> Error。
+    /// </summary>
+    [TestMethod]
+    public void VisitThrow_ExceptionWithMessage()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    throw new Exception(""Invalid state"");
                 }
             }
         ");
@@ -1748,10 +1774,10 @@ catch (ex) {
     #region 扩展测试用例 - 更多异常类型
 
     /// <summary>
-    /// 测试 catch InvalidOperationException 在共享运行时别名时拒绝生成
+    /// catch 过滤 InvalidOperationException 被拒绝：该类型不在支持范围内。
     /// </summary>
     [TestMethod]
-    public void VisitCatch_InvalidOperationException_SharedRuntimeAlias_Throws()
+    public void VisitCatch_InvalidOperationException_RejectsUnsupportedExceptionType()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -1773,8 +1799,8 @@ catch (ex) {
         var walker = new SemanticWalker(true);
         var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
 
-        StringAssert.Contains(exception.Message, "runtime alias 'Error'");
-        StringAssert.Contains(exception.Message, "System.DivideByZeroException");
+        StringAssert.Contains(exception.Message, "System.InvalidOperationException");
+        StringAssert.Contains(exception.Message, "is not supported");
     }
 
     /// <summary>
@@ -2985,7 +3011,7 @@ AssertScriptEqual(@"{
                     }
                     catch (Exception ex)
                     {
-                        throw new InvalidOperationException(""Wrapped"", ex);
+                        throw new Exception(""Wrapped"", ex);
                     }
                 }
 
@@ -3001,7 +3027,7 @@ AssertScriptEqual(@"{
   try {
     this.DoSomething();
   } catch (ex) {
-    throw new Error(""Wrapped"", ex);
+    throw _553ffa41c7b954da(""Wrapped"", ex);
   }
 }", script);
     }

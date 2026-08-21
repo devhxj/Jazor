@@ -32,11 +32,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### 2026-08-21
+### Unreleased
 
-- Jazor 0.19.0 adds RazorVue browser support for `NavigationManager.OnNotFound`, `NavigationManager.NotFound()`, and `NotFoundEventArgs` callback payloads.
-- `NavigationManager.ToAbsoluteUri(...)` now returns a URL-backed `System.Uri`, so supported URI members remain available in browser components.
-- Packaged Wiki SPA consumers now retain their generated documentation catalog during detached release verification.
+- RazorVue browser navigation now supports `NavigationManager.RegisterLocationChangingHandler(...)`, including `PreventNavigation()` and cancellation for superseded navigation attempts.
+- The browser runtime now carries the required `ValueTask` and cancellation API slice for supported async navigation handlers.
+- **Breaking:** update ECMAScript source references from `JPropertyKey` and `JSPropertyDescriptor` to `JazorPropertyKey` and `JazorPropertyDescriptor`.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

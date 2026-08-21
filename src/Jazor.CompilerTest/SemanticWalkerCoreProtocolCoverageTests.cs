@@ -141,7 +141,6 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
                     BigInteger integer = new(value);
                     Exception plain = new();
                     Exception message = new("failed");
-                    InvalidOperationException invalid = new("invalid");
                     ArgumentNullException missing = new("value");
                 }
             }

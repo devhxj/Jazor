@@ -135,12 +135,13 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
         var block = GetBlock(
             """
             using System;
+            using System.Threading.Tasks;
 
             static class TestClass
             {
                 static Type TestMethod()
                 {
-                    return typeof(InvalidOperationException);
+                    return typeof(Task);
                 }
             }
             """);
@@ -148,7 +149,7 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
         var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
             new SemanticWalker(true).Visit(block, new SenseArgument()));
 
-        StringAssert.Contains(exception.Message, "runtime alias 'Error' is shared", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "runtime alias 'Promise' is shared", StringComparison.Ordinal);
         StringAssert.Contains(exception.Message, "precise runtime filtering", StringComparison.Ordinal);
     }
 

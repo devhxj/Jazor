@@ -165,27 +165,6 @@ public static class ExceptionModule
 	public extern static string? _0dbd1c9e0d1f4e3a(Error instance);
 
 	/// <summary>
-	/// C#: new DivideByZeroException()
-	/// JS: new Error("DivideByZeroException")
-	/// </summary>
-	[Jazor(Op.Inline, "System.DivideByZeroException.DivideByZeroException()", "new Error('DivideByZeroException')")]
-	public extern static Error _d1f4c6c8e9474d37();
-
-	/// <summary>
-	/// C#: new InvalidOperationException()
-	/// JS: new Error()
-	/// </summary>
-	[Jazor(Op.Inline, "System.InvalidOperationException.InvalidOperationException()", "new Error()")]
-	public extern static Error _e2850b70fbe24075();
-
-	/// <summary>
-	/// C#: new InvalidOperationException(string)
-	/// JS: new Error(message)
-	/// </summary>
-	[Jazor(Op.Inline, "System.InvalidOperationException.InvalidOperationException(string)", "new Error(__arg1)")]
-	public extern static Error _5c8e0e76e3ba42db(string? message);
-
-	/// <summary>
 	/// C#: new ArgumentNullException(string)
 	/// JS: new TypeError(paramName)
 	/// </summary>
@@ -205,25 +184,16 @@ public static class ExceptionModule
 }
 
 /// <summary>
-/// 衍生异常类型别名映射。
-/// </summary>
-[Jazor(Op.Alias, "System.InvalidOperationException", "Error")]
-public static class InvalidOperationExceptionModule
-{
-}
-
-/// <summary>
 /// ArgumentNullException 映射到 JavaScript TypeError。
+///
+/// 异常族的支持边界：只映射在 JavaScript 侧有对应内建错误类型的 CLR 异常。
+/// System.Exception -> Error、System.ArgumentNullException -> TypeError 各自独占一个别名，
+/// 因此 catch 过滤和 is 判别在运行时可精确区分。
+/// 像 InvalidOperationException / DivideByZeroException 这类没有 JS 对应物的异常，
+/// 若一并别名到 Error 就会与基类共用运行时形状、令类型判别不可判定，故不纳入支持范围：
+/// CLR 运行时模块内部改用 throw new Error("&lt;ExceptionName&gt;: ...") 表达这些失败。
 /// </summary>
 [Jazor(Op.Alias, "System.ArgumentNullException", "TypeError")]
 public static class ArgumentNullExceptionModule
-{
-}
-
-/// <summary>
-/// DivideByZeroException 映射到 JavaScript Error。
-/// </summary>
-[Jazor(Op.Alias, "System.DivideByZeroException", "Error")]
-public static class DivideByZeroExceptionModule
 {
 }

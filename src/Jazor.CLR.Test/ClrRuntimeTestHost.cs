@@ -282,6 +282,10 @@ internal static class ClrRuntimeTestHost
                 // NotFound dispatch is only observable through the sender the runtime passes in,
                 // so record the event-args path onto it. A missing args object throws here.
                 case "CaptureNotFoundPath": fn = (sender, args) => { sender.notFoundPath = args.path; }; break;
+                // Cancellation callbacks own no return channel: their only observable effect is the
+                // state object handed to them, so record the outcome there.
+                case "CaptureCancellationState": fn = state => { state.canceled = true; }; break;
+                case "CaptureCancellationToken": fn = (state, token) => { state.tokenAborted = token.aborted; }; break;
                 default: throw new Error(`Unsupported CLR runtime callable kind: ${value.scalar}`);
               }
               Object.defineProperty(fn, "__clrRuntimeCallable", { value: value.scalar });
@@ -347,6 +351,15 @@ internal static class ClrRuntimeTestHost
           }
           if (value?.constructor?.name === "JRange") {
             return { kind: "record", properties: { start: encode(value.start), end: encode(value.end) } };
+          }
+          // CancellationTokenSource/CancellationToken lower onto the browser AbortController and
+          // AbortSignal, whose state lives behind prototype getters. Encode the CLR-facing state so
+          // scenarios assert cancellation instead of an empty own-property record.
+          if (value instanceof AbortController) {
+            return { kind: "record", properties: { signal: encode(value.signal) } };
+          }
+          if (value instanceof AbortSignal) {
+            return { kind: "record", properties: { aborted: encode(value.aborted) } };
           }
           if (value?.__clrRuntimeCarrier === "disposable") {
             return { kind: "disposable", scalar: String(value.disposeCount) };

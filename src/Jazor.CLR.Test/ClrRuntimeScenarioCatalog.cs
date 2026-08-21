@@ -46,7 +46,9 @@ internal enum ClrRuntimeCallableKind
     Identity,
     SameParity,
     ParityHash,
-    CaptureNotFoundPath
+    CaptureNotFoundPath,
+    CaptureCancellationState,
+    CaptureCancellationToken
 }
 
 internal sealed record ClrRuntimeInvocationValue(
@@ -233,7 +235,8 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeCalendarScenarios.All,
         .. ClrRuntimeCultureInfoScenarios.All,
         .. ClrRuntimeUriScenarios.All,
-        .. ClrRuntimeNavigationScenarios.All
+        .. ClrRuntimeNavigationScenarios.All,
+        .. ClrRuntimeCancellationScenarios.All
     ];
 
     public static ClrRuntimeScenario Get(string id)

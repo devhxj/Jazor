@@ -5,6 +5,7 @@ internal static class ClrRuntimeNavigationScenarios
     private const string NavigationModule = "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
     private const string LocationChangedModule = "Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js";
     private const string NotFoundModule = "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js";
+    private const string LocationChangingModule = "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js";
     private const string ExtensionsModule = "Microsoft/AspNetCore/Components/NavigationManagerExtensionsModule.js";
 
     private const string BaseUri = "Microsoft.AspNetCore.Components.NavigationManager.BaseUri.get";
@@ -23,6 +24,10 @@ internal static class ClrRuntimeNavigationScenarios
     private const string Uri = "Microsoft.AspNetCore.Components.NavigationManager.Uri.get";
     private const string LocationChangedConstructor = "Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.LocationChangedEventArgs(string, bool)";
     private const string NotFoundConstructor = "Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs()";
+    private const string RegisterLocationChangingHandler = "Microsoft.AspNetCore.Components.NavigationManager.RegisterLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext, System.Threading.Tasks.ValueTask>)";
+    private const string PreventNavigation = "Microsoft.AspNetCore.Components.Routing.LocationChangingContext.PreventNavigation()";
+    private const string LocationChangingConstructor = "Microsoft.AspNetCore.Components.Routing.LocationChangingContext.LocationChangingContext()";
+    private const string Dispose = "System.IDisposable.Dispose()";
 
     private const string QueryParameterPrefix = "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(Microsoft.AspNetCore.Components.NavigationManager, string, ";
     private const string QueryParameters = "static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameters(Microsoft.AspNetCore.Components.NavigationManager, System.Collections.Generic.IReadOnlyDictionary<string, object>)";
@@ -100,6 +105,47 @@ internal static class ClrRuntimeNavigationScenarios
         // the path field instead of leaving it undefined.
         Success("navigation.not-found-event-args", NotFoundConstructor, NotFoundModule, [], ClrRuntimeValue.Record(
             ("path", ClrRuntimeValue.Null()))),
+
+        // CLR 的 init-only 属性默认值是 null/false，字面量必须把每个字段都写出来而不是留 undefined；
+        // 默认 CancellationToken 必须落在 CancellationToken.None 那个共享的 never-abort 单例上。
+        Success("navigation.location-changing.default-context", LocationChangingConstructor, LocationChangingModule, [], ClrRuntimeValue.Record(
+            ("__jazorNavigationPrevented", ClrRuntimeValue.Boolean(false)),
+            ("cancellationToken", ClrRuntimeValue.Record(("aborted", ClrRuntimeValue.Boolean(false)))),
+            ("historyEntryState", ClrRuntimeValue.Null()),
+            ("isNavigationIntercepted", ClrRuntimeValue.Boolean(false)),
+            ("targetLocation", ClrRuntimeValue.Null()))),
+        // PreventNavigation() owns no CLR runtime identity: it only writes the private marker the
+        // navigation side reads once every handler settles, so the context argument carries it out.
+        Captured(
+            "navigation.location-changing.prevent-navigation",
+            PreventNavigation,
+            LocationChangingModule,
+            [ClrRuntimeValue.Record(("__jazorNavigationPrevented", ClrRuntimeValue.Boolean(false)))],
+            ClrRuntimeValue.Undefined(),
+            [ClrRuntimeValue.Record(("__jazorNavigationPrevented", ClrRuntimeValue.Boolean(true)))]),
+        // Registration hands back a { dispose } object literal, which is exactly what the CLR
+        // IDisposable carrier probes. Disposing it must empty the invocation list, and an empty
+        // list is observable: internal navigation then commits synchronously, so the location has
+        // already moved when the scenario reads Uri afterwards.
+        Success(
+            "navigation.location-changing.dispose-unregisters",
+            Uri,
+            NavigationModule,
+            [ClrRuntimeValue.Sequence(
+                ClrRuntimeValue.Reference(InstanceRef, Navigation),
+                ClrRuntimeValue.Invoke(
+                    Dispose,
+                    ClrRuntimeValue.Invoke(
+                        RegisterLocationChangingHandler,
+                        ClrRuntimeValue.Reference(InstanceRef, ClrRuntimeValue.Null()),
+                        ClrRuntimeValue.Callable(ClrRuntimeCallableKind.Identity))),
+                ClrRuntimeValue.Invoke(
+                    NavigateToForceLoad,
+                    ClrRuntimeValue.Reference(InstanceRef, ClrRuntimeValue.Null()),
+                    ClrRuntimeValue.Text("/app/orders"),
+                    ClrRuntimeValue.Boolean(false)),
+                ClrRuntimeValue.Reference(InstanceRef, ClrRuntimeValue.Null()))],
+            ClrRuntimeValue.Text("https://example.test/app/orders")),
 
         QueryParameter("bool", "bool"),
         QueryParameter("nullable-bool", "bool?"),

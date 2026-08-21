@@ -59,12 +59,19 @@ var outTypes = new Type[]{
 	typeof(Array),
 	typeof(Guid),
 	typeof(Task),
+	typeof(ValueTask),
+	typeof(Uri),
+	typeof(CancellationTokenSource),
+	typeof(CancellationToken),
+	typeof(CancellationTokenRegistration),
 	// Blazor authoring contracts are scaffolded from the real ASP.NET Core symbols,
 	// then carried into Jazor.CLR as erased browser-facing signatures. The CLR project
 	// itself must not reference ASP.NET Core; only this generator needs the package.
 	typeof(Microsoft.AspNetCore.Components.NavigationManager),
 	typeof(Microsoft.AspNetCore.Components.NavigationOptions),
 	typeof(Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs),
+	typeof(Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs),
+	typeof(Microsoft.AspNetCore.Components.Routing.LocationChangingContext),
 	typeof(Microsoft.AspNetCore.Components.NavigationManagerExtensions)
 };
 var operatorNames = new Dictionary<string, string>
@@ -141,9 +148,19 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(CultureInfo),"String"},
 	{typeof(Console),"Object"},
 	{typeof(Guid),"String"},
+	{typeof(Task),"Promise"},
+	{typeof(ValueTask),"Promise"},
+	{typeof(Uri),"URL"},
+	{typeof(CancellationTokenSource),"AbortController"},
+	{typeof(CancellationToken),"AbortSignal"},
+	// registration 只是"如何解除订阅"的载体，浏览器没有对等类型，脚手架回落到 Object；
+	// 真实 carrier 由 src/Jazor.CLR 侧的 adapter 签名声明。
+	{typeof(CancellationTokenRegistration),"Object"},
 	{typeof(Microsoft.AspNetCore.Components.NavigationManager),"Object"},
 	{typeof(Microsoft.AspNetCore.Components.NavigationOptions),"Object"},
 	{typeof(Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs),"Object"},
+	{typeof(Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs),"Object"},
+	{typeof(Microsoft.AspNetCore.Components.Routing.LocationChangingContext),"Object"},
 	{typeof(Microsoft.AspNetCore.Components.NavigationManagerExtensions),"Object"},
 };
 var nameMaps = new Dictionary<string, string>()
@@ -220,6 +237,9 @@ var compilation = CSharpCompilation.Create("Jazor", references: [
 	MetadataReference.CreateFromFile(typeof(Console).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(Math).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location, documentation: numericsXml),
+	// System.Uri lives in System.Private.Uri, not CoreLib, but its doc comments ship in the
+	// CoreLib documentation set.
+	MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.NavigationManager).Assembly.Location),
 ]);
 string ConvertTypeName(ITypeSymbol symbol)

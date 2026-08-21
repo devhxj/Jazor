@@ -35,6 +35,12 @@ public sealed class NavigationManagerCatalogWhitelistTests
         Assert.AreEqual(Op.Import, notFound.Op);
         Assert.AreEqual("notFound", notFound.Value);
 
+        // Registration owns an invocation list and hands back an IDisposable, so it stays an import.
+        var registerLocationChanging = attributes[
+            "Microsoft.AspNetCore.Components.NavigationManager.RegisterLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext, System.Threading.Tasks.ValueTask>)"];
+        Assert.AreEqual(Op.Import, registerLocationChanging.Op);
+        Assert.AreEqual("registerLocationChangingHandler", registerLocationChanging.Value);
+
         var extensionAttributes = typeof(NavigationManagerExtensionsModule)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Select(static method => method.GetCustomAttribute<JazorAttribute>())
@@ -114,6 +120,51 @@ public sealed class NavigationManagerCatalogWhitelistTests
         Assert.AreEqual(
             "({ forceLoad: false, replaceHistoryEntry: false, relativeToCurrentUri: false, historyEntryState: null })",
             constructor.Value);
+    }
+
+    [TestMethod]
+    public void LocationChangingContext_MapsInitOnlyFieldsOverAPlainBrowserObject()
+    {
+        var typeAttribute = typeof(LocationChangingContextModule).GetCustomAttribute<JazorAttribute>();
+
+        Assert.IsNotNull(typeAttribute);
+        Assert.AreEqual(Op.Alias, typeAttribute.Op);
+        Assert.AreEqual("Object", typeAttribute.Value);
+
+        var members = Members(typeof(LocationChangingContextModule));
+
+        var constructor = members["Microsoft.AspNetCore.Components.Routing.LocationChangingContext.LocationChangingContext()"];
+        // CancellationToken 的 CLR 默认值是 CancellationToken.None，它必须落在取消链共享的
+        // never-abort 单例上，因此默认上下文无法压成一个自足的对象字面量。
+        Assert.AreEqual(Op.Import, constructor.Op);
+        Assert.AreEqual("createDefault", constructor.Value);
+
+        foreach (var (member, field) in new[]
+        {
+            ("TargetLocation", "targetLocation"),
+            ("HistoryEntryState", "historyEntryState"),
+            ("IsNavigationIntercepted", "isNavigationIntercepted"),
+        })
+        {
+            foreach (var accessor in new[] { "get", "init" })
+            {
+                var key = $"Microsoft.AspNetCore.Components.Routing.LocationChangingContext.{member}.{accessor}";
+                Assert.AreEqual(Op.Alias, members[key].Op, key);
+                Assert.AreEqual(field, members[key].Value, key);
+            }
+        }
+
+        // PreventNavigation() writes a private marker the navigation side reads after every handler
+        // settles, so it owns runtime behavior instead of a name remap.
+        var prevent = members["Microsoft.AspNetCore.Components.Routing.LocationChangingContext.PreventNavigation()"];
+        Assert.AreEqual(Op.Import, prevent.Op);
+        Assert.AreEqual("preventNavigation", prevent.Value);
+
+        // dispatch 的取消 token 就是宿主 AbortSignal，因此这里只是字段名改写。
+        var cancellationToken =
+            members["Microsoft.AspNetCore.Components.Routing.LocationChangingContext.CancellationToken.get"];
+        Assert.AreEqual(Op.Alias, cancellationToken.Op);
+        Assert.AreEqual("cancellationToken", cancellationToken.Value);
     }
 
     [TestMethod]

@@ -1190,6 +1190,11 @@ public partial class SemanticWalker
 	/// <returns></returns>
 	private Expression CreateTypeMatchExpr(IOperation operation, ITypeSymbol typeSymbol, Expression value, SenseArgument context)
 	{
+		// C# 中 `x is T?` 与 `x is T` 判别等价：装箱的 Nullable<T> 在运行时要么是 null（不匹配），
+		// 要么就是底层 T 的值。按底层类型判别，避免退化成对不存在的 Nullable 运行时类型做 instanceof。
+		if (IsNullableType(typeSymbol))
+			typeSymbol = ((INamedTypeSymbol)typeSymbol).TypeArguments[0];
+
 		value = StabilizePatternExpression(operation, value, context, "type", out var initialization);
 
 		Expression? result;
@@ -1218,17 +1223,15 @@ public partial class SemanticWalker
 			else if (typeSymbol.TypeKind == TypeKind.Interface && mapper == TypeMapper.Object)
 			{
 				if (TryEvaluateCompileTimeErasedInterfaceIsTypeCheck(operation, typeSymbol, out var folded))
-				{
-					result = folded switch
-					{
-						InterfaceTypeCheckFold.AlwaysTrue => new BooleanLiteral(true, "true"),
-						InterfaceTypeCheckFold.AlwaysFalse => new BooleanLiteral(false, "false"),
-						InterfaceTypeCheckFold.NonNullOnly => new NonLogicalBinaryExpression(Operator.Inequality, value, Null),
-						_ => null
-					};
-				}
+					result = BuildRuntimeTypeCheckFold(folded, value);
 				else
 					return HandleTransformationFailure<Expression>(operation, BuildUnsupportedErasedInterfaceIsTypeCheckMessage(operation, typeSymbol));
+			}
+			// 委托在运行时只是普通函数：typeof 判别对「是否可调用」精确，参数个数与签名不参与判别。
+			// 这与数组不判别元素类型、共用 string carrier 的白名单类型族属于同一档擦除取舍。
+			else if (typeSymbol.TypeKind == TypeKind.Delegate)
+			{
+				result = TypeOfExpr(value, CreateStringLiteral("function"));
 			}
 			else if (mapper == TypeMapper.Object && TryGetWhiteListTypeAlias(typeSymbol, out var runtimeAlias) && runtimeAlias == "Object")
 			{
@@ -1286,7 +1289,32 @@ public partial class SemanticWalker
 		NonNullOnly
 	}
 
+	private static Expression BuildRuntimeTypeCheckFold(InterfaceTypeCheckFold fold, Expression value)
+		=> fold switch
+		{
+			InterfaceTypeCheckFold.AlwaysTrue => new BooleanLiteral(true, "true"),
+			InterfaceTypeCheckFold.AlwaysFalse => new BooleanLiteral(false, "false"),
+			_ => new NonLogicalBinaryExpression(Operator.Inequality, value, Null)
+		};
+
 	private bool TryEvaluateCompileTimeErasedInterfaceIsTypeCheck(IOperation operation, ITypeSymbol interfaceType, out InterfaceTypeCheckFold result)
+		=> TryEvaluateCompileTimeIsTypeCheck(operation, interfaceType, IsRuntimeTypeAssignableToInterface, out result);
+
+	/// <summary>
+	/// 共用运行时别名的具体类型检查：只在 Roslyn 能证明结果时折叠，否则由调用方保持显式失败。
+	/// </summary>
+	/// <remarks>
+	/// 与擦除接口检查同一策略。区别只是可赋值性按类继承链（含类型实参）判定，
+	/// 因此 <c>Task&lt;int&gt;</c> 不会被当成 <c>Task&lt;string&gt;</c> 的证明。
+	/// </remarks>
+	private bool TryEvaluateCompileTimeSharedAliasIsTypeCheck(IOperation operation, ITypeSymbol targetType, out InterfaceTypeCheckFold result)
+		=> TryEvaluateCompileTimeIsTypeCheck(operation, targetType, IsRuntimeTypeAssignableToClass, out result);
+
+	private bool TryEvaluateCompileTimeIsTypeCheck(
+		IOperation operation,
+		ITypeSymbol targetType,
+		Func<ITypeSymbol, ITypeSymbol, bool> isAssignableToTarget,
+		out InterfaceTypeCheckFold result)
 	{
 		result = InterfaceTypeCheckFold.AlwaysFalse;
 		var sourceOperation = ResolveIsTypeSourceOperation(operation);
@@ -1297,18 +1325,18 @@ public partial class SemanticWalker
 		if (resolvedSource is not null &&
 			TryResolveDeterministicRuntimeValue(resolvedSource, out var runtimeType, out _))
 		{
-			// null is never an instance of interface types.
+			// null is never an instance of a nominal target type.
 			if (runtimeType is null)
 			{
 				result = InterfaceTypeCheckFold.AlwaysFalse;
 				return true;
 			}
 
-			var assignable = IsRuntimeTypeAssignableToInterface(runtimeType, interfaceType);
+			var provablyAssignable = isAssignableToTarget(runtimeType, targetType);
 			// TryResolveDeterministicRuntimeValue only returns a concrete runtime type for
 			// definitely non-null values. Nullable/reference defaults take the null branch above,
 			// so this fold must not keep an unreachable non-null guard.
-			result = assignable
+			result = provablyAssignable
 				? InterfaceTypeCheckFold.AlwaysTrue
 				: InterfaceTypeCheckFold.AlwaysFalse;
 
@@ -1318,13 +1346,29 @@ public partial class SemanticWalker
 		// If deterministic runtime value is unavailable, fall back to statically-known
 		// input type only. Unprovable scenarios stay explicit unsupported.
 		var staticType = resolvedSource?.Type ?? ResolvePatternInputStaticType(operation);
-		if (staticType is null || !IsRuntimeTypeAssignableToInterface(staticType, interfaceType))
+		if (staticType is null || !isAssignableToTarget(staticType, targetType))
 			return false;
 
 		result = staticType.IsValueType && !IsNullableType(staticType)
 			? InterfaceTypeCheckFold.AlwaysTrue
 			: InterfaceTypeCheckFold.NonNullOnly;
 		return true;
+	}
+
+	private static bool IsRuntimeTypeAssignableToClass(ITypeSymbol runtimeType, ITypeSymbol targetType)
+	{
+		// C# boxes Nullable<T> as either null or its underlying T; prove the non-null branch against T.
+		if (IsNullableType(runtimeType))
+			return IsRuntimeTypeAssignableToClass(((INamedTypeSymbol)runtimeType).TypeArguments[0], targetType);
+
+		// 比较构造后的符号，让类型实参参与证明：Task<int> 不能证明 Task<string>。
+		for (var current = runtimeType; current is not null; current = current.BaseType)
+		{
+			if (SymbolEqualityComparer.Default.Equals(current, targetType))
+				return true;
+		}
+
+		return false;
 	}
 
 	private static bool IsRuntimeTypeAssignableToInterface(ITypeSymbol runtimeType, ITypeSymbol interfaceType)
@@ -1578,9 +1622,39 @@ public partial class SemanticWalker
 		}
 
 		RejectUnsupportedTypeFallback(operation, typeSymbol, "type checks");
-		RejectAmbiguousRuntimeTypeFilter(operation, typeSymbol, "type checks");
+
+		// 共用运行时别名的类型族（Task/ValueTask 共用 Promise、CLR 异常族共用 Error）无法靠 instanceof 精确过滤。
+		// 判定顺序：先按被测操作数的静态类型收窄歧义集，再尝试 Roslyn 编译期折叠，最后才显式失败——
+		// 任何一步都不允许为不可判定的检查发射假阳性的 instanceof。
+		if (HasAmbiguousRuntimeTypeFilter(
+				operation,
+				typeSymbol,
+				ResolveTypeCheckOperandStaticType(operation),
+				out var runtimeAlias,
+				out var conflicts))
+		{
+			if (TryEvaluateCompileTimeSharedAliasIsTypeCheck(operation, typeSymbol, out var folded))
+				return BuildRuntimeTypeCheckFold(folded, value);
+
+			return HandleTransformationFailure<Expression>(
+				operation,
+				BuildAmbiguousRuntimeTypeFilterMessage(typeSymbol, "type checks", runtimeAlias, conflicts));
+		}
+
 		var runtimeType = BuildFullTypeName(typeSymbol, context) ?? new Identifier(typeName);
 		return new NonLogicalBinaryExpression(Operator.InstanceOf, value, runtimeType);
+	}
+
+	/// <summary>
+	/// 取被测值的静态类型：优先用 is/as/switch 的单一判别源，模式嵌套时退回该位置的模式输入类型。
+	/// </summary>
+	private static ITypeSymbol? ResolveTypeCheckOperandStaticType(IOperation operation)
+	{
+		var sourceOperation = ResolveIsTypeSourceOperation(operation);
+		if (sourceOperation is not null)
+			return sourceOperation.Type;
+
+		return operation is IPatternOperation patternOperation ? patternOperation.InputType : null;
 	}
 
 	/// <summary>
@@ -1594,6 +1668,17 @@ public partial class SemanticWalker
 		SenseArgument argument)
 	{
 		Identifier? deconstructResultId = null;
+		if (!namedType.IsTupleType && !IsStructuralType(namedType) && operation.DeconstructSymbol is not IMethodSymbol)
+		{
+			// Roslyn 对 ITuple 位置模式（例如 object 上的 `is (int, int)`）不绑定 Deconstruct 方法，
+			// DeconstructSymbol 报告的是 ITuple 类型本身。擦除后的元组只是普通对象字面量，
+			// 没有 ITuple 的 Length/索引器运行时协议，无法在此判别元数，因此显式失败。
+			HandleTransformationFailure<Node>(
+				operation,
+				$"Positional pattern on '{namedType.OriginalDefinition.ToDisplayString(Format.NameFormat)}' relies on the runtime 'System.Runtime.CompilerServices.ITuple' protocol, which erased tuples do not provide. Match against a tuple-typed value or a type exposing a Deconstruct method instead.");
+			return;
+		}
+
 		if (!namedType.IsTupleType &&
 			!IsStructuralType(namedType) &&
 			operation.DeconstructSymbol is IMethodSymbol deconstructMethod)

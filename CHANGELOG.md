@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+- RazorVue browser navigation now supports `NavigationManager.RegisterLocationChangingHandler(...)`. Handlers receive `LocationChangingContext`, can call `PreventNavigation()`, and observe cancellation when a later navigation supersedes an in-flight handler. The browser runtime now provides the required `ValueTask`, `CancellationToken`, `CancellationTokenSource`, and `CancellationTokenRegistration` slice.
+- **Breaking:** ECMAScript property-key and property-descriptor authoring types are now named `JazorPropertyKey` and `JazorPropertyDescriptor`. Update source references from `JPropertyKey` and `JSPropertyDescriptor`; generated JavaScript property-key and descriptor behavior is unchanged.
+- Browser lowering now rejects exception families without a stable supported JavaScript identity, including `InvalidOperationException` and `DivideByZeroException`. Use the supported `System.Exception` surface where a general browser error is intended.
+
 ## 2026-08-21
 
 ### Jazor 0.19.0

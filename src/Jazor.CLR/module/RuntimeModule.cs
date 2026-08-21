@@ -175,18 +175,18 @@ public static class RuntimeModule
 
 	private static bool ThrowReadOnlyArraySet<TItem>(
 		Array<TItem> target,
-		ECMAScript.JPropertyKey property,
+		ECMAScript.JazorPropertyKey property,
 		object? value,
 		object receiver)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static bool ThrowReadOnlyArrayDelete<TItem>(Array<TItem> target, ECMAScript.JPropertyKey property)
+	private static bool ThrowReadOnlyArrayDelete<TItem>(Array<TItem> target, ECMAScript.JazorPropertyKey property)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static bool ThrowReadOnlyArrayDefine<TItem>(
 		Array<TItem> target,
-		ECMAScript.JPropertyKey property,
-		ECMAScript.JSPropertyDescriptor attributes)
+		ECMAScript.JazorPropertyKey property,
+		ECMAScript.JazorPropertyDescriptor attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	internal static Array<TItem> CreateReadOnlyArrayView<TItem>(Array<TItem>? source, string nullMessage)
@@ -326,7 +326,7 @@ public static class RuntimeModule
 		return value.ToString() ?? "";
 	}
 
-	private static object? BindReadOnlyCollectionProperty<TTarget>(TTarget target, ECMAScript.JPropertyKey property)
+	private static object? BindReadOnlyCollectionProperty<TTarget>(TTarget target, ECMAScript.JazorPropertyKey property)
 		where TTarget : class
 	{
 		var value = ECMAScript.Reflect.Get(target, property, target);
@@ -345,7 +345,7 @@ public static class RuntimeModule
 	private static void ThrowReadOnlySetClear<T>()
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static object? GetReadOnlySetProperty<T>(Set<T> target, ECMAScript.JPropertyKey property, object receiver)
+	private static object? GetReadOnlySetProperty<T>(Set<T> target, ECMAScript.JazorPropertyKey property, object receiver)
 	{
 		var propertyName = property.AsString;
 		if (propertyName == "add")
@@ -360,18 +360,18 @@ public static class RuntimeModule
 
 	private static bool ThrowReadOnlySetPropertySet<T>(
 		Set<T> target,
-		ECMAScript.JPropertyKey property,
+		ECMAScript.JazorPropertyKey property,
 		object? value,
 		object receiver)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static bool ThrowReadOnlySetPropertyDelete<T>(Set<T> target, ECMAScript.JPropertyKey property)
+	private static bool ThrowReadOnlySetPropertyDelete<T>(Set<T> target, ECMAScript.JazorPropertyKey property)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static bool ThrowReadOnlySetPropertyDefine<T>(
 		Set<T> target,
-		ECMAScript.JPropertyKey property,
-		ECMAScript.JSPropertyDescriptor attributes)
+		ECMAScript.JazorPropertyKey property,
+		ECMAScript.JazorPropertyDescriptor attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	internal static Set<T> MarkAsReadOnlySetCarrier<T>(Set<T> instance)
@@ -408,7 +408,7 @@ public static class RuntimeModule
 
 	private static object? GetReadOnlyDictionaryProperty<TKey, TValue>(
 		Map<TKey, TValue> target,
-		ECMAScript.JPropertyKey property,
+		ECMAScript.JazorPropertyKey property,
 		object receiver)
 	{
 		var propertyName = property.AsString;
@@ -424,18 +424,18 @@ public static class RuntimeModule
 
 	private static bool ThrowReadOnlyDictionaryPropertySet<TKey, TValue>(
 		Map<TKey, TValue> target,
-		ECMAScript.JPropertyKey property,
+		ECMAScript.JazorPropertyKey property,
 		object? value,
 		object receiver)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static bool ThrowReadOnlyDictionaryPropertyDelete<TKey, TValue>(Map<TKey, TValue> target, ECMAScript.JPropertyKey property)
+	private static bool ThrowReadOnlyDictionaryPropertyDelete<TKey, TValue>(Map<TKey, TValue> target, ECMAScript.JazorPropertyKey property)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static bool ThrowReadOnlyDictionaryPropertyDefine<TKey, TValue>(
 		Map<TKey, TValue> target,
-		ECMAScript.JPropertyKey property,
-		ECMAScript.JSPropertyDescriptor attributes)
+		ECMAScript.JazorPropertyKey property,
+		ECMAScript.JazorPropertyDescriptor attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	internal static Map<TKey, TValue> MarkAsReadOnlyDictionaryCarrier<TKey, TValue>(Map<TKey, TValue> instance)
@@ -478,7 +478,7 @@ public static class RuntimeModule
 			this.Date = new Date(date.GetTime());
 			this.Kind = 0;
 			this.SubMillisecondTicks = BigInt.Zero;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -490,7 +490,7 @@ public static class RuntimeModule
 			this.Date = new Date(date.GetTime());
 			this.Kind = kind;
 			this.SubMillisecondTicks = BigInt.Zero;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -502,7 +502,7 @@ public static class RuntimeModule
 			this.Date = new Date(date.GetTime());
 			this.Kind = kind;
 			this.SubMillisecondTicks = subMillisecondTicks;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -565,7 +565,7 @@ public static class RuntimeModule
 			this.UtcDateTime = new Date(utcDateTime.GetTime());
 			this.OffsetTicks = offsetTicks;
 			this.UtcSubMillisecondTicks = BigInt.Zero;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -577,7 +577,7 @@ public static class RuntimeModule
 			this.UtcDateTime = new Date(utcDateTime.GetTime());
 			this.OffsetTicks = offsetTicks;
 			this.UtcSubMillisecondTicks = utcSubMillisecondTicks;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -648,7 +648,7 @@ public static class RuntimeModule
 			var utcDate = CreateUtcDate(year, month, day);
 			var start = CreateUtcDate(1, 1, 1);
 			DayNumber = Math.FloorFunc((utcDate.GetTime() - start.GetTime()) / 86400000);
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -807,7 +807,7 @@ public static class RuntimeModule
 		{
 			var normalized = ticks % BigIntValue("864000000000");
 			this.Ticks = normalized < BigInt.Zero ? normalized + BigIntValue("864000000000") : normalized;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -859,7 +859,7 @@ public static class RuntimeModule
 				throw new Error("OverflowException: TimeSpan is too long or too short.");
 
 			this.Ticks = ticks;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -920,7 +920,7 @@ public static class RuntimeModule
 		{
 			this.CalendarType = calendarType;
 			this.TwoDigitYearMax = twoDigitYearMax;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -950,6 +950,71 @@ public static class RuntimeModule
 			throw new Error("ArgumentNullException: calendar is null.");
 
 		return calendar;
+	}
+
+	/// <summary>
+	/// CancellationTokenRegistration 的 runtime carrier，保存解除订阅所需的 signal 与 listener。
+	/// </summary>
+	/// <remarks>
+	/// CLR 的 registration 是"如何撤下这个回调"的凭据；擦除到浏览器侧它就是 (signal, listener) 二元组，
+	/// 因此 carrier 只保存这两项，不模拟 CLR 的 node/id 结构。
+	/// <c>Handler</c> 为 null 表示已经没有可撤回调：注册时 token 就已取消（回调当场同步跑完，
+	/// abort 事件不会再触发），或者已经 Unregister/Dispose 过一次。
+	/// </remarks>
+	public sealed class JCancellationTokenRegistration
+	{
+		[Description("@#signal")]
+		public AbortSignal Signal { get; }
+
+		[Description("@#handler")]
+		public HandleEventCallback? Handler { get; set; }
+
+		public JCancellationTokenRegistration(AbortSignal signal, HandleEventCallback? handler)
+		{
+			this.Signal = signal;
+			this.Handler = handler;
+		}
+	}
+
+	/// <summary>
+	/// CancellationToken.Register / UnsafeRegister 的公共注册路径。
+	/// </summary>
+	/// <remarks>
+	/// token 已取消时 CLR 会同步执行回调并返回一个撤不掉的 registration。AbortSignal 在这种情况下
+	/// 也不会再派发 abort，所以必须在这里显式调用一次，只挂 listener 会永久丢掉回调。
+	/// UnsafeRegister 与 Register 的差别仅是不捕获 ExecutionContext，浏览器没有这个概念，
+	/// 因此两组重载共用同一实现。
+	/// </remarks>
+	internal static JCancellationTokenRegistration RegisterCancellationCallback(AbortSignal signal, Action callback)
+	{
+		if (signal.Aborted)
+		{
+			callback();
+			return new JCancellationTokenRegistration(signal, null);
+		}
+
+		var handler = (HandleEventCallback)(_ => callback());
+		signal.AddEventListener("abort", handler, false);
+		return new JCancellationTokenRegistration(signal, handler);
+	}
+
+	/// <summary>
+	/// CancellationTokenRegistration.Unregister / Dispose 的公共撤销路径。
+	/// </summary>
+	/// <remarks>
+	/// CLR 只在真正撤下一个尚未执行的回调时返回 true；已执行或已撤销都返回 false。signal 已 abort
+	/// 说明回调跑过了，即使 listener 仍挂着也不算撤销成功，因此要先看 aborted 再看 handler。
+	/// Dispose 在 CLR 下还需要等待并发执行中的回调，JS 单线程不存在这个窗口，两者行为一致。
+	/// </remarks>
+	internal static bool UnregisterCancellationCallback(JCancellationTokenRegistration registration)
+	{
+		var handler = registration.Handler;
+		if (handler == null)
+			return false;
+
+		registration.Signal.RemoveEventListener("abort", handler, false);
+		registration.Handler = null;
+		return !registration.Signal.Aborted;
 	}
 
 	public static Number GetDaysInMonth(Number year, Number month)

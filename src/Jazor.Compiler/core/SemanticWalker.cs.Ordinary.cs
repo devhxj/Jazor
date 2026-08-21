@@ -1774,7 +1774,10 @@ public partial class SemanticWalker
 			"System.DateTimeOffset" or
 			"System.TimeOnly" or
 			"System.TimeSpan" or
-			"System.Guid";
+			"System.Guid" or
+			// default(CancellationToken) 必须与 CancellationToken.None 引用相同（CLR 保证两者相等且永不取消），
+			// 因此走无参构造映射拿到那个共享的 never-abort signal，而不是发射一个新的空值。
+			"System.Threading.CancellationToken";
 	}
 
 	private bool TryBuildKnownDefaultConstructorExpression(ITypeSymbol type, SenseArgument argument, out Expression? expression)

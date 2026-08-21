@@ -1898,6 +1898,72 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   /// <summary>
+  /// 测试 ValueTask 的构造与等待面共用 Task 的 Promise carrier
+  /// </summary>
+  [TestMethod]
+  public void Visit_ValueTaskCreationAndAwaitMembers_UsePromiseTemplates()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task task, System.Threading.Tasks.ValueTask value)
+                {
+                    var empty = new System.Threading.Tasks.ValueTask();
+                    var wrapped = new System.Threading.Tasks.ValueTask(task);
+                    var completed = System.Threading.Tasks.ValueTask.CompletedTask;
+                    var asTask = value.AsTask();
+                    var preserved = value.Preserve();
+                    value.GetAwaiter();
+                    value.ConfigureAwait(false);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let empty = Promise.resolve();
+  let wrapped = Promise.resolve(task);
+  let completed = Promise.resolve();
+  let asTask = Promise.resolve(value);
+  let preserved = Promise.resolve(value);
+  Promise.resolve(value);
+  Promise.resolve(value);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 ValueTask.FromException / FromCanceled 复用 Task 家族的拒绝编码
+  /// </summary>
+  [TestMethod]
+  public void Visit_ValueTaskFromExceptionAndFromCanceled_UsePromiseReject()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Exception ex, System.Threading.CancellationToken cancellationToken)
+                {
+                    var faulted = System.Threading.Tasks.ValueTask.FromException(ex);
+                    var canceled = System.Threading.Tasks.ValueTask.FromCanceled(cancellationToken);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    // IsCanceled/Status recognition keys off this exact rejection reason, so the ValueTask
+    // factories must not invent a second cancellation encoding.
+    AssertScriptEqual(@"{
+  let faulted = Promise.reject(ex);
+  let canceled = Promise.reject(new Error(""TaskCanceledException""));
+}", script);
+  }
+
+  /// <summary>
   /// 测试 new Task(Action) 会映射为延迟启动任务（等待 Start/RunSynchronously 触发）
   /// </summary>
   [TestMethod]
@@ -2245,9 +2311,26 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertScriptEqual(@"{
-  await Promise.resolve(first);
-}", script);
+    // token 落在竞速取消的 helper 上：被等待方原样透出，取消侧只 reject，
+    // 并在被等待方先落定时撤下 listener（None / default 共用同一个 never-abort 单例）。
+    AssertScriptEqual(
+      """
+      {
+        await (globalThis.__jazorTaskWithCancellation ??= (task, signal, reason) => {
+          let fail = null;
+          const cancellation = new Promise((_, reject) => {
+            fail = () => reject(new Error(reason));
+          });
+          if (signal.aborted) {
+            fail();
+          } else {
+            signal.addEventListener("abort", fail, { once: true });
+          }
+          return Promise.race([Promise.resolve(task).finally(() => signal.removeEventListener("abort", fail)), cancellation]);
+        })(Promise.resolve(first), cancellationToken, "TaskCanceledException");
+      }
+      """,
+      script);
   }
 
   /// <summary>

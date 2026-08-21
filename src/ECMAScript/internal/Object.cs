@@ -1,4 +1,4 @@
-using PropertyKey = ECMAScript.JPropertyKey;
+using PropertyKey = ECMAScript.JazorPropertyKey;
 
 namespace ECMAScript;
 
@@ -127,7 +127,7 @@ public static partial class Global
 		/// <param name="attributes">Descriptor for the property. It can describe a data or accessor property.</param>
 		/// <returns>The same <paramref name="o"/> instance.</returns>
 		[Description("@#defineProperty")]
-		public extern static TTarget DefineProperty<TTarget>(TTarget o, JPropertyKey p, JSPropertyDescriptor attributes);
+		public extern static TTarget DefineProperty<TTarget>(TTarget o, JazorPropertyKey p, JazorPropertyDescriptor attributes);
 
 		/// <summary>
 		/// Adds one or more properties to an object, and/or modifies attributes of existing properties.
@@ -172,7 +172,7 @@ public static partial class Global
 		/// <param name="p">Name of the property.</param>
 		/// <returns></returns>
 		[Description("@#getOwnPropertyDescriptor")]
-		public extern static JSPropertyDescriptor? GetOwnPropertyDescriptor(object o, JPropertyKey p);
+		public extern static JazorPropertyDescriptor? GetOwnPropertyDescriptor(object o, JazorPropertyKey p);
 
 		/// <summary>
 		/// Returns all own property descriptors of an object.
@@ -245,7 +245,7 @@ public static partial class Global
 		/// <param name="v">A property name.</param>
 		/// <returns></returns>
 		[Description("@#hasOwnProperty")]
-		public extern bool HasOwnProperty(JPropertyKey v);
+		public extern bool HasOwnProperty(JazorPropertyKey v);
 
 		/// <summary>
 		/// Determines whether an object exists in another object's prototype chain.
@@ -263,7 +263,7 @@ public static partial class Global
 		/// <param name="v">A property name.</param>
 		/// <returns></returns>
 		[Description("@#propertyIsEnumerable")]
-		public extern bool PropertyIsEnumerable(JPropertyKey v);
+		public extern bool PropertyIsEnumerable(JazorPropertyKey v);
 
 		/// <summary>
 		/// Reads a property by dynamic key on an already-erased runtime value, lowering to
@@ -278,7 +278,7 @@ public static partial class Global
 		/// <param name="name">The property key to read. 要读取的属性 key。</param>
 		/// <returns>The property value; JavaScript <c>undefined</c> projects as <see langword="null"/>.</returns>
 		[ECMAScriptInline("__arg1[__arg2]")]
-		public extern object? Get(JPropertyKey name);
+		public extern object? Get(JazorPropertyKey name);
 
 		/// <summary>
 		/// Writes a property by dynamic key on an already-erased runtime value, lowering to the
@@ -290,7 +290,7 @@ public static partial class Global
 		/// <param name="name">The property key to write. 要写入的属性 key。</param>
 		/// <param name="value">The value to assign. 要赋的值。</param>
 		[ECMAScriptInline("(__arg1[__arg2] = __arg3)")]
-		public extern void Set(JPropertyKey name, object? value);
+		public extern void Set(JazorPropertyKey name, object? value);
 
 		/// <summary>
 		/// Invokes a method by dynamic name on an already-erased runtime value, lowering to the
@@ -305,7 +305,7 @@ public static partial class Global
 		/// <param name="args">The argument list passed through as a single spread. 作为单个 spread 传递的参数列表。</param>
 		/// <returns>The method's return value; JavaScript <c>undefined</c> projects as <see langword="null"/>.</returns>
 		[ECMAScriptInline("__arg1[__arg2](...__arg3)")]
-		public extern object? Invoke(JPropertyKey name, [Preserve] params object?[] args);
+		public extern object? Invoke(JazorPropertyKey name, [Preserve] params object?[] args);
 
 		/// <summary>
 		/// Legacy JavaScript accessor for the current prototype.
@@ -322,7 +322,7 @@ public static partial class Global
 		/// 遗留 JavaScript 帮助器，在当前对象上安装指定 key 的 getter；委托形状匹配 JavaScript property descriptor 的 accessor。
 		/// </summary>
 		[Description("@#__defineGetter__")]
-		public extern void __defineGetter__(JPropertyKey property, Func<object?> getter);
+		public extern void __defineGetter__(JazorPropertyKey property, Func<object?> getter);
 
 		/// <summary>
 		/// Legacy JavaScript helper that installs a setter for the supplied property key on the current object.
@@ -330,7 +330,7 @@ public static partial class Global
 		/// 遗留 JavaScript 帮助器，在当前对象上安装指定 key 的 setter；委托形状匹配 JavaScript property descriptor 的 accessor。
 		/// </summary>
 		[Description("@#__defineSetter__")]
-		public extern void __defineSetter__(JPropertyKey property, Action<object?> setter);
+		public extern void __defineSetter__(JazorPropertyKey property, Action<object?> setter);
 
 		/// <summary>
 		/// Legacy JavaScript helper that looks up an inherited or own getter for the supplied property key.
@@ -338,7 +338,7 @@ public static partial class Global
 		/// 查找当前对象或 prototype chain 上指定 key 的 getter；不存在时 JavaScript <c>undefined</c> 投影为 <see langword="null"/>。
 		/// </summary>
 		[Description("@#__lookupGetter__")]
-		public extern Func<object?>? __lookupGetter__(JPropertyKey property);
+		public extern Func<object?>? __lookupGetter__(JazorPropertyKey property);
 
 		/// <summary>
 		/// Legacy JavaScript helper that looks up an inherited or own setter for the supplied property key.
@@ -346,7 +346,7 @@ public static partial class Global
 		/// 查找当前对象或 prototype chain 上指定 key 的 setter；不存在时 JavaScript <c>undefined</c> 投影为 <see langword="null"/>。
 		/// </summary>
 		[Description("@#__lookupSetter__")]
-		public extern Action<object?>? __lookupSetter__(JPropertyKey property);
+		public extern Action<object?>? __lookupSetter__(JazorPropertyKey property);
 
 		/// <summary>
 		/// Returns the names of the enumerable string properties and methods of an object.
@@ -401,7 +401,7 @@ public static partial class Global
 		/// 按 JavaScript property key 对 iterable 元素分组；结果为对象式值，key 通常通过动态属性访问消费，因此返回 <see cref="IObject"/>。
 		/// </summary>
 		[Description("@#groupBy")]
-		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, Number, JPropertyKey> callbackfn);
+		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, Number, JazorPropertyKey> callbackfn);
 
 		/// <summary>
 		/// Groups iterable values by a JavaScript property key and returns the grouped result as an object.
@@ -409,7 +409,7 @@ public static partial class Global
 		/// 不需要索引参数时的 <c>Object.groupBy</c> 回调重载。
 		/// </summary>
 		[Description("@#groupBy")]
-		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, JPropertyKey> callbackfn);
+		public extern static IObject GroupBy<T>(IEnumerable<T> items, Func<T, JazorPropertyKey> callbackfn);
 
 		/// <summary>
 		/// Returns whether the object has the specified own property.
@@ -418,7 +418,7 @@ public static partial class Global
 		/// <param name="p">Property key to test.</param>
 		/// <returns><see langword="true"/> when the property exists directly on the object.</returns>
 		[Description("@#hasOwn")]
-		public extern static bool HasOwn(object o, JPropertyKey p);
+		public extern static bool HasOwn(object o, JazorPropertyKey p);
 
 		/// <summary>
 		/// Returns true if existing property attributes cannot be modified in an object and new properties cannot be added to the object.

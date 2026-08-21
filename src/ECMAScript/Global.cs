@@ -311,6 +311,27 @@ public static partial class Global
 	public extern static void QueueMicrotask(Action callback);
 
 	/// <summary>
+	/// C# host projection of JavaScript global <c>setTimeout</c>.
+	/// This stays on <see cref="Global"/> rather than on the window host because JavaScript exposes it on
+	/// <c>globalThis</c> in both document and worker scopes, so scheduling must not require a <c>window</c> object.
+	/// The callback stays a plain <see cref="Action"/> instead of the WebIDL timer-handler union: the string-source
+	/// form is a legacy <c>eval</c> entry point and is deliberately not part of this host surface.
+	/// JavaScript 全局 <c>setTimeout</c> 的 C# 投影。它在 document 与 worker 作用域下都由 <c>globalThis</c> 提供，
+	/// 因此定时调度不经过 <c>window</c>（SSR 场景下没有 window）。回调固定为 <see cref="Action"/>，
+	/// 不暴露 WebIDL 的字符串 handler 分支（那是遗留的 <c>eval</c> 入口）。
+	/// </summary>
+	[Description("@#setTimeout")]
+	public extern static Number SetTimeout(Action handler, Number delay);
+
+	/// <summary>
+	/// C# host projection of JavaScript global <c>clearTimeout</c>.
+	/// 与 <see cref="SetTimeout"/> 成对出现的 JavaScript 全局 <c>clearTimeout</c> 投影；
+	/// 传入未知或已触发的 id 在 JavaScript 下是无操作，不是错误。
+	/// </summary>
+	[Description("@#clearTimeout")]
+	public extern static void ClearTimeout(Number id);
+
+	/// <summary>
 	/// C# host projection of JavaScript global <c>structuredClone</c>.
 	/// Nullable is used because JavaScript can clone <c>undefined</c>, and the C# projection maps that absence to <see langword="null" />.
 	/// JavaScript 全局 <c>structuredClone</c> 的 C# 投影。可空返回值表示 JavaScript 的 <c>undefined</c> 缺失值，并不表示 CLR 深拷贝。

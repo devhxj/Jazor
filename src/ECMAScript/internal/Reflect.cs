@@ -9,9 +9,9 @@ namespace ECMAScript;
 [Description("@#Reflect")]
 /// <remarks>
 /// <c>Reflect</c> retains JavaScript property-key, receiver, and return-value rules, so some parameters must retain
-/// <see cref="object"/> or <see cref="JPropertyKey"/> shapes. Do not reduce these to string-only or catch-all APIs for superficial C# convenience.
+/// <see cref="object"/> or <see cref="JazorPropertyKey"/> shapes. Do not reduce these to string-only or catch-all APIs for superficial C# convenience.
 /// <c>Reflect</c> 保留 JavaScript 的属性键、receiver 和返回值规则，因此部分参数必须保留
-/// <see cref="object"/> 或 <see cref="JPropertyKey"/> 形状；不要为表面简洁而改成仅 string 或 catch-all API。
+/// <see cref="object"/> 或 <see cref="JazorPropertyKey"/> 形状；不要为表面简洁而改成仅 string 或 catch-all API。
 /// </remarks>
 public static class Reflect
 {
@@ -68,49 +68,49 @@ public static class Reflect
 	/// 定义或重新配置属性并直接返回 JavaScript 布尔结果；区别于返回目标对象的 <c>Object.defineProperty</c>。
 	/// </summary>
 	[Description("@#defineProperty")]
-	public extern static bool DefineProperty(object target, JPropertyKey propertyKey, JSPropertyDescriptor attributes);
+	public extern static bool DefineProperty(object target, JazorPropertyKey propertyKey, JazorPropertyDescriptor attributes);
 
 	/// <summary>
 	/// Reads a property from the target.
 	/// 读取目标上的属性。
 	/// </summary>
 	[Description("@#get")]
-	public extern static object? Get(object target, JPropertyKey propertyKey);
+	public extern static object? Get(object target, JazorPropertyKey propertyKey);
 
 	/// <summary>
 	/// Reads a property from the target using an explicit receiver.
 	/// 使用显式 receiver 读取目标上的属性。
 	/// </summary>
 	[Description("@#get")]
-	public extern static object? Get(object target, JPropertyKey propertyKey, object receiver);
+	public extern static object? Get(object target, JazorPropertyKey propertyKey, object receiver);
 
 	/// <summary>
 	/// Sets a property on the target.
 	/// 在目标上设置属性。
 	/// </summary>
 	[Description("@#set")]
-	public extern static bool Set(object target, JPropertyKey propertyKey, object? value);
+	public extern static bool Set(object target, JazorPropertyKey propertyKey, object? value);
 
 	/// <summary>
 	/// Sets a property on the target using an explicit receiver.
 	/// 使用显式 receiver 在目标上设置属性。
 	/// </summary>
 	[Description("@#set")]
-	public extern static bool Set(object target, JPropertyKey propertyKey, object? value, object receiver);
+	public extern static bool Set(object target, JazorPropertyKey propertyKey, object? value, object receiver);
 
 	/// <summary>
 	/// Returns whether the property exists on the target or its prototype chain.
 	/// 返回属性是否存在于目标或其原型链上。
 	/// </summary>
 	[Description("@#has")]
-	public extern static bool Has(object target, JPropertyKey propertyKey);
+	public extern static bool Has(object target, JazorPropertyKey propertyKey);
 
 	/// <summary>
 	/// Deletes an own property from the target.
 	/// 从目标删除自身属性。
 	/// </summary>
 	[Description("@#deleteProperty")]
-	public extern static bool DeleteProperty(object target, JPropertyKey propertyKey);
+	public extern static bool DeleteProperty(object target, JazorPropertyKey propertyKey);
 
 	/// <summary>
 	/// Reads the prototype of the target.
@@ -125,14 +125,14 @@ public static class Reflect
 	/// 返回目标的所有自身属性键，包括 Symbol。
 	/// </summary>
 	[Description("@#ownKeys")]
-	public extern static Array<JPropertyKey> OwnKeys(object target);
+	public extern static Array<JazorPropertyKey> OwnKeys(object target);
 
 	/// <summary>
 	/// Returns the own property descriptor for the specified property key.
 	/// 返回给定属性键的自身属性描述符。
 	/// </summary>
 	[Description("@#getOwnPropertyDescriptor")]
-	public extern static JSPropertyDescriptor? GetOwnPropertyDescriptor(object target, JPropertyKey propertyKey);
+	public extern static JazorPropertyDescriptor? GetOwnPropertyDescriptor(object target, JazorPropertyKey propertyKey);
 
 	/// <summary>
 	/// Updates the target prototype and returns the JavaScript boolean success result.

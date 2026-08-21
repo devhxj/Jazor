@@ -7784,7 +7784,7 @@ public sealed class SemanticWalkerReferenceTest
             {
                 void TestMethod()
                 {
-                    Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JSPropertyDescriptor
+                    Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
                     {
                         Value = (global::System.Func<string?, object>)ToPrimitive,
                         Configurable = true
@@ -9162,34 +9162,6 @@ public sealed class SemanticWalkerReferenceTest
   let error = new Error(""boom"");
   let message = error.message;
   let cause = error.cause;
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
-	}
-
-	[TestMethod]
-	public void Visit_Reference_InvalidOperationExceptionMembers_FallbackToBaseErrorMappings()
-	{
-		var block = GetBlockOperation(@"
-            class TestClass
-            {
-                void TestMethod()
-                {
-                    var error = new InvalidOperationException(""boom"");
-                    var message = error.Message;
-                    var stack = error.StackTrace;
-                    var text = error.ToString();
-                }
-            }
-        ");
-
-		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
-
-		Assert.AreEqual(@"{
-  let error = new Error(""boom"");
-  let message = error.message;
-  let stack = error.stack;
-  let text = error.toString();
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 

@@ -147,7 +147,7 @@ public sealed class CompilerTraditionalCoverageBehaviorTests
                         Child = { Value = 3 }
                     };
                     var stable = new Holder { Nodes = { [1] = { Value = 4 } } };
-                    var error = new InvalidOperationException("failed");
+                    var error = new Exception("failed");
                     return holder.Nodes[0].Value + stable.Nodes[1].Value + error.Message.Length;
                 }
             }

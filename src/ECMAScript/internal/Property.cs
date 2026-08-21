@@ -6,7 +6,7 @@
 /// JavaScript own-property descriptor object shape.
 /// JavaScript 自身属性描述符对象形状。
 /// </summary>
-public class JSPropertyDescriptor
+public class JazorPropertyDescriptor
 {
 	/// <summary>
 	/// Gets or sets whether the descriptor can be changed and the property can be deleted.
@@ -60,5 +60,5 @@ public class JSPropertyDescriptor
 public abstract class PropertyDescriptorMap
 {
 	/// <summary>Gets or sets the descriptor for a string property key. 获取或设置字符串属性键的描述符。</summary>
-	public extern JSPropertyDescriptor this[string key] { get; set; }
+	public extern JazorPropertyDescriptor this[string key] { get; set; }
 }

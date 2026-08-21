@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using PropertyKey = ECMAScript.JPropertyKey;
+using PropertyKey = ECMAScript.JazorPropertyKey;
 
 namespace ECMAScript;
 
@@ -85,19 +85,19 @@ public sealed class ProxyMutationHandler<TTarget> where TTarget : class
 	/// 获取可选的属性读取 trap，使仅修改的 handler 保持精简。
 	/// </summary>
 	[Description("@#get")]
-	public Func<TTarget, JPropertyKey, object, object?>? Get { get; init; }
+	public Func<TTarget, JazorPropertyKey, object, object?>? Get { get; init; }
 
 	/// <summary>Gets the optional trap for property writes. 获取可选的属性写入 trap。</summary>
 	[Description("@#set")]
-	public Func<TTarget, JPropertyKey, object?, object, bool>? Set { get; init; }
+	public Func<TTarget, JazorPropertyKey, object?, object, bool>? Set { get; init; }
 
 	/// <summary>Gets the optional trap for deleting an own property. 获取可选的删除自身属性 trap。</summary>
 	[Description("@#deleteProperty")]
-	public Func<TTarget, JPropertyKey, bool>? DeleteProperty { get; init; }
+	public Func<TTarget, JazorPropertyKey, bool>? DeleteProperty { get; init; }
 
 	/// <summary>Gets the optional trap for defining or reconfiguring an own property. 获取可选的定义或重新配置自身属性 trap。</summary>
 	[Description("@#defineProperty")]
-	public Func<TTarget, JPropertyKey, JSPropertyDescriptor, bool>? DefineProperty { get; init; }
+	public Func<TTarget, JazorPropertyKey, JazorPropertyDescriptor, bool>? DefineProperty { get; init; }
 }
 
 /// <summary>
@@ -115,37 +115,37 @@ public abstract class ProxyHandler<TTarget> where TTarget : class
 	/// Trap for property reads. 属性读取 trap。
 	/// </summary>
 	[Description("@#get")]
-	public extern virtual object? Get(TTarget target, JPropertyKey property, object receiver);
+	public extern virtual object? Get(TTarget target, JazorPropertyKey property, object receiver);
 
 	/// <summary>
 	/// Trap for property writes. 属性写入 trap。
 	/// </summary>
 	[Description("@#set")]
-	public extern virtual bool Set(TTarget target, JPropertyKey property, object? value, object receiver);
+	public extern virtual bool Set(TTarget target, JazorPropertyKey property, object? value, object receiver);
 
 	/// <summary>
 	/// Trap for deleting an own property. 删除自身属性 trap。
 	/// </summary>
 	[Description("@#deleteProperty")]
-	public extern virtual bool DeleteProperty(TTarget target, JPropertyKey property);
+	public extern virtual bool DeleteProperty(TTarget target, JazorPropertyKey property);
 
 	/// <summary>
 	/// Trap for defining or reconfiguring an own property. 定义或重新配置自身属性 trap。
 	/// </summary>
 	[Description("@#defineProperty")]
-	public extern virtual bool DefineProperty(TTarget target, JPropertyKey property, JSPropertyDescriptor attributes);
+	public extern virtual bool DefineProperty(TTarget target, JazorPropertyKey property, JazorPropertyDescriptor attributes);
 
 	/// <summary>
 	/// Trap for reading an own property descriptor. 读取自身属性描述符 trap。
 	/// </summary>
 	[Description("@#getOwnPropertyDescriptor")]
-	public extern virtual JSPropertyDescriptor? GetOwnPropertyDescriptor(TTarget target, JPropertyKey property);
+	public extern virtual JazorPropertyDescriptor? GetOwnPropertyDescriptor(TTarget target, JazorPropertyKey property);
 
 	/// <summary>
 	/// Trap for enumerating own property keys, including symbols. 枚举自身属性键（包括 Symbol）的 trap。
 	/// </summary>
 	[Description("@#ownKeys")]
-	public extern virtual Array<JPropertyKey> OwnKeys(TTarget target);
+	public extern virtual Array<JazorPropertyKey> OwnKeys(TTarget target);
 
 	/// <summary>
 	/// Trap for reading the proxy target prototype. 读取代理目标原型 trap。
@@ -175,7 +175,7 @@ public abstract class ProxyHandler<TTarget> where TTarget : class
 	/// Trap for the JavaScript <c>in</c> operator. JavaScript <c>in</c> 运算符的 trap。
 	/// </summary>
 	[Description("@#has")]
-	public extern virtual bool Has(TTarget target, JPropertyKey property);
+	public extern virtual bool Has(TTarget target, JazorPropertyKey property);
 
 	/// <summary>
 	/// Trap for function invocation.

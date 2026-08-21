@@ -10,6 +10,12 @@ public static class NavigationManagerModule
 {
 	private static readonly WeakMap<object, Array<object>> LocationHandlers = new();
 	private static readonly WeakMap<object, Array<object>> NotFoundHandlers = new();
+	// location-changing handler 不是 CLR 事件：注册返回 IDisposable，注销只能通过该句柄，
+	// 因此与事件家族分开保存，避免 add/remove 事件语义混入。
+	private static readonly WeakMap<object, Array<object>> LocationChangingHandlers = new();
+	// LocationChangingContext.CancellationToken 的宿主载体：每次内部导航的 dispatch 独占一个 controller，
+	// 被后续导航取代时立即 abort，与 Blazor 的 _locationChangingCts 行为一致。
+	private static readonly WeakMap<object, AbortController> LocationChangingCancellations = new();
 	// Public NavigationManager overloads only receive the service instance. Keep the
 	// Router invalidation callback with that instance so all entry points refresh alike.
 	private static readonly WeakMap<object, Action?> RefreshHandlers = new();
@@ -23,83 +29,88 @@ public static class NavigationManagerModule
 		var instance = Object.Create(null);
 		LocationHandlers.Set(instance, []);
 		NotFoundHandlers.Set(instance, []);
+		LocationChangingHandlers.Set(instance, []);
 		RefreshHandlers.Set(instance, refresh);
 
-		Object.DefineProperty(instance, "baseUri", new JSPropertyDescriptor
+		Object.DefineProperty(instance, "baseUri", new JazorPropertyDescriptor
 		{
 			Get = () => GetBaseUri()
 		});
-		Object.DefineProperty(instance, "uri", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "uri", new JazorPropertyDescriptor
 		{
 			Get = GetUri
 		});
-		Object.DefineProperty(instance, "historyEntryState", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "historyEntryState", new JazorPropertyDescriptor
 		{
 			Get = GetHistoryEntryState
 		});
-		Object.DefineProperty(instance, "version", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "version", new JazorPropertyDescriptor
 		{
 			Get = () => GetVersion(instance)
 		});
-		Object.DefineProperty(instance, "addLocationChanged", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "addLocationChanged", new JazorPropertyDescriptor
 		{
 			Value = (Action<object>)((value) => AddLocationChanged(instance, value))
 		});
-		Object.DefineProperty(instance, "removeLocationChanged", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "removeLocationChanged", new JazorPropertyDescriptor
 		{
 			Value = (Action<object>)((value) => RemoveLocationChanged(instance, value))
 		});
-		Object.DefineProperty(instance, "addOnNotFound", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "addOnNotFound", new JazorPropertyDescriptor
 		{
 			Value = (Action<object>)((value) => AddNotFound(instance, value))
 		});
-		Object.DefineProperty(instance, "removeOnNotFound", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "removeOnNotFound", new JazorPropertyDescriptor
 		{
 			Value = (Action<object>)((value) => RemoveNotFound(instance, value))
 		});
-		Object.DefineProperty(instance, "notFound", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "notFound", new JazorPropertyDescriptor
 		{
 			Value = (Action)(() => NotFound(instance))
 		});
-		Object.DefineProperty(instance, "notifyLocationChanged", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "registerLocationChangingHandler", new JazorPropertyDescriptor
+		{
+			Value = (Func<object, object>)((handler) => RegisterLocationChangingHandler(instance, handler))
+		});
+		Object.DefineProperty(instance, "notifyLocationChanged", new JazorPropertyDescriptor
 		{
 			Value = (Action<bool>)((intercepted) => NotifyLocationChanged(instance, intercepted))
 		});
-		Object.DefineProperty(instance, "navigateTo", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "navigateTo", new JazorPropertyDescriptor
 		{
 			Value = (Action<string, object?, object?>)((uri, optionsOrForceLoad, replace) =>
 				NavigateTo(instance, uri, optionsOrForceLoad, replace))
 		});
-		Object.DefineProperty(instance, "toAbsoluteUri", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "toAbsoluteUri", new JazorPropertyDescriptor
 		{
 			Value = (Func<string?, URL>)((uri) => ToAbsoluteUri(instance, uri))
 		});
-		Object.DefineProperty(instance, "toBaseRelativePath", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "toBaseRelativePath", new JazorPropertyDescriptor
 		{
 			Value = (Func<string, string>)((uri) => ToBaseRelativePath(instance, uri))
 		});
-		Object.DefineProperty(instance, "getUriWithQueryParameter", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "getUriWithQueryParameter", new JazorPropertyDescriptor
 		{
 			Value = (Func<string, object?, string>)((name, value) =>
 				NavigationManagerExtensionsModule.GetUriWithQueryParameterCore(GetUri(), name, value))
 		});
-		Object.DefineProperty(instance, "getUriWithQueryParameters", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "getUriWithQueryParameters", new JazorPropertyDescriptor
 		{
 			Value = (Func<object, string>)((parameters) =>
 				NavigationManagerExtensionsModule.GetUriWithQueryParametersObjectCore(GetUri(), parameters))
 		});
-		Object.DefineProperty(instance, "getUriWithQueryParametersFromUri", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "getUriWithQueryParametersFromUri", new JazorPropertyDescriptor
 		{
 			Value = (Func<string, object, string>)((uri, parameters) =>
 				NavigationManagerExtensionsModule.GetUriWithQueryParametersObjectCore(uri, parameters))
 		});
-		Object.DefineProperty(instance, "getUriWithFragment", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "getUriWithFragment", new JazorPropertyDescriptor
 		{
 			Value = (Func<string?, string>)((fragment) =>
 				NavigationManagerExtensionsModule.GetUriWithFragmentCore(GetUri(), fragment))
 		});
 
-		Object.DefineProperty(instance, "__jazorNavigationVersion", new ECMAScript.JSPropertyDescriptor
+		Object.DefineProperty(instance, "__jazorNavigationVersion", new JazorPropertyDescriptor
 		{
 			Value = 0d,
 			Writable = true
@@ -160,8 +171,17 @@ public static class NavigationManagerModule
 	public static string _0da3e56124eaf41a(object instance, string uri)
 		=> ToBaseRelativePath(instance, uri);
 
-	[Jazor(Op.Discard ,"Microsoft.AspNetCore.Components.NavigationManager.RegisterLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext, System.Threading.Tasks.ValueTask>)")]
-	public extern static global::System.IDisposable _eaafc9868e2e1ebe(object instance, object locationChangingHandler);
+	/// <summary>
+	/// C#: navigation.RegisterLocationChangingHandler(handler)
+	/// JS: 登记 handler 并返回带 dispose 的注销句柄。
+	/// </summary>
+	/// <remarks>
+	/// 返回值声明为 object：System.IDisposable 擦除为 Object，IDisposableModule.Dispose() 只探测实例上的
+	/// dispose 方法，因此 { dispose } 字面量就是合法的 IDisposable 载体。
+	/// </remarks>
+	[Jazor(Op.Import, "Microsoft.AspNetCore.Components.NavigationManager.RegisterLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext, System.Threading.Tasks.ValueTask>)", "registerLocationChangingHandler")]
+	public static object _eaafc9868e2e1ebe(object instance, object locationChangingHandler)
+		=> RegisterLocationChangingHandler(instance, locationChangingHandler);
 
 	private static void AddLocationChanged(object instance, object value)
 		=> AddHandler(LocationHandlers, instance, value);
@@ -171,6 +191,15 @@ public static class NavigationManagerModule
 
 	private static void AddNotFound(object instance, object value)
 		=> AddHandler(NotFoundHandlers, instance, value);
+
+	private static object RegisterLocationChangingHandler(object instance, object handler)
+	{
+		AddHandler(LocationChangingHandlers, instance, handler);
+		return new
+		{
+			dispose = (Action)(() => RemoveHandler(LocationChangingHandlers, instance, handler))
+		};
+	}
 
 	private static void RemoveNotFound(object instance, object value)
 		=> RemoveHandler(NotFoundHandlers, instance, value);
@@ -299,6 +328,56 @@ public static class NavigationManagerModule
 			return;
 		}
 
+		// location-changing handler 只覆盖内部导航：forceLoad 与跨 base URI 的整页导航由浏览器
+		// location 直接接管，Blazor 同样不在这两条路径上运行 handler。
+		var handlers = GetHandlers(LocationChangingHandlers, instance).Slice();
+		if (handlers.Length == 0)
+		{
+			CommitInternalNavigation(instance, target, replace, historyState);
+			return;
+		}
+
+		var cancellation = BeginLocationChangingCancellation(instance);
+		var context = LocationChangingContextModule.CreateLocationChangingContext(
+			target.Href,
+			historyState as string,
+			false,
+			cancellation.Signal);
+		DispatchLocationChanging(handlers, context, () =>
+		{
+			EndLocationChangingCancellation(instance, cancellation);
+			// 本次 dispatch 已被后续导航取代：token 已取消，提交它会把过期的目标写回 history。
+			if (cancellation.Signal.Aborted)
+				return;
+
+			if (!LocationChangingContextModule.IsNavigationPrevented(context))
+				CommitInternalNavigation(instance, target, replace, historyState);
+		});
+	}
+
+	private static AbortController BeginLocationChangingCancellation(object instance)
+	{
+		if (LocationChangingCancellations.Has(instance))
+			LocationChangingCancellations.Get(instance)!.Abort();
+
+		var cancellation = new AbortController();
+		LocationChangingCancellations.Set(instance, cancellation);
+		return cancellation;
+	}
+
+	// 只有仍属于本次 dispatch 时才清除：被取代之后 WeakMap 里已经换成新的 controller。
+	private static void EndLocationChangingCancellation(object instance, AbortController cancellation)
+	{
+		if (LocationChangingCancellations.Get(instance) == cancellation)
+			LocationChangingCancellations.Delete(instance);
+	}
+
+	private static void CommitInternalNavigation(
+		object instance,
+		URL target,
+		bool replace,
+		object? historyState)
+	{
 		var route = target.Pathname + target.Search + target.Hash;
 		var history = GetWindowHistory();
 		if (replace)
@@ -306,6 +385,25 @@ public static class NavigationManagerModule
 		else
 			history.PushState(historyState!, "", route);
 		NotifyLocationChanged(instance, true);
+	}
+
+	// handler 全部先同步启动（副作用顺序与 CLR 一致），其异步部分全部结算之后才读取
+	// PreventNavigation() 标记；NavigateTo 保持 void，与真实 Blazor 的 fire-and-forget 一致。
+	private static void DispatchLocationChanging(Array<object> handlers, object context, Action commit)
+	{
+		IPromise settled = Promise.Resolve();
+		for (var handlerIndex = 0; handlerIndex < handlers.Length; handlerIndex++)
+		{
+			var handler = handlers[handlerIndex];
+			if (handler is null)
+				continue;
+
+			// handler 返回 ValueTask（擦除为 Promise）；同步完成的 handler 返回 undefined。
+			IPromise awaited = Promise.Resolve(ECMAScript.Reflect.Apply(handler, null, [context]));
+			settled = settled.Then(() => awaited);
+		}
+
+		settled.Then(commit);
 	}
 
 	private static void Refresh(object instance, bool forceReload)

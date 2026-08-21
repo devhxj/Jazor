@@ -10,6 +10,8 @@
 | [RazorVue 极致性能路线图](./razorvue-extreme-performance.md) | 从真实 benchmark、child block tree、list/slot lowering 到 CLR payload、SSR 与生成吞吐的实施顺序和门禁 |
 | [RazorVue 作者面诊断与支持决策路线图](./razorvue-authoring-diagnostics.md) | Razor/C# 合法作者面与支持切片差值的分级清单、final-pipeline 诊断契约、支持/拒绝决策与静默劣化清零计划 |
 | [RazorVue 开发者体验完善路线图](./razorvue-developer-experience.md) | Blazor-first 作者面兼容：标准 Razor/C# 直接工作；无法保真时由作者源码分析在代码位置解释并给出替代，另含组件适配、运行时证明和发布门禁 |
+| [RazorVue Blazor CLR 类型支持计划](./blazor-clr-support-plan.md) | 浏览器运行时类型与服务的专项 ledger：导航拦截、事件参数、元素引用、受控 JS interop、认证、表单与文件输入的归属、依赖、顺序和验收 |
+| [CLR Runtime Object 布局调整计划](./clr-runtime-object-layout-plan.md) | 收敛不必要的 `J*` runtime class：以匿名 object、structural record、原生 carrier、closure 与 `WeakMap` 表示内部状态，并明确 nominal type identity 的失败边界 |
 | [JazorAdmin 生产级参考应用路线图](./admin-reference-app.md) | 示例应用的定位收敛、IAM 边界规矩、TDesign + VueDataUi + VuIcons 界面栈分工、审计日志与 SSO 演示客户端的里程碑与验收 |
 
 新增路线图前，应先明确目标、依赖、验收标准和归属；完成或废弃后，应将结论收敛到当前状态或 [历史演进](../05-history/evolution.md)，而不是继续保留阶段清单。
