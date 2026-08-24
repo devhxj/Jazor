@@ -4,6 +4,8 @@
 using System.Collections.Generic;
 using ECMAScript;
 using static ECMAScript.Vue;
+using Event = ECMAScript.JazorEvent;
+using Location = ECMAScript.JazorLocation;
 
 namespace Wiki;
 
@@ -1931,7 +1933,7 @@ public static partial class WikiHomeModule
     private static string ReadElementStringValue(Element element, string propertyName)
     {
         var value = element.Get(propertyName);
-        return value == null ? "" : ECMAScript.Global.StringFn(value);
+        return value == null ? "" : ECMAScript.Global.StringValue(value);
     }
 
     private static void ClearNavFilter(MouseEvent mouseEvent)

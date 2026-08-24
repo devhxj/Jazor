@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ECMAScript;
 using static ECMAScript.Vue;
+using Event = ECMAScript.JazorEvent;
 
 namespace Wiki;
 

@@ -763,12 +763,12 @@ internal static class PackageVerifier
                 RequireEntry(archive, "tools/net11.0/Jazor.Emit.dll", packageId);
                 RequireEntry(archive, "lib/net11.0/Jazor.AspNetCore.dll", packageId);
                 RequireEntry(archive, "lib/net11.0/Jazor.AspNetCore.Dev.dll", packageId);
-                RequireEntry(archive, "jazor/vue3/manifest.json", packageId);
             }
             else if (packageId == "Jazor.Vue")
             {
                 RequireEntry(archive, "buildTransitive/Jazor.Vue.targets", packageId);
                 RequireEntry(archive, "analyzers/dotnet/cs/Jazor.RazorVue.dll", packageId);
+                RequireEntry(archive, "jazor/vue3/manifest.json", packageId);
             }
             else
             {
