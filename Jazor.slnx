@@ -25,6 +25,7 @@
     <Project Path="src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj" />
   </Folder>
   <Project Path="src/ECMAScript.Contract/ECMAScript.Contract.csproj" />
+  <Project Path="src/ECMAScript.Blazor/ECMAScript.Blazor.csproj" />
   <Project Path="src/ECMAScript.ElementPlus/ECMAScript.ElementPlus.csproj" />
   <Project Path="src/ECMAScript.Vue.Devtools/ECMAScript.Vue.Devtools.csproj" />
   <Project Path="src/ECMAScript.VueDataUi/ECMAScript.VueDataUi.csproj" />

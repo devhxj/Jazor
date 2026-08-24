@@ -1,6 +1,6 @@
 # ECMAScript
 
-> 定位：Jazor 的 JavaScript、Web API 与基础 Vue authoring host projection 程序集。
+> 定位：Jazor 的框架无关 JavaScript、Web API 与基础 host projection 程序集。
 
 `ECMAScript` 将可支持的 JavaScript runtime surface 表达为稳定的 C# contract，并通过 `[ECMAScript]`、`[ECMAScriptModule]`、`[Description]` 和白名单映射进入 compiler。它不是 JavaScript 的弱类型镜像：未建模的 runtime 语义不能通过 `object` 或手写 import 绕过。
 
@@ -8,14 +8,12 @@
 
 - 提供 global host、DOM/Web API、命名 union 与基础 runtime contract。
 - 保留 authoring 中声明的 npm specifier 与模块路径，按 compiler 的标准 import 路径发射。
-- 提供基础 Vue API，例如 `createApp`、`defineComponent`、`h`、`ref` 与 `computed`。
+- 提供 ECMAScript global、DOM/Web API、union 和 runtime contract；Vue authoring API 由 `ECMAScript.Vue`（随 `Jazor.Vue` 交付）提供。
 - 为 record、`[Spread]` 与 typed object literal 提供可预测的结构化 lowering 契约。
 
-## Vue authoring 接口
+## Host authoring 接口
 
-`VueComponentOptions` 适用于无 props 的简单组件，`VueComponentOptions<TProps>` 用于 typed props 的 `Setup` / `H(...)` authoring。泛型参数提供 C# 类型检查，不自动生成 Vue runtime `props` 或 `emits`；需要 runtime contract 时，应显式填写 `Props` 与 `Emits`。
-
-`VueObject` / `VueObject<TProps>` 用于结构化对象字面量，`[Spread]` 用于明确的静态展开。record 会按结构属性键降低，静态 `null` 属性在适用的 object literal 位置省略；这些规则不表示 CLR runtime identity。
+Vue component、props、reactivity 和 render-function authoring 位于独立的 `ECMAScript.Vue` 项目，并随 `Jazor.Vue` 交付。`ECMAScript` 只提供通用 compiler/host contract；普通 ECMAScript 类库无需安装 Vue binding。
 
 ## 边界
 

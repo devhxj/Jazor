@@ -6,12 +6,13 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.14.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.14.0" />
+  <PackageReference Include="Jazor" Version="0.20.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.20.0" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.20.0" />
 </ItemGroup>
 ```
 
-所有 Jazor 和 `ECMAScript.*` 包应使用相同版本。`Jazor` 已提供 Vue、`@vue/devtools-api` 与 `perfect-debounce` 的本地 runtime closure；本包不会重复携带 manifest、browser ESM 或 Devtools extension internals。
+所有 Jazor、`Jazor.Vue` 和 `ECMAScript.*` 包应使用相同版本。`Jazor.Vue` 提供 Vue、`@vue/devtools-api` 与 `perfect-debounce` 的本地 runtime closure；本包不会重复携带 manifest、browser ESM 或 Devtools extension internals。
 
 ## 使用
 

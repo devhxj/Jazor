@@ -10,11 +10,6 @@
     <None Remove="$(JazorDir)**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- The umbrella package carries Vue's runtime assets as well as its binding DLL. -->
-    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json"
-                          Condition="Exists('$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json')" />
-  </ItemGroup>
   <Target Name="_ResolveJazorEmitTool">
     <PropertyGroup>
       <_JazorPackagedToolPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net11.0\Jazor.Emit.dll'))</_JazorPackagedToolPath>

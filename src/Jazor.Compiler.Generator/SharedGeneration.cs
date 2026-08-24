@@ -63,6 +63,9 @@ internal static class SharedGeneration
         {
             Path.Combine(src, "ECMAScript"),
             Path.Combine(src, "Jazor.CLR"),
+            // Blazor framework mappings are a first-party source contribution. They
+            // are declarations only; CLR runtime modules remain under Jazor.CLR.
+            Path.Combine(src, "ECMAScript.Blazor"),
             Path.Combine(src, "ECMAScript.Vue"),
             Path.Combine(src, "ECMAScript.Vuetify"),
             Path.Combine(src, "Jazor.RazorVue", "RazorSdk", "Catalog"),

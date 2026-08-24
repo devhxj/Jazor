@@ -32,11 +32,12 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-21
+### 2026-08-24
 
-- Jazor 0.19.0 支持 RazorVue 浏览器导航的 `NavigationManager.OnNotFound`、`NavigationManager.NotFound()` 与 `NotFoundEventArgs` 回调负载。
-- `NavigationManager.ToAbsoluteUri(...)` 现返回 URL 驱动的 `System.Uri`，浏览器组件可继续使用受支持的 URI 成员。
-- 已打包的 Wiki SPA 消费者会在脱离仓库的发布验证中保留生成的文档目录。
+- **包边界变更：** `Jazor` 现在保持框架无关，可用于普通 C# -> ECMAScript 类库。Vue authoring、Razor-to-Vue、Vue runtime 资源，以及 `ECMAScript.Vue`、`ECMAScript.VueContract`、`ECMAScript.Blazor` payload 由显式的 `Jazor.Vue` 提供。
+- `ECMAScript.Blazor` 首批提供 Mouse/Keyboard/Focus 事件 getter 到原生 browser carrier 的 mapping；它随 `Jazor.Vue` 交付，不随 `Jazor` 安装，实际 runtime module/helper 仍由 `Jazor.CLR` 承载。
+- RazorVue 浏览器导航现支持 `NavigationManager.RegisterLocationChangingHandler(...)`、`PreventNavigation()`，以及后续导航覆盖进行中 handler 时的取消语义。
+- 浏览器 runtime 增加上述异步导航路径所需的 `ValueTask` 与 cancellation API 切片。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -80,9 +81,9 @@ flowchart LR
 
 | 包 | 职责 |
 | --- | --- |
-| `Jazor` | 核心编译器、CLR 契约、分析器、emit 工具、MSBuild 与 ASP.NET Core 集成，以及基础 Vue 3 authoring 类型 |
-| `Jazor.Vue` | Razor SDK 项目的显式 Razor-to-Vue opt-in |
-| `ECMAScript.*` | ECMAScript、Vue、Router、Pinia、UI 库与 CSS-in-JS 绑定 |
+| `Jazor` | 框架无关的编译器、CLR 契约、分析器、emit 工具、MSBuild 与 ASP.NET Core 集成，可用于普通 ECMAScript 类库 |
+| `Jazor.Vue` | Vue authoring、Razor-to-Vue opt-in、Vue runtime 资源，以及 `ECMAScript.Vue`、`ECMAScript.VueContract`、`ECMAScript.Blazor` payload |
+| `ECMAScript.*` | 框架无关 ECMAScript 绑定、可选 Vue 生态绑定与 CSS-in-JS 类库 |
 | `ECMAScript.VueDataUi` | `vue-data-ui` 的强类型 RazorVue 图表与按组件本地 ESM 物化 |
 | `ECMAScript.VuIcons` | `vu-icons` 的强类型 RazorVue 图标，支持静态单图标与动态 catalog 路径 |
 | `Jazor.Admin` | UI 库无关的管理壳库与 RazorVue 组件 |
@@ -94,15 +95,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.19.0
+dotnet add package Jazor --version 0.20.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.19.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.19.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.20.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.20.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

@@ -36,21 +36,28 @@ public sealed class ProductionRazorCompilerReferenceTests
         var jazorProject = File.ReadAllText(Path.Combine(root, "src", "Jazor", "Jazor.csproj"));
         var jazorVueProjectPath = Path.Combine(root, "src", "Jazor.Vue", "Jazor.Vue.csproj");
         var jazorVueProject = File.ReadAllText(jazorVueProjectPath);
+        var jazorVueNuspecPath = Path.Combine(root, "src", "Jazor.Vue", "Jazor.Vue.nuspec");
+        var jazorVueNuspec = File.ReadAllText(jazorVueNuspecPath);
 
         Assert.IsFalse(
             jazorProject.Contains("Jazor.RazorVue\\bin", StringComparison.Ordinal),
             "Jazor must not package or install the Razor-to-Vue implementation and generator hook.");
         StringAssert.Contains(jazorVueProject, "<PackageId>Jazor.Vue</PackageId>");
-        StringAssert.Contains(jazorVueProject, "Jazor.RazorVue.dll");
+        StringAssert.Contains(jazorVueProject, "<NuspecFile>Jazor.Vue.nuspec</NuspecFile>");
+        StringAssert.Contains(jazorVueNuspec, "Jazor.RazorVue.dll");
         Assert.IsFalse(
-            jazorVueProject.Contains("Jazor.RazorVue.Generator", StringComparison.Ordinal),
+            jazorVueProject.Contains("Jazor.RazorVue.Generator", StringComparison.Ordinal) ||
+            jazorVueNuspec.Contains("Jazor.RazorVue.Generator", StringComparison.Ordinal),
             "Jazor.Vue must package one RazorVue analyzer assembly, not the retired generator assembly.");
 
-        var packagedAnalyzers = System.Xml.Linq.XDocument.Load(jazorVueProjectPath)
-            .Descendants("None")
-            .Where(static item => string.Equals((string?)item.Attribute("Pack"), "true", StringComparison.OrdinalIgnoreCase))
-            .Where(static item => ((string?)item.Attribute("PackagePath"))?.Replace('\\', '/').StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase) == true)
-            .Select(static item => Path.GetFileName(((string?)item.Attribute("Include"))?.Replace('\\', '/')))
+        var packagedAnalyzers = System.Xml.Linq.XDocument.Load(jazorVueNuspecPath)
+            .Descendants()
+            .Where(static item => string.Equals(item.Name.LocalName, "file", StringComparison.Ordinal))
+            .Where(static item => string.Equals(
+                ((string?)item.Attribute("target"))?.Replace('\\', '/').TrimEnd('/'),
+                "analyzers/dotnet/cs",
+                StringComparison.OrdinalIgnoreCase))
+            .Select(static item => Path.GetFileName(((string?)item.Attribute("src"))?.Replace('\\', '/')))
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToArray();
 

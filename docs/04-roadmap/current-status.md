@@ -18,7 +18,7 @@ RazorVue 的生产输出是 direct Vue render-function `.mjs`。当前已接受�
 
 RazorVue 作者面现已使用 final Compilation typed diagnostics：`JAZORVGA021`-`026` 分别覆盖 direct-render、compiler bridge、component binding、member closure、VueInject 和 Vue module；`JAZORVGA020` 收缩为 bootstrap/未分类内部失败。mapped `.razor` location、稳定多组件聚合和错误时无 partial catalog 由官方 Razor SG 回归覆盖。member class 进入 Vue Proxy 时使用 proxy-safe mangled storage；支持切片、拒绝边界和升级门禁见 [RazorVue 作者指南](../03-guides/razorvue-authoring.md) 与 [作者面诊断路线图](./razorvue-authoring-diagnostics.md)。
 
-Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vu Icons、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` 和 ASP.NET Core SSR 都围绕核心平台或当前 RazorVue 集成提供能力；它们不改变 Jazor 的框架无关核心定位。`ECMAScript.VueDataUi` 完整映射 `vue-data-ui` 3.23.4 的 71 个公开 `vue-ui-*` entry，保留 typed dataset/config authoring，并由 package manifest 按实际 import 物化 runtime closure。`ECMAScript.VuIcons` 映射 `vu-icons` 1.5.4 的 1,821 个静态 wrapper；静态使用按单图标 entry 物化，`VuIcon` 动态名称使用则显式物化全量 catalog。
+Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vu Icons、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` 和 ASP.NET Core SSR 都围绕核心平台或当前 RazorVue 集成提供能力；Vue authoring、Vue bindings 和 Vue runtime 由 `Jazor.Vue` 交付，不改变 Jazor 的框架无关核心定位。`ECMAScript.Blazor` 是随 `Jazor.Vue` 交付的 Blazor framework mapping contribution，实际 CLR runtime module/helper 仍由 `Jazor.CLR` 提供。`ECMAScript.VueDataUi` 完整映射 `vue-data-ui` 3.23.4 的 71 个公开 `vue-ui-*` entry，保留 typed dataset/config authoring，并由 package manifest 按实际 import 物化 runtime closure。`ECMAScript.VuIcons` 映射 `vu-icons` 1.5.4 的 1,821 个静态 wrapper；静态使用按单图标 entry 物化，`VuIcon` 动态名称使用则显式物化全量 catalog。
 
 `Jazor.React`、`Jazor.RazorReact` 等未来方向尚未构成已接受的产品范围或公开 API。任何新框架集成必须遵守 [框架集成层](../02-architecture/framework-integrations.md) 的边界。
 

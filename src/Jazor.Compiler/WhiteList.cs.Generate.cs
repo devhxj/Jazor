@@ -9,6 +9,9 @@ internal static partial class WhiteList
 	static partial void Generate(ref Dictionary<string, WhiteListValue> types, ref Dictionary<string, WhiteListValue> members)
 	{
 		// 初始化类型
+		types["Microsoft.AspNetCore.Components.Web.MouseEventArgs"] = new(Op.Alias, "MouseEvent");
+		types["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs"] = new(Op.Alias, "KeyboardEvent");
+		types["Microsoft.AspNetCore.Components.Web.FocusEventArgs"] = new(Op.Alias, "FocusEvent");
 		types["System.Array"] = new(Op.Alias, "Array");
 		types["System.Numerics.BigInteger"] = new(Op.Alias, "BigInt");
 		types["bool"] = new(Op.Alias, "Boolean");
@@ -106,6 +109,35 @@ internal static partial class WhiteList
 		types["Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions"] = new(Op.Allowed);
 		
 		// 初始化成员
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.Detail.get"] = new(Op.Inline, "__arg1.detail");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.ScreenX.get"] = new(Op.Inline, "__arg1.screenX");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.ScreenY.get"] = new(Op.Inline, "__arg1.screenY");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.ClientX.get"] = new(Op.Inline, "__arg1.clientX");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.ClientY.get"] = new(Op.Inline, "__arg1.clientY");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.OffsetX.get"] = new(Op.Inline, "__arg1.offsetX");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.OffsetY.get"] = new(Op.Inline, "__arg1.offsetY");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageX.get"] = new(Op.Inline, "__arg1.pageX");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.PageY.get"] = new(Op.Inline, "__arg1.pageY");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.get"] = new(Op.Inline, "__arg1.movementX");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.get"] = new(Op.Inline, "__arg1.movementY");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.Button.get"] = new(Op.Inline, "__arg1.button");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.Buttons.get"] = new(Op.Inline, "__arg1.buttons");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.CtrlKey.get"] = new(Op.Inline, "__arg1.ctrlKey");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.ShiftKey.get"] = new(Op.Inline, "__arg1.shiftKey");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.AltKey.get"] = new(Op.Inline, "__arg1.altKey");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.MetaKey.get"] = new(Op.Inline, "__arg1.metaKey");
+		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.Type.get"] = new(Op.Inline, "__arg1.type");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Key.get"] = new(Op.Inline, "__arg1.key");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Code.get"] = new(Op.Inline, "__arg1.code");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Location.get"] = new(Op.Inline, "__arg1.location");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Repeat.get"] = new(Op.Inline, "__arg1.repeat");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.CtrlKey.get"] = new(Op.Inline, "__arg1.ctrlKey");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.ShiftKey.get"] = new(Op.Inline, "__arg1.shiftKey");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.AltKey.get"] = new(Op.Inline, "__arg1.altKey");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.MetaKey.get"] = new(Op.Inline, "__arg1.metaKey");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Type.get"] = new(Op.Inline, "__arg1.type");
+		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get"] = new(Op.Inline, "__arg1.isComposing");
+		members["Microsoft.AspNetCore.Components.Web.FocusEventArgs.Type.get"] = new(Op.Inline, "__arg1.type");
 		members["static extern ECMAScript.Global.Undefined<T>()"] = new(Op.Inline, "undefined");
 		members["static extern ECMAScript.Global.TypeOf(object)"] = new(Op.Compile, "_27d71701fd254382");
 		members["static extern ECMAScript.BigInt.Zero.get"] = new(Op.Inline, "0n");

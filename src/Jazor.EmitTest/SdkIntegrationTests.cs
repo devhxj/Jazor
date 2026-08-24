@@ -37,6 +37,19 @@ public sealed class SdkIntegrationTests
         var vueEntryNames = vueArchive.Entries
             .Select(static entry => entry.FullName.Replace('\\', '/'))
             .ToArray();
+        CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.Blazor.dll");
+        CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.Blazor.pdb");
+        CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.Vue.dll");
+        CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.VueContract.dll");
+        CollectionAssert.Contains(vueEntryNames, "buildTransitive/Jazor.Vue.targets");
+        var vueNuspec = ReadPackageEntryText(package.VuePackagePath, "Jazor.Vue.nuspec");
+        StringAssert.Contains(vueNuspec, "<dependency id=\"Jazor\"", StringComparison.Ordinal);
+        StringAssert.Contains(vueNuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />", StringComparison.Ordinal);
+        using var jazorArchiveForBlazorBoundary = ZipFile.OpenRead(package.PackagePath);
+        Assert.IsFalse(
+            jazorArchiveForBlazorBoundary.Entries.Any(static entry =>
+                string.Equals(entry.FullName.Replace('\\', '/'), "lib/net11.0/ECMAScript.Blazor.dll", StringComparison.OrdinalIgnoreCase)),
+            "ECMAScript.Blazor is a Jazor.Vue payload and must not be installed by the Jazor core package.");
         var vueAnalyzerEntries = vueEntryNames
             .Where(static path => path.StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase))
             .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
@@ -91,6 +104,7 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.Vuetify.dll");
         CollectionAssert.Contains(entryNames, "ECMAScript.Vuetify.nuspec");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
+        StringAssert.Contains(nuspec, "<dependency id=\"Jazor.Vue\"");
     }
 
     [TestMethod]
@@ -107,6 +121,7 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.VueRoute.dll");
         CollectionAssert.Contains(entryNames, "ECMAScript.VueRoute.nuspec");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
+        StringAssert.Contains(nuspec, "<dependency id=\"Jazor.Vue\"");
     }
 
     [TestMethod]
@@ -127,6 +142,7 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/dist/nostics/index.mjs");
         CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/licenses/NOSTICS-LICENSE");
         StringAssert.Contains(piniaNuspec, "<dependency id=\"Jazor\"");
+        StringAssert.Contains(piniaNuspec, "<dependency id=\"Jazor.Vue\"");
 
         using var piniaTestingArchive = ZipFile.OpenRead(package.PiniaTestingPackagePath);
         var piniaTestingEntryNames = piniaTestingArchive.Entries
@@ -140,6 +156,7 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(piniaTestingEntryNames, "jazor/pinia-testing/dist/index.mjs");
         CollectionAssert.Contains(piniaTestingEntryNames, "jazor/pinia-testing/licenses/LICENSE");
         StringAssert.Contains(piniaTestingNuspec, "<dependency id=\"ECMAScript.Pinia\"");
+        StringAssert.Contains(piniaTestingNuspec, "<dependency id=\"Jazor.Vue\"");
     }
 
     [TestMethod]
@@ -156,6 +173,7 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.TDesign.dll");
         CollectionAssert.Contains(entryNames, "ECMAScript.TDesign.nuspec");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
+        StringAssert.Contains(nuspec, "<dependency id=\"Jazor.Vue\"");
         StringAssert.Contains(nuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />");
     }
 
@@ -164,9 +182,19 @@ public sealed class SdkIntegrationTests
     {
         var package = await LocalPackage.Value;
 
-        AssertPackageEntries(
+        AssertPackageDoesNotContain(
             package.PackagePath,
             "lib/net11.0/ECMAScript.Vue.dll",
+            "lib/net11.0/ECMAScript.VueContract.dll",
+            "lib/net11.0/ECMAScript.Blazor.dll",
+            "jazor/vue3/manifest.json",
+            "tools/net11.0/tooling/vue/compiler-sfc.esm-browser.js");
+        AssertPackageEntries(
+            package.VuePackagePath,
+            "lib/net11.0/ECMAScript.Vue.dll",
+            "lib/net11.0/ECMAScript.VueContract.dll",
+            "lib/net11.0/ECMAScript.Blazor.dll",
+            "lib/net11.0/ECMAScript.Blazor.pdb",
             "jazor/vue3/manifest.json",
             "jazor/vue3/dist/vue.runtime.esm-browser.js",
             "jazor/vue3/dist/vue.runtime.esm-browser.prod.js",
@@ -236,7 +264,7 @@ public sealed class SdkIntegrationTests
     public async Task CreateLocalPackage_VueDevtoolsApi_SatisfiesVueRouterAndPiniaDevelopmentImports()
     {
         var package = await LocalPackage.Value;
-        using var manifest = JsonDocument.Parse(ReadPackageEntryText(package.PackagePath, "jazor/vue3/manifest.json"));
+        using var manifest = JsonDocument.Parse(ReadPackageEntryText(package.VuePackagePath, "jazor/vue3/manifest.json"));
 
         var devtools = manifest.RootElement.GetProperty("imports").GetProperty("@vue/devtools-api");
         Assert.AreEqual("dist/devtools-api/vue-devtools-api.esm-browser.js", devtools.GetProperty("development").GetString());
@@ -261,7 +289,7 @@ public sealed class SdkIntegrationTests
             .ToArray();
         CollectionAssert.Contains(serverRendererFiles, "licenses/VUE-SERVER-RENDERER-LICENSE");
 
-        var devtoolsApi = ReadPackageEntryText(package.PackagePath, "jazor/vue3/dist/devtools-api/vue-devtools-api.esm-browser.js");
+        var devtoolsApi = ReadPackageEntryText(package.VuePackagePath, "jazor/vue3/dist/devtools-api/vue-devtools-api.esm-browser.js");
         StringAssert.Contains(devtoolsApi, "from 'perfect-debounce'", StringComparison.Ordinal);
 
         var router = ReadPackageEntryText(package.VueRoutePackagePath, "jazor/vue-router/dist/vue-router.esm-browser.js");
@@ -450,7 +478,7 @@ public sealed class SdkIntegrationTests
 
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "SsrReleaseSdkSample");
-        var projectPath = CreateDefaultOutputStaticHostProject(projectRoot);
+        var projectPath = CreateDefaultOutputStaticHostProject(projectRoot, includeVue: true);
         var build = await RunDotNetAsync(
             package.RepoRoot,
             [
@@ -506,7 +534,7 @@ public sealed class SdkIntegrationTests
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "SsrPublishSdkSample");
         var publishOutputRoot = Path.Combine(workspace.RootPath, "publish-output");
-        var projectPath = CreateDefaultOutputWebHostProject(projectRoot);
+        var projectPath = CreateDefaultOutputWebHostProject(projectRoot, includeVue: true);
         var publish = await RunDotNetAsync(
             package.RepoRoot,
             [
@@ -2787,6 +2815,16 @@ public sealed class SdkIntegrationTests
             Assert.IsTrue(entries.Contains(expectedPath), $"Package '{packagePath}' is missing '{expectedPath}'.");
     }
 
+    private static void AssertPackageDoesNotContain(string packagePath, params string[] forbiddenPaths)
+    {
+        using var archive = ZipFile.OpenRead(packagePath);
+        var entries = archive.Entries
+            .Select(static entry => entry.FullName.Replace('\\', '/'))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var forbiddenPath in forbiddenPaths)
+            Assert.IsFalse(entries.Contains(forbiddenPath), $"Package '{packagePath}' unexpectedly contains '{forbiddenPath}'.");
+    }
+
     private static void AssertPackageArtifactOutputs(
         string packageBuildOutputRoot,
         string emitPublishDirectory)
@@ -3338,14 +3376,17 @@ public sealed class SdkIntegrationTests
                output.Contains("being used by another process", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string CreateDefaultOutputStaticHostProject(string projectRoot)
+    private static string CreateDefaultOutputStaticHostProject(string projectRoot, bool includeVue = false)
     {
         Directory.CreateDirectory(projectRoot);
         var projectPath = Path.Combine(projectRoot, "StaticHostDefaultOutput.csproj");
+        var vuePackageReference = includeVue
+            ? "    <PackageReference Include=\"Jazor.Vue\" Version=\"$(JazorPackageVersion)\" PrivateAssets=\"all\" />"
+            : "";
 
         WriteFile(
             projectPath,
-            """
+            $$"""
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
@@ -3357,6 +3398,7 @@ public sealed class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+            {{vuePackageReference}}
               </ItemGroup>
 
               <ItemGroup>
@@ -3465,14 +3507,17 @@ public sealed class SdkIntegrationTests
         return projectPath;
     }
 
-    private static string CreateDefaultOutputWebHostProject(string projectRoot)
+    private static string CreateDefaultOutputWebHostProject(string projectRoot, bool includeVue = false)
     {
         Directory.CreateDirectory(projectRoot);
         var projectPath = Path.Combine(projectRoot, "WebHostDefaultOutput.csproj");
+        var vuePackageReference = includeVue
+            ? "    <PackageReference Include=\"Jazor.Vue\" Version=\"$(JazorPackageVersion)\" PrivateAssets=\"all\" />"
+            : "";
 
         WriteFile(
             projectPath,
-            """
+            $$"""
             <Project Sdk="Microsoft.NET.Sdk.Web">
               <PropertyGroup>
                 <TargetFramework>net11.0</TargetFramework>
@@ -3483,6 +3528,7 @@ public sealed class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+            {{vuePackageReference}}
               </ItemGroup>
             </Project>
             """);

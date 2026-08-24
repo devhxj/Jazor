@@ -2,8 +2,12 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
-## Unreleased
+## 2026-08-24
 
+### Jazor 0.20.0
+
+- **Breaking package boundary:** `Jazor` is now framework-neutral and can be used for ordinary C# -> ECMAScript libraries without Vue payloads. Vue authoring, Razor-to-Vue integration, Vue bindings, and local Vue browser runtime assets are delivered by the explicit `Jazor.Vue` package; Vue ecosystem packages now depend on the same-version `Jazor.Vue` package.
+- `ECMAScript.Blazor` is introduced as the first-party Blazor framework-to-browser mapping contribution. Its initial Mouse/Keyboard/Focus event getter declarations ship as a `Jazor.Vue` payload; the `Jazor` package does not install that assembly or add a Blazor framework reference. Runtime modules/helpers remain owned by `Jazor.CLR`.
 - RazorVue browser navigation now supports `NavigationManager.RegisterLocationChangingHandler(...)`. Handlers receive `LocationChangingContext`, can call `PreventNavigation()`, and observe cancellation when a later navigation supersedes an in-flight handler. The browser runtime now provides the required `ValueTask`, `CancellationToken`, `CancellationTokenSource`, and `CancellationTokenRegistration` slice.
 - **Breaking:** ECMAScript property-key and property-descriptor authoring types are now named `JazorPropertyKey` and `JazorPropertyDescriptor`. Update source references from `JPropertyKey` and `JSPropertyDescriptor`; generated JavaScript property-key and descriptor behavior is unchanged.
 - Browser lowering now rejects exception families without a stable supported JavaScript identity, including `InvalidOperationException` and `DivideByZeroException`. Use the supported `System.Exception` surface where a general browser error is intended.

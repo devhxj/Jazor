@@ -29,6 +29,14 @@
 
 `ECMAScript.VuIcons` 同时提供静态与动态路径。已知图标应直接使用生成的 `VuUser` 等 component，其 descriptor 指向独立 `vu-icons/VuUser` entry，Emit 仅物化该 SVG module、共享 runtime 和样式；运行时名称选择使用 `VuIcon` 与 `VuIconName`，它需要完整 `icons-data.js` catalog 才能解析任意名称。这是运行时动态性的必要载荷，不是静态路径的回退。
 
+## Blazor framework 绑定
+
+| 包/程序集 | 用途 | 交付边界 |
+| --- | --- | --- |
+| `ECMAScript.Blazor` | Blazor framework 类型到原生 browser carrier 的 mapping contribution 与适配器声明 | 独立项目/程序集；由 `Jazor.Vue` NuGet 带入，**不**随 `Jazor` 核心包安装；不复制到 `Jazor.Vue` 源码 |
+
+`ECMAScript.Blazor` 面向的是 Blazor API 的 framework mapping，不是第二个 Razor renderer，也不拥有 runtime module。Blazor 专属 runtime helper/module 仍放在 `Jazor.CLR`，由现有 C# module 管道编译和物化；Vue listener/component framing 仍由 `Jazor.Vue`/`Jazor.RazorVue` 负责，共用的 CLR carrier 与 async 语义也仍由 `Jazor.CLR` 提供。当前 compiler whitelist 仍是静态生成物，第一方 `ECMAScript.Blazor` 源码由生成器显式扫描并合并；仅把程序集出现在 NuGet 依赖图中不会自动发现新的 mapping。
+
 ## 名称与作者契约
 
 未映射的 C# 符号保持作者声明的名称。JavaScript ABI 所需的名称差异必须通过成员级 `ECMAScriptName` 或约定的元数据显式声明，不依赖大小写、`OnX`、`Changed`、`Content` 等约定反推。

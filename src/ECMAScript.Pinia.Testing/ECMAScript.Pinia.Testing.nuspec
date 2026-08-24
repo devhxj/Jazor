@@ -11,6 +11,7 @@
     <dependencies>
       <group targetFramework="net11.0">
         <dependency id="ECMAScript.Pinia" version="$dependencyVersion$" />
+        <dependency id="Jazor.Vue" version="$dependencyVersion$" />
       </group>
     </dependencies>
   </metadata>

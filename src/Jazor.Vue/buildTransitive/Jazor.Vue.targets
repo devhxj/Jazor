@@ -1,4 +1,10 @@
 <Project>
+  <!-- Jazor.Vue owns Vue's browser runtime assets; Jazor core stays framework-neutral. -->
+  <ItemGroup>
+    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json"
+                          Condition="Exists('$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json')" />
+  </ItemGroup>
+
   <!-- Jazor.RazorVue is packaged as an analyzer, so the core SDK cannot discover it
        from normal runtime references. This adapter-specific target contributes the
        provider assembly to Emit's neutral runtime-provider collection. -->

@@ -2,13 +2,13 @@
 
 > 定位：将受支持 C# 语义编译为确定性 ECMAScript 模块的核心 NuGet 包。
 
-`Jazor` 包含核心 runtime contract、analyzer、source generator、Emit 工具、MSBuild 集成、ASP.NET Core 集成与基础 Vue 3 authoring 类型。Razor-to-Vue 是独立的 `Jazor.Vue` opt-in，不属于核心平台定义。
+`Jazor` 包含框架无关的 runtime contract、analyzer、source generator、Emit 工具、MSBuild 集成与 ASP.NET Core 集成。它可以用于编写普通 ECMAScript 类库；Vue authoring、Razor-to-Vue、Vue bindings 与 Vue runtime 由独立的 `Jazor.Vue` opt-in 包提供。
 
 ## 安装
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.9.0" />
+  <PackageReference Include="Jazor" Version="0.20.0" />
 </ItemGroup>
 ```
 
@@ -37,15 +37,17 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.9.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.9.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.9.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.9.0" />
-  <PackageReference Include="ECMAScript.Style" Version="0.9.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.20.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.20.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.20.0" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.20.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.20.0" />
 </ItemGroup>
 ```
 
-`ECMAScript.Vue` 随 `Jazor` 提供；`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。所有 Jazor 与 `ECMAScript.*` 包应保持相同版本。
+`ECMAScript.Vue` 随 `Jazor.Vue` 提供；`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。所有 Jazor、`Jazor.Vue` 与 Vue 生态包应保持相同版本。
+
+`ECMAScript.Blazor` 不随 `Jazor` 核心包安装；其 Blazor framework-to-browser mapping declarations 随 `Jazor.Vue` 一起交付。实际 runtime module/helper 仍由 `Jazor.CLR` 提供。它保持独立程序集边界，用户无需把映射源码复制到 `Jazor.Vue` 或在核心包中引入 Blazor mapping 依赖。
 
 ## SSR
 
@@ -74,7 +76,7 @@ Razor SDK 项目需要额外引用 `Jazor.Vue`：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="0.20.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

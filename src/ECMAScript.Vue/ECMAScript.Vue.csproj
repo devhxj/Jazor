@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
-    <IsPackable>true</IsPackable>
+    <!-- Vue authoring is delivered by Jazor.Vue; this source project is a payload input, not a public package. -->
+    <IsPackable>false</IsPackable>
     <PackageId>ECMAScript.Vue</PackageId>
     <RootNamespace>ECMAScript</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>

@@ -32,10 +32,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Unreleased
+### Jazor 0.20.0 — 2026-08-24
 
 - RazorVue browser navigation now supports `NavigationManager.RegisterLocationChangingHandler(...)`, including `PreventNavigation()` and cancellation for superseded navigation attempts.
 - The browser runtime now carries the required `ValueTask` and cancellation API slice for supported async navigation handlers.
+- **Breaking package boundary:** `Jazor` is now framework-neutral for ordinary ECMAScript libraries. Add `Jazor.Vue` for Vue authoring, Razor-to-Vue, Vue runtime assets, and the `ECMAScript.Vue`/`ECMAScript.VueContract`/`ECMAScript.Blazor` payload.
 - **Breaking:** update ECMAScript source references from `JPropertyKey` and `JSPropertyDescriptor` to `JazorPropertyKey` and `JazorPropertyDescriptor`.
 
 See the [changelog](CHANGELOG.md) for the full release history.
@@ -80,9 +81,9 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 
 | Package | Responsibility |
 | --- | --- |
-| `Jazor` | Core compiler, CLR contracts, analyzer, emit tooling, MSBuild and ASP.NET Core integration, and baseline Vue 3 authoring types |
-| `Jazor.Vue` | Explicit Razor-to-Vue opt-in for Razor SDK projects |
-| `ECMAScript.*` | ECMAScript, Vue, Router, Pinia, UI-library, and CSS-in-JS bindings |
+| `Jazor` | Framework-neutral compiler, CLR contracts, analyzer, emit tooling, MSBuild and ASP.NET Core integration; suitable for ordinary ECMAScript libraries |
+| `Jazor.Vue` | Vue authoring, Razor-to-Vue opt-in, Vue runtime assets, `ECMAScript.Vue`, `ECMAScript.VueContract`, and `ECMAScript.Blazor` payload |
+| `ECMAScript.*` | Framework-neutral ECMAScript bindings plus optional Vue ecosystem bindings and CSS-in-JS libraries |
 | `ECMAScript.VueDataUi` | Typed `vue-data-ui` RazorVue charts with per-component local ESM materialization |
 | `ECMAScript.VuIcons` | Typed `vu-icons` RazorVue icons with static per-icon and dynamic catalog paths |
 | `Jazor.Admin` | UI-library-neutral admin-shell library and RazorVue components |
@@ -94,15 +95,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.19.0
+dotnet add package Jazor --version 0.20.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.19.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.19.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.20.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.20.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
