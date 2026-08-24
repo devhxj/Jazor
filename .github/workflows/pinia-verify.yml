@@ -178,6 +178,7 @@ jobs:
             --output-directory artifacts/packages `
             --skip-push `
             --package jazor `
+            --package jazor-vue `
             --package devtools `
             --package dataui `
             --package vu-icons `
@@ -199,6 +200,7 @@ jobs:
             --skip-push `
             --no-build `
             --package jazor `
+            --package jazor-vue `
             --package devtools `
             --package dataui `
             --package vu-icons `

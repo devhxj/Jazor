@@ -24,6 +24,7 @@ await ScriptHelpers.RunDotNetAsync(
         "--output-directory", packageOutput,
         "--skip-push",
         "--package", "jazor",
+        "--package", "jazor-vue",
         "--package", "devtools"
     ],
     repoRoot,
@@ -127,6 +128,8 @@ internal static class ScriptHelpers
         var packageFile = new DirectoryInfo(packageOutput)
             .EnumerateFiles("Jazor.*.nupkg", SearchOption.TopDirectoryOnly)
             .Where(static file => !file.Name.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
+            // Jazor.Vue shares the Jazor.* prefix; only a numeric suffix is the core package version.
+            .Where(static file => file.Name.Length > "Jazor.".Length && char.IsDigit(file.Name["Jazor.".Length]))
             .OrderByDescending(static file => file.LastWriteTimeUtc)
             .FirstOrDefault()
             ?? throw new InvalidOperationException("Packed Jazor package was not found under '" + packageOutput + "'.");

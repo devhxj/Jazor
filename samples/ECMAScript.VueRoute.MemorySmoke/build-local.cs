@@ -10,6 +10,7 @@ var hostProject = Path.Combine(sampleRoot, "VueRoute.MemorySmoke.Host", "VueRout
 var packageProjects = new[]
 {
     Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
+    Path.Combine(repoRoot, "src", "Jazor.Vue", "Jazor.Vue.csproj"),
     Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj")
 };
 var packageOutput = Path.Combine(repoRoot, ".tmp", "nupkg-sample");
