@@ -275,6 +275,15 @@ static void AssertNuspecNoBuildPackInputsExist(
             continue;
         }
 
+        // NuGet resolves the global package root during pack. The no-build
+        // preflight cannot portably reconstruct that user-specific path, so
+        // leave this dependency to the actual pack invocation just as we do
+        // for the MSBuild $(NuGetPackageRoot) form above.
+        if (src.Contains("$nugetPackageRoot$", StringComparison.Ordinal))
+        {
+            continue;
+        }
+
         var resolvedPath = ResolvePackInputPath(roots, src, configuration, packageReadmeFile);
         if (ContainsGlob(src))
         {
@@ -368,9 +377,11 @@ static string ResolvePackInputPath(
 {
     var resolved = include
         .Replace("$(Configuration)", configuration, StringComparison.Ordinal)
+        .Replace("$configuration$", configuration, StringComparison.Ordinal)
         .Replace("$(MSBuildThisFileDirectory)", roots.ProjectDirectory + Path.DirectorySeparatorChar, StringComparison.Ordinal)
         .Replace("$(JazorPackageBuildOutputRoot)", roots.PackageBuildOutputRoot, StringComparison.Ordinal)
         .Replace("$(JazorVuePackageBuildOutputRoot)", roots.PackageBuildOutputRoot, StringComparison.Ordinal)
+        .Replace("$buildOutputRoot$", ScriptHelpers.EnsureTrailingSeparator(roots.PackageBuildOutputRoot), StringComparison.Ordinal)
         .Replace("$buildOutputDir$", ScriptHelpers.EnsureTrailingSeparator(roots.BuildOutputDirectory), StringComparison.Ordinal)
         .Replace("$projectDir$", roots.ProjectDirectory + Path.DirectorySeparatorChar, StringComparison.Ordinal)
         .Replace("$packageReadmeFile$", packageReadmeFile, StringComparison.Ordinal);
