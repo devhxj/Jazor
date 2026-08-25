@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 底部抽屉组件。
 /// Vuetify bottom sheet component.
 /// </summary>
-public sealed class VBottomSheet : ComponentBase
+public sealed class VBottomSheet : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件的模型值。

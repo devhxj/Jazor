@@ -197,7 +197,7 @@ public sealed class RenderEmitterContractTests
             }
 
             [ECMAScript.ECMAScriptModule("./components/render-emitter-generic-child")]
-            private sealed class GenericChild<T> : ComponentBase { }
+            private sealed class GenericChild<T> : ComponentBase, ECMAScript.Vue.IVueComponent { }
             """);
 
         var emitted = RenderEmitter.TryEmitWithDiagnostic(
@@ -1096,7 +1096,7 @@ public sealed class RenderEmitterContractTests
             [Parameter] public bool Enabled { get; set; }
 
             [global::ECMAScript.ECMAScriptModule("./components/conditional-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter] public RenderFragment? ChildContent { get; set; }
             }
@@ -1139,7 +1139,7 @@ public sealed class RenderEmitterContractTests
             [Parameter] public bool Enabled { get; set; }
 
             [global::ECMAScript.ECMAScriptModule("./components/conditional-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter] public RenderFragment? ChildContent { get; set; }
             }
@@ -1184,7 +1184,7 @@ public sealed class RenderEmitterContractTests
             [Parameter] public bool Enabled { get; set; }
 
             [global::ECMAScript.ECMAScriptModule("./components/conditional-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter] public string? Title { get; set; }
             }
@@ -1221,7 +1221,7 @@ public sealed class RenderEmitterContractTests
             [Parameter] public bool Enabled { get; set; }
 
             [global::ECMAScript.ECMAScriptModule("./components/conditional-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter] public RenderFragment? ChildContent { get; set; }
             }
@@ -1360,7 +1360,7 @@ public sealed class RenderEmitterContractTests
             """,
             """
             [global::ECMAScript.ECMAScriptModule("./components/typeof-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter] public string Title { get; set; } = "";
             }
@@ -1430,7 +1430,7 @@ public sealed class RenderEmitterContractTests
             [Parameter] public System.Collections.Generic.IReadOnlyDictionary<string, object?> Attributes { get; set; } = new System.Collections.Generic.Dictionary<string, object?>();
 
             [global::ECMAScript.ECMAScriptModule("./components/runtime-attributes-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter] public string Title { get; set; } = "";
             }
@@ -1561,7 +1561,7 @@ public sealed class RenderEmitterContractTests
             "ChildContent component parameter must be a RenderFragment for direct render lowering.",
             """
             [global::ECMAScript.ECMAScriptModule("./components/parameter-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter] public RenderFragment? ChildContent { get; set; }
             }
@@ -1577,7 +1577,7 @@ public sealed class RenderEmitterContractTests
             private static RenderFragment UnknownFragment = default!;
 
             [global::ECMAScript.ECMAScriptModule("./components/parameter-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter] public RenderFragment? Header { get; set; }
             }
@@ -2048,7 +2048,7 @@ public sealed class RenderEmitterContractTests
             "SetUpdatesAttributeName must target an open element before children.",
             """
             [global::ECMAScript.ECMAScriptModule("./components/frame-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
             }
             """);
@@ -2300,7 +2300,7 @@ public sealed class RenderEmitterContractTests
             [Parameter] public string CssStyle { get; set; } = string.Empty;
 
             [global::ECMAScript.ECMAScriptModule("./components/patch-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter, global::ECMAScript.ECMAScriptName("class")] public string Class { get; set; } = string.Empty;
                 [Parameter, global::ECMAScript.ECMAScriptName("style")] public string Style { get; set; } = string.Empty;
@@ -2739,7 +2739,7 @@ public sealed class RenderEmitterContractTests
             [Parameter] public bool Enabled { get; set; }
 
             [global::ECMAScript.ECMAScriptModule("./components/conditional-slot-child")]
-            private sealed class ChildComponent : ComponentBase
+            private sealed class ChildComponent : ComponentBase, ECMAScript.Vue.IVueComponent
             {
                 [Parameter] public RenderFragment? ChildContent { get; set; }
             }
@@ -3131,7 +3131,7 @@ public sealed class RenderEmitterContractTests
             }
 
             [ECMAScriptModule("./components/render-emitter-open-generic-child")]
-            public sealed class GenericChild<TValue> : ComponentBase { }
+            public sealed class GenericChild<TValue> : ComponentBase, ECMAScript.Vue.IVueComponent { }
             """,
             new CSharpParseOptions(LanguageVersion.Preview),
             path: "RenderEmitterOpenGenericContract.cs");
@@ -3184,7 +3184,7 @@ public sealed class RenderEmitterContractTests
             public sealed class ContractComponent : GenericBase<string> { }
 
             [ECMAScriptModule("./components/render-emitter-inherited-generic-child")]
-            public sealed class GenericChild<TValue> : ComponentBase { }
+            public sealed class GenericChild<TValue> : ComponentBase, ECMAScript.Vue.IVueComponent { }
             """,
             new CSharpParseOptions(LanguageVersion.Preview),
             path: "RenderEmitterInheritedGenericContract.cs");

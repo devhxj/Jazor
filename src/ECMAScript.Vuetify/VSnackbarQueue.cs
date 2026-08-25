@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify snackbar-queue authoring proxy for sequential notifications.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSnackbarQueue")]
-public sealed class VSnackbarQueue : ComponentBase
+public sealed class VSnackbarQueue : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 消息队列中待显示的通知列表。

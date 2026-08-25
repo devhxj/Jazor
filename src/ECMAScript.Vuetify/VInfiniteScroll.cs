@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify infinite-scroll authoring proxy for incremental list loading.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VInfiniteScroll")]
-public sealed class VInfiniteScroll : ComponentBase
+public sealed class VInfiniteScroll : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 根元素使用的 HTML 标签。

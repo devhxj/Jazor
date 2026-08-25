@@ -287,7 +287,7 @@ public sealed class RazorVueCompatibilityAnalyzerTests
     }
 
     [TestMethod]
-    public async Task StandardBlazorComponentTag_RemainsQuietWhenAdapterIsRegistered()
+    public async Task StandardBlazorComponentTag_ReportsUnsupportedBuiltInUi()
     {
         var diagnostics = await AnalyzeAsync(
             new SourceFile("Pages/Dynamic.razor.cs", "public sealed class Dynamic;"),
@@ -296,12 +296,12 @@ public sealed class RazorVueCompatibilityAnalyzerTests
                 "Pages/Dynamic.razor",
                 "<DynamicComponent Type=\"typeof(object)\" />")]);
 
-        Assert.IsFalse(diagnostics.Any(static item => item.Id == "JAZORVCA010"),
-            string.Join(Environment.NewLine, diagnostics));
+        var diagnostic = diagnostics.Single(static item => item.Id == "JAZORVCA010");
+        StringAssert.Contains(diagnostic.GetMessage(), "DynamicComponent", StringComparison.Ordinal);
     }
 
     [TestMethod]
-    public async Task StandardGenericComponentTag_RemainsQuietWhenInputAdapterIsRegistered()
+    public async Task StandardGenericComponentTag_ReportsUnsupportedBuiltInUi()
     {
         var diagnostics = await AnalyzeAsync(
             new SourceFile("Pages/Form.razor.cs", "public sealed class Form;"),
@@ -310,8 +310,8 @@ public sealed class RazorVueCompatibilityAnalyzerTests
                 "Pages/Form.razor",
                 "<InputText @bind-Value=\"Name\" />")]);
 
-        Assert.IsFalse(diagnostics.Any(static item => item.Id == "JAZORVCA010"),
-            string.Join(Environment.NewLine, diagnostics));
+        var diagnostic = diagnostics.Single(static item => item.Id == "JAZORVCA010");
+        StringAssert.Contains(diagnostic.GetMessage(), "InputText", StringComparison.Ordinal);
     }
 
     [TestMethod]

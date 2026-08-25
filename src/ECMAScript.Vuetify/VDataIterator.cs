@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify data-iterator authoring proxy for filtered, sorted, grouped, paginated item rendering.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDataIterator")]
-public sealed class VDataIterator : ComponentBase
+public sealed class VDataIterator : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 选中项的绑定值。

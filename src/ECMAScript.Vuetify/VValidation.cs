@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify validation authoring proxy exposing the validation composable as a scoped slot.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VValidation")]
-public sealed class VValidation : ComponentBase
+public sealed class VValidation : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 聚焦。

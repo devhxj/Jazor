@@ -236,6 +236,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeCultureInfoScenarios.All,
         .. ClrRuntimeUriScenarios.All,
         .. ClrRuntimeNavigationScenarios.All,
+        .. ClrRuntimeChangeEventArgsScenarios.All,
         .. ClrRuntimeCancellationScenarios.All
     ];
 

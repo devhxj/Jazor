@@ -4,20 +4,23 @@
 >
 > 定位：这是 [RazorVue 开发者体验完善路线图](./razorvue-developer-experience.md) 中浏览器运行时类型与服务的专项实施计划。它不试图把整个 ASP.NET Core/Blazor runtime 映射到 JavaScript。
 
-本计划采用“一步到位的归属、分切片的实现”：Blazor framework 的类型扩展声明从第一版就属于 `ECMAScript.Blazor`，不先在 `Jazor.CLR` 建一套再迁移；需要实际浏览器行为的 runtime module/helper 仍直接属于 `Jazor.CLR`。S0–S8 仍按各自的 reference、browser、package 和 profile 门禁逐步交付，不等于一次性实现全部 Blazor API。
+> **范围决策（2026-08-25）**：本计划支持 Blazor framework 的 authoring/runtime contract，以及自定义组件和第三方组件库所需的 lowering/runtime primitive；不支持 `Microsoft.AspNetCore.Components` 提供的内置 UI 组件。`Router`、`RouteView`、`NavLink`、`DynamicComponent`、`ErrorBoundary`、`EditForm`、`Input*`、`AuthorizeView`、`Virtualize`、`QuickGrid` 等标签不属于本计划的产品契约。UI 组件层由现有的 TDesign、Vuetify、Element Plus 等绑定/组件库承担。标准组件若仍被识别到，最终应走稳定的 Reject/Guidance 诊断，不得静默生成“部分兼容”的 Vue 替代品。
+> **RazorVue 组件入口**：可被本计划消费的组件类型必须可赋值给 `ComponentBase`、实现 `IVueComponent` 或其派生接口，并带有 `[ECMAScriptModule]` 或 `[VueLibraryComponent]` 导入描述。`ComponentBase`/`IComponent` 本身仍属于 framework primitive；仅有 `ComponentBase` 但没有 Vue marker 的 Microsoft 内置 UI 组件不进入本计划。
+
+本计划采用“一步到位的归属、分切片的实现”：Blazor framework 的类型扩展声明从第一版就属于 `ECMAScript.Blazor`，不先在 `Jazor.CLR` 建一套再迁移；需要实际浏览器行为的 runtime module/helper 仍直接属于 `Jazor.CLR`。S0–S6 以及后续框架级切片仍按各自的 reference、browser、package 和 profile 门禁逐步交付，不等于一次性实现全部 Blazor API，也不为内置 UI 组件建立兼容路线。
 
 ## 1. 目标与范围
 
-RazorVue 的目标是让标准 Blazor 作者面在浏览器中保持可观察行为，而不是复制 server renderer、circuit 或完整 CLR 对象模型。本计划只覆盖普通组件 C# 逻辑确实需要消费、且能够在浏览器中建立稳定 carrier 与行为合同的类型：
+RazorVue 的目标是让 Blazor framework 的作者面在浏览器中保持可观察行为，而不是复制 server renderer、circuit、内置组件库或完整 CLR 对象模型。本计划只覆盖自定义组件 C# 逻辑确实需要消费、且能够在浏览器中建立稳定 carrier 与行为合同的 framework 类型：
 
+- official Razor Source Generator 生成形状、`ComponentBase` 生命周期、参数/fragment/event callback 等自定义组件 lowering primitive；
 - 导航拦截所需的 `ValueTask`、`LocationChangingContext` 和关联注销/取消协议；
 - DOM 事件参数对象：原生 DOM event 作为 carrier，由 `ECMAScript.Blazor`（随 `Jazor.Vue` 交付）声明 Blazor 成员投影，实际 helper/module 仍由 `Jazor.CLR` 承载；
 - `ElementReference` 的浏览器操作；
 - 受控的 JS interop 对象与回调协议；
-- 浏览器认证状态；
-- 表单编辑、验证与文件输入所需的值对象。
+- 浏览器认证状态 provider 的 API（不包含 `AuthorizeView` 或其他认证 UI 组件）。
 
-以下内容不因名称属于 Blazor 就进入 `Jazor.CLR`：`ComponentBase`、`EventCallback`、`RenderFragment`、`ParameterView`、`RenderTreeBuilder`、renderer/circuit 基础设施和标准组件组合协议。它们分别属于 `Jazor.RazorVue` 的 current-component lowering、render emitter 或 runtime adapter。
+以下内容不因名称属于 Blazor 就进入本计划的内置组件兼容范围：`Router`、`RouteView`、`LayoutView`、`NavLink`、`DynamicComponent`、`ErrorBoundary`、`EditForm`、`InputBase<T>`/`Input*`、`ValidationMessage`、`AuthorizeView`、`CascadingAuthenticationState`、`Virtualize<TItem>`、`QuickGrid<TGridItem>`、`SectionOutlet`/`SectionContent` 以及 `InputFile`/`IBrowserFile` 组件组合。`ComponentBase`、`EventCallback`、`RenderFragment`、`ParameterView`、`RenderTreeBuilder` 等 framework primitive 仍可由 `Jazor.RazorVue` 的 current-component lowering、render emitter 或运行时桥接消费，但这不等于承诺对应标准组件标签。
 
 ### 1.1 发布基线与开发基线
 
@@ -29,11 +32,11 @@ RazorVue 的目标是让标准 Blazor 作者面在浏览器中保持可观察行
 | 非泛型 `ValueTask` | 未发布 | 导航 handler 所需最小 Promise carrier、metadata/runtime/compiler tests 已落地 | **InProof**：只作为已批准 async 路径的依赖，不代表完整 `ValueTask` 支持 |
 | `CancellationToken` / `CancellationTokenSource` / `CancellationTokenRegistration` | 未发布 | `AbortSignal` / `AbortController` / inferred nominal carrier 及对应成员族已落地 | **InProof**：只承诺已验收的取消切片 |
 | `MouseEventArgs`、`KeyboardEventArgs`、`FocusEventArgs` | Razor SG 可绑定 handler；首批 DOM carrier 与只读 getter mapping 已落地 | **InProof**：mapping declaration、source-root 和 compiler regression 已有；reference/browser/package 证据仍待补齐 | S2：核心事件 |
-| `ChangeEventArgs` | Razor SG 可绑定 handler，但 `Value` 需要事件时刻 capture；尚无 CLR member projection | **Planned**：等待 capture contract 与 `Jazor.CLR` helper | S2：核心事件 |
-| `@ref` capture / `ElementReference.FocusAsync` | capture 已由 render emitter 支持；焦点扩展未支持 | 状态不变 | S3：只补受控 DOM 操作 |
+| `ChangeEventArgs` | Razor SG 可绑定 handler；`Value` 已通过 listener 边界 capture 与 CLR `WeakMap` helper 投影 | **InProof**：mapping、runtime module、compiler wrapper 与 official Razor SG typed handler 回归已落地；真实 BrowserSmoke 与 package consumer 证据仍待补齐 | S2：核心事件 |
+| `@ref` capture / `ElementReference.FocusAsync` | capture 已由 render emitter 支持；`ElementReference` 已映射为 `HTMLElement`，两个 `FocusAsync` overload 已接入 `HTMLElement.Focus` | **InProof**：mapping/compiler/official Razor SG 证据已落地，真实 browser 与 package consumer 仍待补齐 | S3：只补受控 DOM 操作 |
 | `IJSRuntime` / `IJSObjectReference` | 属性注入 framing 可存在，但没有默认可执行 interop contract | M5 ledger 仍为 Guidance；没有 typed identifier/module contract | S5：先做可行性与合同裁决，不预先承诺 Support |
-| `AuthenticationStateProvider` | 没有默认 browser provider | 通用 browser service injection 不等于认证状态已实现 | S6：认证状态垂直切片 |
-| `EditContext`、`FieldIdentifier`、`ValidationMessageStore`、`InputFile` | 文本、textarea、checkbox、number、date、select 等基础 input adapter 处于 InProof；文件输入尚无 adapter，完整状态机未支持 | `InputDate` 仍存在 plain-object 日期构造缺口，见 [hardening plan](./clr-runtime-hardening-plan.md) R1 | S7 表单/验证；S8 文件输入 |
+| `AuthenticationStateProvider` | 没有默认 browser provider | 通用 browser service injection 不等于认证 UI 已实现；只评估 provider/state API | S6：认证状态 API 垂直切片，排除 `AuthorizeView` |
+| `EditContext`、`FieldIdentifier`、`ValidationMessageStore`、`InputFile` | 不在本框架计划中；已有标准输入适配器属于遗留实验/组件兼容工作，不构成 Support | 由 TDesign/Vuetify/Element Plus 的强类型表单组件或独立组件兼容路线承担 | Out of scope；不安排 S7/S8 实现 |
 
 开发基线上的实现事实、发布状态和支持决策必须分开记录：白名单存在不等于 Support，Deno runtime 通过也不等于 BrowserSmoke；反过来，已经落地的 runtime/test 也不能继续写成“无映射”。源码证据应引用稳定的类型、成员和测试名，不引用易漂移的 `WhiteList.cs.Generate.cs` 行号。
 
@@ -117,7 +120,7 @@ RazorVue 的目标是让标准 Blazor 作者面在浏览器中保持可观察行
 | S1 导航类型与 location-changing 成员 | Blazor framework type/member mapping declaration | `NavigationManager`、`LocationChangingContext`、handler/registration、取消与 commit helper 仍在 `Jazor.CLR`；Router mount/unmount framing 在 `Jazor.RazorVue` |
 | S2/S4 DOM `EventArgs` | framework getter alias 与 native carrier mapping；`ChangeEventArgs` 只在 capture contract 完成后增加原始 getter declaration | Vue listener 注册和一次 capture 调用在 `Jazor.RazorVue`；`WeakMap`/值转换与 event helper 在 `Jazor.CLR` |
 | S3 `ElementReference` | Blazor extension member 到 WebIDL DOM 操作的 mapping | `@ref` 生命周期和 VNode ref callback 在 `Jazor.RazorVue` |
-| S5–S8 interop、认证、表单与文件类型 | Blazor framework API 的 typed mapping、carrier 与 provider contract | Vue provide/inject、cascade、component adapter 和 SSR handoff 分别由 `Jazor.RazorVue`/`Jazor.Emit` 负责；共用 CLR 值/async 语义仍由 `Jazor.CLR` 提供 |
+| S5–S6 interop 与认证状态 API | Blazor framework API 的 typed mapping、carrier 与 provider contract | Vue provide/inject、host registration 和 SSR handoff 分别由 `Jazor.RazorVue`/`Jazor.Emit` 负责；不实现标准表单/路由/认证 UI 组件 |
 
 因此“随 `Jazor.Vue` 安装”只改变交付入口，不改变 owner：`Jazor.Vue` 不复制这些声明，`ECMAScript.Blazor` 也不承担 Razor renderer、Vue 组件实现或 runtime module。
 
@@ -180,7 +183,7 @@ compiler contribution contract、generator merge、package build inputs 和 runt
 - 任一 handler 调用 `PreventNavigation()` 后，剩余 handler 与最终导航提交的行为；
 - handler 在执行期间触发新导航时，旧 context 的取消与最终 URL；
 - 被后续导航取代的 context 何时触发 `CancellationToken`，以及已注册回调与 handler completion 的先后顺序；
-- `NavigateTo`、`NavLink`、浏览器 back/forward、hash/history state、外部 URI 与 `forceLoad` 的差异；
+- `NavigateTo`、浏览器 back/forward、hash/history state、外部 URI 与 `forceLoad` 的差异；`NavLink` 等标准组件不作为本计划的 reference surface；
 - 注册句柄 dispose 后的行为、组件 unmount 后是否仍保留 handler；
 - `IsNavigationIntercepted` 和 `HistoryEntryState` 的实际值来源。
 
@@ -188,9 +191,9 @@ compiler contribution contract、generator merge、package build inputs 和 runt
 
 1. 以现有 `ValueTaskModule` 的 Promise carrier 为基线，核对并收敛非泛型 `ValueTask` 的最小可观察面；不可保真的身份/比较成员继续保留 `Op.Discard`，不得把该最小面误写成完整 `ValueTask` 支持。
 2. 在 `Jazor.CLR` 的 C# `[ECMAScriptModule]` 中定义 `LocationChangingContext` runtime 成员和 `PreventNavigation()` helper；`ECMAScript.Blazor` 只记录 framework member 到该 carrier/helper 的 mapping。复杂 dispatch、取消和 commit 决策使用 `Jazor.CLR` 模块的 `Import`，不压缩进 Inline，也不新建手写 `.mjs`。
-3. 当前实现的 navigation host 已使用 `Object.Create(null)` + module-private `WeakMap`，但 `popstate`/`hashchange` listener 仍由 `blazor-routing.mjs` 的 Router framing 注册和释放。后续若抽取跨切片 lifetime primitive，必须先有两个以上真实消费者和独立生命周期回归；S1 不应把计划中的未来抽象写成已存在的实现。
-4. `NavigationManagerModule` 继续拥有已落地的 handler registry、取消 controller、内部 dispatch 和 commit；handler/cancellation 主要状态放在 module-private `WeakMap`，当前 Router invalidation 版本仍通过 host 上的内部 `__jazorNavigationVersion` 属性传递（它不是作者 API，也不应被描述成完整私有布局）。browser `History` 操作优先复用 WebIDL binding。`popstate`/`hashchange` 的 replay/restore 或明确 Guided Adaptation 尚未裁决，不能把它们写成当前已有的取消协议。认证、表单等后续切片只能复用已证明的所有权/释放约定，不能复用或改写 navigation state。
-5. `blazor-routing.mjs` 只负责创建 host、`provide`、Router render framing 以及当前 listener 的 mount/unmount；不得在此新增 navigation dispatch、取消、commit 或 replay 状态机。若未来把 listener owner 移到 CLR module，必须同步删除这里的注册并增加 browser regression，避免双重订阅。
+3. 当前实现的 navigation host 已使用 `Object.Create(null)` + module-private `WeakMap`，但 `popstate`/`hashchange` listener 仍由现有 routing host framing 注册和释放。该 framing 只服务 `NavigationManager`/页面 route catalog 的宿主集成；`Router`、`RouteView`、`NavLink` 标签不属于本计划。后续若抽取跨切片 lifetime primitive，必须先有两个以上真实消费者和独立生命周期回归；S1 不应把计划中的未来抽象写成已存在的实现。
+4. `NavigationManagerModule` 继续拥有已落地的 handler registry、取消 controller、内部 dispatch 和 commit；handler/cancellation 主要状态放在 module-private `WeakMap`，当前 host invalidation 版本仍通过 host 上的内部 `__jazorNavigationVersion` 属性传递（它不是作者 API，也不应被描述成完整私有布局）。browser `History` 操作优先复用 WebIDL binding。`popstate`/`hashchange` 的 replay/restore 或明确 Guided Adaptation 尚未裁决，不能把它们写成当前已有的取消协议。认证等后续 framework 切片只能复用已证明的所有权/释放约定，不能复用或改写 navigation state。
+5. `blazor-routing.mjs` 只负责创建 host、`provide`、页面 route catalog 的宿主 framing 以及当前 listener 的 mount/unmount；不得在此新增标准 Router/RouteView/NavLink 组件兼容协议。若未来把 listener owner 移到 CLR module，必须同步删除这里的注册并增加 browser regression，避免双重订阅。
 6. 只有 browser、Release package 和适用 SSR/hydration 行为一致后，才把该切片从 **InProof** 提升为 **Support**；明确不可保真的成员仍保持 `Op.Discard`，不因切片升级而放行。
 
 ### 3.4 验收
@@ -243,7 +246,7 @@ internal static class MouseEventArgsExtensions
 | `Microsoft.AspNetCore.Components.Web.MouseEventArgs` | 目标：Direct Support | `MouseEvent` | `Detail`、`ScreenX/Y`、`ClientX/Y`、`OffsetX/Y`、`PageX/Y`、`MovementX/Y`、`Button`、`Buttons`、`CtrlKey`、`ShiftKey`、`AltKey`、`MetaKey`、`Type` | 无 wrapper，原样传 event。 |
 | `Microsoft.AspNetCore.Components.Web.KeyboardEventArgs` | 目标：Direct Support | `KeyboardEvent` | `Key`、`Code`、`Location`、`Repeat`、`CtrlKey`、`ShiftKey`、`AltKey`、`MetaKey`、`Type`、`IsComposing` | 无 wrapper，原样传 event。 |
 | `Microsoft.AspNetCore.Components.Web.FocusEventArgs` | 目标：Direct Support | `FocusEvent` | `Type` | 无 wrapper，原样传 event。 |
-| `Microsoft.AspNetCore.Components.ChangeEventArgs` | 目标：Compatibility Adapter | `Event` | `Value`，通过 CLR helper 读取已捕获的 change value | 只在 typed `ChangeEventArgs` handler 上调用一次 capture helper；见下一节。 |
+| `Microsoft.AspNetCore.Components.ChangeEventArgs` | 目标：Compatibility Adapter | `JazorEvent` | `Value`，通过 CLR helper 读取已捕获的 change value | 只在 typed `ChangeEventArgs` handler 上调用一次 capture helper；见下一节。 |
 
 数值在 JavaScript 中统一是 `Number`，因此 `int`/`long`/`float`/`double` 的不同不会要求 payload 转换；C# 的静态签名和 Razor SG 继续负责作者侧类型检查。首批 read surface 覆盖这些类型的全部公开实例 getter。未列出的 setter、构造器和 runtime identity 不是遗漏，而是显式不支持的语义边界。
 
@@ -344,31 +347,31 @@ ChangeEventArgs.Value.get -> getChangeEventValue(event)
 | `AuthenticationStateProvider` | `GetAuthenticationStateAsync()` 与状态变更通知 | provider 必须由 host 注册；没有默认隐式 identity 服务。 |
 | `AuthenticationState` | `User` 的最小可观察身份 carrier | 不宣称完整服务器 `ClaimsPrincipal` runtime 身份。 |
 | `ClaimsPrincipal`、`ClaimsIdentity`、`Claim` | 仅为已批准的角色/claim 查询提供受控 carrier/member slice | 不引入任意 claims transformation、服务器 ticket 或安全决策 fallback；普通 service injection 不等于有默认身份来源。 |
-| `CascadingAuthenticationState` | 作为认证组件 adapter，将 provider 的 `Task<AuthenticationState>` 以标准 cascading contract 提供给后代组件 | 不属于 CLR module；订阅、刷新和 unmount 必须与 `AuthenticationStateProvider` 使用同一生命周期协议。 |
-| `AuthorizeView` / `AuthorizeRouteView` | 作为 RazorVue 组件 adapter 消费认证 state | 它们不是 CLR module；UI 隐藏本身不构成 endpoint 授权。 |
+| `CascadingAuthenticationState` | 不在本计划中 | 这是 Blazor 内置认证 UI/组合组件；第三方组件库或应用自定义组件可消费已注册的 provider/state contract。 |
+| `AuthorizeView` / `AuthorizeRouteView` | 不在本计划中 | 这是 Blazor 内置认证 UI/路由组件；UI 隐藏本身也不构成 endpoint 授权。 |
 
-实施顺序：先确定 host 提供的 C# auth descriptor 来源和版本化 refresh 方式，再设计 claims carrier，然后在 CLR module 实现 provider/event，接入 `CascadingAuthenticationState`，最后增加 `AuthorizeView`/route adapter。两个组件 adapter 仅消费同一 lifecycle contract，不各自发明 JS state protocol。SSR profile 必须明确 payload 何时生成、何时失效、hydration 后是否重取；没有该协议时只支持 Browser interactive 或维持 Guided Adaptation。
+实施顺序：先确定 host 提供的 C# auth descriptor 来源和版本化 refresh 方式，再设计 claims carrier，然后在 CLR module 实现 provider/event。任何 cascading provider 或认证 UI 由第三方组件库/自定义组件自行组合，不在本计划新增标准组件 adapter。SSR profile 必须明确 payload 何时生成、何时失效、hydration 后是否重取；没有该协议时只支持 Browser interactive 或维持 Guided Adaptation。
 
-验收至少包括 anonymous/authenticated 切换、role/claim 分支、`CascadingAuthenticationState` 向后代的初始值与刷新传播、provider refresh、组件 unmount、token/descriptor 过期后的可观察行为，以及 endpoint 授权不因 UI adapter 而被错误宣称为已覆盖。
+验收至少包括 anonymous/authenticated 切换、role/claim 查询、provider refresh、组件 unmount、token/descriptor 过期后的可观察行为，以及 endpoint 授权不因任何 UI 组件而被错误宣称为已覆盖。
 
-## 9. P3：表单、验证与文件输入
+## 9. 内置表单、验证与文件组件（不属于本计划）
 
-基础 `EditForm`、`InputText`、`InputTextArea`、`InputCheckbox`、`InputNumber`、`InputDate` 和 `InputSelect` adapter 已解决部分 DOM 输入，但这不等于已实现 Blazor 表单状态机。本阶段必须以完整编辑上下文为单位推进。
+`EditForm`、`InputText`、`InputTextArea`、`InputCheckbox`、`InputNumber`、`InputDate`、`InputSelect`、`InputFile` 以及 `EditContext`/validation 组合均明确移出本框架计划。工作树中可能存在的标准组件 adapter、测试和 runtime module 是历史实验，不是产品支持证据；不得继续扩展，也不得在 release 文档中标记为 Support。表单交互由 TDesign、Vuetify、Element Plus 或应用自定义组件提供。
 
-| 类型/API | 目标支持面 | 非目标/依赖 |
+| 类型/API | 本计划处理 | 组件兼容路线 |
 | --- | --- | --- |
-| `EditContext` | model、字段变更、validation state、`Validate()`、已证明的事件订阅 | 不能仅靠 model 上可选的 `validate()` 方法声称等价。 |
-| `FieldIdentifier` | model identity + field name 的稳定键 | `Expression<Func<T>>` 的解析必须由编译期/已知 binding descriptor 完成，不做浏览器反射。 |
-| `ValidationMessageStore` | add/clear/查询并通知 validation state | 消息归属、字段级与全局消息、重复/清理顺序必须有 reference fixture。 |
-| `InputBase<T>` 与 `InputText`、`InputTextArea`、`InputCheckbox`、`InputNumber`、`InputDate`、`InputSelect`、`InputRadioGroup`、`InputRadio` | 用同一个 edit-context contract 更新 field 和 parse error | nullable、enum、date/culture、nested field 和自定义派生类要逐项声明。 |
-| `ValidationMessage`、`ValidationSummary`、`DataAnnotationsValidator` | RazorVue component adapter | DataAnnotations 需要编译期 descriptor 或明确验证器合同，不能扫描整个程序集。 |
-| `InputFileChangeEventArgs`、`IBrowserFile` | 基于 browser `File`/`Blob` 的文件元数据与读取流协议 | 先完成 `InputFile` adapter 和 File lifetime；不把文件内容无界复制为普通 object。 |
+| `EditContext` | 不处理 | 由第三方/自定义表单组件定义 model、字段变更和 validation contract。 |
+| `FieldIdentifier` | 不处理 | 若组件库需要 field identity，由其公开强类型参数 contract。 |
+| `ValidationMessageStore` | 不处理 | 由组件库或应用 validation service 提供。 |
+| `InputBase<T>` 与 `Input*` | 不处理 | 不为 Microsoft 内置 input 标签生成 Vue 替代；使用 TDesign/Vuetify/Element Plus 的 typed binding。 |
+| `ValidationMessage`、`ValidationSummary`、`DataAnnotationsValidator` | 不处理 | 组件库自行选择 validation descriptor/服务；不扫描整个程序集。 |
+| `InputFileChangeEventArgs`、`IBrowserFile` | 不处理 | 文件选择/上传由第三方组件或显式 browser API contract 承担；不伪装成 `InputFile`。 |
 
-`EditContext` 与 `ValidationMessageStore` 的状态机、订阅和通知以 C# 写在 `Jazor.CLR` module；`ECMAScript.Blazor` 只声明 framework member mapping。`FieldIdentifier` 的 expression 只采用编译期或已知 binding descriptor，DataAnnotations 只采用由 C# attribute 形成的编译期 descriptor。RazorVue 只承担 component/cascade/render framing，不得新增 hand-written `.mjs` 表单状态机、反射扫描或运行时 JS 验证表。
+本节不新增 `Jazor.CLR` module、`ECMAScript.Blazor` mapping 或 `RazorVue` 标准表单 adapter。若未来要兼容某个内置组件，必须另立组件兼容路线、独立 owner、独立 ledger 和独立版本决策。
 
-`FormName`、`AntiforgeryToken`、`[SupplyParameterFromForm]` 和 enhanced form post 需要 SSR/endpoint host contract，不属于浏览器 CLR module 的自然延伸；在该 contract 未完成前保持 Guided Adaptation 或 Reject。
+`FormName`、`AntiforgeryToken`、`[SupplyParameterFromForm]` 和 enhanced form post 同样不进入本计划；它们属于 SSR/endpoint 或组件兼容路线。
 
-表单验收必须同时覆盖：提交/取消、field changed、同步和异步 validation、parse failure、nested model、nullable/enum/date、清除消息、重复提交、组件卸载以及 server error 的显式交接。只验证表单标签能提交或输入值能写回不足以标记 Support。
+本计划的验收只确认标准组件标签不会被误宣称为 framework Support，并最终能在作者源/使用点得到稳定 Reject 或 Guidance；不会用“表单标签能提交”作为 Blazor framework 证据。
 
 ## 10. 明确不进入本计划的类型
 
@@ -389,15 +392,14 @@ ChangeEventArgs.Value.get -> getChangeEventValue(event)
 
 | 顺序 | 可独立发布的能力切片 | 主要依赖 | 完成后允许宣称的支持 |
 | --- | --- | --- | --- |
-| S0 | API ledger、reference fixtures、diagnostic ownership、mapping package 归属裁决 | `src/ECMAScript.Blazor` 项目、首批 mapping test、generator source-root 与 `Jazor.Vue` package build inputs 已落地；仍需在 `src/Jazor.RazorVue.Sg.Test/RazorVueUsageScenarioCatalog.cs` 扩展现有 M5 ledger，或新增有明确 owner link 的 Blazor CLR 子表。不要把第二套互相矛盾的 Support 状态塞进 catalog。记录类型/成员、carrier、profile、实现路径（WebIDL receiver、`Alias`/`Inline`、必要时 `Jazor.CLR` C# `Import` module 或 `Compile`）、fixture、diagnostic owner、contribution contract version 和 `Jazor.CLR` 共用依赖。同步更新现有 `RazorVueSemanticMatrixInventoryTests` / `RazorVueM5CapabilityLedgerTests`，只有在确实新建独立 ledger 时才新增专门测试类。标准 Blazor reference fixture 与 RazorVue runtime fixture 可以新增文件，但必须使用仓库现有 `RazorSgOfficialAuthoringTestHost` / `RazorSgOfficialDenoRuntimeTestHost` 入口 | mapping 包边界为 **InProof**，不据此提升具体 API 为 Support |
+| S0 | API ledger、reference fixtures、diagnostic ownership、mapping package 归属裁决 | `src/ECMAScript.Blazor` 项目、首批 mapping test、generator source-root 与 `Jazor.Vue` package build inputs 已落地；现有 M5 ledger 已登记 5 个 Blazor CLR 条目，并由 `RazorVueM5CapabilityLedgerTests.Ledger_BlazorClrSlicesDeclareAuditableContractMetadata` 固定 carrier、profile、实现路径、依赖、排除面和 `static-source-root/v1` contract version。仍需标准 Blazor reference fixture、真正的 per-compilation contribution contract 和隔离 package consumer 编译证据。不要把第二套互相矛盾的 Support 状态塞进 catalog。标准 reference/runtime fixture 可以新增文件，但必须使用仓库现有 `RazorSgOfficialAuthoringTestHost` / `RazorSgOfficialDenoRuntimeTestHost` 入口 | mapping 包边界为 **InProof**，不据此提升具体 API 为 Support |
 | S1 | 导航拦截：`ValueTask` + `LocationChangingContext` + 注册句柄 | 已落地的 `NavigationManager` 基础 runtime、`ValueTask`/cancellation 最小 carrier；仍需 reference/browser/package 证据 | 受限的内部导航拦截 |
 | S2 | 核心事件：Change/Mouse/Keyboard/Focus | `ECMAScript.Blazor` member adapters + WebIDL carrier；仅 `ChangeEventArgs` 需要由 `Jazor.CLR` helper 实现的一次性 value capture；Task/ValueTask 等共用 carrier 由 `Jazor.CLR` 提供 | 强类型高频 DOM handler |
 | S3 | `ElementReference.FocusAsync` | `@ref` lifecycle、`ValueTask` carrier、WebIDL `HTMLElement.Focus`/`FocusOptions` | 受控元素焦点 |
 | S4 | Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 事件组 | S2、WebIDL/File carrier（按组） | 已完成组的强类型 handler |
 | S5 | 编译期 typed module contract、`IJSRuntime` 首批 invocation 与静态模块获取 entry | S1 的 async carrier、host injection、现有 import collection、manifest closure | 已声明 identifier/module 的 interop |
-| S6 | C# auth state/provider、`CascadingAuthenticationState` 与 `AuthorizeView` adapter | S5 的 host/provider 模式、auth descriptor contract | 浏览器 UI 认证状态 |
-| S7 | C# `EditContext`/验证 | S2、typed input descriptor、表单 descriptor | 已声明的表单/验证行为 |
-| S8 | `InputFileChangeEventArgs` / `IBrowserFile` | S2、强类型 File/WebIDL binding、File lifetime 与 package closure | 已声明的文件元数据/读取流行为 |
+| S6 | C# auth state/provider API | S5 的 host/provider 模式、auth descriptor contract | 浏览器认证状态 API；不包含 `CascadingAuthenticationState`/`AuthorizeView` |
+| S7/S8 | 内置表单、验证和文件组件 | 不在本计划中 | 由 TDesign/Vuetify/Element Plus 或独立组件兼容路线承担 |
 
 没有日历式发版目标。每个切片在标准语义 fixture、browser、package 及适用 profile 全部通过后，才进入下一次 MINOR；没有通过时保持计划状态或转为 Guided Adaptation/Reject。
 
@@ -407,15 +409,14 @@ ChangeEventArgs.Value.get -> getChangeEventValue(event)
 
 | 切片 | 当前状态 | 稳定证据 | 缺口/裁决 |
 | --- | --- | --- | --- |
-| S0 | **InProof** | `ECMAScript.Blazor` 项目已加入 solution、compiler generator source-root 与 `Jazor.Vue` package inputs；`EcmaScriptBlazorMappingTests` 固定首批 whitelist/emission；`SdkIntegrationTests` 固定核心包与 Vue 包的 payload 边界 | 尚无 Blazor CLR 子表、标准 reference fixture 和真正的 per-compilation contribution contract；当前第一方 mapping 仍由静态 whitelist 显式合并，不把 package payload 存在误写成动态发现 |
+| S0 | **InProof** | `ECMAScript.Blazor` 项目已加入 solution、compiler generator source-root 与 `Jazor.Vue` package inputs；`EcmaScriptBlazorMappingTests` 固定首批 whitelist/emission；`RazorVueM5CapabilityLedgerTests.Ledger_BlazorClrSlicesDeclareAuditableContractMetadata` 固定 5 个 Blazor CLR 条目的审计元数据；`ProductionRazorCompilerReferenceTests` 与 `Jazor.EmitTest.SdkIntegrationTests.CreateLocalPackage_SeparatesSharedAndRazorVueAnalyzers`/`CreateLocalPackage_IncludesSelfContainedBrowserAssets` 固定 `Jazor`/`Jazor.Vue` 的程序集与 payload 边界 | 尚无标准 Blazor reference fixture、真正的 per-compilation contribution contract 或隔离 package consumer 编译；当前第一方 mapping 仍由静态 whitelist 显式合并，不把 package payload 存在误写成动态发现 |
 | S1 | **InProof** | CLR metadata: `NavigationManagerCatalogWhitelistTests`; CLR/compiler/runtime: `RazorSgNavigationRuntimeTests`（覆盖 URI/history、`LocationChanged`/`OnNotFound`、prevent/dispose/supersede）；模块实现：`NavigationManagerModule`、`ValueTaskModule`、cancellation modules；面向用户草稿：`README.md`/`CHANGELOG.md` Unreleased | 缺标准 Blazor reference oracle、真实 BrowserSmoke、Release PackageConsumer；在证据补齐或面向用户声明回退前，不标记 Support |
-| S2 | **InProof（Mouse/Keyboard/Focus mapping）** | M5 `P0-bind-events` 已覆盖普通 DOM/EventCallback framing；`ECMAScript.Blazor.DomEventArgsExtensions` 与 `EcmaScriptBlazorMappingTests` 已固定 Mouse/Keyboard/Focus 的原生 carrier、只读 getter key 和 compiler emission | 缺 official Razor SG handler、真实 BrowserSmoke 和 isolated mapping consumer 证据；constructor/setter/合成 payload 保持 Reject。`ChangeEventArgs.Value` 仍为 Planned，等待 event-time capture contract 与 `Jazor.CLR` helper |
-| S3 | **Planned** | `@ref` capture 已由 render emitter 覆盖（`RazorSgOfficialReferenceAuthoringTests` 等） | `FocusAsync` 两个 overload 尚无 CLR mapping、compiler emission 和 browser lifecycle 证据 |
+| S2 | **InProof（Mouse/Keyboard/Focus/Change mapping）** | M5 `P0-bind-events` 已覆盖普通 DOM/EventCallback framing；`ECMAScript.Blazor.DomEventArgsExtensions` 与 `EcmaScriptBlazorMappingTests` 固定原生 carrier/getter；`ChangeEventArgsModule`、RenderEmitter typed `onchange` wrapper 与 `RazorSgOfficialBindingAuthoringTests.BuildComponent_OfficialRazorTypedChangeHandler_CapturesValueBeforeCallback` 已落地 string/bool/multiple-select capture | Mouse/Keyboard/Focus 的 official Razor SG handler、真实 BrowserSmoke 和 isolated mapping consumer 证据仍待补齐；file input、constructor/setter/合成 payload 保持 Reject |
+| S3 | **InProof** | `ECMAScript.Blazor.ElementReferenceExtensions` 固定 `ElementReference -> HTMLElement` alias 与两个 `FocusAsync` `Inline` mapping；`EcmaScriptBlazorMappingTests` 覆盖 whitelist/compiler emission；`RazorSgOfficialReferenceAuthoringTests.BuildComponent_OfficialRazorElementReferenceFocus_UsesDomCarrierMapping` 覆盖 official Razor SG、`@ref` 生命周期和 `OnAfterRenderAsync` lowering | 仍缺真实 BrowserSmoke、isolated Release PackageConsumer，以及空/未挂载 element reference 的 browser 行为裁决；未完成前不标记 Support |
 | S4 | **Planned** | 无扩展 event-args CLR mapping | 每个事件组独立验收，不因共享 WebIDL carrier 自动 Support |
 | S5 | **Guidance** | M5 row `P2-js-runtime` 的 typed module registry 仍为 Guidance | 先完成静态 contract/manifest/import 设计；当前没有默认动态 interop runtime |
-| S6 | **Planned** | M5 row `P2-authentication` 仍为 Planned | 必须先解决 host descriptor、refresh、claims carrier 和 endpoint authorization 分离 |
-| S7 | **InProof（仅基础 adapter）** | `RazorSgStandardBlazorComponentRuntimeTests.TypedInputs_EmitValueDescriptorsForNumberDateAndEnum`；M5 row `P1-standard-forms` | 完整 `EditContext`/validation 未支持；日期输入的 plain-object carrier 缺口由 hardening R1 负责，不能把该测试当成 CLR carrier proof |
-| S8 | **Planned** | 无 `InputFile`/`IBrowserFile` CLR mapping | 先定义 File/Blob lifetime、stream、size/error 和 package closure |
+| S6 | **Planned** | M5 row `P2-authentication` 仍为 Planned | 必须先解决 host descriptor、refresh、claims carrier 和 endpoint authorization 分离；内置认证 UI 不在范围 |
+| S7/S8 | **Out of scope** | 无本计划实现 | 不把现有标准 input/file adapter 测试当成 CLR framework proof；组件库或独立兼容路线另行负责 |
 
 ## 12. 统一验收与发布清单
 

@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// First-wave Vuetify breadcrumbs stub for RazorVue authoring.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VBreadcrumbs")]
-public sealed class VBreadcrumbs : ComponentBase
+public sealed class VBreadcrumbs : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 面包屑导航项列表。

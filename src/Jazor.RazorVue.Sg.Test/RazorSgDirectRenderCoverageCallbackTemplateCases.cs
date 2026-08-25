@@ -68,7 +68,11 @@ internal static partial class DirectRenderCaseCatalog
                 runtimeName)
             {
                 AdditionalExpectedFragment = runtimeHandler,
-                Members = "private void " + handler + "(ChangeEventArgs value) { }"
+                Members = "private void " + handler + "(ChangeEventArgs value) { }",
+                // Only the onchange DOM event receives the event-time ChangeEventArgs capture
+                // bridge; the same authored callback shape on other event names remains a
+                // regular EventCallback projection.
+                ImportCount = hostIndex == 1 ? 1 : 0
             },
             5 => new(
                 open + "builder.AddAttribute(1, " + CSharpStringLiteral(eventName) + ", EventCallback.Factory.Create<string>(this, value => " + field + " = value)); builder.AddAttribute(2, \"data-case\", " + CSharpStringLiteral(marker) + ");" + close,

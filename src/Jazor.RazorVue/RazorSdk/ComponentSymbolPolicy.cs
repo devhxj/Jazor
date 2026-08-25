@@ -8,6 +8,43 @@ namespace Jazor.RazorVue.RazorSdk;
 /// </summary>
 internal static class ComponentSymbolPolicy
 {
+    internal const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
+    internal const string VueComponentMarkerMetadataName = "ECMAScript.Vue+IVueComponent";
+
+    /// <summary>
+    /// Returns whether a type satisfies the single RazorVue component identity contract.
+    /// 组件身份必须同时具备 ComponentBase 生命周期入口和 Vue marker；导入特性由调用方另行检查。
+    /// </summary>
+    public static bool IsRazorVueComponent(
+        INamedTypeSymbol componentType,
+        INamedTypeSymbol? componentBase,
+        INamedTypeSymbol? vueComponentMarker)
+        => componentBase is not null &&
+           vueComponentMarker is not null &&
+           InheritsFrom(componentType, componentBase) &&
+           Implements(componentType, vueComponentMarker);
+
+    public static bool InheritsFrom(INamedTypeSymbol type, INamedTypeSymbol baseType)
+    {
+        for (var current = type; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(
+                    current.OriginalDefinition,
+                    baseType.OriginalDefinition))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool Implements(INamedTypeSymbol type, INamedTypeSymbol interfaceType)
+        => type.AllInterfaces.Any(candidate =>
+            SymbolEqualityComparer.Default.Equals(
+                candidate.OriginalDefinition,
+                interfaceType.OriginalDefinition));
+
     // Razor components commonly move reusable members to a source base class. Treat that
     // base chain as one component surface while callers retain their own source/protocol checks.
     public static bool IsDeclaredOnComponentHierarchy(

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify floating action button authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VFab")]
-public sealed class VFab : ComponentBase
+public sealed class VFab : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 按钮的展开/收起绑定值。

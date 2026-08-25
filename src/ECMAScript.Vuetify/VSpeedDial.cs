@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify speed-dial authoring proxy built on the VMenu/VOverlay surface.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSpeedDial")]
-public sealed class VSpeedDial : ComponentBase
+public sealed class VSpeedDial : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 快速拨号的显示状态。

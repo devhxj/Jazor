@@ -27,7 +27,7 @@
 
 | ID | 状态 | 结论与证据 | 后续动作 |
 | --- | --- | --- | --- |
-| R1 | **需修复** | `blazor-components.mjs` 的 `parseIsoDate` 为 `DateOnly`、`DateTime`、`DateTimeOffset` 手工拼装 plain object；`RazorSgStandardBlazorComponentRuntimeTests.TypedInputs_EmitValueDescriptorsForNumberDateAndEnum` 也把该结构写成了期望值。这些对象不是对应的 `J*` 实例，因而丢失 `is`/`as`、`Symbol.toPrimitive` 和依赖 carrier 的 object overload 语义 | 由 CLR-owned 强类型构造/helper 产生值；RazorVue 只传递输入描述和调用模块入口，不再维护第二份字段布局 |
+| R1 | **范围外/历史实验已冻结** | 历史 `blazor-components.mjs` `InputDate` adapter 曾由 `parseIsoDate` 手工拼装 `DateOnly`、`DateTime`、`DateTimeOffset` plain object；该 adapter 与对应 RazorVue 输入测试已从产品入口移除，内置 `EditForm`/`Input*` 统一 Reject，因此不再把这条实验路径当作 CLR runtime 缺口或 Support 证据 | 保留问题记录供历史追溯；若未来单独立项内置表单组件路线，必须重新建立 reference oracle、CLR-owned carrier/helper 和独立版本/能力台账 |
 | R2 | **已有行为，缺 compiler 护栏** | `DateTimeModule` 和 `DateTimeOffsetModule` 已为 `==`、`!=`、`<`、`<=`、`>`、`>=` 声明 `Op.Import`；生成白名单使用 `static System.DateTime.operator ...` 形式的 canonical key。`ClrRuntimeDateTimeScenarios` 与 `ClrRuntimeDateTimeOffsetScenarios` 已覆盖 helper 行为 | 增加 authored C# compiler emission 回归，证明比较运算符绑定到稳定 import，而不是退化成裸 JavaScript 运算符。此项不新增 API，也不改变现有 runtime helper |
 | R3 | **需护栏** | `TryGetInternalRuntimeValueCarrier` 检查 `TypeKind.Class`、非 static、源码声明、`Jazor.CLR` 命名空间和 module path；但它没有像 `ClrRuntimeSelection` 一样排除 record。record 会走 structural lowering，不应被推断成可供 `instanceof` 的 runtime class | carrier inference 明确排除 `IsRecord`，并在 generator predicate 的可测试落点增加回归 |
 | R4 | **需护栏** | 需要字符串/数值强制的六类 carrier（`JDateTime`、`JDateTimeOffset`、`JDateOnly`、`JTimeOnly`、`JTimeSpan`、`JGregorianCalendar`）在各构造路径安装 own `Symbol.toPrimitive`。安装逻辑分散，漏掉某个重载会只在该构造路径复现 | 对这六类 carrier 逐个覆盖所有构造路径，断言 own hook、default/string/number hint；不要求 `JIndex`、`JRange`、`JQueue` 等本来不需要该 hook 的 carrier 安装它 |
@@ -40,10 +40,10 @@
 
 R1 是当前唯一已经由生产路径证明的“双写布局”缺口，优先级高于性能工作。修复必须满足：
 
-1. 先用标准 Blazor reference fixture 固化 `InputDate<TValue>` 对 `DateOnly`、`DateTime`、`DateTimeOffset`、nullable、无效输入和时区/offset 的行为；不能只把现有 plain object 换成 `new J*` 后沿用未经验证的值语义。
-2. 日期解析、范围校验和 carrier 创建由 C# 编写的 `Jazor.CLR` module helper 负责；RazorVue `.mjs` 可以保留 DOM/Vue listener framing 和一次薄调用，但不得继续知道 `year`、`dayNumber`、`utcDateTime` 等内部字段集合。
-3. 产出的值必须通过正常 CLR 成员调用、`is`/`as`、object overload 和字符串转换回归；不得只断言字段 deep-equal。
-4. 这是 [Blazor CLR 支持计划](./blazor-clr-support-plan.md) 表单切片进入 Support 的前置条件。修复缺口本身不等于完整 `EditContext`/validation 已支持。
+1. R1 当前不进入实施队列；历史 adapter 代码只保留用于范围审计，不得继续扩展或作为发布 Support 证据。
+2. 若未来另立内置表单组件路线，先用标准 Blazor reference fixture 固化 `InputDate<TValue>` 对 `DateOnly`、`DateTime`、`DateTimeOffset`、nullable、无效输入和时区/offset 的行为；不能只把 plain object 换成 `new J*` 后沿用未经验证的值语义。
+3. 日期解析、范围校验和 carrier 创建必须由 C# 编写的 `Jazor.CLR` module helper 负责；宿主 `.mjs` 只能保留 DOM/Vue listener framing 和一次薄调用，不得复制 `year`、`dayNumber`、`utcDateTime` 等字段布局。
+4. 未来产出的值必须通过正常 CLR 成员调用、`is`/`as`、object overload 和字符串转换回归；不得只断言字段 deep-equal。
 5. 本计划不顺带建立通用 JSON、IndexedDB、`postMessage` 或 `structuredClone` rehydration 框架；以后若新增这类入口，必须为该入口单独定义强类型重建协议。
 
 ### 2.3 R2 的更正
@@ -101,7 +101,7 @@ authored C# d1 < d2
 | 阶段 | 内容 | 出口条件 |
 | --- | --- | --- |
 | H0 | 更正 operator 基线；为 `DateTime`/`DateTimeOffset` authored C# 比较补 compiler import 回归；把 carrier 精度和 number-hint 精度写入稳定文档 | 生成代码调用既有 import helper；CLR runtime comparison 场景继续通过；没有新增 API |
-| H1 | 修复 `blazor-components.mjs` 日期 plain-object 构造；先补 reference oracle，再改为 CLR-owned 构造/helper | `InputDate` 产生真实 carrier；成员访问、比较/identity、字符串转换、invalid/nullable/offset 行为通过 Razor SG runtime 与真实浏览器验证 |
+| H1 | （冻结）不修复历史内置 `InputDate` adapter；等待独立组件路线立项 | 当前产品不生成内置 `InputDate`，因此不存在已承诺的 CLR carrier 行为；未来路线需重新定义 reference/browser/package 门禁 |
 | H2 | carrier inference 排除 record；为需要 `ToPrimitive` 的 carrier 覆盖全部构造路径 | 生成器输出级回归能阻止 record 获得 `RuntimeValueCarrier`；故意漏掉任一 hook 时对应测试失败。优先扩展现有 `WhiteListLookupTests` 的生成结果断言；若 predicate 本身无法从现有测试入口覆盖，再提取共享纯函数或使用最小输入/输出 probe，不把不存在的 generator test project 当成前提 |
 | H3 | 建立 CLR runtime 性能基线，给 P1-P3 分别做 go/no-go 裁决 | 基线、阈值和结果可复现；没有达到阈值的候选记录为“不实施”，不提交无收益复杂度 |
 | H4 | 仅在触及 `ClrRuntimeTestHost` 时收敛按 class-name 编码的测试债务 | 专用 carrier 编码不会静默落入 generic object 分支；该协议仍只存在于测试层 |

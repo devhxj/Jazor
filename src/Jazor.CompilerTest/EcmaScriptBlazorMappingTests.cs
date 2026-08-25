@@ -1,4 +1,5 @@
 using Acornima;
+using Acornima.Ast;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.AspNetCore.Components;
@@ -20,7 +21,9 @@ public sealed class EcmaScriptBlazorMappingTests
         {
             ("Microsoft.AspNetCore.Components.Web.MouseEventArgs", "MouseEvent"),
             ("Microsoft.AspNetCore.Components.Web.KeyboardEventArgs", "KeyboardEvent"),
-            ("Microsoft.AspNetCore.Components.Web.FocusEventArgs", "FocusEvent")
+            ("Microsoft.AspNetCore.Components.Web.FocusEventArgs", "FocusEvent"),
+            ("Microsoft.AspNetCore.Components.ChangeEventArgs", "JazorEvent"),
+            ("Microsoft.AspNetCore.Components.ElementReference", "HTMLElement")
         };
         var expectedMembers = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -52,7 +55,13 @@ public sealed class EcmaScriptBlazorMappingTests
             ["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.MetaKey.get"] = "__arg1.metaKey",
             ["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Type.get"] = "__arg1.type",
             ["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get"] = "__arg1.isComposing",
-            ["Microsoft.AspNetCore.Components.Web.FocusEventArgs.Type.get"] = "__arg1.type"
+            ["Microsoft.AspNetCore.Components.Web.FocusEventArgs.Type.get"] = "__arg1.type",
+            ["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)"] = "Promise.resolve(__arg1.focus())",
+            ["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference, bool)"] = "Promise.resolve(__arg1.focus({ preventScroll: __arg2 }))"
+        };
+        var expectedImports = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get"] = "getChangeEventValue"
         };
 
         foreach (var (typeName, runtimeName) in expectedAliases)
@@ -62,6 +71,7 @@ public sealed class EcmaScriptBlazorMappingTests
             // The first slice is a DOM-origin read projection. Any constructor or
             // setter entry would silently claim support for synthetic EventArgs values.
             var expectedKeys = expectedMembers.Keys
+                .Concat(expectedImports.Keys)
                 .Where(key => key.StartsWith(typeName + ".", StringComparison.Ordinal))
                 .OrderBy(static key => key, StringComparer.Ordinal)
                 .ToArray();
@@ -76,6 +86,11 @@ public sealed class EcmaScriptBlazorMappingTests
         {
             AssertInline(memberName, template);
         }
+
+        foreach (var (memberName, exportName) in expectedImports)
+        {
+            AssertImport(memberName, exportName, "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js");
+        }
     }
 
     [TestMethod]
@@ -84,14 +99,24 @@ public sealed class EcmaScriptBlazorMappingTests
         var block = GetBlockOperation(
             """
             using Microsoft.AspNetCore.Components.Web;
+            using Microsoft.AspNetCore.Components;
+            using System.Threading.Tasks;
 
             public static class BlazorEventScenario
             {
-                public static string Evaluate(MouseEventArgs mouse, KeyboardEventArgs keyboard, FocusEventArgs focus)
+                public static string Evaluate(
+                    MouseEventArgs mouse,
+                    KeyboardEventArgs keyboard,
+                    FocusEventArgs focus,
+                    ChangeEventArgs change,
+                    ElementReference element)
                 {
                     var clientX = mouse.ClientX;
                     var key = keyboard.Key;
-                    return focus.Type + key + clientX;
+                    _ = element.FocusAsync();
+                    _ = element.FocusAsync(true);
+                    var value = change.Value;
+                    return focus.Type + key + clientX + (string)value!;
                 }
             }
             """);
@@ -100,10 +125,17 @@ public sealed class EcmaScriptBlazorMappingTests
         var body = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(body);
-        Assert.HasCount(0, argument.FlushImportSpecifiers(), body);
+        var imports = argument.FlushImportSpecifiers();
+        Assert.HasCount(1, imports, body);
+        Assert.AreEqual("Microsoft/AspNetCore/Components/ChangeEventArgsModule.js", imports[0].Key, body);
+        var importSpecifier = imports[0].Value.OfType<ImportSpecifier>().Single();
+        Assert.IsInstanceOfType<Identifier>(importSpecifier.Imported, body);
+        Assert.AreEqual("getChangeEventValue", ((Identifier)importSpecifier.Imported).Name, body);
         StringAssert.Contains(body, "clientX", StringComparison.Ordinal);
         StringAssert.Contains(body, "keyboard.key", StringComparison.Ordinal);
         StringAssert.Contains(body, "focus.type", StringComparison.Ordinal);
+        StringAssert.Contains(body, "Promise.resolve(element.focus())", StringComparison.Ordinal);
+        StringAssert.Contains(body, "Promise.resolve(element.focus({ preventScroll: true }))", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(mouse, keyboard, focus) " + body);
     }
 
@@ -120,6 +152,14 @@ public sealed class EcmaScriptBlazorMappingTests
         Assert.IsTrue(WhiteList.Members.TryGetValue(memberName, out var mapping), $"Missing Blazor member mapping: {memberName}");
         Assert.AreEqual(ECMAScript.Contract.Op.Inline, mapping.Op);
         Assert.AreEqual(template, mapping.Value);
+    }
+
+    private static void AssertImport(string memberName, string exportName, string modulePath)
+    {
+        Assert.IsTrue(WhiteList.Members.TryGetValue(memberName, out var mapping), $"Missing Blazor member mapping: {memberName}");
+        Assert.AreEqual(ECMAScript.Contract.Op.Import, mapping.Op);
+        Assert.AreEqual(exportName, mapping.Value);
+        Assert.AreEqual(modulePath, mapping.Path);
     }
 
     private static IBlockOperation GetBlockOperation(string source)

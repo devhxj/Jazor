@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify window authoring proxy for grouped panel navigation.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VWindow")]
-public sealed class VWindow : ComponentBase
+public sealed class VWindow : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 模型值。

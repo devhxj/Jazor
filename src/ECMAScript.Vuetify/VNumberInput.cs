@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify number input component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VNumberInput")]
-public sealed class VNumberInput : ComponentBase
+public sealed class VNumberInput : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 数字输入控件的标签文本。

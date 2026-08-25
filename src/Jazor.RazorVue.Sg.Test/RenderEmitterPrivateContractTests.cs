@@ -156,28 +156,34 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoArgumentModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NullModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoImportComponent")));
-        AssertComponentImport(GetNamedType(fixture, "ModuleComponent"), "./components/module.mjs", "default");
-        AssertComponentImport(GetNamedType(fixture, "LibraryComponent"), "tdesign-vue-next", "Button");
+        AssertComponentImport(fixture, GetNamedType(fixture, "ModuleComponent"), "./components/module.mjs", "default");
+        AssertComponentImport(fixture, GetNamedType(fixture, "LibraryComponent"), "tdesign-vue-next", "Button");
         var slotMapComponent = GetNamedType(fixture, "SlotMapComponent");
         var slotNames = Invoke<ImmutableDictionary<IPropertySymbol, string>>(
             "BuildComponentSlotNameMap",
             slotMapComponent);
         Assert.AreEqual("header-slot", slotNames[GetProperty(slotMapComponent, "Header")]);
         var reactLibraryImport = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "ReactLibraryComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "ReactLibraryComponent")));
         StringAssert.Contains(reactLibraryImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var noArgumentImport = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "NoArgumentModuleComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NoArgumentModuleComponent")));
         StringAssert.Contains(noArgumentImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var nullModuleImport = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "NullModuleComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NullModuleComponent")));
         StringAssert.Contains(nullModuleImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var importFailure = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "NoImportComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NoImportComponent")));
         StringAssert.Contains(importFailure.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var invalidLibraryImport = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", GetNamedType(fixture, "InvalidLibraryComponent")));
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "InvalidLibraryComponent")));
         StringAssert.Contains(invalidLibraryImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
+
+        var contractFailure = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<object>("EnsureRazorVueComponentContract", fixture.Compilation, GetNamedType(fixture, "SlotMapComponent")));
+        StringAssert.Contains(contractFailure.InnerException!.Message, "must derive", StringComparison.Ordinal);
+
+        Assert.IsFalse(Invoke<bool>("IsChangeEventCallbackType", new object?[] { null }));
 
         var genericInitializer = GetVariableInitializer(fixture, GetMethod(fixture, "OperationShapes", "FragmentLambdas"), "generic");
         var renderInitializer = GetVariableInitializer(fixture, GetMethod(fixture, "OperationShapes", "FragmentLambdas"), "fragment");
@@ -2890,6 +2896,20 @@ public sealed class RenderEmitterPrivateContractTests
 
         var unknown = GetNamedType(fixture, "ModuleComponent");
         Assert.IsFalse(Invoke<bool>("TryGetStandardBlazorComponentAdapter", new object?[] { unknown, null }));
+
+        var routingUnknown = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.Routing.UnregisteredRoutingType");
+        var formsUnknown = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.Forms.UnregisteredFormsType");
+        var rootUnknown = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.UnregisteredRootType");
+        var webUnknown = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.Web.UnregisteredWebType");
+        Assert.IsNotNull(routingUnknown);
+        Assert.IsNotNull(formsUnknown);
+        Assert.IsNotNull(rootUnknown);
+        Assert.IsNotNull(webUnknown);
+        Assert.IsFalse(Invoke<bool>("TryGetStandardBlazorComponentAdapter", new object?[] { routingUnknown, null }));
+        Assert.IsFalse(Invoke<bool>("TryGetStandardBlazorComponentAdapter", new object?[] { formsUnknown, null }));
+        Assert.IsFalse(Invoke<bool>("TryGetStandardBlazorComponentAdapter", new object?[] { rootUnknown, null }));
+        Assert.IsFalse(Invoke<bool>("TryGetStandardBlazorComponentAdapter", new object?[] { webUnknown, null }));
+
         var cascadingDefinition = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.CascadingValue`1");
         Assert.IsNotNull(cascadingDefinition);
         var intType = compilation.GetSpecialType(SpecialType.System_Int32);
@@ -2963,9 +2983,13 @@ public sealed class RenderEmitterPrivateContractTests
         Assert.AreEqual(expected, arguments[1]);
     }
 
-    private static void AssertComponentImport(INamedTypeSymbol componentType, string importSpecifier, string exportName)
+    private static void AssertComponentImport(
+        Fixture fixture,
+        INamedTypeSymbol componentType,
+        string importSpecifier,
+        string exportName)
     {
-        var descriptor = Invoke<object>("ResolveComponentImport", componentType);
+        var descriptor = Invoke<object>("ResolveComponentImport", fixture.Compilation, componentType);
         var descriptorType = descriptor.GetType();
         var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         Assert.AreEqual(importSpecifier, descriptorType.GetProperty("ImportSpecifier", flags)!.GetValue(descriptor));
@@ -3449,31 +3473,32 @@ public sealed class RenderEmitterPrivateContractTests
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
+            using static ECMAScript.Vue;
 
             namespace RenderEmitterPrivateContracts;
 
             [Obsolete]
             [ECMAScriptModule(" ./components/module ")]
-            public sealed class ModuleComponent : ComponentBase;
+            public sealed class ModuleComponent : ComponentBase, IVueComponent;
 
             [ECMAScriptModule(" ")]
             [VueLibraryComponent(" tdesign-vue-next ", " Button ")]
-            public sealed class LibraryComponent;
+            public sealed class LibraryComponent : ComponentBase, IVueComponent;
 
             [ReactLibraryComponent("react-library", "ReactButton")]
-            public sealed class ReactLibraryComponent;
+            public sealed class ReactLibraryComponent : ComponentBase, IVueComponent;
 
             [ECMAScriptModule]
-            public sealed class NoArgumentModuleComponent;
+            public sealed class NoArgumentModuleComponent : ComponentBase, IVueComponent;
 
             [ECMAScriptModule(null)]
-            public sealed class NullModuleComponent;
+            public sealed class NullModuleComponent : ComponentBase, IVueComponent;
 
             [Obsolete]
-            public sealed class NoImportComponent;
+            public sealed class NoImportComponent : ComponentBase, IVueComponent;
 
             [VueLibraryComponent(" ", "Button")]
-            public sealed class InvalidLibraryComponent;
+            public sealed class InvalidLibraryComponent : ComponentBase, IVueComponent;
 
             public sealed class SlotMapComponent : ComponentBase
             {
@@ -4305,9 +4330,33 @@ public sealed class RenderEmitterPrivateContractTests
             """,
             new CSharpParseOptions(LanguageVersion.Preview),
             path: "RenderEmitterPrivateContracts.cs");
+        var adapterNamespaceTree = CSharpSyntaxTree.ParseText(
+            """
+            namespace Microsoft.AspNetCore.Components.Routing
+            {
+                public sealed class UnregisteredRoutingType { }
+            }
+
+            namespace Microsoft.AspNetCore.Components.Forms
+            {
+                public sealed class UnregisteredFormsType { }
+            }
+
+            namespace Microsoft.AspNetCore.Components
+            {
+                public sealed class UnregisteredRootType { }
+            }
+
+            namespace Microsoft.AspNetCore.Components.Web
+            {
+                public sealed class UnregisteredWebType { }
+            }
+            """,
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "RenderEmitterPrivateContractAdapterNamespaces.cs");
         var compilation = CSharpCompilation.Create(
             "RazorVue.RenderEmitterPrivateContracts",
-            [syntaxTree],
+            [syntaxTree, adapterNamespaceTree],
             RazorSgTestHost.CreateMetadataReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = RazorSgTestHost.GetCompilationErrors(compilation);

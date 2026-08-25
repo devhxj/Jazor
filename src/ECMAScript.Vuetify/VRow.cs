@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify grid row authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRow")]
-public sealed class VRow : ComponentBase
+public sealed class VRow : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 渲染根元素时使用的 HTML 标签。

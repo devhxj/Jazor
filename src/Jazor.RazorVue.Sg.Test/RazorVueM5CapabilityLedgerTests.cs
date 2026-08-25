@@ -82,8 +82,46 @@ public sealed class RazorVueM5CapabilityLedgerTests
 
         var standardComponents = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-standard-blazor-component-adapters");
-        Assert.IsNull(standardComponents.DiagnosticId);
-        Assert.AreEqual(RazorVueCapabilityStatus.InProof, standardComponents.Status);
-        Assert.IsTrue(standardComponents.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.AreEqual("JAZORVGA021", standardComponents.DiagnosticId);
+        Assert.AreEqual(RazorVueCapabilityDecision.Reject, standardComponents.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Reject, standardComponents.Status);
+        Assert.IsTrue(standardComponents.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+
+        foreach (var id in new[] { "P1-dynamic-component", "P1-error-boundary", "P1-standard-forms" })
+        {
+            var entry = RazorVueM5CapabilityLedger.All.Single(candidate => candidate.Id == id);
+            Assert.AreEqual(RazorVueCapabilityDecision.Reject, entry.Decision, id);
+            Assert.AreEqual(RazorVueCapabilityStatus.Reject, entry.Status, id);
+            Assert.AreEqual("JAZORVGA021", entry.DiagnosticId, id);
+        }
+    }
+
+    [TestMethod]
+    public void Ledger_BlazorClrSlicesDeclareAuditableContractMetadata()
+    {
+        var entries = RazorVueM5CapabilityLedger.All
+            .Where(static entry => entry.Id.Contains("blazor-clr", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.HasCount(5, entries);
+        Assert.IsTrue(entries.All(static entry =>
+            !string.IsNullOrWhiteSpace(entry.TargetProfiles) &&
+            !string.IsNullOrWhiteSpace(entry.Carrier) &&
+            !string.IsNullOrWhiteSpace(entry.ImplementationPath) &&
+            !string.IsNullOrWhiteSpace(entry.ContributionContractVersion) &&
+            !string.IsNullOrWhiteSpace(entry.Dependencies) &&
+            !string.IsNullOrWhiteSpace(entry.ExcludedSurface)));
+        Assert.IsTrue(entries.All(static entry =>
+            entry.ImplementationPath.Contains("ECMAScript.Blazor", StringComparison.Ordinal)));
+        Assert.IsTrue(entries.All(static entry =>
+            entry.ContributionContractVersion == "static-source-root/v1"));
+
+        var package = entries.Single(static entry => entry.Id == "P0-blazor-clr-mapping-package");
+        Assert.AreEqual(RazorVueCapabilityStatus.InProof, package.Status);
+        Assert.IsTrue(package.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+
+        var extendedEvents = entries.Single(static entry => entry.Id == "P2-blazor-clr-extended-dom-events");
+        Assert.AreEqual(RazorVueCapabilityStatus.Planned, extendedEvents.Status);
+        Assert.AreEqual(RazorVueCapabilityEvidence.None, extendedEvents.Evidence);
     }
 }

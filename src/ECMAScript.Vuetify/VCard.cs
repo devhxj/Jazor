@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// First-wave Vuetify card stub for child-content composition.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCard")]
-public sealed class VCard : ComponentBase
+public sealed class VCard : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 标题文本。

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs calendar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VCalendar")]
-public sealed class VCalendar : ComponentBase
+public sealed class VCalendar : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 日历的当前日期值。

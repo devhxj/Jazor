@@ -12,9 +12,13 @@ Jazor 的当前核心是受控 C# -> ECMAScript 转换：Roslyn `IOperation` 进
 
 当前已实现的框架集成是 Razor-to-Vue。它以官方 Razor Source Generator 完成后的最终 `Compilation` 为输入，通过 `Jazor.RazorVue` 完成组件绑定和 Vue framing，并复用核心编译器降低 C# 语义。
 
+Blazor framework mapping 的 S2 核心事件切片（Mouse/Keyboard/Focus/Change）已进入 InProof：前三类 getter 使用原生 DOM carrier，`ChangeEventArgs.Value` 使用 `Jazor.CLR` 的一次性 listener capture 与 `WeakMap` 投影；official Razor SG、browser smoke 和 package consumer 证据仍待补齐。Blazor 内置 UI 组件仍明确不在产品入口内。
+
 RazorVue 的生产输出是 direct Vue render-function `.mjs`。当前已接受的 static hoist、精确 static VNode cardinality、按需 raw-markup runtime、child-level block tree（dynamic string text、mixed text 与 nested block）、保守 patch flags、setup-instance handler cache、已证明安全的 `foreach` `renderList` / keyed-unkeyed fragment、stable/dynamic slot 精确 lowering、direct string/boolean DOM bind，以及 shallow parameter lifecycle watch 边界见 [RazorVue Direct Render 性能评审](./razorvue-direct-h-performance.md)。production Vue gate 已确认 keyed reorder identity、slot 分支更新、direct bind patch，以及 scalar/reference parameter replacement；同一 prop 引用内部的 nested mutation 不定义为新参数赋值。artifact generation 在保持 stable discovery/order 的前提下有界并行，release library assets 由 generated `PackageImports` 和 package-declared closure 按需物化；browser 不复制无关 SSR/devtools entry，SSR 则显式保留 `vue` / `@vue/server-renderer`。完整边界、实测口径和未启用的 cache/preload 策略见 [RazorVue 极致性能路线图](./razorvue-extreme-performance.md)。
 
 作者 C# 面已覆盖两层：Razor 标记和手写 `BuildRenderTree` 共用 direct-render 协议；`@code`/`.razor.cs` 的可达 helper、handler、lifecycle、source-base dispatch、parameterless constructor replay 和 static module members 走 component-logic/module framing。含普通 `break`/`continue` 的 `for`、`foreach`、`while`、`do while` 会使用 imperative loop lowering 保留控制流；`goto`、无法投影的 labeled branch、跨 open frame branch 和参数化 component activation 仍是明确边界。`SetParametersAsync(ParameterView)` 已进入 per-instance compatibility adapter proof，尚未宣称完整 browser/SSR consumer 支持。完整矩阵见 [RazorVue 作者指南](../03-guides/razorvue-authoring.md)。
+
+组件身份约束已统一为：必须直接或间接继承 `ComponentBase`，实现 `IVueComponent` 或其派生接口，并声明 `[ECMAScriptModule]` 或 `[VueLibraryComponent]` 导入描述。Microsoft Blazor 内置 UI 组件（如 `Router`、`DynamicComponent`、`ErrorBoundary`、`EditForm`、`Input*`）不满足该产品入口，识别到后稳定报告 Reject；UI 组件由 TDesign、Vuetify、Element Plus 或应用自定义组件承担。
 
 RazorVue 作者面现已使用 final Compilation typed diagnostics：`JAZORVGA021`-`026` 分别覆盖 direct-render、compiler bridge、component binding、member closure、VueInject 和 Vue module；`JAZORVGA020` 收缩为 bootstrap/未分类内部失败。mapped `.razor` location、稳定多组件聚合和错误时无 partial catalog 由官方 Razor SG 回归覆盖。member class 进入 Vue Proxy 时使用 proxy-safe mangled storage；支持切片、拒绝边界和升级门禁见 [RazorVue 作者指南](../03-guides/razorvue-authoring.md) 与 [作者面诊断路线图](./razorvue-authoring-diagnostics.md)。
 

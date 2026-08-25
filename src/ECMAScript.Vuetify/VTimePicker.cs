@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs time-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VTimePicker")]
-public sealed class VTimePicker : ComponentBase
+public sealed class VTimePicker : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 模型值。

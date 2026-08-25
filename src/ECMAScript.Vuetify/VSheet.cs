@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify sheet container authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSheet")]
-public sealed class VSheet : ComponentBase
+public sealed class VSheet : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件主题名称。

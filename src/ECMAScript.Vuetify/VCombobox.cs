@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify combobox component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCombobox")]
-public sealed class VCombobox : VSelectLikeComponentBase
+public sealed class VCombobox : VSelectLikeComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 是否自动选中第一个匹配项。

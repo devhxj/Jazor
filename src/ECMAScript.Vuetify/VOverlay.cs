@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify overlay component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VOverlay")]
-public sealed class VOverlay : ComponentBase
+public sealed class VOverlay : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 遮罩层是否可见。

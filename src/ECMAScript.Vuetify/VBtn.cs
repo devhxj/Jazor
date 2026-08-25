@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify button authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VBtn")]
-public sealed class VBtn : ComponentBase
+public sealed class VBtn : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 激活状态。

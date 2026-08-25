@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 应用栏组件。
 /// Vuetify app bar component.
 /// </summary>
-public sealed class VAppBar : ComponentBase
+public sealed class VAppBar : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件的模型值。

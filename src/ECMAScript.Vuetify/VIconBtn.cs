@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs icon-btn authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VIconBtn")]
-public sealed class VIconBtn : ComponentBase
+public sealed class VIconBtn : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 按钮的主题颜色。

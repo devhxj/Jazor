@@ -44,7 +44,7 @@ public sealed class RazorSgOfficialVueLibraryComponentDescriptorTests
                 namespace Demo.Library;
 
                 [VueLibraryComponent("tdesign-vue-next", "Button")]
-                public sealed class TButton : ComponentBase
+                public sealed class TButton : ComponentBase, IVueComponent
                 {
                     [Parameter, System.ComponentModel.Description("@#theme")] public string Theme { get; set; } = string.Empty;
                     [Parameter, System.ComponentModel.Description("@#onClick")] public EventCallback OnClick { get; set; }

@@ -1,8 +1,25 @@
 using ECMAScript;
 using ECMAScript.Contract;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace ECMAScript.Blazor;
+
+/// <summary>
+/// Maps Blazor change arguments to the native event carrier captured by RazorVue's listener
+/// boundary. The value getter is backed by the CLR-owned event-time capture helper.
+/// </summary>
+[ECMAScriptModule("Microsoft/AspNetCore/Components/ChangeEventArgsModule.js")]
+[Jazor(Op.Alias, "Microsoft.AspNetCore.Components.ChangeEventArgs", "JazorEvent")]
+internal static class ChangeEventArgsExtensions
+{
+    [Jazor(
+        Op.Import,
+        "Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get",
+        "getChangeEventValue")]
+    internal static object? Value(this ChangeEventArgs instance)
+        => instance.Value;
+}
 
 /// <summary>
 /// Blazor DOM event adapters.

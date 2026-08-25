@@ -4,7 +4,7 @@ namespace ECMAScript.VuIcons;
 /// Shared wrapper props for the static <c>VuUser</c>/<c>VuSearch</c> component catalog。
 /// Static components each import one browser-ready SVG module, preserving the library's on-demand path.
 /// </summary>
-public abstract class VuIconComponentBase : ComponentBase
+public abstract class VuIconComponentBase : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     /// <summary>Icon size，number maps to px while string keeps the upstream numeric parsing behavior.</summary>
     [Parameter]
@@ -32,7 +32,7 @@ public abstract class VuIconComponentBase : ComponentBase
 /// generated static component such as <c>VuUser</c> so Emit only materializes that SVG module.
 /// </summary>
 [VueLibraryComponent("vu-icons", "VuIcon")]
-public sealed class VuIcon : ComponentBase
+public sealed class VuIcon : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     /// <summary>Canonical required Razor icon token。The closed enum prevents misspelled upstream names.</summary>
     [Parameter]

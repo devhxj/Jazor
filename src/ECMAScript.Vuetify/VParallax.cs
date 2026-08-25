@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify parallax authoring proxy for image-backed parallax sections.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VParallax")]
-public sealed class VParallax : ComponentBase
+public sealed class VParallax : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 视差滚动缩放比例。

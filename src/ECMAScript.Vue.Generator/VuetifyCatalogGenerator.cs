@@ -280,6 +280,18 @@ internal static class VuetifyCatalogGenerator
 
         var edits = new List<TextEdit>();
         var lineEnding = source.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
+
+        // The component marker is part of the generated declaration contract. Keep the
+        // existing ComponentBase/custom authoring base intact so generated proxies retain
+        // their parameter inheritance while satisfying RazorVue's ComponentBase + IVueComponent policy.
+        var baseList = declaration.BaseList ?? throw new InvalidOperationException(
+            $"Vuetify component '{component.TypeName}' must declare a ComponentBase-derived base type.");
+        if (!baseList.Types.Any(static type =>
+                type.Type.DescendantNodesAndSelf().OfType<SimpleNameSyntax>().LastOrDefault()?.Identifier.ValueText is "IVuetifyComponent" or "IVueComponent"))
+        {
+            edits.Add(new TextEdit(baseList.Span.End, 0, ", IVuetifyComponent"));
+        }
+
         foreach (var (memberName, property) in parameterProperties)
         {
             var expectedName = expectedMembers[memberName].RuntimeName;
@@ -438,19 +450,47 @@ internal static class VuetifyCatalogGenerator
           "imports": {
             "vuetify": {
               "development": "dist/vuetify.esm.js",
-              "production": "dist/vuetify.esm.js"
+              "production": "dist/vuetify.esm.js",
+              "developmentDependencies": [
+                "vue"
+              ],
+              "productionDependencies": [
+                "vue"
+              ]
             },
             "vuetify/components": {
               "development": "dist/components.mjs",
-              "production": "dist/components.mjs"
+              "production": "dist/components.mjs",
+              "developmentDependencies": [
+                "vuetify"
+              ],
+              "productionDependencies": [
+                "vuetify"
+              ]
             },
             "vuetify/labs/components": {
               "development": "dist/labs.mjs",
-              "production": "dist/labs.mjs"
+              "production": "dist/labs.mjs",
+              "developmentDependencies": [
+                "vuetify"
+              ],
+              "productionDependencies": [
+                "vuetify"
+              ],
+              "files": [
+                "dist/vuetify-labs.esm.js"
+              ]
             },
             "vuetify/directives": {
               "development": "dist/directives.mjs",
-              "production": "dist/directives.mjs"
+              "production": "dist/directives.mjs",
+              "developmentDependencies": [
+                "vuetify"
+              ],
+              "productionDependencies": [
+                "vuetify"
+              ],
+              "files": []
             }
           },
           "requires": {

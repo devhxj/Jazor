@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify lazy component that renders content on demand based on viewport visibility.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VLazy")]
-public sealed class VLazy : ComponentBase
+public sealed class VLazy : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件是否已激活（内容已渲染）。

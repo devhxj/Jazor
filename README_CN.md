@@ -32,11 +32,11 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### Jazor 0.21.0 — 2026-08-25
+### Jazor 0.22.0 — 2026-08-25
 
-- CLR 数值解析、边界溢出、稳定数学函数、decimal 指数校验和 DateTime 时区转换现在更贴合受支持的 .NET 契约。
-- 只读数组视图会拒绝全部原型突变方法，`Array.Clear` 保持数组长度，无分隔符 `Split` 保留 CLR 的连续空白空条目。
-- `Queue<T>` 与 `Stack<T>` 增加受支持的核心操作，集合比较器、哈希和批量修改路径完成一致性收口。
+- RazorVue 组件入口现在统一为 `ComponentBase` 加 `IVueComponent`（或其派生接口），并必须带有明确的模块/组件导入描述。
+- Microsoft 内置 Blazor UI 组件会以可操作诊断稳定拒绝；请改用应用自定义组件，或使用 TDesign、Vuetify、Element Plus 的强类型绑定。
+- `Jazor.Vue` 现在携带首批 Blazor CLR 映射，包括类型化 `ChangeEventArgs` 值捕获与 `ElementReference.FocusAsync`；映射仍是 opt-in，不进入核心 `Jazor` 包。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -94,15 +94,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.21.0
+dotnet add package Jazor --version 0.22.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.21.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.21.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.22.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.22.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

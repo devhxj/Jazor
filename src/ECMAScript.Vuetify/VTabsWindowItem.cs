@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify tabs-window-item authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTabsWindowItem")]
-public sealed class VTabsWindowItem : ComponentBase
+public sealed class VTabsWindowItem : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 值。

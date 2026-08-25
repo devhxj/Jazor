@@ -32,11 +32,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.21.0 — 2026-08-25
+### Jazor 0.22.0 — 2026-08-25
 
-- CLR numeric parsing, signed-zero predicates, narrow-integer overflow, stable math functions, decimal exponent validation, and DateTime timezone conversion now follow the supported .NET contracts more closely.
-- Read-only array views reject all prototype mutators, `Array.Clear` preserves array length, and whitespace `Split` keeps the CLR empty-entry behavior.
-- `Queue<T>` and `Stack<T>` expose their supported core operations, with collection comparer/hash paths and bulk mutation behavior aligned across carriers.
+- RazorVue components now use one stable entry contract: `ComponentBase` plus `IVueComponent` (or a derived interface) and an explicit module/component import descriptor.
+- Microsoft built-in Blazor UI components are rejected with an actionable diagnostic; use an application-owned component or the typed TDesign, Vuetify, or Element Plus bindings instead.
+- `Jazor.Vue` now carries the first Blazor CLR mapping slice for typed `ChangeEventArgs` value capture and `ElementReference.FocusAsync`; the mapping remains opt-in and does not enter the core `Jazor` package.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -94,15 +94,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.21.0
+dotnet add package Jazor --version 0.22.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.21.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.21.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.22.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.22.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

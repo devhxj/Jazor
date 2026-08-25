@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify selection-control group authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSelectionControlGroup")]
-public sealed class VSelectionControlGroup : ComponentBase
+public sealed class VSelectionControlGroup : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 分组的唯一标识符。

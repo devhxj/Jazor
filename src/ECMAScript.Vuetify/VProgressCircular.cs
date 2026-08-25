@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify circular progress indicator component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VProgressCircular")]
-public sealed class VProgressCircular : ComponentBase
+public sealed class VProgressCircular : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件使用的主题名称。

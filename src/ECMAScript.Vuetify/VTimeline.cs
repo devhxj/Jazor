@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify timeline authoring proxy for chronological vertical or horizontal content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTimeline")]
-public sealed class VTimeline : ComponentBase
+public sealed class VTimeline : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 主题名。

@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify code authoring proxy for inline or block code containers.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCode")]
-public sealed class VCode : ComponentBase
+public sealed class VCode : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件的 HTML 标签名。

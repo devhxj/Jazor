@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify icon authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VIcon")]
-public sealed class VIcon : ComponentBase
+public sealed class VIcon : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 显示的图标。

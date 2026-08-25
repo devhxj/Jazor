@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify locale-provider authoring proxy for scoped locale, fallback, RTL, and messages.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VLocaleProvider")]
-public sealed class VLocaleProvider : ComponentBase
+public sealed class VLocaleProvider : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 当前作用域的区域设置标识符。

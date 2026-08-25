@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify list item component for a single interactive entry within a list.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VListItem")]
-public sealed class VListItem : ComponentBase
+public sealed class VListItem : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 列表项是否处于活跃状态。

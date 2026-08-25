@@ -92,14 +92,14 @@ public sealed class RazorSgOfficialTDesignTableCellRuntimeTests
                 namespace Demo.Library;
 
                 [VueLibraryComponent("table-cell-capture", "CellCapture")]
-                public sealed class CellCapture : ComponentBase
+                public sealed class CellCapture : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("columns")]
                     public TPrimaryTableCol<Demo.Pages.CellRow>[]? Columns { get; set; }
                 }
 
                 [VueLibraryComponent("tdesign-vue-next", "Button")]
-                public sealed class TButton : ComponentBase
+                public sealed class TButton : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("onClick")]
                     public EventCallback OnClick { get; set; }

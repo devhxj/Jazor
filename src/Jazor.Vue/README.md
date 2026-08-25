@@ -8,14 +8,14 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.21.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.21.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.22.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.22.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 该包是 opt-in，必须与 `Jazor` 一起引用。只引用 `Jazor` 不会安装 Razor hook、扫描 Razor 组件或生成 Vue render catalog。`Jazor.Vue` 只携带合并后的 `Jazor.RazorVue` analyzer，避免重复装载共享 generator。
 
-Blazor framework-to-browser mapping declarations 由独立的 `ECMAScript.Blazor` 程序集提供，并由 `Jazor.Vue` 的 NuGet payload 带入；用户不需要单独引用或复制映射源码。实际 Blazor runtime module/helper 仍由 `Jazor.CLR` 提供，`ECMAScript.Blazor` 不属于 `Jazor` 核心包。当前首批只覆盖 Mouse/Keyboard/Focus event 的只读 getter；`ChangeEventArgs.Value` 在事件时刻捕获协议完成前仍不宣称支持。
+Blazor framework-to-browser mapping declarations 由独立的 `ECMAScript.Blazor` 程序集提供，并由 `Jazor.Vue` 的 NuGet payload 带入；用户不需要单独引用或复制映射源码。实际 Blazor runtime module/helper 仍由 `Jazor.CLR` 提供，`ECMAScript.Blazor` 不属于 `Jazor` 核心包。当前首批覆盖 Mouse/Keyboard/Focus event 的只读 getter，以及带事件时刻 capture 的 `ChangeEventArgs.Value`；file input 与合成 `EventArgs` payload 仍不支持。
 
 ## 产物输出
 

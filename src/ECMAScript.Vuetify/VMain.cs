@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify main content area component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VMain")]
-public sealed class VMain : ComponentBase
+public sealed class VMain : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 是否允许主内容区域独立滚动。

@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 横幅组件。
 /// Vuetify banner component.
 /// </summary>
-public sealed class VBanner : ComponentBase
+public sealed class VBanner : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 头像图片 URL。

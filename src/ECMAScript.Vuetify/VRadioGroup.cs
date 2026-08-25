@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify radio group component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRadioGroup")]
-public sealed class VRadioGroup : ComponentBase
+public sealed class VRadioGroup : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 单选按钮组的标签文本。

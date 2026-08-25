@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify checkbox authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCheckbox")]
-public sealed class VCheckbox : VSelectionControlComponentBase
+public sealed class VCheckbox : VSelectionControlComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 附加到组件根元素的额外属性。

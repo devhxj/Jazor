@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify responsive container authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VResponsive")]
-public sealed class VResponsive : ComponentBase
+public sealed class VResponsive : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 容器的宽高比。

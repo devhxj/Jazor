@@ -1,23 +1,26 @@
 # RazorVue Blazor-first 兼容与开发者体验路线图
 
-> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器、标准动态组件/错误边界/常见表单输入适配器与 P0 module-integrity proof 已落地；剩余的是行为深度、验证、LocationChanged、SSR/package/browser consumer proof 及未承诺的 P1/P2 能力。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
+> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器与 P0 module-integrity proof 已落地；剩余的是 framework 行为深度、验证、LocationChanged、typed JS/auth state、SSR/package/browser consumer proof 及未承诺的 P1/P2 能力。标准 Blazor 内置 UI 组件不属于当前产品契约。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
 >
-> 目标：开发者按标准 Blazor 的 Razor、组件、生命周期、表单和服务使用习惯编写功能。RazorVue 应优先自动提供等价行为；无法保持等价时，由源码分析诊断在作者代码处说明原因、影响和替代，而不是要求开发者预先学习 lowering、Vue 或 generated C#。
+> 目标：开发者按标准 Blazor 的 Razor、组件生命周期、参数、事件、服务和 framework API 使用习惯编写自定义组件；UI 由 TDesign、Vuetify、Element Plus 等组件库提供。RazorVue 应优先自动提供 framework 等价行为；无法保持等价时，由源码分析诊断在作者代码处说明原因、影响和替代，而不是要求开发者预先学习 lowering、Vue 或 generated C#。
+
+> **范围决策（2026-08-25）**：支持 Blazor framework，不承诺 `Microsoft.AspNetCore.Components` 内置 UI 组件。`Router`、`RouteView`、`NavLink`、`DynamicComponent`、`ErrorBoundary`、`EditForm`、`Input*`、`AuthorizeView`、`Virtualize`、`QuickGrid` 等标准标签不进入 M5 Support；识别到未纳入组件路线的标准标签时，应给出稳定 Reject/Guidance。现有适配器代码保留为历史/实验实现，不能作为产品支持证据或继续扩大承诺。
+> **组件入口契约（2026-08-25）**：所有进入 RazorVue lowering 的组件类型必须可赋值给 `ComponentBase`，实现 `IVueComponent` 或其派生接口，并声明 `[ECMAScriptModule]` 或 `[VueLibraryComponent]` 导入描述。组件库基类必须传递该 marker；只有 `ComponentBase` 而没有 `IVueComponent` 的 Microsoft 内置 UI 组件稳定 Reject。
 
 ## 1. 产品决策
 
-M5 的目标从“定义一个容易学习的 RazorVue 子集”提升为“尽量完整兼容 Blazor 作者面”。这不等同于把任意 .NET server runtime 带进浏览器，也不等同于静默改变代码行为。
+M5 的目标从“定义一个容易学习的 RazorVue 子集”提升为“尽量完整覆盖 Blazor framework 作者面，并让 UI 组件库承担组件体验”。这不等同于把任意 .NET server runtime 或 Microsoft 内置 UI 组件带进浏览器，也不等同于静默改变代码行为。
 
 兼容性采用以下优先级：
 
 1. 同一份标准 Blazor 写法可以直接编译、运行，并保留可观察行为。
-2. 若 Blazor 的抽象可以由浏览器运行时等价实现，RazorVue 自动提供 adapter，作者仍使用原来的 Razor/C# 形状。
+2. 若 Blazor framework 抽象可以由浏览器运行时等价实现，RazorVue 自动提供 adapter，作者仍使用原来的 Razor/C# 形状；UI 组件标签由组件库提供明确的 typed contract。
 3. 若无法等价，源码分析诊断在准确位置给出一个可复制的迁移；作者不需要先阅读内部限制文档。
 4. 只有不能在浏览器保真、也没有安全明确替代的能力才保持 Reject，并必须有稳定诊断、HelpLink 和最小替代。
 
 页面作者不应为了正常业务功能理解 RenderTreeBuilder、VNode frame、fragment closure、泛型擦除、Vue module、import alias 或 generated Razor C#。这些知识只属于组件库作者、binding 维护者和 RazorVue 维护者。
 
-兼容层的默认策略是保留 Blazor 的作者面：页面继续使用标准 Razor 指令、`ComponentBase` 生命周期、参数、服务和表单 API。adapter、registry 和 host registration 属于框架或组件库交付物；除非某个服务确实需要应用宿主选择，否则不把它们变成页面作者必须记忆的新调用约定。内部 ledger、实现原则和完整矩阵用于维护者验收，不是开发者开始写页面的前置阅读。
+兼容层的默认策略是保留 Blazor 的 framework 作者面：页面继续使用标准 Razor 指令、`ComponentBase` 生命周期、参数、事件、服务和 framework API。UI 组件使用 TDesign、Vuetify、Element Plus 等库的自然 API，不把 Microsoft 内置组件标签当成隐式兼容层。adapter、registry 和 host registration 属于框架或组件库交付物；除非某个服务确实需要应用宿主选择，否则不把它们变成页面作者必须记忆的新调用约定。内部 ledger、实现原则和完整矩阵用于维护者验收，不是开发者开始写页面的前置阅读。
 
 ### 1.1 M5 评审结论与修正
 
@@ -107,7 +110,7 @@ P0 是“开发者不应额外学习 RazorVue”的最低完成线：
 
 P0 的业务页面不得依赖 RenderTreeBuilder、ECMAScriptModule、手写 JavaScript、object 逃生参数或 generated C#。
 
-### 3.2 P1：高频 Blazor 组件模型兼容
+### 3.2 P1：Blazor framework 组件模型兼容
 
 P1 消除开发者从普通 Blazor 迁移时最常见的认知断点：
 
@@ -116,14 +119,14 @@ P1 消除开发者从普通 Blazor 迁移时最常见的认知断点：
 | SetParametersAsync(ParameterView) | Compatibility Adapter 或 Direct Support | 提供真实 ParameterView snapshot、参数应用顺序和 lifecycle 调度；不能把它伪装成普通 props watch |
 | `@inject`/`[Inject]` property 和 constructor injection | Compatibility Adapter | 浏览器 service catalog 与 Vue provide/inject；仅可执行的服务可以被激活 |
 | CascadingValue 和 [CascadingParameter] | Compatibility Adapter | typed provide/inject、名称/类型匹配、更新传播、嵌套覆盖和生命周期回归 |
-| NavigationManager | Compatibility Adapter | 通过 Vue Router/宿主导航实现 URI、NavigateTo、location changed 的明确子集 |
-| Router、RouteView、LayoutView、NavLink、PageTitle/HeadOutlet | Compatibility Adapter | 保留标准组件组合和 route data 语义；router registration 由 host 完成，页面不写 Vue Router glue |
+| NavigationManager | Compatibility Adapter | 通过宿主导航实现 URI、NavigateTo、location changed 的明确子集；不承诺 `Router`/`NavLink` 标签 |
+| route catalog、`@page`、route/query 参数与页面 host framing | Compatibility Adapter | 生成页面 route metadata 和 host navigation contract；`Router`、`RouteView`、`LayoutView`、`NavLink` 等内置组件标签不在本计划中 |
 | `[SupplyParameterFromQuery]`、route parameter、query 更新 | Compatibility Adapter | 由 router/URI adapter 向标准 parameter surface 提供值，并回归 back/forward、编码、nullable 和更新时机 |
-| DynamicComponent（`Type`、`Parameters`） | Compatibility Adapter | 仅为兼容既有 Blazor API 保留标准参数字典作者形状，不新增 `object` catch-all；由已生成的 parameter descriptor 校验名称/值，未知或 external runtime Type 由诊断处理 |
-| ErrorBoundary、@ref 和 Dispose | Direct Support 或 Compatibility Adapter | 子树错误、引用生命周期、unmount/dispose 的实际浏览器证明 |
-| EditForm、InputBase、常见 Input 组件、ValidationMessage | Compatibility Adapter | 强类型编辑上下文和可序列化的验证 descriptor；不能依赖浏览器不存在的反射魔法 |
+| `@ref`、Dispose、Error propagation 和自定义 fragment/slot | Direct Support 或 Compatibility Adapter | 仅覆盖 framework/lowering primitive；`ErrorBoundary`、`DynamicComponent` 等内置组件标签不在本计划中 |
+| `Router`、`RouteView`、`LayoutView`、`NavLink`、`DynamicComponent`、`ErrorBoundary` | Reject / separate component roadmap | 不生成 partial Vue substitute；使用应用自定义组件或第三方组件库的 typed contract |
+| `EditForm`、`InputBase`、`Input*`、`ValidationMessage`、`InputFile` | Reject / separate component roadmap | 表单与文件 UI 由 TDesign、Vuetify、Element Plus 或应用自定义组件承担 |
 
-P1 的目标是让标准组件代码保持原样。若某个 API 的浏览器语义与 server renderer 天然不同，adapter 必须将差异限定在运行时环境，不得悄悄改变作者的核心控制流。
+P1 的目标是让自定义组件的 framework 代码保持原样。内置 UI 组件标签即使在历史 runtime 中存在 adapter，也不能提升为 M5 Support；若某个标签没有独立组件路线，应在作者源/最终使用点稳定失败。
 
 ### 3.3 P2：平台服务和高级兼容
 
@@ -131,11 +134,11 @@ P2 继续扩大 Blazor 兼容，但每项先完成可行性设计和行为证明
 
 | 能力 | 候选方向 | 不可接受的做法 |
 | --- | --- | --- |
-| AuthenticationStateProvider、AuthorizeView | 浏览器认证状态 provider 加服务端 endpoint/SSR payload 交接 | 只隐藏 UI 而不在 endpoint 强制授权 |
+| AuthenticationStateProvider、claims/auth state API | 浏览器认证状态 provider 加服务端 endpoint/SSR payload 交接 | 不以 `AuthorizeView`/`AuthorizeRouteView` 隐藏 UI 代替 endpoint 授权；内置认证 UI 不在本计划 |
 | IJSRuntime、IJSObjectReference、IJSInProcessRuntime、JSInvokable | 仅为兼容既有 Blazor API 保留 `InvokeAsync`/`InvokeVoidAsync` 作者调用形状，不新增更宽的 `object` catch-all；宿主或绑定包预注册已知 identifier 并自动映射到强类型 WebIDL/module contract，未知 identifier 在作者源码处给出 typed bridge 诊断 | 任意 string eval、未声明 dynamic import、object 结果逃生；页面作者不被要求手写 Vue/模块协议 |
 | PersistentComponentState、prerender data | SSR payload 和 hydration state handoff | 客户端与服务器重复副作用或无版本的全局缓存 |
-| `[SupplyParameterFromForm]`、`FormName`、`AntiforgeryToken`、enhanced form post | SSR/form host adapter 和明确 endpoint contract | 让浏览器 bundle 假设服务器 form post、antiforgery 或 model binding 自然存在 |
-| `Virtualize<TItem>`、`QuickGrid<TGridItem>`、`SectionOutlet`/`SectionContent`、`StreamRendering` | 浏览器虚拟化、typed data source 和 SSR/streaming adapter；按 profile 分别证明 | 只替换成普通列表而不说明性能/时序变化，或在没有交互能力时生成假占位 |
+| `[SupplyParameterFromForm]`、`FormName`、`AntiforgeryToken`、enhanced form post | 独立 SSR/endpoint 或组件路线 | 本框架计划不实现内置表单组件的 server form protocol |
+| `Virtualize<TItem>`、`QuickGrid<TGridItem>`、`SectionOutlet`/`SectionContent`、`StreamRendering` | 独立性能/SSR/组件路线 | 不以普通列表或空占位静默替代内置组件 |
 | query、fragment、history state 等超出基础 route parameter 的 URI 状态 | Vue Router adapter 与 Razor 组件参数同步 | 页面作者手写 router glue |
 | DataAnnotations 和复杂表单验证 | 编译时 descriptor 或明确绑定 contract | 运行时反射扫描整个程序集 |
 | localization、culture、`IStringLocalizer`/资源访问 | 编译时资源索引或显式 host locale adapter | 把服务器资源程序集或当前线程状态隐式复制到浏览器 |
@@ -163,13 +166,13 @@ P2 不预设全部都会变成 Direct Support。每项要么实现可保真的 a
 | --- | --- | --- |
 | Razor 文件指令 | `@page`、`@layout`、`@inherits`、`@implements`、`@using`、`@inject`、`@typeparam`/`[CascadingTypeParameter]`、`@attribute`、`@namespace`、`@preservewhitespace`、`@rendermode` | official Razor SG 绑定、泛型级联、基类/接口契约、静态与交互 render mode 的环境边界 |
 | 组件契约 | `IComponent`、`ComponentBase`、`IHandleEvent`、`IHandleAfterRender`、`IDisposable`、`IAsyncDisposable`、`OwningComponentBase` | activation、DI lifetime、事件调度、dispose 顺序；server-only owner 必须有明确替代或 Reject |
-| 渲染与组合 | `RenderFragment`、`RenderFragment<T>`、`DynamicComponent`、`CascadingValue<T>`/`CascadingValueSource<T>`、`ErrorBoundary`、`Virtualize`、`QuickGrid`、`SectionOutlet`/`SectionContent` 及常见 templated component | 单次求值、稳定 identity、fragment/slot 闭包、未知组件类型、大列表更新和 section/stream 时序 |
+| 渲染与组合 | `RenderFragment`、`RenderFragment<T>`、`CascadingValue<T>`/`CascadingValueSource<T>` 及自定义 templated component | 单次求值、稳定 identity、fragment/slot 闭包和级联更新；`DynamicComponent`、`ErrorBoundary`、`Virtualize`、`QuickGrid`、`Section*` 内置组件另行处理 |
 | 状态与生命周期 | `[Parameter]`、`[CascadingParameter]`、`[SupplyParameterFromQuery]`、`[SupplyParameterFromForm]`、`ParameterView`、`SetParametersAsync`、`OnInitialized*`、`OnParametersSet*`、`OnAfterRender*`、`ShouldRender`、`StateHasChanged`、`InvokeAsync` | 参数覆盖顺序、异步竞态、异常传播、render gate、SSR/hydration 一次性副作用 |
-| 路由与文档头 | `Router`、`RouteView`、`AuthorizeRouteView`、`LayoutView`、`NavLink`、`NavigationManager`、`NavigationLock`、`FocusOnNavigate`、`PageTitle`、`HeadContent`、`HeadOutlet`、query/fragment/history state | route data 与 layout 组合、浏览器 history、not-found、授权分支、head 更新和 host registration |
-| 表单与验证 | `EditForm`、`EditContext`、`FieldIdentifier`、`InputBase<T>`、常见 `Input*`（含 `InputFile`）、`ValidationMessage`、`ValidationSummary`、`FormName`、`AntiforgeryToken`、`ValidationAttribute`、自定义 validator | parse/format、nullable/enum/union、nested field、同步/异步 validation、server error 和可序列化 descriptor |
-| 平台服务 | `AuthenticationStateProvider`、`AuthorizeView`、`PersistentComponentState`、`IJSRuntime` 家族、`HttpClient` 和可执行应用服务 | 浏览器可执行性、认证与 endpoint 强制授权、typed JS/module registry、SSR payload 版本和 service lifetime |
+| 路由与文档头 | `NavigationManager`、`NavigationLock`、`FocusOnNavigate`、`PageTitle`、`HeadContent`、`HeadOutlet`、query/fragment/history state，以及生成的 route metadata | 浏览器 history、URI 状态和 host registration；`Router`、`RouteView`、`AuthorizeRouteView`、`LayoutView`、`NavLink` 等内置组件不在本计划 |
+| 表单与验证 | 自定义组件的 binding/event contract | 由 TDesign/Vuetify/Element Plus 或独立路线定义 parse/format、validation、file input；`EditForm`/`Input*`/`ValidationMessage` 等内置组件不在本计划 |
+| 平台服务 | `AuthenticationStateProvider`、claims/auth state、`PersistentComponentState`、`IJSRuntime` 家族、`HttpClient` 和可执行应用服务 | 浏览器可执行性、认证与 endpoint 强制授权、typed JS/module registry、SSR payload 版本和 service lifetime；`AuthorizeView` 不在本计划 |
 
-`@rendermode`、`OwningComponentBase`、`Virtualize`、`QuickGrid`、自定义 `InputBase<T>` 和任意 `IJSRuntime` identifier 不因出现在盘点表中而自动获得 Support；它们必须先通过对应环境的行为证明，或者由 authored-source analyzer 给出 Guided Adaptation/Reject。这样既保持 Blazor 作者面的完整视野，也不把“列入计划”误写成“已经实现”。
+`@rendermode`、`OwningComponentBase`、`Virtualize`、`QuickGrid`、自定义 `InputBase<T>` 和任意 `IJSRuntime` identifier 不因出现在盘点表中而自动获得 Support；内置 UI 组件标签默认走 Reject/Guidance 或独立组件路线。这样既保持 Blazor framework 作者面的完整视野，也不把“列入盘点”误写成“已经实现”。
 
 ## 4. 分析诊断优先
 
@@ -214,9 +217,9 @@ P2 不预设全部都会变成 Direct Support。每项要么实现可保真的 a
 | Browser service eligibility | [Inject] 的服务含 server-only member、已知 host service 没有 adapter，或属性不是可激活的 writable auto-property | 指出不兼容成员及注册/endpoint client 替代；当前已落地 `JAZORVCA001`-`007` |
 | Parameter lifecycle | SetParametersAsync、ParameterView、parameter mutation | 说明 adapter 支持状态；未实现时给出 OnParametersSet 或已定义兼容入口 |
 | Cascading/DI | `[CascadingParameter]`、名称/类型冲突、无 provider、生命周期不匹配 | typed provider/inject adapter 已处理类型/名称匹配、最近值和生命周期；`JAZORVCA008` 只诊断不可写属性形状 |
-| Forms/validation | 未支持的 validator、反射型 rule、不可序列化 field expression | 指出可用 Input/validator adapter 或明确 Reject |
-| Navigation/auth/JS | server authentication dependency、动态 JS invocation、尚未注册的 host capability | `@page`、基础 Router/RouteView/LayoutView/NavLink 和 NavigationManager 已由生成 route catalog/runtime adapter 消费；其余给出 host adapter/typed binding 迁移路径 |
-| Standard component adapter | 尚未注册的标准标签（例如 AuthorizeView、InputFile、Virtualize、ValidationSummary） | `JAZORVCA010` 仅保留为兼容 descriptor/未来未适配形状的作者侧 guidance；已实现的 DynamicComponent、ErrorBoundary、EditForm 和常见 input 保持零噪音 |
+| Forms/validation | 未支持的 validator、反射型 rule、不可序列化 field expression | 指出第三方 typed form contract 或明确 Reject；不把 `EditForm`/`Input*` adapter 当作 framework Support |
+| Navigation/auth/JS | server authentication dependency、动态 JS invocation、尚未注册的 host capability | `NavigationManager`、route metadata 和 framework host contract 可被消费；`Router`/`RouteView`/`NavLink`/`AuthorizeView` 等内置组件标签不在本计划 |
+| Standard component adapter | 任意未纳入独立组件路线的 Microsoft 内置标签 | `JAZORVCA010` 作为稳定 Reject/Guidance descriptor；不得因历史 adapter 注册而静默放行或生成部分 Vue substitute |
 | Render shape | 高置信 dynamic component、fragment recursion、跨 frame control flow | 能在作者源码判断时提前解释；不能确定时让 final Compilation 维持唯一诊断 |
 
 分析器不能追踪不可靠的数据流、猜测动态 Type 来源，或重复 Razor SDK 的 RZ/CS 诊断。不能确定时保持静默，由 final Compilation 以精确 operation 状态决定。
@@ -257,24 +260,18 @@ Blazor 兼容实现按真实生命周期和可见行为设计，而不是按方�
 - adapter 可以在内部使用 Vue provide/inject 或 router，但这些实现细节不进入页面作者 API；
 - API/endpoint client 保持强类型 C# contract，客户端不直接操作数据库、HttpContext 或 server service。
 
-### 5.3 Forms、binding 和 validation
+### 5.3 Framework binding、auth state 和 validation boundary
 
-表单兼容的验收以用户行为为准：
+本路线只定义 framework-level binding/event/auth contracts：
 
-- 输入值、validation state、submit、invalid submit、server error、disable/loading、reset 和 nested field path 必须有明确行为；
-- InputBase/typed input 的 parse/format、nullable、enum、union、checkbox/select 和 field identifier 需要分别回归；
-- DataAnnotations 等需要反射的能力优先转为编译时 validation descriptor；无可保真 descriptor 时由 analyzer 说明；
-- 第三方 UI binding 的 Value/ValueChanged、model update 和 event 复杂性由 adapter 吸收，不要求页面作者手写 callback cast；
-- 表单错误和 API 错误应在页面显示，不能只落入 browser console。
+- 自定义组件的 `Value`/`ValueChanged`、`EventCallback<T>`、model update 和 event 复杂性由 lowering 或组件库 adapter 吸收；
+- `AuthenticationStateProvider`、claims/auth state、SSR handoff 和 endpoint authorization 保持分层；UI 隐藏不能替代服务端授权；
+- `EditContext`、`InputBase<T>`、`EditForm`、`ValidationMessage`、`InputFile` 等 Microsoft 内置组件/表单协议不由 M5 实现，使用第三方 UI 库或独立组件路线；
+- 需要反射型 validation、server form post 或 antiforgery 的形状在作者源得到明确 Guidance/Reject，不留 runtime-first 失败。
 
-### 5.4 动态组件与 fragments
+### 5.4 自定义 fragments 与组件库边界
 
-DynamicComponent、templated component 和 RenderFragment 的兼容采用编译时发现与稳定 registry：
-
-- 可发现的 RazorVue component 以稳定 type token 注册，参数映射经公开 parameter symbol 验证；
-- generic TypeInference、开放泛型 component 和普通 member 可达 fragment 继续作为 Direct Support；
-- 类型、参数、slot 或 fragment 不能静态解析时，analyzer 优先解释；final Compilation 仍对最终 closure 有裁决权；
-- 不以裸 string component name、反射搜索或未声明模块 import 实现动态组件。
+`RenderFragment`、`RenderFragment<T>`、templated component、slot 和普通 member reachable fragment 仍由 RazorVue lowering 直接支持；不把 `DynamicComponent`、`ErrorBoundary` 等 Microsoft 内置标签作为其默认入口。自定义或第三方组件以稳定 type/parameter contract 注册，未知类型、参数或 fragment 由 analyzer/final Compilation 裁决；不以裸 string component name、反射搜索或未声明模块 import 实现动态组件。
 
 ## 6. M5 里程碑
 
@@ -289,7 +286,7 @@ Ledger 每一行至少包含：Blazor 作者形状、目标语义基线、P0/P1/
 - 在 src/Jazor.RazorVue.Sg.Test/RazorVueUsageScenarioCatalog.cs 中按第 3 节登记每项状态、owner、最小源码和证明层级；**已完成首版 `RazorVueM5CapabilityLedger`，后续实现必须同步更新对应行，而不是只改路线文字；**
 - 将现有 F1/F2/F3、lifecycle、bind、slot、parameter、HMR、SSR、JazorAdmin 场景映射到 ledger；
 - 为当前 Reject 建立候选表：升级为 Direct Support、Compatibility Adapter、Guided Adaptation 或保留 Reject；
-- 定义 analyzer ID（暂建议 `JAZORVCA001+`）、HelpLink、诊断去重和 source/final pipeline 边界；**`JAZORVCA001`-`010` 已锁定为作者源码规则：001/002 是 server-only Reject，003-005 是未物化 ParameterView 操作，006 是注入属性形状，007 是已知 host service adapter 缺失，008 是 cascading 属性形状；009/010 descriptor 暂保留以维持 API/HelpLink 契约，但 route catalog 和已注册标准组件不会再触发它们。`SetParametersAsync(ParameterView)`、标准 cascading provider、基础 routing 和首批标准组件已有 compatibility adapter，`JAZORVGA024` 仅保留给真正未实现的 final activation/protocol 形状。**
+- 定义 analyzer ID（暂建议 `JAZORVCA001+`）、HelpLink、诊断去重和 source/final pipeline 边界；**`JAZORVCA001`-`010` 已锁定为作者源码规则：001/002 是 server-only Reject，003-005 是未物化 ParameterView 操作，006 是注入属性形状，007 是已知 host service adapter 缺失，008 是 cascading 属性形状；009/010 descriptor 保留为未纳入产品路线的 host/standard-component guidance。`SetParametersAsync(ParameterView)`、标准 cascading provider 和基础 routing 属于 framework primitive；Microsoft 内置 UI 组件及其历史 compatibility adapter 不进入当前产品契约，`JAZORVGA024` 仅保留给真正未实现的 final activation/protocol 形状。**
 - 完成作者 `.razor`/`.razor.cs` source acquisition、symbol 配对和原始 span 映射的可行性证明；
 - 明确新的 samples/RazorVue.Authoring library、host、package-consumer、browser smoke 和临时资源所有权。
 
@@ -328,31 +325,31 @@ Ledger 每一行至少包含：Blazor 作者形状、目标语义基线、P0/P1/
 
 退出条件：作者样例 P0 旅程在 official SG、debug、Release、真实浏览器下完成，且静态 module invariant 无漏报/误报回归。
 
-### M5-C：P1 Blazor component runtime adapters
+### M5-C：P1 Blazor framework runtime primitives
 
-目的：解决标准 Blazor 组件代码迁移时最大的认知断点。
+目的：覆盖自定义组件所需的 Blazor framework primitive，不把 Microsoft 内置 UI 组件标签提升为产品支持。
 
 交付物按实际语义依次推进：
 
 1. ParameterView 和 SetParametersAsync 的参数快照、source-name sparse 覆盖链、slot/alias 传递、异步顺序和 error behavior。
 2. browser service catalog、[Inject]/@inject property、activation lifetime 和 server-only service diagnostics；当前 property adapter 已进入 proof，constructor injection/parameterized activation 仍由 `JAZORVGA024` 明确拒绝，直到有完整 activation protocol。
 3. CascadingValue、[CascadingParameter]、named cascade、嵌套 provider 覆盖与更新传播。
-4. NavigationManager、自动生成 route catalog、route/query 参数更新和基础 history/popstate behavior；`replace`、LocationChanged 订阅和复杂 URI 状态仍需补齐。
-5. DynamicComponent 的静态 registry/type token 已接入；参数 descriptor validation、未知类型和 not-found diagnostic 仍需补齐。
-6. ErrorBoundary、@ref、dispose 和 render/update/unmount 组合已有初始 adapter；子树恢复、Recover API 和完整 browser/SSR proof 仍需补齐。
+4. NavigationManager、自动生成 route catalog、route/query 参数更新和基础 history/popstate behavior；`replace`、LocationChanged 订阅和复杂 URI 状态仍需补齐。`Router`、`RouteView`、`LayoutView`、`NavLink` 标签不在本路线。
+5. 自定义/第三方组件的静态 type token、registry、fragment/slot 和参数 descriptor contract；不以 Microsoft `DynamicComponent` 标签作为隐式 Vue 组件入口。
+6. 自定义组件的 error propagation、`@ref`、dispose 和 render/update/unmount 组合；`ErrorBoundary` 标签和其历史 adapter 不在本路线。
 
 每一项先写 adapter protocol 和行为矩阵，再改 lowering。不能将未实现的 adapter 标成 Support，也不能以运行时 null/undefined 作为回退。
 
 退出条件：P1 ledger 中已承诺项全部具有 source、component runtime、browser 和适用 SSR 证明；未承诺项拥有 analyzer guidance。
 
-### M5-D：P2 服务、表单和 SSR/hydration 兼容
+### M5-D：P2 服务、状态和 SSR/hydration 兼容
 
 目的：把复杂但高价值的 Blazor 代码迁移成可预测的浏览器应用。
 
 交付物：
 
-- EditForm、常用 text/checkbox/number/date/select input 的标准 binding adapter；InputBase、validation state、server result 和复杂表单语义仍按证据推进；
-- authentication state、AuthorizeView 和 host/endpoint contract；
+- authentication state provider、claims 和 host/endpoint contract；不以 `AuthorizeView`/`AuthorizeRouteView` 隐藏 UI 代替 endpoint 授权；
+- 自定义组件的 typed binding/event contract；表单 UI、validation 和 file input 由 TDesign、Vuetify、Element Plus 或独立组件路线提供；
 - IJSRuntime/IJSObjectReference/IJSInProcessRuntime/JSInvokable 的候选范围、typed module registry 和无法确定 invocation 的 analyzer guidance；
 - prerender/SSR data handoff、PersistentComponentState 候选与 hydration 不重复副作用规则；
 - route/not-found、query、error boundary 和 forms 的 SSR/hydration browser smoke。

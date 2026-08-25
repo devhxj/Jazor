@@ -135,17 +135,13 @@ public sealed class RazorSgNavigationRuntimeTests
     }
 
     [TestMethod]
-    public async Task RoutingAdapter_UsesBaseHrefReplaceStateAndLocationChanged()
+    public async Task NavigationManagerHost_UsesBaseHrefReplaceStateAndLocationChanged()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
-            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/RouterHost.razor"),
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/NavigationHost.razor"),
             documentText:
             """
-            @using Microsoft.AspNetCore.Components.Routing
-
-            <Router AppAssembly="@typeof(Program).Assembly">
-                <Found Context="routeData"><p>found</p></Found>
-            </Router>
+            <p>@Current</p>
             """,
             codeBehindSource:
             """
@@ -156,27 +152,35 @@ public sealed class RazorSgNavigationRuntimeTests
 
             namespace Demo.Pages;
 
-            public sealed class Program;
+            [ECMAScriptModule("./components/navigation-host")]
+            public partial class NavigationHost : ComponentBase, IVueComponent
+            {
+                [Inject]
+                public NavigationManager Navigation { get; set; } = null!;
 
-            [ECMAScriptModule("./components/router-host")]
-            public partial class RouterHost : ComponentBase, IVueComponent;
+                private string Current { get; set; } = "unset";
+
+                protected override void OnInitialized()
+                {
+                    Current = Navigation.BaseUri + "|" + Navigation.ToBaseRelativePath(Navigation.Uri);
+                }
+            }
             """,
             rootNamespace: "Demo.Pages",
-            componentMetadataName: "Demo.Pages.RouterHost");
+            componentMetadataName: "Demo.Pages.NavigationHost");
 
         await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
-            "components/router-host.mjs",
+            "components/navigation-host.mjs",
             observation.ModuleText,
-            "router-host.test.mjs",
+            "navigation-host.test.mjs",
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import component from "./components/router-host.mjs";
-            import { Router } from "@jazor/vue-runtime/blazor-routing.mjs";
-            import { __getProvider } from "vue";
+            import component from "./components/navigation-host.mjs";
+            import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
+            import { __getProvider, __setProvider } from "vue";
 
-            test("routing adapter preserves base URI and history/event semantics", () => {
-                const listeners = {};
+            test("NavigationManager host preserves base URI and history/event semantics", () => {
                 const historyCalls = [];
                 globalThis.location = {
                     origin: "https://example.test",
@@ -188,7 +192,7 @@ public sealed class RazorSgNavigationRuntimeTests
                 globalThis.document = {
                     querySelector() { return { getAttribute() { return "/app/"; } }; },
                 };
-                globalThis.addEventListener = (name, callback) => { listeners[name] = callback; };
+                globalThis.addEventListener = () => {};
                 globalThis.removeEventListener = () => {};
                 class BrowserHistory {
                     constructor() {
@@ -219,9 +223,13 @@ public sealed class RazorSgNavigationRuntimeTests
                 globalThis.history = browserHistory;
                 globalThis.window = { location: globalThis.location, history: browserHistory };
 
-                component.setup({}, { slots: {} });
-                Router.setup({}, { slots: {} });
-                const navigation = __getProvider("jazor:service:Microsoft.AspNetCore.Components.NavigationManager");
+                const navigation = CreateNavigationManager(() => {});
+                __setProvider("jazor:service:Microsoft.AspNetCore.Components.NavigationManager", navigation);
+                const render = component.setup({}, { slots: {} });
+                assert.equal(render().children, "https://example.test/app/|start");
+                assert.equal(
+                    __getProvider("jazor:service:Microsoft.AspNetCore.Components.NavigationManager"),
+                    navigation);
                 assert.equal(navigation.baseUri, "https://example.test/app/");
                 assert.equal(navigation.toBaseRelativePath(navigation.uri), "start");
 
@@ -240,7 +248,7 @@ public sealed class RazorSgNavigationRuntimeTests
                 globalThis.location.pathname = "/app/back";
                 globalThis.location.search = "";
                 globalThis.location.href = "https://example.test/app/back";
-                listeners.popstate();
+                navigation.notifyLocationChanged(false);
                 assert.equal(events[2].location, "https://example.test/app/back");
                 assert.equal(events[2].isNavigationIntercepted, false);
             });
@@ -252,6 +260,7 @@ public sealed class RazorSgNavigationRuntimeTests
             vueRuntimeSource: """
             const providers = new Map();
             export function __getProvider(key) { return providers.get(key); }
+            export function __setProvider(key, value) { providers.set(key, value); }
             export const Fragment = Symbol("Fragment");
             export function defineComponent(options) { return options; }
             export function reactive(value) { return value; }

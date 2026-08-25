@@ -26,6 +26,7 @@ internal static class RenderEmitter
     private const string CascadingValueTypePropName = "__jazorCascadeType";
     private const string BlazorRoutingRuntimeModuleSpecifier = "@jazor/vue-runtime/blazor-routing.mjs";
     private const string BlazorComponentsRuntimeModuleSpecifier = "@jazor/vue-runtime/blazor-components.mjs";
+    private const string ChangeEventArgsRuntimeModuleSpecifier = "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js";
     private const string StandardInputValueTypePropName = "__jazorValueType";
     private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
@@ -2028,6 +2029,19 @@ internal static class RenderEmitter
                     var componentType = ResolveOpenComponentType(invocation, context);
                     var isCascadingValue = IsCascadingValueComponent(componentType);
                     var hasStandardAdapter = TryGetStandardBlazorComponentAdapter(componentType, out var standardAdapter);
+                    if (hasStandardAdapter)
+                    {
+                        // Microsoft Blazor UI components are intentionally outside the
+                        // RazorVue component contract. Keep CascadingValue as a framework
+                        // primitive, but never let historical browser adapters bypass the
+                        // ComponentBase + IVueComponent + import boundary.
+                        throw Unsupported(
+                            invocation,
+                            "Microsoft Blazor built-in UI component '" +
+                            componentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
+                            "' is not supported by RazorVue. Use a ComponentBase + IVueComponent " +
+                            "component with [ECMAScriptModule] or [VueLibraryComponent].");
+                    }
                     var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
                     var componentExpression = isCascadingValue
                         ? _argument.BindImportSpecifier(
@@ -2351,6 +2365,20 @@ internal static class RenderEmitter
             var value = invocation.Arguments.Length == 2
                 ? new BooleanLiteral(true, "true")
                 : LowerExpression(invocation.Arguments[2].Value, context);
+            if (frame is ElementFrame &&
+                string.Equals(name, "onchange", StringComparison.OrdinalIgnoreCase) &&
+                invocation.Arguments.Length == 3 &&
+                IsChangeEventCallbackType(invocation.Arguments[2].Value.Type) &&
+                HasChangeEventArgsHandler(invocation.Arguments[2].Value))
+            {
+                // ChangeEventArgs.Value is an event-time compatibility projection. Capture the
+                // shaped value once before the lowered callback can start async work; the helper
+                // remains CLR-owned and the render emitter only frames the listener call.
+                var captureHelper = context.Argument.BindImportSpecifier(
+                    ChangeEventArgsRuntimeModuleSpecifier,
+                    "captureChangeEvent");
+                value = BuildChangeEventCaptureHandler(value, captureHelper);
+            }
             frame.AddAttribute(new DirectAttribute(
                 frame.NormalizeAttributeName(name),
                 value,
@@ -4338,7 +4366,7 @@ internal static class RenderEmitter
         private Expression BindComponentImport(INamedTypeSymbol componentType)
         {
             var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
-            var descriptor = ResolveComponentImport(runtimeComponentType);
+            var descriptor = ResolveComponentImport(_compilation, runtimeComponentType);
             return _argument
                 .BindImportSpecifier(descriptor.ImportSpecifier, descriptor.ExportName);
         }
@@ -5365,8 +5393,11 @@ internal static class RenderEmitter
         return builder.ToString();
     }
 
-    private static ComponentImportDescriptor ResolveComponentImport(INamedTypeSymbol componentType)
+    private static ComponentImportDescriptor ResolveComponentImport(
+        Compilation compilation,
+        INamedTypeSymbol componentType)
     {
+        EnsureRazorVueComponentContract(compilation, componentType);
         var exportPath = GetECMAScriptModuleExportPath(componentType);
         if (!string.IsNullOrWhiteSpace(exportPath))
             return new ComponentImportDescriptor(NormalizeModuleImportPath(exportPath!), "default");
@@ -5397,6 +5428,22 @@ internal static class RenderEmitter
             "RazorVue component '" +
             componentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
             "' must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")] for direct render lowering.");
+    }
+
+    private static void EnsureRazorVueComponentContract(
+        Compilation compilation,
+        INamedTypeSymbol componentType)
+    {
+        var componentBase = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.ComponentBaseMetadataName);
+        var vueComponentMarker = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.VueComponentMarkerMetadataName);
+        if (ComponentSymbolPolicy.IsRazorVueComponent(componentType, componentBase, vueComponentMarker))
+            return;
+
+        throw new InvalidOperationException(
+            "RazorVue component '" +
+            componentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
+            "' must derive from Microsoft.AspNetCore.Components.ComponentBase and implement " +
+            "ECMAScript.Vue.IVueComponent or a derived interface.");
     }
 
     private static string? GetECMAScriptModuleExportPath(INamedTypeSymbol componentType)
@@ -5733,6 +5780,30 @@ internal static class RenderEmitter
             async: false);
     }
 
+    private static Expression BuildChangeEventCaptureHandler(
+        Expression handlerExpression,
+        Expression captureHelper)
+    {
+        var eventParameter = new Identifier("event");
+        var args = new Identifier("args");
+        var statements = new List<Statement>
+        {
+            new NonSpecialExpressionStatement(new CallExpression(
+                captureHelper,
+                NodeList.From<Expression>(eventParameter),
+                optional: false)),
+            new ReturnStatement(new CallExpression(
+                handlerExpression,
+                NodeList.From<Expression>(eventParameter, new SpreadElement(args)),
+                optional: false))
+        };
+        return new ArrowFunctionExpression(
+            NodeList.From<Node>(eventParameter, new RestElement(args)),
+            new FunctionBody(NodeList.From(statements), strict: true),
+            expression: false,
+            async: false);
+    }
+
     private static void AddDirectEventModifierStatement(
         List<Statement> statements,
         Expression eventParameter,
@@ -5758,6 +5829,43 @@ internal static class RenderEmitter
         => name.StartsWith("on", StringComparison.Ordinal) &&
            name.Length > 2 &&
            char.IsUpper(name[2]);
+
+    private static bool IsChangeEventCallbackType(ITypeSymbol? type)
+    {
+        if (type is not INamedTypeSymbol namedType)
+        {
+            return false;
+        }
+
+        // NameFormat expands the open generic EventCallback definition to TValue. The exact
+        // display contract lets us avoid treating non-generic EventCallback as a ChangeEventArgs
+        // callback while keeping the check small enough for the RazorVue coverage gate.
+        if (!string.Equals(
+                namedType.OriginalDefinition.ToDisplayString(Format.NameFormat),
+                "Microsoft.AspNetCore.Components.EventCallback<TValue>",
+                StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return IsChangeEventArgsType(namedType.TypeArguments[0]);
+    }
+
+    private static bool IsChangeEventArgsType(ITypeSymbol type)
+        => string.Equals(
+            type.OriginalDefinition.ToDisplayString(Format.NameFormat),
+            "Microsoft.AspNetCore.Components.ChangeEventArgs",
+            StringComparison.Ordinal);
+
+    private static bool HasChangeEventArgsHandler(IOperation operation)
+    {
+        // Official Razor SG spells a typed EventCallback handler with the authored
+        // ChangeEventArgs type in this argument's syntax. CreateBinder<T>/CreateInferredBindSetter
+        // erase the event type from their generated expression, even though their outer
+        // EventCallback protocol is EventCallback<ChangeEventArgs>; using the argument syntax
+        // keeps this protocol distinction without traversing the whole operation tree.
+        return operation.Syntax.ToString().Contains("ChangeEventArgs", StringComparison.Ordinal);
+    }
 
     private static string NormalizeModuleImportPath(string path)
         => ECMAScriptModulePath.NormalizeRootRelativeImportSpecifier(path);

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify empty-state authoring proxy for no-data and onboarding surfaces.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VEmptyState")]
-public sealed class VEmptyState : ComponentBase
+public sealed class VEmptyState : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件主题名称。

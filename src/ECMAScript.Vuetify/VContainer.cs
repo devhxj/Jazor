@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify grid container component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VContainer")]
-public sealed class VContainer : ComponentBase
+public sealed class VContainer : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 渲染的 HTML 标签名。

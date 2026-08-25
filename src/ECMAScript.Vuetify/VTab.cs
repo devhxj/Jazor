@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify tab authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTab")]
-public sealed class VTab : ComponentBase
+public sealed class VTab : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 标签页的文本内容。

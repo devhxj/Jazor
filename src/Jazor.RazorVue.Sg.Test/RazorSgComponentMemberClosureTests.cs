@@ -1544,7 +1544,7 @@ public sealed class MemberClosureTests
             namespace Demo.Pages
             {
                 [VueLibraryComponent("npm:demo-links@1.mjs", "DemoLink")]
-                public sealed class DemoLink : ComponentBase
+                public sealed class DemoLink : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("default")]
                     public RenderFragment? ChildContent { get; set; }
@@ -7287,7 +7287,7 @@ public sealed class MemberClosureTests
                 }
 
                 [VueLibraryComponent("demo-components", "Child")]
-                public sealed class Child : ChildBase
+                public sealed class Child : ChildBase, IVueComponent
                 {
                     [Parameter]
                     [ECMAScriptName("derivedTitle")]

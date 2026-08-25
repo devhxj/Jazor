@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify expansion-panel component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VExpansionPanel")]
-public sealed class VExpansionPanel : ComponentBase
+public sealed class VExpansionPanel : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 面板的背景颜色。

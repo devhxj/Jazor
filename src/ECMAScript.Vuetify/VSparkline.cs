@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify sparkline authoring proxy for compact trend and bar visualizations.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSparkline")]
-public sealed class VSparkline : ComponentBase
+public sealed class VSparkline : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 是否在挂载时自动绘制动画。

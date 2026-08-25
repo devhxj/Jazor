@@ -33,7 +33,7 @@ public sealed class RazorSgOfficialRepeatedComponentImportRuntimeTests
                 namespace Demo.Pages;
 
                 [ECMAScriptModule("./components/release-badge")]
-                public sealed class ReleaseBadge : ComponentBase
+                public sealed class ReleaseBadge : ComponentBase, IVueComponent
                 {
                     [Parameter, System.ComponentModel.Description("@#label")]
                     public string Label { get; set; } = string.Empty;

@@ -43,4 +43,69 @@ public sealed class ComponentSymbolPolicyTests
         Assert.IsFalse(ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, externalType));
         Assert.IsFalse(ComponentSymbolPolicy.IsDeclaredOnComponentHierarchy(component, null));
     }
+
+    [TestMethod]
+    public void IsRazorVueComponent_RequiresComponentBaseAndSupportsDerivedVueMarkers()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace Demo;
+
+            public interface IDerivedVueComponent : IVueComponent
+            {
+            }
+
+            public abstract class ComponentBaseAlias : ComponentBase
+            {
+            }
+
+            public sealed class IndirectComponent : ComponentBaseAlias, IDerivedVueComponent
+            {
+            }
+
+            public sealed class DirectComponent : ComponentBase, IDerivedVueComponent
+            {
+            }
+
+            public sealed class MissingComponentBase : IDerivedVueComponent
+            {
+            }
+
+            public sealed class MissingVueMarker : ComponentBase
+            {
+            }
+            """);
+        var compilation = CSharpCompilation.Create(
+            "ComponentSymbolPolicyContractTests",
+            [syntaxTree],
+            RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = RazorSgTestHost.GetCompilationErrors(compilation);
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
+
+        var componentBase = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.ComponentBaseMetadataName);
+        var vueComponentMarker = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.VueComponentMarkerMetadataName);
+        Assert.IsNotNull(componentBase);
+        Assert.IsNotNull(vueComponentMarker);
+
+        Assert.IsTrue(ComponentSymbolPolicy.IsRazorVueComponent(
+            compilation.GetTypeByMetadataName("Demo.IndirectComponent")!,
+            componentBase,
+            vueComponentMarker));
+        Assert.IsTrue(ComponentSymbolPolicy.IsRazorVueComponent(
+            compilation.GetTypeByMetadataName("Demo.DirectComponent")!,
+            componentBase,
+            vueComponentMarker));
+        Assert.IsFalse(ComponentSymbolPolicy.IsRazorVueComponent(
+            compilation.GetTypeByMetadataName("Demo.MissingComponentBase")!,
+            componentBase,
+            vueComponentMarker));
+        Assert.IsFalse(ComponentSymbolPolicy.IsRazorVueComponent(
+            compilation.GetTypeByMetadataName("Demo.MissingVueMarker")!,
+            componentBase,
+            vueComponentMarker));
+    }
 }

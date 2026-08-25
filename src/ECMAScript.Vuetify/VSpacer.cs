@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify spacer authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSpacer")]
-public sealed class VSpacer : ComponentBase
+public sealed class VSpacer : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 自定义 CSS 类。

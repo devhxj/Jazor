@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify chip component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VChip")]
-public sealed class VChip : ComponentBase
+public sealed class VChip : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 芯片的选中绑定值。

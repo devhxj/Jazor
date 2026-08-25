@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify chip group component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VChipGroup")]
-public sealed class VChipGroup : ComponentBase
+public sealed class VChipGroup : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 芯片组的绑定值。

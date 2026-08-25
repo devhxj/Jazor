@@ -18,6 +18,16 @@ Razor 组件
 
 生产路径不依赖 `EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument`、Razor IR、生成 SFC 或二次解析生成 C#。这些形式均不作为回退路径。
 
+## 组件身份与导入契约
+
+组件 lowering 只有一个组件身份边界。被 RazorVue 当作组件消费的类型必须满足以下全部条件：
+
+1. 类型可赋值给 `Microsoft.AspNetCore.Components.ComponentBase`，直接或通过源码/库基类间接继承均可；
+2. 类型实现 `ECMAScript.Vue.IVueComponent` 或其派生接口；
+3. 类型声明组件导入描述：`[ECMAScriptModule("...")]` 或 `[VueLibraryComponent("package", "Export")]`。
+
+`IVueComponent<TProps>` / `IVueComponent<TProps, TSlots>` 是带类型化 props/slots 的可选增强契约，不替代非泛型 marker。导入特性描述模块来源，不改变组件身份；两者同时出现时 `[ECMAScriptModule]` 按现有兼容规则优先。缺少任一身份条件的类型不得进入 direct render 或 library component import，Microsoft Blazor 内置 UI 组件因此不会被当作隐式 Vue 组件。
+
 ## 包边界
 
 | 包 | 责任 |

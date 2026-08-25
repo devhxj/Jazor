@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify confirm-edit authoring proxy for editable value confirmation flows.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VConfirmEdit")]
-public sealed class VConfirmEdit : ComponentBase
+public sealed class VConfirmEdit : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 编辑绑定值。

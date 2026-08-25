@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify radio button component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRadio")]
-public sealed class VRadio : ComponentBase
+public sealed class VRadio : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 单选按钮的标签文本。

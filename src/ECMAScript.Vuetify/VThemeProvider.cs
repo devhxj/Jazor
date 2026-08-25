@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify theme provider authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VThemeProvider")]
-public sealed class VThemeProvider : ComponentBase
+public sealed class VThemeProvider : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 是否显示背景。

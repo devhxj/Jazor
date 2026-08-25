@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 警告提示组件。
 /// Vuetify alert component.
 /// </summary>
-public sealed class VAlert : ComponentBase
+public sealed class VAlert : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件的模型值。

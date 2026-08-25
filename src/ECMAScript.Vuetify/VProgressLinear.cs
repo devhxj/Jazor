@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify linear progress bar component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VProgressLinear")]
-public sealed class VProgressLinear : ComponentBase
+public sealed class VProgressLinear : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件使用的主题名称。

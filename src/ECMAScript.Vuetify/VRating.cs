@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify rating component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VRating")]
-public sealed class VRating : ComponentBase
+public sealed class VRating : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 当前评分值。

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify dialog authoring proxy for overlay-backed modal content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDialog")]
-public sealed class VDialog : ComponentBase
+public sealed class VDialog : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 对话框的显示状态。

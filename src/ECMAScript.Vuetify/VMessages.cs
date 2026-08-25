@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify messages component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VMessages")]
-public sealed class VMessages : ComponentBase
+public sealed class VMessages : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 消息是否处于活跃可见状态。

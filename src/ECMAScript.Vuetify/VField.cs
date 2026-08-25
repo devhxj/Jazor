@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify field authoring proxy for composing custom input chrome.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VField")]
-public sealed class VField : ComponentBase
+public sealed class VField : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 字段的 HTML id 属性。

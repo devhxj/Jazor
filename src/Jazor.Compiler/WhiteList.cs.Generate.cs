@@ -9,9 +9,11 @@ internal static partial class WhiteList
 	static partial void Generate(ref Dictionary<string, WhiteListValue> types, ref Dictionary<string, WhiteListValue> members)
 	{
 		// 初始化类型
+		types["Microsoft.AspNetCore.Components.ChangeEventArgs"] = new(Op.Alias, "JazorEvent");
 		types["Microsoft.AspNetCore.Components.Web.MouseEventArgs"] = new(Op.Alias, "MouseEvent");
 		types["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs"] = new(Op.Alias, "KeyboardEvent");
 		types["Microsoft.AspNetCore.Components.Web.FocusEventArgs"] = new(Op.Alias, "FocusEvent");
+		types["Microsoft.AspNetCore.Components.ElementReference"] = new(Op.Alias, "HTMLElement");
 		types["System.Array"] = new(Op.Alias, "Array");
 		types["System.Numerics.BigInteger"] = new(Op.Alias, "BigInt");
 		types["bool"] = new(Op.Alias, "Boolean");
@@ -109,6 +111,7 @@ internal static partial class WhiteList
 		types["Microsoft.AspNetCore.Components.Web.WebRenderTreeBuilderExtensions"] = new(Op.Allowed);
 		
 		// 初始化成员
+		members["Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get"] = new(Op.Import, "getChangeEventValue", "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js");
 		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.Detail.get"] = new(Op.Inline, "__arg1.detail");
 		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.ScreenX.get"] = new(Op.Inline, "__arg1.screenX");
 		members["Microsoft.AspNetCore.Components.Web.MouseEventArgs.ScreenY.get"] = new(Op.Inline, "__arg1.screenY");
@@ -138,6 +141,8 @@ internal static partial class WhiteList
 		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Type.get"] = new(Op.Inline, "__arg1.type");
 		members["Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get"] = new(Op.Inline, "__arg1.isComposing");
 		members["Microsoft.AspNetCore.Components.Web.FocusEventArgs.Type.get"] = new(Op.Inline, "__arg1.type");
+		members["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)"] = new(Op.Inline, "Promise.resolve(__arg1.focus())");
+		members["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference, bool)"] = new(Op.Inline, "Promise.resolve(__arg1.focus({ preventScroll: __arg2 }))");
 		members["static extern ECMAScript.Global.Undefined<T>()"] = new(Op.Inline, "undefined");
 		members["static extern ECMAScript.Global.TypeOf(object)"] = new(Op.Compile, "_27d71701fd254382");
 		members["static extern ECMAScript.BigInt.Zero.get"] = new(Op.Inline, "0n");

@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// First-wave Vuetify tooltip stub for RazorVue authoring.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTooltip")]
-public sealed class VTooltip : ComponentBase
+public sealed class VTooltip : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 模型值。

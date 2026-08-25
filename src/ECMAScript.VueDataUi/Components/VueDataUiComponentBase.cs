@@ -6,7 +6,7 @@ namespace ECMAScript.VueDataUi;
 /// </summary>
 /// <typeparam name="TDataset">该图表在 upstream contract 中的 dataset 形状。</typeparam>
 /// <typeparam name="TConfig">该图表的 config 形状。</typeparam>
-public abstract class VueDataUiChartComponent<TDataset, TConfig> : ComponentBase
+public abstract class VueDataUiChartComponent<TDataset, TConfig> : ComponentBase, ECMAScript.Vue.IVueComponent
     where TConfig : VueDataUiConfig
 {
     /// <summary>图表输入数据。The chart input dataset.</summary>
@@ -27,7 +27,7 @@ public abstract class VueDataUiChartComponent<TDataset, TConfig> : ComponentBase
 /// </summary>
 /// <typeparam name="TDataset">该图表在 upstream contract 中的 dataset 形状。</typeparam>
 /// <typeparam name="TConfig">该图表的必填 config 形状。</typeparam>
-public abstract class VueDataUiRequiredConfigChartComponent<TDataset, TConfig> : ComponentBase
+public abstract class VueDataUiRequiredConfigChartComponent<TDataset, TConfig> : ComponentBase, ECMAScript.Vue.IVueComponent
     where TConfig : VueDataUiConfig
 {
     [Parameter]
@@ -43,7 +43,7 @@ public abstract class VueDataUiRequiredConfigChartComponent<TDataset, TConfig> :
 
 /// <summary>只有 config 的 vue-data-ui visual component 参数基类。</summary>
 /// <typeparam name="TConfig">组件 config 形状。</typeparam>
-public abstract class VueDataUiConfigComponent<TConfig> : ComponentBase
+public abstract class VueDataUiConfigComponent<TConfig> : ComponentBase, ECMAScript.Vue.IVueComponent
     where TConfig : VueDataUiConfig
 {
     [Parameter]
@@ -56,7 +56,7 @@ public abstract class VueDataUiConfigComponent<TConfig> : ComponentBase
 /// 仍通过这个基类保留 Razor required-parameter contract。
 /// </summary>
 /// <typeparam name="TDataset">该组件的输入数据形状。</typeparam>
-public abstract class VueDataUiDatasetComponent<TDataset> : ComponentBase
+public abstract class VueDataUiDatasetComponent<TDataset> : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     [Parameter]
     [EditorRequired]
@@ -70,7 +70,7 @@ public abstract class VueDataUiDatasetComponent<TDataset> : ComponentBase
 /// </summary>
 /// <typeparam name="TDataset">可选输入数据的形状。</typeparam>
 /// <typeparam name="TConfig">组件配置形状。</typeparam>
-public abstract class VueDataUiOptionalDatasetChartComponent<TDataset, TConfig> : ComponentBase
+public abstract class VueDataUiOptionalDatasetChartComponent<TDataset, TConfig> : ComponentBase, ECMAScript.Vue.IVueComponent
     where TDataset : class
     where TConfig : VueDataUiConfig
 {

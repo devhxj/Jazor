@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify snackbar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSnackbar")]
-public sealed class VSnackbar : ComponentBase
+public sealed class VSnackbar : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 消息条的显示状态。

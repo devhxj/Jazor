@@ -13,7 +13,6 @@ internal static class ComponentSelector
 {
     private static readonly SymbolEqualityComparer Comparer = SymbolEqualityComparer.Default;
     private const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
-    private const string VueComponentMarkerMetadataName = "ECMAScript.Vue+IVueComponent";
     private const string RenderTreeBuilderMetadataName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
 
     public static ImmutableArray<INamedTypeSymbol> DiscoverCurrentComponents(Compilation compilation)
@@ -22,14 +21,15 @@ internal static class ComponentSelector
             throw new ArgumentNullException(nameof(compilation));
 
         var moduleAttribute = compilation.GetTypeByMetadataName(ECMAScriptModuleAttributeMetadataName);
-        var vueComponentMarker = compilation.GetTypeByMetadataName(VueComponentMarkerMetadataName);
-        if (moduleAttribute is null || vueComponentMarker is null)
+        var vueComponentMarker = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.VueComponentMarkerMetadataName);
+        var componentBase = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.ComponentBaseMetadataName);
+        if (moduleAttribute is null || vueComponentMarker is null || componentBase is null)
             return ImmutableArray<INamedTypeSymbol>.Empty;
 
         var components = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
         foreach (var symbol in EnumerateNamedTypes(compilation.GlobalNamespace))
         {
-            if (!IsRazorVueComponent(symbol, moduleAttribute, vueComponentMarker) ||
+            if (!IsRazorVueComponent(symbol, moduleAttribute, componentBase, vueComponentMarker) ||
                 !Comparer.Equals(symbol.ContainingAssembly, compilation.Assembly) ||
                 !HasCurrentCompilationSource(symbol))
             {
@@ -158,10 +158,11 @@ internal static class ComponentSelector
     private static bool IsRazorVueComponent(
         INamedTypeSymbol symbol,
         INamedTypeSymbol moduleAttribute,
+        INamedTypeSymbol componentBase,
         INamedTypeSymbol vueComponentMarker)
         => !symbol.IsStatic &&
            HasECMAScriptModuleAttribute(symbol, moduleAttribute) &&
-           Implements(symbol, vueComponentMarker);
+           ComponentSymbolPolicy.IsRazorVueComponent(symbol, componentBase, vueComponentMarker);
 
     private static bool HasECMAScriptModuleAttribute(INamedTypeSymbol symbol, INamedTypeSymbol moduleAttribute)
         => symbol.GetAttributes().Any(attribute =>
@@ -170,9 +171,6 @@ internal static class ComponentSelector
                 attribute.AttributeClass!.ToDisplayString(),
                 ECMAScriptModuleAttributeMetadataName,
                 StringComparison.Ordinal));
-
-    private static bool Implements(INamedTypeSymbol symbol, INamedTypeSymbol interfaceSymbol)
-        => symbol.AllInterfaces.Any(candidate => Comparer.Equals(candidate.OriginalDefinition, interfaceSymbol));
 
     internal static IMethodSymbol? FindBuildRenderTreeMethod(INamedTypeSymbol symbol)
     {

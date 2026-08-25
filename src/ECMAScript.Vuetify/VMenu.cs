@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify menu component.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VMenu")]
-public sealed class VMenu : ComponentBase
+public sealed class VMenu : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 菜单是否可见。

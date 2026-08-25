@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify text-field authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTextField")]
-public sealed class VTextField : VInputComponentBase
+public sealed class VTextField : VInputComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 输入类型。

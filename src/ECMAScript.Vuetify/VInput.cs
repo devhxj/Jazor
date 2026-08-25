@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify input authoring proxy for composing validation, messages, and control slots.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VInput")]
-public sealed class VInput : ComponentBase
+public sealed class VInput : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 输入控件的唯一标识符。

@@ -99,7 +99,7 @@ public sealed class VueUiHistoryPlot : VueDataUiChartComponent<VueUiHistoryPlotD
 
 /// <summary>vue-data-ui icon renderer。</summary>
 [VueLibraryComponent("vue-data-ui/vue-ui-icon", "VueUiIcon")]
-public sealed class VueUiIcon : ComponentBase
+public sealed class VueUiIcon : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     [Parameter]
     [EditorRequired]

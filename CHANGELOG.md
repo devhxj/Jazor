@@ -4,6 +4,20 @@
 
 ## 2026-08-25
 
+### Jazor 0.22.0
+
+> RazorVue 组件入口约束统一，并交付首批 Blazor CLR 映射能力。本版本按 `MINOR` 通道发布；未完成真实浏览器 profile 证据的切片仍按路线图保持 `InProof`，不扩大为完整 Blazor UI 兼容。
+
+#### 新增
+
+- **统一 RazorVue 组件契约**：组件必须继承 `ComponentBase` 或其派生类，实现 `IVueComponent` 或其派生接口，并声明 `[ECMAScriptModule]` 或 `[VueLibraryComponent]` 导入描述。Vuetify、TDesign、Element Plus、VueDataUi、VuIcons 和 VueRoute 的生成/绑定组件沿用该契约。
+- **Blazor CLR 映射首批切片**：`Jazor.Vue` 携带 `ECMAScript.Blazor` 映射，支持 DOM 事件参数的强类型只读投影、`ChangeEventArgs.Value` 的事件时刻捕获，以及 `ElementReference.FocusAsync` 的受控 DOM 焦点操作。
+
+#### 边界与兼容性
+
+- **内置 Blazor UI 组件不在产品契约内**：`Router`、`RouteView`、`NavLink`、`DynamicComponent`、`ErrorBoundary`、`EditForm`、`Input*`、`AuthorizeView` 等标签现在稳定报告 `JAZORVGA021`。请使用自定义 `ComponentBase + IVueComponent` 组件或现有的 TDesign/Vuetify/Element Plus 组件库。
+- `ECMAScript.Blazor` 仍只随 `Jazor.Vue` 交付；核心 `Jazor` 包保持框架无关。事件参数构造、setter、runtime identity、`InputFile`/`IBrowserFile` 以及完整内置表单/认证 UI 仍不支持。
+
 ### Jazor 0.21.0
 
 > CLR 运行时语义加固与泛型集合能力补齐。本版本包含新的 `Queue<T>` / `Stack<T>` 支持面，按 `MINOR` 通道发布。

@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs date-input authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VDateInput")]
-public sealed class VDateInput : VInputComponentBase
+public sealed class VDateInput : VInputComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 允许选择的最小日期。

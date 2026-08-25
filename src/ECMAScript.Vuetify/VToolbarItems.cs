@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify toolbar-items authoring proxy for grouped toolbar actions.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VToolbarItems")]
-public sealed class VToolbarItems : ComponentBase
+public sealed class VToolbarItems : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 主题颜色。

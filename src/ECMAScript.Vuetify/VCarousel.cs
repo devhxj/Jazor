@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify carousel authoring proxy for grouped slide navigation.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCarousel")]
-public sealed class VCarousel : ComponentBase
+public sealed class VCarousel : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 当前轮播激活项的绑定值。

@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify textarea authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTextarea")]
-public sealed class VTextarea : VInputComponentBase
+public sealed class VTextarea : VInputComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 自动增长。

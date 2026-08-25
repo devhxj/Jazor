@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.ElementPlus;
 
-public abstract class ElComponentBase : ComponentBase
+public abstract class ElComponentBase : ComponentBase, ECMAScript.Vue.IVueComponent
 {
     [Parameter]
     [ECMAScriptName("class")]

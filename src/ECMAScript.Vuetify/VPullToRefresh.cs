@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs pull-to-refresh authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VPullToRefresh")]
-public sealed class VPullToRefresh : ComponentBase
+public sealed class VPullToRefresh : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 是否禁用下拉刷新功能。

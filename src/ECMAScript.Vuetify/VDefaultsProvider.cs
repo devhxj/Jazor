@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify defaults-provider authoring proxy for scoped component defaults.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDefaultsProvider")]
-public sealed class VDefaultsProvider : ComponentBase
+public sealed class VDefaultsProvider : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 子组件的默认属性值。

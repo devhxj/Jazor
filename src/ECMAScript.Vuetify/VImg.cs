@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify image component with lazy loading, aspect ratio, and responsive sources.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VImg")]
-public sealed class VImg : ComponentBase
+public sealed class VImg : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 图片的源地址或源对象。

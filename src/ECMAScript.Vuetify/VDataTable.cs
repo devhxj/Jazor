@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify data table authoring proxy for RazorVue.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDataTable")]
-public sealed class VDataTable : ComponentBase
+public sealed class VDataTable : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 选中行的绑定值。

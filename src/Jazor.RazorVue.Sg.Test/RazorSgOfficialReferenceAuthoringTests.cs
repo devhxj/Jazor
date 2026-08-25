@@ -4,6 +4,47 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialReferenceAuthoringTests
 {
     [TestMethod]
+    public async Task BuildComponent_OfficialRazorElementReferenceFocus_UsesDomCarrierMapping()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReferenceFocus.razor"),
+            documentText:
+            """
+            <input @ref="inputElement" />
+            """,
+            codeBehindSource:
+            """
+            using System.Threading.Tasks;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/reference-focus")]
+            public partial class ReferenceFocus : ComponentBase, IVueComponent
+            {
+                private ElementReference inputElement;
+
+                protected override async Task OnAfterRenderAsync(bool firstRender)
+                {
+                    if (!firstRender)
+                        return;
+
+                    await inputElement.FocusAsync();
+                    await inputElement.FocusAsync(true);
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ReferenceFocus");
+
+        StringAssert.Contains(observation.ModuleText, "Promise.resolve(state.inputElement.focus())", StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "Promise.resolve(state.inputElement.focus({ preventScroll: true }))",
+            StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+    }
+
+    [TestMethod]
     public async Task BuildComponent_OfficialRazorReferences_EmitElementAndComponentRefCallbacksInSourceOrder()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(

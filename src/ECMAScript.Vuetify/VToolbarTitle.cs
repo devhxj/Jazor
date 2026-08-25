@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify toolbar title authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VToolbarTitle")]
-public sealed class VToolbarTitle : ComponentBase
+public sealed class VToolbarTitle : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 根标签。

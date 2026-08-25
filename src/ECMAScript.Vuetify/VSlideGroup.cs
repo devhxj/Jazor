@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify slide-group authoring proxy for horizontally or vertically scrollable grouped content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSlideGroup")]
-public sealed class VSlideGroup : ComponentBase
+public sealed class VSlideGroup : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 当前选中的值。

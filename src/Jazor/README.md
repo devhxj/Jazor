@@ -8,7 +8,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.21.0" />
+  <PackageReference Include="Jazor" Version="0.22.0" />
 </ItemGroup>
 ```
 
@@ -37,11 +37,11 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.21.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.21.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.21.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.21.0" />
-  <PackageReference Include="ECMAScript.Style" Version="0.21.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.22.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.22.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.22.0" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.22.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.22.0" />
 </ItemGroup>
 ```
 
@@ -76,7 +76,7 @@ Razor SDK 项目需要额外引用 `Jazor.Vue`：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="0.21.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="0.22.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

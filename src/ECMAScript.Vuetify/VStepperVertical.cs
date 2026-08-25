@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs vertical stepper authoring proxy for expansion-panel based workflows.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VStepperVertical")]
-public sealed class VStepperVertical : ComponentBase
+public sealed class VStepperVertical : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 垂直步骤条当前选中的步骤值。

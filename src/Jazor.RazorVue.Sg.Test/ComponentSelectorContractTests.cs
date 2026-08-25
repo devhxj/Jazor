@@ -44,6 +44,50 @@ public sealed class ComponentSelectorContractTests
     }
 
     [TestMethod]
+    public void DiscoverCurrentComponents_RequiresComponentBaseAndVueComponentMarker()
+    {
+        var compilation = CreateCompilation(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo;
+
+            public interface IDerivedVueComponent : IVueComponent
+            {
+            }
+
+            public abstract class RazorBase : ComponentBase
+            {
+            }
+
+            [ECMAScriptModule("./components/indirect")]
+            public sealed class IndirectComponent : RazorBase, IDerivedVueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder) { }
+            }
+
+            [ECMAScriptModule("./components/no-base")]
+            public sealed class NoComponentBase : IDerivedVueComponent
+            {
+            }
+
+            [ECMAScriptModule("./components/no-marker")]
+            public sealed class NoVueMarker : ComponentBase
+            {
+            }
+            """,
+            "Candidates/ComponentContract.razor.cs");
+
+        var components = ComponentSelector.DiscoverCurrentComponents(compilation);
+
+        Assert.HasCount(1, components);
+        Assert.AreEqual("IndirectComponent", components[0].Name);
+    }
+
+    [TestMethod]
     public void FindBuildRenderTreeMethod_RequiresSourceInstanceRenderTreeSignatureAndSkipsGeneratedMethods()
     {
         var compilation = CreateCompilation(

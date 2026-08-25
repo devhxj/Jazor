@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs picker shell authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VPicker")]
-public sealed class VPicker : ComponentBase
+public sealed class VPicker : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 组件使用的主题名称。

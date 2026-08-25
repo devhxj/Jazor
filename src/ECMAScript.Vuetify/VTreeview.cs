@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs treeview authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VTreeview")]
-public sealed class VTreeview : ComponentBase
+public sealed class VTreeview : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 模型值。

@@ -598,7 +598,26 @@ public sealed record RazorVueCapabilityLedgerEntry(
     string? DiagnosticId,
     string Fixture,
     RazorVueCapabilityEvidence Evidence,
-    string Blocker);
+    string Blocker)
+{
+    /// <summary>Browser/SSR profile explicitly covered by the entry.</summary>
+    public string TargetProfiles { get; init; } = string.Empty;
+
+    /// <summary>Runtime carrier used by the framework value or mapping.</summary>
+    public string Carrier { get; init; } = string.Empty;
+
+    /// <summary>Stable lowering owner and operation kind (WebIDL, Alias, Inline, Import, or Compile).</summary>
+    public string ImplementationPath { get; init; } = string.Empty;
+
+    /// <summary>Version of the mapping contribution contract consumed by this entry.</summary>
+    public string ContributionContractVersion { get; init; } = string.Empty;
+
+    /// <summary>Approved shared runtime/module dependencies.</summary>
+    public string Dependencies { get; init; } = string.Empty;
+
+    /// <summary>Authoring/runtime surface intentionally excluded from the entry.</summary>
+    public string ExcludedSurface { get; init; } = string.Empty;
+}
 
 /// <summary>
 /// Blazor-first compatibility baseline. Keep an explicit entry for every major authoring
@@ -681,18 +700,18 @@ internal static class RazorVueM5CapabilityLedger
             "ParameterView/SetParametersAsync has a separate P1 entry because it needs a real snapshot protocol."),
         new(
             "P0-route-layout-page-state",
-            "@page, @layout, route parameters, not-found, and normal loading/error/retry page workflows",
+            "@page, @layout, route parameters, not-found, and normal loading/error/retry page workflows (without Microsoft built-in Router/RouteView/LayoutView/NavLink tags)",
             RazorVueCapabilityPriority.P0,
             RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.InProof,
             "RazorVue route host",
             null,
-            "RazorSourceGeneratorTailOutputTests.RouteCatalog_EmitsDeterministicPageLayoutAndQueryMappings; RazorSgStandardBlazorComponentRuntimeTests.RouterRouteViewAndLayoutView_RenderThroughStandardAdapters",
+            "RazorSourceGeneratorTailOutputTests.RouteCatalog_EmitsDeterministicPageLayoutAndQueryMappings",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime,
-            "The route catalog and standard routing adapters own @page/@layout/query mapping; page authors do not write Vue Router glue."),
+            "The route catalog owns @page/@layout/query mapping; Microsoft Router/RouteView/LayoutView/NavLink tags are outside the product contract."),
         new(
             "P1-parameter-view",
             "SetParametersAsync(ParameterView), parameter snapshot, overlay order, and async error behavior",
@@ -792,7 +811,7 @@ internal static class RazorVueM5CapabilityLedger
             "Typed/named provider lookup, nested Vue scope behavior, IsFixed and browser/package consumer proof remain before Support."),
         new(
             "P1-navigation-router",
-            "NavigationManager, Router, RouteView, LayoutView, NavLink, and query/route parameter refresh",
+            "NavigationManager and query/route parameter refresh through the RazorVue route catalog (Microsoft Router/RouteView/LayoutView/NavLink tags excluded)",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.InProof,
@@ -803,63 +822,160 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime,
-            "Router route matching, page/layout composition, history refresh, and query/route parameter browser proof remain before Support."),
+            "Router component matching and standard route-host composition are intentionally excluded; route catalog and NavigationManager consumer proof remain before Support."),
         new(
-            "P1-standard-blazor-component-adapters",
-            "DynamicComponent, EditForm, ErrorBoundary, Router, RouteView, LayoutView, NavLink, and built-in input components",
+            "P0-blazor-clr-mapping-package",
+            "ECMAScript.Blazor first-party mapping contribution delivered with Jazor.Vue and consumed by the static compiler source-root",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "Jazor.Compiler.Generator + Jazor.Vue packaging + ECMAScript.Blazor",
+            null,
+            "EcmaScriptBlazorMappingTests; ProductionRazorCompilerReferenceTests; Jazor.EmitTest.SdkIntegrationTests.CreateLocalPackage_SeparatesSharedAndRazorVueAnalyzers; Jazor.EmitTest.SdkIntegrationTests.CreateLocalPackage_IncludesSelfContainedBrowserAssets",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The first-party static contribution is proven; a general third-party per-compilation provider protocol is not claimed.")
+        {
+            TargetProfiles = "Compiler authoring; Browser interactive package payload",
+            Carrier = "Provider assembly metadata and generated whitelist entries",
+            ImplementationPath = "ECMAScript.Blazor Alias/Inline/Import declarations merged by Jazor.Compiler.Generator source-root",
+            ContributionContractVersion = "static-source-root/v1",
+            Dependencies = "Jazor.Vue lib/net11.0 payload; Jazor.CLR runtime catalog; Microsoft.AspNetCore.App reference",
+            ExcludedSurface = "Dynamic third-party mapping discovery; duplicate provider registries; Blazor assets in core Jazor package"
+        },
+        new(
+            "P1-blazor-clr-navigation-location-changing",
+            "NavigationManager.RegisterLocationChangingHandler(Func<LocationChangingContext, ValueTask>), LocationChangingContext, CancellationToken, and IDisposable registration",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.InProof,
-            "RenderEmitter + blazor-components.mjs",
+            "ECMAScript.Blazor mapping + Jazor.CLR NavigationManagerModule + RazorVue route host",
             null,
-            "RazorVueCompatibilityAnalyzerTests.StandardBlazorComponentTag_RemainsQuietWhenAdapterIsRegistered; RazorSgStandardBlazorComponentRuntimeTests",
+            "RazorSgNavigationRuntimeTests; ClrRuntimeNavigationScenarios; NavigationManagerCatalogWhitelistTests",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime,
-            "Dynamic parameter validation, EditContext/validation semantics, and browser/package proof remain before Support."),
+            "Reference oracle, real BrowserSmoke, and isolated Release PackageConsumer are still required; popstate/hashchange cancellation remains unclaimed.")
+        {
+            TargetProfiles = "Browser interactive; SSR/prerender not claimed",
+            Carrier = "Promise/AbortSignal + module-private navigation host WeakMap",
+            ImplementationPath = "ECMAScript.Blazor mapping; Jazor.CLR C# Import modules; RazorVue host framing",
+            ContributionContractVersion = "static-source-root/v1",
+            Dependencies = "Task/ValueTask + CancellationToken carriers; NavigationManager route host",
+            ExcludedSurface = "Router/RouteView/LayoutView/NavLink tags; popstate/hashchange cancellation; server circuit identity"
+        },
+        new(
+            "P1-blazor-clr-core-dom-events",
+            "MouseEventArgs, KeyboardEventArgs, FocusEventArgs getter projections and ChangeEventArgs.Value event-time capture",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "ECMAScript.Blazor mappings + Jazor.RazorVue RenderEmitter + Jazor.CLR ChangeEventArgsModule",
+            null,
+            "EcmaScriptBlazorMappingTests; RazorSgOfficialBindingAuthoringTests.BuildComponent_OfficialRazorTypedChangeHandler_CapturesValueBeforeCallback; ClrRuntimeChangeEventArgsScenarios",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Mouse/Keyboard/Focus official handler coverage, real BrowserSmoke, and isolated mapping PackageConsumer remain; constructor/setter/identity and file input stay rejected.")
+        {
+            TargetProfiles = "Browser interactive; SSR/prerender not claimed",
+            Carrier = "MouseEvent/KeyboardEvent/FocusEvent; JazorEvent + WeakMap for ChangeEventArgs",
+            ImplementationPath = "ECMAScript.Blazor Alias/Inline/Import; one typed onchange capture wrapper in RenderEmitter; Jazor.CLR C# Import helper",
+            ContributionContractVersion = "static-source-root/v1",
+            Dependencies = "WebIDL event carriers; Jazor.CLR WeakMap/Array runtime; EventCallback framing",
+            ExcludedSurface = "Synthetic EventArgs construction, setters, runtime identity/type tests, InputFile/IBrowserFile"
+        },
+        new(
+            "P1-blazor-clr-element-reference",
+            "@ref ElementReference capture and ElementReferenceExtensions.FocusAsync overloads",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.InProof,
+            "ECMAScript.Blazor mapping + Jazor.RazorVue VNode ref framing",
+            null,
+            "EcmaScriptBlazorMappingTests; RazorSgOfficialReferenceAuthoringTests.BuildComponent_OfficialRazorElementReferenceFocus_UsesDomCarrierMapping",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact,
+            "Real BrowserSmoke, isolated Release PackageConsumer, and empty/unmounted element behavior remain to be proved.")
+        {
+            TargetProfiles = "Browser interactive; SSR/prerender not claimed",
+            Carrier = "HTMLElement captured by Vue ref callback",
+            ImplementationPath = "ECMAScript.Blazor Alias(ElementReference -> HTMLElement) + Inline(HTMLElement.Focus)",
+            ContributionContractVersion = "static-source-root/v1",
+            Dependencies = "HTMLElement/FocusOptions WebIDL; ValueTask/Promise carrier; Vue ref lifecycle",
+            ExcludedSurface = "new ElementReference, Id/Context server identity, arbitrary DOM methods"
+        },
+        new(
+            "P2-blazor-clr-extended-dom-events",
+            "Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress EventArgs groups",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.Planned,
+            "ECMAScript.Blazor mapping provider",
+            null,
+            "No fixture yet; each event group requires an independent official Razor/browser scenario",
+            RazorVueCapabilityEvidence.None,
+            "Do not infer support from the core event carrier; add one group only after a concrete authoring scenario and browser contract exist.")
+        {
+            TargetProfiles = "Browser interactive only after group-specific proof",
+            Carrier = "PointerEvent/WheelEvent/DragEvent/ClipboardEvent/TouchEvent and group-specific WebIDL carriers",
+            ImplementationPath = "Future ECMAScript.Blazor Alias/Inline or Jazor.CLR Import only when property conversion requires it",
+            ContributionContractVersion = "static-source-root/v1",
+            Dependencies = "Core DOM event mappings and group-specific WebIDL bindings",
+            ExcludedSurface = "File payloads, permission-sensitive clipboard/file APIs, synthetic event construction"
+        },
+        new(
+            "P1-standard-blazor-component-adapters",
+            "Microsoft built-in UI components: DynamicComponent, EditForm, ErrorBoundary, Router, RouteView, LayoutView, NavLink, and Input*",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityStatus.Reject,
+            "RazorVueCompatibilityAnalyzer + RenderEmitter",
+            "JAZORVGA021",
+            "RazorVueCompatibilityAnalyzerTests.StandardBlazorComponentTag_ReportsUnsupportedBuiltInUi; RazorSgStandardBlazorComponentRuntimeTests",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
+            "Use ComponentBase + IVueComponent with an explicit import, or use a typed TDesign/Vuetify/Element Plus/custom component. Historical adapters are not product support."),
         new(
             "P1-dynamic-component",
             "DynamicComponent with statically discoverable component type and validated parameters",
             RazorVueCapabilityPriority.P1,
-            RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
-            "RenderEmitter + blazor-components.mjs",
-            null,
-            "RazorSgStandardBlazorComponentRuntimeTests.DynamicComponent_UsesStaticComponentRegistryAdapter",
+            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityStatus.Reject,
+            "RazorVueCompatibilityAnalyzer + RenderEmitter",
+            "JAZORVGA021",
+            "RazorVueCompatibilityAnalyzerTests.StandardBlazorComponentTag_ReportsUnsupportedBuiltInUi; RazorSgStandardBlazorComponentRuntimeTests.DynamicComponent_IsRejectedAsBuiltInUi",
             RazorVueCapabilityEvidence.AuthorSource |
-            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
-            RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Static type-token registry is supported; parameter descriptor validation and unknown external runtime types remain before Support."),
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
+            "Dynamic runtime component selection is outside the product contract; use a statically imported ComponentBase + IVueComponent or a typed component-library component."),
         new(
             "P1-error-boundary",
             "ErrorBoundary with child render/update/unmount error semantics",
             RazorVueCapabilityPriority.P1,
-            RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
-            "blazor-components.mjs ErrorBoundary adapter",
-            null,
-            "RazorSgStandardBlazorComponentRuntimeTests; ErrorBoundary adapter module proof",
+            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityStatus.Reject,
+            "RazorVueCompatibilityAnalyzer + RenderEmitter",
+            "JAZORVGA021",
+            "RazorSgStandardBlazorComponentRuntimeTests.ErrorBoundary_IsRejectedAsBuiltInUi",
             RazorVueCapabilityEvidence.AuthorSource |
-            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
-            RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Initial child/error slot capture is supported; Recover API, nested update/unmount coverage and SSR/browser proof remain before Support."),
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
+            "Use an application-owned error boundary contract or a typed component-library component; the historical adapter is not a product entry point."),
         new(
             "P1-standard-forms",
             "EditForm, InputBase, built-in Input*, validation messages, and edit context",
             RazorVueCapabilityPriority.P1,
-            RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
-            "blazor-components.mjs form/input adapters",
-            null,
-            "RazorSgStandardBlazorComponentRuntimeTests.EditFormAndInputText_KeepStandardBindingSurface",
+            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityStatus.Reject,
+            "RazorVueCompatibilityAnalyzer + RenderEmitter",
+            "JAZORVGA021",
+            "RazorVueCompatibilityAnalyzerTests.StandardGenericComponentTag_ReportsUnsupportedBuiltInUi; RazorSgStandardBlazorComponentRuntimeTests.EditFormAndInputText_AreRejectedAsBuiltInUi",
             RazorVueCapabilityEvidence.AuthorSource |
-            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
-            RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Common text/textarea/checkbox/number/date/select binding is materialized; InputBase, EditContext validation, culture/enum parsing, server errors and package/SSR proof remain before Support."),
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
+            "Use typed TDesign/Vuetify/Element Plus form components or an application-owned ComponentBase + IVueComponent contract; EditContext/InputBase semantics are not lowered."),
         new(
             "P2-authentication",
             "AuthenticationStateProvider, AuthorizeView, and authorization-aware route composition",

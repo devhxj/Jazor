@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify virtual-scroll authoring proxy for large item collections.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VVirtualScroll")]
-public sealed class VVirtualScroll : ComponentBase
+public sealed class VVirtualScroll : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 高。

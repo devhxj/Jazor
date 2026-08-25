@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// First-wave Vuetify pagination stub for RazorVue authoring.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VPagination")]
-public sealed class VPagination : ComponentBase
+public sealed class VPagination : ComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 当前选中的页码。

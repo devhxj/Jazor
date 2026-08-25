@@ -120,6 +120,90 @@ internal static class RazorSgOfficialAuthoringTestHost
             artifact.SourceMapContent.ReplaceLineEndings("\n"));
     }
 
+    public static Task<ImmutableArray<Diagnostic>> GetGeneratorDiagnosticsAsync(
+        string documentPath,
+        string documentText,
+        string codeBehindSource,
+        string rootNamespace,
+        IReadOnlyDictionary<string, string>? supportingSources = null)
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var syntaxTrees = ImmutableArray.CreateBuilder<SyntaxTree>();
+        syntaxTrees.Add(CSharpSyntaxTree.ParseText(
+            GlobalUsingsSource,
+            options: parseOptions,
+            path: "GlobalUsings.g.cs"));
+        syntaxTrees.Add(CSharpSyntaxTree.ParseText(
+            codeBehindSource,
+            options: parseOptions,
+            path: documentPath + ".cs"));
+        if (supportingSources is not null)
+        {
+            foreach (var source in supportingSources.OrderBy(static item => item.Key, StringComparer.Ordinal))
+            {
+                syntaxTrees.Add(CSharpSyntaxTree.ParseText(
+                    source.Value,
+                    options: parseOptions,
+                    path: source.Key));
+            }
+        }
+
+        var baseCompilation = CSharpCompilation.Create(
+            assemblyName: "RazorSg.OfficialAuthoring.Diagnostics.Tests",
+            syntaxTrees: syntaxTrees,
+            references: RazorSgTestHost.CreateMetadataReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var projectDirectory = Path.GetDirectoryName(documentPath);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(projectDirectory), "Official Razor document path must have a parent directory.");
+        var additionalText = new InMemoryAdditionalText(documentPath, documentText);
+        using var sourceTextScope = RazorSourceTextRegistry.Push(documentPath, documentText);
+        var optionsProvider = new OfficialAuthoringAnalyzerConfigOptionsProvider(
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["build_property.RazorLangVersion"] = "11.0",
+                ["build_property.RootNamespace"] = rootNamespace,
+                ["build_property.SupportLocalizedComponentNames"] = "true",
+                ["build_property.GenerateRazorMetadataSourceChecksumAttributes"] = "false",
+                ["build_property.MSBuildProjectDirectory"] = projectDirectory!
+            },
+            new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                [documentPath] = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["build_metadata.AdditionalFiles.TargetPath"] = Convert.ToBase64String(
+                        Encoding.UTF8.GetBytes(Path.GetFileName(documentPath)))
+                }
+            });
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            generators: [new RazorSourceGenerator().AsSourceGenerator()],
+            additionalTexts: [additionalText],
+            parseOptions: parseOptions,
+            optionsProvider: optionsProvider);
+        driver = driver.RunGeneratorsAndUpdateCompilation(baseCompilation, out var compilation, out var diagnostics);
+        var allDiagnostics = diagnostics
+            .AddRange(compilation.GetDiagnostics().Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
+
+        // The production RazorVue generator observes the post-Razor compilation through its
+        // GeneratorDriver hook. This focused helper may be called before that hook has been
+        // installed in a fresh test process, so run the same tail boundary when no RazorVue
+        // diagnostic was reported by the driver. That keeps the test at the official SG input
+        // boundary without duplicating the Razor front-end.
+        if (!allDiagnostics.Any(static diagnostic => diagnostic.Id.StartsWith("JAZORVGA", StringComparison.Ordinal)))
+        {
+            if (!RazorTailOutput.TryBuildFinalCompilationCatalog(
+                    compilation,
+                    CancellationToken.None,
+                    out _,
+                    out var tailDiagnostics))
+            {
+                allDiagnostics = allDiagnostics.AddRange(tailDiagnostics.Select(Diagnostics.Create));
+            }
+        }
+
+        return Task.FromResult(allDiagnostics);
+    }
+
     private sealed class InMemoryAdditionalText(string path, string text) : AdditionalText
     {
         private readonly SourceText _text = SourceText.From(text);

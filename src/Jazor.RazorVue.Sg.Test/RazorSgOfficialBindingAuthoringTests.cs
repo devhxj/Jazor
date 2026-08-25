@@ -4,6 +4,58 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgOfficialBindingAuthoringTests
 {
     [TestMethod]
+    public async Task BuildComponent_OfficialRazorTypedChangeHandler_CapturesValueBeforeCallback()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TypedChangeHandler.razor"),
+            documentText:
+            """
+            @using Microsoft.AspNetCore.Components.Web
+
+            <input @onchange="HandleChange" />
+            <input @onchange="HandleChangeAsync" @onchange:preventDefault="true" @onchange:stopPropagation="true" />
+            """,
+            codeBehindSource:
+            """
+            using System.Threading.Tasks;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/typed-change-handler")]
+            public partial class TypedChangeHandler : ComponentBase, IVueComponent
+            {
+                private string LastValue { get; set; } = "";
+
+                private void HandleChange(ChangeEventArgs args)
+                {
+                    LastValue = (string)args.Value!;
+                }
+
+                private Task HandleChangeAsync(ChangeEventArgs args)
+                {
+                    LastValue = (string)args.Value!;
+                    return Task.CompletedTask;
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.TypedChangeHandler");
+
+        StringAssert.Contains(
+            observation.GeneratedCSharp,
+            "EventCallback.Factory.Create<global::Microsoft.AspNetCore.Components.ChangeEventArgs>",
+            StringComparison.Ordinal);
+        var script = observation.ModuleText;
+        StringAssert.Contains(script, "captureChangeEvent", StringComparison.Ordinal);
+        StringAssert.Contains(script, "captureChangeEvent(event)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "getChangeEventValue(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "preventDefault", StringComparison.Ordinal);
+        StringAssert.Contains(script, "stopPropagation", StringComparison.Ordinal);
+        StringAssert.Contains(script, "LastValue", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(script);
+    }
+
+    [TestMethod]
     public async Task BuildComponent_OfficialRazorInputBind_EmitsStateAssignmentHandler()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(

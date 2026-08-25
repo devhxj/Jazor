@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify select component authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSelect")]
-public sealed class VSelect : VSelectLikeComponentBase
+public sealed class VSelect : VSelectLikeComponentBase, IVuetifyComponent
 {
     /// <summary>
     /// 当前选中的值。
