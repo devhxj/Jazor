@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Acornima;
 using Acornima.Ast;
@@ -462,42 +463,19 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
 
     private static string ResolveBundledDenoExecutable()
     {
-        var root = FindRepositoryRoot();
-        var executableName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
-        var emitBuildRoot = Path.Combine(root, "src", "Jazor.Emit", "bin");
-        if (!Directory.Exists(emitBuildRoot))
-        {
-            throw new FileNotFoundException(
-                "Jazor.Emit build output is required for official RazorVue DenoHost tests. Build src/Jazor.Emit first.",
-                emitBuildRoot);
-        }
-
-        var candidate = Directory.EnumerateFiles(emitBuildRoot, executableName, SearchOption.AllDirectories)
-            .Where(path => path.Contains(
-                Path.DirectorySeparatorChar + "runtimes" + Path.DirectorySeparatorChar,
-                StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(path => path.Contains(
-                Path.DirectorySeparatorChar + "net11.0" + Path.DirectorySeparatorChar,
-                StringComparison.OrdinalIgnoreCase))
-            .ThenByDescending(File.GetLastWriteTimeUtc)
-            .FirstOrDefault();
-
-        return candidate ?? throw new FileNotFoundException(
-            "Bundled DenoHost runtime was not found. Build src/Jazor.Emit so its runtime assets are restored.",
-            emitBuildRoot);
-    }
-
-    private static string FindRepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
-                return directory.FullName;
-
-            directory = directory.Parent;
-        }
-
-        throw new DirectoryNotFoundException("Could not locate the Jazor repository root from the test output directory.");
+        // Runtime tests own their native Deno asset. Do not depend on another project's
+        // incidental bin output, which is absent in a clean or isolated CI build.
+        var runtimeIdentifier = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "win-x64"
+            : RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                ? "linux-x64"
+                : RuntimeInformation.ProcessArchitecture == Architecture.Arm64
+                    ? "osx-arm64"
+                    : "osx-x64";
+        var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "deno.exe" : "deno";
+        var path = Path.Combine(AppContext.BaseDirectory, "runtimes", runtimeIdentifier, "native", executableName);
+        return File.Exists(path)
+            ? path
+            : throw new FileNotFoundException("Bundled Deno runtime was not found in the Razor SG test output.", path);
     }
 }
