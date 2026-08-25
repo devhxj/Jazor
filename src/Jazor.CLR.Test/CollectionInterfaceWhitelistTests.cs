@@ -307,6 +307,47 @@ public sealed class CollectionInterfaceWhitelistTests
 	}
 
 	[TestMethod]
+	public void QueueMappings_SupportCoreFifoOperations()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>.Count.get", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>.Clear()", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>.Enqueue(T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>.Dequeue()", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>.TryDequeue(out T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>.Peek()", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>.TryPeek(out T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>.Contains(T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.QueueT1Module<>), "System.Collections.Generic.Queue<T>.ToArray()", Op.Import);
+	}
+
+	[TestMethod]
+	public void StackMappings_SupportCoreLifoOperations()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>.Count.get", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>.Clear()", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>.Contains(T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>.Peek()", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>.TryPeek(out T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>.Pop()", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>.TryPop(out T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>.Push(T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.StackT1Module<>), "System.Collections.Generic.Stack<T>.ToArray()", Op.Import);
+	}
+
+	[TestMethod]
+	public void CharCasingMappings_UseImportForSingleCodeUnitSemantics()
+	{
+		AssertMemberOp(typeof(Jazor.CLR.CharModule), "static char.ToUpper(char)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.CharModule), "static char.ToUpperInvariant(char)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.CharModule), "static char.ToUpper(char, System.Globalization.CultureInfo)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.CharModule), "static char.ToLower(char)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.CharModule), "static char.ToLowerInvariant(char)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.CharModule), "static char.ToLower(char, System.Globalization.CultureInfo)", Op.Import);
+	}
+
+	[TestMethod]
 	public void ConditionalWeakTableMappings_SupportFactoryBasedValueCreation()
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.ConditionalWeakTableT2Module<,>), "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>", "WeakMap");

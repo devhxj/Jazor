@@ -6,6 +6,8 @@ namespace Jazor.CLR;
 /// C# ReadOnlyCollection&lt;T&gt; 与 JavaScript Array 的对应关系：
 /// - ReadOnlyCollection&lt;T&gt; 映射为 JavaScript Array（只读视图）
 /// - 构造函数要求实时跟踪原 IList；当前 Array carrier 尚无对应 view 协议
+/// - Empty/CreateCollection 使用冻结副本；AsReadOnly/构造函数使用 Proxy live view，分别对应
+///   CLR 的独立快照与对源 IList 的实时观察语义。
 ///
 /// Op 类型选择原则：
 /// - Alias: JS Array 有同名方法/属性
@@ -59,7 +61,7 @@ public static class ReadOnlyCollectionT1Module<T>
 
 	/// <summary>
 	/// C#: ReadOnlyCollection.Empty
-	/// JS: Object.freeze([])
+	/// JS: Object.freeze([])。这是独立的不可变空快照，不是某个源列表的 live view。
 	/// </summary>
 	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlyCollection<T>.Empty.get")]
 	public static Array<T> _e5f6a7b8c9d0e1f2()
@@ -162,6 +164,7 @@ public static class ReadOnlyCollectionT1Module<T>
 
 	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlyCollection.CreateCollection<T>(params System.ReadOnlySpan<T>)")]
 	public static Array<T> _a0cccd63a3a3eee1(Array<T> values)
+		// CreateCollection copies its span before freezing; callers cannot observe later source writes.
 		=> Object.Freeze(values.Slice());
 
 	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlyCollection.CreateSet<T>(params System.ReadOnlySpan<T>)")]

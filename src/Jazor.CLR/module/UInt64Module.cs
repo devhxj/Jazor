@@ -19,6 +19,7 @@ public static class UInt64Module
 {
 	private static BigInt Mask => BigIntValue("18446744073709551615");
 	private static BigInt Modulus => BigIntValue("18446744073709551616");
+	private static BigInt MaxValueCore => BigIntValue("18446744073709551615");
 
 	/// <summary>
 	/// C#: ulong.MaxValue
@@ -100,28 +101,7 @@ public static class UInt64Module
 	/// </summary>
 	[Jazor(Op.Import, "static ulong.Parse(string)")]
 	public static BigInt _ab08b15d1ba56047(string? s)
-	{
-		if (s == null)
-			throw new Error("ArgumentNullException: String cannot be null.");
-
-		var trimmed = s.Trim();
-		BigInt result;
-		try
-		{
-			result = BigIntValue(trimmed);
-		}
-		catch
-		{
-			throw new Error($"FormatException: String '{s}' was not recognized as a valid UInt64.");
-		}
-
-		// 仅转换失败属于 FormatException；无符号范围验证必须保留 OverflowException。
-		var minValue = BigIntValue("0");
-		var maxValue = BigIntValue("18446744073709551615");
-		if (result < minValue || result > maxValue)
-			throw new Error($"OverflowException: Value '{s}' was either too large or too small for a UInt64.");
-		return result;
-	}
+		=> BigIntIntegerRuntime.Parse(s, BigInt.Zero, MaxValueCore, "UInt64");
 
 	///<summary>Converts the string representation of a number in a specified style to its 64-bit unsigned integer equivalent.</summary>
 	[Jazor(Op.Discard ,"static ulong.Parse(string, System.Globalization.NumberStyles)")]
@@ -145,26 +125,7 @@ public static class UInt64Module
 	/// </summary>
 	[Jazor(Op.Import, "static ulong.TryParse(string, out ulong)")]
 	public static Array<object?> _a2771534d71206bd(string? s, BigInt result)
-	{
-		if (s == null)
-			return [false, BigInt.Zero];
-
-		var trimmed = s.Trim();
-		try
-		{
-			var parsed = BigIntValue(trimmed);
-			// Check ulong range: 0 to 18446744073709551615
-			var minValue = BigIntValue("0");
-			var maxValue = BigIntValue("18446744073709551615");
-			if (parsed < minValue || parsed > maxValue)
-				return [false, BigInt.Zero];
-			return [true, parsed];
-		}
-		catch
-		{
-			return [false, BigInt.Zero];
-		}
-	}
+		=> BigIntIntegerRuntime.TryParse(s, BigInt.Zero, MaxValueCore);
 
 	///<summary>Tries to convert the span representation of a number to its 64-bit unsigned integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Import, "static ulong.TryParse(System.ReadOnlySpan<char>, out ulong)")]

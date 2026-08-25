@@ -151,15 +151,9 @@ public static class DateTimeModule
 
 	private static BigInt GetTicks(Date date)
 	{
-		var milliseconds = Date.UTC(
-			date.GetFullYear(),
-			date.GetMonth(),
-			date.GetDate(),
-			date.GetHours(),
-			date.GetMinutes(),
-			date.GetSeconds(),
-			date.GetMilliseconds());
-		return BigIntValue(milliseconds) * TicksPerMillisecond + UnixEpochTicks;
+		// A raw JavaScript Date already represents an instant. Reading local fields and
+		// feeding them back into Date.UTC would apply the host offset twice.
+		return BigIntValue(date.GetTime()) * TicksPerMillisecond + UnixEpochTicks;
 	}
 
 	private static BigInt GetInstantTicks(RuntimeModule.JDateTime instance)

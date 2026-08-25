@@ -13,6 +13,7 @@ namespace Jazor.CLR;
 /// - Import: 需要验证的 Parse/TryParse
 /// - Discard: 不常用或平台特定的方法
 /// </summary>
+/// <remarks>Exp2M1/Exp10M1 与 Log2P1/Log10P1 先用 double 稳定函数换底，再以 fround 回到 float 精度；换底乘除的单次舍入是已知且可接受的边界。</remarks>
 [ECMAScriptModule("System/SingleModule.js")]
 [Jazor(Op.Alias, "float","Number")]
 public static class SingleModule
@@ -82,9 +83,12 @@ public static class SingleModule
 		if (!IsFiniteCore(value) || value <= 0)
 			return false;
 
-		// JS Number 没有可直接复用的 float 位级判定，这里退化为判定 log2 是否为整数。
+		// log2 can round a non-power to an integer for large values; reconstruct the
+		// candidate power before applying the single-precision result contract.
 		var exponent = Math.Logarithm2(value);
-		return IsFiniteCore(exponent) && Math.FloorFunc(exponent) == exponent;
+		return IsFiniteCore(exponent)
+			&& Math.FloorFunc(exponent) == exponent
+			&& Math.Fround(Math.Power(2, exponent)) == Math.Fround(value);
 	}
 
 	internal static Number SignCore(Number value)
@@ -171,7 +175,7 @@ public static class SingleModule
 		if (exponentBits != 0)
 			return exponentBits - 127;
 
-		return HighestSetBitCore(bits % 8388608d) - 149;
+		return RuntimeModule.GetHighestSetBit(bits % 8388608d) - 149;
 	}
 
 	private static Number BitIncrementCore(Number value)
@@ -179,18 +183,6 @@ public static class SingleModule
 
 	private static Number BitDecrementCore(Number value)
 		=> OffsetAdjacentCore(value, false);
-
-	private static Number HighestSetBitCore(Number value)
-	{
-		var bit = -1;
-		while (value > 0)
-		{
-			value = Math.FloorFunc(value / 2);
-			bit++;
-		}
-
-		return bit;
-	}
 
 	private static Number OffsetAdjacentCore(Number value, bool increment)
 	{
@@ -528,7 +520,7 @@ public static class SingleModule
 	public extern static Number _9feb625727b5f8b7(Number x);
 
 	///<summary>Computes <code data-dev-comment-type="c">E</code> raised to a given power and subtracts one.</summary>
-	[Jazor(Op.Inline ,"static float.ExpM1(float)", "(Math.exp(__arg1) - 1)")]
+	[Jazor(Op.Inline ,"static float.ExpM1(float)", "Math.fround(Math.expm1(__arg1))")]
 	public extern static Number _225c97db4c06d542(Number x);
 
 	///<summary>Computes <code data-dev-comment-type="c">2</code> raised to a given power.</summary>
@@ -536,7 +528,7 @@ public static class SingleModule
 	public extern static Number _850a2368fd9ebd00(Number x);
 
 	///<summary>Computes <code data-dev-comment-type="c">2</code> raised to a given power and subtracts one.</summary>
-	[Jazor(Op.Inline ,"static float.Exp2M1(float)", "(Math.pow(2, __arg1) - 1)")]
+	[Jazor(Op.Inline ,"static float.Exp2M1(float)", "Math.fround(Math.expm1(__arg1 * Math.LN2))")]
 	public extern static Number _bea586f79da8325a(Number x);
 
 	///<summary>Computes <code data-dev-comment-type="c">10</code> raised to a given power.</summary>
@@ -544,7 +536,7 @@ public static class SingleModule
 	public extern static Number _c4a8e15339b99e72(Number x);
 
 	///<summary>Computes <code data-dev-comment-type="c">10</code> raised to a given power and subtracts one.</summary>
-	[Jazor(Op.Inline ,"static float.Exp10M1(float)", "(Math.pow(10, __arg1) - 1)")]
+	[Jazor(Op.Inline ,"static float.Exp10M1(float)", "Math.fround(Math.expm1(__arg1 * Math.LN10))")]
 	public extern static Number _0c886f93ae8f2c80(Number x);
 
 	///<summary>Computes the ceiling of a value.</summary>
@@ -676,11 +668,11 @@ public static class SingleModule
 	public extern static Number _13b3c426479d8061(Number x);
 
 	///<summary>Computes the base-2 logarithm of a value plus one.</summary>
-	[Jazor(Op.Inline ,"static float.Log2P1(float)", "(Math.log2(__arg1 + 1))")]
+	[Jazor(Op.Inline ,"static float.Log2P1(float)", "Math.fround(Math.log1p(__arg1) / Math.LN2)")]
 	public extern static Number _320a7a02cb084671(Number x);
 
 	///<summary>Computes the base-10 logarithm of a value plus one.</summary>
-	[Jazor(Op.Inline ,"static float.Log10P1(float)", "(Math.log10(__arg1 + 1))")]
+	[Jazor(Op.Inline ,"static float.Log10P1(float)", "Math.fround(Math.log1p(__arg1) / Math.LN10)")]
 	public extern static Number _9025daef4465a5f4(Number x);
 
 	///<summary>Clamps a value to an inclusive minimum and maximum value.</summary>
@@ -814,8 +806,23 @@ public static class SingleModule
 	public extern static Number _76c7c7ae956d3449(Number x, Number y);
 
 	///<summary>Computes the n-th root of a value.</summary>
-	[Jazor(Op.Inline ,"static float.RootN(float, int)", "Math.pow(__arg1, 1 / __arg2)")]
-	public extern static Number _9a3da74ee8bdf7c6(Number x, Number n);
+	[Jazor(Op.Import ,"static float.RootN(float, int)")]
+	public static Number _9a3da74ee8bdf7c6(Number x, Number n)
+		=> Math.Fround(RootNCore(x, n));
+
+	private static Number RootNCore(Number value, Number degree)
+	{
+		if (degree == 0)
+			return Number.NaN;
+
+		var oddDegree = degree % 2 != 0;
+		if (value < 0 && !oddDegree)
+			return Number.NaN;
+
+		var magnitude = Math.Power(Math.Absolute(value), 1 / degree);
+		var negativeResult = oddDegree && (value < 0 || Object.Is(value, -0));
+		return negativeResult ? -magnitude : magnitude;
+	}
 
 	///<summary>Computes the square-root of a value.</summary>
 	[Jazor(Op.Inline ,"static float.Sqrt(float)", "Math.sqrt(__arg1)")]

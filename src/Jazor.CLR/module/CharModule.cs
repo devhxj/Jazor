@@ -65,6 +65,26 @@ public static class CharModule
 	private static Number GetCodeUnitFromChar(char value)
 		=> value.ToString().CharCodeAt(0);
 
+	private static string ToUpperCore(string value)
+	{
+		// .NET char casing is a simple one-code-unit mapping. JavaScript string casing
+		// may expand (for example, U+00DF -> "SS"), which cannot be represented by char.
+		if (value == "\u0131")
+			return "I";
+
+		var result = value.ToUpperInvariant();
+		return result.Length == 1 ? result : value;
+	}
+
+	private static string ToLowerCore(string value)
+	{
+		if (value == "\u0130")
+			return "i";
+
+		var result = value.ToLowerInvariant();
+		return result.Length == 1 ? result : value;
+	}
+
 	private static bool IsControlCode(Number code)
 		=> code < 32 || (code >= 127 && code <= 159);
 
@@ -342,45 +362,51 @@ public static class CharModule
 
 	/// <summary>
 	/// C#: char.ToUpper(c, culture)
-	/// JS: c.toUpperCase()
+	/// JS: simple one-code-unit mapping over c.toUpperCase()
 	/// </summary>
-	[Jazor(Op.Inline, "static char.ToUpper(char, System.Globalization.CultureInfo)", "__arg1.toUpperCase()")]
-	public extern static string _dd41639bb00c83ab(string c, String culture);
+	[Jazor(Op.Import, "static char.ToUpper(char, System.Globalization.CultureInfo)")]
+	public static string _dd41639bb00c83ab(string c, String culture)
+		=> ToUpperCore(c);
 
 	/// <summary>
 	/// C#: char.ToUpper(c)
-	/// JS: c.toUpperCase()
+	/// JS: simple one-code-unit mapping over c.toUpperCase()
 	/// </summary>
-	[Jazor(Op.Inline, "static char.ToUpper(char)", "__arg1.toUpperCase()")]
-	public extern static string _2713512e6f5a9312(string c);
+	[Jazor(Op.Import, "static char.ToUpper(char)")]
+	public static string _2713512e6f5a9312(string c)
+		=> ToUpperCore(c);
 
 	/// <summary>
 	/// C#: char.ToUpperInvariant(c)
-	/// JS: c.toUpperCase()
+	/// JS: simple one-code-unit mapping over c.toUpperCase()
 	/// </summary>
-	[Jazor(Op.Inline, "static char.ToUpperInvariant(char)", "__arg1.toUpperCase()")]
-	public extern static string _b0c91aa30cd2a5f7(string c);
+	[Jazor(Op.Import, "static char.ToUpperInvariant(char)")]
+	public static string _b0c91aa30cd2a5f7(string c)
+		=> ToUpperCore(c);
 
 	/// <summary>
 	/// C#: char.ToLower(c, culture)
-	/// JS: c.toLowerCase()
+	/// JS: simple one-code-unit mapping over c.toLowerCase()
 	/// </summary>
-	[Jazor(Op.Inline, "static char.ToLower(char, System.Globalization.CultureInfo)", "__arg1.toLowerCase()")]
-	public extern static string _b81ddeb8c6240b72(string c, String culture);
+	[Jazor(Op.Import, "static char.ToLower(char, System.Globalization.CultureInfo)")]
+	public static string _b81ddeb8c6240b72(string c, String culture)
+		=> ToLowerCore(c);
 
 	/// <summary>
 	/// C#: char.ToLower(c)
-	/// JS: c.toLowerCase()
+	/// JS: simple one-code-unit mapping over c.toLowerCase()
 	/// </summary>
-	[Jazor(Op.Inline, "static char.ToLower(char)", "__arg1.toLowerCase()")]
-	public extern static string _b91d21a936e68017(string c);
+	[Jazor(Op.Import, "static char.ToLower(char)")]
+	public static string _b91d21a936e68017(string c)
+		=> ToLowerCore(c);
 
 	/// <summary>
 	/// C#: char.ToLowerInvariant(c)
-	/// JS: c.toLowerCase()
+	/// JS: simple one-code-unit mapping over c.toLowerCase()
 	/// </summary>
-	[Jazor(Op.Inline, "static char.ToLowerInvariant(char)", "__arg1.toLowerCase()")]
-	public extern static string _76274ed9d45c0127(string c);
+	[Jazor(Op.Import, "static char.ToLowerInvariant(char)")]
+	public static string _76274ed9d45c0127(string c)
+		=> ToLowerCore(c);
 
 	[Jazor(Op.Inline, "char.GetTypeCode()", "4")]
 	public extern static System.TypeCode _84932c09c59d9b51(string instance);

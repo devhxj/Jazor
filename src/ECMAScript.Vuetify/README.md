@@ -10,9 +10,9 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.9.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.9.0" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.9.0" />
+  <PackageReference Include="Jazor" Version="0.21.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.21.0" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.21.0" />
 </ItemGroup>
 ```
 

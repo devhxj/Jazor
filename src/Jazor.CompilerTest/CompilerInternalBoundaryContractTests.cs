@@ -1301,7 +1301,7 @@ public sealed class CompilerInternalBoundaryContractTests
             [new NumericLiteral(1, "1")]);
 
         Assert.AreEqual("Extensions.Read(host)", extensionCall.ToKnRECMAScript());
-        Assert.AreEqual("receiver.abs(1)", fallbackCall.ToKnRECMAScript());
+        Assert.AreEqual("_0aaf1073fc70e405(1)", fallbackCall.ToKnRECMAScript());
 
         Expression Lower(
             IInvocationOperation invocation,

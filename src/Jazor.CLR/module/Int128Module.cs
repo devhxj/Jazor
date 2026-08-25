@@ -496,7 +496,7 @@ public static class Int128Module
 	public extern static bool _265a23c7352a4445(BigInt value);
 
 	///<summary>Determines if a value is positive.</summary>
-	[Jazor(Op.Inline, "static System.Int128.IsPositive(System.Int128)", "(__arg1 > 0n)")]
+	[Jazor(Op.Inline, "static System.Int128.IsPositive(System.Int128)", "(__arg1 >= 0n)")]
 	public extern static bool _ab537fdef4fbd602(BigInt value);
 
 	///<summary>Compares two values to compute which is greater.</summary>

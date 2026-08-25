@@ -330,8 +330,14 @@ public static class HashSetT1Module<T>
 		if (match == null)
 			throw new Error("ArgumentNullException: match is null.");
 
-		var removed = 0;
+		// Materialize before deleting. ECMAScript permits deletion during Set iteration,
+		// but the CLR contract does not expose that host-specific traversal detail.
+		var snapshot = new Array<T>();
 		foreach (var item in instance)
+			snapshot.Push((T)item);
+
+		var removed = 0;
+		foreach (var item in snapshot)
 		{
 			var value = (T)item;
 			if (!match(value))

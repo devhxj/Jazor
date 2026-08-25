@@ -28,10 +28,10 @@ public static class RuntimeModule
 			return text;
 
 		var characters = (Array<string>)raw;
-		var result = "";
+		var parts = new Array<string>();
 		for (var index = 0; index < characters.Length; index++)
-			result += characters[index];
-		return result;
+			parts.Push(characters[index]);
+		return parts.Join("");
 	}
 
 	/// <summary>
@@ -51,16 +51,19 @@ public static class RuntimeModule
 
 		try
 		{
-			var decoder = new TextDecoder(
-				"utf-8",
-				new TextDecoderOptions(Fatal: true, IgnoreBOM: true));
-			return decoder.Decode(new Uint8Array(utf8Text));
+			return Utf8Decoder.Decode(new Uint8Array(utf8Text));
 		}
 		catch
 		{
 			return null;
 		}
 	}
+
+	// TextDecoder.decode() is stateless when stream mode is not requested. Reusing the
+	// configured decoder avoids constructing one for every numeric UTF-8 parse.
+	private static readonly TextDecoder Utf8Decoder = new(
+		"utf-8",
+		new TextDecoderOptions(Fatal: true, IgnoreBOM: true));
 
 	internal static string DecodeUtf8OrThrowFormat(Uint8Array utf8Text)
 	{
@@ -189,6 +192,31 @@ public static class RuntimeModule
 		ECMAScript.JazorPropertyDescriptor attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
+	private static void ThrowReadOnlyArrayMutation<TItem>()
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static object? GetReadOnlyArrayProperty<TItem>(
+		Array<TItem> target,
+		ECMAScript.JazorPropertyKey property,
+		object receiver)
+	{
+		// Array prototype mutators execute with the proxy as `this`; returning a throwing
+		// function prevents push/pop/sort and the other in-place methods from bypassing Set.
+		var propertyName = property.AsString;
+		if (propertyName == "copyWithin"
+			|| propertyName == "fill"
+			|| propertyName == "pop"
+			|| propertyName == "push"
+			|| propertyName == "reverse"
+			|| propertyName == "shift"
+			|| propertyName == "sort"
+			|| propertyName == "splice"
+			|| propertyName == "unshift")
+			return (Action)ThrowReadOnlyArrayMutation<TItem>;
+
+		return BindReadOnlyCollectionProperty(target, property);
+	}
+
 	internal static Array<TItem> CreateReadOnlyArrayView<TItem>(Array<TItem>? source, string nullMessage)
 	{
 		if (source is null)
@@ -199,6 +227,7 @@ public static class RuntimeModule
 		// writes through the view are rejected even after the CLR collection type is erased.
 		var handler = new ECMAScript.ProxyMutationHandler<Array<TItem>>
 		{
+			Get = GetReadOnlyArrayProperty<TItem>,
 			Set = ThrowReadOnlyArraySet<TItem>,
 			DeleteProperty = ThrowReadOnlyArrayDelete<TItem>,
 			DefineProperty = ThrowReadOnlyArrayDefine<TItem>
@@ -248,12 +277,35 @@ public static class RuntimeModule
 	private static readonly WeakMap<object, Number> ReferenceHashCodes = new();
 	private static Number NextReferenceHashCode = 1;
 
-	private static Number HashString(string text)
+	/// <summary>
+	/// Computes the Java-style 32-bit string hash used by erased CLR carriers.
+	/// </summary>
+	/// <remarks>
+	/// Callers supply the historical seed because object hashing uses 17 while decimal's
+	/// normalized-text path uses 0. Sharing the recurrence keeps overflow behavior in one place
+	/// without changing either existing hash contract.
+	/// </remarks>
+	public static Number GetStringHashCode(string text, Number seed)
 	{
-		var hash = 17;
+		var hash = seed;
 		for (var index = 0; index < text.Length; index++)
 			hash = ((hash * 31) + text[index]) | 0;
 		return hash;
+	}
+
+	/// <summary>
+	/// Returns the index of the highest set bit in a non-negative integer carrier.
+	/// </summary>
+	public static Number GetHighestSetBit(Number value)
+	{
+		var bit = -1;
+		while (value > 0)
+		{
+			value = Math.FloorFunc(value / 2);
+			bit++;
+		}
+
+		return bit;
 	}
 
 	private static Number GetReferenceHashCode(object value)
@@ -293,18 +345,18 @@ public static class RuntimeModule
 				return 0;
 			if (Math.FloorFunc(number) == number && number >= -2147483648 && number <= 2147483647)
 				return number | 0;
-			return HashString(number.ToString());
+			return GetStringHashCode(number.ToString(), 17);
 		}
 
 		if (type == "string")
-			return HashString((string)value);
+			return GetStringHashCode((string)value, 17);
 		if (type == "bigint")
-			return HashString(((BigInt)value).ToString());
+			return GetStringHashCode(((BigInt)value).ToString(), 17);
 
 		if (type == "object" || type == "function")
 			return GetReferenceHashCode(value);
 
-		return HashString(value.ToString() ?? "");
+		return GetStringHashCode(value.ToString() ?? "", 17);
 	}
 
 	/// <summary>
@@ -525,14 +577,22 @@ public static class RuntimeModule
 
 		[Description("@#valueOf")]
 		public Number ValueOf()
-			=> Date.UTC(
-				Date.GetFullYear(),
-				Date.GetMonth(),
-				Date.GetDate(),
-				Date.GetHours(),
-				Date.GetMinutes(),
-				Date.GetSeconds(),
-				Date.GetMilliseconds());
+		{
+			// Utc DateTime stores civil UTC fields in a local Date carrier so the CLR
+			// getters remain stable. Local/unspecified values, however, are represented
+			// by an actual local Date instant and must retain its timezone offset.
+			if (Kind != 2)
+				return Date.UTC(
+					Date.GetFullYear(),
+					Date.GetMonth(),
+					Date.GetDate(),
+					Date.GetHours(),
+					Date.GetMinutes(),
+					Date.GetSeconds(),
+					Date.GetMilliseconds());
+
+			return Date.GetTime();
+		}
 
 		[Description("@#toPrimitive")]
 		public object ToPrimitive(string? hint)
@@ -741,7 +801,7 @@ public static class RuntimeModule
 		public Array<T> Items { get; }
 
 		[Description("@#head")]
-		public Number Head { get; }
+		public Number Head { get; set; }
 
 		public JQueue()
 		{
@@ -1099,9 +1159,15 @@ public static class RuntimeModule
 
 	public static string PadLeft(string text, int width)
 	{
-		while (text.Length < width)
-			text = "0" + text;
+		var missing = width - text.Length;
+		if (missing <= 0)
+			return text;
 
-		return text;
+		var parts = new Array<string>();
+		for (var index = 0; index < missing; index++)
+			parts.Push("0");
+		parts.Push(text);
+
+		return parts.Join("");
 	}
 }

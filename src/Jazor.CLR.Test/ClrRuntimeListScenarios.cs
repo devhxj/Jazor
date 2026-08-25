@@ -233,6 +233,11 @@ internal static class ClrRuntimeListScenarios
             "System.Collections.Generic.List<T>.InsertRange(int, System.Collections.Generic.IEnumerable<T>)",
             [Array(Number(1), Number(4)), Number(1), Array(Number(2), Number(3))],
             [Array(Number(1), Number(2), Number(3), Number(4)), Number(1), Array(Number(2), Number(3))]),
+        Mutation(
+            "list.insert-range.self-snapshots-source",
+            "System.Collections.Generic.List<T>.InsertRange(int, System.Collections.Generic.IEnumerable<T>)",
+            [Reference("self-insert", Array(Number(1), Number(2), Number(3))), Number(1), Reference("self-insert", Array())],
+            [Array(Number(1), Number(1), Number(2), Number(3), Number(2), Number(3)), Number(1), Array(Number(1), Number(1), Number(2), Number(3), Number(2), Number(3))]),
         Success(
             "list.last-index-of.bounded-range",
             "System.Collections.Generic.List<T>.LastIndexOf(T, int, int)",

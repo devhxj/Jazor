@@ -248,10 +248,16 @@ public static class SByteModule
 
 	/// <summary>
 	/// C#: sbyte.Abs(value)
-	/// JS: Math.abs(value)
+	/// JS: checked absolute value with the CLR overflow contract
 	/// </summary>
-	[Jazor(Op.Inline, "static sbyte.Abs(sbyte)", "Math.abs(__arg1)")]
-	public extern static Number _f0d5d38874458f27(Number value);
+	[Jazor(Op.Import, "static sbyte.Abs(sbyte)")]
+	public static Number _f0d5d38874458f27(Number value)
+	{
+		if (value == -128)
+			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
+
+		return Math.Absolute(value);
+	}
 
 	/// <summary>
 	/// C#: sbyte.IsEvenInteger(value)
@@ -276,8 +282,8 @@ public static class SByteModule
 
 	/// <summary>
 	/// C#: sbyte.IsPositive(value)
-	/// JS: value > 0
+	/// JS: value >= 0
 	/// </summary>
-	[Jazor(Op.Inline, "static sbyte.IsPositive(sbyte)", "(__arg1 > 0)")]
+	[Jazor(Op.Inline, "static sbyte.IsPositive(sbyte)", "(__arg1 >= 0)")]
 	public extern static bool _f1b22dc04ea66c02(Number value);
 }

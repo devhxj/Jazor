@@ -310,10 +310,16 @@ public static class Int16Module
 
 	/// <summary>
 	/// C#: short.Abs(value)
-	/// JS: Math.abs(value)
+	/// JS: checked absolute value with the CLR overflow contract
 	/// </summary>
-	[Jazor(Op.Inline, "static short.Abs(short)", "Math.abs(__arg1)")]
-	public extern static Number _8ce36b36c4abd947(Number value);
+	[Jazor(Op.Import, "static short.Abs(short)")]
+	public static Number _8ce36b36c4abd947(Number value)
+	{
+		if (value == -32768)
+			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
+
+		return Math.Absolute(value);
+	}
 
 	[Jazor(Op.Discard, "static short.CreateChecked<TOther>(TOther)")]
 	public extern static Number _5fc26fbc77170159<TOther>(object value);
@@ -347,9 +353,9 @@ public static class Int16Module
 
 	/// <summary>
 	/// C#: short.IsPositive(value)
-	/// JS: value > 0
+	/// JS: value >= 0
 	/// </summary>
-	[Jazor(Op.Inline, "static short.IsPositive(short)", "(__arg1 > 0)")]
+	[Jazor(Op.Inline, "static short.IsPositive(short)", "(__arg1 >= 0)")]
 	public extern static bool _f65c31648c1c40d7(Number value);
 
 	/// <summary>

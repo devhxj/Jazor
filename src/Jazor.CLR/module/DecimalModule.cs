@@ -117,9 +117,7 @@ public static class DecimalModule
 		for (var i = 0; i < parts.Length; i++)
 		{
 			var part = parts[i]!;
-			if (part.Type == "group" && groupSeparator.Length == 0)
-				groupSeparator = part.Value;
-			else if (part.Type == "group")
+			if (part.Type == "group")
 				groupSeparator = part.Value;
 			else if (part.Type == "decimal")
 				decimalSeparator = part.Value;
@@ -154,11 +152,11 @@ public static class DecimalModule
 
 	private static string RepeatZero(Number count)
 	{
-		var text = "";
+		var parts = new Array<string>();
 		for (var i = 0; i < count; i++)
-			text += "0";
+			parts.Push("0");
 
-		return text;
+		return parts.Join("");
 	}
 
 	private static string StripLeadingZeros(string digits)
@@ -231,7 +229,13 @@ public static class DecimalModule
 
 			var exponentText = s.Substring(exponentIndex + 1);
 			var exponentValue = NumberValue(exponentText);
-			if (IsNaN(exponentValue) || Math.FloorFunc(exponentValue) != exponentValue)
+			// Reject non-finite/oversized exponents before RepeatZero can turn attacker input
+			// into an unbounded string-building loop.
+			if (IsNaN(exponentValue)
+				|| !DoubleModule.IsFiniteCore(exponentValue)
+				|| Math.FloorFunc(exponentValue) != exponentValue
+				|| exponentValue < -100
+				|| exponentValue > 100)
 				throw new Error($"FormatException: String '{value}' was not recognized as a valid Decimal.");
 
 			exponent = exponentValue;
@@ -844,15 +848,6 @@ public static class DecimalModule
 		return scale == 0 || GetUnscaled(parts) % Pow10(scale) == BigInt.Zero;
 	}
 
-	private static Number GetStringHashCode(string text)
-	{
-		var hash = 0;
-		for (var i = 0; i < text.Length; i++)
-			hash = ((hash << 5) - hash) + text[i];
-
-		return hash | 0;
-	}
-
 	//decimal.Zero = 0;
 
 	//decimal.One = 1;
@@ -1037,7 +1032,7 @@ public static class DecimalModule
 	/// </summary>
 	[Jazor(Op.Import, "override decimal.GetHashCode()")]
 	public static Number _f58659c33299d2b1(string instance)
-		=> GetStringHashCode(NormalizeDecimal(instance));
+		=> RuntimeModule.GetStringHashCode(NormalizeDecimal(instance), 0);
 
 	/// <summary>
 	/// C#: decimal.Equals(d1, d2)

@@ -6,6 +6,8 @@ namespace Jazor.CLR;
 /// C# Dictionary&lt;TKey, TValue&gt; 与 JavaScript Map 的对应关系：
 /// - Dictionary 映射为 JavaScript Map
 /// - 大多数方法可以直接映射
+/// - 默认 comparer 不创建旁路状态：JavaScript Map 的 SameValueZero（NaN 相等、±0 归一、对象按
+///   引用）与当前 EqualityComparer&lt;T&gt;.Default 的擦除支持域一致；显式 comparer 才启用 WeakMap 状态。
 ///
 /// Op 类型选择原则：
 /// - Alias: JS Map 有同名方法

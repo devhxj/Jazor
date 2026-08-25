@@ -6,7 +6,7 @@
 
 Jazor 的当前核心是受控 C# -> ECMAScript 转换：Roslyn `IOperation` 进入 `Jazor.Compiler`，生成 ESTree 和确定性 ECMAScript 模块，随后由 `Jazor.Emit` 物化或打包。宿主 API 通过 CLR/ECMAScript 映射和白名单定义，未支持的运行时语义在使用点明确失败。
 
-当前核心持续维护的能力包括模块发射、导入收集、source origin、source map carrier、CLR 映射、静态分析与 Emit 交付。详细边界见 [编译器](../02-architecture/compiler.md) 和 [产物管线](../02-architecture/artifact-pipeline.md)。
+当前核心持续维护的能力包括模块发射、导入收集、source origin、source map carrier、CLR 映射、静态分析与 Emit 交付。CLR 集合映射目前包含 `Queue<T>` / `Stack<T>` 的核心切片：构造、`Count`、入队/入栈、出队/出栈、查看、Try 操作、`Contains`、`Clear` 与 `ToArray`；容量管理及未列入白名单的长尾成员仍保持明确的不支持边界。详细边界见 [编译器](../02-architecture/compiler.md) 和 [产物管线](../02-architecture/artifact-pipeline.md)。
 
 ## 框架集成
 

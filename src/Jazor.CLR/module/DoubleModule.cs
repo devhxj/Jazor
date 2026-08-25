@@ -14,6 +14,11 @@ namespace Jazor.CLR;
 /// - Import: 需要验证的 Parse/TryParse
 /// - Discard: 不常用或平台特定的方法
 /// </summary>
+/// <remarks>
+/// ExpM1/LogP1 使用 JavaScript 原生稳定函数；Exp2M1/Exp10M1 和对应 Log*P1 通过
+/// expm1/log1p 与 LN2/LN10 换底。换底会保留一次乘法/除法舍入，但避免了在零附近的灾难性消减，
+/// 这是当前 ECMAScript API 能提供的可维护精度边界。
+/// </remarks>
 [ECMAScriptModule("System/DoubleModule.js")]
 [Jazor(Op.Alias, "double", "Number")]
 public static class DoubleModule
@@ -89,9 +94,12 @@ public static class DoubleModule
 		if (!IsFiniteCore(value) || value <= 0)
 			return false;
 
-		// JS Number 没有可直接复用的 64 位尾数位运算，这里退化为判定 log2 是否为整数。
+		// log2 can round a non-power to an integer for large values; reconstruct the
+		// candidate power so the predicate remains exact at the Number value level.
 		var exponent = Math.Logarithm2(value);
-		return IsFiniteCore(exponent) && Math.FloorFunc(exponent) == exponent;
+		return IsFiniteCore(exponent)
+			&& Math.FloorFunc(exponent) == exponent
+			&& Math.Power(2, exponent) == value;
 	}
 
 	internal static Number SignCore(Number value)
@@ -342,8 +350,8 @@ public static class DoubleModule
 
 		var highMantissa = high % 1048576d;
 		return highMantissa != 0
-			? HighestSetBitCore(highMantissa) - 1042
-			: HighestSetBitCore(low) - 1074;
+			? RuntimeModule.GetHighestSetBit(highMantissa) - 1042
+			: RuntimeModule.GetHighestSetBit(low) - 1074;
 	}
 
 	internal static Number BitIncrementCore(Number value)
@@ -351,18 +359,6 @@ public static class DoubleModule
 
 	internal static Number BitDecrementCore(Number value)
 		=> OffsetAdjacentCore(value, false);
-
-	private static Number HighestSetBitCore(Number value)
-	{
-		var bit = -1;
-		while (value > 0)
-		{
-			value = Math.FloorFunc(value / 2);
-			bit++;
-		}
-
-		return bit;
-	}
 
 	private static Number OffsetAdjacentCore(Number value, bool increment)
 	{
@@ -652,19 +648,19 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.Exp(double)", "Math.exp(__arg1)")]
 	public extern static Number _e94626bfb529f1e2(Number x);
 
-	[Jazor(Op.Inline, "static double.ExpM1(double)", "(Math.exp(__arg1) - 1)")]
+	[Jazor(Op.Inline, "static double.ExpM1(double)", "Math.expm1(__arg1)")]
 	public extern static Number _1a8fc1577d8842a1(Number x);
 
 	[Jazor(Op.Inline, "static double.Exp2(double)", "Math.pow(2, __arg1)")]
 	public extern static Number _894bcd9f10fe195f(Number x);
 
-	[Jazor(Op.Inline, "static double.Exp2M1(double)", "(Math.pow(2, __arg1) - 1)")]
+	[Jazor(Op.Inline, "static double.Exp2M1(double)", "Math.expm1(__arg1 * Math.LN2)")]
 	public extern static Number _b2c7a69c53b5558f(Number x);
 
 	[Jazor(Op.Inline, "static double.Exp10(double)", "(Math.pow(10, __arg1))")]
 	public extern static Number _433ea7f5bfe42847(Number x);
 
-	[Jazor(Op.Inline, "static double.Exp10M1(double)", "(Math.pow(10, __arg1) - 1)")]
+	[Jazor(Op.Inline, "static double.Exp10M1(double)", "Math.expm1(__arg1 * Math.LN10)")]
 	public extern static Number _aece0b0b794624da(Number x);
 
 	[Jazor(Op.Inline, "static double.Ceiling(double)", "Math.ceil(__arg1)")]
@@ -762,13 +758,13 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.LogP1(double)", "Math.log1p(__arg1)")]
 	public extern static Number _379f80adec6e897b(Number x);
 
-	[Jazor(Op.Inline, "static double.Log2P1(double)", "(Math.log2(__arg1 + 1))")]
+	[Jazor(Op.Inline, "static double.Log2P1(double)", "(Math.log1p(__arg1) / Math.LN2)")]
 	public extern static Number _0f38233678cfefdc(Number x);
 
 	[Jazor(Op.Inline, "static double.Log10(double)", "Math.log10(__arg1)")]
 	public extern static Number _d057b30c2fca7de9(Number x);
 
-	[Jazor(Op.Inline, "static double.Log10P1(double)", "(Math.log10(__arg1 + 1))")]
+	[Jazor(Op.Inline, "static double.Log10P1(double)", "(Math.log1p(__arg1) / Math.LN10)")]
 	public extern static Number _f0b78003a9ab01fb(Number x);
 
 	[Jazor(Op.Inline, "static double.Clamp(double, double, double)", "(Math.max(__arg2, Math.min(__arg1, __arg3)))")]
@@ -867,8 +863,23 @@ public static class DoubleModule
 	[Jazor(Op.Inline, "static double.Hypot(double, double)", "Math.hypot(__arg1, __arg2)")]
 	public extern static Number _7b8e31add532abe8(Number x, Number y);
 
-	[Jazor(Op.Inline, "static double.RootN(double, int)", "Math.pow(__arg1, 1 / __arg2)")]
-	public extern static Number _83649fc6ded4d88e(Number x, Number n);
+	[Jazor(Op.Import, "static double.RootN(double, int)")]
+	public static Number _83649fc6ded4d88e(Number x, Number n)
+		=> RootNCore(x, n);
+
+	private static Number RootNCore(Number value, Number degree)
+	{
+		if (degree == 0)
+			return Number.NaN;
+
+		var oddDegree = degree % 2 != 0;
+		if (value < 0 && !oddDegree)
+			return Number.NaN;
+
+		var magnitude = Math.Power(Math.Absolute(value), 1 / degree);
+		var negativeResult = oddDegree && (value < 0 || Object.Is(value, -0));
+		return negativeResult ? -magnitude : magnitude;
+	}
 
 	[Jazor(Op.Inline, "static double.Sqrt(double)", "Math.sqrt(__arg1)")]
 	public extern static Number _73df268429011d00(Number x);

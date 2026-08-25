@@ -88,11 +88,19 @@ internal static class ClrRuntimeCharScenarios
         Success("char.high-surrogate.string-index", "static char.IsHighSurrogate(string, int)", [Text(GrinningFace), Number(0)], Bool(true)),
         Success("char.low-surrogate.string-index", "static char.IsLowSurrogate(string, int)", [Text(GrinningFace), Number(1)], Bool(true)),
         Success("char.lower.string-index", "static char.IsLower(string, int)", [Text("xY"), Number(0)], Bool(true)),
-		Success("char.lower.string-index-greek", "static char.IsLower(string, int)", [Text("x\u03C9"), Number(1)], Bool(true)),
+        Success("char.lower.string-index-greek", "static char.IsLower(string, int)", [Text("x\u03C9"), Number(1)], Bool(true)),
         Success("char.surrogate.string-index", "static char.IsSurrogate(string, int)", [Text(GrinningFace), Number(0)], Bool(true)),
         Success("char.upper.string-index", "static char.IsUpper(string, int)", [Text("xY"), Number(1)], Bool(true)),
 		Success("char.upper.string-index-greek", "static char.IsUpper(string, int)", [Text("x\u03A9"), Number(1)], Bool(true)),
-        Success("char.white-space.string-index", "static char.IsWhiteSpace(string, int)", [Text("A\u00A0"), Number(1)], Bool(true))
+		Success("char.white-space.string-index", "static char.IsWhiteSpace(string, int)", [Text("A\u00A0"), Number(1)], Bool(true)),
+		Success("char.to-upper.dotless-i-is-single-code-unit", "static char.ToUpperInvariant(char)", [Text("\u0131")], Text("I")),
+		Success("char.to-upper.dotless-i-default-culture", "static char.ToUpper(char)", [Text("\u0131")], Text("I")),
+		Success("char.to-upper.dotless-i-explicit-culture", "static char.ToUpper(char, System.Globalization.CultureInfo)", [Text("\u0131"), Null()], Text("I")),
+		Success("char.to-lower.dotted-i-is-single-code-unit", "static char.ToLowerInvariant(char)", [Text("\u0130")], Text("i")),
+		Success("char.to-lower.dotted-i-default-culture", "static char.ToLower(char)", [Text("\u0130")], Text("i")),
+		Success("char.to-lower.dotted-i-explicit-culture", "static char.ToLower(char, System.Globalization.CultureInfo)", [Text("\u0130"), Null()], Text("i")),
+		Success("char.to-upper.does-not-expand-sharp-s", "static char.ToUpperInvariant(char)", [Text("ß")], Text("ß")),
+		Success("char.to-lower.does-not-expand-capital-i-dot", "static char.ToLowerInvariant(char)", [Text("\u0130")], Text("i"))
     ];
 
     private static ClrRuntimeScenario Success(

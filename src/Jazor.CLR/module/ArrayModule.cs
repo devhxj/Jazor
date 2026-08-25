@@ -312,9 +312,9 @@ public static class ArrayModule<T>
 
 	/// <summary>
 	/// C#: Array.Clear(array)
-	/// JS: array.length = 0 或 array.fill(undefined)
+	/// JS: array.fill(undefined), preserving the fixed CLR array length
 	/// </summary>
-	[Jazor(Op.Inline, "static System.Array.Clear(System.Array)", "__arg1.length = 0")]
+	[Jazor(Op.Inline, "static System.Array.Clear(System.Array)", "__arg1.fill(undefined)")]
 	public extern static void _96774f9ec153a919(Array<T> array);
 
 	/// <summary>

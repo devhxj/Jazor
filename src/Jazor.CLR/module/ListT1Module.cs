@@ -729,31 +729,22 @@ public static class ListT1Module<T>
 		if (collection is null)
 			throw new Error("ArgumentNullException: collection is null");
 
-		// .NET List.InsertRange supports self-insert. Snapshot the source sequence first so
-		// insertion does not feed back into the same enumeration stream.
-		if (collection is Array<T> source && Object.Is(instance, source))
-		{
-			var snapshot = new Array<T>();
-			for (uint i = 0; i < source.Length; i++)
-				snapshot.Push(source[i]);
-
-			var selfInsertionIndex = index;
-			for (uint i = 0; i < snapshot.Length; i++)
-			{
-				EnsureCapacityCore(instance, instance.Length + 1);
-				instance.Splice(selfInsertionIndex, 0, snapshot[i]);
-				selfInsertionIndex++;
-			}
-			return;
-		}
-
-		var insertionIndex = index;
+		// Materialize first, including self-insert, so enumeration observes the original
+		// source and the target can be shifted in one linear pass.
+		var values = new Array<T>();
 		foreach (var item in collection)
-		{
-			EnsureCapacityCore(instance, instance.Length + 1);
-			instance.Splice(insertionIndex, 0, item);
-			insertionIndex++;
-		}
+			values.Push(item);
+
+		if (values.Length == 0)
+			return;
+
+		var originalLength = instance.Length;
+		EnsureCapacityCore(instance, originalLength + values.Length);
+		for (var read = originalLength; read > index; read--)
+			instance[read + values.Length - 1] = instance[read - 1];
+
+		for (var offset = 0; offset < values.Length; offset++)
+			instance[index + offset] = values[offset];
 	}
 
 	/// <summary>
@@ -832,15 +823,22 @@ public static class ListT1Module<T>
 		EnsureInstance(instance);
 		EnsureMatch(match);
 
-		int count = 0;
-		for (uint i = instance.Length; i > 0; i--)
+		var write = 0;
+		var count = 0;
+		for (var read = 0; read < instance.Length; read++)
 		{
-			if (match(instance[i - 1]))
+			var item = instance[read];
+			if (match(item))
 			{
-				instance.Splice(i - 1, 1);
 				count++;
+				continue;
 			}
+
+			instance[write++] = item;
 		}
+
+		if (count > 0)
+			instance.Splice(write, count);
 		return count;
 	}
 

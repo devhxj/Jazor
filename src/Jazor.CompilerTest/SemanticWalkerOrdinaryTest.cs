@@ -1091,7 +1091,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let result = Math.abs(-5);
+  let result = _0aaf1073fc70e405(-5);
 }", script);
 
   }
@@ -3195,7 +3195,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(
 @"{
-  let absValue = Math.abs(-5);
+  let absValue = _0aaf1073fc70e405(-5);
   let text = ""Hello World"";
   let upperText = text.toUpperCase();
   function LocalFunction(param) {

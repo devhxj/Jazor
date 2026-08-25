@@ -1281,9 +1281,9 @@ public static class BigIntegerModule
 
 	/// <summary>
 	/// C#: BigInteger.IsPositive(value)
-	/// JS: value > 0n
+	/// JS: value >= 0n
 	/// </summary>
-	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.IsPositive(System.Numerics.BigInteger)", "(__arg1 > 0n)")]
+	[Jazor(Op.Inline ,"static System.Numerics.BigInteger.IsPositive(System.Numerics.BigInteger)", "(__arg1 >= 0n)")]
 	public extern static bool _386d048147df6eae(BigInt value);
 
 	/// <summary>

@@ -6,6 +6,8 @@ namespace Jazor.CLR;
 /// <remarks>
 /// Number 只是 Half 的无损 carrier。所有产生新 Half 值的运算必须经过 Math.f16round，
 /// 不能把 binary64 中间结果直接暴露为 Half，否则后续比较和成员调用都会观察到错误精度。
+/// Exp2M1/Exp10M1 和 Log2P1/Log10P1 通过稳定的 expm1/log1p 换底；LN2/LN10 的一次舍入
+/// 在回到 Half 精度后不会重新引入旧的零点消减问题。
 /// </remarks>
 [ECMAScriptModule("System/HalfModule.js")]
 [Jazor(Op.Alias, "System.Half", "Number")]
@@ -112,7 +114,7 @@ public static class HalfModule
 		if (exponentBits != 0)
 			return exponentBits - 15;
 
-		return HighestSetBitCore(magnitudeBits % 1024d) - 24;
+		return RuntimeModule.GetHighestSetBit(magnitudeBits % 1024d) - 24;
 	}
 
 	private static Number BitIncrementCore(Number value)
@@ -182,18 +184,6 @@ public static class HalfModule
 		}
 
 		return negative ? -value : value;
-	}
-
-	private static Number HighestSetBitCore(Number value)
-	{
-		var bit = -1;
-		while (value > 0)
-		{
-			value = Math.FloorFunc(value / 2);
-			bit++;
-		}
-
-		return bit;
 	}
 
 	private static Number ClampCore(Number value, Number min, Number max)
@@ -662,7 +652,7 @@ public static class HalfModule
 	public extern static Number _a7fa6fea71e1af01(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">E</code> raised to a given power and subtracts one.</summary>
-	[Jazor(Op.Inline, "static System.Half.ExpM1(System.Half)", "Math.f16round(Math.exp(__arg1) - 1)")]
+	[Jazor(Op.Inline, "static System.Half.ExpM1(System.Half)", "Math.f16round(Math.expm1(__arg1))")]
 	public extern static Number _07444142f58d0e8b(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">2</code> raised to a given power.</summary>
@@ -670,7 +660,7 @@ public static class HalfModule
 	public extern static Number _e8d9bbc26b41707d(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">2</code> raised to a given power and subtracts one.</summary>
-	[Jazor(Op.Inline, "static System.Half.Exp2M1(System.Half)", "Math.f16round(Math.pow(2, __arg1) - 1)")]
+	[Jazor(Op.Inline, "static System.Half.Exp2M1(System.Half)", "Math.f16round(Math.expm1(__arg1 * Math.LN2))")]
 	public extern static Number _538126e3a652c9d4(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">10</code> raised to a given power.</summary>
@@ -678,7 +668,7 @@ public static class HalfModule
 	public extern static Number _530bc0e2964110b9(Number value);
 
 	///<summary>Computes <code data-dev-comment-type="c">10</code> raised to a given power and subtracts one.</summary>
-	[Jazor(Op.Inline, "static System.Half.Exp10M1(System.Half)", "Math.f16round(Math.pow(10, __arg1) - 1)")]
+	[Jazor(Op.Inline, "static System.Half.Exp10M1(System.Half)", "Math.f16round(Math.expm1(__arg1 * Math.LN10))")]
 	public extern static Number _eb941b49b9a77bf8(Number value);
 
 	///<summary>Computes the ceiling of a value.</summary>
@@ -826,11 +816,11 @@ public static class HalfModule
 	public extern static Number _c7bfbccbaa6f0096(Number value);
 
 	///<summary>Computes the base-2 logarithm of a value plus one.</summary>
-	[Jazor(Op.Inline, "static System.Half.Log2P1(System.Half)", "Math.f16round(Math.log2(__arg1 + 1))")]
+	[Jazor(Op.Inline, "static System.Half.Log2P1(System.Half)", "Math.f16round(Math.log1p(__arg1) / Math.LN2)")]
 	public extern static Number _307d0b18233ab939(Number value);
 
 	///<summary>Computes the base-10 logarithm of a value plus one.</summary>
-	[Jazor(Op.Inline, "static System.Half.Log10P1(System.Half)", "Math.f16round(Math.log10(__arg1 + 1))")]
+	[Jazor(Op.Inline, "static System.Half.Log10P1(System.Half)", "Math.f16round(Math.log1p(__arg1) / Math.LN10)")]
 	public extern static Number _6ef95ef69ba65637(Number value);
 
 	///<summary>Divides two values together to compute their modulus or remainder.</summary>

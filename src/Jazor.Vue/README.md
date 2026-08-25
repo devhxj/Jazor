@@ -8,8 +8,8 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.20.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.20.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.21.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.21.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

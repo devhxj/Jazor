@@ -21,6 +21,8 @@ internal static class ClrRuntimeSingleScenarios
 
         Success("single.is-pow2.fractional-power", "static float.IsPow2(float)", [Number(0.5)], Bool(true)),
         Success("single.is-pow2.infinity", "static float.IsPow2(float)", [Number(double.PositiveInfinity)], Bool(false)),
+        Success("single.root-n.negative-odd", "static float.RootN(float, int)", [Number(-8), Number(3)], Number(-2)),
+        Success("single.root-n.negative-even-is-nan", "static float.RootN(float, int)", [Number(-8), Number(2)], Number(float.NaN)),
         Success("single.sign.negative", "static float.Sign(float)", [Number(-3.5)], Number(-1)),
         Success("single.sign.negative-zero", "static float.Sign(float)", [Number(-0.0)], Number(0)),
         Failure("single.sign.nan", "static float.Sign(float)", [Number(double.NaN)], "ArithmeticException"),

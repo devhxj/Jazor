@@ -414,7 +414,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let log2 = Math.log2(value);
-  let expM1 = Math.exp(value) - 1;
+  let expM1 = Math.fround(Math.expm1(value));
   let ceil = Math.ceil(value);
   let floor = Math.floor(value);
   let round = _99c8e34b34aa762c(value);
@@ -647,11 +647,11 @@ public sealed class SemanticWalkerReferenceTest
   let copy = sign < 0 ? -Math.abs(value) : Math.abs(value);
   let clamp = Math.min(Math.max(value, min), max);
   let signum = value > 0 ? 1 : value < 0 ? -1 : 0;
-  let abs = Math.abs(value);
+  let abs = _49bf8261f5cf3a4b(value);
   let even = (value & 1) === 0;
   let negative = value < 0;
   let odd = (value & 1) !== 0;
-  let positive = value > 0;
+  let positive = value >= 0;
   let pow2 = value > 0 && (value & value - 1) === 0;
   let log2 = Math.floor(Math.log2(value));
   let leadingZeros = Math.clz32(value);
@@ -709,11 +709,11 @@ public sealed class SemanticWalkerReferenceTest
   let signedCopy = signedSign < 0 ? -Math.abs(signedValue) : Math.abs(signedValue);
   let signedClamp = Math.min(Math.max(signedValue, signedMin), signedMax);
   let signedSignum = signedValue > 0 ? 1 : signedValue < 0 ? -1 : 0;
-  let signedAbs = Math.abs(signedValue);
+  let signedAbs = _8ce36b36c4abd947(signedValue);
   let signedEven = (signedValue & 1) === 0;
   let signedNegative = signedValue < 0;
   let signedOdd = (signedValue & 1) !== 0;
-  let signedPositive = signedValue > 0;
+  let signedPositive = signedValue >= 0;
   let signedPow2 = signedValue > 0 && (signedValue & signedValue - 1) === 0;
   let signedLog2 = Math.floor(Math.log2(signedValue));
   let signedLeadingZeros = signedValue === 0 ? 16 : Math.clz32(signedValue & 0xFFFF) - 16;
@@ -925,11 +925,11 @@ public sealed class SemanticWalkerReferenceTest
   let signedCopy = signedSign < 0 ? -Math.abs(signedValue) : Math.abs(signedValue);
   let signedClamp = Math.min(Math.max(signedValue, signedMin), signedMax);
   let signedSignum = signedValue > 0 ? 1 : signedValue < 0 ? -1 : 0;
-  let signedAbs = Math.abs(signedValue);
+  let signedAbs = _f0d5d38874458f27(signedValue);
   let signedEven = (signedValue & 1) === 0;
   let signedNegative = signedValue < 0;
   let signedOdd = (signedValue & 1) !== 0;
-  let signedPositive = signedValue > 0;
+  let signedPositive = signedValue >= 0;
   let signedPow2 = signedValue > 0 && (signedValue & signedValue - 1) === 0;
   let signedLog2 = Math.floor(Math.log2(signedValue));
   let signedMaxValue = Math.max(signedMin, signedMax);
@@ -1039,7 +1039,7 @@ public sealed class SemanticWalkerReferenceTest
   let even = value % 2n === 0n;
   let negative = value < 0n;
   let odd = value % 2n !== 0n;
-  let positive = value > 0n;
+  let positive = value >= 0n;
   let remainder = left % right;
   let subtract = left - right;
 }", script);
@@ -2305,7 +2305,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(
 @"{
-  let abs = Math.abs;
+  let abs = v$0$0 => _0aaf1073fc70e405(v$0$0);
 }", script);
 
 	}
@@ -3277,8 +3277,8 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let last = _5ad63706a889c294(text, text.length - 1);
-  let upper = last.toUpperCase();
-  let lower = last.toLowerCase();
+  let upper = _b0c91aa30cd2a5f7(last);
+  let lower = _76274ed9d45c0127(last);
   let letter = _38721338a529a8d7(last);
   let whitespace = _16e351e6f7b127f7(last);
   let numeric = _d86c1e9964250116(last);
@@ -6521,7 +6521,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  [1, 2, 3].length = 0;
+  [1, 2, 3].fill(undefined);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 

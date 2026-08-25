@@ -106,6 +106,9 @@ internal static class ClrRuntimeStringExtendedScenarios
         Success("string.last-index-of-any.bounded", "string.LastIndexOfAny(char[], int, int)", [Text("abcabc"), Array(Text("a")), Number(4), Number(2)], Number(3)),
 
         Success("string.split.character-count", "string.Split(char, int, System.StringSplitOptions)", [Text("a,b,c"), Text(","), Number(2), Number(0)], Array(Text("a"), Text("b,c"))),
+        Success("string.split.null-character-array-keeps-whitespace", "string.Split(char[], System.StringSplitOptions)", [Text("a  b"), Null(), Number(0)], Array(Text("a"), Text(""), Text("b"))),
+        Success("string.split.null-character-array-count-keeps-whitespace", "string.Split(char[], int)", [Text("a  b"), Null(), Number(3)], Array(Text("a"), Text(""), Text("b"))),
+		Success("string.split.null-character-array-recognizes-nel", "string.Split(char[], System.StringSplitOptions)", [Text("a\u0085b"), Null(), Number(0)], Array(Text("a"), Text("b"))),
         Success("string.split.character-array-options", "string.Split(char[], System.StringSplitOptions)", [Text(" a, ,b "), Array(Text(",")), Number(3)], Array(Text("a"), Text("b"))),
         Success("string.split.character-array-count", "string.Split(char[], int)", [Text("a,b,c"), Array(Text(",")), Number(2)], Array(Text("a"), Text("b,c"))),
         Success("string.split.character-array-count-options", "string.Split(char[], int, System.StringSplitOptions)", [Text(" a, ,b "), Array(Text(",")), Number(2), Number(3)], Array(Text("a"), Text(",b"))),

@@ -6,6 +6,9 @@ namespace Jazor.CLR;
 /// <remarks>
 /// Promise 本身通常立即拥有异步结果，但 C# Task 的部分创建 API 还具有延迟启动语义；
 /// 本模块通过 runtime WeakMap 保存 starter 状态，不能简单把所有 Task.Factory 调用替换为 Promise.resolve。
+/// 取消状态沿用 TaskInlineTemplates 的统一 Error("TaskCanceledException") 协议；因此用户代码若
+/// 主动抛出同名错误，会被状态投影视为取消而不是故障。这是 Promise carrier 的边界，取消路径必须
+/// 继续使用该协议，不能只修改某一个 Status/IsCanceled 模板。
 /// </remarks>
 [ECMAScriptModule("System/Threading/Tasks/TaskModule.js")]
 [Jazor(Op.Alias, "System.Threading.Tasks.Task", "Promise")]

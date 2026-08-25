@@ -209,24 +209,28 @@ public static class MathModule
 	public extern static Number _d198ea5fec4f6c8a(Number value);
 
 	///<summary>Returns the absolute value of a 16-bit signed integer.</summary>
-	[Jazor(Op.Alias, "static System.Math.Abs(short)", "abs")]
-	public extern static Number _81a80e1bfb516bfb(Number value);
+	[Jazor(Op.Import, "static System.Math.Abs(short)")]
+	public static Number _81a80e1bfb516bfb(Number value)
+		=> Int16Module._8ce36b36c4abd947(value);
 
 	///<summary>Returns the absolute value of a 32-bit signed integer.</summary>
-	[Jazor(Op.Alias, "static System.Math.Abs(int)", "abs")]
-	public extern static Number _0aaf1073fc70e405(Number value);
+	[Jazor(Op.Import, "static System.Math.Abs(int)")]
+	public static Number _0aaf1073fc70e405(Number value)
+		=> Int32Module._49bf8261f5cf3a4b(value);
 
 	///<summary>Returns the absolute value of a 64-bit signed integer.</summary>
-	[Jazor(Op.Inline, "static System.Math.Abs(long)", "((__arg1 < 0n) ? -__arg1 : __arg1)")]
-	public extern static BigInt _2f5b0b713dde9501(BigInt value);
+	[Jazor(Op.Import, "static System.Math.Abs(long)")]
+	public static BigInt _2f5b0b713dde9501(BigInt value)
+		=> Int64Module._6ae5b36df368d1e5(value);
 
 	///<summary>Returns the absolute value of a native signed integer.</summary>
 	[Jazor(Op.Discard ,"static System.Math.Abs(nint)")]
 	public extern static nint _6de080191221a07d(object value);
 
 	///<summary>Returns the absolute value of an 8-bit signed integer.</summary>
-	[Jazor(Op.Alias, "static System.Math.Abs(sbyte)", "abs")]
-	public extern static Number _6ed2ee0733ac7051(Number value);
+	[Jazor(Op.Import, "static System.Math.Abs(sbyte)")]
+	public static Number _6ed2ee0733ac7051(Number value)
+		=> SByteModule._f0d5d38874458f27(value);
 
 	///<summary>Returns the absolute value of a <see cref="T:System.Decimal" /> number.</summary>
 	[Jazor(Op.Import ,"static System.Math.Abs(decimal)")]

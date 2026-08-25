@@ -326,11 +326,16 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.Abs(value)
-	/// JS: Math.abs(value)
-	/// Note: 这里不能依赖 int -> Number 的 Alias 宿主，否则会退化成错误的 Number.abs
+	/// JS: checked absolute value with the CLR overflow contract
 	/// </summary>
-	[Jazor(Op.Inline, "static int.Abs(int)", "Math.abs(__arg1)")]
-	public extern static Number _49bf8261f5cf3a4b(Number value);
+	[Jazor(Op.Import, "static int.Abs(int)")]
+	public static Number _49bf8261f5cf3a4b(Number value)
+	{
+		if (value == -2147483648)
+			throw new Error("OverflowException: Arithmetic operation resulted in an overflow.");
+
+		return Math.Absolute(value);
+	}
 
 	[Jazor(Op.Discard, "static int.CreateChecked<TOther>(TOther)")]
 	public extern static Number _275663af53fa5529<TOther>(object value);
@@ -364,9 +369,9 @@ public static class Int32Module
 
 	/// <summary>
 	/// C#: int.IsPositive(value)
-	/// JS: value > 0
+	/// JS: value >= 0
 	/// </summary>
-	[Jazor(Op.Inline, "static int.IsPositive(int)", "(__arg1 > 0)")]
+	[Jazor(Op.Inline, "static int.IsPositive(int)", "(__arg1 >= 0)")]
 	public extern static bool _280b1b013a39c514(Number value);
 
 	/// <summary>

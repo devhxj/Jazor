@@ -5270,14 +5270,15 @@ export function LongCopy(value, sign) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function SignedCopy(value, sign) {
+@"import { _49bf8261f5cf3a4b } from ""System/Int32Module.js"";
+export function SignedCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
 export function SignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function SignedMeta(value) {
-  return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + Math.clz32(value) + (value === 0 ? 32 : 31 - Math.clz32(value & -value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return (value > 0 ? 1 : value < 0 ? -1 : 0) + _49bf8261f5cf3a4b(value) + Math.floor(Math.log2(value)) + Math.clz32(value) + (value === 0 ? 32 : 31 - Math.clz32(value & -value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value >= 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
 export function SignedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
@@ -5363,14 +5364,15 @@ export function SignedBounds(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function SignedCopy(value, sign) {
+@"import { _8ce36b36c4abd947 } from ""System/Int16Module.js"";
+export function SignedCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
 export function SignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function SignedMeta(value) {
-  return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) + ((((value & 0xFFFF) << (3 & 15) | (value & 0xFFFF) >>> 16 - (3 & 15)) & 0xFFFF) << 16 >> 16) + ((((value & 0xFFFF) >>> (5 & 15) | (value & 0xFFFF) << 16 - (5 & 15)) & 0xFFFF) << 16 >> 16) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return (value > 0 ? 1 : value < 0 ? -1 : 0) + _8ce36b36c4abd947(value) + Math.floor(Math.log2(value)) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) + ((((value & 0xFFFF) << (3 & 15) | (value & 0xFFFF) >>> 16 - (3 & 15)) & 0xFFFF) << 16 >> 16) + ((((value & 0xFFFF) >>> (5 & 15) | (value & 0xFFFF) << 16 - (5 & 15)) & 0xFFFF) << 16 >> 16) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value >= 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
 export function SignedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
@@ -5595,14 +5597,15 @@ export function Sum(ushortValue, uintValue) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function SignedCopy(value, sign) {
+@"import { _f0d5d38874458f27 } from ""System/SByteModule.js"";
+export function SignedCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
 export function SignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function SignedMeta(value) {
-  return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return (value > 0 ? 1 : value < 0 ? -1 : 0) + _f0d5d38874458f27(value) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value >= 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
 export function SignedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
@@ -5799,7 +5802,7 @@ export function Odd(value) {
   return value % 2n !== 0n;
 }
 export function Positive(value) {
-  return value > 0n;
+  return value >= 0n;
 }
 export function Remainder(left, right) {
   return left % right;
@@ -5965,7 +5968,7 @@ export function MinNumber(left, right) {
 @"import { _99c8e34b34aa762c, _e54bb5d6b1fb386d } from ""System/SingleModule.js"";
 export function Run(value, left, right, third) {
   let log2 = Math.log2(value);
-  let expM1 = Math.exp(value) - 1;
+  let expM1 = Math.fround(Math.expm1(value));
   let ceil = Math.ceil(value);
   let floor = Math.floor(value);
   let round = _99c8e34b34aa762c(value);

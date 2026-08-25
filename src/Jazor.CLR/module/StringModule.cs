@@ -6,6 +6,9 @@ namespace Jazor.CLR;
 /// <remarks>
 /// JavaScript String 与 .NET UTF-16 字符串在大多数索引操作上相近，但比较、格式化、culture
 /// 和 null 行为并不自动等价；复杂路径使用 Import，短小稳定的路径才使用 Inline。
+/// 无参 Trim 继续遵循 JavaScript 的 Unicode whitespace 集合；带 char/char[]/span 参数的
+/// Trim 必须严格按调用方提供的字符集合扫描。Split 的 null 分隔符则使用 .NET BMP whitespace
+/// 集合（包括 U+0085 NEL），不能用会折叠连续空白或遗漏 NEL 的正则别名替代。
 /// </remarks>
 [ECMAScriptModule("System/StringModule.js")]
 [Jazor(Op.Alias, "string","String")]
@@ -25,10 +28,10 @@ public static class StringModule
 
 	private static string JoinCharacters(Array<string> value, Number startIndex, Number length)
 	{
-		var result = "";
+		var parts = new Array<string>();
 		for (var index = startIndex; index < startIndex + length; index++)
-			result += value[index];
-		return result;
+			parts.Push(value[index]);
+		return parts.Join("");
 	}
 
 	private static void EnsureStringIndex(string value, Number index, string parameterName)
@@ -97,16 +100,16 @@ public static class StringModule
 		if (values == null)
 			throw new Error($"ArgumentNullException: {parameterName} is null.");
 
-		var result = "";
+		var parts = new Array<string>();
 		var first = true;
 		foreach (var value in values)
 		{
 			if (!first)
-				result += separator;
-			result += value ?? "";
+				parts.Push(separator);
+			parts.Push(value ?? "");
 			first = false;
 		}
-		return result;
+		return parts.Join("");
 	}
 
 	private static string ConcatStrings(Array<string?> values, string separator, string parameterName)
@@ -114,14 +117,14 @@ public static class StringModule
 		if (values == null)
 			throw new Error($"ArgumentNullException: {parameterName} is null.");
 
-		var result = "";
+		var parts = new Array<string>();
 		for (var index = 0; index < values.Length; index++)
 		{
 			if (index != 0)
-				result += separator;
-			result += values[index] ?? "";
+				parts.Push(separator);
+			parts.Push(values[index] ?? "");
 		}
-		return result;
+		return parts.Join("");
 	}
 
 	private static string ConcatValues<T>(IEnumerable<T> values, string separator, string parameterName)
@@ -129,16 +132,16 @@ public static class StringModule
 		if (values == null)
 			throw new Error($"ArgumentNullException: {parameterName} is null.");
 
-		var result = "";
+		var parts = new Array<string>();
 		var first = true;
 		foreach (var value in values)
 		{
 			if (!first)
-				result += separator;
-			result += RuntimeModule.GetStringRepresentation(value);
+				parts.Push(separator);
+			parts.Push(RuntimeModule.GetStringRepresentation(value));
 			first = false;
 		}
-		return result;
+		return parts.Join("");
 	}
 
 	private static string ConcatValues<T>(Array<T> values, string separator, string parameterName)
@@ -146,14 +149,14 @@ public static class StringModule
 		if (values == null)
 			throw new Error($"ArgumentNullException: {parameterName} is null.");
 
-		var result = "";
+		var parts = new Array<string>();
 		for (var index = 0; index < values.Length; index++)
 		{
 			if (index != 0)
-				result += separator;
-			result += RuntimeModule.GetStringRepresentation(values[index]);
+				parts.Push(separator);
+			parts.Push(RuntimeModule.GetStringRepresentation(values[index]));
 		}
-		return result;
+		return parts.Join("");
 	}
 
 	private static string JoinRange(string separator, Array<string?> value, Number startIndex, Number count)
@@ -165,14 +168,14 @@ public static class StringModule
 		if (startIndex > value.Length - count)
 			throw new Error("ArgumentOutOfRangeException: startIndex and count must identify a valid range.");
 
-		var result = "";
+		var parts = new Array<string>();
 		for (var index = startIndex; index < startIndex + count; index++)
 		{
 			if (index != startIndex)
-				result += separator;
-			result += value[index] ?? "";
+				parts.Push(separator);
+			parts.Push(value[index] ?? "");
 		}
-		return result;
+		return parts.Join("");
 	}
 
 	private static string GetNormalizationForm(Number normalizationForm)
@@ -193,7 +196,7 @@ public static class StringModule
 		if (replacementText == null)
 			throw new Error("ArgumentNullException: replacementText is null.");
 
-		var result = "";
+		var parts = new Array<string>();
 		var segmentStart = 0;
 		for (var index = 0; index < instance.Length; index++)
 		{
@@ -208,14 +211,18 @@ public static class StringModule
 			if (!isLineEnding)
 				continue;
 
-			result += instance.Substring(segmentStart, index - segmentStart);
-			result += replacementText;
+			parts.Push(instance.Substring(segmentStart, index - segmentStart));
+			parts.Push(replacementText);
 			if (isCarriageReturn && index + 1 < instance.Length && instance.CharCodeAt(index + 1) == 10)
 				index++;
 			segmentStart = index + 1;
 		}
 
-		return segmentStart == 0 ? instance : result + instance.Substring(segmentStart);
+		if (segmentStart == 0)
+			return instance;
+
+		parts.Push(instance.Substring(segmentStart));
+		return parts.Join("");
 	}
 
 	private static string TrimReadOnlyCharacterSpan(
@@ -1092,7 +1099,7 @@ public static class StringModule
 	public static string[] _62c8810ea13dba45(string instance, object? separator)
 	{
 		if (separator is null)
-			return instance.Split(RegExp(@"\s+"));
+			return SplitByWhitespace(instance);
 
 		if (separator is string singleSeparator)
 			return instance.Split(RegExp(BuildSplitCharClassPattern(singleSeparator)));
@@ -1100,13 +1107,13 @@ public static class StringModule
 		if (separator is Array<string> separators)
 			return instance.Split(RegExp(BuildSplitCharClassPattern(separators)));
 
-		return instance.Split(RegExp(@"\s+"));
+		return SplitByWhitespace(instance);
 	}
 
 	private static string BuildSplitCharClassPattern(string separator)
 	{
 		if (separator.Length == 0)
-			return @"\s+";
+			return @"\s";
 
 		var pattern = "[";
 		for (var i = 0; i < separator.Length; i++)
@@ -1118,7 +1125,7 @@ public static class StringModule
 	private static string BuildSplitCharClassPattern(Array<string> separators)
 	{
 		if (separators.Length == 0)
-			return @"\s+";
+			return @"\s";
 
 		var pattern = "[";
 		var hasSeparator = false;
@@ -1133,7 +1140,43 @@ public static class StringModule
 				pattern += EscapeRegexCharClassChar(separator.Substring(j, 1));
 		}
 
-		return hasSeparator ? pattern + "]" : @"\s+";
+		return hasSeparator ? pattern + "]" : @"\s";
+	}
+
+	private static bool IsWhitespaceCharacter(string value)
+	{
+		if (value.Length != 1)
+			return false;
+
+		var code = value.CharCodeAt(0);
+		return (code >= 0x0009 && code <= 0x000D)
+			|| code == 0x0020
+			|| code == 0x0085
+			|| code == 0x00A0
+			|| code == 0x1680
+			|| (code >= 0x2000 && code <= 0x200A)
+			|| code == 0x2028
+			|| code == 0x2029
+			|| code == 0x202F
+			|| code == 0x205F
+			|| code == 0x3000;
+	}
+
+	private static string[] SplitByWhitespace(string instance)
+	{
+		var result = new Array<string>();
+		var start = 0;
+		for (var index = 0; index < instance.Length; index++)
+		{
+			if (!IsWhitespaceCharacter(instance[index].ToString()))
+				continue;
+
+			result.Push(instance.Substring(start, index - start));
+			start = index + 1;
+		}
+
+		result.Push(instance.Substring(start));
+		return result;
 	}
 
 	private static string EscapeRegexCharClassChar(string ch) => ch switch
@@ -1185,11 +1228,13 @@ public static class StringModule
 			return ApplySplitOptions([instance], options);
 
 		var any = NormalizeCharSet(separator);
+		var useWhitespace = any.Count == 0;
 		var result = new Array<string>();
 		var start = 0;
 		for (var i = 0; i < instance.Length && result.Length < count - 1; i++)
 		{
-			if (!any.Contains(instance[i].ToString()))
+			var current = instance[i].ToString();
+			if (useWhitespace ? !IsWhitespaceCharacter(current) : !any.Contains(current))
 				continue;
 
 			var part = instance.Substring(start, i - start);

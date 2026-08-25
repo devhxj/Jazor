@@ -32,12 +32,19 @@ internal static class ClrRuntimeSetScenarios
                     Text("a"))
             ],
             Number(3)),
-        Success(
-            "hash-set.ensure-capacity.rounds-to-clr-prime",
-            "System.Collections.Generic.HashSet<T>.EnsureCapacity(int)",
+            Success(
+                "hash-set.ensure-capacity.rounds-to-clr-prime",
+                "System.Collections.Generic.HashSet<T>.EnsureCapacity(int)",
+                "System/Collections/Generic/HashSetT1Module.js",
+                [Invoke("System.Collections.Generic.HashSet<T>.HashSet()"), Number(4)],
+                Number(7)),
+        SuccessMutation(
+            "hash-set.remove-where.materializes-before-delete",
+            "System.Collections.Generic.HashSet<T>.RemoveWhere(System.Predicate<T>)",
             "System/Collections/Generic/HashSetT1Module.js",
-            [Invoke("System.Collections.Generic.HashSet<T>.HashSet()"), Number(4)],
-            Number(7)),
+            [Set(Number(1), Number(2), Number(3), Number(4)), Callable(ClrRuntimeCallableKind.IsEven)],
+            Number(2),
+            [Set(Number(1), Number(3)), Callable(ClrRuntimeCallableKind.IsEven)]),
         Failure(
             "hash-set.ensure-capacity.rejects-negative-capacity",
             "System.Collections.Generic.HashSet<T>.EnsureCapacity(int)",
@@ -110,6 +117,7 @@ internal static class ClrRuntimeSetScenarios
     private static ClrRuntimeValue Bool(bool value) => ClrRuntimeValue.Boolean(value);
     private static ClrRuntimeValue Array(params ClrRuntimeValue[] values) => ClrRuntimeValue.Array(values);
     private static ClrRuntimeValue Set(params ClrRuntimeValue[] values) => ClrRuntimeValue.Set(values);
+    private static ClrRuntimeValue Callable(ClrRuntimeCallableKind kind) => ClrRuntimeValue.Callable(kind);
     private static ClrRuntimeValue Reference(string id, ClrRuntimeValue value) => ClrRuntimeValue.Reference(id, value);
     private static ClrRuntimeValue Invoke(string member, params ClrRuntimeValue[] arguments)
         => ClrRuntimeValue.Invoke(member, arguments);

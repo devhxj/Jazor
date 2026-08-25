@@ -261,7 +261,7 @@ internal static class ClrRuntimeTestHost
               switch (value.scalar) {
                 case "IsEven": fn = item => typeof item === "number" && item % 2 === 0; break;
                 case "IsEvenIndex": fn = (_, index) => index % 2 === 0; break;
-                case "IsPositive": fn = item => typeof item === "number" && item > 0; break;
+                case "IsPositive": fn = item => typeof item === "number" && item >= 0; break;
                 case "DoubleNumber": fn = item => item * 2; break;
                 case "AddIndex": fn = (item, index) => item + index; break;
                 case "ExpandNumber": fn = item => [item, item * 10]; break;

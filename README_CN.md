@@ -32,12 +32,11 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### 2026-08-24
+### Jazor 0.21.0 — 2026-08-25
 
-- **包边界变更：** `Jazor` 现在保持框架无关，可用于普通 C# -> ECMAScript 类库。Vue authoring、Razor-to-Vue、Vue runtime 资源，以及 `ECMAScript.Vue`、`ECMAScript.VueContract`、`ECMAScript.Blazor` payload 由显式的 `Jazor.Vue` 提供。
-- `ECMAScript.Blazor` 首批提供 Mouse/Keyboard/Focus 事件 getter 到原生 browser carrier 的 mapping；它随 `Jazor.Vue` 交付，不随 `Jazor` 安装，实际 runtime module/helper 仍由 `Jazor.CLR` 承载。
-- RazorVue 浏览器导航现支持 `NavigationManager.RegisterLocationChangingHandler(...)`、`PreventNavigation()`，以及后续导航覆盖进行中 handler 时的取消语义。
-- 浏览器 runtime 增加上述异步导航路径所需的 `ValueTask` 与 cancellation API 切片。
+- CLR 数值解析、边界溢出、稳定数学函数、decimal 指数校验和 DateTime 时区转换现在更贴合受支持的 .NET 契约。
+- 只读数组视图会拒绝全部原型突变方法，`Array.Clear` 保持数组长度，无分隔符 `Split` 保留 CLR 的连续空白空条目。
+- `Queue<T>` 与 `Stack<T>` 增加受支持的核心操作，集合比较器、哈希和批量修改路径完成一致性收口。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -95,15 +94,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.20.0
+dotnet add package Jazor --version 0.21.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.20.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.20.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.21.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.21.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

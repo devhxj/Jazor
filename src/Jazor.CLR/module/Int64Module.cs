@@ -102,28 +102,11 @@ public static class Int64Module
 	/// </summary>
 	[Jazor(Op.Import, "static long.Parse(string)")]
 	public static BigInt _4174bb5b72e448a6(string? s)
-	{
-		if (s == null)
-			throw new Error("ArgumentNullException: String cannot be null.");
-
-		var trimmed = s.Trim();
-		BigInt result;
-		try
-		{
-			result = BigIntValue(trimmed);
-		}
-		catch
-		{
-			throw new Error($"FormatException: String '{s}' was not recognized as a valid Int64.");
-		}
-
-		// 仅转换失败属于 FormatException；范围验证必须保留 OverflowException。
-		var minValue = BigIntValue("-9223372036854775808");
-		var maxValue = BigIntValue("9223372036854775807");
-		if (result < minValue || result > maxValue)
-			throw new Error($"OverflowException: Value '{s}' was either too large or too small for an Int64.");
-		return result;
-	}
+		=> BigIntIntegerRuntime.Parse(
+			s,
+			MinValueCore,
+			BigIntValue("9223372036854775807"),
+			"Int64");
 
 	///<summary>Converts the string representation of a number in a specified style to its 64-bit signed integer equivalent.</summary>
 	[Jazor(Op.Discard, "static long.Parse(string, System.Globalization.NumberStyles)")]
@@ -147,26 +130,10 @@ public static class Int64Module
 	/// </summary>
 	[Jazor(Op.Import, "static long.TryParse(string, out long)")]
 	public static Array<object?> _2cba636c245c1675(string? s, BigInt result)
-	{
-		if (s == null)
-			return [false, BigInt.Zero];
-
-		var trimmed = s.Trim();
-		try
-		{
-			var parsed = BigIntValue(trimmed);
-			// Check long range
-			var minValue = BigIntValue("-9223372036854775808");
-			var maxValue = BigIntValue("9223372036854775807");
-			if (parsed < minValue || parsed > maxValue)
-				return [false, BigInt.Zero];
-			return [true, parsed];
-		}
-		catch
-		{
-			return [false, BigInt.Zero];
-		}
-	}
+		=> BigIntIntegerRuntime.TryParse(
+			s,
+			MinValueCore,
+			BigIntValue("9223372036854775807"));
 
 	///<summary>Converts the span representation of a number to its 64-bit signed integer equivalent. A return value indicates whether the conversion succeeded or failed.</summary>
 	[Jazor(Op.Import, "static long.TryParse(System.ReadOnlySpan<char>, out long)")]
@@ -260,8 +227,9 @@ public static class Int64Module
 	public extern static Number _003e583f1faf343b(BigInt value);
 
 	///<summary>Computes the absolute of a value.</summary>
-	[Jazor(Op.Inline, "static long.Abs(long)", "(__arg1 < 0n ? -__arg1 : __arg1)")]
-	public extern static BigInt _6ae5b36df368d1e5(BigInt value);
+	[Jazor(Op.Import, "static long.Abs(long)")]
+	public static BigInt _6ae5b36df368d1e5(BigInt value)
+		=> BigIntIntegerRuntime.AbsSigned(value, MinValueCore);
 
 	///<summary>Creates an instance of the current type from a value, throwing an overflow exception for any values that fall outside the representable range of the current type.</summary>
 	[Jazor(Op.Discard, "static long.CreateChecked<TOther>(TOther)")]
@@ -288,7 +256,7 @@ public static class Int64Module
 	public extern static bool _23594f30886ac699(BigInt value);
 
 	///<summary>Determines if a value is positive.</summary>
-	[Jazor(Op.Inline, "static long.IsPositive(long)", "(__arg1 > 0n)")]
+	[Jazor(Op.Inline, "static long.IsPositive(long)", "(__arg1 >= 0n)")]
 	public extern static bool _3c8be08897a76569(BigInt value);
 
 	///<summary>Compares two values to compute which is greater.</summary>
