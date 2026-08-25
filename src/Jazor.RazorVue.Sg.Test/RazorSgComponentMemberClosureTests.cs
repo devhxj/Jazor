@@ -17,7 +17,7 @@ namespace Jazor.RazorVue.Sg.Test;
 [TestClass]
 public sealed class MemberClosureTests
 {
-    private static readonly Lazy<string> DenoExecutable = new(ResolveDenoExecutable);
+    private static readonly Lazy<string> DenoExecutable = new(RazorSgDenoRuntime.ResolveExecutable);
 
     [TestMethod]
     public async Task Build_OfficialRazorCounter_CompilesStateThroughCompilerClosureAndHost()
@@ -7037,57 +7037,6 @@ public sealed class MemberClosureTests
                     error);
             }
         }
-    }
-
-    private static string ResolveDenoExecutable()
-    {
-        var repositoryRoot = Path.GetDirectoryName(FindRepositoryFile("Jazor.slnx"))
-            ?? throw new InvalidOperationException("Could not resolve the repository root for DenoHost.");
-        var executableName = OperatingSystem.IsWindows() ? "deno.exe" : "deno";
-        var candidates = new List<string>();
-
-        AddDenoRuntimeCandidates(candidates, Path.Combine(repositoryRoot, "src", "Jazor.Emit", "bin"), executableName);
-        var packageRoot = Path.Combine(repositoryRoot, ".dotnet", ".nuget", "packages");
-        if (Directory.Exists(packageRoot))
-        {
-            foreach (var runtimePackage in Directory.EnumerateDirectories(packageRoot, "denohost.runtime.*"))
-                AddDenoRuntimeCandidates(candidates, runtimePackage, executableName);
-        }
-
-        // Runtime semantics must execute on the DenoHost asset shipped by Jazor, never Node/PATH.
-        return candidates.FirstOrDefault(System.IO.File.Exists)
-            ?? throw new FileNotFoundException(
-                "Bundled DenoHost runtime was not found. Restore or build Jazor.Emit before running RazorVue runtime tests.");
-    }
-
-    private static void AddDenoRuntimeCandidates(ICollection<string> candidates, string root, string executableName)
-    {
-        if (!Directory.Exists(root))
-            return;
-
-        foreach (var candidate in Directory
-            .EnumerateFiles(root, executableName, SearchOption.AllDirectories)
-            .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase))
-        {
-            candidates.Add(candidate);
-        }
-    }
-
-    private static string FindRepositoryFile(string relativePath)
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            var candidate = Path.Combine(
-                directory.FullName,
-                relativePath.Replace('/', Path.DirectorySeparatorChar));
-            if (System.IO.File.Exists(candidate))
-                return candidate;
-
-            directory = directory.Parent;
-        }
-
-        throw new FileNotFoundException("Could not locate repository file.", relativePath);
     }
 
     private static string? ResolveBrowserExecutable()

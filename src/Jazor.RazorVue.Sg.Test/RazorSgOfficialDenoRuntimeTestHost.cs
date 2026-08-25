@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using Acornima;
 using Acornima.Ast;
@@ -432,7 +431,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
     {
         var startInfo = new ProcessStartInfo
         {
-            FileName = ResolveBundledDenoExecutable(),
+            FileName = RazorSgDenoRuntime.ResolveExecutable(),
             RedirectStandardError = true,
             RedirectStandardOutput = true,
             UseShellExecute = false,
@@ -461,21 +460,4 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             await standardError);
     }
 
-    private static string ResolveBundledDenoExecutable()
-    {
-        // Runtime tests own their native Deno asset. Do not depend on another project's
-        // incidental bin output, which is absent in a clean or isolated CI build.
-        var runtimeIdentifier = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? "win-x64"
-            : RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                ? "linux-x64"
-                : RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                    ? "osx-arm64"
-                    : "osx-x64";
-        var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "deno.exe" : "deno";
-        var path = Path.Combine(AppContext.BaseDirectory, "runtimes", runtimeIdentifier, "native", executableName);
-        return File.Exists(path)
-            ? path
-            : throw new FileNotFoundException("Bundled Deno runtime was not found in the Razor SG test output.", path);
-    }
 }
