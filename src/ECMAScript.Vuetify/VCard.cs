@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// 第一波 Vuetify 卡片存根，用于子内容组合。
 /// First-wave Vuetify card stub for child-content composition.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VCard")]
+[ECMAScript("vuetify/components", Transform.Component, "VCard")]
 public sealed class VCard : ComponentBase, IVuetifyComponent
 {
     /// <summary>

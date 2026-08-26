@@ -1466,9 +1466,9 @@ export function Render() {
                 string.Equals(reference.Display, typeof(ECMAScript.Vue).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
         {
             references.Add(MetadataReference.CreateFromFile(
-                typeof(ECMAScript.Contract.LibraryComponentAttribute).Assembly.Location));
+                typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location));
             references.Add(MetadataReference.CreateFromFile(
-                typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location));
+                typeof(ECMAScript.VueContract.VueInjectAttribute).Assembly.Location));
             references.Add(MetadataReference.CreateFromFile(
                 typeof(ECMAScript.Vue.IVueComponent).Assembly.Location));
         }

@@ -1,11 +1,10 @@
 # RazorVue Blazor-first 兼容与开发者体验路线图
 
-> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器与 P0 module-integrity proof 已落地；剩余的是 framework 行为深度、验证、LocationChanged、typed JS/auth state、SSR/package/browser consumer proof 及未承诺的 P1/P2 能力。标准 Blazor 内置 UI 组件不属于当前产品契约。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
+> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器与 P0 module-integrity proof 已落地；剩余的是 framework 行为深度、验证、LocationChanged、auth state、SSR/package/browser consumer proof 及未承诺的 P1/P2 能力。标准 Blazor 内置 UI 组件和 Blazor JS interop 不属于当前产品契约。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
 >
 > 目标：开发者按标准 Blazor 的 Razor、组件生命周期、参数、事件、服务和 framework API 使用习惯编写自定义组件；UI 由 TDesign、Vuetify、Element Plus 等组件库提供。RazorVue 应优先自动提供 framework 等价行为；无法保持等价时，由源码分析诊断在作者代码处说明原因、影响和替代，而不是要求开发者预先学习 lowering、Vue 或 generated C#。
 
 > **范围决策（2026-08-25）**：支持 Blazor framework，不承诺 `Microsoft.AspNetCore.Components` 内置 UI 组件。`Router`、`RouteView`、`NavLink`、`DynamicComponent`、`ErrorBoundary`、`EditForm`、`Input*`、`AuthorizeView`、`Virtualize`、`QuickGrid` 等标准标签不进入 M5 Support；识别到未纳入组件路线的标准标签时，应给出稳定 Reject/Guidance。现有适配器代码保留为历史/实验实现，不能作为产品支持证据或继续扩大承诺。
-> **组件入口契约（2026-08-25）**：所有进入 RazorVue lowering 的组件类型必须可赋值给 `ComponentBase`，实现 `IVueComponent` 或其派生接口，并声明 `[ECMAScriptModule]` 或 `[VueLibraryComponent]` 导入描述。组件库基类必须传递该 marker；只有 `ComponentBase` 而没有 `IVueComponent` 的 Microsoft 内置 UI 组件稳定 Reject。
 
 ## 1. 产品决策
 
@@ -135,7 +134,7 @@ P2 继续扩大 Blazor 兼容，但每项先完成可行性设计和行为证明
 | 能力 | 候选方向 | 不可接受的做法 |
 | --- | --- | --- |
 | AuthenticationStateProvider、claims/auth state API | 浏览器认证状态 provider 加服务端 endpoint/SSR payload 交接 | 不以 `AuthorizeView`/`AuthorizeRouteView` 隐藏 UI 代替 endpoint 授权；内置认证 UI 不在本计划 |
-| IJSRuntime、IJSObjectReference、IJSInProcessRuntime、JSInvokable | 仅为兼容既有 Blazor API 保留 `InvokeAsync`/`InvokeVoidAsync` 作者调用形状，不新增更宽的 `object` catch-all；宿主或绑定包预注册已知 identifier 并自动映射到强类型 WebIDL/module contract，未知 identifier 在作者源码处给出 typed bridge 诊断 | 任意 string eval、未声明 dynamic import、object 结果逃生；页面作者不被要求手写 Vue/模块协议 |
+| IJSRuntime、IJSObjectReference、IJSInProcessRuntime、JSInvokable | **Reject**；Jazor 已通过强类型 ECMAScript/WebIDL/module binding 直接生成浏览器 import，不再提供 Blazor 的 string invocation facade | `InvokeAsync`/`InvokeVoidAsync`、动态 import、`object[]` 编组、runtime registry 和程序集扫描；作者改用实际 API 的强类型 binding |
 | PersistentComponentState、prerender data | SSR payload 和 hydration state handoff | 客户端与服务器重复副作用或无版本的全局缓存 |
 | `[SupplyParameterFromForm]`、`FormName`、`AntiforgeryToken`、enhanced form post | 独立 SSR/endpoint 或组件路线 | 本框架计划不实现内置表单组件的 server form protocol |
 | `Virtualize<TItem>`、`QuickGrid<TGridItem>`、`SectionOutlet`/`SectionContent`、`StreamRendering` | 独立性能/SSR/组件路线 | 不以普通列表或空占位静默替代内置组件 |
@@ -144,7 +143,7 @@ P2 继续扩大 Blazor 兼容，但每项先完成可行性设计和行为证明
 | localization、culture、`IStringLocalizer`/资源访问 | 编译时资源索引或显式 host locale adapter | 把服务器资源程序集或当前线程状态隐式复制到浏览器 |
 | 参数化组件 constructor、this/base chaining | 仅在 activation、DI lifetime、base 初始化顺序可完整投影时支持 | 忽略 constructor argument 或把参数当 constructor argument |
 
-P2 不预设全部都会变成 Direct Support。每项要么实现可保真的 adapter，要么进入 Guided Adaptation；不会长期留下“能编译但运行时未知”的灰区。
+P2 不预设全部都会变成 Direct Support。每项要么实现可保真的 adapter，要么进入 Guided Adaptation；`IJSRuntime` 家族固定为 Reject。不会长期留下“能编译但运行时未知”的灰区。
 
 ### 3.4 仍需明确拒绝的底线
 
@@ -152,6 +151,7 @@ P2 不预设全部都会变成 Direct Support。每项要么实现可保真的 a
 
 - 需要真实 server process、filesystem、thread、socket、数据库上下文或任意服务器 DI service 的代码；
 - 无法静态确定的动态 Type、动态 import、任意 JavaScript text execution；
+- `IJSRuntime`、`IJSObjectReference`、`IJSInProcessRuntime`、`DotNetObjectReference<T>` 与 `JSInvokable` 的通用 interop facade；应改用强类型 ECMAScript/WebIDL/module binding；
 - 跨 render frame 的 goto、不可投影的 labeled branch，或破坏 Razor render protocol 的控制流；
 - 无法确定来源且可能递归的 RenderFragment factory；
 - 不能建立稳定使用点语义的反射、运行时代码生成和裸 object 逃生 API。
@@ -170,9 +170,9 @@ P2 不预设全部都会变成 Direct Support。每项要么实现可保真的 a
 | 状态与生命周期 | `[Parameter]`、`[CascadingParameter]`、`[SupplyParameterFromQuery]`、`[SupplyParameterFromForm]`、`ParameterView`、`SetParametersAsync`、`OnInitialized*`、`OnParametersSet*`、`OnAfterRender*`、`ShouldRender`、`StateHasChanged`、`InvokeAsync` | 参数覆盖顺序、异步竞态、异常传播、render gate、SSR/hydration 一次性副作用 |
 | 路由与文档头 | `NavigationManager`、`NavigationLock`、`FocusOnNavigate`、`PageTitle`、`HeadContent`、`HeadOutlet`、query/fragment/history state，以及生成的 route metadata | 浏览器 history、URI 状态和 host registration；`Router`、`RouteView`、`AuthorizeRouteView`、`LayoutView`、`NavLink` 等内置组件不在本计划 |
 | 表单与验证 | 自定义组件的 binding/event contract | 由 TDesign/Vuetify/Element Plus 或独立路线定义 parse/format、validation、file input；`EditForm`/`Input*`/`ValidationMessage` 等内置组件不在本计划 |
-| 平台服务 | `AuthenticationStateProvider`、claims/auth state、`PersistentComponentState`、`IJSRuntime` 家族、`HttpClient` 和可执行应用服务 | 浏览器可执行性、认证与 endpoint 强制授权、typed JS/module registry、SSR payload 版本和 service lifetime；`AuthorizeView` 不在本计划 |
+| 平台服务 | `AuthenticationStateProvider`、claims/auth state、`PersistentComponentState`、`HttpClient` 和可执行应用服务 | 浏览器可执行性、认证与 endpoint 强制授权、SSR payload 版本和 service lifetime；浏览器 API/第三方模块通过 compiler-owned typed ECMAScript/WebIDL binding，不是 Blazor service；`AuthorizeView` 不在本计划 |
 
-`@rendermode`、`OwningComponentBase`、`Virtualize`、`QuickGrid`、自定义 `InputBase<T>` 和任意 `IJSRuntime` identifier 不因出现在盘点表中而自动获得 Support；内置 UI 组件标签默认走 Reject/Guidance 或独立组件路线。这样既保持 Blazor framework 作者面的完整视野，也不把“列入盘点”误写成“已经实现”。
+`@rendermode`、`OwningComponentBase`、`Virtualize`、`QuickGrid`、自定义 `InputBase<T>` 和 Blazor JS interop 家族不因出现在盘点表中而自动获得 Support；其中 JS interop 是固定 Reject，作者应改用显式的强类型 binding。内置 UI 组件标签默认走 Reject/Guidance 或独立组件路线。这样既保持 Blazor framework 作者面的完整视野，也不把“列入盘点”误写成“已经实现”。
 
 ## 4. 分析诊断优先
 
@@ -350,7 +350,7 @@ Ledger 每一行至少包含：Blazor 作者形状、目标语义基线、P0/P1/
 
 - authentication state provider、claims 和 host/endpoint contract；不以 `AuthorizeView`/`AuthorizeRouteView` 隐藏 UI 代替 endpoint 授权；
 - 自定义组件的 typed binding/event contract；表单 UI、validation 和 file input 由 TDesign、Vuetify、Element Plus 或独立组件路线提供；
-- IJSRuntime/IJSObjectReference/IJSInProcessRuntime/JSInvokable 的候选范围、typed module registry 和无法确定 invocation 的 analyzer guidance；
+- IJSRuntime/IJSObjectReference/IJSInProcessRuntime/JSInvokable 的 compiler/final Compilation 使用点 Reject 诊断和强类型 ECMAScript/WebIDL binding 迁移说明；不建设 module registry 或 invocation adapter；
 - prerender/SSR data handoff、PersistentComponentState 候选与 hydration 不重复副作用规则；
 - route/not-found、query、error boundary 和 forms 的 SSR/hydration browser smoke。
 
@@ -416,7 +416,7 @@ M5 完成时必须同时满足：
 | --- | --- |
 | “完整兼容”被误解为任意 server API 都可在浏览器运行 | P0/P1/P2 ledger 明确行为证明；server-only API 由 source analyzer 解释 |
 | analyzer 与 final generator 重复报错 | author-source 高置信规则和 final operation 裁决分层；去重回归锁定 |
-| 为兼容 IJSRuntime/DI 引入弱类型或动态漏洞 | 强类型 browser service/module registry；禁止 arbitrary eval、open object fallback 和隐式 server access |
+| 通用 JS interop 或 DI 引入弱类型、字符串调度或动态漏洞 | 明确拒绝 `IJSRuntime` 家族；浏览器 API 和模块只经 compiler-owned typed ECMAScript/WebIDL binding，禁止 arbitrary eval、open object fallback 和隐式 server access |
 | lifecycle/SSR 有重复副作用 | lifecycle protocol、generation-aware async guard、SSR/hydration browser proof |
 | bridge 演化成第二套不透明 UI framework | 只包装重复摩擦；原生 Razor 自然的 API 不加 wrapper；先 API review |
 | 样例和真实消费者漂移 | 作者样例有 Release/package smoke；JazorAdmin 和 TodoList 各自保留独立责任 |

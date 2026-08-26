@@ -152,7 +152,6 @@ public sealed class RenderEmitterPrivateContractTests
 
         Assert.AreEqual(" ./components/module ", Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "ModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "LibraryComponent")));
-        Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "ReactLibraryComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoArgumentModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NullModuleComponent")));
         Assert.IsNull(Invoke<string?>("GetECMAScriptModuleExportPath", GetNamedType(fixture, "NoImportComponent")));
@@ -163,9 +162,6 @@ public sealed class RenderEmitterPrivateContractTests
             "BuildComponentSlotNameMap",
             slotMapComponent);
         Assert.AreEqual("header-slot", slotNames[GetProperty(slotMapComponent, "Header")]);
-        var reactLibraryImport = Assert.Throws<TargetInvocationException>(() =>
-            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "ReactLibraryComponent")));
-        StringAssert.Contains(reactLibraryImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
         var noArgumentImport = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NoArgumentModuleComponent")));
         StringAssert.Contains(noArgumentImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
@@ -175,6 +171,12 @@ public sealed class RenderEmitterPrivateContractTests
         var importFailure = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "NoImportComponent")));
         StringAssert.Contains(importFailure.InnerException!.Message, "must declare", StringComparison.Ordinal);
+        var allowMarkerFailure = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "AllowMarkerComponent")));
+        StringAssert.Contains(allowMarkerFailure.InnerException!.Message, "Transform.Component", StringComparison.Ordinal);
+        var importMarkerFailure = Assert.Throws<TargetInvocationException>(() =>
+            Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "ImportMarkerComponent")));
+        StringAssert.Contains(importMarkerFailure.InnerException!.Message, "Transform.Component", StringComparison.Ordinal);
         var invalidLibraryImport = Assert.Throws<TargetInvocationException>(() =>
             Invoke<object>("ResolveComponentImport", fixture.Compilation, GetNamedType(fixture, "InvalidLibraryComponent")));
         StringAssert.Contains(invalidLibraryImport.InnerException!.Message, "must declare", StringComparison.Ordinal);
@@ -3482,11 +3484,8 @@ public sealed class RenderEmitterPrivateContractTests
             public sealed class ModuleComponent : ComponentBase, IVueComponent;
 
             [ECMAScriptModule(" ")]
-            [VueLibraryComponent(" tdesign-vue-next ", " Button ")]
+            [ECMAScript(" tdesign-vue-next ", Transform.Component, " Button ")]
             public sealed class LibraryComponent : ComponentBase, IVueComponent;
-
-            [ReactLibraryComponent("react-library", "ReactButton")]
-            public sealed class ReactLibraryComponent : ComponentBase, IVueComponent;
 
             [ECMAScriptModule]
             public sealed class NoArgumentModuleComponent : ComponentBase, IVueComponent;
@@ -3497,7 +3496,13 @@ public sealed class RenderEmitterPrivateContractTests
             [Obsolete]
             public sealed class NoImportComponent : ComponentBase, IVueComponent;
 
-            [VueLibraryComponent(" ", "Button")]
+            [ECMAScript]
+            public sealed class AllowMarkerComponent : ComponentBase, IVueComponent;
+
+            [ECMAScript("vue")]
+            public sealed class ImportMarkerComponent : ComponentBase, IVueComponent;
+
+            [ECMAScript(" ", Transform.Component, "Button")]
             public sealed class InvalidLibraryComponent : ComponentBase, IVueComponent;
 
             public sealed class SlotMapComponent : ComponentBase
@@ -3508,10 +3513,6 @@ public sealed class RenderEmitterPrivateContractTests
                 [Parameter]
                 public string? Title { get; set; }
             }
-
-            [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-            public sealed class ReactLibraryComponentAttribute(string importSpecifier, string exportName)
-                : LibraryComponentAttribute(importSpecifier, exportName);
 
             public class BaseDescriptor
             {

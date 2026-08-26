@@ -349,16 +349,16 @@ internal static partial class DirectRenderFailureCaseCatalog
         {
             0 => new(
                 "builder.OpenComponent<FailureNoImportChild>(0); builder.CloseComponent();",
-                "must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")]"),
+                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\", Transform.Component[, \"Export\"])]"),
             1 => new(
                 "builder.OpenComponent<FailureWhitespaceLibrarySpecifierChild>(0); builder.CloseComponent();",
-                "must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")]"),
+                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\", Transform.Component[, \"Export\"])]"),
             2 => new(
                 "builder.OpenComponent<FailureWhitespaceLibraryExportChild>(0); builder.CloseComponent();",
-                "must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")]"),
+                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\", Transform.Component[, \"Export\"])]"),
             _ => new(
                 "builder.OpenComponent<FailureWhitespaceModuleChild>(0); builder.CloseComponent();",
-                "must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")]")
+                "must declare [ECMAScriptModule(\"./path\")] or [ECMAScript(\"package\", Transform.Component[, \"Export\"])]")
         };
 
     private static BoundaryCaseSpec CreateUnsupportedHelperInvocationShapeCase(int variant, string marker)

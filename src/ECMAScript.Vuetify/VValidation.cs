@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 验证组件的创作代理，将验证组合式函数暴露为作用域插槽。
 /// Vuetify validation authoring proxy exposing the validation composable as a scoped slot.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VValidation")]
+[ECMAScript("vuetify/components", Transform.Component, "VValidation")]
 public sealed class VValidation : ComponentBase, IVuetifyComponent
 {
     /// <summary>

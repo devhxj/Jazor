@@ -64,6 +64,14 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.AreEqual("JAZORVCA007", hostServiceGap.DiagnosticId);
         Assert.AreEqual(RazorVueCapabilityStatus.Guidance, hostServiceGap.Status);
 
+        var jsInterop = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P2-js-runtime");
+        Assert.AreEqual("JAZORVGA022", jsInterop.DiagnosticId);
+        Assert.AreEqual(RazorVueCapabilityDecision.Reject, jsInterop.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Reject, jsInterop.Status);
+        Assert.IsTrue(jsInterop.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(jsInterop.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+
         var cascading = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-cascading-values");
         Assert.AreEqual("JAZORVCA008", cascading.DiagnosticId);

@@ -610,7 +610,7 @@ internal static class ElementPlusGenerator
             builder.AppendLine("/// <summary>");
             builder.AppendLine($"/// {EscapeXml(component.Description)}");
             builder.AppendLine("/// </summary>");
-            builder.AppendLine($"[VueLibraryComponent(\"element-plus\", \"{component.RuntimeExportName}\")]");
+            builder.AppendLine($"[ECMAScript(\"element-plus\", Transform.Component, \"{component.RuntimeExportName}\")]");
 
             builder.AppendLine($"public sealed class {component.ClassName} : {(component.HasDefaultSlot ? "ElContentComponentBase" : "ElComponentBase")}");
             builder.AppendLine("{");

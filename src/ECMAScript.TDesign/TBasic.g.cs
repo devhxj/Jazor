@@ -23842,7 +23842,7 @@ public enum TdTreePropsValueMode
     All,
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Affix")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Affix")]
 public sealed class TAffix : TContentComponentBase
 {
     [Parameter]
@@ -23874,7 +23874,7 @@ public sealed class TAffix : TContentComponentBase
     public EventCallback<bool> OnFixedChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Alert")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Alert")]
 public sealed class TAlert : TContentComponentBase
 {
     [Parameter]
@@ -23934,7 +23934,7 @@ public sealed class TAlert : TContentComponentBase
     public EventCallback<TAlertClosedEventContext> OnClosed { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Anchor")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Anchor")]
 public sealed class TAnchor : TContentComponentBase
 {
     [Parameter]
@@ -23974,7 +23974,7 @@ public sealed class TAnchor : TContentComponentBase
     public EventCallback<TAnchorClickEventLink> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "AnchorItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "AnchorItem")]
 public sealed class TAnchorItem : TContentComponentBase
 {
     [Parameter]
@@ -23999,7 +23999,7 @@ public sealed class TAnchorItem : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "AnchorTarget")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "AnchorTarget")]
 public sealed class TAnchorTarget : TContentComponentBase
 {
     [Parameter]
@@ -24012,7 +24012,7 @@ public sealed class TAnchorTarget : TContentComponentBase
     public string? Tag { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Aside")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Aside")]
 public sealed class TAside : TContentComponentBase
 {
     [Parameter]
@@ -24020,7 +24020,7 @@ public sealed class TAside : TContentComponentBase
     public string? Width { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "AutoComplete")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "AutoComplete")]
 public class TAutoComplete<T> : TContentComponentBase
 {
     [Parameter]
@@ -24160,12 +24160,12 @@ public class TAutoComplete<T> : TContentComponentBase
     public EventCallback<string> OnSelect { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "AutoComplete")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "AutoComplete")]
 public sealed class TAutoComplete : TAutoComplete<TAutoCompleteOption>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Avatar")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Avatar")]
 public sealed class TAvatar : TContentComponentBase
 {
     [Parameter]
@@ -24209,7 +24209,7 @@ public sealed class TAvatar : TContentComponentBase
     public EventCallback<TAvatarErrorEventContext> OnError { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "AvatarGroup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "AvatarGroup")]
 public sealed class TAvatarGroup : TContentComponentBase
 {
     [Parameter]
@@ -24241,7 +24241,7 @@ public sealed class TAvatarGroup : TContentComponentBase
     public RenderFragment? CollapseAvatarContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "BackTop")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "BackTop")]
 public sealed class TBackTop : TContentComponentBase
 {
     [Parameter]
@@ -24289,7 +24289,7 @@ public sealed class TBackTop : TContentComponentBase
     public EventCallback<TBackTopClickEventContext> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Badge")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Badge")]
 public sealed class TBadge : TContentComponentBase
 {
     [Parameter]
@@ -24337,7 +24337,7 @@ public sealed class TBadge : TContentComponentBase
     public RenderFragment? CountContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "BaseTable")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "BaseTable")]
 public sealed class TBaseTable : TContentComponentBase
 {
     [Parameter]
@@ -24626,7 +24626,7 @@ public sealed class TBaseTable : TContentComponentBase
     public EventCallback<bool> OnShowElementChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Breadcrumb")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Breadcrumb")]
 public sealed class TBreadcrumb : TContentComponentBase
 {
     [Parameter]
@@ -24670,7 +24670,7 @@ public sealed class TBreadcrumb : TContentComponentBase
     public RenderFragment? SeparatorContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "BreadcrumbItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "BreadcrumbItem")]
 public sealed class TBreadcrumbItem : TContentComponentBase
 {
     [Parameter]
@@ -24718,7 +24718,7 @@ public sealed class TBreadcrumbItem : TContentComponentBase
     public EventCallback<MouseEvent> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Button")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Button")]
 public sealed class TButton : TContentComponentBase
 {
     [Parameter]
@@ -24794,7 +24794,7 @@ public sealed class TButton : TContentComponentBase
     public EventCallback<MouseEvent> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Calendar")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Calendar")]
 public sealed class TCalendar : TContentComponentBase
 {
     [Parameter]
@@ -24902,7 +24902,7 @@ public sealed class TCalendar : TContentComponentBase
     public EventCallback<TCalendarMonthChangeEventOptions> OnMonthChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Card")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Card")]
 public sealed class TCard : TContentComponentBase
 {
     [Parameter]
@@ -25018,7 +25018,7 @@ public sealed class TCard : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Cascader")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Cascader")]
 public class TCascader<CascaderOption> : TContentComponentBase
 {
     [Parameter]
@@ -25250,12 +25250,12 @@ public class TCascader<CascaderOption> : TContentComponentBase
     public EventCallback<TRemoveContext<CascaderOption>> OnRemove { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Cascader")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Cascader")]
 public sealed class TCascader : TCascader<TTreeOptionData<TCascaderCascaderOptionDefaultTDefault>>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "CheckTag")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "CheckTag")]
 public sealed class TCheckTag : TContentComponentBase
 {
     [Parameter]
@@ -25299,7 +25299,7 @@ public sealed class TCheckTag : TContentComponentBase
     public EventCallback<TCheckTagClickEventContext> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "CheckTagGroup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "CheckTagGroup")]
 public sealed class TCheckTagGroup : TContentComponentBase
 {
     [Parameter]
@@ -25327,7 +25327,7 @@ public sealed class TCheckTagGroup : TContentComponentBase
     public EventCallback<TCheckTagGroupValueItem[]> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Checkbox")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Checkbox")]
 public sealed class TCheckbox : TContentComponentBase
 {
     [Parameter]
@@ -25379,7 +25379,7 @@ public sealed class TCheckbox : TContentComponentBase
     public EventCallback<bool> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "CheckboxGroup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "CheckboxGroup")]
 public class TCheckboxGroup<T> : TContentComponentBase
 {
     [Parameter]
@@ -25415,12 +25415,12 @@ public class TCheckboxGroup<T> : TContentComponentBase
     public EventCallback<T> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "CheckboxGroup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "CheckboxGroup")]
 public sealed class TCheckboxGroup : TCheckboxGroup<TCheckboxGroupValueItem[]>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Col")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Col")]
 public sealed class TCol : TContentComponentBase
 {
     [Parameter]
@@ -25476,7 +25476,7 @@ public sealed class TCol : TContentComponentBase
     public TColXxlValue? Xxl { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Collapse")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Collapse")]
 public sealed class TCollapse : TContentComponentBase
 {
     [Parameter]
@@ -25520,7 +25520,7 @@ public sealed class TCollapse : TContentComponentBase
     public EventCallback<TCollapseValueItem[]> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "CollapsePanel")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "CollapsePanel")]
 public sealed class TCollapsePanel : TContentComponentBase
 {
     [Parameter]
@@ -25568,7 +25568,7 @@ public sealed class TCollapsePanel : TContentComponentBase
     public RenderFragment? HeaderRightContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "ColorPicker")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "ColorPicker")]
 public sealed class TColorPicker : TContentComponentBase
 {
     [Parameter]
@@ -25648,7 +25648,7 @@ public sealed class TColorPicker : TContentComponentBase
     public EventCallback<string[]> OnRecentColorsChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "ColorPickerPanel")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "ColorPickerPanel")]
 public sealed class TColorPickerPanel : TContentComponentBase
 {
     [Parameter]
@@ -25704,7 +25704,7 @@ public sealed class TColorPickerPanel : TContentComponentBase
     public EventCallback<string[]> OnRecentColorsChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Comment")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Comment")]
 public sealed class TComment : TContentComponentBase
 {
     [Parameter]
@@ -25760,7 +25760,7 @@ public sealed class TComment : TContentComponentBase
     public RenderFragment? ReplyContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "ConfigProvider")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "ConfigProvider")]
 public sealed class TConfigProvider : TContentComponentBase
 {
     [Parameter]
@@ -25768,7 +25768,7 @@ public sealed class TConfigProvider : TContentComponentBase
     public TGlobalConfigProvider? GlobalConfig { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Content")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Content")]
 public sealed class TContent : TContentComponentBase
 {
     [Parameter]
@@ -25780,7 +25780,7 @@ public sealed class TContent : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "DatePicker")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "DatePicker")]
 public sealed class TDatePicker : TContentComponentBase
 {
     [Parameter]
@@ -25956,7 +25956,7 @@ public sealed class TDatePicker : TContentComponentBase
     public EventCallback<TDatePickerYearChangeEventContext> OnYearChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "DatePickerPanel")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "DatePickerPanel")]
 public sealed class TDatePickerPanel : TContentComponentBase
 {
     [Parameter]
@@ -26044,7 +26044,7 @@ public sealed class TDatePickerPanel : TContentComponentBase
     public EventCallback<TDatePickerPanelYearChangeEventContext> OnYearChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "DateRangePicker")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "DateRangePicker")]
 public sealed class TDateRangePicker : TContentComponentBase
 {
     [Parameter]
@@ -26216,7 +26216,7 @@ public sealed class TDateRangePicker : TContentComponentBase
     public EventCallback<TDateRangePickerYearChangeEventContext> OnYearChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "DateRangePickerPanel")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "DateRangePickerPanel")]
 public sealed class TDateRangePickerPanel : TContentComponentBase
 {
     [Parameter]
@@ -26300,7 +26300,7 @@ public sealed class TDateRangePickerPanel : TContentComponentBase
     public EventCallback<TDateRangePickerPanelYearChangeEventContext> OnYearChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Descriptions")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Descriptions")]
 public sealed class TDescriptions : TContentComponentBase
 {
     [Parameter]
@@ -26352,7 +26352,7 @@ public sealed class TDescriptions : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "DescriptionsItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "DescriptionsItem")]
 public sealed class TDescriptionsItem : TContentComponentBase
 {
     [Parameter]
@@ -26376,7 +26376,7 @@ public sealed class TDescriptionsItem : TContentComponentBase
     public RenderFragment? LabelContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Dialog")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Dialog")]
 public sealed class TDialog : TContentComponentBase
 {
     [Parameter]
@@ -26548,7 +26548,7 @@ public sealed class TDialog : TContentComponentBase
     public EventCallback<TDialogOverlayClickEventContext> OnOverlayClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "DialogCard")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "DialogCard")]
 public sealed class TDialogCard : TContentComponentBase
 {
     [Parameter]
@@ -26620,7 +26620,7 @@ public sealed class TDialogCard : TContentComponentBase
     public EventCallback<TDialogCardConfirmEventContext> OnConfirm { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Divider")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Divider")]
 public sealed class TDivider : TContentComponentBase
 {
     [Parameter]
@@ -26648,7 +26648,7 @@ public sealed class TDivider : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Drawer")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Drawer")]
 public sealed class TDrawer : TContentComponentBase
 {
     [Parameter]
@@ -26796,7 +26796,7 @@ public sealed class TDrawer : TContentComponentBase
     public EventCallback<TDrawerSizeDragEndEventContext> OnSizeDragEnd { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Dropdown")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Dropdown")]
 public sealed class TDropdown : TContentComponentBase
 {
     [Parameter]
@@ -26860,7 +26860,7 @@ public sealed class TDropdown : TContentComponentBase
     public EventCallback<TDropdownOption> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "DropdownItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "DropdownItem")]
 public sealed class TDropdownItem : TContentComponentBase
 {
     [Parameter]
@@ -26900,7 +26900,7 @@ public sealed class TDropdownItem : TContentComponentBase
     public EventCallback<TDropdownOption> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Empty")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Empty")]
 public sealed class TEmpty : TContentComponentBase
 {
     [Parameter]
@@ -26944,7 +26944,7 @@ public sealed class TEmpty : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "EnhancedTable")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "EnhancedTable")]
 public class TEnhancedTable<T> : TContentComponentBase
 {
     [Parameter]
@@ -27092,12 +27092,12 @@ public class TEnhancedTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "EnhancedTable")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "EnhancedTable")]
 public sealed class TEnhancedTable : TEnhancedTable<TTableRowData>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Footer")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Footer")]
 public sealed class TFooter : TContentComponentBase
 {
     [Parameter]
@@ -27105,7 +27105,7 @@ public sealed class TFooter : TContentComponentBase
     public string? Height { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Form")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Form")]
 public class TForm<FormData> : TContentComponentBase
 {
     [Parameter]
@@ -27201,12 +27201,12 @@ public class TForm<FormData> : TContentComponentBase
     public EventCallback<TValidateResultContext<FormData>> OnValidate { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Form")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Form")]
 public sealed class TForm : TForm<TJsonObject>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "FormItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "FormItem")]
 public sealed class TFormItem : TContentComponentBase
 {
     [Parameter]
@@ -27278,7 +27278,7 @@ public sealed class TFormItem : TContentComponentBase
     public RenderFragment? TipsContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Guide")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Guide")]
 public sealed class TGuide : TContentComponentBase
 {
     [Parameter]
@@ -27358,7 +27358,7 @@ public sealed class TGuide : TContentComponentBase
     public EventCallback<TGuideSkipEventContext> OnSkip { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "HeadMenu")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "HeadMenu")]
 public sealed class THeadMenu : TContentComponentBase
 {
     [Parameter]
@@ -27394,7 +27394,7 @@ public sealed class THeadMenu : TContentComponentBase
     public EventCallback<TMenuValue[]> OnExpand { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Header")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Header")]
 public sealed class THeader : TContentComponentBase
 {
     [Parameter]
@@ -27402,7 +27402,7 @@ public sealed class THeader : TContentComponentBase
     public string? Height { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Icon")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Icon")]
 public sealed class TIcon : TContentComponentBase
 {
     [Parameter]
@@ -27431,7 +27431,7 @@ public sealed class TIcon : TContentComponentBase
     public EventCallback<TIconClickEventContext> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Image")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Image")]
 public sealed class TImage : TContentComponentBase
 {
     [Parameter]
@@ -27519,7 +27519,7 @@ public sealed class TImage : TContentComponentBase
     public EventCallback<TImageLoadEventContext> OnLoad { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "ImageViewer")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "ImageViewer")]
 public sealed class TImageViewer : TContentComponentBase
 {
     [Parameter]
@@ -27615,7 +27615,7 @@ public sealed class TImageViewer : TContentComponentBase
     public EventCallback<Number> OnIndexChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Input")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Input")]
 public class TInput<T> : TContentComponentBase
 {
     [Parameter]
@@ -27803,12 +27803,12 @@ public class TInput<T> : TContentComponentBase
     public EventCallback<TInputWheelEventContext<T>> OnWheel { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Input")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Input")]
 public sealed class TInput : TInput<TInputValue>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "InputAdornment")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "InputAdornment")]
 public sealed class TInputAdornment : TContentComponentBase
 {
     [Parameter]
@@ -27828,7 +27828,7 @@ public sealed class TInputAdornment : TContentComponentBase
     public RenderFragment? PrependContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "InputGroup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "InputGroup")]
 public sealed class TInputGroup : TContentComponentBase
 {
     [Parameter]
@@ -27836,7 +27836,7 @@ public sealed class TInputGroup : TContentComponentBase
     public bool? Separate { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "InputNumber")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "InputNumber")]
 public class TInputNumber<T> : TContentComponentBase
 {
     [Parameter]
@@ -27964,12 +27964,12 @@ public class TInputNumber<T> : TContentComponentBase
     public EventCallback<TInputNumberValidateEventContext<T>> OnValidate { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "InputNumber")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "InputNumber")]
 public sealed class TInputNumber : TInputNumber<TInputNumberValue>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Layout")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Layout")]
 public sealed class TLayout : TContentComponentBase
 {
     [Parameter]
@@ -27977,7 +27977,7 @@ public sealed class TLayout : TContentComponentBase
     public TLayoutDirectionValue? Direction { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Link")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Link")]
 public sealed class TLink : TContentComponentBase
 {
     [Parameter]
@@ -28033,7 +28033,7 @@ public sealed class TLink : TContentComponentBase
     public EventCallback<MouseEvent> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "List")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "List")]
 public sealed class TList : TContentComponentBase
 {
     [Parameter]
@@ -28089,7 +28089,7 @@ public sealed class TList : TContentComponentBase
     public EventCallback<TListScrollEventOptions> OnScroll { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "ListItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "ListItem")]
 public sealed class TListItem : TContentComponentBase
 {
     [Parameter]
@@ -28109,7 +28109,7 @@ public sealed class TListItem : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "ListItemMeta")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "ListItemMeta")]
 public sealed class TListItemMeta : TContentComponentBase
 {
     [Parameter]
@@ -28145,7 +28145,7 @@ public sealed class TListItemMeta : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Loading")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Loading")]
 public sealed class TLoading : TContentComponentBase
 {
     [Parameter]
@@ -28209,7 +28209,7 @@ public sealed class TLoading : TContentComponentBase
     public RenderFragment? TextContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Menu")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Menu")]
 public sealed class TMenu : TContentComponentBase
 {
     [Parameter]
@@ -28257,7 +28257,7 @@ public sealed class TMenu : TContentComponentBase
     public EventCallback<TMenuValue[]> OnExpand { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "MenuGroup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "MenuGroup")]
 public sealed class TMenuGroup : TContentComponentBase
 {
     [Parameter]
@@ -28269,7 +28269,7 @@ public sealed class TMenuGroup : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "MenuItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "MenuItem")]
 public sealed class TMenuItem : TContentComponentBase
 {
     [Parameter]
@@ -28325,7 +28325,7 @@ public sealed class TMenuItem : TContentComponentBase
     public EventCallback<TMenuItemClickEventContext> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Message")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Message")]
 public sealed class TMessage : TContentComponentBase
 {
     [Parameter]
@@ -28373,7 +28373,7 @@ public sealed class TMessage : TContentComponentBase
     public EventCallback OnDurationEnd { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Notification")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Notification")]
 public sealed class TNotification : TContentComponentBase
 {
     [Parameter]
@@ -28437,7 +28437,7 @@ public sealed class TNotification : TContentComponentBase
     public EventCallback OnDurationEnd { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Option")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Option")]
 public sealed class TOption : TContentComponentBase
 {
     [Parameter]
@@ -28469,7 +28469,7 @@ public sealed class TOption : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "OptionGroup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "OptionGroup")]
 public sealed class TOptionGroup : TContentComponentBase
 {
     [Parameter]
@@ -28481,7 +28481,7 @@ public sealed class TOptionGroup : TContentComponentBase
     public string? Label { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Pagination")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Pagination")]
 public sealed class TPagination : TContentComponentBase
 {
     [Parameter]
@@ -28569,7 +28569,7 @@ public sealed class TPagination : TContentComponentBase
     public EventCallback<Number> OnPageSizeChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "PaginationMini")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "PaginationMini")]
 public sealed class TPaginationMini : TContentComponentBase
 {
     [Parameter]
@@ -28601,7 +28601,7 @@ public sealed class TPaginationMini : TContentComponentBase
     public EventCallback<TPaginationMiniChangeEventContext> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Paragraph")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Paragraph")]
 public sealed class TParagraph : TContentComponentBase
 {
     [Parameter]
@@ -28617,7 +28617,7 @@ public sealed class TParagraph : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Popconfirm")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Popconfirm")]
 public sealed class TPopconfirm : TContentComponentBase
 {
     [Parameter]
@@ -28681,7 +28681,7 @@ public sealed class TPopconfirm : TContentComponentBase
     public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Popup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Popup")]
 public sealed class TPopup : TContentComponentBase
 {
     [Parameter]
@@ -28777,7 +28777,7 @@ public sealed class TPopup : TContentComponentBase
     public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "PrimaryTable")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "PrimaryTable")]
 public class TPrimaryTable<T> : TContentComponentBase
 {
     [Parameter]
@@ -29234,12 +29234,12 @@ public class TPrimaryTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "PrimaryTable")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "PrimaryTable")]
 public sealed class TPrimaryTable : TPrimaryTable<TTableRowData>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Progress")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Progress")]
 public sealed class TProgress : TContentComponentBase
 {
     [Parameter]
@@ -29279,7 +29279,7 @@ public sealed class TProgress : TContentComponentBase
     public RenderFragment? LabelContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "QRCode")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "QRCode")]
 public sealed class TQRCode : TContentComponentBase
 {
     [Parameter]
@@ -29331,7 +29331,7 @@ public sealed class TQRCode : TContentComponentBase
     public EventCallback OnRefresh { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Radio")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Radio")]
 public class TRadio<T> : TContentComponentBase
 {
     [Parameter]
@@ -29375,12 +29375,12 @@ public class TRadio<T> : TContentComponentBase
     public EventCallback<TRadioClickEventContext<T>> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Radio")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Radio")]
 public sealed class TRadio : TRadio<TRadioValue>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "RadioButton")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "RadioButton")]
 public class TRadioButton<T> : TContentComponentBase
 {
     [Parameter]
@@ -29424,12 +29424,12 @@ public class TRadioButton<T> : TContentComponentBase
     public EventCallback<TRadioButtonClickEventContext<T>> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "RadioButton")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "RadioButton")]
 public sealed class TRadioButton : TRadioButton<TRadioValue>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "RadioGroup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "RadioGroup")]
 public class TRadioGroup<T> : TContentComponentBase
 {
     [Parameter]
@@ -29473,12 +29473,12 @@ public class TRadioGroup<T> : TContentComponentBase
     public EventCallback<T> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "RadioGroup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "RadioGroup")]
 public sealed class TRadioGroup : TRadioGroup<TRadioValue>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "RangeInput")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "RangeInput")]
 public sealed class TRangeInput : TContentComponentBase
 {
     [Parameter]
@@ -29602,7 +29602,7 @@ public sealed class TRangeInput : TContentComponentBase
     public EventCallback<TRangeInputMouseleaveEventContext> OnMouseleave { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "RangeInputPopup")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "RangeInputPopup")]
 public sealed class TRangeInputPopup : TContentComponentBase
 {
     [Parameter]
@@ -29670,7 +29670,7 @@ public sealed class TRangeInputPopup : TContentComponentBase
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Rate")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Rate")]
 public sealed class TRate : TContentComponentBase
 {
     [Parameter]
@@ -29722,7 +29722,7 @@ public sealed class TRate : TContentComponentBase
     public EventCallback<Number> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Row")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Row")]
 public sealed class TRow : TContentComponentBase
 {
     [Parameter]
@@ -29742,7 +29742,7 @@ public sealed class TRow : TContentComponentBase
     public string? Tag { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Select")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Select")]
 public class TSelect<T> : TContentComponentBase
 {
     [Parameter]
@@ -29986,12 +29986,12 @@ public class TSelect<T> : TContentComponentBase
     public EventCallback<string> OnSearch { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Select")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Select")]
 public sealed class TSelect : TSelect<TSelectOption>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "SelectInput")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "SelectInput")]
 public sealed class TSelectInput : TContentComponentBase
 {
     [Parameter]
@@ -30183,7 +30183,7 @@ public sealed class TSelectInput : TContentComponentBase
     public EventCallback<TTagInputValueItem[]> OnTagChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Skeleton")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Skeleton")]
 public sealed class TSkeleton : TContentComponentBase
 {
     [Parameter]
@@ -30215,7 +30215,7 @@ public sealed class TSkeleton : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Slider")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Slider")]
 public sealed class TSlider : TContentComponentBase
 {
     [Parameter]
@@ -30279,7 +30279,7 @@ public sealed class TSlider : TContentComponentBase
     public EventCallback<TSliderValue> OnChangeEnd { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Space")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Space")]
 public sealed class TSpace : TContentComponentBase
 {
     [Parameter]
@@ -30307,7 +30307,7 @@ public sealed class TSpace : TContentComponentBase
     public RenderFragment? SeparatorContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Statistic")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Statistic")]
 public sealed class TStatistic : TContentComponentBase
 {
     [Parameter]
@@ -30391,7 +30391,7 @@ public sealed class TStatistic : TContentComponentBase
     public RenderFragment? UnitContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "StepItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "StepItem")]
 public sealed class TStepItem : TContentComponentBase
 {
     [Parameter]
@@ -30435,7 +30435,7 @@ public sealed class TStepItem : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Steps")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Steps")]
 public sealed class TSteps : TContentComponentBase
 {
     [Parameter]
@@ -30471,7 +30471,7 @@ public sealed class TSteps : TContentComponentBase
     public EventCallback<TStepsChangeEventCurrent> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "StickyItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "StickyItem")]
 public sealed class TStickyItem : TContentComponentBase
 {
     [Parameter]
@@ -30503,7 +30503,7 @@ public sealed class TStickyItem : TContentComponentBase
     public RenderFragment? PopupContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "StickyTool")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "StickyTool")]
 public sealed class TStickyTool : TContentComponentBase
 {
     [Parameter]
@@ -30543,7 +30543,7 @@ public sealed class TStickyTool : TContentComponentBase
     public EventCallback<TStickyToolHoverEventContext> OnHover { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Submenu")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Submenu")]
 public sealed class TSubmenu : TContentComponentBase
 {
     [Parameter]
@@ -30579,7 +30579,7 @@ public sealed class TSubmenu : TContentComponentBase
     public RenderFragment? TitleContent { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Swiper")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Swiper")]
 public sealed class TSwiper : TContentComponentBase
 {
     [Parameter]
@@ -30647,7 +30647,7 @@ public sealed class TSwiper : TContentComponentBase
     public EventCallback<Number> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "SwiperItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "SwiperItem")]
 public sealed class TSwiperItem : TContentComponentBase
 {
     [Parameter]
@@ -30715,7 +30715,7 @@ public sealed class TSwiperItem : TContentComponentBase
     public EventCallback<Number> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Switch")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Switch")]
 public class TSwitch<T> : TContentComponentBase
 {
     [Parameter]
@@ -30755,12 +30755,12 @@ public class TSwitch<T> : TContentComponentBase
     public EventCallback<T> OnChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Switch")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Switch")]
 public sealed class TSwitch : TSwitch<TSwitchValue>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "TabPanel")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "TabPanel")]
 public sealed class TTabPanel : TContentComponentBase
 {
     [Parameter]
@@ -30808,7 +30808,7 @@ public sealed class TTabPanel : TContentComponentBase
     public EventCallback<TTabPanelRemoveEventOptions> OnRemove { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Table")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Table")]
 public class TTable<T> : TContentComponentBase
 {
     [Parameter]
@@ -31265,12 +31265,12 @@ public class TTable<T> : TContentComponentBase
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Table")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Table")]
 public sealed class TTable : TTable<TTableRowData>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Tabs")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Tabs")]
 public sealed class TTabs : TContentComponentBase
 {
     [Parameter]
@@ -31334,7 +31334,7 @@ public sealed class TTabs : TContentComponentBase
     public EventCallback<TTabsRemoveEventOptions> OnRemove { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Tag")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Tag")]
 public sealed class TTag : TContentComponentBase
 {
     [Parameter]
@@ -31394,7 +31394,7 @@ public sealed class TTag : TContentComponentBase
     public EventCallback<TTagCloseEventContext> OnClose { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "TagInput")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "TagInput")]
 public sealed class TTagInput : TContentComponentBase
 {
     [Parameter]
@@ -31562,7 +31562,7 @@ public sealed class TTagInput : TContentComponentBase
     public EventCallback<TTagInputRemoveContext> OnRemove { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Text")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Text")]
 public sealed class TText : TContentComponentBase
 {
     [Parameter]
@@ -31618,7 +31618,7 @@ public sealed class TText : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Textarea")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Textarea")]
 public sealed class TTextarea : TContentComponentBase
 {
     [Parameter]
@@ -31702,7 +31702,7 @@ public sealed class TTextarea : TContentComponentBase
     public EventCallback<TTextareaValidateEventContext> OnValidate { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "TimePicker")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "TimePicker")]
 public sealed class TTimePicker : TContentComponentBase
 {
     [Parameter]
@@ -31834,7 +31834,7 @@ public sealed class TTimePicker : TContentComponentBase
     public EventCallback<string> OnPick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "TimeRangePicker")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "TimeRangePicker")]
 public sealed class TTimeRangePicker : TContentComponentBase
 {
     [Parameter]
@@ -31942,7 +31942,7 @@ public sealed class TTimeRangePicker : TContentComponentBase
     public EventCallback<string[]> OnPick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Timeline")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Timeline")]
 public sealed class TTimeline : TContentComponentBase
 {
     [Parameter]
@@ -31966,7 +31966,7 @@ public sealed class TTimeline : TContentComponentBase
     public TTimelineThemeValue? Theme { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "TimelineItem")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "TimelineItem")]
 public sealed class TTimelineItem : TContentComponentBase
 {
     [Parameter]
@@ -32006,7 +32006,7 @@ public sealed class TTimelineItem : TContentComponentBase
     public EventCallback<TTimelineItemClickEventContext> OnClick { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Title")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Title")]
 public sealed class TTitle : TContentComponentBase
 {
     [Parameter]
@@ -32026,7 +32026,7 @@ public sealed class TTitle : TContentComponentBase
     public RenderFragment? ContentSlot { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Tooltip")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Tooltip")]
 public sealed class TTooltip : TContentComponentBase
 {
     [Parameter]
@@ -32130,7 +32130,7 @@ public sealed class TTooltip : TContentComponentBase
     public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Transfer")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Transfer")]
 public class TTransfer<T> : TContentComponentBase
 {
     [Parameter]
@@ -32246,12 +32246,12 @@ public class TTransfer<T> : TContentComponentBase
     public EventCallback<TSearchContext> OnSearch { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Transfer")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Transfer")]
 public sealed class TTransfer : TTransfer<TDataOption>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Tree")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Tree")]
 public class TTree<T> : TContentComponentBase
 {
     [Parameter]
@@ -32451,12 +32451,12 @@ public class TTree<T> : TContentComponentBase
     public EventCallback<TTreeScrollEventParams<T>> OnScroll { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Tree")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Tree")]
 public sealed class TTree : TTree<TTreeOptionData<TTreeTDefaultTDefault>>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "TreeSelect")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "TreeSelect")]
 public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
 {
     [Parameter]
@@ -32672,17 +32672,17 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
     public EventCallback<string> OnSearch { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "TreeSelect")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "TreeSelect")]
 public sealed class TTreeSelect : TTreeSelect<TTreeOptionData<TTreeSelectDataOptionDefaultTDefault>, TTreeSelectValue>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Typography")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Typography")]
 public sealed class TTypography : TContentComponentBase
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Upload")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Upload")]
 public class TUpload<T> : TContentComponentBase
 {
     [Parameter]
@@ -32938,12 +32938,12 @@ public class TUpload<T> : TContentComponentBase
     public EventCallback<TUploadWaitingUploadFilesChangeEventContext<T>> OnWaitingUploadFilesChange { get; set; }
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Upload")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Upload")]
 public sealed class TUpload : TUpload<TUploadFile>
 {
 }
 
-[VueLibraryComponent("tdesign-vue-next", "Watermark")]
+[ECMAScript("tdesign-vue-next", Transform.Component, "Watermark")]
 public sealed class TWatermark : TContentComponentBase
 {
     [Parameter]

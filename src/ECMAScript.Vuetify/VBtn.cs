@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 按钮创作代理。
 /// Vuetify button authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VBtn")]
+[ECMAScript("vuetify/components", Transform.Component, "VBtn")]
 public sealed class VBtn : ComponentBase, IVuetifyComponent
 {
     /// <summary>

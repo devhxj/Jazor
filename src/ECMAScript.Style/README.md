@@ -8,7 +8,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="0.22.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.23.0" />
 </ItemGroup>
 ```
 

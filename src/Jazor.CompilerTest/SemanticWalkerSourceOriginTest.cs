@@ -1310,7 +1310,8 @@ public sealed class SemanticWalkerSourceOriginTest
 
         var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
         var references = TestMetadataReferences.Net11
-            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location));
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location));
         var compilation = CSharpCompilation.Create(
             assemblyName: "TestAssembly",
             syntaxTrees:
@@ -1355,7 +1356,8 @@ public sealed class SemanticWalkerSourceOriginTest
 
         var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
         var references = TestMetadataReferences.Net11
-            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location));
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location));
         var compilation = CSharpCompilation.Create(
             assemblyName: "TestAssembly",
             syntaxTrees:

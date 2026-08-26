@@ -347,7 +347,9 @@ public sealed class UtilSymbolNamingScenarioTests
         var compilation = CSharpCompilation.Create(
             "RecoveredNameMetadata",
             [syntaxTree],
-            TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScriptAttribute).Assembly.Location)),
+            TestMetadataReferences.Net11
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScriptAttribute).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var host = compilation.GetTypeByMetadataName("RecoveredNameHost")!;
 
@@ -369,7 +371,9 @@ public sealed class UtilSymbolNamingScenarioTests
         var compilation = CSharpCompilation.Create(
             "UtilSymbolNamingScenario_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
-            TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScriptAttribute).Assembly.Location)),
+            TestMetadataReferences.Net11
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScriptAttribute).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)

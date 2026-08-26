@@ -77,7 +77,8 @@ public sealed class CompilerReferenceCoverageCompletionTests
             "CompilerReferenceCoverageInlineModule_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
             TestMetadataReferences.Net11.Add(
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location)),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var diagnostics = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
@@ -457,7 +458,9 @@ public sealed class CompilerReferenceCoverageCompletionTests
         var compilation = CSharpCompilation.Create(
             "CompilerReferenceCoverageCompletion_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
-            TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location)),
+            TestMetadataReferences.Net11
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         AssertCompilationSucceeded(compilation);
 
@@ -486,7 +489,9 @@ public sealed class CompilerReferenceCoverageCompletionTests
         var compilation = CSharpCompilation.Create(
             "CompilerReferenceCoverageEcma_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
-            TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location)),
+            TestMetadataReferences.Net11
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         AssertCompilationSucceeded(compilation);
         return compilation;

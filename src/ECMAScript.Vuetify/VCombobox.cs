@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 组合框组件创作代理。
 /// Vuetify combobox component authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VCombobox")]
+[ECMAScript("vuetify/components", Transform.Component, "VCombobox")]
 public sealed class VCombobox : VSelectLikeComponentBase, IVuetifyComponent
 {
     /// <summary>

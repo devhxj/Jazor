@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 键盘输入样式组件。
 /// Vuetify keyboard input styling component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VKbd")]
+[ECMAScript("vuetify/components", Transform.Component, "VKbd")]
 public sealed class VKbd : ComponentBase, IVuetifyComponent
 {
     /// <summary>

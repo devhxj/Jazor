@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 工具栏组件的编写代理。
 /// Vuetify toolbar authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VToolbar")]
+[ECMAScript("vuetify/components", Transform.Component, "VToolbar")]
 public sealed class VToolbar : ComponentBase, IVuetifyComponent
 {
     /// <summary>

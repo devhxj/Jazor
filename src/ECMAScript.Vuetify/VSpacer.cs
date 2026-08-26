@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 间距占位组件的编写代理。
 /// Vuetify spacer authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VSpacer")]
+[ECMAScript("vuetify/components", Transform.Component, "VSpacer")]
 public sealed class VSpacer : ComponentBase, IVuetifyComponent
 {
     /// <summary>

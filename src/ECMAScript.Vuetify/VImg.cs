@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 图片组件，支持懒加载、宽高比和响应式源。
 /// Vuetify image component with lazy loading, aspect ratio, and responsive sources.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VImg")]
+[ECMAScript("vuetify/components", Transform.Component, "VImg")]
 public sealed class VImg : ComponentBase, IVuetifyComponent
 {
     /// <summary>

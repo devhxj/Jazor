@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 文本输入框组件的编写代理。
 /// Vuetify text-field authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VTextField")]
+[ECMAScript("vuetify/components", Transform.Component, "VTextField")]
 public sealed class VTextField : VInputComponentBase, IVuetifyComponent
 {
     /// <summary>

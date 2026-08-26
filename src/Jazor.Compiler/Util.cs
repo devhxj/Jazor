@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Acornima;
 using Acornima.Ast;
+using ECMAScript;
 using ECMAScript.Contract;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
@@ -434,11 +435,56 @@ public static class Util
     public static bool IsECMAScriptSupportMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() is ECMAScriptAttributeMetadataName or ECMAScriptModuleAttributeMetadataName;
 
+    public static bool IsECMAScriptSupportMarkerAttributeData(AttributeData? attribute)
+    {
+        if (attribute?.AttributeClass is not { } attributeClass)
+            return false;
+
+        var metadataName = attributeClass.ToDisplayString();
+        if (metadataName == ECMAScriptModuleAttributeMetadataName)
+            return true;
+        if (metadataName != ECMAScriptAttributeMetadataName)
+            return false;
+
+        if (attribute.ConstructorArguments.Length >= 2 &&
+            attribute.ConstructorArguments[1].Value is int transform)
+        {
+            return transform is (int)Transform.Allow or (int)Transform.Import;
+        }
+
+        return true;
+    }
+
     internal static string? GetECMAScriptModuleImportPath(ITypeSymbol symbol)
     {
         foreach (var attribute in symbol.GetAttributes())
         {
-            if (!IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass) ||
+            var metadataName = attribute.AttributeClass?.ToDisplayString();
+            if (metadataName == ECMAScriptAttributeMetadataName)
+            {
+                if (attribute.ConstructorArguments.Length == 0 ||
+                    attribute.ConstructorArguments[0].Value is not string externalPath ||
+                    string.IsNullOrWhiteSpace(externalPath))
+                {
+                    continue;
+                }
+
+                if (attribute.ConstructorArguments.Length >= 2 &&
+                    attribute.ConstructorArguments[1].Value is int transform)
+                {
+                    if (transform == (int)Transform.Component)
+                        continue;
+                    if (transform != (int)Transform.Import)
+                    {
+                        throw new NotSupportedException(
+                            $"ECMAScript transform value '{transform}' is not supported for module imports.");
+                    }
+                }
+
+                return ECMAScriptModulePath.ValidateExternalImportSpecifier(externalPath);
+            }
+
+            if (metadataName != ECMAScriptModuleAttributeMetadataName ||
                 attribute.ConstructorArguments.Length != 1)
             {
                 continue;
@@ -458,6 +504,31 @@ public static class Util
         return null;
     }
 
+    internal static bool IsExternalECMAScriptImport(ITypeSymbol symbol)
+    {
+        for (var current = symbol; current is not null; current = current.ContainingType)
+        {
+            foreach (var attribute in current.GetAttributes())
+            {
+                if (attribute.AttributeClass?.ToDisplayString() != ECMAScriptAttributeMetadataName ||
+                    attribute.ConstructorArguments.Length == 0 ||
+                    attribute.ConstructorArguments[0].Value is not string importSpecifier ||
+                    string.IsNullOrWhiteSpace(importSpecifier))
+                {
+                    continue;
+                }
+
+                if (attribute.ConstructorArguments.Length < 2)
+                    return true;
+
+                return attribute.ConstructorArguments[1].Value is int transform &&
+                       transform == (int)Transform.Import;
+            }
+        }
+
+        return false;
+    }
+
     public static bool HasECMAScriptSupportMarker(ISymbol? symbol)
     {
         if (symbol is null)
@@ -468,7 +539,7 @@ public static class Util
             for (ISymbol? current = candidate; current is not null; current = GetSupportContainingSymbol(current))
             {
                 if (current.GetAttributes().Any(static attribute =>
-                    IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass)))
+                    IsECMAScriptSupportMarkerAttributeData(attribute)))
                 {
                     return true;
                 }
@@ -539,7 +610,7 @@ public static class Util
         var original = symbol?.OriginalDefinition;
         return original is not null &&
                original.GetAttributes().Any(static attribute =>
-                   IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass));
+                   IsECMAScriptSupportMarkerAttributeData(attribute));
     }
 
     private static bool HasDirectECMAScriptSupportMarkerBaseType(INamedTypeSymbol typeSymbol)
@@ -633,8 +704,8 @@ public static class Util
     }
 
     private static bool IsRuntimeMarkerType(ISymbol? symbol)
-        => symbol?.GetAttributes().Any(attr =>
-            attr.AttributeClass?.ToDisplayString() == ECMAScriptAttributeMetadataName) == true;
+        => symbol?.GetAttributes().Any(static attribute =>
+            attribute.AttributeClass?.ToDisplayString() == ECMAScriptAttributeMetadataName) == true;
 
     /// <summary>
     /// 判断一个类型是否属于 ECMAScript 运行时映射类型。

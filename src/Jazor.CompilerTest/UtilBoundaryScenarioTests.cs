@@ -1,5 +1,6 @@
 using ECMAScript;
 using Jazor.Compiler;
+using Jazor.Common;
 using Jazor.ComplierTest;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -229,7 +230,7 @@ public sealed class UtilBoundaryScenarioTests
 
     [TestMethod]
     [DynamicData(nameof(ModulePathCases))]
-    public void GetECMAScriptModuleImportPath_ValidatesAndNormalizesConstructorValue(UtilModulePathScenario scenario)
+    public void GetECMAScriptModuleImportPath_PreservesExternalSpecifierAndReadsModuleMarker(UtilModulePathScenario scenario)
     {
         var fixture = SymbolFixture.Value;
         var type = scenario.Kind switch
@@ -243,6 +244,71 @@ public sealed class UtilBoundaryScenarioTests
         };
 
         Assert.AreEqual(scenario.Expected, Util.GetECMAScriptModuleImportPath(type), scenario.Id);
+    }
+
+    [TestMethod]
+    public void GetECMAScriptModuleImportPath_RejectsDiskAbsoluteExternalSpecifier()
+    {
+        var type = SymbolFixture.Value.GetType("DiskImportedRuntime");
+        Assert.Throws<InvalidOperationException>(() => Util.GetECMAScriptModuleImportPath(type));
+    }
+
+    [TestMethod]
+    public void GetECMAScriptModuleImportPath_RejectsUnknownTransform()
+    {
+        var type = SymbolFixture.Value.GetType("UnknownTransformRuntime");
+        var exception = Assert.Throws<NotSupportedException>(() => Util.GetECMAScriptModuleImportPath(type));
+        StringAssert.Contains(exception.Message, "transform value '99'", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void ECMAScriptAttribute_UsesUnifiedTransformAndExportContract()
+    {
+        var allow = new ECMAScriptAttribute();
+        var import = new ECMAScriptAttribute("vue");
+        var componentDefault = new ECMAScriptAttribute("element-plus", Transform.Component);
+        var componentNamed = new ECMAScriptAttribute("element-plus", Transform.Component, "ElButton");
+
+        Assert.IsNull(allow.Import);
+        Assert.AreEqual(Transform.Allow, allow.Transform);
+        Assert.AreEqual("vue", import.Import);
+        Assert.AreEqual(Transform.Import, import.Transform);
+        Assert.AreEqual(Transform.Component, componentDefault.Transform);
+        Assert.IsNull(componentDefault.ExportName);
+        Assert.AreEqual("ElButton", componentNamed.ExportName);
+
+        Assert.Throws<ArgumentException>(
+            () => new ECMAScriptAttribute("vue", Transform.Allow));
+        Assert.Throws<ArgumentException>(
+            () => new ECMAScriptAttribute("vue", Transform.Import, "Vue"));
+        Assert.Throws<ArgumentException>(
+            () => new ECMAScriptAttribute("", Transform.Component));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new ECMAScriptAttribute("vue", (Transform)99));
+
+        Assert.IsNull(
+            typeof(ECMAScriptAttribute).Assembly.GetType("ECMAScript.Contract.LibraryComponentAttribute"));
+    }
+
+    [TestMethod]
+    public void ExternalImportSpecifier_PreservesEsmFormsAndRejectsDiskPaths()
+    {
+        foreach (var specifier in new[]
+        {
+            "vue",
+            "./components/button.js",
+            "/assets/button",
+            "https://cdn.example.test/button.mjs",
+            "../shared/button"
+        })
+        {
+            Assert.AreEqual(specifier, ECMAScriptModulePath.ValidateExternalImportSpecifier(specifier));
+        }
+
+        Assert.Throws<InvalidOperationException>(
+            () => ECMAScriptModulePath.ValidateExternalImportSpecifier("C:/packages/button.mjs"));
+        Assert.Throws<InvalidOperationException>(
+            () => ECMAScriptModulePath.ValidateExternalImportSpecifier("\\\\server\\share\\button.mjs"));
     }
 
     private static void AssertSymbolName(
@@ -295,7 +361,7 @@ public sealed class UtilBoundaryScenarioTests
     private static bool EvaluateBooleanScenario(UtilSymbolFixture fixture, UtilBooleanKind kind)
         => kind switch
         {
-            UtilBooleanKind.SupportAttributeNull => Util.IsECMAScriptSupportMarkerAttribute(null),
+            UtilBooleanKind.SupportAttributeNull => Util.IsECMAScriptSupportMarkerAttribute((INamedTypeSymbol?)null),
             UtilBooleanKind.SupportAttributeRuntime => Util.IsECMAScriptSupportMarkerAttribute(fixture.ECMAScriptAttribute),
             UtilBooleanKind.SupportAttributeModule => Util.IsECMAScriptSupportMarkerAttribute(fixture.ECMAScriptModuleAttribute),
             UtilBooleanKind.SupportAttributeUnrelated => Util.IsECMAScriptSupportMarkerAttribute(fixture.DescriptionAttribute),
@@ -362,6 +428,8 @@ public sealed class UtilBoundaryScenarioTests
             syntaxTrees: [sourceTree],
             references: TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
@@ -645,7 +713,7 @@ internal static class UtilBoundaryScenarioCatalog
 
     public static IReadOnlyList<UtilModulePathScenario> ModulePaths { get; } =
     [
-        ModulePath("runtime-import", "runtime-import-trims-and-normalizes-separators", UtilModulePathKind.RuntimeImport, "./runtime/bridge.mjs"),
+        ModulePath("runtime-import", "runtime-import-preserves-external-specifier", UtilModulePathKind.RuntimeImport, "../runtime/bridge.js"),
         ModulePath("module-export", "module-marker-normalizes-extension", UtilModulePathKind.ModuleExport, "./components/widget.mjs"),
         ModulePath("marker-without-argument", "parameterless-marker-has-no-import-path", UtilModulePathKind.MarkerWithoutArgument, null),
         ModulePath("blank-import", "blank-import-path-is-ignored", UtilModulePathKind.BlankImport, null),
@@ -825,8 +893,18 @@ internal static class UtilBoundaryScenarioCatalog
             public int Named { get; set; }
         }
 
-        [ECMAScript(" ./runtime\\bridge ")]
+        [ECMAScript(" ../runtime/bridge.js ")]
         public sealed class ImportedRuntime
+        {
+        }
+
+        [ECMAScript("C:/runtime/bridge.mjs")]
+        public sealed class DiskImportedRuntime
+        {
+        }
+
+        [ECMAScript("runtime-package", (Transform)99)]
+        public sealed class UnknownTransformRuntime
         {
         }
 

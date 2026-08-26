@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VAvatar")]
+[ECMAScript("vuetify/components", Transform.Component, "VAvatar")]
 /// <summary>
 /// Vuetify 头像组件。
 /// Vuetify avatar component.

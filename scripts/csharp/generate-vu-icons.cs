@@ -144,7 +144,7 @@ static string GenerateComponents(IReadOnlyList<Icon> icons)
         builder.Append("/// <summary>按需 static renderer for upstream <c>")
             .Append(icon.ComponentName)
             .AppendLine("</c>; only its SVG module is materialized.</summary>");
-        builder.Append("[VueLibraryComponent(\"vu-icons/").Append(icon.ComponentName).Append("\", \"").Append(icon.ComponentName).AppendLine("\")]");
+        builder.Append("[ECMAScript(\"vu-icons/").Append(icon.ComponentName).Append("\", Transform.Component, \"").Append(icon.ComponentName).AppendLine("\")]");
         builder.Append("public sealed class ").Append(icon.ComponentName).AppendLine(" : VuIconComponentBase;");
         if (index != icons.Count - 1)
             builder.AppendLine();

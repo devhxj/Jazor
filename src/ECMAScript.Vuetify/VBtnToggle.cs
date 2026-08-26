@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VBtnToggle")]
+[ECMAScript("vuetify/components", Transform.Component, "VBtnToggle")]
 /// <summary>
 /// Vuetify 按钮切换组件。
 /// Vuetify button toggle component.

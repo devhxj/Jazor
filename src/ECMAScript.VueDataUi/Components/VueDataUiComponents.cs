@@ -3,7 +3,7 @@ namespace ECMAScript.VueDataUi;
 /// <summary>Vue Data UI 基础 chart 的 Razor component catalog。其余公开组件在
 /// <c>VueDataUiExtendedComponents</c> 中；每个 descriptor 均指向单独 ESM entry，
 /// so an authored chart never imports the package root bundle.</summary>
-[VueLibraryComponent("vue-data-ui/vue-ui-xy", "VueUiXy")]
+[ECMAScript("vue-data-ui/vue-ui-xy", Transform.Component, "VueUiXy")]
 public sealed class VueUiXy : VueDataUiChartComponent<VueUiXyDatasetItem[], VueUiXyConfig>
 {
     [Parameter]
@@ -11,7 +11,7 @@ public sealed class VueUiXy : VueDataUiChartComponent<VueUiXyDatasetItem[], VueU
     public int? SelectedXIndex { get; set; }
 }
 
-[VueLibraryComponent("vue-data-ui/vue-ui-donut", "VueUiDonut")]
+[ECMAScript("vue-data-ui/vue-ui-donut", Transform.Component, "VueUiDonut")]
 public sealed class VueUiDonut : VueDataUiChartComponent<VueUiDonutDatasetItem[], VueUiDonutConfig>
 {
     [Parameter]
@@ -19,19 +19,19 @@ public sealed class VueUiDonut : VueDataUiChartComponent<VueUiDonutDatasetItem[]
     public EventCallback<VueUiDonutLegendItem[]> OnSelectLegend { get; set; }
 }
 
-[VueLibraryComponent("vue-data-ui/vue-ui-gauge", "VueUiGauge")]
+[ECMAScript("vue-data-ui/vue-ui-gauge", Transform.Component, "VueUiGauge")]
 public sealed class VueUiGauge : VueDataUiChartComponent<VueUiGaugeDataset, VueUiGaugeConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-vertical-bar", "VueUiVerticalBar")]
+[ECMAScript("vue-data-ui/vue-ui-vertical-bar", Transform.Component, "VueUiVerticalBar")]
 public sealed class VueUiVerticalBar : VueDataUiChartComponent<VueUiVerticalBarDatasetItem[], VueUiVerticalBarConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-horizontal-bar", "VueUiHorizontalBar")]
+[ECMAScript("vue-data-ui/vue-ui-horizontal-bar", Transform.Component, "VueUiHorizontalBar")]
 public sealed class VueUiHorizontalBar : VueDataUiChartComponent<VueUiHorizontalBarDatasetItem[], VueUiHorizontalBarConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-stackbar", "VueUiStackbar")]
+[ECMAScript("vue-data-ui/vue-ui-stackbar", Transform.Component, "VueUiStackbar")]
 public sealed class VueUiStackbar : VueDataUiChartComponent<VueUiStackbarDatasetItem[], VueUiStackbarConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-stackline", "VueUiStackline")]
+[ECMAScript("vue-data-ui/vue-ui-stackline", Transform.Component, "VueUiStackline")]
 public sealed class VueUiStackline : VueDataUiChartComponent<VueUiStacklineDatasetItem[], VueUiStacklineConfig>
 {
     [Parameter]
@@ -39,52 +39,52 @@ public sealed class VueUiStackline : VueDataUiChartComponent<VueUiStacklineDatas
     public int? SelectedXIndex { get; set; }
 }
 
-[VueLibraryComponent("vue-data-ui/vue-ui-sparkline", "VueUiSparkline")]
+[ECMAScript("vue-data-ui/vue-ui-sparkline", Transform.Component, "VueUiSparkline")]
 public sealed class VueUiSparkline : VueDataUiChartComponent<VueUiSparklineDatasetItem[], VueUiSparklineConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-sparkbar", "VueUiSparkbar")]
+[ECMAScript("vue-data-ui/vue-ui-sparkbar", Transform.Component, "VueUiSparkbar")]
 public sealed class VueUiSparkbar : VueDataUiChartComponent<VueUiSparkbarDatasetItem[], VueUiSparkbarConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-sparkhistogram", "VueUiSparkHistogram")]
+[ECMAScript("vue-data-ui/vue-ui-sparkhistogram", Transform.Component, "VueUiSparkHistogram")]
 public sealed class VueUiSparkHistogram : VueDataUiChartComponent<VueUiSparkHistogramDatasetItem[], VueUiSparkHistogramConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-radar", "VueUiRadar")]
+[ECMAScript("vue-data-ui/vue-ui-radar", Transform.Component, "VueUiRadar")]
 public sealed class VueUiRadar : VueDataUiChartComponent<VueUiRadarDataset, VueUiRadarConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-waffle", "VueUiWaffle")]
+[ECMAScript("vue-data-ui/vue-ui-waffle", Transform.Component, "VueUiWaffle")]
 public sealed class VueUiWaffle : VueDataUiChartComponent<VueUiWaffleDatasetItem[], VueUiWaffleConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-treemap", "VueUiTreemap")]
+[ECMAScript("vue-data-ui/vue-ui-treemap", Transform.Component, "VueUiTreemap")]
 public sealed class VueUiTreemap : VueDataUiChartComponent<VueUiTreemapDatasetItem[], VueUiTreemapConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-heatmap", "VueUiHeatmap")]
+[ECMAScript("vue-data-ui/vue-ui-heatmap", Transform.Component, "VueUiHeatmap")]
 public sealed class VueUiHeatmap : VueDataUiChartComponent<VueUiHeatmapDatasetItem[], VueUiHeatmapConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-scatter", "VueUiScatter")]
+[ECMAScript("vue-data-ui/vue-ui-scatter", Transform.Component, "VueUiScatter")]
 public sealed class VueUiScatter : VueDataUiChartComponent<VueUiScatterDatasetItem[], VueUiScatterConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-funnel", "VueUiFunnel")]
+[ECMAScript("vue-data-ui/vue-ui-funnel", Transform.Component, "VueUiFunnel")]
 public sealed class VueUiFunnel : VueDataUiChartComponent<VueUiFunnelDatasetItem[], VueUiFunnelConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-word-cloud", "VueUiWordCloud")]
+[ECMAScript("vue-data-ui/vue-ui-word-cloud", Transform.Component, "VueUiWordCloud")]
 public sealed class VueUiWordCloud : VueDataUiChartComponent<VueUiWordCloudDataset, VueUiWordCloudConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-kpi", "VueUiKpi")]
+[ECMAScript("vue-data-ui/vue-ui-kpi", Transform.Component, "VueUiKpi")]
 public sealed class VueUiKpi : VueDataUiChartComponent<double, VueUiKpiConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-table", "VueUiTable")]
+[ECMAScript("vue-data-ui/vue-ui-table", Transform.Component, "VueUiTable")]
 public sealed class VueUiTable : VueDataUiChartComponent<VueUiTableDataset, VueUiTableConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-table-heatmap", "VueUiTableHeatmap")]
+[ECMAScript("vue-data-ui/vue-ui-table-heatmap", Transform.Component, "VueUiTableHeatmap")]
 public sealed class VueUiTableHeatmap : VueDataUiChartComponent<VueUiTableHeatmapDatasetItem[], VueUiTableHeatmapConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-table-sparkline", "VueUiTableSparkline")]
+[ECMAScript("vue-data-ui/vue-ui-table-sparkline", Transform.Component, "VueUiTableSparkline")]
 public sealed class VueUiTableSparkline : VueDataUiRequiredConfigChartComponent<VueUiTableSparklineDatasetItem[], VueUiTableSparklineConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-quick-chart", "VueUiQuickChart")]
+[ECMAScript("vue-data-ui/vue-ui-quick-chart", Transform.Component, "VueUiQuickChart")]
 public sealed class VueUiQuickChart : VueDataUiChartComponent<VueUiQuickChartDataset, VueUiQuickChartConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-candlestick", "VueUiCandlestick")]
+[ECMAScript("vue-data-ui/vue-ui-candlestick", Transform.Component, "VueUiCandlestick")]
 public sealed class VueUiCandlestick : VueDataUiChartComponent<VueDataUiCellValue[][], VueUiCandlestickConfig>
 {
     [Parameter]
@@ -92,8 +92,8 @@ public sealed class VueUiCandlestick : VueDataUiChartComponent<VueDataUiCellValu
     public int? SelectedXIndex { get; set; }
 }
 
-[VueLibraryComponent("vue-data-ui/vue-ui-dumbbell", "VueUiDumbbell")]
+[ECMAScript("vue-data-ui/vue-ui-dumbbell", Transform.Component, "VueUiDumbbell")]
 public sealed class VueUiDumbbell : VueDataUiChartComponent<VueUiDumbbellDataset[], VueUiDumbbellConfig>;
 
-[VueLibraryComponent("vue-data-ui/vue-ui-bullet", "VueUiBullet")]
+[ECMAScript("vue-data-ui/vue-ui-bullet", Transform.Component, "VueUiBullet")]
 public sealed class VueUiBullet : VueDataUiChartComponent<VueUiBulletDataset, VueUiBulletConfig>;

@@ -225,7 +225,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
             if (uniqueSpecifiers.Length > 0 &&
                 string.Equals(
-                    ECMAScriptModulePath.NormalizeImportSpecifier(pair.Key),
+                    pair.Key,
                     _currentModuleImportPath,
                     System.StringComparison.Ordinal))
             {

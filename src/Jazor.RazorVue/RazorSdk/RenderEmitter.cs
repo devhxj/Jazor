@@ -28,7 +28,6 @@ internal static class RenderEmitter
     private const string BlazorComponentsRuntimeModuleSpecifier = "@jazor/vue-runtime/blazor-components.mjs";
     private const string ChangeEventArgsRuntimeModuleSpecifier = "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js";
     private const string StandardInputValueTypePropName = "__jazorValueType";
-    private const string VueLibraryComponentAttributeMetadataName = "ECMAScript.VueContract.VueLibraryComponentAttribute";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
     public static bool TryEmit(
@@ -2040,7 +2039,7 @@ internal static class RenderEmitter
                             "Microsoft Blazor built-in UI component '" +
                             componentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
                             "' is not supported by RazorVue. Use a ComponentBase + IVueComponent " +
-                            "component with [ECMAScriptModule] or [VueLibraryComponent].");
+                            "component with [ECMAScriptModule] or [ECMAScript(import, Transform.Component, exportName)].");
                     }
                     var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
                     var componentExpression = isCascadingValue
@@ -4368,7 +4367,7 @@ internal static class RenderEmitter
             var runtimeComponentType = _injectRegistry.ResolveImplementation(componentType);
             var descriptor = ResolveComponentImport(_compilation, runtimeComponentType);
             return _argument
-                .BindImportSpecifier(descriptor.ImportSpecifier, descriptor.ExportName);
+                .BindExternalImportSpecifier(descriptor.ImportSpecifier, descriptor.ExportName);
         }
 
         private ImmutableArray<ImportDeclaration> BuildImportDeclarations()
@@ -5404,30 +5403,19 @@ internal static class RenderEmitter
 
         foreach (var attribute in componentType.GetAttributes())
         {
-            if (!string.Equals(
-                    attribute.AttributeClass!.ToDisplayString(),
-                    VueLibraryComponentAttributeMetadataName,
-                    StringComparison.Ordinal))
-            {
+            if (!ECMAScriptComponentMetadata.TryGetComponentImport(attribute, out var descriptor))
                 continue;
-            }
 
-            if (attribute.ConstructorArguments.Length == 2 &&
-                attribute.ConstructorArguments[0].Value is string importSpecifier &&
-                attribute.ConstructorArguments[1].Value is string exportName &&
-                !string.IsNullOrWhiteSpace(importSpecifier) &&
-                !string.IsNullOrWhiteSpace(exportName))
-            {
-                return new ComponentImportDescriptor(
-                    importSpecifier.Trim(),
-                    exportName.Trim());
-            }
+            return new ComponentImportDescriptor(
+                descriptor.ImportSpecifier,
+                descriptor.ExportName ?? "default");
         }
 
         throw new InvalidOperationException(
             "RazorVue component '" +
             componentType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) +
-            "' must declare [ECMAScriptModule(\"./path\")] or [VueLibraryComponent(\"package\", \"Export\")] for direct render lowering.");
+            "' must declare [ECMAScriptModule(\"./path\")] or " +
+            "[ECMAScript(\"package\", Transform.Component[, \"Export\"])] for direct render lowering.");
     }
 
     private static void EnsureRazorVueComponentContract(

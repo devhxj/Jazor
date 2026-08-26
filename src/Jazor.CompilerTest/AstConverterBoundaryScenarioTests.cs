@@ -61,7 +61,7 @@ public sealed class AstConverterBoundaryScenarioTests
         Assert.IsTrue(AstConverterBoundaryScenarioCatalog.ImportSuccesses.All(static scenario =>
             !string.IsNullOrWhiteSpace(scenario.Dimension)));
         Assert.IsTrue(AstConverterBoundaryScenarioCatalog.ImportFailures.All(static scenario =>
-            !string.IsNullOrWhiteSpace(scenario.Dimension) && scenario.ExpectedMessageFragments.Count > 0));
+            !string.IsNullOrWhiteSpace(scenario.Dimension) && scenario.ExpectedImport is not null));
         Assert.IsTrue(AstConverterBoundaryScenarioCatalog.DeclaredNames.All(static scenario =>
             !string.IsNullOrWhiteSpace(scenario.Dimension) &&
             !string.IsNullOrWhiteSpace(scenario.ReservedName)));
@@ -108,7 +108,7 @@ public sealed class AstConverterBoundaryScenarioTests
 
     [TestMethod]
     [DynamicData(nameof(ImportFailureCases))]
-    public async Task Convert_CurrentModuleImportFailsWithCanonicalSpecifierName(AstConverterImportFailureScenario scenario)
+    public async Task Convert_ExternalSpecifierMatchingGeneratedModuleStemRemainsIndependent(AstConverterImportFailureScenario scenario)
     {
         var fixture = CompileModule(scenario.Source, scenario.Id);
         var host = new ImportProbeSemanticWalkerHost(scenario.Import);
@@ -117,10 +117,13 @@ public sealed class AstConverterBoundaryScenarioTests
             fixture.SemanticModel,
             new AstConverterOptions(AstConverterProfile.Standard, Host: host));
 
-        var exception = await Assert.ThrowsExactlyAsync<NotSupportedException>(() => converter.Convert());
+        var module = await converter.Convert();
 
-        foreach (var expected in scenario.ExpectedMessageFragments)
-            StringAssert.Contains(exception.Message, expected, StringComparison.Ordinal, scenario.Id);
+        Assert.IsNotNull(module, scenario.Id);
+        AssertImportShape(
+            module.Body.OfType<ImportDeclaration>().ToArray(),
+            scenario.ExpectedImport,
+            scenario.Id);
     }
 
     [TestMethod]
@@ -465,9 +468,9 @@ public sealed record AstConverterImportFailureScenario(
     AstConverterImportFailureKind Kind,
     string Source,
     AstConverterImportProbe Import,
-    IReadOnlyList<string> ExpectedMessageFragments)
+    AstConverterImportExpectation ExpectedImport)
 {
-    public string InputIdentity => $"{Kind}|{Import}|{Source}";
+    public string InputIdentity => $"{Kind}|{Import}|{ExpectedImport}|{Source}";
 }
 
 public sealed record AstConverterDeclaredNameScenario(
@@ -555,22 +558,22 @@ internal static class AstConverterBoundaryScenarioCatalog
     [
         ImportFailure(
             "current-module-default",
-            "current-module-default-import-diagnostic",
+            "current-module-default-external-specifier-retained",
             AstConverterImportFailureKind.CurrentModuleDefault,
             Probe("./current", "default", "CurrentDefault", AstConverterImportProbeKind.Default, true),
-            ["Import 'default'", "current module './current.mjs'", "matching local binding"]),
+            Expected("./current", "default", "CurrentDefault", AstConverterImportExpectationKind.Default)),
         ImportFailure(
             "current-module-namespace",
-            "current-module-namespace-import-diagnostic",
+            "current-module-namespace-external-specifier-retained",
             AstConverterImportFailureKind.CurrentModuleNamespace,
             Probe("./current", "*", "CurrentNamespace", AstConverterImportProbeKind.Namespace, true),
-            ["Import '*'", "current module './current.mjs'", "matching local binding"]),
+            Expected("./current", "*", "CurrentNamespace", AstConverterImportExpectationKind.Namespace)),
         ImportFailure(
             "current-module-named-string",
-            "current-module-string-named-import-diagnostic",
+            "current-module-string-named-external-specifier-retained",
             AstConverterImportFailureKind.CurrentModuleNamedString,
             Probe("./current", "external-name", "externalName", AstConverterImportProbeKind.NamedString, true),
-            ["Import 'external-name'", "current module './current.mjs'", "matching local binding"])
+            Expected("./current", "external-name", "externalName", AstConverterImportExpectationKind.NamedString))
     ];
 
     public static IReadOnlyList<AstConverterDeclaredNameScenario> DeclaredNames { get; } =
@@ -680,14 +683,14 @@ internal static class AstConverterBoundaryScenarioCatalog
         string dimension,
         AstConverterImportFailureKind kind,
         AstConverterImportProbe import,
-        IReadOnlyList<string> expectedMessageFragments)
+        AstConverterImportExpectation expectedImport)
         => new(
             $"ast-converter-boundary.import-failure.{id}",
             dimension,
             kind,
             CurrentModuleSource,
             import,
-            expectedMessageFragments);
+            expectedImport);
 
     private static AstConverterDeclaredNameScenario DeclaredName(
         string id,

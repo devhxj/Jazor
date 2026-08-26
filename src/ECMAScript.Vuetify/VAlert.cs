@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VAlert")]
+[ECMAScript("vuetify/components", Transform.Component, "VAlert")]
 /// <summary>
 /// Vuetify 警告提示组件。
 /// Vuetify alert component.

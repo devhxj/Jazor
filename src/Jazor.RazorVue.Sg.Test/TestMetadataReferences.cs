@@ -10,7 +10,9 @@ internal static class TestMetadataReferences
         CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
 
     public static ImmutableArray<MetadataReference> Net11 { get; } =
-        ResolveNetCoreAppReferences("net11.0").ToImmutableArray();
+        ResolveNetCoreAppReferences("net11.0")
+            .Append(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location))
+            .ToImmutableArray();
 
     private static IEnumerable<MetadataReference> ResolveNetCoreAppReferences(string targetFramework)
     {

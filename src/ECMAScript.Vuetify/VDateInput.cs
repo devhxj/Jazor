@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify labs 日期输入创作代理。
 /// Vuetify labs date-input authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/labs/components", "VDateInput")]
+[ECMAScript("vuetify/labs/components", Transform.Component, "VDateInput")]
 public sealed class VDateInput : VInputComponentBase, IVuetifyComponent
 {
     /// <summary>

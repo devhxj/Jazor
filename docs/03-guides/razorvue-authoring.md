@@ -58,6 +58,10 @@ Razor SDK/Roslyn 的 `RZ****`、`CS****` 诊断仍由对应工具报告；RazorV
 
 浏览器可执行服务的 `[Inject]`/`@inject` 属性会在 component 初始化和生命周期回调前自动解析。provider key、生命周期和缺失 provider 错误由宿主 adapter 负责；页面作者继续使用标准 Blazor 注入语法。当前 adapter 的服务入口是属性注入，参数化 constructor activation 仍按 `JAZORVGA024` 明确拒绝。
 
+Blazor JS interop 不属于 browser service adapter。`IJSRuntime` 的 identifier string、`object[]` 参数编组、动态 import 和 runtime dispatcher 会绕开 Jazor 的静态 import/manifest 约束，因此在实际类型或成员使用点由现有 compiler/final Compilation 不支持诊断拒绝；这里不新增专用 analyzer 规则或兼容层。需要 JavaScript 能力时，使用已有的强类型 `ECMAScript`/WebIDL binding，或为静态模块 API 添加同样强类型的 binding declaration；调用、导入和 artifact closure 仍由 `Jazor.Compiler` 与 `Jazor.Emit` 统一处理。
+
+不要把这条 Reject 理解为拒绝所有带 Blazor 形状的组件。组件类型仍按独立的 RazorVue 入口契约判断：必须可赋值给 `ComponentBase`、实现 `IVueComponent`（包括泛型或派生 marker），并声明 `[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]`。其中 `Transform.Component` 是静态库组件 import 描述；它与 `IVueComponent` 共同构成受支持的组件类型，不是 `IJSRuntime` 兼容层。
+
 这些规则只检查作者的 `.razor`、`.razor.cs` 和普通 C# component source；它们不分析 Razor SG 生成的 C#，因此不会复制 `JAZORVGA020`-`026` 的 final Compilation 诊断。其他服务在尚未能够静态证明其 browser contract 前不产生猜测性 warning；最终 lowering 失败仍由既有、唯一的 final diagnostic 报告。
 
 <a id="cascading-parameters"></a>
@@ -160,7 +164,7 @@ RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，不会因�
 
 ### 仍有明确环境边界的标准 API
 
-Razor SDK 能编译不等于每个 ASP.NET Core runtime API 都能在浏览器执行。已注册、可执行的服务可直接使用标准 `[Inject]`/`@inject`；数据库上下文、请求上下文、服务器 host/Identity 服务由 `JAZORVCA001`/`JAZORVCA002` 在作者源码处拒绝，已知但没有 adapter 的 Blazor host service 由 `JAZORVCA007` 说明。`NavigationManager`、`IJSRuntime` 和 `AuthenticationStateProvider` 的属性注入可以由 browser service adapter 提供；标准 cascading 和基础 route catalog 仍属于 framework primitive。Microsoft 内置 UI 组件不因存在历史 adapter 而进入产品契约；复杂 forms/validation、LocationChanged 订阅、SSR/hydration 和其它未证明能力不会静默生成运行时 `undefined`，而由对应 guidance 或 final Compilation 在作者映射位置说明。
+Razor SDK 能编译不等于每个 ASP.NET Core runtime API 都能在浏览器执行。已注册、可执行的服务可直接使用标准 `[Inject]`/`@inject`；数据库上下文、请求上下文、服务器 host/Identity 服务由 `JAZORVCA001`/`JAZORVCA002` 在作者源码处拒绝，已知但没有 adapter 的 Blazor host service 由 `JAZORVCA007` 说明。`NavigationManager` 和 `AuthenticationStateProvider` 的属性注入可由 browser service adapter 提供；`IJSRuntime` 家族没有 RazorVue 兼容层，实际调用或成员访问由现有 compiler/final Compilation 在使用点报告不支持，作者应改用强类型 ECMAScript/WebIDL binding。标准 cascading 和基础 route catalog 仍属于 framework primitive。Microsoft 内置 UI 组件不因存在历史 adapter 而进入产品契约；复杂 forms/validation、LocationChanged 订阅、SSR/hydration 和其它未证明能力不会静默生成运行时 `undefined`，而由对应 guidance 或 final Compilation 在作者映射位置说明。
 
 `ParameterView` 的标准 `SetParametersAsync(ParameterView)` 入口已经由 compatibility adapter 支持；不要枚举参数、调用 `TryGetValue` 或 `ToDictionary`。这些未物化操作会分别报告 `JAZORVCA003`、`JAZORVCA004`、`JAZORVCA005`，建议改用已声明的 typed parameters。`[VueInject]` 仍是组件库级 contract（见 [VueInject](#vue-inject)），不是页面作者完成普通服务注入的前置知识。
 
@@ -180,7 +184,7 @@ Razor SG 生成的 builder 调用按顺序解释为 Vue VNode；手写 `BuildRen
 | 未初始化 local、frame 外 metadata、`goto`、无法投影的 labeled branch | **Reject (`JAZORVGA021`)** | 改用初始化、正确 frame 顺序或 [Component C# Logic](#component-logic) 中的普通 helper。普通 loop `break`/`continue` 见下方循环规则。 |
 
 - `OpenElement`、`OpenComponent`、`OpenRegion` 必须与对应 close 成对，且按栈顺序关闭；
-- `OpenComponent<T>` 支持开放泛型组件类型（例如 `OpenComponent<TTable<T>>()`）；类型参数只作为编译期注解擦除，组件仍必须有 `[ECMAScriptModule]` 或 `[VueLibraryComponent]` 描述。official Razor SG 生成的 `TypeInference.Create*_0<T>` 辅助会在当前 fragment builder 作用域内内联，构造方法参数与方法体原始定义对齐，不会把 `builder`/`__builder` 泄漏到最终模块。运行时动态 `Type`、无法静态确定的组件类型仍报告 `JAZORVGA021`。
+- `OpenComponent<T>` 支持开放泛型组件类型（例如 `OpenComponent<TTable<T>>()`）；类型参数只作为编译期注解擦除，组件仍必须有 `[ECMAScriptModule]` 或 `[ECMAScript(..., Transform.Component, ...)]` 描述。official Razor SG 生成的 `TypeInference.Create*_0<T>` 辅助会在当前 fragment builder 作用域内内联，构造方法参数与方法体原始定义对齐，不会把 `builder`/`__builder` 泄漏到最终模块。运行时动态 `Type`、无法静态确定的组件类型仍报告 `JAZORVGA021`。
 - element/component 的属性、component parameter、splat 和 event metadata 必须在第一个 child 之前写入；
 - tag、attribute、parameter、event modifier 和 bulk-attribute 名称必须是 compile-time string；
 - `SetKey`、`SetUpdatesAttributeName`、reference capture 和 render-mode metadata 必须作用于正确的当前 frame；
@@ -217,9 +221,9 @@ RazorVue 不会在 direct-render 层重新实现 C# 成员、调用、转换或 
 <a id="component-binding"></a>
 ## Component Binding
 
-组件必须能从 final Compilation 中解析出可绑定的 `BuildRenderTree(RenderTreeBuilder)` block，并同时满足 RazorVue 组件身份契约：可赋值给 `ComponentBase`，实现 `IVueComponent` 或其派生接口，且声明 `[ECMAScriptModule("...")]` 或 `[VueLibraryComponent("package", "Export")]` 导入描述。官方 Razor SG 生成的 component parameter、required parameter 和参数类型错误仍由 Razor SDK 负责；RazorVue 只报告它无法绑定或无法消费的最终形状。
+组件必须能从 final Compilation 中解析出可绑定的 `BuildRenderTree(RenderTreeBuilder)` block，并同时满足 RazorVue 组件身份契约：可赋值给 `ComponentBase`，实现 `IVueComponent` 或其派生接口，且声明 `[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]` 导入描述。官方 Razor SG 生成的 component parameter、required parameter 和参数类型错误仍由 Razor SDK 负责；RazorVue 只报告它无法绑定或无法消费的最终形状。
 
-组件模块应使用稳定的 `[ECMAScriptModule("...")]` 或已声明的 Vue library contract。组件引用、parameter 名称和 child content 必须与编译期 symbol 对齐；不要依赖运行时字符串查找组件。标准 Blazor 内置 UI 组件没有 `IVueComponent` marker，不属于 RazorVue 组件入口。
+组件模块应使用稳定的 `[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]`。组件引用、parameter 名称和 child content 必须与编译期 symbol 对齐；不要依赖运行时字符串查找组件。标准 Blazor 内置 UI 组件没有 `IVueComponent` marker，不属于 RazorVue 组件入口。
 
 <a id="member-closure"></a>
 ## Member Closure 与 Reactive Class

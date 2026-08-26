@@ -216,7 +216,9 @@ public sealed class SemanticWalkerIsTypeSupportedTypesTests
         var compilation = CSharpCompilation.Create(
             "IsTypeSupportedTypeScenarios",
             [syntaxTree],
-            TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location)),
+            TestMetadataReferences.Net11
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)

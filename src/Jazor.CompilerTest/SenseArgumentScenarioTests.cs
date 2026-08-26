@@ -990,7 +990,8 @@ public sealed class SenseArgumentScenarioTests
             assemblyName: "SenseArgumentScenarios",
             syntaxTrees: [syntaxTree],
             references: TestMetadataReferences.Net11
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location)),
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)

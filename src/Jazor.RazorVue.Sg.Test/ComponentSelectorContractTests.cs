@@ -44,7 +44,7 @@ public sealed class ComponentSelectorContractTests
     }
 
     [TestMethod]
-    public void DiscoverCurrentComponents_RequiresComponentBaseAndVueComponentMarker()
+    public void DiscoverCurrentComponents_RequiresBaseMarkerAndComponentImportDescriptor()
     {
         var compilation = CreateCompilation(
             """
@@ -69,6 +69,12 @@ public sealed class ComponentSelectorContractTests
                 protected override void BuildRenderTree(RenderTreeBuilder builder) { }
             }
 
+            [ECMAScript("component-package", Transform.Component, "ExternalComponent")]
+            public sealed class ExternalComponent : ComponentBase, IVueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder) { }
+            }
+
             [ECMAScriptModule("./components/no-base")]
             public sealed class NoComponentBase : IDerivedVueComponent
             {
@@ -78,13 +84,28 @@ public sealed class ComponentSelectorContractTests
             public sealed class NoVueMarker : ComponentBase
             {
             }
+
+            [ECMAScript]
+            public sealed class AllowOnlyComponent : ComponentBase, IVueComponent
+            {
+            }
+
+            [ECMAScript("vue")]
+            public sealed class ImportOnlyComponent : ComponentBase, IVueComponent
+            {
+            }
+
+            public sealed class NoImportDescriptor : ComponentBase, IVueComponent
+            {
+            }
             """,
             "Candidates/ComponentContract.razor.cs");
 
         var components = ComponentSelector.DiscoverCurrentComponents(compilation);
 
-        Assert.HasCount(1, components);
-        Assert.AreEqual("IndirectComponent", components[0].Name);
+        CollectionAssert.AreEquivalent(
+            new[] { "ExternalComponent", "IndirectComponent" },
+            components.Select(static component => component.Name).ToArray());
     }
 
     [TestMethod]

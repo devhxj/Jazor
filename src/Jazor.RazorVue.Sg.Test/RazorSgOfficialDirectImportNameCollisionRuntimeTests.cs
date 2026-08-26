@@ -42,7 +42,7 @@ public sealed class RazorSgOfficialDirectImportNameCollisionRuntimeTests
 
                 namespace Demo.Library;
 
-                [VueLibraryComponent("demo-release-library", "queueRelease")]
+                [ECMAScript("demo-release-library", Transform.Component, "queueRelease")]
                 public sealed class ReleasePanel : ComponentBase, IVueComponent
                 {
                     [Parameter, System.ComponentModel.Description("@#status")] public string Status { get; set; } = string.Empty;

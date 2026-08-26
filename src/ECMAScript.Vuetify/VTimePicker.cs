@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 实验室时间选择器组件的编写代理。
 /// Vuetify labs time-picker authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/labs/components", "VTimePicker")]
+[ECMAScript("vuetify/labs/components", Transform.Component, "VTimePicker")]
 public sealed class VTimePicker : ComponentBase, IVuetifyComponent
 {
     /// <summary>

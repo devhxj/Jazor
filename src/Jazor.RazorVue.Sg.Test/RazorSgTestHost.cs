@@ -90,8 +90,8 @@ internal static class RazorSgTestHost
         }
 
         AddAssemblyLocation(referencePaths, typeof(ECMAScript.Vue));
-        AddAssemblyLocation(referencePaths, typeof(ECMAScript.Contract.LibraryComponentAttribute));
-        AddAssemblyLocation(referencePaths, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute));
+        AddAssemblyLocation(referencePaths, typeof(ECMAScript.ECMAScriptAttribute));
+        AddAssemblyLocation(referencePaths, typeof(ECMAScript.VueContract.VueInjectAttribute));
         AddAssemblyLocation(referencePaths, typeof(global::ECMAScript.Style.css));
         AddAssemblyLocation(referencePaths, typeof(Microsoft.AspNetCore.Components.ComponentBase));
         AddAssemblyLocation(referencePaths, typeof(Microsoft.AspNetCore.Components.Web.MouseEventArgs));

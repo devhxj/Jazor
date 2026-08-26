@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 选择控件组件的编写代理。
 /// Vuetify selection-control authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VSelectionControl")]
+[ECMAScript("vuetify/components", Transform.Component, "VSelectionControl")]
 public sealed class VSelectionControl : ComponentBase, IVuetifyComponent
 {
     /// <summary>

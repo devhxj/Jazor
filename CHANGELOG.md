@@ -2,6 +2,25 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-26
+
+### Jazor 0.23.0
+
+> ECMAScript 外部绑定元数据收敛为统一协议。本版本删除旧组件 Attribute 公共 API，按 `MINOR` 通道发布。
+
+#### 新增
+
+- **统一 ECMAScript binding 协议**：`ECMAScriptAttribute` 现在通过 `Transform.Allow`、`Transform.Import` 和 `Transform.Component` 区分环境宿主、普通外部 ESM binding 与组件 binding，并支持组件 default/named export。
+- **保留外部 ESM specifier**：bare、相对、root-relative 与 URL specifier 原样进入模块 import，不补 `.mjs` 或改写 `.js`；Windows 盘符和 UNC 磁盘路径会明确失败。
+
+#### 破坏性变更
+
+- 删除 `LibraryComponentAttribute` 与 `VueLibraryComponentAttribute`，不保留 obsolete 兼容层。组件代理应从 `[VueLibraryComponent("package", "Export")]` 迁移到 `[ECMAScript("package", Transform.Component, "Export")]`；省略第三个参数表示 default export。
+
+#### 边界
+
+- RazorVue 组件仍必须同时满足 `ComponentBase + IVueComponent`，统一 Attribute 不能绕过组件身份约束。Blazor JS interop 继续保持现有 Reject 边界，不属于本协议。
+
 ## 2026-08-25
 
 ### Jazor 0.22.0

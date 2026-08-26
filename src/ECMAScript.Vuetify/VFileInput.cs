@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 文件输入组件。
 /// Vuetify file-input component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VFileInput")]
+[ECMAScript("vuetify/components", Transform.Component, "VFileInput")]
 public sealed class VFileInput : ComponentBase, IVuetifyComponent
 {
     /// <summary>

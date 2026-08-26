@@ -239,12 +239,12 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 		return current
 			.GetAttributes()
-			.Any(a => Util.IsECMAScriptSupportMarkerAttribute(a.AttributeClass));
+            .Any(Util.IsECMAScriptSupportMarkerAttributeData);
 	}
 
 	private static bool HasECMAScriptAttribute(ITypeSymbol typeSymbol)
 		=> typeSymbol.GetAttributes()
-			.Any(a => Util.IsECMAScriptSupportMarkerAttribute(a.AttributeClass));
+            .Any(Util.IsECMAScriptSupportMarkerAttributeData);
 
 	private static bool IsWhiteListedType(ITypeSymbol typeSymbol)
 		=> WhiteListLookup.TryGetValue(
@@ -966,7 +966,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 	private static bool IsLibraryComponent(ITypeSymbol typeSymbol)
 		=> typeSymbol.OriginalDefinition.GetAttributes().Any(static attribute =>
-			LibraryComponentMetadata.IsLibraryComponentAttribute(attribute.AttributeClass));
+			ECMAScriptComponentMetadata.IsComponentAttribute(attribute));
 
 	private static void AnalysisSymbolEndAction(SymbolAnalysisContext ctx)
 	{

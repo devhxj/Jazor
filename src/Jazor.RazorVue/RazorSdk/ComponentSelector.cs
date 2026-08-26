@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -23,7 +24,7 @@ internal static class ComponentSelector
         var moduleAttribute = compilation.GetTypeByMetadataName(ECMAScriptModuleAttributeMetadataName);
         var vueComponentMarker = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.VueComponentMarkerMetadataName);
         var componentBase = compilation.GetTypeByMetadataName(ComponentSymbolPolicy.ComponentBaseMetadataName);
-        if (moduleAttribute is null || vueComponentMarker is null || componentBase is null)
+        if (vueComponentMarker is null || componentBase is null)
             return ImmutableArray<INamedTypeSymbol>.Empty;
 
         var components = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
@@ -157,18 +158,24 @@ internal static class ComponentSelector
 
     private static bool IsRazorVueComponent(
         INamedTypeSymbol symbol,
-        INamedTypeSymbol moduleAttribute,
+        INamedTypeSymbol? moduleAttribute,
         INamedTypeSymbol componentBase,
         INamedTypeSymbol vueComponentMarker)
         => !symbol.IsStatic &&
-           HasECMAScriptModuleAttribute(symbol, moduleAttribute) &&
-           ComponentSymbolPolicy.IsRazorVueComponent(symbol, componentBase, vueComponentMarker);
+           ComponentSymbolPolicy.IsRazorVueComponent(symbol, componentBase, vueComponentMarker) &&
+           HasComponentImportDescriptor(symbol, moduleAttribute);
 
-    private static bool HasECMAScriptModuleAttribute(INamedTypeSymbol symbol, INamedTypeSymbol moduleAttribute)
+    private static bool HasComponentImportDescriptor(
+        INamedTypeSymbol symbol,
+        INamedTypeSymbol? moduleAttribute)
+        => HasECMAScriptModuleAttribute(symbol, moduleAttribute) ||
+           symbol.GetAttributes().Any(ECMAScriptComponentMetadata.IsComponentAttribute);
+
+    private static bool HasECMAScriptModuleAttribute(INamedTypeSymbol symbol, INamedTypeSymbol? moduleAttribute)
         => symbol.GetAttributes().Any(attribute =>
-            Comparer.Equals(attribute.AttributeClass, moduleAttribute) ||
+            (moduleAttribute is not null && Comparer.Equals(attribute.AttributeClass, moduleAttribute)) ||
             string.Equals(
-                attribute.AttributeClass!.ToDisplayString(),
+                attribute.AttributeClass?.ToDisplayString(),
                 ECMAScriptModuleAttributeMetadataName,
                 StringComparison.Ordinal));
 

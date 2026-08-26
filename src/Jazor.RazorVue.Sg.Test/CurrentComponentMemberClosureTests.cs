@@ -282,6 +282,7 @@ public sealed class CurrentComponentMemberClosureTests
 
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(RenderTreeBuilder).Assembly.Location));
         var compilation = CSharpCompilation.Create(

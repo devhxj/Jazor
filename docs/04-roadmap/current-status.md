@@ -18,7 +18,7 @@ RazorVue 的生产输出是 direct Vue render-function `.mjs`。当前已接受�
 
 作者 C# 面已覆盖两层：Razor 标记和手写 `BuildRenderTree` 共用 direct-render 协议；`@code`/`.razor.cs` 的可达 helper、handler、lifecycle、source-base dispatch、parameterless constructor replay 和 static module members 走 component-logic/module framing。含普通 `break`/`continue` 的 `for`、`foreach`、`while`、`do while` 会使用 imperative loop lowering 保留控制流；`goto`、无法投影的 labeled branch、跨 open frame branch 和参数化 component activation 仍是明确边界。`SetParametersAsync(ParameterView)` 已进入 per-instance compatibility adapter proof，尚未宣称完整 browser/SSR consumer 支持。完整矩阵见 [RazorVue 作者指南](../03-guides/razorvue-authoring.md)。
 
-组件身份约束已统一为：必须直接或间接继承 `ComponentBase`，实现 `IVueComponent` 或其派生接口，并声明 `[ECMAScriptModule]` 或 `[VueLibraryComponent]` 导入描述。Microsoft Blazor 内置 UI 组件（如 `Router`、`DynamicComponent`、`ErrorBoundary`、`EditForm`、`Input*`）不满足该产品入口，识别到后稳定报告 Reject；UI 组件由 TDesign、Vuetify、Element Plus 或应用自定义组件承担。
+组件身份约束已统一为：必须直接或间接继承 `ComponentBase`，实现 `IVueComponent` 或其派生接口，并声明 `[ECMAScriptModule]` 或 `[ECMAScript(import, Transform.Component, exportName)]` 导入描述。Microsoft Blazor 内置 UI 组件（如 `Router`、`DynamicComponent`、`ErrorBoundary`、`EditForm`、`Input*`）不满足该产品入口，识别到后稳定报告 Reject；UI 组件由 TDesign、Vuetify、Element Plus 或应用自定义组件承担。
 
 RazorVue 作者面现已使用 final Compilation typed diagnostics：`JAZORVGA021`-`026` 分别覆盖 direct-render、compiler bridge、component binding、member closure、VueInject 和 Vue module；`JAZORVGA020` 收缩为 bootstrap/未分类内部失败。mapped `.razor` location、稳定多组件聚合和错误时无 partial catalog 由官方 Razor SG 回归覆盖。member class 进入 Vue Proxy 时使用 proxy-safe mangled storage；支持切片、拒绝边界和升级门禁见 [RazorVue 作者指南](../03-guides/razorvue-authoring.md) 与 [作者面诊断路线图](./razorvue-authoring-diagnostics.md)。
 

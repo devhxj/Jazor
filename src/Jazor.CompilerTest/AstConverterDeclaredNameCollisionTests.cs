@@ -86,7 +86,8 @@ public sealed class AstConverterDeclaredNameCollisionTests
             "AstConverterDeclaredNameCollision_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
             TestMetadataReferences.Net11
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScriptAttribute).Assembly.Location)),
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScriptAttribute).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)

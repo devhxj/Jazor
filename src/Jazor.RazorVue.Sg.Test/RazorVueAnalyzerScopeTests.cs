@@ -87,7 +87,7 @@ public sealed class RazorVueAnalyzerScopeTests
     }
 
     [TestMethod]
-    public async Task VueLibraryComponentTypeArgument_IsAcceptedAsHostComponent()
+    public async Task ECMAScriptComponentTypeArgument_IsAcceptedAsHostComponent()
     {
         var diagnostics = await AnalyzeAsync(
             """
@@ -226,13 +226,11 @@ public sealed class RazorVueAnalyzerScopeTests
     }
 
     [TestMethod]
-    public async Task FrameworkNeutralLibraryComponentTypes_AreAcceptedWithoutVueContractReference()
+    public async Task ECMAScriptComponentTypes_AreAcceptedWithoutVueContractReference()
     {
         var diagnostics = await AnalyzeAsync(
             """
-            using System;
             using ECMAScript;
-            using ECMAScript.Contract;
 
             [ECMAScriptModule("./components/host")]
             public sealed class Host
@@ -242,15 +240,11 @@ public sealed class RazorVueAnalyzerScopeTests
                 public ReactWidget Use(ReactWidget widget) => widget;
             }
 
-            [LibraryComponent("react-library", "Widget")]
+            [ECMAScript("react-library", Transform.Component, "Widget")]
             public sealed class LibraryWidget;
 
-            [ReactLibraryComponent("react-library", "ReactWidget")]
+            [ECMAScript("react-library", Transform.Component, "ReactWidget")]
             public sealed class ReactWidget;
-
-            [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-            public sealed class ReactLibraryComponentAttribute(string importSpecifier, string exportName)
-                : LibraryComponentAttribute(importSpecifier, exportName);
             """,
             includeVueContractReference: false);
 
@@ -638,7 +632,7 @@ public sealed class RazorVueAnalyzerScopeTests
         var references = RazorSgTestHost.CreateMetadataReferences();
         if (!includeVueContractReference)
         {
-            var vueContractAssemblyPath = typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location;
+            var vueContractAssemblyPath = typeof(ECMAScript.VueContract.VueInjectAttribute).Assembly.Location;
             references = references
                 .Where(reference => !string.Equals(
                     reference.Display,

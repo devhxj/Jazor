@@ -8,7 +8,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 评分组件。
 /// Vuetify rating component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VRating")]
+[ECMAScript("vuetify/components", Transform.Component, "VRating")]
 public sealed class VRating : ComponentBase, IVuetifyComponent
 {
     /// <summary>

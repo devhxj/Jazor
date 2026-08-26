@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VAutocomplete")]
+[ECMAScript("vuetify/components", Transform.Component, "VAutocomplete")]
 /// <summary>
 /// Vuetify 自动补全组件。
 /// Vuetify autocomplete component.

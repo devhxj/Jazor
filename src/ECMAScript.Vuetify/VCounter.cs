@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 计数器组件创作代理。
 /// Vuetify counter component authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VCounter")]
+[ECMAScript("vuetify/components", Transform.Component, "VCounter")]
 public sealed class VCounter : ComponentBase, IVuetifyComponent
 {
     /// <summary>

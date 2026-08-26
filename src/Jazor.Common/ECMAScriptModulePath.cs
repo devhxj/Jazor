@@ -12,6 +12,27 @@ namespace Jazor.Common;
 /// </remarks>
 public static class ECMAScriptModulePath
 {
+    /// <summary>
+    /// Validates an external ESM specifier and returns it without generated-module rewriting.
+    /// 外部 ESM specifier 只做协议边界校验，保留作者提供的文本，不补扩展名或改写目录。
+    /// </summary>
+    public static string ValidateExternalImportSpecifier(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new InvalidOperationException("ECMAScript external import specifier cannot be empty.");
+
+        var trimmed = path.Trim();
+        // Windows drive and UNC paths are filesystem locations, not portable ESM specifiers.
+        if ((trimmed.Length >= 2 && char.IsLetter(trimmed[0]) && trimmed[1] == ':') ||
+            trimmed.StartsWith("\\", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"ECMAScript external import specifier '{trimmed}' cannot be a disk absolute path.");
+        }
+
+        return trimmed;
+    }
+
     public static string NormalizeRelativePath(string path)
         => NormalizeCore(path, includeRelativePrefix: false);
 

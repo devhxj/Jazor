@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 标签页窗口项目组件的编写代理。
 /// Vuetify tabs-window-item authoring proxy.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VTabsWindowItem")]
+[ECMAScript("vuetify/components", Transform.Component, "VTabsWindowItem")]
 public sealed class VTabsWindowItem : ComponentBase, IVuetifyComponent
 {
     /// <summary>

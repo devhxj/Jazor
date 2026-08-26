@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 标签组件，用于表单控件标签显示。
 /// Vuetify label component for form control label display.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VLabel")]
+[ECMAScript("vuetify/components", Transform.Component, "VLabel")]
 public sealed class VLabel : ComponentBase, IVuetifyComponent
 {
     /// <summary>

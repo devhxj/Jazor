@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 工具提示组件的编写代理，用于 RazorVue 创作的第一波存根。
 /// First-wave Vuetify tooltip stub for RazorVue authoring.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VTooltip")]
+[ECMAScript("vuetify/components", Transform.Component, "VTooltip")]
 public sealed class VTooltip : ComponentBase, IVuetifyComponent
 {
     /// <summary>

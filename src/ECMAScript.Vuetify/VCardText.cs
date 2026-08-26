@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VCardText")]
+[ECMAScript("vuetify/components", Transform.Component, "VCardText")]
 /// <summary>
 /// Vuetify 卡片文本区域组件。
 /// Vuetify card text section component.

@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 输入创作代理，用于组合验证、消息和控件插槽。
 /// Vuetify input authoring proxy for composing validation, messages, and control slots.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VInput")]
+[ECMAScript("vuetify/components", Transform.Component, "VInput")]
 public sealed class VInput : ComponentBase, IVuetifyComponent
 {
     /// <summary>

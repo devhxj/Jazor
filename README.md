@@ -32,11 +32,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.22.0 — 2026-08-25
+### Jazor 0.23.0 — 2026-08-26
 
-- RazorVue components now use one stable entry contract: `ComponentBase` plus `IVueComponent` (or a derived interface) and an explicit module/component import descriptor.
-- Microsoft built-in Blazor UI components are rejected with an actionable diagnostic; use an application-owned component or the typed TDesign, Vuetify, or Element Plus bindings instead.
-- `Jazor.Vue` now carries the first Blazor CLR mapping slice for typed `ChangeEventArgs` value capture and `ElementReference.FocusAsync`; the mapping remains opt-in and does not enter the core `Jazor` package.
+- `ECMAScriptAttribute` now provides one external binding protocol for allowed host contracts, ordinary ESM imports, and Vue component default/named exports.
+- Component proxies now use `[ECMAScript(import, Transform.Component, exportName)]`; migrate from the removed `LibraryComponentAttribute` and `VueLibraryComponentAttribute` APIs.
+- RazorVue keeps its explicit component boundary: `ComponentBase`, `IVueComponent`, and a valid local module or external component descriptor are all required.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -94,15 +94,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.22.0
+dotnet add package Jazor --version 0.23.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.22.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.22.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.23.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.23.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

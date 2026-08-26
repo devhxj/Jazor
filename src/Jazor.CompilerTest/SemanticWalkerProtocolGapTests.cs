@@ -634,7 +634,8 @@ public sealed class SemanticWalkerProtocolGapTests
             "SemanticWalkerProtocolGapTests_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
             TestMetadataReferences.Net11.Add(
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location)),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)

@@ -1,4 +1,5 @@
 using System.Reflection;
+using ECMAScript;
 using ECMAScript.VueDataUi;
 
 namespace Jazor.RazorVue.Sg.Test;
@@ -9,9 +10,11 @@ public sealed class RazorSgVueDataUiLibraryComponentTests
     [TestMethod]
     public async Task BuildComponent_OfficialRazorVueDataUiDonut_UsesPerChartImportAndInheritedParameters()
     {
-        var descriptor = typeof(VueUiDonut).GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>();
+        var descriptor = typeof(VueUiDonut).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(descriptor);
-        Assert.AreEqual("vue-data-ui/vue-ui-donut", descriptor!.ImportSpecifier);
+        Assert.AreEqual("vue-data-ui/vue-ui-donut", descriptor!.Import);
+        Assert.AreEqual(Transform.Component, descriptor.Transform);
+        Assert.AreEqual("VueUiDonut", descriptor.ExportName);
 
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/RevenueDonut.razor"),

@@ -939,7 +939,7 @@ internal static class RazorVueM5CapabilityLedger
             "RazorVueCompatibilityAnalyzerTests.StandardBlazorComponentTag_ReportsUnsupportedBuiltInUi; RazorSgStandardBlazorComponentRuntimeTests",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
-            "Use ComponentBase + IVueComponent with an explicit import, or use a typed TDesign/Vuetify/Element Plus/custom component. Historical adapters are not product support."),
+            "Use ComponentBase + IVueComponent with [ECMAScriptModule] or [ECMAScript(import, Transform.Component, exportName)] metadata, or use a typed TDesign/Vuetify/Element Plus/custom component. Historical adapters are not product support."),
         new(
             "P1-dynamic-component",
             "DynamicComponent with statically discoverable component type and validated parameters",
@@ -989,15 +989,16 @@ internal static class RazorVueM5CapabilityLedger
             "Browser state handoff and endpoint enforcement contract are not implemented."),
         new(
             "P2-js-runtime",
-            "IJSRuntime/IJSObjectReference/JSInvokable with a typed registered module contract",
+            "IJSRuntime/IJSObjectReference/IJSInProcessRuntime/JSInvokable Blazor JS interop facades",
             RazorVueCapabilityPriority.P2,
-            RazorVueCapabilityDecision.GuidedAdaptation,
-            RazorVueCapabilityStatus.Guidance,
-            "Typed WebIDL/module registry",
-            null,
-            "typed module registry fixture",
-            RazorVueCapabilityEvidence.None,
-            "Arbitrary string invocation and dynamic import remain intentionally unsupported."),
+            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityStatus.Reject,
+            "Jazor.Compiler usage-site validation + RazorVue final Compilation",
+            "JAZORVGA022",
+            "RazorSourceGeneratorBootstrapPatchTests.DriverCompletionHook_CompilerBridgeFailure_ReportsMappedAuthorDiagnostic",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
+            "The existing unwhitelisted-type/member boundary rejects these facades at their actual use site. Jazor already emits typed ECMAScript modules, so IJSRuntime string invocation, dynamic import, object-array marshaling, runtime registries, DotNetObjectReference, and JSInvokable are intentionally unsupported; use a typed ECMAScript/WebIDL/module binding instead."),
         new(
             "P2-ssr-state-and-forms",
             "PersistentComponentState, SupplyParameterFromForm, antiforgery, enhanced post, and hydration state",

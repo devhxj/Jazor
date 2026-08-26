@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 懒加载组件，基于可视区域按需渲染内容。
 /// Vuetify lazy component that renders content on demand based on viewport visibility.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VLazy")]
+[ECMAScript("vuetify/components", Transform.Component, "VLazy")]
 public sealed class VLazy : ComponentBase, IVuetifyComponent
 {
     /// <summary>

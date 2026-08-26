@@ -21,7 +21,7 @@ internal static class VuIconsTestCompiler
             [
                 MetadataReference.CreateFromFile(typeof(ECMAScriptModuleAttribute).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Contract.IUIComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(VueContract.VueLibraryComponentAttribute).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(VueContract.VueInjectAttribute).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Vue.IVueComponent).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Vue).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(VuIcon).Assembly.Location)

@@ -1086,6 +1086,7 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
             [syntaxTree],
             TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()

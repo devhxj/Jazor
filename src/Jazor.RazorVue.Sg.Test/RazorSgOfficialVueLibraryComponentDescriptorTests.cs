@@ -43,7 +43,7 @@ public sealed class RazorSgOfficialVueLibraryComponentDescriptorTests
 
                 namespace Demo.Library;
 
-                [VueLibraryComponent("tdesign-vue-next", "Button")]
+                [ECMAScript("tdesign-vue-next", Transform.Component, "Button")]
                 public sealed class TButton : ComponentBase, IVueComponent
                 {
                     [Parameter, System.ComponentModel.Description("@#theme")] public string Theme { get; set; } = string.Empty;

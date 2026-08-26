@@ -59,15 +59,15 @@ public sealed class AstConverterTests
             references.AddRange(additionalReferences);
 
         if (ContainsVueReference(references) &&
-            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Contract.LibraryComponentAttribute).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
+            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
         {
-            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.LibraryComponentAttribute).Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location));
         }
 
         if (ContainsVueReference(references) &&
-            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
+            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.VueContract.VueInjectAttribute).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
         {
-            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueInjectAttribute).Assembly.Location));
         }
 
         if (ContainsVueReference(references) &&

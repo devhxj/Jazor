@@ -18,9 +18,9 @@ RazorVue 将所有进入组件 lowering 的类型统一视为 RazorVue 组件。
 
 - 可赋值给 `Microsoft.AspNetCore.Components.ComponentBase`，包括通过自定义基类间接继承；
 - 实现 `ECMAScript.Vue.IVueComponent` 或其派生接口；
-- 声明组件导入描述：本地/应用组件使用 `[ECMAScriptModule("...")]`，第三方库代理使用 `[VueLibraryComponent("package", "Export")]`。
+- 声明组件导入描述：本地/应用组件使用 `[ECMAScriptModule("...")]`，第三方库代理使用 `[ECMAScript("package", Transform.Component, "Export")]`。
 
-`IVueComponent<TProps>`、`IVueComponent<TProps, TSlots>` 和组件库自己的派生 marker 都满足第二项。两个导入特性同时出现时保留现有兼容规则：`[ECMAScriptModule]` 优先。HTML 元素、`RenderFragment` 和普通 C# 类型不属于组件类型，不需要该 marker；Microsoft Blazor 内置 UI 组件即使继承 `ComponentBase`，因没有 `IVueComponent` 契约仍应稳定 Reject。
+`IVueComponent<TProps>`、`IVueComponent<TProps, TSlots>` 和组件库自己的派生 marker 都满足第二项。两个导入描述同时出现时，`[ECMAScriptModule]` 优先。HTML 元素、`RenderFragment` 和普通 C# 类型不属于组件类型，不需要该 marker；Microsoft Blazor 内置 UI 组件即使继承 `ComponentBase`，因没有 `IVueComponent` 契约仍应稳定 Reject。
 
 ## 边界
 
@@ -28,7 +28,7 @@ RazorVue 将所有进入组件 lowering 的类型统一视为 RazorVue 组件。
 - C# 表达式、成员和函数语义必须经 `Jazor.Compiler` translation hook 处理；RazorVue 只可为 compiler 不拥有的 Vue artifact framing 直接构造 AST。
 - Razor 标记与手写 `BuildRenderTree` 都属于受约束的 direct-render 协议；`@code`/`.razor.cs` 的可达 helper、事件和生命周期成员属于 component logic。两者的完整 Support/constraint/reject 矩阵见 [RazorVue 作者指南](../../docs/03-guides/razorvue-authoring.md)。
 - `Jazor.Analyzer` 提供 Razor SG hook/bootstrap；本项目不拥有 authoring analyzer、SFC frontend 或宿主 RPC。
-- `VueLibraryComponentAttribute` 是中性 `LibraryComponentAttribute` 的 Vue 专属派生特性。RazorVue 只接受该 Vue 特性并解释其 import，不把 React 或其他框架包装器纳入 Vue render-function lowering。
+- 第三方库组件使用框架中性的 `[ECMAScript(import, Transform.Component, exportName)]`；RazorVue 只在类型同时满足 `ComponentBase + IVueComponent` 时解释该 import，不把 JS interop 或其他框架包装器纳入 Vue render-function lowering。
 - DOM `@bind`、`EventCallback`、slot、source-base lifecycle/Dispose、parameterless constructor replay 和 direct-render imperative loop 的支持范围以当前 official SG 输入与回归测试为准；不支持的协议必须给出可定位诊断。
 
 ## 代码结构

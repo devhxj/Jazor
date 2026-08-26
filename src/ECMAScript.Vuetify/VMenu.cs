@@ -7,7 +7,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 菜单组件。
 /// Vuetify menu component.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VMenu")]
+[ECMAScript("vuetify/components", Transform.Component, "VMenu")]
 public sealed class VMenu : ComponentBase, IVuetifyComponent
 {
     /// <summary>

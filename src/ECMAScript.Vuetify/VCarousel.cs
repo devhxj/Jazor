@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 轮播组件创作代理，用于分组幻灯片导航。
 /// Vuetify carousel authoring proxy for grouped slide navigation.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VCarousel")]
+[ECMAScript("vuetify/components", Transform.Component, "VCarousel")]
 public sealed class VCarousel : ComponentBase, IVuetifyComponent
 {
     /// <summary>

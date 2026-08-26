@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Reflection;
+using ECMAScript;
 using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
 
@@ -83,9 +84,10 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         var componentType = typeof(ECMAScript.VueRouterLink);
         Assert.IsTrue(typeof(ComponentBase).IsAssignableFrom(componentType));
 
-        var component = componentType.GetCustomAttribute<VueLibraryComponentAttribute>();
+        var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(component);
-        Assert.AreEqual("vue-router", component!.ImportSpecifier);
+        Assert.AreEqual("vue-router", component!.Import);
+        Assert.AreEqual(Transform.Component, component.Transform);
         Assert.AreEqual("RouterLink", component.ExportName);
 
         Assert.AreEqual(

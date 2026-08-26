@@ -3157,7 +3157,7 @@ public sealed class EcmaScriptVueProxyTests
                 type.IsClass &&
                 !type.IsAbstract &&
                 typeof(Microsoft.AspNetCore.Components.ComponentBase).IsAssignableFrom(type) &&
-                type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
+                type.GetCustomAttribute<ECMAScriptAttribute>() is { Transform: Transform.Component })
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
 
@@ -3238,7 +3238,7 @@ public sealed class EcmaScriptVueProxyTests
             .Where(static type =>
                 type.Namespace == "ECMAScript.Vuetify" &&
                 typeof(ComponentBase).IsAssignableFrom(type) &&
-                type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
+                type.GetCustomAttribute<ECMAScriptAttribute>() is { Transform: Transform.Component })
             .ToArray();
 
         var eventProperties = componentTypes
@@ -3269,7 +3269,7 @@ public sealed class EcmaScriptVueProxyTests
             "optionsChanged",
             typeof(VDataIterator).GetProperty(nameof(VDataIterator.OptionsChanged))?.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
         Assert.IsNull(
-            typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly
+            typeof(ECMAScript.VueContract.VueInjectAttribute).Assembly
                 .GetType("ECMAScript.VueContract.VueLibraryEmitAttribute"));
 
         Assert.IsNotNull(typeof(VDialog).GetProperty(nameof(VDialog.OnKeydown)));
@@ -3310,9 +3310,10 @@ public sealed class EcmaScriptVueProxyTests
         foreach (var componentType in componentTypes)
         {
             var contract = catalog.Components[componentType.Name];
-            var component = componentType.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>();
+            var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
             Assert.IsNotNull(component, componentType.FullName);
-            Assert.AreEqual("tdesign-vue-next", component!.ImportSpecifier, componentType.FullName);
+            Assert.AreEqual("tdesign-vue-next", component!.Import, componentType.FullName);
+            Assert.AreEqual(Transform.Component, component.Transform, componentType.FullName);
             Assert.AreEqual(contract.RuntimeExport, component.ExportName, componentType.FullName);
             CollectionAssert.Contains(runtimeExports, component.ExportName, componentType.FullName);
 
@@ -3375,10 +3376,11 @@ public sealed class EcmaScriptVueProxyTests
         var legacyMetadataTypeNames = new[]
         {
             "ECMAScript.VueContract.VuePropAttribute",
-            "ECMAScript.VueContract.VueSlotAttribute"
+            "ECMAScript.VueContract.VueSlotAttribute",
+            "ECMAScript.VueContract.VueLibraryComponentAttribute"
         };
         foreach (var typeName in legacyMetadataTypeNames)
-            Assert.IsNull(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.GetType(typeName), typeName);
+            Assert.IsNull(typeof(ECMAScript.VueContract.VueInjectAttribute).Assembly.GetType(typeName), typeName);
     }
 
     [TestMethod]
@@ -4161,7 +4163,7 @@ public sealed class EcmaScriptVueProxyTests
                 !type.IsAbstract &&
                 !type.ContainsGenericParameters &&
                 typeof(ComponentBase).IsAssignableFrom(type) &&
-                type.GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>() is not null)
+                type.GetCustomAttribute<ECMAScriptAttribute>() is { Transform: Transform.Component })
             .OrderBy(static type => type.Name, StringComparer.Ordinal)
             .ToArray();
 

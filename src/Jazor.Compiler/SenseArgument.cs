@@ -272,6 +272,19 @@ public readonly record struct SenseArgument
     /// 也避免在不同 walker 路径里出现同一导入被重复分配不同本地名的情况。
     /// </summary>
     public Identifier BindImportSpecifier(string? modulePath, string importedName)
+        => BindImportSpecifierCore(modulePath, importedName, normalizeForCurrentModule: true);
+
+    /// <summary>
+    /// Binds an external ESM specifier without applying generated-module path normalization.
+    /// 外部 ESM specifier 必须按原文保留，不能套用生成模块的 `.mjs`/目录逃逸规则。
+    /// </summary>
+    public Identifier BindExternalImportSpecifier(string? modulePath, string importedName)
+        => BindImportSpecifierCore(modulePath, importedName, normalizeForCurrentModule: false);
+
+    private Identifier BindImportSpecifierCore(
+        string? modulePath,
+        string importedName,
+        bool normalizeForCurrentModule)
     {
         if (string.IsNullOrWhiteSpace(importedName))
             return new Identifier(importedName ?? string.Empty);
@@ -279,7 +292,8 @@ public readonly record struct SenseArgument
         if (string.IsNullOrWhiteSpace(modulePath))
             return new Identifier(importedName);
 
-        if (string.Equals(
+        if (normalizeForCurrentModule &&
+            string.Equals(
                 ECMAScriptModulePath.NormalizeImportSpecifier(modulePath!),
                 _currentModuleImportPath,
                 System.StringComparison.Ordinal))

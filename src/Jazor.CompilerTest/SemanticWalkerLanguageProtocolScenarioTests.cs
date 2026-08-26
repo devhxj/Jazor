@@ -1511,6 +1511,7 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
             [syntaxTree],
             TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location))
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location))
                 .AddRange(additionalReferences),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -1601,7 +1602,9 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
         var compilation = CSharpCompilation.Create(
             "ExternalContracts_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
-            TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location)),
+            TestMetadataReferences.Net11
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptAttribute).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         using var image = new MemoryStream();
         var emitResult = compilation.Emit(image);

@@ -1543,7 +1543,7 @@ public sealed class MemberClosureTests
 
             namespace Demo.Pages
             {
-                [VueLibraryComponent("npm:demo-links@1.mjs", "DemoLink")]
+                [ECMAScript("npm:demo-links@1.mjs", Transform.Component, "DemoLink")]
                 public sealed class DemoLink : ComponentBase, IVueComponent
                 {
                     [Parameter, ECMAScriptName("default")]
@@ -7235,7 +7235,7 @@ public sealed class MemberClosureTests
                     public RenderFragment? Header { get; set; }
                 }
 
-                [VueLibraryComponent("demo-components", "Child")]
+                [ECMAScript("demo-components", Transform.Component, "Child")]
                 public sealed class Child : ChildBase, IVueComponent
                 {
                     [Parameter]
@@ -7319,7 +7319,7 @@ public sealed class MemberClosureTests
                     public string Title { get; set; } = "base";
                 }
 
-                [VueLibraryComponent("demo-components", "Child")]
+                [ECMAScript("demo-components", Transform.Component, "Child")]
                 public sealed class Counter : ChildBase
                 {
                     public new string Title { get; set; } = "local";
@@ -7361,7 +7361,7 @@ public sealed class MemberClosureTests
 
             namespace Demo.Pages
             {
-                [VueLibraryComponent("demo-components", "Counter")]
+                [ECMAScript("demo-components", Transform.Component, "Counter")]
                 public sealed class Counter : ComponentBase
                 {
                     [Parameter]

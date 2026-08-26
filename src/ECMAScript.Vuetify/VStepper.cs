@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 步骤条组件的编写代理，用于多步骤工作流。
 /// Vuetify stepper authoring proxy for multi-step workflows.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VStepper")]
+[ECMAScript("vuetify/components", Transform.Component, "VStepper")]
 public sealed class VStepper : ComponentBase, IVuetifyComponent
 {
     /// <summary>

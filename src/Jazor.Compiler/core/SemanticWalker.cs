@@ -728,7 +728,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             for (ISymbol? current = candidate; current is not null; current = GetSupportContainingSymbol(current))
             {
                 if (current.GetAttributes().Any(static attribute =>
-                    Util.IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass)))
+                    Util.IsECMAScriptSupportMarkerAttributeData(attribute)))
                     return true;
             }
         }

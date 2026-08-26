@@ -1,4 +1,5 @@
 using System.Reflection;
+using ECMAScript;
 using ECMAScript.VuIcons;
 
 namespace Jazor.RazorVue.Sg.Test;
@@ -36,12 +37,14 @@ public sealed class RazorSgVuIconsLibraryComponentTests
     [TestMethod]
     public async Task BuildComponent_OfficialRazorVuIcons_UsesStaticAndDynamicImportPaths()
     {
-        var staticDescriptor = typeof(VuUser).GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>();
-        var dynamicDescriptor = typeof(VuIcon).GetCustomAttribute<ECMAScript.VueContract.VueLibraryComponentAttribute>();
+        var staticDescriptor = typeof(VuUser).GetCustomAttribute<ECMAScriptAttribute>();
+        var dynamicDescriptor = typeof(VuIcon).GetCustomAttribute<ECMAScriptAttribute>();
         Assert.IsNotNull(staticDescriptor);
         Assert.IsNotNull(dynamicDescriptor);
-        Assert.AreEqual("vu-icons/VuUser", staticDescriptor!.ImportSpecifier);
-        Assert.AreEqual("vu-icons", dynamicDescriptor!.ImportSpecifier);
+        Assert.AreEqual("vu-icons/VuUser", staticDescriptor!.Import);
+        Assert.AreEqual("vu-icons", dynamicDescriptor!.Import);
+        Assert.AreEqual(Transform.Component, staticDescriptor.Transform);
+        Assert.AreEqual(Transform.Component, dynamicDescriptor.Transform);
 
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
             documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/Icons.razor"),

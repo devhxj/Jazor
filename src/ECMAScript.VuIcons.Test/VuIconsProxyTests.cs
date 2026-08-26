@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ComponentDescriptionAttribute = System.ComponentModel.DescriptionAttribute;
-using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.VuIcons.Test;
@@ -18,15 +17,15 @@ public sealed class VuIconsProxyTests
         var imports = manifest.RootElement.GetProperty("imports");
         var componentTypes = typeof(VuIcon).Assembly
             .GetExportedTypes()
-            .Select(type => (Type: type, Attribute: type.GetCustomAttribute<VueLibraryComponentAttribute>()))
-            .Where(static item => item.Attribute is not null)
+            .Select(type => (Type: type, Attribute: type.GetCustomAttribute<ECMAScriptAttribute>()))
+            .Where(static item => item.Attribute?.Transform == Transform.Component)
             .OrderBy(static item => item.Type.Name, StringComparer.Ordinal)
             .ToArray();
         var staticTypes = componentTypes
-            .Where(static item => item.Attribute!.ImportSpecifier.StartsWith("vu-icons/", StringComparison.Ordinal))
+            .Where(static item => item.Attribute!.Import!.StartsWith("vu-icons/", StringComparison.Ordinal))
             .ToArray();
         var descriptorEntries = staticTypes
-            .Select(static item => item.Attribute!.ImportSpecifier)
+            .Select(static item => item.Attribute!.Import!)
             .OrderBy(static entry => entry, StringComparer.Ordinal)
             .ToArray();
         var shippedEntries = Directory
@@ -50,7 +49,7 @@ public sealed class VuIconsProxyTests
         foreach (var (type, attribute) in componentTypes)
         {
             Assert.IsNotNull(attribute);
-            Assert.IsTrue(imports.TryGetProperty(attribute!.ImportSpecifier, out _), type.Name);
+            Assert.IsTrue(imports.TryGetProperty(attribute!.Import!, out _), type.Name);
             Assert.AreEqual(type.Name, attribute.ExportName, type.Name);
         }
     }
@@ -74,8 +73,8 @@ public sealed class VuIconsProxyTests
             .ToArray();
         var wrapperNames = typeof(VuIcon).Assembly
             .GetExportedTypes()
-            .Select(type => (Type: type, Attribute: type.GetCustomAttribute<VueLibraryComponentAttribute>()))
-            .Where(static item => item.Attribute?.ImportSpecifier.StartsWith("vu-icons/", StringComparison.Ordinal) == true)
+            .Select(type => (Type: type, Attribute: type.GetCustomAttribute<ECMAScriptAttribute>()))
+            .Where(static item => item.Attribute?.Import?.StartsWith("vu-icons/", StringComparison.Ordinal) == true)
             .Select(static item => item.Type.Name[2..])
             .OrderBy(static value => value, StringComparer.Ordinal)
             .ToArray();

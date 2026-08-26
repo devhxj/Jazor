@@ -31,7 +31,7 @@ foreach (var path in Directory.EnumerateFiles(targetDirectory, "*.cs", SearchOpt
     var root = tree.GetCompilationUnitRoot();
 
     foreach (var component in root.DescendantNodes().OfType<ClassDeclarationSyntax>()
-                 .Where(static declaration => HasAttribute(declaration.AttributeLists, "VueLibraryComponent")))
+                 .Where(static declaration => FlattenAttributes(declaration.AttributeLists).Any(IsComponentBinding)))
     {
         totalComponents++;
         var result = AuditComponent(component, path, repoRoot, options.WriteSchema);
@@ -208,15 +208,16 @@ static ComponentIdentity GetComponentIdentity(
     string repositoryRoot)
 {
     var attribute = FlattenAttributes(component.AttributeLists)
-        .SingleOrDefault(static candidate => IsAttribute(candidate, "VueLibraryComponent"))
-        ?? throw new InvalidOperationException($"{component.Identifier.ValueText} is missing VueLibraryComponent metadata.");
+        .SingleOrDefault(IsComponentBinding)
+        ?? throw new InvalidOperationException($"{component.Identifier.ValueText} is missing ECMAScript Component metadata.");
     var arguments = attribute.ArgumentList?.Arguments;
-    if (arguments is not { Count: 2 } ||
+    if (arguments is not { Count: 3 } ||
         GetStringLiteral(arguments.Value[0].Expression) is not { Length: > 0 } module ||
-        GetStringLiteral(arguments.Value[1].Expression) is not { Length: > 0 } export)
+        !IsComponentTransform(arguments.Value[1].Expression) ||
+        GetStringLiteral(arguments.Value[2].Expression) is not { Length: > 0 } export)
     {
         throw new InvalidOperationException(
-            $"VueLibraryComponent on {component.Identifier.ValueText} must declare module and export string literals.");
+            $"ECMAScript Component on {component.Identifier.ValueText} must declare module and export string literals.");
     }
 
     return new ComponentIdentity(
@@ -275,6 +276,16 @@ static bool IsAttribute(AttributeSyntax attribute, string expectedName)
     return string.Equals(simpleName, expectedName, StringComparison.Ordinal) ||
            string.Equals(simpleName, expectedName + "Attribute", StringComparison.Ordinal);
 }
+
+static bool IsComponentBinding(AttributeSyntax attribute)
+    => IsAttribute(attribute, "ECMAScript") &&
+       attribute.ArgumentList?.Arguments is { Count: 2 or 3 } arguments &&
+       IsComponentTransform(arguments[1].Expression);
+
+static bool IsComponentTransform(ExpressionSyntax expression)
+    => string.Equals(expression.ToString(), "Transform.Component", StringComparison.Ordinal) ||
+       string.Equals(expression.ToString(), "ECMAScript.Transform.Component", StringComparison.Ordinal) ||
+       string.Equals(expression.ToString(), "global::ECMAScript.Transform.Component", StringComparison.Ordinal);
 
 static string? GetStringLiteral(ExpressionSyntax expression)
     => expression is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.StringLiteralExpression)

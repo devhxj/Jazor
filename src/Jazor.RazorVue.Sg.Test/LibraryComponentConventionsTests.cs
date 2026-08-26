@@ -20,7 +20,7 @@ public sealed class LibraryComponentConventionsTests
 
             namespace Demo;
 
-            [VueLibraryComponent("demo-components", "LibraryWidget")]
+            [ECMAScript("demo-components", Transform.Component, "LibraryWidget")]
             public sealed class LibraryWidget : ComponentBase
             {
                 [Parameter, ECMAScriptName("data-title")]
@@ -94,7 +94,7 @@ public sealed class LibraryComponentConventionsTests
                 public new string Title { get; set; } = string.Empty;
             }
 
-            [VueLibraryComponent("demo-components", "LibraryWidget")]
+            [ECMAScript("demo-components", Transform.Component, "LibraryWidget")]
             public sealed class LibraryWidget : ComponentBase
             {
                 [Parameter]
@@ -113,7 +113,7 @@ public sealed class LibraryComponentConventionsTests
                 public RenderFragment? ApiURLContent { get; set; }
             }
 
-            [VueLibraryComponent("demo-components", "DefaultSlotWidget")]
+            [ECMAScript("demo-components", Transform.Component, "DefaultSlotWidget")]
             public sealed class DefaultSlotWidget : ComponentBase
             {
                 [Parameter, ECMAScriptName("default")]
@@ -157,12 +157,13 @@ public sealed class LibraryComponentConventionsTests
         var compilation = CreateCompilation(
             """
             #nullable enable
+            using ECMAScript;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace Demo;
 
-            [VueLibraryComponent("demo-components", "LibraryWidget")]
+            [ECMAScript("demo-components", Transform.Component, "LibraryWidget")]
             public sealed class LibraryWidget : ComponentBase
             {
                 [Parameter] public string Value { get; set; } = string.Empty;
@@ -216,6 +217,7 @@ public sealed class LibraryComponentConventionsTests
             """
             #nullable enable
             using System;
+            using ECMAScript;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
@@ -229,7 +231,7 @@ public sealed class LibraryComponentConventionsTests
 
             [Obsolete("container metadata")]
             [CustomMetadata(Flag = true)]
-            [VueLibraryComponent("demo-components", "DecoratedWidget")]
+            [ECMAScript("demo-components", Transform.Component, "DecoratedWidget")]
             public sealed class DecoratedWidget : ComponentBase
             {
                 [Obsolete("listener metadata"), Parameter]

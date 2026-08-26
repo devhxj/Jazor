@@ -120,17 +120,17 @@ internal static class VuetifyCatalogGenerator
             {
                 var attribute = declaration.AttributeLists
                     .SelectMany(static list => list.Attributes)
-                    .SingleOrDefault(IsVueLibraryComponent);
+                    .SingleOrDefault(IsComponentBinding);
                 if (attribute is null)
                     continue;
 
                 var arguments = attribute.ArgumentList?.Arguments;
-                if (arguments is not { Count: 2 } ||
+                if (arguments is not { Count: 2 or 3 } ||
                     !TryReadString(arguments.Value[0], out var module) ||
-                    !TryReadString(arguments.Value[1], out var export))
+                    !TryReadComponentExport(arguments.Value, out var export))
                 {
                     throw new InvalidOperationException(
-                        $"VueLibraryComponent on {Path.GetFileName(path)} must declare module and export string literals.");
+                        $"ECMAScript Component binding on {Path.GetFileName(path)} must declare module and export string literals.");
                 }
 
                 if (module is not StableModule and not LabsModule)
@@ -148,7 +148,7 @@ internal static class VuetifyCatalogGenerator
         }
 
         if (components.Count == 0)
-            throw new InvalidOperationException("No [VueLibraryComponent] declarations were found in ECMAScript.Vuetify.");
+            throw new InvalidOperationException("No [ECMAScript(..., Transform.Component, ...)] declarations were found in ECMAScript.Vuetify.");
 
         return components
             .OrderBy(static component => component.Module, StringComparer.Ordinal)
@@ -268,7 +268,7 @@ internal static class VuetifyCatalogGenerator
         var declaration = root.DescendantNodes().OfType<ClassDeclarationSyntax>()
             .SingleOrDefault(candidate =>
                 string.Equals(candidate.Identifier.ValueText, component.TypeName, StringComparison.Ordinal) &&
-                candidate.AttributeLists.SelectMany(static list => list.Attributes).Any(IsVueLibraryComponent));
+                candidate.AttributeLists.SelectMany(static list => list.Attributes).Any(IsComponentBinding));
         if (declaration is null)
             throw new InvalidOperationException($"Cannot locate Vuetify component declaration '{component.TypeName}'.");
 
@@ -280,6 +280,23 @@ internal static class VuetifyCatalogGenerator
 
         var edits = new List<TextEdit>();
         var lineEnding = source.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
+
+        var componentAttribute = declaration.AttributeLists
+            .SelectMany(static list => list.Attributes)
+            .SingleOrDefault(IsComponentBinding);
+        if (componentAttribute is not null &&
+            componentAttribute.ArgumentList?.Arguments is { Count: 2 or 3 } componentArguments &&
+            TryReadString(componentArguments[0], out var componentModule) &&
+            TryReadComponentExport(componentArguments, out var componentExport))
+        {
+            var replacement = componentArguments.Count == 2 && IsComponentTransform(componentArguments[1])
+                ? $"ECMAScript(\"{EscapeCSharpString(componentModule)}\", Transform.Component)"
+                : $"ECMAScript(\"{EscapeCSharpString(componentModule)}\", Transform.Component, \"{EscapeCSharpString(componentExport)}\")";
+            edits.Add(new TextEdit(
+                componentAttribute.Span.Start,
+                componentAttribute.Span.Length,
+                replacement));
+        }
 
         // The component marker is part of the generated declaration contract. Keep the
         // existing ComponentBase/custom authoring base intact so generated proxies retain
@@ -508,8 +525,35 @@ internal static class VuetifyCatalogGenerator
     private static bool IsParameterProperty(PropertyDeclarationSyntax property)
         => property.AttributeLists.SelectMany(static list => list.Attributes).Any(IsParameter);
 
-    private static bool IsVueLibraryComponent(AttributeSyntax attribute)
-        => IsAttribute(attribute, "VueLibraryComponent");
+    private static bool IsComponentBinding(AttributeSyntax attribute)
+        => (IsAttribute(attribute, "ECMAScript") &&
+            attribute.ArgumentList?.Arguments is { Count: 2 or 3 } arguments &&
+            IsComponentTransform(arguments[1]));
+
+    private static bool TryReadComponentExport(
+        SeparatedSyntaxList<AttributeArgumentSyntax> arguments,
+        out string export)
+    {
+        export = string.Empty;
+        if (arguments.Count == 2)
+        {
+            if (IsComponentTransform(arguments[1]))
+            {
+                export = "default";
+                return true;
+            }
+
+            return false;
+        }
+
+        return IsComponentTransform(arguments[1]) && TryReadString(arguments[2], out export);
+    }
+
+    private static bool IsComponentTransform(AttributeArgumentSyntax argument)
+        => string.Equals(
+            argument.Expression.ToString(),
+            "Transform.Component",
+            StringComparison.Ordinal);
 
     private static bool IsECMAScriptName(AttributeSyntax attribute)
         => IsAttribute(attribute, "ECMAScriptName");

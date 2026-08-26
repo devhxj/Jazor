@@ -205,7 +205,7 @@ internal static class TDesignComponentGenerator
         foreach (var component in components)
         {
             builder.AppendLine();
-            builder.AppendLine($"[VueLibraryComponent(\"tdesign-vue-next\", \"{component.Component.Binding.RuntimeExport}\")]");
+            builder.AppendLine($"[ECMAScript(\"tdesign-vue-next\", Transform.Component, \"{component.Component.Binding.RuntimeExport}\")]");
             var genericSuffix = component.TypeParameters.Length == 0
                 ? string.Empty
                 : "<" + string.Join(", ", component.TypeParameters.Select(static parameter => parameter.Name)) + ">";
@@ -257,7 +257,7 @@ internal static class TDesignComponentGenerator
             if (component.TypeParameters.Length > 0 && component.DefaultTypeArguments.Length == component.TypeParameters.Length)
             {
                 builder.AppendLine();
-                builder.AppendLine($"[VueLibraryComponent(\"tdesign-vue-next\", \"{component.Component.Binding.RuntimeExport}\")]");
+                builder.AppendLine($"[ECMAScript(\"tdesign-vue-next\", Transform.Component, \"{component.Component.Binding.RuntimeExport}\")]");
                 builder.AppendLine($"public sealed class {component.Component.Contract.AuthoringType} : {component.Component.Contract.AuthoringType}<{string.Join(", ", component.DefaultTypeArguments.Select(static argument => argument.Name))}>");
                 builder.AppendLine("{");
                 builder.AppendLine("}");

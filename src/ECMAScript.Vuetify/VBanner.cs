@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VBanner")]
+[ECMAScript("vuetify/components", Transform.Component, "VBanner")]
 /// <summary>
 /// Vuetify 横幅组件。
 /// Vuetify banner component.

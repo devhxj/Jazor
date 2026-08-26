@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VBadge")]
+[ECMAScript("vuetify/components", Transform.Component, "VBadge")]
 /// <summary>
 /// Vuetify 徽章组件。
 /// Vuetify badge component.

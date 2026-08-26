@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 默认值提供者创作代理，用于作用域组件默认值。
 /// Vuetify defaults-provider authoring proxy for scoped component defaults.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VDefaultsProvider")]
+[ECMAScript("vuetify/components", Transform.Component, "VDefaultsProvider")]
 public sealed class VDefaultsProvider : ComponentBase, IVuetifyComponent
 {
     /// <summary>

@@ -242,7 +242,9 @@ public partial class SemanticWalker
 			if (!string.IsNullOrEmpty(modulePath))
 			{
 				if (context is { } importContext)
-					return importContext.BindImportSpecifier(modulePath!, flatName!);
+                    return Util.IsExternalECMAScriptImport(symbol)
+                        ? importContext.BindExternalImportSpecifier(modulePath!, flatName!)
+                        : importContext.BindImportSpecifier(modulePath!, flatName!);
 			}
 
 			return new Identifier(flatName!);
@@ -266,7 +268,9 @@ public partial class SemanticWalker
 				// The loop exits before processing _moduleRootType, so every module path here
 				// belongs to an external runtime type and can be imported when a context exists.
 				if (context is { } importContext)
-					return importContext.BindImportSpecifier(modulePath!, name!);
+                    return Util.IsExternalECMAScriptImport(type)
+                        ? importContext.BindExternalImportSpecifier(modulePath!, name!)
+                        : importContext.BindImportSpecifier(modulePath!, name!);
 
 				queue.Push(name!);
 				break;
@@ -351,7 +355,9 @@ public partial class SemanticWalker
 		// C# module member that attempts to declare `export default`, so importing an existing ESM
 		// default does not silently broaden Jazor's own module export contract.
 		// 这里只允许跨模块消费既有 default export；Jazor 自身模块仍只声明 named export。
-		expression = context.BindImportSpecifier(modulePath!, memberName);
+		expression = Util.IsExternalECMAScriptImport(containingType)
+			? context.BindExternalImportSpecifier(modulePath!, memberName)
+			: context.BindImportSpecifier(modulePath!, memberName);
 		return true;
 	}
 
@@ -1240,7 +1246,9 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			{
 				importedIdentifierName = Util.GetConfigOrSymbolName(method);
 				if (!string.IsNullOrWhiteSpace(importedIdentifierName))
-					importedBinding = argument.BindImportSpecifier(modulePath!, importedIdentifierName!);
+					importedBinding = Util.IsExternalECMAScriptImport(method.ContainingType)
+						? argument.BindExternalImportSpecifier(modulePath!, importedIdentifierName!)
+						: argument.BindImportSpecifier(modulePath!, importedIdentifierName!);
 			}
 
 			expression = InstantiateInlineTemplate(

@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ComponentDescriptionAttribute = System.ComponentModel.DescriptionAttribute;
-using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.VueDataUi.Test;
@@ -18,8 +17,8 @@ public sealed class VueDataUiProxyTests
         var imports = manifest.RootElement.GetProperty("imports");
         var componentTypes = typeof(VueUiXy).Assembly
             .GetExportedTypes()
-            .Select(type => (Type: type, Attribute: type.GetCustomAttribute<VueLibraryComponentAttribute>()))
-            .Where(static item => item.Attribute is not null)
+            .Select(type => (Type: type, Attribute: type.GetCustomAttribute<ECMAScriptAttribute>()))
+            .Where(static item => item.Attribute?.Transform == Transform.Component)
             .OrderBy(static item => item.Type.Name, StringComparer.Ordinal)
             .ToArray();
         var shippedEntries = Directory
@@ -28,7 +27,7 @@ public sealed class VueDataUiProxyTests
             .OrderBy(static entry => entry, StringComparer.Ordinal)
             .ToArray();
         var descriptorEntries = componentTypes
-            .Select(static item => item.Attribute!.ImportSpecifier)
+            .Select(static item => item.Attribute!.Import!)
             .OrderBy(static entry => entry, StringComparer.Ordinal)
             .ToArray();
 
@@ -41,11 +40,11 @@ public sealed class VueDataUiProxyTests
         {
             Assert.IsNotNull(attribute);
             Assert.IsTrue(
-                attribute!.ImportSpecifier.StartsWith("vue-data-ui/vue-ui-", StringComparison.Ordinal),
+                attribute!.Import!.StartsWith("vue-data-ui/vue-ui-", StringComparison.Ordinal),
                 $"{type.Name} must use a per-component vue-data-ui entry.");
             Assert.IsTrue(
-                imports.TryGetProperty(attribute.ImportSpecifier, out _),
-                $"manifest.json is missing {attribute.ImportSpecifier} for {type.Name}.");
+                imports.TryGetProperty(attribute.Import, out _),
+                $"manifest.json is missing {attribute.Import} for {type.Name}.");
             Assert.AreEqual(type.Name, attribute.ExportName, type.Name);
         }
 

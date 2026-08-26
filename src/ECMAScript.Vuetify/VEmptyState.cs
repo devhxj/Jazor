@@ -6,7 +6,7 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 空状态创作代理，用于无数据和引导界面。
 /// Vuetify empty-state authoring proxy for no-data and onboarding surfaces.
 /// </summary>
-[VueLibraryComponent("vuetify/components", "VEmptyState")]
+[ECMAScript("vuetify/components", Transform.Component, "VEmptyState")]
 public sealed class VEmptyState : ComponentBase, IVuetifyComponent
 {
     /// <summary>

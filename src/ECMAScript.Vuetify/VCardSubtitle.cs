@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VCardSubtitle")]
+[ECMAScript("vuetify/components", Transform.Component, "VCardSubtitle")]
 /// <summary>
 /// Vuetify 卡片副标题组件。
 /// Vuetify card subtitle component.
