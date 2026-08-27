@@ -4,7 +4,7 @@
 >
 > 审阅基线：已发布的 `v0.19.0` 与 2026-08-24 的开发工作树。源码位置以类型、成员和测试名为准，不把提交号或生成文件行号当成长期契约。
 >
-> 关联：[RazorVue Blazor CLR 类型支持计划](./blazor-clr-support-plan.md) 负责新增 Blazor API 切片；本文只强化既有 CLR runtime 表示、生成器护栏和消费边界，不扩大作者可调用的 API 面。`ECMAScript.Blazor` 只提供随 `Jazor.Vue` 交付的 Blazor mapping declaration；若映射需要 carrier/helper，实际 runtime 仍由 `Jazor.CLR` 提供。`Jazor` 核心包不因此引入新的 Blazor mapping API。
+> 关联：[RazorVue Blazor CLR 类型支持计划](./blazor-clr-support-plan.md) 负责新增 Blazor API 切片；本文只强化既有 CLR runtime 表示、生成器护栏和消费边界，不扩大作者可调用的 API 面。Blazor CLR mapping 由 `Jazor.CLR.Generator` 生成并由 `Jazor.CLR` 唯一持有；`ECMAScript.Blazor` 只提供随 `Jazor.Vue` 交付的标准 ECMAScript 模拟/投影扩展。`Jazor` 核心包不因此引入新的 Blazor mapping API。
 
 ## 1. 已裁决的对象模型
 
@@ -93,7 +93,7 @@ authored C# d1 < d2
 6. 日期/时间值 carrier 在受支持 CLR 路径中保持逻辑不可变，并保留 `Date` 防御性拷贝。`JGregorianCalendar` 和 `JCancellationTokenRegistration` 等有意可变状态 carrier 不受“全部字段只读”的错误泛化约束。
 7. 任何生产入口从外部表示创建 nominal carrier 时，必须调用 CLR-owned 构造/helper；不得在 RazorVue 或其他宿主层复制 carrier 字段布局。
 8. 原生集合和共享 carrier 的 `is`/`as` 只具有 carrier 精度；文档必须诚实说明，不能用 type tag 假装获得更强身份。
-9. 共用 CLR runtime 行为以及 Blazor 专属 runtime module/helper 都以 C# 写入 `Jazor.CLR` 并由现有管道编译；`ECMAScript.Blazor` 只持有 framework-to-carrier mapping declaration。手写 `.mjs` 只保留宿主生命周期、渲染 framing 和到 `Jazor.CLR` 模块入口的薄转发。
+9. 共用 CLR runtime 行为以及 Blazor 专属 CLR mapping/runtime module/helper 都以 C# 写入 `Jazor.CLR`，先经过 `Jazor.CLR.Generator` 冻结真实 surface，再由现有管道编译；`ECMAScript.Blazor` 只持有标准 ECMAScript 模拟/投影扩展。手写 `.mjs` 只保留宿主生命周期、渲染 framing 和到 `Jazor.CLR` 模块入口的薄转发。
 10. 本计划不新增 CLR API 映射；若某项必须扩大作者可用成员面，应移入独立 `MINOR` 能力切片。
 
 ## 5. 实施阶段
@@ -133,4 +133,4 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg
 - 不实现 prototype symbol-member emission、完整 CLR runtime identity 或一类型一 carrier。
 - 不新增手写 runtime `.mjs` 领域逻辑，不新增 `.ps1` 自动化。
 - 不扩大作者可调用的 CLR/Blazor API 面；新增能力归 [Blazor CLR 支持计划](./blazor-clr-support-plan.md) 或其他独立路线图。
-- 不把 Blazor framework mapping declaration 复制回 `Jazor.CLR`；其声明归属和随 `Jazor.Vue` 的交付由 [Blazor CLR 支持计划](./blazor-clr-support-plan.md) §2.1 规定，实际 runtime module/helper 仍由 `Jazor.CLR` 唯一承载。
+- 不把 Blazor framework CLR mapping 复制到其他项目；其生成入口、声明归属和随 `Jazor.Vue` 的可选作者扩展交付由 [Blazor CLR 支持计划](./blazor-clr-support-plan.md) §2.1 规定，实际 mapping/runtime module/helper 仍由 `Jazor.CLR` 唯一承载。

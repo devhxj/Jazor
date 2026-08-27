@@ -12,6 +12,12 @@
 
 **成员**：Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get</br>
 **签名**：_1762f2817bbb7a57</br>
+
+**成员**：Microsoft.AspNetCore.Components.ChangeEventArgs.Value.set</br>
+**签名**：_b834c09ac3cad4f5</br>
+
+**成员**：Microsoft.AspNetCore.Components.ChangeEventArgs.ChangeEventArgs()</br>
+**签名**：_edaab150211bc8e2</br>
 **注释**：
 
 ```xml

@@ -72,8 +72,8 @@ internal sealed class WebIdlTypeMapper
     private static readonly IReadOnlyDictionary<string, string> PrimitiveTypeMap = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         // Keep the Web IDL primitive distinct from WebCrypto's `typedef Uint8Array BigInteger`.
-        // 使用全限定名避免同名 typedef alias 截获真实 JavaScript BigInt 的 C# 映射。
-        ["bigint"] = "System.Numerics.BigInteger",
+        // Web IDL bigint 直接暴露 JavaScript BigInt 宿主类型，而不是 CLR BigInteger carrier。
+        ["bigint"] = "BigInt",
         ["DOMString"] = "string",
         ["USVString"] = "string",
         ["CSSOMString"] = "string",
@@ -90,8 +90,10 @@ internal sealed class WebIdlTypeMapper
         ["unsigned short"] = "ushort",
         ["long"] = "int",
         ["unsigned long"] = "uint",
-        ["long long"] = "long",
-        ["unsigned long long"] = "ulong",
+        // Web IDL `long long` is a 64-bit integer domain, but its ECMAScript binding is Number.
+        // C# long/ulong 会被 Jazor 降为 BigInt，因此 64 位 IDL 整数必须使用 Number 宿主类型。
+        ["long long"] = "Number",
+        ["unsigned long long"] = "Number",
         ["float"] = "float",
         ["unrestricted float"] = "float",
         ["double"] = "double",
@@ -112,6 +114,8 @@ internal sealed class WebIdlTypeMapper
     {
         ["Delegate"] = "System.Delegate",
         ["BigInteger"] = "System.Numerics.BigInteger",
+        ["Number"] = "ECMAScript.Number",
+        ["BigInt"] = "ECMAScript.BigInt",
         ["ArrayBuffer"] = "ECMAScript.ArrayBuffer",
         ["IBufferSource"] = "ECMAScript.IBufferSource",
         ["IArrayBufferView"] = "ECMAScript.IArrayBufferView",
@@ -180,6 +184,32 @@ internal sealed class WebIdlTypeMapper
     public bool TryResolveAliasValue(string aliasName, out string value)
     {
         return _typedefValueByName.TryGetValue(aliasName, out value!);
+    }
+
+    public bool IsNonConstHostType(string typeName)
+    {
+        var current = typeName.EndsWith("?", StringComparison.Ordinal)
+            ? typeName[..^1]
+            : typeName;
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        while (visited.Add(current))
+        {
+            if (current is "Number" or "BigInt" or "ECMAScript.Number" or "ECMAScript.BigInt")
+            {
+                return true;
+            }
+
+            if (!_typedefValueByName.TryGetValue(current, out var aliasValue))
+            {
+                return false;
+            }
+
+            current = aliasValue.EndsWith("?", StringComparison.Ordinal)
+                ? aliasValue[..^1]
+                : aliasValue;
+        }
+
+        return false;
     }
 
     public bool IsEnumType(string typeName)

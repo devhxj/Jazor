@@ -153,7 +153,7 @@ static IReadOnlyList<string> GetRequiredPaths(string packageId)
             Path.Combine("lib", "net11.0", "ECMAScript.dll"),
             Path.Combine("lib", "net11.0", "Jazor.Compiler.dll"),
             Path.Combine("tools", "net11.0", "Jazor.Emit.dll"),
-            Path.Combine("tools", "net11.0", "runtimes", "win-x64", "native", "deno.exe")
+            Path.Combine("tools", "net11.0", "Jazor.Emit.runtimeconfig.json")
         ]).ToArray(),
         "Jazor.Vue" => commonPaths.Concat(
         [

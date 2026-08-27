@@ -433,7 +433,11 @@ internal sealed class PreviewBindingEmitter
         var builder = new StringBuilder();
         AppendDocumentation(builder, documentation);
         builder.AppendLine($"[Description(\"@#{member.GetStringOrNull("name")}\")]" );
-        builder.Append($"public const {type} {propertyName} = {value};");
+        // JavaScript Number/BigInt hosts are not C# const-compatible. Keep these constants
+        // bound to the native interface object; CLR primitive WebIDL constants remain const.
+        builder.Append(_typeMapper.IsNonConstHostType(type)
+            ? $"public static extern {type} {propertyName} {{ get; }}"
+            : $"public const {type} {propertyName} = {value};");
         return builder.ToString();
     }
 

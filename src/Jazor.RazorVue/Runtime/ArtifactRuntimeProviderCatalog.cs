@@ -26,11 +26,6 @@ internal static class RuntimeProviderCatalog
             "Jazor.RazorVue.Runtime.blazor-routing",
             "@jazor/vue-runtime/blazor-routing.mjs",
             ["@jazor/vue-runtime/routes.mjs"]),
-        new(
-            "Jazor.RazorVue.Runtime.blazor-components.mjs",
-            "Jazor.RazorVue.Runtime.blazor-components",
-            "@jazor/vue-runtime/blazor-components.mjs",
-            [])
     ];
 
     private static readonly ImportMapContribution[] ImportMapEntries =

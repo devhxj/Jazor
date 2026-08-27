@@ -2,6 +2,24 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-28
+
+### Jazor 0.24.0
+
+> Blazor CLR 模块生成与归属边界收敛，并交付扩展 DOM 事件参数的最小垂直切片。本版本按 `MINOR` 通道发布；尚未完成真实浏览器、reference oracle 与独立 package consumer 证据的能力继续标记为 `InProof`。
+
+#### 新增
+
+- **统一 Blazor CLR 模块管线**：受支持的 Blazor framework 类型先由 `Jazor.CLR.Generator` 从真实 reference symbol 生成初始 module/doc，再由 `Jazor.CLR` 持有 mapping、carrier 与 runtime helper；`Jazor.Compiler` 的静态 whitelist 与既有 `ECMAScript.Catalog` 继续由各自 owner 生成/物化。
+- **扩展 DOM 事件参数切片**：Pointer、Wheel、Drag/DataTransfer、Clipboard、Touch、Error 和 Progress 的原生事件只读 getter 已接入 `Jazor.CLR`，TouchList 在属性访问时惰性转换为数组 carrier；未批准的构造器、setter、合成 payload、文件/items 和 TouchList 非 getter 操作继续明确拒绝。
+- **发布包边界验证**：核心 `Jazor` consumer 不携带 `ECMAScript.Blazor` 或 ASP.NET Core framework；`Jazor + Jazor.Vue` consumer 保留 Razor/Vue authoring payload，并由独立 Release package consumer 回归验证。
+
+#### 边界与迁移
+
+- `ECMAScript.Blazor` 现在只提供标准 ECMAScript 模拟/投影扩展，不再贡献 `[Jazor]` mapping、CLR whitelist 或 runtime module；Blazor CLR mapping 由 `Jazor.CLR` 唯一持有。需要 Blazor 类型支持的应用无需复制 mapping 源码或注册 provider。
+- RazorVue 仍保留 `ComponentBase`、`EventCallback`、`RenderTreeBuilder` 和 current-component 等产品 hook，但这些 hook 的获准 CLR surface 也必须经过模块生成器并在 `Jazor.CLR` 声明；组件入口仍要求 `ComponentBase + IVueComponent + ECMAScript` 导入描述。
+- S5 认证状态/provider 不实现且不进入本版本；`IJSRuntime` 家族继续是 Reject。浏览器 API 应使用强类型 ECMAScript/WebIDL binding，内置 Blazor UI、表单、文件和认证 UI 不因本次 CLR 切片而获得支持。
+
 ## 2026-08-26
 
 ### Jazor 0.23.0

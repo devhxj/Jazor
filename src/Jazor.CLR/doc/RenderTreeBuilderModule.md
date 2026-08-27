@@ -1,4 +1,4 @@
-# RenderTreeBuilderCatalog.cs
+# RenderTreeBuilderModule.cs
 
 > ⚠️ **注意**：签名= _+ SHA256Hash(成员)
 
@@ -58,9 +58,6 @@
 
 **成员**：Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetUpdatesAttributeName(string)</br>
 **签名**：_92e64559bb857d1a</br>
-
-**成员**：Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int, object)</br>
-**签名**：_3316fc4656366ed7</br>
 
 **成员**：Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.OpenComponent<TComponent>(int)</br>
 **签名**：_c79a1a2386a24d3e</br>

@@ -338,7 +338,6 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 "@jazor/vue-runtime/raw-markup.mjs" => "Jazor.RazorVue.Runtime.raw-markup.mjs",
                 "@jazor/vue-runtime/cascading.mjs" => "Jazor.RazorVue.Runtime.cascading.mjs",
                 "@jazor/vue-runtime/blazor-routing.mjs" => "Jazor.RazorVue.Runtime.blazor-routing.mjs",
-                "@jazor/vue-runtime/blazor-components.mjs" => "Jazor.RazorVue.Runtime.blazor-components.mjs",
                 _ => throw new InvalidOperationException(
                     $"Official RazorVue Deno test host does not know runtime import '{importPath}'.")
             };

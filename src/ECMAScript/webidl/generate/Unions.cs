@@ -4965,17 +4965,17 @@ public readonly union CreateObjectURLObj(Blob, MediaSource)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union CryptoKeyID(SmallCryptoKeyID, System.Numerics.BigInteger)
+public readonly union CryptoKeyID(SmallCryptoKeyID, BigInt)
 {
 
     public SmallCryptoKeyID? AsSmallCryptoKeyID => Value is SmallCryptoKeyID value ? value : default(SmallCryptoKeyID?);
 
-    public System.Numerics.BigInteger? AsBigInteger => Value is System.Numerics.BigInteger value ? value : default(System.Numerics.BigInteger?);
+    public BigInt? AsBigInt => Value is BigInt value ? value : default(BigInt?);
 
     public static implicit operator CryptoKeyID(SmallCryptoKeyID value)
         => new(value);
 
-    public static implicit operator CryptoKeyID(System.Numerics.BigInteger value)
+    public static implicit operator CryptoKeyID(BigInt value)
         => new(value);
 }
 
@@ -6356,14 +6356,14 @@ public readonly union LineAndPositionSetting(double, AutoKeyword)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union MLNumber(System.Numerics.BigInteger, double)
+public readonly union MLNumber(BigInt, double)
 {
 
-    public System.Numerics.BigInteger? AsBigInteger => Value is System.Numerics.BigInteger value ? value : default(System.Numerics.BigInteger?);
+    public BigInt? AsBigInt => Value is BigInt value ? value : default(BigInt?);
 
     public double? AsDouble => Value is double value ? value : default(double?);
 
-    public static implicit operator MLNumber(System.Numerics.BigInteger value)
+    public static implicit operator MLNumber(BigInt value)
         => new(value);
 
     public static implicit operator MLNumber(double value)

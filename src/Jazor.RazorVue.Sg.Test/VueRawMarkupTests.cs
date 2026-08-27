@@ -41,7 +41,7 @@ public sealed class VueRawMarkupTests
         Assert.AreEqual("jazor.vue", ReadStatic<string>(catalog, "ProviderId"));
 
         var modules = InvokeEnumerable(catalog, "GetModules").Cast<object>().ToArray();
-        Assert.HasCount(4, modules);
+        Assert.HasCount(3, modules);
         var rawMarkup = modules.Single(module =>
             ReadProperty<string>(module, "RelativePath") == "@jazor/vue-runtime/raw-markup.mjs");
         Assert.AreEqual("Jazor.RazorVue.Runtime.raw-markup.mjs", ReadProperty<string>(rawMarkup, "ResourceName"));
@@ -54,9 +54,6 @@ public sealed class VueRawMarkupTests
         CollectionAssert.AreEquivalent(
             new[] { "@jazor/vue-runtime/routes.mjs" },
             ((IEnumerable)routing.GetType().GetProperty("Dependencies")!.GetValue(routing)!).Cast<string>().ToArray());
-        var components = modules.Single(module =>
-            ReadProperty<string>(module, "RelativePath") == "@jazor/vue-runtime/blazor-components.mjs");
-        Assert.AreEqual("Jazor.RazorVue.Runtime.blazor-components.mjs", ReadProperty<string>(components, "ResourceName"));
         Assert.IsFalse(
             assembly.GetManifestResourceNames().Any(static name => name.Contains("render-context", StringComparison.Ordinal)),
             "The retired render-context runtime must not return as a provider dependency.");

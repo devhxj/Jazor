@@ -111,7 +111,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
             .Where(static entry => entry.Id.Contains("blazor-clr", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.HasCount(5, entries);
+        Assert.HasCount(11, entries);
         Assert.IsTrue(entries.All(static entry =>
             !string.IsNullOrWhiteSpace(entry.TargetProfiles) &&
             !string.IsNullOrWhiteSpace(entry.Carrier) &&
@@ -120,16 +120,33 @@ public sealed class RazorVueM5CapabilityLedgerTests
             !string.IsNullOrWhiteSpace(entry.Dependencies) &&
             !string.IsNullOrWhiteSpace(entry.ExcludedSurface)));
         Assert.IsTrue(entries.All(static entry =>
-            entry.ImplementationPath.Contains("ECMAScript.Blazor", StringComparison.Ordinal)));
+            entry.ImplementationPath.Contains("Jazor.CLR", StringComparison.Ordinal)));
         Assert.IsTrue(entries.All(static entry =>
-            entry.ContributionContractVersion == "static-source-root/v1"));
+            entry.ContributionContractVersion == "generated-clr-module/v1"));
+        Assert.IsFalse(entries.Any(static entry =>
+            entry.ImplementationPath.Contains("source-root", StringComparison.Ordinal)));
 
         var package = entries.Single(static entry => entry.Id == "P0-blazor-clr-mapping-package");
         Assert.AreEqual(RazorVueCapabilityStatus.InProof, package.Status);
         Assert.IsTrue(package.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
 
-        var extendedEvents = entries.Single(static entry => entry.Id == "P2-blazor-clr-extended-dom-events");
-        Assert.AreEqual(RazorVueCapabilityStatus.Planned, extendedEvents.Status);
-        Assert.AreEqual(RazorVueCapabilityEvidence.None, extendedEvents.Evidence);
+        foreach (var id in new[]
+        {
+            "P2-blazor-clr-pointer-events",
+            "P2-blazor-clr-wheel-events",
+            "P2-blazor-clr-drag-events",
+            "P2-blazor-clr-clipboard-events",
+            "P2-blazor-clr-touch-events",
+            "P2-blazor-clr-error-events",
+            "P2-blazor-clr-progress-events"
+        })
+        {
+            var eventSlice = entries.Single(entry => entry.Id == id);
+            Assert.AreEqual(RazorVueCapabilityStatus.InProof, eventSlice.Status, id);
+            Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator), id);
+            Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime), id);
+        }
+
+        Assert.IsFalse(entries.Any(static entry => entry.Id == "P2-blazor-clr-remaining-dom-events"));
     }
 }

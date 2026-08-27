@@ -1,14 +1,34 @@
 # ECMAScript.Blazor
 
-`ECMAScript.Blazor` 是 Blazor framework 类型到原生 browser carrier 的类型映射扩展库。它只包含 `[Jazor]` mapping declarations 和用于保持声明可编译的 adapter signatures，不拥有 Razor renderer，也不定义独立的 JavaScript runtime module。
+> 定位：面向 Blazor authoring 场景的标准 ECMAScript 模拟/投影扩展库。
 
-当前首批映射把 `MouseEventArgs`、`KeyboardEventArgs` 和 `FocusEventArgs` 的只读 getter 投影到同一个 DOM callback 传入的 `MouseEvent`、`KeyboardEvent` 和 `FocusEvent`，并把 `ChangeEventArgs` 投影到 `JazorEvent`。setter、构造器和合成 `EventArgs` payload 不在此切片内。`ChangeEventArgs.Value` 由 `Jazor.CLR` helper 在 listener 边界一次性捕获，并以 `WeakMap` 保存事件时刻的 string、bool 或 string array 值。
+`ECMAScript.Blazor` 的写法应与 [ECMAScript 的 `Math` 投影](../ECMAScript/internal/Math.cs)一致：只用公开 ECMAScript 协议表达额外的 host shape、成员名与调用形状。它不是 Blazor CLR mapping 的事实源；RazorVue 消费的 framework type/member mapping 由 `Jazor.CLR.Generator` 生成并由 `Jazor.CLR` 持有。
 
-该程序集不单独发布给应用安装：它作为 `Jazor.Vue` NuGet 的 `lib/net11.0` payload 交付；`Jazor` 核心包不包含该程序集，也不因此增加 `Microsoft.AspNetCore.App` framework reference。当前第一方 mapping 仍由 compiler generator 静态合并，独立程序集的交付边界不应误写成已经具备任意 NuGet provider 的动态发现能力。
+## 编写边界
 
-映射源修改后运行：
+- 使用公共 ECMAScript 协议：`[ECMAScript]`、`[ECMAScript("specifier")]`、`[ECMAScriptInline]`，以及 `Description` 等标准名称/投影元数据。
+- 仅在确有额外作者 API 时，用模拟/投影扩展成员表达所需的 host shape；C# surface 只描述可由编译器直接降低的标准 ECMAScript 语义。
+- 不使用内部 `[Jazor]` 或 `Op.*`，不作为 whitelist 生成输入，也不维护第二份 CLR member mapping 表。
+- 不声明 `[ECMAScriptModule]`，不包含 C# 编写的 JavaScript runtime module、helper 实现或手写 `.mjs`。
+- 不拥有 Razor renderer、Vue listener/callback framing 或组件运行时实现。
 
-```bash
-dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj
-dotnet build src/ECMAScript.Blazor/ECMAScript.Blazor.csproj
-```
+需要实际运行时语义时，投影只声明其公开 host contract；实现归 `Jazor.CLR`。例如需要复杂控制流、事件值捕获或可复用 helper 时，应由 `Jazor.CLR` 的 C# module 提供，并沿既有 runtime catalog/Emit 管道物化。
+
+## 职责划分
+
+| Owner | 职责 |
+| --- | --- |
+| `ECMAScript.Blazor` | 可选的标准 ECMAScript 模拟/投影扩展与公开 host contract；不持有 framework member key |
+| `Jazor.CLR` | C# 编写的 JavaScript runtime module、helper、Blazor CLR mapping 和运行时语义 |
+| `ECMAScript.Catalog` | 既有 runtime catalog 的发布与物化；本项目不迁移、不替代其职责 |
+| `Jazor.RazorVue` | Razor 生成 C# 的 render/lifecycle lowering，以及 Vue listener/component framing |
+
+## 交付边界
+
+该程序集作为 `Jazor.Vue` NuGet 的 `lib/net11.0` payload 交付；应用不需要单独引用或复制扩展源码。`Jazor` 核心包不包含该程序集，也不因此引入 Blazor framework reference。没有额外扩展需求时，不为维持程序集存在而复制 CLR mapping。
+
+## 相关文档
+
+- [Jazor.CLR](../Jazor.CLR/README.md)
+- [Jazor.Vue](../Jazor.Vue/README.md)
+- [Blazor CLR 类型支持计划](../../docs/04-roadmap/blazor-clr-support-plan.md)

@@ -95,6 +95,76 @@ public sealed class RazorSgStandardBlazorComponentRuntimeTests
             """,
             "Microsoft.AspNetCore.Components.Web.ErrorBoundary");
 
+    [TestMethod]
+    public async Task RemainingStandardBlazorComponents_AreRejectedAsBuiltInUi()
+    {
+        var cases = new[]
+        {
+            (
+                Name: "NavigationLockHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Routing
+
+                    <NavigationLock />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Routing.NavigationLock"),
+            (
+                Name: "FocusOnNavigateHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Routing
+
+                    <FocusOnNavigate />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Routing.FocusOnNavigate"),
+            (
+                Name: "PageTitleHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Web
+
+                    <PageTitle>Orders</PageTitle>
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Web.PageTitle"),
+            (
+                Name: "AuthorizeRouteViewHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Authorization
+
+                    <AuthorizeRouteView />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView"),
+            (
+                Name: "CascadingAuthenticationStateHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Authorization
+
+                    <CascadingAuthenticationState />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState"),
+            (
+                Name: "DataAnnotationsValidatorHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Forms
+
+                    <DataAnnotationsValidator />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator")
+        };
+
+        foreach (var testCase in cases)
+        {
+            await AssertBuiltInRejectedAsync(
+                testCase.Name,
+                testCase.Markup,
+                $$"""
+                namespace Demo.Pages;
+
+                [ECMAScriptModule("./components/{{testCase.Name.ToLowerInvariant()}}")]
+                public partial class {{testCase.Name}} : ComponentBase, IVueComponent;
+                """,
+                testCase.ExpectedType);
+        }
+    }
+
     private static async Task AssertBuiltInRejectedAsync(
         string componentName,
         string documentText,

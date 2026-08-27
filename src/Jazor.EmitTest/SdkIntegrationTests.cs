@@ -13,6 +13,7 @@ namespace Jazor.EmitTest;
 public sealed class SdkIntegrationTests
 {
     private static readonly Lazy<Task<LocalPackageFixture>> LocalPackage = new(CreateLocalPackageAsync);
+    private static readonly Lazy<Task<LocalReleasePackageFixture>> LocalReleasePackage = new(CreateLocalReleasePackageAsync);
     private static readonly Lazy<Task<LocalStylePackageFixture>> LocalStylePackage = new(CreateLocalStylePackageAsync);
     private static readonly SemaphoreSlim SourceReferencedRazorVueBuildGate = new(1, 1);
 
@@ -88,6 +89,58 @@ public sealed class SdkIntegrationTests
                 path.StartsWith("tools/net11.0/DenoHost", StringComparison.OrdinalIgnoreCase) ||
                 path.StartsWith("tools/net11.0/runtimes/", StringComparison.OrdinalIgnoreCase)),
             "Jazor.Emit must remain a Netpack-only build tool and cannot carry DenoHost runtime assets.");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalReleasePackages_CoreAndVueConsumers_RespectBlazorClrPackageBoundary()
+    {
+        var package = await LocalReleasePackage.Value;
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var commonArguments = new[]
+        {
+            "-c",
+            "Release",
+            "-t:Rebuild",
+            "/m:1",
+            "/p:BuildInParallel=false",
+            $"-p:RestoreSources={package.PackageOutputDirectory}",
+            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+            $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+            $"-p:JazorPackageVersion={package.PackageVersion}"
+        };
+
+        var coreRoot = Path.Combine(workspace.RootPath, "ReleaseCorePackageConsumer");
+        var coreProject = CreateReleaseCorePackageConsumerProject(coreRoot);
+        var coreBuild = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            ["build", coreProject, .. commonArguments]);
+        Assert.AreEqual(0, coreBuild.ExitCode, coreBuild.ToString());
+
+        var coreAssets = ReadProjectAssetsText(coreRoot);
+        Assert.IsFalse(coreAssets.Contains("ECMAScript.Blazor.dll", StringComparison.OrdinalIgnoreCase), coreAssets);
+        Assert.IsFalse(coreAssets.Contains("Jazor.Vue", StringComparison.OrdinalIgnoreCase), coreAssets);
+        Assert.IsFalse(coreAssets.Contains("Microsoft.AspNetCore.App", StringComparison.Ordinal), coreAssets);
+        var coreOutput = Path.Combine(coreRoot, "bin", "Release", "net11.0");
+        Assert.IsFalse(
+            Directory.Exists(coreOutput) &&
+            Directory.EnumerateFiles(coreOutput, "ECMAScript.Blazor.dll", SearchOption.AllDirectories).Any(),
+            "The core Jazor package consumer must not copy ECMAScript.Blazor.");
+
+        var vueRoot = Path.Combine(workspace.RootPath, "ReleaseVuePackageConsumer");
+        var vueProject = CreateReleaseVuePackageConsumerProject(vueRoot);
+        var vueBuild = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            ["build", vueProject, .. commonArguments]);
+        Assert.AreEqual(0, vueBuild.ExitCode, vueBuild.ToString());
+
+        var vueAssets = ReadProjectAssetsText(vueRoot);
+        StringAssert.Contains(vueAssets, "ECMAScript.Blazor.dll", StringComparison.Ordinal);
+        StringAssert.Contains(vueAssets, "Jazor.RazorVue.dll", StringComparison.Ordinal);
+        StringAssert.Contains(vueAssets, "Microsoft.AspNetCore.App", StringComparison.Ordinal);
+        Assert.IsTrue(
+            File.Exists(Path.Combine(vueRoot, "obj", "Release", "net11.0", "ReleaseVuePackageConsumer.GlobalUsings.g.cs")) ||
+            Directory.EnumerateFiles(Path.Combine(vueRoot, "obj"), "*.razor.g.cs", SearchOption.AllDirectories).Any(),
+            "The Jazor.Vue package consumer must compile through the official Razor source generator.");
     }
 
     [TestMethod]
@@ -2694,6 +2747,78 @@ public sealed class SdkIntegrationTests
             GetPackagePath(packageOutputDirectory, "ECMAScript.Style", packageVersion));
     }
 
+    private static async Task<LocalReleasePackageFixture> CreateLocalReleasePackageAsync()
+    {
+        var repoRoot = FindRepoRoot();
+        var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "release-nupkg", Guid.NewGuid().ToString("N"));
+        var restorePackagesPath = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "release-restore-packages", Guid.NewGuid().ToString("N"));
+        var packageBuildOutputRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "release-package-out", Guid.NewGuid().ToString("N"));
+        var packageBuildIntermediateRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "release-package-obj", Guid.NewGuid().ToString("N"));
+
+        Directory.CreateDirectory(packageOutputDirectory);
+        Directory.CreateDirectory(restorePackagesPath);
+
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
+                "-c",
+                "Release",
+                "-o",
+                packageOutputDirectory,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+
+        var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "Jazor.Vue", "Jazor.Vue.csproj"),
+                "-c",
+                "Release",
+                "-o",
+                packageOutputDirectory,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:PackageVersion={packageVersion}",
+                $"-p:JazorPackageVersion={packageVersion}",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+
+        var jazorPackagePath = GetPackagePath(packageOutputDirectory, packageVersion);
+        var vuePackagePath = GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion);
+        AssertPackageEntries(
+            jazorPackagePath,
+            "lib/net11.0/ECMAScript.dll",
+            "tools/net11.0/Jazor.Emit.dll");
+        AssertPackageEntries(
+            vuePackagePath,
+            "lib/net11.0/ECMAScript.Blazor.dll",
+            "analyzers/dotnet/cs/Jazor.RazorVue.dll");
+
+        return new LocalReleasePackageFixture(
+            repoRoot,
+            packageVersion,
+            packageOutputDirectory,
+            restorePackagesPath,
+            jazorPackagePath,
+            vuePackagePath);
+    }
+
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
     {
         var repoRoot = FindRepoRoot();
@@ -3751,6 +3876,115 @@ public sealed class SdkIntegrationTests
         return projectPath;
     }
 
+    private static string CreateReleaseCorePackageConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+        var projectPath = Path.Combine(projectRoot, "ReleaseCorePackageConsumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <JazorMode>none</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            using ECMAScript;
+
+            namespace ReleaseCorePackageConsumer;
+
+            [ECMAScriptModule("./core")]
+            public static class CoreModule
+            {
+                public static int Value() => 1;
+            }
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+        return projectPath;
+    }
+
+    private static string CreateReleaseVuePackageConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+        var projectPath = Path.Combine(projectRoot, "ReleaseVuePackageConsumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <JazorMode>none</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ReleaseVuePackageConsumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "PackageBoundary.razor.cs"),
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ReleaseVuePackageConsumer;
+
+            [ECMAScriptModule("./components/package-boundary")]
+            public partial class PackageBoundary : ComponentBase, IVueComponent
+            {
+            }
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "PackageBoundary.razor"),
+            """
+            <button type="button">Package boundary</button>
+            """);
+        return projectPath;
+    }
+
+    private static string ReadProjectAssetsText(string projectRoot)
+    {
+        var assetsPath = Path.Combine(projectRoot, "obj", "project.assets.json");
+        Assert.IsTrue(File.Exists(assetsPath), $"NuGet assets file was not generated: {assetsPath}");
+        return File.ReadAllText(assetsPath, Encoding.UTF8);
+    }
+
     private static ManifestModel LoadManifest(string manifestPath)
         => ManifestModel.TryLoad(manifestPath)
             ?? throw new FileNotFoundException("Manifest was not found: " + manifestPath, manifestPath);
@@ -3814,6 +4048,14 @@ public sealed class SdkIntegrationTests
         string TDesignPackagePath,
         string ElementPlusPackagePath,
         string DenoHostRuntimePath);
+
+    private sealed record LocalReleasePackageFixture(
+        string RepoRoot,
+        string PackageVersion,
+        string PackageOutputDirectory,
+        string RestorePackagesPath,
+        string PackagePath,
+        string VuePackagePath);
 
     private sealed record LocalStylePackageFixture(
         string RepoRoot,

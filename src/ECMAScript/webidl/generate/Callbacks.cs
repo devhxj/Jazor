@@ -500,7 +500,7 @@ public delegate object CatchCallback(object value);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate object Mapper(object value, ulong index);
+public delegate object Mapper(object value, Number index);
 
 /// <summary>
 /// <see href="https://wicg.github.io/observable/#callbackdef-observableinspectoraborthandler">Observable: 2.2 The Observable interface</see>
@@ -516,7 +516,7 @@ public delegate void ObservableInspectorAbortHandler(object value);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate bool Predicate(object value, ulong index);
+public delegate bool Predicate(object value, Number index);
 
 /// <summary>
 /// <see href="https://wicg.github.io/observable/#callbackdef-reducer">Observable: 2.2 The Observable interface</see>
@@ -524,7 +524,7 @@ public delegate bool Predicate(object value, ulong index);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate object Reducer(object accumulator, object currentValue, ulong index);
+public delegate object Reducer(object accumulator, object currentValue, Number index);
 
 /// <summary>
 /// <see href="https://wicg.github.io/observable/#callbackdef-subscribecallback">Observable: 2.2 The Observable interface</see>
@@ -540,7 +540,7 @@ public delegate void SubscribeCallback(Subscriber subscriber);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate void Visitor(object value, ulong index);
+public delegate void Visitor(object value, Number index);
 
 /// <summary>
 /// <see href="https://wicg.github.io/scheduling-apis/#callbackdef-schedulerposttaskcallback">Prioritized Task Scheduling: 2.2 The Scheduler Interface</see>

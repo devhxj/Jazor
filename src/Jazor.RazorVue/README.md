@@ -39,8 +39,7 @@ RazorVue 将所有进入组件 lowering 的类型统一视为 RazorVue 组件。
 | `RazorSdk/GeneratedCSharpBinder.cs` | final generated C# 和 operation 绑定 |
 | `RazorSdk/ComponentSelector.cs` | 组件发现与选择 |
 | `RazorSdk/MemberClosureBuilder.cs` | 组件成员闭包和 compiler 选项 |
-| `RazorSdk/Lowering/` | RazorVue 特有的 render-function lowering |
-| `RazorSdk/Catalog/` | ASP.NET Components mapping catalog |
+| `RazorSdk/Lowering/` | RazorVue 特有的 render-function lowering、ASP.NET Components product hooks 与 Vue projection framing |
 | `RazorSdk/VueModuleBuilder.cs` | Vue module framing 与 source map 组装 |
 
 ## 验证

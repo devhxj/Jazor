@@ -32,7 +32,6 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
     private const string ComponentBaseMetadataName = "Microsoft.AspNetCore.Components.ComponentBase";
     private const string ParameterViewMetadataName = "Microsoft.AspNetCore.Components.ParameterView";
     private const string NavigationManagerMetadataName = "Microsoft.AspNetCore.Components.NavigationManager";
-    private const string ErrorBoundaryBaseMetadataName = "Microsoft.AspNetCore.Components.ErrorBoundaryBase";
     private const string StateHasChangedRuntimeName = "stateHasChanged";
     private const string InvokeAsyncRuntimeName = "invokeAsync";
     private const string ParameterAdapterRuntimeName = "parameterAdapter";
@@ -100,18 +99,6 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         if (IsStateHasChangedInvocation(operation.TargetMethod, operation.Instance))
             return RewriteStateHasChanged(operation);
 
-        if (IsErrorBoundaryInvocation(operation))
-        {
-            if (!IsErrorBoundaryRecoverInvocation(operation.TargetMethod))
-            {
-                throw new OperationTransformationException(
-                    operation,
-                    "ErrorBoundary member '" +
-                    operation.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat) +
-                    "' is not available in the RazorVue browser adapter. Only ErrorBoundary.Recover() is currently projected from a component reference.");
-            }
-        }
-
         // The normal compiler cannot materialize ComponentBase or ParameterView. In adapter
         // mode these two calls are explicit runtime protocol seams, so claim them before the
         // generic current-component dispatch guard can report a misleading indirect-call error.
@@ -143,9 +130,6 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 
         if (IsComponentBaseInvokeAsyncInvocation(operation.TargetMethod, operation.Instance))
             return RewriteInvokeAsync(operation, arguments);
-
-        if (IsErrorBoundaryInvocation(operation))
-            return RewriteErrorBoundaryRecoverInvocation(operation, instance, arguments);
 
         if (_parameterPropertiesUseState && IsComponentBaseSetParametersAsyncInvocation(operation.TargetMethod))
             return RewriteComponentBaseSetParametersAsync(operation, arguments);
@@ -258,30 +242,6 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
         Expression? instance,
         IReadOnlyList<Expression> arguments)
     {
-        if (IsErrorBoundaryPropertyReference(operation))
-        {
-            if (!string.Equals(operation.Property.Name, "CurrentException", StringComparison.Ordinal) ||
-                operation.Property.SetMethod is not null && operation.Property.SetMethod.DeclaredAccessibility == Accessibility.Public)
-            {
-                throw new OperationTransformationException(
-                    operation,
-                    "ErrorBoundary member '" +
-                    operation.Property.OriginalDefinition.ToDisplayString(Format.NameFormat) +
-                    "' is not available in the RazorVue browser adapter. Only the read-only CurrentException property is projected from a component reference.");
-            }
-
-            if (instance is null)
-                throw new OperationTransformationException(
-                    operation,
-                    "ErrorBoundary.CurrentException lost its component-reference receiver during RazorVue lowering.");
-
-            return new MemberExpression(
-                instance,
-                new Identifier("CurrentException"),
-                computed: false,
-                optional: false);
-        }
-
         if (!IsCurrentComponentProperty(operation.Property, operation.Instance))
             return null;
 
@@ -1075,55 +1035,6 @@ internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
             NodeList.From<Expression>(instance),
             optional: false);
     }
-
-    private static Expression RewriteErrorBoundaryRecoverInvocation(
-        IInvocationOperation operation,
-        Expression? instance,
-        IReadOnlyList<Expression> arguments)
-    {
-        if (instance is null)
-        {
-            throw new OperationTransformationException(
-                operation,
-                "ErrorBoundary.Recover requires a component reference captured by @ref in RazorVue's browser adapter.");
-        }
-
-        if (arguments.Count != 0)
-        {
-            throw new OperationTransformationException(
-                operation,
-                "ErrorBoundary.Recover is supported by the RazorVue browser adapter only as a parameterless call.");
-        }
-
-        return new CallExpression(
-            new MemberExpression(
-                instance,
-                new Identifier("Recover"),
-                computed: false,
-                optional: false),
-            NodeList.Empty<Expression>(),
-            optional: false);
-    }
-
-    private static bool IsErrorBoundaryInvocation(IInvocationOperation operation)
-        => !operation.TargetMethod.IsStatic &&
-           IsErrorBoundaryBaseType(operation.TargetMethod.ContainingType);
-
-    private static bool IsErrorBoundaryRecoverInvocation(IMethodSymbol method)
-        => string.Equals(method.Name, "Recover", StringComparison.Ordinal) &&
-           method.Parameters.Length == 0 &&
-           !method.IsStatic &&
-           IsErrorBoundaryBaseType(method.ContainingType);
-
-    private static bool IsErrorBoundaryPropertyReference(IPropertyReferenceOperation operation)
-        => IsErrorBoundaryBaseType(operation.Property.ContainingType);
-
-    private static bool IsErrorBoundaryBaseType(ITypeSymbol? type)
-        => type is INamedTypeSymbol namedType &&
-           string.Equals(
-               namedType.OriginalDefinition.ToDisplayString(Format.NameFormat),
-               ErrorBoundaryBaseMetadataName,
-               StringComparison.Ordinal);
 
     // The adapter names its accessors after the CLR event, so "add"/"remove" + event name matches
     // the browser service surface exactly for every event listed here.

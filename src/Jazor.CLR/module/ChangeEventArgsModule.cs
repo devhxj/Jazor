@@ -12,6 +12,7 @@ namespace Jazor.CLR;
 /// value observed by an async handler even when the DOM target changes before its continuation.
 /// </remarks>
 [ECMAScriptModule("Microsoft/AspNetCore/Components/ChangeEventArgsModule.js")]
+[Jazor(Op.Alias, "Microsoft.AspNetCore.Components.ChangeEventArgs", "JazorEvent")]
 public static class ChangeEventArgsModule
 {
     private static readonly WeakMap<JazorEvent, object?> Values = new();
@@ -86,4 +87,12 @@ public static class ChangeEventArgsModule
 
         return Values.Get(@event);
     }
+
+    // Native DOM events are read-only carriers. Constructing or mutating a synthetic
+    // ChangeEventArgs would claim a POCO contract that the browser path does not provide.
+    [Jazor(Op.Discard, "Microsoft.AspNetCore.Components.ChangeEventArgs.Value.set")]
+    public extern static void _b834c09ac3cad4f5(JazorEvent instance, object? value);
+
+    [Jazor(Op.Discard, "Microsoft.AspNetCore.Components.ChangeEventArgs.ChangeEventArgs()")]
+    public extern static JazorEvent _edaab150211bc8e2();
 }

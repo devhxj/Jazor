@@ -315,6 +315,49 @@ public sealed class RazorVueCompatibilityAnalyzerTests
     }
 
     [TestMethod]
+    public async Task RemainingStandardComponentTags_ReportUnsupportedBuiltInUi()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile("Pages/Standard.razor.cs", "public sealed class Standard;"),
+            additionalFiles:
+            [new InMemoryAdditionalText(
+                "Pages/Standard.razor",
+                """
+                @using Microsoft.AspNetCore.Components.Authorization
+                @using Microsoft.AspNetCore.Components.Forms
+                @using Microsoft.AspNetCore.Components.Routing
+
+                <AuthorizeRouteView />
+                <CascadingAuthenticationState />
+                <DataAnnotationsValidator />
+                <NavigationLock />
+                <FocusOnNavigate />
+                <PageTitle>Orders</PageTitle>
+                """)]);
+
+        var messages = diagnostics
+            .Where(static item => item.Id == "JAZORVCA010")
+            .Select(static item => item.GetMessage())
+            .ToArray();
+
+        Assert.HasCount(6, messages);
+        foreach (var componentName in new[]
+        {
+            "AuthorizeRouteView",
+            "CascadingAuthenticationState",
+            "DataAnnotationsValidator",
+            "NavigationLock",
+            "FocusOnNavigate",
+            "PageTitle"
+        })
+        {
+            Assert.IsTrue(
+                messages.Any(message => message.Contains(componentName, StringComparison.Ordinal)),
+                componentName);
+        }
+    }
+
+    [TestMethod]
     public async Task StandardComponentTagInsideCommentsOrAttributeText_DoesNotReport()
     {
         var diagnostics = await AnalyzeAsync(

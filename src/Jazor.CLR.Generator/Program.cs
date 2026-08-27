@@ -1,4 +1,8 @@
 using Jazor.Common;
+using Jazor.CLR.Generator;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.ObjectModel;
@@ -66,13 +70,44 @@ var outTypes = new Type[]{
 	typeof(CancellationTokenRegistration),
 	// Blazor authoring contracts are scaffolded from the real ASP.NET Core symbols,
 	// then carried into Jazor.CLR as erased browser-facing signatures. The CLR project
-	// itself must not reference ASP.NET Core; only this generator needs the package.
-	typeof(Microsoft.AspNetCore.Components.NavigationManager),
-	typeof(Microsoft.AspNetCore.Components.NavigationOptions),
+	// itself must not reference ASP.NET Core; only this generator needs the packages.
+	typeof(NavigationManager),
+	typeof(NavigationOptions),
 	typeof(Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs),
 	typeof(Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs),
 	typeof(Microsoft.AspNetCore.Components.Routing.LocationChangingContext),
-	typeof(Microsoft.AspNetCore.Components.NavigationManagerExtensions)
+	typeof(NavigationManagerExtensions),
+
+	// RazorVue product hooks own final Vue lowering, but their accepted CLR symbols
+	// still enter the compiler only through generated Jazor.CLR modules.
+	typeof(ComponentBase),
+	typeof(EventCallback),
+	typeof(EventCallback<>),
+	typeof(EventCallbackFactory),
+	typeof(RenderFragment),
+	typeof(RenderFragment<>),
+	typeof(MarkupString),
+	typeof(ParameterView),
+	typeof(RenderTreeBuilder),
+	typeof(WebRenderTreeBuilderExtensions),
+
+	// DOM-origin event carriers and controlled element operations.
+	typeof(ChangeEventArgs),
+	typeof(ElementReference),
+	typeof(Microsoft.AspNetCore.Components.ElementReferenceExtensions),
+	typeof(MouseEventArgs),
+	typeof(KeyboardEventArgs),
+	typeof(FocusEventArgs),
+	typeof(PointerEventArgs),
+	typeof(WheelEventArgs),
+	typeof(DragEventArgs),
+	typeof(DataTransfer),
+	typeof(DataTransferItem),
+	typeof(ClipboardEventArgs),
+	typeof(TouchEventArgs),
+	typeof(TouchPoint),
+	typeof(Microsoft.AspNetCore.Components.Web.ErrorEventArgs),
+	typeof(ProgressEventArgs),
 };
 var operatorNames = new Dictionary<string, string>
 {
@@ -156,13 +191,45 @@ var typeMaps = new Dictionary<Type, string>()
 	// registration 只是"如何解除订阅"的载体，浏览器没有对等类型，脚手架回落到 Object；
 	// 真实 carrier 由 src/Jazor.CLR 侧的 adapter 签名声明。
 	{typeof(CancellationTokenRegistration),"Object"},
-	{typeof(Microsoft.AspNetCore.Components.NavigationManager),"Object"},
-	{typeof(Microsoft.AspNetCore.Components.NavigationOptions),"Object"},
+	{typeof(NavigationManager),"Object"},
+	{typeof(NavigationOptions),"Object"},
 	{typeof(Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs),"Object"},
 	{typeof(Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs),"Object"},
 	{typeof(Microsoft.AspNetCore.Components.Routing.LocationChangingContext),"Object"},
-	{typeof(Microsoft.AspNetCore.Components.NavigationManagerExtensions),"Object"},
+	{typeof(NavigationManagerExtensions),"Object"},
+	{typeof(ComponentBase),"Object"},
+	{typeof(EventCallback),"Object"},
+	{typeof(EventCallback<>),"Object"},
+	{typeof(EventCallbackFactory),"Object"},
+	{typeof(RenderFragment),"Object"},
+	{typeof(RenderFragment<>),"Object"},
+	{typeof(MarkupString),"Object"},
+	{typeof(ParameterView),"Object"},
+	{typeof(RenderTreeBuilder),"Object"},
+	{typeof(WebRenderTreeBuilderExtensions),"Object"},
+	{typeof(ChangeEventArgs),"JazorEvent"},
+	{typeof(ElementReference),"HTMLElement"},
+	{typeof(Microsoft.AspNetCore.Components.ElementReferenceExtensions),"Object"},
+	{typeof(MouseEventArgs),"MouseEvent"},
+	{typeof(KeyboardEventArgs),"KeyboardEvent"},
+	{typeof(FocusEventArgs),"FocusEvent"},
+	{typeof(PointerEventArgs),"PointerEvent"},
+	{typeof(WheelEventArgs),"WheelEvent"},
+	{typeof(DragEventArgs),"DragEvent"},
+	{typeof(DataTransfer),"DataTransfer"},
+	{typeof(DataTransferItem),"DataTransferItem"},
+	{typeof(ClipboardEventArgs),"ClipboardEvent"},
+	{typeof(TouchEventArgs),"TouchEvent"},
+	{typeof(TouchPoint),"Touch"},
+	{typeof(Microsoft.AspNetCore.Components.Web.ErrorEventArgs),"ErrorEvent"},
+	{typeof(ProgressEventArgs),"ProgressEvent"},
 };
+var blazorRuntimeCarrierMaps = typeMaps
+	.Where(static entry => entry.Key.Namespace?.StartsWith("Microsoft.AspNetCore.Components", StringComparison.Ordinal) == true)
+	.ToDictionary(
+		static entry => entry.Key.FullName!,
+		static entry => entry.Value,
+		StringComparer.Ordinal);
 var nameMaps = new Dictionary<string, string>()
 {
 	{"System.IFormatProvider","Intl.NumberFormat"},
@@ -240,22 +307,13 @@ var compilation = CSharpCompilation.Create("Jazor", references: [
 	// System.Uri lives in System.Private.Uri, not CoreLib, but its doc comments ship in the
 	// CoreLib documentation set.
 	MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location, documentation: coreLibXml),
-	MetadataReference.CreateFromFile(typeof(Microsoft.AspNetCore.Components.NavigationManager).Assembly.Location),
+	MetadataReference.CreateFromFile(typeof(NavigationManager).Assembly.Location),
+	MetadataReference.CreateFromFile(typeof(MouseEventArgs).Assembly.Location),
 ]);
 string ConvertTypeName(ITypeSymbol symbol)
 {
 	var display = symbol.ToDisplayString();
 	var nullableSuffix = display.EndsWith("?", StringComparison.Ordinal) ? "?" : string.Empty;
-	// The scaffold is copied into Jazor.CLR, which deliberately has no ASP.NET Core
-	// reference. Preserve the CLR member signature in the Jazor attribute, but erase
-	// Blazor-only carriers in the generated adapter declaration.
-	if (UsesBlazorExternalType(symbol))
-		return $"Object{nullableSuffix}";
-
-	var key = display.TrimEnd('?');
-	if (nameMaps.TryGetValue(key, out var mapName))
-		return $"{mapName}{nullableSuffix}";
-
 	if (symbol is ITypeParameterSymbol typeParameter)
 		return $"{EscapeIdentifier(typeParameter.Name)}{nullableSuffix}";
 
@@ -278,10 +336,49 @@ string ConvertTypeName(ITypeSymbol symbol)
 		nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
 		return $"{ConvertTypeName(nullable.TypeArguments[0])}?";
 
+	// The scaffold is copied into Jazor.CLR, which deliberately has no ASP.NET Core
+	// reference. Preserve a known browser carrier when one was explicitly configured;
+	// unknown Blazor-only types still erase to Object in the adapter declaration.
+	if (TryGetBlazorRuntimeCarrier(symbol, out var runtimeCarrier))
+		return $"{runtimeCarrier}{nullableSuffix}";
+
+	if (UsesBlazorExternalType(symbol))
+		return $"Object{nullableSuffix}";
+
+	var key = display.TrimEnd('?');
+	if (nameMaps.TryGetValue(key, out var mapName))
+		return $"{mapName}{nullableSuffix}";
+
 	// 未知 host 类型仍保留其 C# 类型。Op.Discard 只表示尚未 lower，
 	// 不能把生成骨架的强类型契约悄悄降为 object。
 	var nonNullable = symbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
 	return $"{nonNullable.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}{nullableSuffix}";
+}
+
+bool TryGetBlazorRuntimeCarrier(ITypeSymbol symbol, out string runtimeCarrier)
+{
+	if (symbol is INamedTypeSymbol named &&
+		blazorRuntimeCarrierMaps.TryGetValue(GetMetadataName(named.OriginalDefinition), out runtimeCarrier!))
+	{
+		return true;
+	}
+
+	runtimeCarrier = null!;
+	return false;
+}
+
+string GetMetadataName(INamedTypeSymbol symbol)
+{
+	var typeNames = new Stack<string>();
+	for (var current = symbol; current is not null; current = current.ContainingType)
+		typeNames.Push(current.MetadataName);
+
+	var namespaceName = symbol.ContainingNamespace.IsGlobalNamespace
+		? string.Empty
+		: symbol.ContainingNamespace.ToDisplayString();
+	return string.IsNullOrEmpty(namespaceName)
+		? string.Join("+", typeNames)
+		: $"{namespaceName}.{string.Join("+", typeNames)}";
 }
 
 bool UsesBlazorExternalType(ITypeSymbol symbol)
@@ -323,8 +420,13 @@ string FormatConstraints(IEnumerable<ITypeParameterSymbol> typeParameters, strin
 		else if (typeParameter.HasNotNullConstraint)
 			constraints.Add("notnull");
 
-		constraints.AddRange(typeParameter.ConstraintTypes.Select(constraint =>
-			constraint.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
+		// Jazor.CLR intentionally has no ASP.NET Core reference. A Blazor-only
+		// constraint is authoring metadata, not a runtime carrier requirement for
+		// the erased adapter, so omit it instead of generating an uncompilable
+		// reference such as `where T : Microsoft.AspNetCore.Components.IComponent`.
+		constraints.AddRange(typeParameter.ConstraintTypes
+			.Where(constraint => !UsesBlazorExternalType(constraint))
+			.Select(constraint => constraint.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
 		if (typeParameter.HasConstructorConstraint)
 			constraints.Add("new()");
 		if (typeParameter.AllowsRefLikeType)
@@ -344,6 +446,9 @@ string FormatConstraints(IEnumerable<ITypeParameterSymbol> typeParameters, strin
 
 	return result.ToString();
 }
+
+bool IsConsumerAccessible(ISymbol member)
+	=> member.DeclaredAccessibility is Accessibility.Public or Accessibility.Protected or Accessibility.ProtectedOrInternal;
 
 if (args.Length > 1)
 {
@@ -366,12 +471,29 @@ if (!Directory.Exists(doc))
 if (!Directory.Exists(module))
 	Directory.CreateDirectory(module);
 
+var outputNames = outTypes
+	.Select(type => (Type: type, ModuleName: ModuleOutputNaming.GetModuleName(type)))
+	.ToArray();
+var duplicateOutputNames = outputNames
+	.GroupBy(static output => output.ModuleName, StringComparer.Ordinal)
+	.Where(static group => group.Count() > 1)
+	.ToArray();
+if (duplicateOutputNames.Length > 0)
+{
+	var collisions = string.Join(
+		Environment.NewLine,
+		duplicateOutputNames.Select(group =>
+			$"{group.Key}: {string.Join(", ", group.Select(entry => entry.Type.FullName))}"));
+	throw new InvalidOperationException($"CLR generator module output names must be unique.{Environment.NewLine}{collisions}");
+}
+
 foreach (var type in outTypes)
 {
 	var coder = new StringBuilder();
 	var noter = new StringBuilder();
 	var symbol = compilation.GetTypeByMetadataName(type.FullName!)!;
-	var typeName = type.Name.Split('`')[0];
+	var moduleName = ModuleOutputNaming.GetModuleName(type);
+	var modulePath = ModuleOutputNaming.GetModulePath(type);
 	var fullName = symbol.ToDisplayString(Format.NameFormat);
 
 	var typeGenericNames = symbol
@@ -390,13 +512,13 @@ foreach (var type in outTypes)
 	coder.Append(
 $@"namespace Jazor.CLR;
 
-[ECMAScriptModule(""{type.FullName?.Split('`')[0].Replace('.', '/')}Module.js"")]
+[ECMAScriptModule(""{modulePath}"")]
 [Jazor(Op.Alias, ""{fullName}"", ""{mapName}"")]
-public static class {typeName}Module{(typeGenerics.Length > 0 ? typeGenerics : "")}{typeConstraints}
+public static class {moduleName}{(typeGenerics.Length > 0 ? typeGenerics : "")}{typeConstraints}
 {{");
 
 	noter
-		.AppendLine($"# {typeName}Module.cs")
+		.AppendLine($"# {moduleName}.cs")
 		.AppendLine()
 		.AppendLine(@"> ⚠️ **注意**：签名= _+ SHA256Hash(成员)")
 		.AppendLine();
@@ -405,7 +527,7 @@ public static class {typeName}Module{(typeGenerics.Length > 0 ? typeGenerics : "
 	var members = symbol.GetMembers();
 	foreach (var member in members)
 	{
-		if (member.DeclaredAccessibility.HasFlag(Accessibility.Public))
+		if (IsConsumerAccessible(member))
 		{
 			var display = member is IMethodSymbol { IsExtensionMethod: true } extensionMethod
 				? extensionMethod.OriginalDefinition.ToDisplayString(Format.StaticExtensionNameFormat)
@@ -495,9 +617,9 @@ $@"**成员**：{display}</br>
 	}
 
 	coder.AppendLine("}");
-	File.WriteAllText(Path.Combine(module, $"{typeName}Module.cs"), coder.ToString());
-	File.WriteAllText(Path.Combine(doc, $"{typeName}Module.md"), noter.ToString().TrimEnd() + Environment.NewLine);
-	Console.WriteLine(typeName);
+	File.WriteAllText(Path.Combine(module, $"{moduleName}.cs"), coder.ToString());
+	File.WriteAllText(Path.Combine(doc, $"{moduleName}.md"), noter.ToString().TrimEnd() + Environment.NewLine);
+	Console.WriteLine(moduleName);
 }
 
 return 0;

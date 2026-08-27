@@ -423,25 +423,25 @@ public class GPUCompilationMessage
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpucompilationmessage-linenum">WebGPU: 9.1.2 Shader Module Compilation Information</see>
     /// </summary>
     [Description("@#lineNum")]
-    public extern ulong LineNum { get; }
+    public extern Number LineNum { get; }
 
     /// <summary>
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpucompilationmessage-linepos">WebGPU: 9.1.2 Shader Module Compilation Information</see>
     /// </summary>
     [Description("@#linePos")]
-    public extern ulong LinePos { get; }
+    public extern Number LinePos { get; }
 
     /// <summary>
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpucompilationmessage-offset">WebGPU: 9.1.2 Shader Module Compilation Information</see>
     /// </summary>
     [Description("@#offset")]
-    public extern ulong Offset { get; }
+    public extern Number Offset { get; }
 
     /// <summary>
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpucompilationmessage-length">WebGPU: 9.1.2 Shader Module Compilation Information</see>
     /// </summary>
     [Description("@#length")]
-    public extern ulong Length { get; }
+    public extern Number Length { get; }
 }
 
 /// <summary>
@@ -1529,13 +1529,13 @@ public class GPUSupportedLimits
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpusupportedlimits-maxuniformbufferbindingsize">WebGPU: 3.6.2.1 GPUSupportedLimits</see>
     /// </summary>
     [Description("@#maxUniformBufferBindingSize")]
-    public extern ulong MaxUniformBufferBindingSize { get; }
+    public extern Number MaxUniformBufferBindingSize { get; }
 
     /// <summary>
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpusupportedlimits-maxstoragebufferbindingsize">WebGPU: 3.6.2.1 GPUSupportedLimits</see>
     /// </summary>
     [Description("@#maxStorageBufferBindingSize")]
-    public extern ulong MaxStorageBufferBindingSize { get; }
+    public extern Number MaxStorageBufferBindingSize { get; }
 
     /// <summary>
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpusupportedlimits-minuniformbufferoffsetalignment">WebGPU: 3.6.2.1 GPUSupportedLimits</see>
@@ -1559,7 +1559,7 @@ public class GPUSupportedLimits
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpusupportedlimits-maxbuffersize">WebGPU: 3.6.2.1 GPUSupportedLimits</see>
     /// </summary>
     [Description("@#maxBufferSize")]
-    public extern ulong MaxBufferSize { get; }
+    public extern Number MaxBufferSize { get; }
 
     /// <summary>
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpusupportedlimits-maxvertexattributes">WebGPU: 3.6.2.1 GPUSupportedLimits</see>

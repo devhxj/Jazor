@@ -62,7 +62,10 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
     private static readonly ImmutableArray<(string TagName, string MetadataName)> UnsupportedRazorComponentContracts =
     [
         ("AuthorizeView", "Microsoft.AspNetCore.Components.Authorization.AuthorizeView"),
+        ("AuthorizeRouteView", "Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView"),
+        ("CascadingAuthenticationState", "Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState"),
         ("DynamicComponent", "Microsoft.AspNetCore.Components.DynamicComponent"),
+        ("DataAnnotationsValidator", "Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator"),
         ("EditForm", "Microsoft.AspNetCore.Components.Forms.EditForm"),
         ("ErrorBoundary", "Microsoft.AspNetCore.Components.Web.ErrorBoundary"),
         ("HeadContent", "Microsoft.AspNetCore.Components.Web.HeadContent"),
@@ -79,13 +82,17 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
         ("InputTextArea", "Microsoft.AspNetCore.Components.Forms.InputTextArea"),
         ("LayoutView", "Microsoft.AspNetCore.Components.LayoutView"),
         ("NavLink", "Microsoft.AspNetCore.Components.Routing.NavLink"),
+        ("NavigationLock", "Microsoft.AspNetCore.Components.Routing.NavigationLock"),
+        ("FocusOnNavigate", "Microsoft.AspNetCore.Components.Routing.FocusOnNavigate"),
         ("RouteView", "Microsoft.AspNetCore.Components.RouteView"),
         ("Router", "Microsoft.AspNetCore.Components.Routing.Router"),
+        ("PageTitle", "Microsoft.AspNetCore.Components.Web.PageTitle"),
         ("SectionContent", "Microsoft.AspNetCore.Components.Sections.SectionContent"),
         ("SectionOutlet", "Microsoft.AspNetCore.Components.Sections.SectionOutlet"),
         ("ValidationMessage", "Microsoft.AspNetCore.Components.Forms.ValidationMessage`1"),
         ("ValidationSummary", "Microsoft.AspNetCore.Components.Forms.ValidationSummary"),
-        ("Virtualize", "Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize`1")
+        ("Virtualize", "Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize`1"),
+        ("QuickGrid", "Microsoft.AspNetCore.Components.QuickGrid.QuickGrid`1")
     ];
     internal static readonly DiagnosticDescriptor BrowserIneligibleDbContext = new(
         id: "JAZORVCA001",

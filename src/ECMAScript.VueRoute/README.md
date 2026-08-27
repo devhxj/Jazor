@@ -6,9 +6,9 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.23.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.23.0" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.23.0" />
+  <PackageReference Include="Jazor" Version="0.24.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.24.0" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.24.0" />
 </ItemGroup>
 ```
 

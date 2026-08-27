@@ -5,7 +5,7 @@ using Jazor.CLR;
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
-public sealed class NavigationManagerCatalogWhitelistTests
+public sealed class NavigationManagerClrWhitelistTests
 {
     [TestMethod]
     public void NavigationManagerMembers_AreDeclaredAsBrowserAliases()

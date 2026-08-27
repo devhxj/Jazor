@@ -609,7 +609,7 @@ public sealed record RazorVueCapabilityLedgerEntry(
     /// <summary>Stable lowering owner and operation kind (WebIDL, Alias, Inline, Import, or Compile).</summary>
     public string ImplementationPath { get; init; } = string.Empty;
 
-    /// <summary>Version of the mapping contribution contract consumed by this entry.</summary>
+    /// <summary>Version of the generated CLR module contract consumed by this entry.</summary>
     public string ContributionContractVersion { get; init; } = string.Empty;
 
     /// <summary>Approved shared runtime/module dependencies.</summary>
@@ -825,24 +825,24 @@ internal static class RazorVueM5CapabilityLedger
             "Router component matching and standard route-host composition are intentionally excluded; route catalog and NavigationManager consumer proof remain before Support."),
         new(
             "P0-blazor-clr-mapping-package",
-            "ECMAScript.Blazor first-party mapping contribution delivered with Jazor.Vue and consumed by the static compiler source-root",
+            "Jazor.CLR generated Blazor mapping modules; ECMAScript.Blazor remains an optional authoring projection payload",
             RazorVueCapabilityPriority.P0,
             RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.InProof,
-            "Jazor.Compiler.Generator + Jazor.Vue packaging + ECMAScript.Blazor",
+            "Jazor.CLR.Generator + Jazor.CLR module/doc + Jazor.Compiler.Generator + Jazor.Vue packaging",
             null,
-            "EcmaScriptBlazorMappingTests; ProductionRazorCompilerReferenceTests; Jazor.EmitTest.SdkIntegrationTests.CreateLocalPackage_SeparatesSharedAndRazorVueAnalyzers; Jazor.EmitTest.SdkIntegrationTests.CreateLocalPackage_IncludesSelfContainedBrowserAssets",
+            "BlazorClrGeneratorOutputTests; BlazorClrWhitelistTests; BlazorClrMappingTests; ProductionRazorCompilerReferenceTests; Jazor.EmitTest.SdkIntegrationTests.Build_LocalReleasePackages_CoreAndVueConsumers_RespectBlazorClrPackageBoundary",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.PackageConsumer,
             "The first-party static contribution is proven; a general third-party per-compilation provider protocol is not claimed.")
         {
             TargetProfiles = "Compiler authoring; Browser interactive package payload",
-            Carrier = "Provider assembly metadata and generated whitelist entries",
-            ImplementationPath = "ECMAScript.Blazor Alias/Inline/Import declarations merged by Jazor.Compiler.Generator source-root",
-            ContributionContractVersion = "static-source-root/v1",
-            Dependencies = "Jazor.Vue lib/net11.0 payload; Jazor.CLR runtime catalog; Microsoft.AspNetCore.App reference",
-            ExcludedSurface = "Dynamic third-party mapping discovery; duplicate provider registries; Blazor assets in core Jazor package"
+            Carrier = "Generated Jazor.CLR adapters and generated whitelist entries",
+            ImplementationPath = "Jazor.CLR generated Alias/Inline/Import/Allowed modules consumed by Jazor.Compiler.Generator; static CLR mapping ownership remains in Jazor.CLR",
+            ContributionContractVersion = "generated-clr-module/v1",
+            Dependencies = "Jazor.CLR module/doc source; Jazor.Compiler.Generator; Jazor.Vue lib/net11.0 authoring payload; Microsoft.AspNetCore.App generator reference",
+            ExcludedSurface = "Dynamic third-party mapping discovery; duplicate provider registries; ECMAScript.Blazor mapping contribution; Blazor assets in core Jazor package"
         },
         new(
             "P1-blazor-clr-navigation-location-changing",
@@ -850,9 +850,9 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.InProof,
-            "ECMAScript.Blazor mapping + Jazor.CLR NavigationManagerModule + RazorVue route host",
+            "Jazor.CLR NavigationManagerModule + RazorVue route host",
             null,
-            "RazorSgNavigationRuntimeTests; ClrRuntimeNavigationScenarios; NavigationManagerCatalogWhitelistTests",
+            "RazorSgNavigationRuntimeTests; ClrRuntimeNavigationScenarios; NavigationManagerClrWhitelistTests",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
@@ -861,8 +861,8 @@ internal static class RazorVueM5CapabilityLedger
         {
             TargetProfiles = "Browser interactive; SSR/prerender not claimed",
             Carrier = "Promise/AbortSignal + module-private navigation host WeakMap",
-            ImplementationPath = "ECMAScript.Blazor mapping; Jazor.CLR C# Import modules; RazorVue host framing",
-            ContributionContractVersion = "static-source-root/v1",
+            ImplementationPath = "Jazor.CLR generated mapping and C# Import modules; RazorVue host framing",
+            ContributionContractVersion = "generated-clr-module/v1",
             Dependencies = "Task/ValueTask + CancellationToken carriers; NavigationManager route host",
             ExcludedSurface = "Router/RouteView/LayoutView/NavLink tags; popstate/hashchange cancellation; server circuit identity"
         },
@@ -872,9 +872,9 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.InProof,
-            "ECMAScript.Blazor mappings + Jazor.RazorVue RenderEmitter + Jazor.CLR ChangeEventArgsModule",
+            "Jazor.CLR event modules + Jazor.RazorVue RenderEmitter",
             null,
-            "EcmaScriptBlazorMappingTests; RazorSgOfficialBindingAuthoringTests.BuildComponent_OfficialRazorTypedChangeHandler_CapturesValueBeforeCallback; ClrRuntimeChangeEventArgsScenarios",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; RazorSgOfficialBindingAuthoringTests.BuildComponent_OfficialRazorTypedChangeHandler_CapturesValueBeforeCallback; ClrRuntimeChangeEventArgsScenarios",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
@@ -883,8 +883,8 @@ internal static class RazorVueM5CapabilityLedger
         {
             TargetProfiles = "Browser interactive; SSR/prerender not claimed",
             Carrier = "MouseEvent/KeyboardEvent/FocusEvent; JazorEvent + WeakMap for ChangeEventArgs",
-            ImplementationPath = "ECMAScript.Blazor Alias/Inline/Import; one typed onchange capture wrapper in RenderEmitter; Jazor.CLR C# Import helper",
-            ContributionContractVersion = "static-source-root/v1",
+            ImplementationPath = "Jazor.CLR generated Alias/Inline/Import modules; one typed onchange capture wrapper in RenderEmitter",
+            ContributionContractVersion = "generated-clr-module/v1",
             Dependencies = "WebIDL event carriers; Jazor.CLR WeakMap/Array runtime; EventCallback framing",
             ExcludedSurface = "Synthetic EventArgs construction, setters, runtime identity/type tests, InputFile/IBrowserFile"
         },
@@ -894,9 +894,9 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.DirectSupport,
             RazorVueCapabilityStatus.InProof,
-            "ECMAScript.Blazor mapping + Jazor.RazorVue VNode ref framing",
+            "Jazor.CLR ElementReference modules + Jazor.RazorVue VNode ref framing",
             null,
-            "EcmaScriptBlazorMappingTests; RazorSgOfficialReferenceAuthoringTests.BuildComponent_OfficialRazorElementReferenceFocus_UsesDomCarrierMapping",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; RazorSgOfficialReferenceAuthoringTests.BuildComponent_OfficialRazorElementReferenceFocus_UsesDomCarrierMapping",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact,
@@ -904,33 +904,168 @@ internal static class RazorVueM5CapabilityLedger
         {
             TargetProfiles = "Browser interactive; SSR/prerender not claimed",
             Carrier = "HTMLElement captured by Vue ref callback",
-            ImplementationPath = "ECMAScript.Blazor Alias(ElementReference -> HTMLElement) + Inline(HTMLElement.Focus)",
-            ContributionContractVersion = "static-source-root/v1",
+            ImplementationPath = "Jazor.CLR generated Alias(ElementReference -> HTMLElement) + Inline(HTMLElement.Focus)",
+            ContributionContractVersion = "generated-clr-module/v1",
             Dependencies = "HTMLElement/FocusOptions WebIDL; ValueTask/Promise carrier; Vue ref lifecycle",
             ExcludedSurface = "new ElementReference, Id/Context server identity, arbitrary DOM methods"
         },
         new(
-            "P2-blazor-clr-extended-dom-events",
-            "Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress EventArgs groups",
+            "P2-blazor-clr-pointer-events",
+            "PointerEventArgs DOM-origin getter projection",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.Planned,
-            "ECMAScript.Blazor mapping provider",
+            RazorVueCapabilityStatus.InProof,
+            "Jazor.CLR PointerEventArgsModule + official Razor SG event framing",
             null,
-            "No fixture yet; each event group requires an independent official Razor/browser scenario",
-            RazorVueCapabilityEvidence.None,
-            "Do not infer support from the core event carrier; add one group only after a concrete authoring scenario and browser contract exist.")
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorPointerAndWheelHandlers_ReadNativeEventCarriersOnDenoHost",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction and setters remain rejected.")
         {
             TargetProfiles = "Browser interactive only after group-specific proof",
-            Carrier = "PointerEvent/WheelEvent/DragEvent/ClipboardEvent/TouchEvent and group-specific WebIDL carriers",
-            ImplementationPath = "Future ECMAScript.Blazor Alias/Inline or Jazor.CLR Import only when property conversion requires it",
-            ContributionContractVersion = "static-source-root/v1",
-            Dependencies = "Core DOM event mappings and group-specific WebIDL bindings",
-            ExcludedSurface = "File payloads, permission-sensitive clipboard/file APIs, synthetic event construction"
+            Carrier = "PointerEvent native event object",
+            ImplementationPath = "Jazor.CLR.Generator PointerEventArgs scaffold copied to Jazor.CLR; Alias(PointerEvent) + Inline native getters",
+            ContributionContractVersion = "generated-clr-module/v1",
+            Dependencies = "Core MouseEvent carrier; PointerEvent WebIDL Number fields; typed EventCallback framing",
+            ExcludedSurface = "PointerEventArgs construction/setters and runtime identity checks"
+        },
+        new(
+            "P2-blazor-clr-wheel-events",
+            "WheelEventArgs DOM-origin getter projection",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.InProof,
+            "Jazor.CLR WheelEventArgsModule + official Razor SG event framing",
+            null,
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorPointerAndWheelHandlers_ReadNativeEventCarriersOnDenoHost",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction and setters remain rejected.")
+        {
+            TargetProfiles = "Browser interactive only after group-specific proof",
+            Carrier = "WheelEvent native event object",
+            ImplementationPath = "Jazor.CLR.Generator WheelEventArgs scaffold copied to Jazor.CLR; Alias(WheelEvent) + Inline native getters",
+            ContributionContractVersion = "generated-clr-module/v1",
+            Dependencies = "Core MouseEvent carrier; WheelEvent WebIDL Number fields; typed EventCallback framing",
+            ExcludedSurface = "WheelEventArgs construction/setters and runtime identity checks"
+        },
+        new(
+            "P2-blazor-clr-drag-events",
+            "DragEventArgs.DataTransfer and the stable read-only DataTransfer fields",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.InProof,
+            "Jazor.CLR DragEventArgs/DataTransfer modules + official Razor SG event framing",
+            null,
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorDragAndClipboardHandlers_ReadNativeEventCarriersOnDenoHost",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction, setters, files, and item payloads remain rejected.")
+        {
+            TargetProfiles = "Browser interactive only after group-specific proof",
+            Carrier = "DragEvent and DataTransfer native browser objects",
+            ImplementationPath = "Jazor.CLR.Generator DragEventArgs/DataTransfer scaffolds copied to Jazor.CLR; Alias + Inline native getters",
+            ContributionContractVersion = "generated-clr-module/v1",
+            Dependencies = "MouseEvent/DragEvent/DataTransfer WebIDL carriers; typed EventCallback framing",
+            ExcludedSurface = "DataTransfer files/items, synthetic DragEvent/DataTransfer construction, and all mutations"
+        },
+        new(
+            "P2-blazor-clr-clipboard-events",
+            "ClipboardEventArgs.Type DOM-origin getter projection",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.InProof,
+            "Jazor.CLR ClipboardEventArgsModule + official Razor SG event framing",
+            null,
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorDragAndClipboardHandlers_ReadNativeEventCarriersOnDenoHost",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; clipboard payload/permission APIs and synthetic construction remain rejected.")
+        {
+            TargetProfiles = "Browser interactive only after group-specific proof",
+            Carrier = "ClipboardEvent native event object",
+            ImplementationPath = "Jazor.CLR.Generator ClipboardEventArgs scaffold copied to Jazor.CLR; Alias(ClipboardEvent) + Inline native getter",
+            ContributionContractVersion = "generated-clr-module/v1",
+            Dependencies = "ClipboardEvent WebIDL carrier; typed EventCallback framing",
+            ExcludedSurface = "clipboard payload permissions, arbitrary clipboard APIs, and synthetic ClipboardEventArgs construction"
+        },
+        new(
+            "P2-blazor-clr-touch-events",
+            "TouchEventArgs modifier/getter projection and TouchPoint collection access",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.InProof,
+            "Jazor.CLR TouchEventArgs/TouchPoint modules + official Razor SG event framing",
+            null,
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction, setters, and non-DOM TouchList operations remain rejected.")
+        {
+            TargetProfiles = "Browser interactive only after group-specific proof",
+            Carrier = "TouchEvent/Touch native browser objects; Array.from conversion at Touches/TargetTouches/ChangedTouches property access",
+            ImplementationPath = "Jazor.CLR.Generator TouchEventArgs/TouchPoint scaffolds copied to Jazor.CLR; Alias(TouchEvent/Touch) + Inline native getters and lazy Array.from",
+            ContributionContractVersion = "generated-clr-module/v1",
+            Dependencies = "TouchEvent/Touch WebIDL carriers; Array.from; typed EventCallback framing",
+            ExcludedSurface = "TouchEventArgs/TouchPoint construction, setters, TouchList mutators, and synthetic event payloads"
+        },
+        new(
+            "P2-blazor-clr-error-events",
+            "ErrorEventArgs DOM-origin getter projection",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.InProof,
+            "Jazor.CLR ErrorEventArgs module + official Razor SG event framing",
+            null,
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction and setters remain rejected.")
+        {
+            TargetProfiles = "Browser interactive only after group-specific proof",
+            Carrier = "ErrorEvent native browser object",
+            ImplementationPath = "Jazor.CLR.Generator ErrorEventArgs scaffold copied to Jazor.CLR; Alias(ErrorEvent) + Inline native getters",
+            ContributionContractVersion = "generated-clr-module/v1",
+            Dependencies = "ErrorEvent WebIDL carrier; typed EventCallback framing",
+            ExcludedSurface = "ErrorEventArgs construction/setters, runtime identity checks, and non-DOM error dispatch"
+        },
+        new(
+            "P2-blazor-clr-progress-events",
+            "ProgressEventArgs DOM-origin getter projection",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.InProof,
+            "Jazor.CLR ProgressEventArgs module + official Razor SG event framing",
+            null,
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction and setters remain rejected.")
+        {
+            TargetProfiles = "Browser interactive only after group-specific proof",
+            Carrier = "ProgressEvent native browser object",
+            ImplementationPath = "Jazor.CLR.Generator ProgressEventArgs scaffold copied to Jazor.CLR; Alias(ProgressEvent) + Inline native getters",
+            ContributionContractVersion = "generated-clr-module/v1",
+            Dependencies = "ProgressEvent WebIDL carrier; typed EventCallback framing",
+            ExcludedSurface = "ProgressEventArgs construction/setters, runtime identity checks, and upload/download orchestration"
         },
         new(
             "P1-standard-blazor-component-adapters",
-            "Microsoft built-in UI components: DynamicComponent, EditForm, ErrorBoundary, Router, RouteView, LayoutView, NavLink, and Input*",
+            "Microsoft built-in UI components: DynamicComponent, EditForm, ErrorBoundary, Router, RouteView, LayoutView, NavLink, NavigationLock, FocusOnNavigate, PageTitle, HeadContent, HeadOutlet, AuthorizeView/AuthorizeRouteView, CascadingAuthenticationState, DataAnnotationsValidator, Input*, Virtualize, QuickGrid, and SectionContent/SectionOutlet",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.Reject,
             RazorVueCapabilityStatus.Reject,

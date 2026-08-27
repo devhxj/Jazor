@@ -15,7 +15,7 @@
 | C# -> ECMAScript 模块 | `Jazor` | 对应的 `ECMAScript.*` 绑定 |
 | 普通 C# -> ECMAScript 类库 | `Jazor` | 不需要 Vue 依赖 |
 | 当前 Razor-to-Vue 集成 | `Jazor`、`Jazor.Vue` | Vue authoring、Razor hook、Vue runtime 与基础 Vue bindings |
-| RazorVue 的 Blazor framework mapping | `Jazor`、`Jazor.Vue` | `ECMAScript.Blazor` 由 `Jazor.Vue` 带入，不需单独引用；不随 `Jazor` 安装 |
+| RazorVue 的 Blazor framework CLR mapping | `Jazor`、`Jazor.Vue` | mapping 由 `Jazor.CLR.Generator` 生成并随 `Jazor` 的静态 CLR catalog 提供；`ECMAScript.Blazor` 仅由 `Jazor.Vue` 带入可选的标准 ECMAScript 模拟/投影扩展 |
 | Vue Router | `Jazor`、`Jazor.Vue`、`ECMAScript.VueRoute` | `ECMAScript.VueRoute` 显式提供 Router bindings |
 | Pinia | `Jazor`、`Jazor.Vue`、`ECMAScript.Pinia` | `ECMAScript.Pinia.Testing` |
 | Vue Devtools 自定义插件 | `Jazor`、`Jazor.Vue`、`ECMAScript.Vue.Devtools` | `Jazor.Vue` 提供 Vue runtime 闭包 |
@@ -28,7 +28,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.23.0" />
+  <PackageReference Include="Jazor" Version="0.24.0" />
 </ItemGroup>
 ```
 
@@ -41,8 +41,8 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.23.0" />
-    <PackageReference Include="Jazor.Vue" Version="0.23.0" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="0.24.0" />
+    <PackageReference Include="Jazor.Vue" Version="0.24.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -51,15 +51,15 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.VuIcons" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.23.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.VuIcons" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.24.0" />
 </ItemGroup>
 ```
 

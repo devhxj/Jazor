@@ -4,35 +4,93 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorVueCatalogOwnershipTests
 {
     [TestMethod]
-    public void AspNetComponentCatalog_KeepsCompilerOwnedSurfaceSeparateFromClrNavigation()
+    public void BlazorClrMappings_AreOwnedByGeneratedClrModules()
     {
         var repositoryRoot = FindRepositoryRoot();
         var catalogDirectory = Path.Combine(repositoryRoot, "src", "Jazor.RazorVue", "RazorSdk", "Catalog");
         var clrDirectory = Path.Combine(repositoryRoot, "src", "Jazor.CLR");
+        var blazorProjectionDirectory = Path.Combine(repositoryRoot, "src", "ECMAScript.Blazor");
 
-        Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "ComponentBaseCatalog.cs")));
-        Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "EventCallbackCatalog.cs")));
-        Assert.IsFalse(File.Exists(Path.Combine(catalogDirectory, "NavigationManagerCatalog.cs")));
-        Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "RenderTreeBuilderCatalog.cs")));
-        Assert.IsTrue(File.Exists(Path.Combine(catalogDirectory, "WebRenderTreeBuilderExtensionsCatalog.cs")));
+        var catalogSources = Directory.Exists(catalogDirectory)
+            ? Directory.EnumerateFiles(catalogDirectory, "*.cs", SearchOption.AllDirectories).ToArray()
+            : [];
+        Assert.HasCount(0, catalogSources, "RazorVue must not retain a CLR whitelist catalog.");
 
-        var clrAspNetReferences = Directory.EnumerateFiles(clrDirectory, "*.cs", SearchOption.AllDirectories)
-            .Where(path => File.ReadAllText(path).Contains("Microsoft.AspNetCore.Components", StringComparison.Ordinal))
-            .Select(path => Path.GetRelativePath(repositoryRoot, path))
+        var blazorProjectionSources = Directory.EnumerateFiles(blazorProjectionDirectory, "*.cs", SearchOption.AllDirectories)
+            .Where(static path => !path.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            .Where(static path => !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             .ToArray();
+        foreach (var source in blazorProjectionSources)
+        {
+            var text = File.ReadAllText(source);
+            Assert.IsFalse(text.Contains("[Jazor", StringComparison.Ordinal), source);
+            Assert.IsFalse(text.Contains("[ECMAScriptModule", StringComparison.Ordinal), source);
+        }
 
-        CollectionAssert.AreEquivalent(
+        var sourceRoots = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor.Compiler.Generator", "SharedGeneration.cs"));
+        Assert.IsFalse(sourceRoots.Contains("Path.Combine(src, \"ECMAScript.Blazor\")", StringComparison.Ordinal));
+        Assert.IsFalse(sourceRoots.Contains("Path.Combine(src, \"Jazor.RazorVue\", \"RazorSdk\", \"Catalog\")", StringComparison.Ordinal));
+
+        var blazorProjectionProject = File.ReadAllText(
+            Path.Combine(repositoryRoot, "src", "ECMAScript.Blazor", "ECMAScript.Blazor.csproj"));
+        Assert.IsFalse(
+            blazorProjectionProject.Contains(
+                "<FrameworkReference Include=\"Microsoft.AspNetCore.App\"",
+                StringComparison.Ordinal),
+            "ECMAScript.Blazor is a standard ECMAScript projection library and must not carry an ASP.NET Core framework dependency.");
+
+        var clrModules = Directory.EnumerateFiles(Path.Combine(clrDirectory, "module"), "*.cs", SearchOption.TopDirectoryOnly)
+            .Select(path => Path.GetFileName(path))
+            .ToHashSet(StringComparer.Ordinal);
+
+        CollectionAssert.IsSubsetOf(
             new[]
             {
-                Path.Combine("src", "Jazor.CLR", "module", "NavigationManagerModule.cs"),
-                Path.Combine("src", "Jazor.CLR", "module", "NavigationOptionsModule.cs"),
-                Path.Combine("src", "Jazor.CLR", "module", "LocationChangedEventArgsModule.cs"),
-                Path.Combine("src", "Jazor.CLR", "module", "LocationChangingContextModule.cs"),
-                Path.Combine("src", "Jazor.CLR", "module", "NotFoundEventArgsModule.cs"),
-                Path.Combine("src", "Jazor.CLR", "module", "NavigationManagerExtensionsModule.cs"),
-                Path.Combine("src", "Jazor.CLR", "module", "ChangeEventArgsModule.cs"),
+                "ComponentBaseModule.cs",
+                "EventCallbackModule.cs",
+                "EventCallbackT1Module.cs",
+                "EventCallbackFactoryModule.cs",
+                "RenderFragmentModule.cs",
+                "RenderFragmentT1Module.cs",
+                "MarkupStringModule.cs",
+                "ParameterViewModule.cs",
+                "RenderTreeBuilderModule.cs",
+                "WebRenderTreeBuilderExtensionsModule.cs",
+                "ChangeEventArgsModule.cs",
+                "ElementReferenceModule.cs",
+                "ElementReferenceExtensionsModule.cs",
+                "MouseEventArgsModule.cs",
+                "KeyboardEventArgsModule.cs",
+                "FocusEventArgsModule.cs",
+                "PointerEventArgsModule.cs",
+                "WheelEventArgsModule.cs",
+                "DragEventArgsModule.cs",
+                "DataTransferModule.cs",
+                "ClipboardEventArgsModule.cs",
+                "TouchEventArgsModule.cs",
+                "TouchPointModule.cs",
+                "ErrorEventArgsModule.cs",
+                "ProgressEventArgsModule.cs",
             },
-            clrAspNetReferences);
+            clrModules.ToArray());
+
+        var clrDocs = Directory.EnumerateFiles(Path.Combine(clrDirectory, "doc"), "*.md", SearchOption.TopDirectoryOnly)
+            .Select(path => Path.GetFileName(path))
+            .ToHashSet(StringComparer.Ordinal);
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                "PointerEventArgsModule.md",
+                "WheelEventArgsModule.md"
+                 ,"DragEventArgsModule.md",
+                "DataTransferModule.md",
+                "ClipboardEventArgsModule.md",
+                "TouchEventArgsModule.md",
+                "TouchPointModule.md",
+                "ErrorEventArgsModule.md",
+                "ProgressEventArgsModule.md"
+            },
+            clrDocs.ToArray());
     }
 
     private static string FindRepositoryRoot()

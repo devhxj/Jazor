@@ -293,7 +293,7 @@ public class AbortSignal : EventTarget
     /// </example>
     /// <param name="milliseconds"><see href="https://dom.spec.whatwg.org/#dom-abortsignal-timeout-milliseconds-milliseconds">DOM Standard: 3.2 Interface AbortSignal</see></param>
     [Description("@#timeout")]
-    public static extern AbortSignal Timeout(ulong milliseconds);
+    public static extern AbortSignal Timeout(Number milliseconds);
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-abortsignal-any">DOM Standard: 3.2 Interface AbortSignal</see>
@@ -7716,7 +7716,7 @@ public class FileSystemSyncAccessHandle
     /// <param name="buffer"><see href="https://fs.spec.whatwg.org/#dom-filesystemsyncaccesshandle-read-buffer-options-buffer">File System Standard: 2.6 The FileSystemSyncAccessHandle interface</see></param>
     /// <param name="options"><see href="https://fs.spec.whatwg.org/#dom-filesystemsyncaccesshandle-read-buffer-options-options">File System Standard: 2.6 The FileSystemSyncAccessHandle interface</see></param>
     [Description("@#read")]
-    public extern ulong Read(IAllowSharedBufferSource buffer, FileSystemReadWriteOptions? options = default);
+    public extern Number Read(IAllowSharedBufferSource buffer, FileSystemReadWriteOptions? options = default);
 
     /// <summary>
     /// <see href="https://fs.spec.whatwg.org/#dom-filesystemsyncaccesshandle-write">File System Standard: 2.6 The FileSystemSyncAccessHandle interface</see>
@@ -7727,7 +7727,7 @@ public class FileSystemSyncAccessHandle
     /// <param name="buffer"><see href="https://fs.spec.whatwg.org/#dom-filesystemsyncaccesshandle-write-buffer-options-buffer">File System Standard: 2.6 The FileSystemSyncAccessHandle interface</see></param>
     /// <param name="options"><see href="https://fs.spec.whatwg.org/#dom-filesystemsyncaccesshandle-write-buffer-options-options">File System Standard: 2.6 The FileSystemSyncAccessHandle interface</see></param>
     [Description("@#write")]
-    public extern ulong Write(IAllowSharedBufferSource buffer, FileSystemReadWriteOptions? options = default);
+    public extern Number Write(IAllowSharedBufferSource buffer, FileSystemReadWriteOptions? options = default);
 
     /// <summary>
     /// <see href="https://fs.spec.whatwg.org/#dom-filesystemsyncaccesshandle-truncate">File System Standard: 2.6.3 The truncate() method</see>
@@ -7737,7 +7737,7 @@ public class FileSystemSyncAccessHandle
     /// </example>
     /// <param name="newSize"><see href="https://fs.spec.whatwg.org/#dom-filesystemsyncaccesshandle-truncate-newsize-newsize">File System Standard: 2.6 The FileSystemSyncAccessHandle interface</see></param>
     [Description("@#truncate")]
-    public extern void Truncate(ulong newSize);
+    public extern void Truncate(Number newSize);
 
     /// <summary>
     /// <see href="https://fs.spec.whatwg.org/#dom-filesystemsyncaccesshandle-getsize">File System Standard: 2.6.4 The getSize() method</see>
@@ -7746,7 +7746,7 @@ public class FileSystemSyncAccessHandle
     /// <code>handle.getSize()</code>
     /// </example>
     [Description("@#getSize")]
-    public extern ulong GetSize();
+    public extern Number GetSize();
 
     /// <summary>
     /// <see href="https://fs.spec.whatwg.org/#dom-filesystemsyncaccesshandle-flush">File System Standard: 2.6.5 The flush() method</see>
@@ -7792,7 +7792,7 @@ public class FileSystemWritableFileStream(object underlyingSink, QueuingStrategy
     /// </example>
     /// <param name="position"><see href="https://fs.spec.whatwg.org/#dom-filesystemwritablefilestream-seek-position-position">File System Standard: 2.5 The FileSystemWritableFileStream interface</see></param>
     [Description("@#seek")]
-    public extern PromiseResult Seek(ulong position);
+    public extern PromiseResult Seek(Number position);
 
     /// <summary>
     /// <see href="https://fs.spec.whatwg.org/#dom-filesystemwritablefilestream-truncate">File System Standard: 2.5.3 The truncate() method</see>
@@ -7802,7 +7802,7 @@ public class FileSystemWritableFileStream(object underlyingSink, QueuingStrategy
     /// </example>
     /// <param name="size"><see href="https://fs.spec.whatwg.org/#dom-filesystemwritablefilestream-truncate-size-size">File System Standard: 2.5 The FileSystemWritableFileStream interface</see></param>
     [Description("@#truncate")]
-    public extern PromiseResult Truncate(ulong size);
+    public extern PromiseResult Truncate(Number size);
 }
 
 /// <summary>
@@ -8783,7 +8783,7 @@ public class ImageBitmapRenderingContext
 [Description("@#OffscreenCanvas")]
 public class OffscreenCanvas : EventTarget
 {
-    public extern OffscreenCanvas(ulong width, ulong height);
+    public extern OffscreenCanvas(Number width, Number height);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-offscreencanvas-width">HTML Standard: 4.12.5.3 The OffscreenCanvas interface</see>
@@ -8792,7 +8792,7 @@ public class OffscreenCanvas : EventTarget
     /// <code>offscreenCanvas.width [ = value ]✔MDNOffscreenCanvas/widthSupport in all current engines.Firefox105+Safari16.4+Chrome69+Opera?Edge79+Edge (Legacy)?Internet ExplorerNoFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?</code>
     /// </example>
     [Description("@#width")]
-    public extern ulong Width { get; set; }
+    public extern Number Width { get; set; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-offscreencanvas-height">HTML Standard: 4.12.5.3 The OffscreenCanvas interface</see>
@@ -8801,7 +8801,7 @@ public class OffscreenCanvas : EventTarget
     /// <code>offscreenCanvas.height [ = value ]✔MDNOffscreenCanvas/heightSupport in all current engines.Firefox105+Safari16.4+Chrome69+Opera?Edge79+Edge (Legacy)?Internet ExplorerNoFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android?</code>
     /// </example>
     [Description("@#height")]
-    public extern ulong Height { get; set; }
+    public extern Number Height { get; set; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-offscreencanvas-getcontext">HTML Standard: 4.12.5.3 The OffscreenCanvas interface</see>
@@ -17162,7 +17162,7 @@ public class NavigationDestination
     /// <code>event.destination.index</code>
     /// </example>
     [Description("@#index")]
-    public extern long Index { get; }
+    public extern Number Index { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationdestination-samedocument">HTML Standard: 7.2.6.10.3 The NavigationDestination interface</see>
@@ -17224,7 +17224,7 @@ public class NavigationHistoryEntry : EventTarget
     /// <code>entry.index</code>
     /// </example>
     [Description("@#index")]
-    public extern long Index { get; }
+    public extern Number Index { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationhistoryentry-samedocument">HTML Standard: 7.2.6.5 The NavigationHistoryEntry interface</see>
@@ -20876,7 +20876,7 @@ public partial class Navigator
     /// <see href="https://w3c.github.io/badging/#dom-navigatorbadge-setappbadge">Badging API: 5.1 setAppBadge() method</see>
     /// </remarks>
     [Description("@#setAppBadge")]
-    public extern PromiseResult SetAppBadge(ulong? contents = default);
+    public extern PromiseResult SetAppBadge(Number? contents = default);
 
     /// <summary>
     /// When the clearAppBadge() method is called, the user agent MUST set the application badge of this to 0.
@@ -21100,7 +21100,7 @@ public partial class Navigator
 
     #region mixin NavigatorConcurrentHardware
     [Description("@#hardwareConcurrency")]
-    public extern ulong HardwareConcurrency { get; }
+    public extern Number HardwareConcurrency { get; }
     #endregion
 
     #region mixin NavigatorNetworkInformation
@@ -22873,7 +22873,7 @@ public partial class WorkerNavigator
     /// <see href="https://w3c.github.io/badging/#dom-navigatorbadge-setappbadge">Badging API: 5.1 setAppBadge() method</see>
     /// </remarks>
     [Description("@#setAppBadge")]
-    public extern PromiseResult SetAppBadge(ulong? contents = default);
+    public extern PromiseResult SetAppBadge(Number? contents = default);
 
     /// <summary>
     /// When the clearAppBadge() method is called, the user agent MUST set the application badge of this to 0.
@@ -23037,7 +23037,7 @@ public partial class WorkerNavigator
 
     #region mixin NavigatorConcurrentHardware
     [Description("@#hardwareConcurrency")]
-    public extern ulong HardwareConcurrency { get; }
+    public extern Number HardwareConcurrency { get; }
     #endregion
 
     #region mixin NavigatorNetworkInformation
@@ -25156,7 +25156,7 @@ public class ReadableStreamBYOBRequest
     /// </example>
     /// <param name="bytesWritten"><see href="https://streams.spec.whatwg.org/#dom-readablestreambyobrequest-respond-byteswritten-byteswritten">Streams Standard: 4.8.1 Interface definition</see></param>
     [Description("@#respond")]
-    public extern void Respond(ulong bytesWritten);
+    public extern void Respond(Number bytesWritten);
 
     /// <summary>
     /// <see href="https://streams.spec.whatwg.org/#rs-byob-request-respond-with-new-view">Streams Standard: 4.8.3 Methods and properties</see>
@@ -26009,7 +26009,7 @@ public partial class JazorFile(BlobPart[] blobParts, BlobPropertyBag options) : 
     /// <see href="https://w3c.github.io/FileAPI/#dfn-lastModified">File API: 4.2 Attributes</see>
     /// </remarks>
     [Description("@#lastModified")]
-    public extern long LastModified { get; }
+    public extern Number LastModified { get; }
 }
 
 /// <summary>
@@ -26155,7 +26155,7 @@ public class IDBDatabase : EventTarget
     /// <code>connection.version</code>
     /// </example>
     [Description("@#version")]
-    public extern ulong Version { get; }
+    public extern Number Version { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/IndexedDB/#dom-idbdatabase-objectstorenames">Indexed Database API 3.0: 4.4 The IDBDatabase interface</see>
@@ -26249,7 +26249,7 @@ public class IDBFactory
     /// <param name="name"><see href="https://w3c.github.io/IndexedDB/#dom-idbfactory-open-name-version-name">Indexed Database API 3.0: 4.3 The IDBFactory interface</see></param>
     /// <param name="version"><see href="https://w3c.github.io/IndexedDB/#dom-idbfactory-open-name-version-version">Indexed Database API 3.0: 4.3 The IDBFactory interface</see></param>
     [Description("@#open")]
-    public extern IDBOpenDBRequest Open(string name, ulong? version = default);
+    public extern IDBOpenDBRequest Open(string name, Number? version = default);
 
     /// <summary>
     /// <see href="https://w3c.github.io/IndexedDB/#dom-idbfactory-deletedatabase">Indexed Database API 3.0: 4.3 The IDBFactory interface</see>
@@ -26956,13 +26956,13 @@ public class IDBVersionChangeEvent(string type, EventInit eventInitDict) : Jazor
     /// <see href="https://w3c.github.io/IndexedDB/#dom-idbversionchangeevent-oldversion">Indexed Database API 3.0: 4.2 Event interfaces</see>
     /// </summary>
     [Description("@#oldVersion")]
-    public extern ulong OldVersion { get; }
+    public extern Number OldVersion { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/IndexedDB/#dom-idbversionchangeevent-newversion">Indexed Database API 3.0: 4.2 Event interfaces</see>
     /// </summary>
     [Description("@#newVersion")]
-    public extern ulong? NewVersion { get; }
+    public extern Number? NewVersion { get; }
 }
 
 /// <summary>
@@ -27726,7 +27726,7 @@ public class ClipboardChangeEvent(string type, EventInit eventInitDict) : JazorE
     /// <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardchangeevent-changeid">Clipboard API and events: 5.2.1.2 Document focus steps</see>
     /// </remarks>
     [Description("@#changeId")]
-    public extern System.Numerics.BigInteger ChangeId { get; }
+    public extern BigInt ChangeId { get; }
 }
 
 /// <summary>
@@ -28419,24 +28419,24 @@ public class MediaKeyStatusMap : IEnumerable<(IBufferSource, MediaKeyStatus)>
 /// </summary>
 [ECMAScript]
 [Description("@#EventCounts")]
-public class EventCounts : IDictionary<string, ulong>
+public class EventCounts : IDictionary<string, Number>
 {
     #region Dictionary
-    extern ulong IDictionary<string, ulong>.this[string key] { get; set; }
-    extern ICollection<string> IDictionary<string, ulong>.Keys { get; }
-    extern ICollection<ulong> IDictionary<string, ulong>.Values { get; }
-    extern int ICollection<KeyValuePair<string, ulong>>.Count { get; }
-    extern bool ICollection<KeyValuePair<string, ulong>>.IsReadOnly { get; }
-    extern void IDictionary<string, ulong>.Add(string key, ulong value);
-    extern void ICollection<KeyValuePair<string, ulong>>.Add(KeyValuePair<string, ulong> item);
-    extern void ICollection<KeyValuePair<string, ulong>>.Clear();
-    extern bool ICollection<KeyValuePair<string, ulong>>.Contains(KeyValuePair<string, ulong> item);
-    extern bool IDictionary<string, ulong>.ContainsKey(string key);
-    extern void ICollection<KeyValuePair<string, ulong>>.CopyTo(KeyValuePair<string, ulong>[] array, int arrayIndex);
-    extern IEnumerator<KeyValuePair<string, ulong>> IEnumerable<KeyValuePair<string, ulong>>.GetEnumerator();
-    extern bool IDictionary<string, ulong>.Remove(string key);
-    extern bool ICollection<KeyValuePair<string, ulong>>.Remove(KeyValuePair<string, ulong> item);
-    extern bool IDictionary<string, ulong>.TryGetValue(string key, [MaybeNullWhen(false)] out ulong value);
+    extern Number IDictionary<string, Number>.this[string key] { get; set; }
+    extern ICollection<string> IDictionary<string, Number>.Keys { get; }
+    extern ICollection<Number> IDictionary<string, Number>.Values { get; }
+    extern int ICollection<KeyValuePair<string, Number>>.Count { get; }
+    extern bool ICollection<KeyValuePair<string, Number>>.IsReadOnly { get; }
+    extern void IDictionary<string, Number>.Add(string key, Number value);
+    extern void ICollection<KeyValuePair<string, Number>>.Add(KeyValuePair<string, Number> item);
+    extern void ICollection<KeyValuePair<string, Number>>.Clear();
+    extern bool ICollection<KeyValuePair<string, Number>>.Contains(KeyValuePair<string, Number> item);
+    extern bool IDictionary<string, Number>.ContainsKey(string key);
+    extern void ICollection<KeyValuePair<string, Number>>.CopyTo(KeyValuePair<string, Number>[] array, int arrayIndex);
+    extern IEnumerator<KeyValuePair<string, Number>> IEnumerable<KeyValuePair<string, Number>>.GetEnumerator();
+    extern bool IDictionary<string, Number>.Remove(string key);
+    extern bool ICollection<KeyValuePair<string, Number>>.Remove(KeyValuePair<string, Number> item);
+    extern bool IDictionary<string, Number>.TryGetValue(string key, [MaybeNullWhen(false)] out Number value);
     extern IEnumerator IEnumerable.GetEnumerator();
     #endregion
 }
@@ -28482,7 +28482,7 @@ public class PerformanceEventTiming : PerformanceEntry
     /// <see href="https://w3c.github.io/event-timing/#dom-performanceeventtiming-interactionid">Event Timing API: 2.1 PerformanceEventTiming interface</see>
     /// </summary>
     [Description("@#interactionId")]
-    public extern ulong InteractionId { get; }
+    public extern Number InteractionId { get; }
 }
 
 /// <summary>
@@ -28772,7 +28772,7 @@ public class PerformanceScriptTiming : PerformanceEntry
     /// <see href="https://w3c.github.io/long-animation-frames/#dom-performancescripttiming-sourcecharposition">Long Animation Frames API: 2.2 PerformanceScriptTiming interface</see>
     /// </summary>
     [Description("@#sourceCharPosition")]
-    public extern long SourceCharPosition { get; }
+    public extern Number SourceCharPosition { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/long-animation-frames/#dom-performancescripttiming-pauseduration">Long Animation Frames API: 2.2 PerformanceScriptTiming interface</see>
@@ -29668,7 +29668,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-navigationstart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </summary>
     [Description("@#navigationStart")]
-    public extern ulong NavigationStart { get; }
+    public extern Number NavigationStart { get; }
 
     /// <summary>
     /// If there are redirect status|HTTP redirects when navigating and not all the redirects are from the same origin, both unloadEventStart and unloadEventEnd must return zero.
@@ -29677,7 +29677,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-unloadeventstart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#unloadEventStart")]
-    public extern ulong UnloadEventStart { get; }
+    public extern Number UnloadEventStart { get; }
 
     /// <summary>
     /// If there are redirect status|HTTP redirects when navigating and not all the redirects are from the same origin, both unloadEventStart and unloadEventEnd must return zero.
@@ -29686,19 +29686,19 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-unloadeventend">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#unloadEventEnd")]
-    public extern ulong UnloadEventEnd { get; }
+    public extern Number UnloadEventEnd { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-redirectstart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </summary>
     [Description("@#redirectStart")]
-    public extern ulong RedirectStart { get; }
+    public extern Number RedirectStart { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-redirectend">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </summary>
     [Description("@#redirectEnd")]
-    public extern ulong RedirectEnd { get; }
+    public extern Number RedirectEnd { get; }
 
     /// <summary>
     /// This attribute must return the time immediately before the user agent starts the domain name lookup for the current document. If a persistent connection RFC2616 obsolete is used or the current document is retrieved from the HTTP cache RFC7234 obsolete or local resources, this attribute must return the same value as fetchStart.
@@ -29707,13 +29707,13 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-fetchstart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#fetchStart")]
-    public extern ulong FetchStart { get; }
+    public extern Number FetchStart { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-domainlookupstart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </summary>
     [Description("@#domainLookupStart")]
-    public extern ulong DomainLookupStart { get; }
+    public extern Number DomainLookupStart { get; }
 
     /// <summary>
     /// This attribute must return the time immediately before the user agent start establishing the connection to the server to retrieve the document. If a persistent connection RFC2616 obsolete is used or the current document is retrieved from the HTTP cache RFC7234 obsolete or local resources, this attribute must return value of domainLookupEnd.
@@ -29722,7 +29722,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-domainlookupend">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#domainLookupEnd")]
-    public extern ulong DomainLookupEnd { get; }
+    public extern Number DomainLookupEnd { get; }
 
     /// <summary>
     /// If the transport connection fails and the user agent reopens a connection, connectStart and connectEnd should return the corresponding values of the new connection.
@@ -29731,7 +29731,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-connectstart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#connectStart")]
-    public extern ulong ConnectStart { get; }
+    public extern Number ConnectStart { get; }
 
     /// <summary>
     /// If the transport connection fails and the user agent reopens a connection, connectStart and connectEnd should return the corresponding values of the new connection.
@@ -29740,13 +29740,13 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-connectend">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#connectEnd")]
-    public extern ulong ConnectEnd { get; }
+    public extern Number ConnectEnd { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-secureconnectionstart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </summary>
     [Description("@#secureConnectionStart")]
-    public extern ulong SecureConnectionStart { get; }
+    public extern Number SecureConnectionStart { get; }
 
     /// <summary>
     /// Checking and retrieving contents from the HTTP cache RFC2616 obsolete is part of the fetching resources|fetching process. It&apos;s covered by the requestStart, responseStart and responseEnd attributes.
@@ -29755,7 +29755,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-requeststart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#requestStart")]
-    public extern ulong RequestStart { get; }
+    public extern Number RequestStart { get; }
 
     /// <summary>
     /// Checking and retrieving contents from the HTTP cache RFC2616 obsolete is part of the fetching resources|fetching process. It&apos;s covered by the requestStart, responseStart and responseEnd attributes.
@@ -29764,7 +29764,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-responsestart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#responseStart")]
-    public extern ulong ResponseStart { get; }
+    public extern Number ResponseStart { get; }
 
     /// <summary>
     /// Checking and retrieving contents from the HTTP cache RFC2616 obsolete is part of the fetching resources|fetching process. It&apos;s covered by the requestStart, responseStart and responseEnd attributes.
@@ -29773,7 +29773,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-responseend">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#responseEnd")]
-    public extern ulong ResponseEnd { get; }
+    public extern Number ResponseEnd { get; }
 
     /// <summary>
     /// If the current document readiness|current document readiness changes to the same state multiple times, domLoading, domInteractive, domContentLoadedEventStart, domContentLoadedEventEnd and domComplete must return the time of the first occurrence of the corresponding current document readiness|document readiness change.
@@ -29782,7 +29782,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-domloading">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#domLoading")]
-    public extern ulong DomLoading { get; }
+    public extern Number DomLoading { get; }
 
     /// <summary>
     /// If the current document readiness|current document readiness changes to the same state multiple times, domLoading, domInteractive, domContentLoadedEventStart, domContentLoadedEventEnd and domComplete must return the time of the first occurrence of the corresponding current document readiness|document readiness change.
@@ -29791,7 +29791,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-dominteractive">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#domInteractive")]
-    public extern ulong DomInteractive { get; }
+    public extern Number DomInteractive { get; }
 
     /// <summary>
     /// If the current document readiness|current document readiness changes to the same state multiple times, domLoading, domInteractive, domContentLoadedEventStart, domContentLoadedEventEnd and domComplete must return the time of the first occurrence of the corresponding current document readiness|document readiness change.
@@ -29800,7 +29800,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-domcontentloadedeventstart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#domContentLoadedEventStart")]
-    public extern ulong DomContentLoadedEventStart { get; }
+    public extern Number DomContentLoadedEventStart { get; }
 
     /// <summary>
     /// If the current document readiness|current document readiness changes to the same state multiple times, domLoading, domInteractive, domContentLoadedEventStart, domContentLoadedEventEnd and domComplete must return the time of the first occurrence of the corresponding current document readiness|document readiness change.
@@ -29809,7 +29809,7 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-domcontentloadedeventend">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#domContentLoadedEventEnd")]
-    public extern ulong DomContentLoadedEventEnd { get; }
+    public extern Number DomContentLoadedEventEnd { get; }
 
     /// <summary>
     /// If the current document readiness|current document readiness changes to the same state multiple times, domLoading, domInteractive, domContentLoadedEventStart, domContentLoadedEventEnd and domComplete must return the time of the first occurrence of the corresponding current document readiness|document readiness change.
@@ -29818,19 +29818,19 @@ public class PerformanceTiming
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-domcomplete">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </remarks>
     [Description("@#domComplete")]
-    public extern ulong DomComplete { get; }
+    public extern Number DomComplete { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-loadeventstart">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </summary>
     [Description("@#loadEventStart")]
-    public extern ulong LoadEventStart { get; }
+    public extern Number LoadEventStart { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-loadeventend">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
     /// </summary>
     [Description("@#loadEventEnd")]
-    public extern ulong LoadEventEnd { get; }
+    public extern Number LoadEventEnd { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/navigation-timing/#dom-performancetiming-tojson">Navigation Timing Level 2: 8.1 The PerformanceTiming interface</see>
@@ -32250,7 +32250,7 @@ public class EncodedAudioChunk
     /// <see href="https://w3c.github.io/webcodecs/#dom-encodedaudiochunk-timestamp">WebCodecs: 8.1.3 Attributes</see>
     /// </summary>
     [Description("@#timestamp")]
-    public extern long Timestamp { get; }
+    public extern Number Timestamp { get; }
 
     /// <summary>
     /// Run these steps: 1. For each output in outputs: 1. Let chunkInit be an EncodedAudioChunkInit with the following keys: 1. Let data contain the encoded audio data from output. 2. Let type be the EncodedAudioChunkType of output. 3. Let timestamp be the timestamp from the AudioData associated with output. 4. Let duration be the duration from the AudioData associated with output. 2. Let chunk be a new EncodedAudioChunk constructed with chunkInit. 3. Let chunkMetadata be a new EncodedAudioChunkMetadata. 4. Let encoderConfig be the active encoder config. 5. Let outputConfig be a new AudioDecoderConfig that describes output....
@@ -32259,7 +32259,7 @@ public class EncodedAudioChunk
     /// <see href="https://w3c.github.io/webcodecs/#dom-encodedaudiochunk-duration">WebCodecs: 8.1.3 Attributes</see>
     /// </remarks>
     [Description("@#duration")]
-    public extern ulong? Duration { get; }
+    public extern Number? Duration { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/webcodecs/#dom-encodedaudiochunk-bytelength">WebCodecs: 8.1.3 Attributes</see>
@@ -32304,13 +32304,13 @@ public class EncodedVideoChunk
     /// <see href="https://w3c.github.io/webcodecs/#dom-encodedvideochunk-timestamp">WebCodecs: 8.2.3 Attributes</see>
     /// </summary>
     [Description("@#timestamp")]
-    public extern long Timestamp { get; }
+    public extern Number Timestamp { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/webcodecs/#dom-encodedvideochunk-duration">WebCodecs: 8.2.3 Attributes</see>
     /// </summary>
     [Description("@#duration")]
-    public extern ulong? Duration { get; }
+    public extern Number? Duration { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/webcodecs/#dom-encodedvideochunk-bytelength">WebCodecs: 8.2.3 Attributes</see>
@@ -32747,7 +32747,7 @@ public class VideoFrame
     /// <see href="https://w3c.github.io/webcodecs/#dom-videoframe-duration">WebCodecs: 9.4.3 Attributes</see>
     /// </remarks>
     [Description("@#duration")]
-    public extern ulong? Duration { get; }
+    public extern Number? Duration { get; }
 
     /// <summary>
     /// Run these steps: 1. For each output in outputs: 1. Let chunkInit be an EncodedVideoChunkInit with the following keys: 1. Let data contain the encoded video data from output. 2. Let type be the EncodedVideoChunkType of output. 3. Let timestamp be the timestamp from the VideoFrame associated with output. 4. Let duration be the duration from the VideoFrame associated with output. 2. Let chunk be a new EncodedVideoChunk constructed with chunkInit. 3. Let chunkMetadata be a new EncodedVideoChunkMetadata. 4. Let encoderConfig be the active encoder config. 5. Let outputConfig be a VideoDecoderConfig that describes output....
@@ -32756,7 +32756,7 @@ public class VideoFrame
     /// <see href="https://w3c.github.io/webcodecs/#dom-videoframe-timestamp">WebCodecs: 9.4.3 Attributes</see>
     /// </remarks>
     [Description("@#timestamp")]
-    public extern long Timestamp { get; }
+    public extern Number Timestamp { get; }
 
     /// <summary>
     /// Configures the VideoFrame.colorSpace for VideoFrames associated with this VideoDecoderConfig. If colorSpace map/exists, the provided values will override any in-band values from the bitsream.
@@ -33615,7 +33615,7 @@ public class WebTransportDatagramsWritable(object underlyingSink, QueuingStrateg
     /// <see href="https://w3c.github.io/webtransport/#dom-webtransportdatagramswritable-sendorder">WebTransport: 4.2 Attributes</see>
     /// </summary>
     [Description("@#sendOrder")]
-    public extern long SendOrder { get; set; }
+    public extern Number SendOrder { get; set; }
 }
 
 /// <summary>
@@ -33690,7 +33690,7 @@ public class WebTransportSendStream(object underlyingSink, QueuingStrategy strat
     /// <see href="https://w3c.github.io/webtransport/#dom-webtransportsendstream-sendorder">WebTransport: 7.1 Attributes</see>
     /// </summary>
     [Description("@#sendOrder")]
-    public extern long SendOrder { get; set; }
+    public extern Number SendOrder { get; set; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/webtransport/#dom-webtransportsendstream-getstats">WebTransport: 7.2 Methods</see>
@@ -34752,7 +34752,7 @@ public class AudioWorkletGlobalScope : WorkletGlobalScope
     /// <see href="https://webaudio.github.io/web-audio-api/#dom-audioworkletglobalscope-currentframe">Web Audio API 1.1: 1.32.3.1 Attributes</see>
     /// </summary>
     [Description("@#currentFrame")]
-    public extern ulong CurrentFrame { get; }
+    public extern Number CurrentFrame { get; }
 
     /// <summary>
     /// <see href="https://webaudio.github.io/web-audio-api/#dom-audioworkletglobalscope-currenttime">Web Audio API 1.1: 1.32.3.1 Attributes</see>
@@ -37192,25 +37192,25 @@ public class BackgroundFetchRegistration : EventTarget
     /// <see href="https://wicg.github.io/background-fetch/#dom-backgroundfetchregistration-uploadtotal">Background Fetch: 6.4 BackgroundFetchRegistration</see>
     /// </summary>
     [Description("@#uploadTotal")]
-    public extern ulong UploadTotal { get; }
+    public extern Number UploadTotal { get; }
 
     /// <summary>
     /// <see href="https://wicg.github.io/background-fetch/#dom-backgroundfetchregistration-uploaded">Background Fetch: 6.4 BackgroundFetchRegistration</see>
     /// </summary>
     [Description("@#uploaded")]
-    public extern ulong Uploaded { get; }
+    public extern Number Uploaded { get; }
 
     /// <summary>
     /// <see href="https://wicg.github.io/background-fetch/#dom-backgroundfetchregistration-downloadtotal">Background Fetch: 6.4 BackgroundFetchRegistration</see>
     /// </summary>
     [Description("@#downloadTotal")]
-    public extern ulong DownloadTotal { get; }
+    public extern Number DownloadTotal { get; }
 
     /// <summary>
     /// <see href="https://wicg.github.io/background-fetch/#dom-backgroundfetchregistration-downloaded">Background Fetch: 6.4 BackgroundFetchRegistration</see>
     /// </summary>
     [Description("@#downloaded")]
-    public extern ulong Downloaded { get; }
+    public extern Number Downloaded { get; }
 
     /// <summary>
     /// <see href="https://wicg.github.io/background-fetch/#dom-backgroundfetchregistration-result">Background Fetch: 6.4 BackgroundFetchRegistration</see>
@@ -37331,7 +37331,7 @@ public class PerformanceContainerTiming : PerformanceEntry
     /// <see href="https://wicg.github.io/container-timing/#dom-performancecontainertiming-size">Container Timing API: 5 The PerformanceContainerTiming Interface</see>
     /// </summary>
     [Description("@#size")]
-    public extern ulong Size { get; }
+    public extern Number Size { get; }
 
     /// <summary>
     /// <see href="https://wicg.github.io/container-timing/#dom-performancecontainertiming-firstrendertime">Container Timing API: 5 The PerformanceContainerTiming Interface</see>
@@ -38147,14 +38147,14 @@ public class Observable
     /// </summary>
     /// <param name="amount"><see href="https://wicg.github.io/observable/#dom-observable-take-amount-amount">Observable: 2.2 The Observable interface</see></param>
     [Description("@#take")]
-    public extern Observable Take(ulong amount);
+    public extern Observable Take(Number amount);
 
     /// <summary>
     /// <see href="https://wicg.github.io/observable/#dom-observable-drop">Observable: 2.3.2 Observable-returning operators</see>
     /// </summary>
     /// <param name="amount"><see href="https://wicg.github.io/observable/#dom-observable-drop-amount-amount">Observable: 2.2 The Observable interface</see></param>
     [Description("@#drop")]
-    public extern Observable Drop(ulong amount);
+    public extern Observable Drop(Number amount);
 
     /// <summary>
     /// <see href="https://wicg.github.io/observable/#dom-observable-flatmap">Observable: 2.3.2 Observable-returning operators</see>
@@ -43933,7 +43933,7 @@ public class WebSocket : EventTarget
     /// <code>socket.bufferedAmount</code>
     /// </example>
     [Description("@#bufferedAmount")]
-    public extern ulong BufferedAmount { get; }
+    public extern Number BufferedAmount { get; }
 
     /// <summary>
     /// <see href="https://websockets.spec.whatwg.org/#dom-websocket-onopen">WebSockets Standard: 3.1 Interface definition</see>
@@ -47900,7 +47900,7 @@ public class WebGL2RenderingContext
     public const GLenum TEXTURE_IMMUTABLE_LEVELS = 0x82DF;
 
     [Description("@#TIMEOUT_IGNORED")]
-    public const GLint64 TIMEOUT_IGNORED = -1;
+    public static extern GLint64 TIMEOUT_IGNORED { get; }
 
     [Description("@#MAX_CLIENT_WAIT_TIMEOUT_WEBGL")]
     public const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL = 0x9247;
@@ -47909,7 +47909,7 @@ public class WebGL2RenderingContext
     public extern void CopyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
 
     [Description("@#getBufferSubData")]
-    public extern void GetBufferSubData(GLenum target, GLintptr srcByteOffset, IArrayBufferView dstBuffer, ulong dstOffset = 0, GLuint? length = default);
+    public extern void GetBufferSubData(GLenum target, GLintptr srcByteOffset, IArrayBufferView dstBuffer, Number? dstOffset = default, GLuint? length = default);
 
     [Description("@#blitFramebuffer")]
     public extern void BlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
@@ -47948,7 +47948,7 @@ public class WebGL2RenderingContext
     public extern void TexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, IArrayBufferView? srcData);
 
     [Description("@#texImage3D")]
-    public extern void TexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, IArrayBufferView srcData, ulong srcOffset);
+    public extern void TexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, IArrayBufferView srcData, Number srcOffset);
 
     [Description("@#texSubImage3D")]
     public extern void TexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, GLintptr pboOffset);
@@ -47957,7 +47957,7 @@ public class WebGL2RenderingContext
     public extern void TexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, TexImageSource source);
 
     [Description("@#texSubImage3D")]
-    public extern void TexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, IArrayBufferView? srcData, ulong srcOffset = 0);
+    public extern void TexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, IArrayBufferView? srcData, Number? srcOffset = default);
 
     [Description("@#copyTexSubImage3D")]
     public extern void CopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
@@ -47966,13 +47966,13 @@ public class WebGL2RenderingContext
     public extern void CompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, GLintptr offset);
 
     [Description("@#compressedTexImage3D")]
-    public extern void CompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, IArrayBufferView srcData, ulong srcOffset = 0, GLuint? srcLengthOverride = default);
+    public extern void CompressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, IArrayBufferView srcData, Number? srcOffset = default, GLuint? srcLengthOverride = default);
 
     [Description("@#compressedTexSubImage3D")]
     public extern void CompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, GLintptr offset);
 
     [Description("@#compressedTexSubImage3D")]
-    public extern void CompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, IArrayBufferView srcData, ulong srcOffset = 0, GLuint? srcLengthOverride = default);
+    public extern void CompressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, IArrayBufferView srcData, Number? srcOffset = default, GLuint? srcLengthOverride = default);
 
     [Description("@#getFragDataLocation")]
     public extern GLint GetFragDataLocation(WebGLProgram program, string name);
@@ -47990,34 +47990,34 @@ public class WebGL2RenderingContext
     public extern void Uniform4ui(WebGLUniformLocation? location, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
 
     [Description("@#uniform1uiv")]
-    public extern void Uniform1uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform1uiv(WebGLUniformLocation? location, Uint32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform2uiv")]
-    public extern void Uniform2uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform2uiv(WebGLUniformLocation? location, Uint32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform3uiv")]
-    public extern void Uniform3uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform3uiv(WebGLUniformLocation? location, Uint32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform4uiv")]
-    public extern void Uniform4uiv(WebGLUniformLocation? location, Uint32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform4uiv(WebGLUniformLocation? location, Uint32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniformMatrix3x2fv")]
-    public extern void UniformMatrix3x2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix3x2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniformMatrix4x2fv")]
-    public extern void UniformMatrix4x2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix4x2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniformMatrix2x3fv")]
-    public extern void UniformMatrix2x3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix2x3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniformMatrix4x3fv")]
-    public extern void UniformMatrix4x3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix4x3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniformMatrix2x4fv")]
-    public extern void UniformMatrix2x4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix2x4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniformMatrix3x4fv")]
-    public extern void UniformMatrix3x4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix3x4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#vertexAttribI4i")]
     public extern void VertexAttribI4i(GLuint index, GLint x, GLint y, GLint z, GLint w);
@@ -48050,13 +48050,13 @@ public class WebGL2RenderingContext
     public extern void DrawBuffers(GLenum[] buffers);
 
     [Description("@#clearBufferfv")]
-    public extern void ClearBufferfv(GLenum buffer, GLint drawbuffer, Float32List values, ulong srcOffset = 0);
+    public extern void ClearBufferfv(GLenum buffer, GLint drawbuffer, Float32List values, Number? srcOffset = default);
 
     [Description("@#clearBufferiv")]
-    public extern void ClearBufferiv(GLenum buffer, GLint drawbuffer, Int32List values, ulong srcOffset = 0);
+    public extern void ClearBufferiv(GLenum buffer, GLint drawbuffer, Int32List values, Number? srcOffset = default);
 
     [Description("@#clearBufferuiv")]
-    public extern void ClearBufferuiv(GLenum buffer, GLint drawbuffer, Uint32List values, ulong srcOffset = 0);
+    public extern void ClearBufferuiv(GLenum buffer, GLint drawbuffer, Uint32List values, Number? srcOffset = default);
 
     [Description("@#clearBufferfi")]
     public extern void ClearBufferfi(GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil);
@@ -48202,10 +48202,10 @@ public class WebGL2RenderingContext
     public extern void BufferSubData(GLenum target, GLintptr dstByteOffset, IAllowSharedBufferSource srcData);
 
     [Description("@#bufferData")]
-    public extern void BufferData(GLenum target, IArrayBufferView srcData, GLenum usage, ulong srcOffset, GLuint? length = default);
+    public extern void BufferData(GLenum target, IArrayBufferView srcData, GLenum usage, Number srcOffset, GLuint? length = default);
 
     [Description("@#bufferSubData")]
-    public extern void BufferSubData(GLenum target, GLintptr dstByteOffset, IArrayBufferView srcData, ulong srcOffset, GLuint? length = default);
+    public extern void BufferSubData(GLenum target, GLintptr dstByteOffset, IArrayBufferView srcData, Number srcOffset, GLuint? length = default);
 
     [Description("@#texImage2D")]
     public extern void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, IArrayBufferView? pixels);
@@ -48226,7 +48226,7 @@ public class WebGL2RenderingContext
     public extern void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, TexImageSource source);
 
     [Description("@#texImage2D")]
-    public extern void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, IArrayBufferView srcData, ulong srcOffset);
+    public extern void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, IArrayBufferView srcData, Number srcOffset);
 
     [Description("@#texSubImage2D")]
     public extern void TexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLintptr pboOffset);
@@ -48235,52 +48235,52 @@ public class WebGL2RenderingContext
     public extern void TexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, TexImageSource source);
 
     [Description("@#texSubImage2D")]
-    public extern void TexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, IArrayBufferView srcData, ulong srcOffset);
+    public extern void TexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, IArrayBufferView srcData, Number srcOffset);
 
     [Description("@#compressedTexImage2D")]
     public extern void CompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, GLintptr offset);
 
     [Description("@#compressedTexImage2D")]
-    public extern void CompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, IArrayBufferView srcData, ulong srcOffset = 0, GLuint? srcLengthOverride = default);
+    public extern void CompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, IArrayBufferView srcData, Number? srcOffset = default, GLuint? srcLengthOverride = default);
 
     [Description("@#compressedTexSubImage2D")]
     public extern void CompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, GLintptr offset);
 
     [Description("@#compressedTexSubImage2D")]
-    public extern void CompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, IArrayBufferView srcData, ulong srcOffset = 0, GLuint? srcLengthOverride = default);
+    public extern void CompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, IArrayBufferView srcData, Number? srcOffset = default, GLuint? srcLengthOverride = default);
 
     [Description("@#uniform1fv")]
-    public extern void Uniform1fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform1fv(WebGLUniformLocation? location, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform2fv")]
-    public extern void Uniform2fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform2fv(WebGLUniformLocation? location, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform3fv")]
-    public extern void Uniform3fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform3fv(WebGLUniformLocation? location, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform4fv")]
-    public extern void Uniform4fv(WebGLUniformLocation? location, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform4fv(WebGLUniformLocation? location, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform1iv")]
-    public extern void Uniform1iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform1iv(WebGLUniformLocation? location, Int32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform2iv")]
-    public extern void Uniform2iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform2iv(WebGLUniformLocation? location, Int32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform3iv")]
-    public extern void Uniform3iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform3iv(WebGLUniformLocation? location, Int32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniform4iv")]
-    public extern void Uniform4iv(WebGLUniformLocation? location, Int32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void Uniform4iv(WebGLUniformLocation? location, Int32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniformMatrix2fv")]
-    public extern void UniformMatrix2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix2fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniformMatrix3fv")]
-    public extern void UniformMatrix3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix3fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#uniformMatrix4fv")]
-    public extern void UniformMatrix4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, ulong srcOffset = 0, GLuint? srcLength = default);
+    public extern void UniformMatrix4fv(WebGLUniformLocation? location, GLboolean transpose, Float32List data, Number? srcOffset = default, GLuint? srcLength = default);
 
     [Description("@#readPixels")]
     public extern void ReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, IArrayBufferView? dstData);
@@ -48289,7 +48289,7 @@ public class WebGL2RenderingContext
     public extern void ReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLintptr offset);
 
     [Description("@#readPixels")]
-    public extern void ReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, IArrayBufferView dstData, ulong dstOffset);
+    public extern void ReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, IArrayBufferView dstData, Number dstOffset);
     #endregion
 }
 
@@ -51528,13 +51528,13 @@ public class AudioData
     /// <see href="https://w3c.github.io/webcodecs/#dom-audiodata-duration">WebCodecs: 9.2.3 Attributes</see>
     /// </remarks>
     [Description("@#duration")]
-    public extern ulong Duration { get; }
+    public extern Number Duration { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/webcodecs/#dom-audiodata-timestamp">WebCodecs: 9.2.3 Attributes</see>
     /// </summary>
     [Description("@#timestamp")]
-    public extern long Timestamp { get; }
+    public extern Number Timestamp { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/webcodecs/#dom-audiodata-allocationsize">WebCodecs: 9.2.4 Methods</see>
@@ -52244,7 +52244,7 @@ public class Blob
     /// <see href="https://w3c.github.io/FileAPI/#dfn-size">File API: 3.2 Attributes</see>
     /// </remarks>
     [Description("@#size")]
-    public extern ulong Size { get; }
+    public extern Number Size { get; }
 
     /// <summary>
     /// S.type = relativeContentType.
@@ -52262,7 +52262,7 @@ public class Blob
     /// <param name="end"><see href="https://w3c.github.io/FileAPI/#dom-blob-slice-start-end-contenttype-end">File API: 3 The Blob Interface and Binary Data</see></param>
     /// <param name="contentType"><see href="https://w3c.github.io/FileAPI/#dom-blob-slice-start-end-contenttype-contenttype">File API: 3 The Blob Interface and Binary Data</see></param>
     [Description("@#slice")]
-    public extern Blob Slice(long? start = default, long? end = default, string? contentType = default);
+    public extern Blob Slice(Number? start = default, Number? end = default, string? contentType = default);
 
     /// <summary>
     /// <see href="https://w3c.github.io/FileAPI/#dom-blob-stream">File API: 3.3.2 The stream() method</see>
@@ -53160,7 +53160,7 @@ public class CrashReportContext
     /// </summary>
     /// <param name="length"><see href="https://wicg.github.io/crash-reporting/#dom-crashreportcontext-initialize-length-length">Crash Reporting: 4 The CrashReportContext interface</see></param>
     [Description("@#initialize")]
-    public extern PromiseResult Initialize(ulong length);
+    public extern PromiseResult Initialize(Number length);
 
     /// <summary>
     /// <see href="https://wicg.github.io/crash-reporting/#dom-crashreportcontext-set">Crash Reporting: 4 The CrashReportContext interface</see>
@@ -53579,7 +53579,7 @@ public class PerformanceEntry
     /// <see href="https://w3c.github.io/performance-timeline/#dom-performanceentry-id">Performance Timeline: 3 The PerformanceEntry interface</see>
     /// </summary>
     [Description("@#id")]
-    public extern ulong Id { get; }
+    public extern Number Id { get; }
 
     /// <summary>
     /// Returns a PerformanceEntryList object returned by the filter buffer map by name and type algorithm with name and type set to null.
@@ -53615,7 +53615,7 @@ public class PerformanceEntry
     /// <see href="https://w3c.github.io/performance-timeline/#dom-performanceentry-navigationid">Performance Timeline: 3 The PerformanceEntry interface</see>
     /// </remarks>
     [Description("@#navigationId")]
-    public extern ulong NavigationId { get; }
+    public extern Number NavigationId { get; }
 
     /// <summary>
     /// When toJSON is called, run WEBIDL&apos;s default toJSON steps.
@@ -57462,7 +57462,7 @@ public partial class Performance : EventTarget
     /// <see href="https://w3c.github.io/event-timing/#dom-performance-interactioncount">Event Timing API: 2.3 Extensions to the Performance interface</see>
     /// </summary>
     [Description("@#interactionCount")]
-    public extern ulong InteractionCount { get; }
+    public extern Number InteractionCount { get; }
 
     /// <summary>
     /// This specification does not propose changing the behavior of Date.now() ECMA-262 as it is genuinely useful in determining the current value of the calendar time and has a long history of usage. The DOMHighResTimeStamp type, Performance.now() method, and Performance.timeOrigin attributes of the Performance interface resolve the above issues by providing monotonically increasing time values with sub-millisecond resolution.
@@ -58943,13 +58943,13 @@ public class MediaStreamTrackProcessor
     /// <see href="https://w3c.github.io/mediacapture-transform/#dom-mediastreamtrackprocessor-discardedframes">MediaStreamTrack Insertable Media Processing using Streams: 2.1.4 Attributes</see>
     /// </summary>
     [Description("@#discardedFrames")]
-    public extern ulong DiscardedFrames { get; }
+    public extern Number DiscardedFrames { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/mediacapture-transform/#dom-mediastreamtrackprocessor-totalframes">MediaStreamTrack Insertable Media Processing using Streams: 2.1.4 Attributes</see>
     /// </summary>
     [Description("@#totalFrames")]
-    public extern ulong TotalFrames { get; }
+    public extern Number TotalFrames { get; }
 }
 
 /// <summary>
@@ -59390,19 +59390,19 @@ public partial class PerformanceResourceTiming : PerformanceEntry
     /// <see href="https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-transfersize">Resource Timing: 3.3 The PerformanceResourceTiming Interface</see>
     /// </summary>
     [Description("@#transferSize")]
-    public extern ulong TransferSize { get; }
+    public extern Number TransferSize { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-encodedbodysize">Resource Timing: 3.3 The PerformanceResourceTiming Interface</see>
     /// </summary>
     [Description("@#encodedBodySize")]
-    public extern ulong EncodedBodySize { get; }
+    public extern Number EncodedBodySize { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-decodedbodysize">Resource Timing: 3.3 The PerformanceResourceTiming Interface</see>
     /// </summary>
     [Description("@#decodedBodySize")]
-    public extern ulong DecodedBodySize { get; }
+    public extern Number DecodedBodySize { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-responsestatus">Resource Timing: 3.3 The PerformanceResourceTiming Interface</see>
@@ -67451,16 +67451,16 @@ public class WEBGLLoseContext
 public class WEBGLMultiDraw
 {
     [Description("@#multiDrawArraysWEBGL")]
-    public extern void MultiDrawArraysWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawArraysWEBGLFirstsList firstsList, ulong firstsOffset, WEBGLMultiDrawMultiDrawArraysWEBGLCountsList countsList, ulong countsOffset, GLsizei drawcount);
+    public extern void MultiDrawArraysWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawArraysWEBGLFirstsList firstsList, Number firstsOffset, WEBGLMultiDrawMultiDrawArraysWEBGLCountsList countsList, Number countsOffset, GLsizei drawcount);
 
     [Description("@#multiDrawElementsWEBGL")]
-    public extern void MultiDrawElementsWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawElementsWEBGLCountsList countsList, ulong countsOffset, GLenum type, WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsList offsetsList, ulong offsetsOffset, GLsizei drawcount);
+    public extern void MultiDrawElementsWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawElementsWEBGLCountsList countsList, Number countsOffset, GLenum type, WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsList offsetsList, Number offsetsOffset, GLsizei drawcount);
 
     [Description("@#multiDrawArraysInstancedWEBGL")]
-    public extern void MultiDrawArraysInstancedWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsList firstsList, ulong firstsOffset, WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsList countsList, ulong countsOffset, WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsList instanceCountsList, ulong instanceCountsOffset, GLsizei drawcount);
+    public extern void MultiDrawArraysInstancedWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsList firstsList, Number firstsOffset, WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsList countsList, Number countsOffset, WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsList instanceCountsList, Number instanceCountsOffset, GLsizei drawcount);
 
     [Description("@#multiDrawElementsInstancedWEBGL")]
-    public extern void MultiDrawElementsInstancedWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsList countsList, ulong countsOffset, GLenum type, WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsList offsetsList, ulong offsetsOffset, WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsList instanceCountsList, ulong instanceCountsOffset, GLsizei drawcount);
+    public extern void MultiDrawElementsInstancedWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsList countsList, Number countsOffset, GLenum type, WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsList offsetsList, Number offsetsOffset, WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsList instanceCountsList, Number instanceCountsOffset, GLsizei drawcount);
 }
 
 [ECMAScript]
@@ -67468,10 +67468,10 @@ public class WEBGLMultiDraw
 public class WEBGLMultiDrawInstancedBaseVertexBaseInstance
 {
     [Description("@#multiDrawArraysInstancedBaseInstanceWEBGL")]
-    public extern void MultiDrawArraysInstancedBaseInstanceWEBGL(GLenum mode, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsList firstsList, ulong firstsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsList countsList, ulong countsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsList instanceCountsList, ulong instanceCountsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesList baseInstancesList, ulong baseInstancesOffset, GLsizei drawcount);
+    public extern void MultiDrawArraysInstancedBaseInstanceWEBGL(GLenum mode, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsList firstsList, Number firstsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsList countsList, Number countsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsList instanceCountsList, Number instanceCountsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesList baseInstancesList, Number baseInstancesOffset, GLsizei drawcount);
 
     [Description("@#multiDrawElementsInstancedBaseVertexBaseInstanceWEBGL")]
-    public extern void MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(GLenum mode, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsList countsList, ulong countsOffset, GLenum type, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsList offsetsList, ulong offsetsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsList instanceCountsList, ulong instanceCountsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesList baseVerticesList, ulong baseVerticesOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesList baseInstancesList, ulong baseInstancesOffset, GLsizei drawcount);
+    public extern void MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(GLenum mode, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsList countsList, Number countsOffset, GLenum type, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsList offsetsList, Number offsetsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsList instanceCountsList, Number instanceCountsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesList baseVerticesList, Number baseVerticesOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesList baseInstancesList, Number baseInstancesOffset, GLsizei drawcount);
 }
 
 [ECMAScript]

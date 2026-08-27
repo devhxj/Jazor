@@ -33,9 +33,10 @@
 
 | 包/程序集 | 用途 | 交付边界 |
 | --- | --- | --- |
-| `ECMAScript.Blazor` | Blazor framework 类型到原生 browser carrier 的 mapping contribution 与适配器声明 | 独立项目/程序集；由 `Jazor.Vue` NuGet 带入，**不**随 `Jazor` 核心包安装；不复制到 `Jazor.Vue` 源码 |
+| `Jazor.CLR` | Blazor framework CLR 类型的生成 module/doc、`[Jazor]` mapping、carrier 与 runtime helper | 由 `Jazor` 既有 CLR catalog/Emit 管线按实际 import 物化；唯一 CLR mapping owner |
+| `ECMAScript.Blazor` | 标准 ECMAScript 模拟/投影扩展作者面 | 独立项目/程序集；由 `Jazor.Vue` NuGet 按需带入，**不**随 `Jazor` 核心包安装；不贡献 whitelist、CLR module 或 runtime mapping |
 
-`ECMAScript.Blazor` 面向的是 Blazor API 的 framework mapping，不是第二个 Razor renderer，也不拥有 runtime module。Blazor 专属 runtime helper/module 仍放在 `Jazor.CLR`，由现有 C# module 管道编译和物化；Vue listener/component framing 仍由 `Jazor.Vue`/`Jazor.RazorVue` 负责，共用的 CLR carrier 与 async 语义也仍由 `Jazor.CLR` 提供。当前 compiler whitelist 仍是静态生成物，第一方 `ECMAScript.Blazor` 源码由生成器显式扫描并合并；仅把程序集出现在 NuGet 依赖图中不会自动发现新的 mapping。
+`Jazor.CLR` 面向的是 Blazor framework CLR mapping 与 runtime helper，不是第二个 Razor renderer。所有进入 runtime-sensitive lowering 的 Blazor 类型都先由 `Jazor.CLR.Generator` 从真实 reference symbol 生成 module/doc，再由 `Jazor.CLR` 完善并进入既有静态 catalog；Vue listener/component framing 仍由 `Jazor.Vue`/`Jazor.RazorVue` 负责。`ECMAScript.Blazor` 与 `ECMAScript/internal/Math.cs` 同类，只提供公开 ECMAScript 模拟/投影扩展，不扫描进 compiler whitelist source roots。
 
 ## 名称与作者契约
 

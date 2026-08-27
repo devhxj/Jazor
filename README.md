@@ -32,11 +32,12 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.23.0 — 2026-08-26
+### Jazor 0.24.0 — 2026-08-28
 
-- `ECMAScriptAttribute` now provides one external binding protocol for allowed host contracts, ordinary ESM imports, and Vue component default/named exports.
-- Component proxies now use `[ECMAScript(import, Transform.Component, exportName)]`; migrate from the removed `LibraryComponentAttribute` and `VueLibraryComponentAttribute` APIs.
-- RazorVue keeps its explicit component boundary: `ComponentBase`, `IVueComponent`, and a valid local module or external component descriptor are all required.
+- Supported Blazor CLR types now flow through `Jazor.CLR.Generator` into `Jazor.CLR` modules, mappings, carriers, and runtime helpers.
+- Pointer, Wheel, Drag/DataTransfer, Clipboard, Touch, Error, and Progress event getter slices are available as auditable RazorVue vertical slices; unsupported construction, setters, synthetic payloads, and file/item APIs remain rejected.
+- `ECMAScript.Blazor` is now a standard ECMAScript projection extension only. The core `Jazor` package boundary and the `Jazor + Jazor.Vue` Release consumer boundary are verified independently.
+- S5 authentication state/provider support is not implemented in this release, and Blazor JS interop remains an explicit Reject boundary.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -94,15 +95,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.23.0
+dotnet add package Jazor --version 0.24.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.23.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.23.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.24.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.24.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

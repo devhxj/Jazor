@@ -32,7 +32,7 @@ public record CookieInit(
     [property: Description("@#path")]string? Path = default,
     [property: Description("@#sameSite")]CookieSameSite SameSite = CookieSameSite.Strict,
     [property: Description("@#partitioned")]bool Partitioned = false,
-    [property: Description("@#maxAge")]long? MaxAge = null);
+    [property: Description("@#maxAge")]Number? MaxAge = null);
 
 /// <summary>
 /// <see href="https://cookiestore.spec.whatwg.org/#dictdef-cookielistitem">Cookie Store API Standard: 3 The CookieStore interface</see>
@@ -852,8 +852,8 @@ public record TimelineRangeOffset(
 [ECMAScript]
 [Description("@#TextEncoderEncodeIntoResult")]
 public record TextEncoderEncodeIntoResult(
-    [property: Description("@#read")]ulong Read = default,
-    [property: Description("@#written")]ulong Written = default);
+    [property: Description("@#read")]Number? Read = default,
+    [property: Description("@#written")]Number? Written = default);
 
 /// <summary>
 /// <see href="https://encoding.spec.whatwg.org/#textdecodeoptions">Encoding Standard: 7.2 Interface TextDecoder</see>
@@ -1021,7 +1021,7 @@ public record FileSystemGetFileOptions(
 [ECMAScript]
 [Description("@#FileSystemReadWriteOptions")]
 public record FileSystemReadWriteOptions(
-    [property: Description("@#at")]ulong At = default);
+    [property: Description("@#at")]Number? At = default);
 
 /// <summary>
 /// <see href="https://fs.spec.whatwg.org/#dictdef-filesystemremoveoptions">File System Standard: 2.4 The FileSystemDirectoryHandle interface</see>
@@ -1043,8 +1043,8 @@ public record FileSystemRemoveOptions(
 [Description("@#WriteParams")]
 public record WriteParams(
     [property: Description("@#type")]WriteCommandType? Type = default,
-    [property: Description("@#size")]ulong Size = default,
-    [property: Description("@#position")]ulong Position = default,
+    [property: Description("@#size")]Number? Size = default,
+    [property: Description("@#position")]Number? Position = default,
     [property: Description("@#data")]WriteParamsData? Data = default);
 
 /// <summary>
@@ -2260,7 +2260,7 @@ public record QueuingStrategyInit(
 [ECMAScript]
 [Description("@#ReadableStreamBYOBReaderReadOptions")]
 public record ReadableStreamBYOBReaderReadOptions(
-    [property: Description("@#min")]ulong Min = 1);
+    [property: Description("@#min")]Number? Min = default);
 
 /// <summary>
 /// <see href="https://streams.spec.whatwg.org/#dictdef-readablestreamgetreaderoptions">Streams Standard: 4.2.1 Interface definition</see>
@@ -2349,7 +2349,7 @@ public record UnderlyingSource(
     [property: Description("@#pull")]UnderlyingSourcePullCallback? Pull = default,
     [property: Description("@#cancel")]UnderlyingSourceCancelCallback? Cancel = default,
     [property: Description("@#type")]ReadableStreamType? Type = default,
-    [property: Description("@#autoAllocateChunkSize")]ulong AutoAllocateChunkSize = default);
+    [property: Description("@#autoAllocateChunkSize")]Number? AutoAllocateChunkSize = default);
 
 /// <summary>
 /// <see href="https://urlpattern.spec.whatwg.org/#dictdef-urlpatterncomponentresult">URL Pattern Standard: 1.2 The URLPattern class</see>
@@ -2652,7 +2652,7 @@ public record BlobPropertyBag(
 [Description("@#IDBDatabaseInfo")]
 public record IDBDatabaseInfo(
     [property: Description("@#name")]string? Name = default,
-    [property: Description("@#version")]ulong Version = default);
+    [property: Description("@#version")]Number? Version = default);
 
 /// <summary>
 /// <see href="https://w3c.github.io/IndexedDB/#dictdef-idbgetalloptions">Indexed Database API 3.0: 4.5 The IDBObjectStore interface</see>
@@ -2706,8 +2706,8 @@ public record IDBTransactionOptions(
 [ECMAScript]
 [Description("@#IDBVersionChangeEventInit")]
 public record IDBVersionChangeEventInit(
-    [property: Description("@#oldVersion")]ulong OldVersion = 0,
-    [property: Description("@#newVersion")]ulong? NewVersion = null) : EventInit;
+    [property: Description("@#oldVersion")]Number? OldVersion = default,
+    [property: Description("@#newVersion")]Number? NewVersion = null) : EventInit;
 
 /// <summary>
 /// <see href="https://w3c.github.io/IntersectionObserver/#dictdef-intersectionobserverentryinit">Intersection Observer: 2.3 The IntersectionObserverEntry interface</see>
@@ -2990,7 +2990,7 @@ public abstract record AttributionImpressionResult();
 [Description("@#ClipboardChangeEventInit")]
 public record ClipboardChangeEventInit(
     [property: Description("@#types")]string[]? Types = default,
-    [property: Description("@#changeId")]System.Numerics.BigInteger? ChangeId = default) : EventInit;
+    [property: Description("@#changeId")]BigInt? ChangeId = default) : EventInit;
 
 /// <summary>
 /// <see href="https://w3c.github.io/clipboard-apis/#dictdef-clipboardeventinit">Clipboard API and events: 5.1 Clipboard event interfaces</see>
@@ -3200,8 +3200,8 @@ public record MediaKeyMessageEventInit(
 [ECMAScript]
 [Description("@#GamepadEffectParameters")]
 public record GamepadEffectParameters(
-    [property: Description("@#duration")]ulong Duration = 0,
-    [property: Description("@#startDelay")]ulong StartDelay = 0,
+    [property: Description("@#duration")]Number? Duration = default,
+    [property: Description("@#startDelay")]Number? StartDelay = default,
     [property: Description("@#strongMagnitude")]double StrongMagnitude = 0.0d,
     [property: Description("@#weakMagnitude")]double WeakMagnitude = 0.0d,
     [property: Description("@#leftTrigger")]double LeftTrigger = 0.0d,
@@ -3262,7 +3262,7 @@ public record MagnetometerSensorOptions(
 public record AudioConfiguration(
     [property: Description("@#contentType")]string? ContentType = default,
     [property: Description("@#channels")]string? Channels = default,
-    [property: Description("@#bitrate")]ulong Bitrate = default,
+    [property: Description("@#bitrate")]Number? Bitrate = default,
     [property: Description("@#samplerate")]uint Samplerate = default,
     [property: Description("@#spatialRendering")]bool SpatialRendering = default);
 
@@ -3318,7 +3318,7 @@ public record VideoConfiguration(
     [property: Description("@#contentType")]string? ContentType = default,
     [property: Description("@#width")]uint Width = default,
     [property: Description("@#height")]uint Height = default,
-    [property: Description("@#bitrate")]ulong Bitrate = default,
+    [property: Description("@#bitrate")]Number? Bitrate = default,
     [property: Description("@#framerate")]double Framerate = default,
     [property: Description("@#hasAlphaChannel")]bool HasAlphaChannel = default,
     [property: Description("@#hdrMetadataType")]HdrMetadataType? HdrMetadataType = default,
@@ -5151,7 +5151,7 @@ public record AudioDataInit(
     [property: Description("@#sampleRate")]float SampleRate = default,
     [property: Description("@#numberOfFrames")]uint NumberOfFrames = default,
     [property: Description("@#numberOfChannels")]uint NumberOfChannels = default,
-    [property: Description("@#timestamp")]long Timestamp = default,
+    [property: Description("@#timestamp")]Number? Timestamp = default,
     [property: Description("@#data")]IBufferSource? Data = default,
     [property: Description("@#transfer")]ArrayBuffer[]? Transfer = default);
 
@@ -5344,8 +5344,8 @@ public record VideoFrameBufferInit(
     [property: Description("@#format")]VideoPixelFormat? Format = default,
     [property: Description("@#codedWidth")]uint CodedWidth = default,
     [property: Description("@#codedHeight")]uint CodedHeight = default,
-    [property: Description("@#timestamp")]long Timestamp = default,
-    [property: Description("@#duration")]ulong Duration = default,
+    [property: Description("@#timestamp")]Number? Timestamp = default,
+    [property: Description("@#duration")]Number? Duration = default,
     [property: Description("@#layout")]PlaneLayout[]? Layout = default,
     [property: Description("@#visibleRect")]DOMRectInit? VisibleRect = default,
     [property: Description("@#rotation")]double Rotation = 0d,
@@ -5386,8 +5386,8 @@ public record VideoFrameCopyToOptions(
 [ECMAScript]
 [Description("@#VideoFrameInit")]
 public record VideoFrameInit(
-    [property: Description("@#duration")]ulong Duration = default,
-    [property: Description("@#timestamp")]long Timestamp = default,
+    [property: Description("@#duration")]Number? Duration = default,
+    [property: Description("@#timestamp")]Number? Timestamp = default,
     [property: Description("@#alpha")]AlphaOption Alpha = AlphaOption.Keep,
     [property: Description("@#visibleRect")]DOMRectInit? VisibleRect = default,
     [property: Description("@#rotation")]double Rotation = 0d,
@@ -5485,7 +5485,7 @@ public record OpusEncoderConfig(
     [property: Description("@#format")]OpusBitstreamFormat Format = OpusBitstreamFormat.Opus,
     [property: Description("@#signal")]OpusSignal Signal = OpusSignal.Auto,
     [property: Description("@#application")]OpusApplication Application = OpusApplication.Audio,
-    [property: Description("@#frameDuration")]ulong FrameDuration = 20000,
+    [property: Description("@#frameDuration")]Number? FrameDuration = default,
     [property: Description("@#complexity")]uint Complexity = default,
     [property: Description("@#packetlossperc")]uint Packetlossperc = 0,
     [property: Description("@#useinbandfec")]bool Useinbandfec = false,
@@ -5727,13 +5727,13 @@ public record RTCEncodedFrameMetadata(
 [ECMAScript]
 [Description("@#RTCEncodedVideoFrameMetadata")]
 public record RTCEncodedVideoFrameMetadata(
-    [property: Description("@#frameId")]ulong FrameId = default,
-    [property: Description("@#dependencies")]ulong[]? Dependencies = default,
+    [property: Description("@#frameId")]Number? FrameId = default,
+    [property: Description("@#dependencies")]Number[]? Dependencies = default,
     [property: Description("@#width")]ushort Width = default,
     [property: Description("@#height")]ushort Height = default,
     [property: Description("@#spatialIndex")]uint SpatialIndex = default,
     [property: Description("@#temporalIndex")]uint TemporalIndex = default,
-    [property: Description("@#timestamp")]long Timestamp = default) : RTCEncodedFrameMetadata;
+    [property: Description("@#timestamp")]Number? Timestamp = default) : RTCEncodedFrameMetadata;
 
 /// <summary>
 /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dictdef-rtcencodedvideoframeoptions">WebRTC Encoded Transform: 4.3 RTCEncodedVideoFrame interface</see>
@@ -6002,19 +6002,19 @@ public record WebTransportCloseInfo(
 [ECMAScript]
 [Description("@#WebTransportConnectionStats")]
 public record WebTransportConnectionStats(
-    [property: Description("@#bytesSent")]ulong BytesSent = default,
-    [property: Description("@#bytesSentOverhead")]ulong BytesSentOverhead = default,
-    [property: Description("@#bytesAcknowledged")]ulong BytesAcknowledged = default,
-    [property: Description("@#packetsSent")]ulong PacketsSent = default,
-    [property: Description("@#bytesLost")]ulong BytesLost = default,
-    [property: Description("@#packetsLost")]ulong PacketsLost = default,
-    [property: Description("@#bytesReceived")]ulong BytesReceived = default,
-    [property: Description("@#packetsReceived")]ulong PacketsReceived = default,
+    [property: Description("@#bytesSent")]Number? BytesSent = default,
+    [property: Description("@#bytesSentOverhead")]Number? BytesSentOverhead = default,
+    [property: Description("@#bytesAcknowledged")]Number? BytesAcknowledged = default,
+    [property: Description("@#packetsSent")]Number? PacketsSent = default,
+    [property: Description("@#bytesLost")]Number? BytesLost = default,
+    [property: Description("@#packetsLost")]Number? PacketsLost = default,
+    [property: Description("@#bytesReceived")]Number? BytesReceived = default,
+    [property: Description("@#packetsReceived")]Number? PacketsReceived = default,
     [property: Description("@#smoothedRtt")]double SmoothedRtt = default,
     [property: Description("@#rttVariation")]double RttVariation = default,
     [property: Description("@#minRtt")]double MinRtt = default,
     [property: Description("@#datagrams")]WebTransportDatagramStats? Datagrams = default,
-    [property: Description("@#estimatedSendRate")]ulong? EstimatedSendRate = null,
+    [property: Description("@#estimatedSendRate")]Number? EstimatedSendRate = null,
     [property: Description("@#atSendCapacity")]bool AtSendCapacity = false);
 
 /// <summary>
@@ -6027,10 +6027,10 @@ public record WebTransportConnectionStats(
 [ECMAScript]
 [Description("@#WebTransportDatagramStats")]
 public record WebTransportDatagramStats(
-    [property: Description("@#droppedIncoming")]ulong DroppedIncoming = default,
-    [property: Description("@#expiredIncoming")]ulong ExpiredIncoming = default,
-    [property: Description("@#expiredOutgoing")]ulong ExpiredOutgoing = default,
-    [property: Description("@#lostOutgoing")]ulong LostOutgoing = default);
+    [property: Description("@#droppedIncoming")]Number? DroppedIncoming = default,
+    [property: Description("@#expiredIncoming")]Number? ExpiredIncoming = default,
+    [property: Description("@#expiredOutgoing")]Number? ExpiredOutgoing = default,
+    [property: Description("@#lostOutgoing")]Number? LostOutgoing = default);
 
 /// <summary>
 /// <see href="https://w3c.github.io/webtransport/#dictdef-webtransporterroroptions">WebTransport: 12. WebTransportError Interface</see>
@@ -6087,8 +6087,8 @@ public record WebTransportOptions(
 [ECMAScript]
 [Description("@#WebTransportReceiveStreamStats")]
 public record WebTransportReceiveStreamStats(
-    [property: Description("@#bytesReceived")]ulong BytesReceived = default,
-    [property: Description("@#bytesRead")]ulong BytesRead = default);
+    [property: Description("@#bytesReceived")]Number? BytesReceived = default,
+    [property: Description("@#bytesRead")]Number? BytesRead = default);
 
 /// <summary>
 /// <see href="https://w3c.github.io/webtransport/#dictdef-webtransportsendoptions">WebTransport: 6.11 WebTransportSendOptions Dictionary</see>
@@ -6099,7 +6099,7 @@ public record WebTransportReceiveStreamStats(
 [Description("@#WebTransportSendOptions")]
 public record WebTransportSendOptions(
     [property: Description("@#sendGroup")]WebTransportSendGroup? SendGroup = null,
-    [property: Description("@#sendOrder")]long SendOrder = 0);
+    [property: Description("@#sendOrder")]Number? SendOrder = default);
 
 /// <summary>
 /// <see href="https://w3c.github.io/webtransport/#dictdef-webtransportsendstreamoptions">WebTransport: 6.12 WebTransportSendStreamOptions Dictionary</see>
@@ -6119,9 +6119,9 @@ public record WebTransportSendStreamOptions(
 [ECMAScript]
 [Description("@#WebTransportSendStreamStats")]
 public record WebTransportSendStreamStats(
-    [property: Description("@#bytesWritten")]ulong BytesWritten = default,
-    [property: Description("@#bytesSent")]ulong BytesSent = default,
-    [property: Description("@#bytesAcknowledged")]ulong BytesAcknowledged = default);
+    [property: Description("@#bytesWritten")]Number? BytesWritten = default,
+    [property: Description("@#bytesSent")]Number? BytesSent = default,
+    [property: Description("@#bytesAcknowledged")]Number? BytesAcknowledged = default);
 
 /// <summary>
 /// <see href="https://webaudio.github.io/web-audio-api/#AnalyserOptions">Web Audio API 1.1: 1.8.4 AnalyserOptions</see>
@@ -7630,7 +7630,7 @@ public record MLOperatorOptions(
 [Description("@#MLOpSupportLimits")]
 public record MLOpSupportLimits(
     [property: Description("@#preferredInputLayout")]MLInputOperandLayout? PreferredInputLayout = default,
-    [property: Description("@#maxTensorByteLength")]ulong MaxTensorByteLength = default,
+    [property: Description("@#maxTensorByteLength")]Number? MaxTensorByteLength = default,
     [property: Description("@#input")]MLTensorLimits? Input = default,
     [property: Description("@#constant")]MLTensorLimits? Constant = default,
     [property: Description("@#output")]MLTensorLimits? Output = default,
@@ -7733,7 +7733,7 @@ public record MLOpSupportLimits(
     [Category("optional")]
     public extern static MLOpSupportLimits OptionalPreferredInputLayoutMaxTensorByteLengthInput5(
         [Description("@#preferredInputLayout")]MLInputOperandLayout? PreferredInputLayout = default,
-        [Description("@#maxTensorByteLength")]ulong MaxTensorByteLength = default,
+        [Description("@#maxTensorByteLength")]Number? MaxTensorByteLength = default,
         [Description("@#input")]MLTensorLimits? Input = default,
         [Description("@#constant")]MLTensorLimits? Constant = default,
         [Description("@#output")]MLTensorLimits? Output = default);
@@ -8388,7 +8388,7 @@ public record BackgroundFetchEventInit(
 [ECMAScript]
 [Description("@#BackgroundFetchOptions")]
 public record BackgroundFetchOptions(
-    [property: Description("@#downloadTotal")]ulong DownloadTotal = 0) : BackgroundFetchUIOptions;
+    [property: Description("@#downloadTotal")]Number? DownloadTotal = default) : BackgroundFetchUIOptions;
 
 /// <summary>
 /// <see href="https://wicg.github.io/background-fetch/#dictdef-backgroundfetchuioptions">Background Fetch: 6.3 BackgroundFetchManager</see>
@@ -8504,7 +8504,7 @@ public record ItemDetails(
     [property: Description("@#freeTrialPeriod")]string? FreeTrialPeriod = default,
     [property: Description("@#introductoryPrice")]PaymentCurrencyAmount? IntroductoryPrice = default,
     [property: Description("@#introductoryPricePeriod")]string? IntroductoryPricePeriod = default,
-    [property: Description("@#introductoryPriceCycles")]ulong IntroductoryPriceCycles = default);
+    [property: Description("@#introductoryPriceCycles")]Number? IntroductoryPriceCycles = default);
 
 /// <summary>
 /// <see href="https://wicg.github.io/digital-goods/#dictdef-purchasedetails">Digital Goods API: 2.2 DigitalGoodsService interface</see>
@@ -8536,8 +8536,8 @@ public record DocumentPictureInPictureEventInit(
 [ECMAScript]
 [Description("@#DocumentPictureInPictureOptions")]
 public record DocumentPictureInPictureOptions(
-    [property: Description("@#width")]ulong Width = 0,
-    [property: Description("@#height")]ulong Height = 0,
+    [property: Description("@#width")]Number? Width = default,
+    [property: Description("@#height")]Number? Height = default,
     [property: Description("@#disallowReturnToOpener")]bool DisallowReturnToOpener = false,
     [property: Description("@#preferInitialWindowPlacement")]bool PreferInitialWindowPlacement = false);
 
@@ -8750,7 +8750,7 @@ public record HandwritingRecognizerQueryResult(
 [ECMAScript]
 [Description("@#IdleOptions")]
 public record IdleOptions(
-    [property: Description("@#threshold")]ulong Threshold = default,
+    [property: Description("@#threshold")]Number? Threshold = default,
     [property: Description("@#signal")]AbortSignal? Signal = default);
 
 /// <summary>
@@ -8846,7 +8846,7 @@ public record MemoryAttributionContainer(
 [ECMAScript]
 [Description("@#MemoryBreakdownEntry")]
 public record MemoryBreakdownEntry(
-    [property: Description("@#bytes")]ulong Bytes = default,
+    [property: Description("@#bytes")]Number? Bytes = default,
     [property: Description("@#attribution")]MemoryAttribution[]? Attribution = default,
     [property: Description("@#types")]string[]? Types = default);
 
@@ -8858,7 +8858,7 @@ public record MemoryBreakdownEntry(
 [ECMAScript]
 [Description("@#MemoryMeasurement")]
 public record MemoryMeasurement(
-    [property: Description("@#bytes")]ulong Bytes = default,
+    [property: Description("@#bytes")]Number? Bytes = default,
     [property: Description("@#breakdown")]MemoryBreakdownEntry[]? Breakdown = default);
 
 /// <summary>
@@ -8868,7 +8868,7 @@ public record MemoryMeasurement(
 [ECMAScript]
 [Description("@#BackgroundSyncOptions")]
 public record BackgroundSyncOptions(
-    [property: Description("@#minInterval")]ulong MinInterval = 0);
+    [property: Description("@#minInterval")]Number? MinInterval = default);
 
 /// <summary>
 /// <see href="https://wicg.github.io/periodic-background-sync/#dictdef-periodicsynceventinit">Web Periodic Background Synchronization: 8.4 The periodicsync event</see>
@@ -8908,7 +8908,7 @@ public record PortalActivateOptions(
 public record SchedulerPostTaskOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
     [property: Description("@#priority")]TaskPriority? Priority = default,
-    [property: Description("@#delay")]ulong Delay = 0);
+    [property: Description("@#delay")]Number? Delay = default);
 
 /// <summary>
 /// <see href="https://wicg.github.io/scheduling-apis/#dictdef-taskcontrollerinit">Prioritized Task Scheduling: 3.2 The TaskController Interface</see>
@@ -9086,7 +9086,7 @@ public record TextDetectorOptions(
 [Description("@#StorageBucketOptions")]
 public record StorageBucketOptions(
     [property: Description("@#persisted")]bool Persisted = false,
-    [property: Description("@#quota")]ulong Quota = default,
+    [property: Description("@#quota")]Number? Quota = default,
     [property: Description("@#expires")]double Expires = default);
 
 /// <summary>
@@ -9597,7 +9597,7 @@ public record VideoEncoderConfig(
     [property: Description("@#height")]uint Height = default,
     [property: Description("@#displayWidth")]uint DisplayWidth = default,
     [property: Description("@#displayHeight")]uint DisplayHeight = default,
-    [property: Description("@#bitrate")]ulong Bitrate = default,
+    [property: Description("@#bitrate")]Number? Bitrate = default,
     [property: Description("@#framerate")]double Framerate = default,
     [property: Description("@#hardwareAcceleration")]HardwareAcceleration HardwareAcceleration = HardwareAcceleration.NoPreference,
     [property: Description("@#alpha")]AlphaOption Alpha = AlphaOption.Discard,
@@ -9615,7 +9615,7 @@ public record VideoEncoderConfig(
         [Description("@#height")]uint Height = default,
         [Description("@#displayWidth")]uint DisplayWidth = default,
         [Description("@#displayHeight")]uint DisplayHeight = default,
-        [Description("@#bitrate")]ulong Bitrate = default,
+        [Description("@#bitrate")]Number? Bitrate = default,
         [Description("@#framerate")]double Framerate = default,
         [Description("@#hardwareAcceleration")]HardwareAcceleration hardwareAcceleration = HardwareAcceleration.NoPreference,
         [Description("@#alpha")]AlphaOption alpha = AlphaOption.Discard,
@@ -9840,7 +9840,7 @@ public record AudioEncoderConfig(
     [property: Description("@#codec")]string? Codec = default,
     [property: Description("@#sampleRate")]uint SampleRate = default,
     [property: Description("@#numberOfChannels")]uint NumberOfChannels = default,
-    [property: Description("@#bitrate")]ulong Bitrate = default,
+    [property: Description("@#bitrate")]Number? Bitrate = default,
     [property: Description("@#bitrateMode")]BitrateMode BitrateMode = BitrateMode.Variable,
     [property: Description("@#aac")]AacEncoderConfig? Aac = default,
     [property: Description("@#flac")]FlacEncoderConfig? Flac = default,
@@ -9851,7 +9851,7 @@ public record AudioEncoderConfig(
         [Description("@#codec")]string? Codec = default,
         [Description("@#sampleRate")]uint SampleRate = default,
         [Description("@#numberOfChannels")]uint NumberOfChannels = default,
-        [Description("@#bitrate")]ulong Bitrate = default,
+        [Description("@#bitrate")]Number? Bitrate = default,
         [Description("@#bitrateMode")]BitrateMode bitrateMode = BitrateMode.Variable);
 
     [Category("optional")]
@@ -9877,7 +9877,7 @@ public record AudioEncoderConfig(
 [ECMAScript]
 [Description("@#FilePropertyBag")]
 public record FilePropertyBag(
-    [property: Description("@#lastModified")]long LastModified = default) : BlobPropertyBag;
+    [property: Description("@#lastModified")]Number? LastModified = default) : BlobPropertyBag;
 
 /// <summary>
 /// Both Manufacturer Specific Data and Service Data map a key to an array of bytes. BluetoothDataFilterInit filters these arrays. An array matches if it has a prefix such that prefix &amp; mask is equal to dataPrefix &amp; mask.
@@ -10463,23 +10463,23 @@ public record RTCIceCandidatePairStats(
     [property: Description("@#remoteCandidateId")]string? RemoteCandidateId = default,
     [property: Description("@#state")]RTCStatsIceCandidatePairState? State = default,
     [property: Description("@#nominated")]bool Nominated = default,
-    [property: Description("@#packetsSent")]ulong PacketsSent = default,
-    [property: Description("@#packetsReceived")]ulong PacketsReceived = default,
-    [property: Description("@#bytesSent")]ulong BytesSent = default,
-    [property: Description("@#bytesReceived")]ulong BytesReceived = default,
+    [property: Description("@#packetsSent")]Number? PacketsSent = default,
+    [property: Description("@#packetsReceived")]Number? PacketsReceived = default,
+    [property: Description("@#bytesSent")]Number? BytesSent = default,
+    [property: Description("@#bytesReceived")]Number? BytesReceived = default,
     [property: Description("@#lastPacketSentTimestamp")]double LastPacketSentTimestamp = default,
     [property: Description("@#lastPacketReceivedTimestamp")]double LastPacketReceivedTimestamp = default,
     [property: Description("@#totalRoundTripTime")]double TotalRoundTripTime = default,
     [property: Description("@#currentRoundTripTime")]double CurrentRoundTripTime = default,
     [property: Description("@#availableOutgoingBitrate")]double AvailableOutgoingBitrate = default,
     [property: Description("@#availableIncomingBitrate")]double AvailableIncomingBitrate = default,
-    [property: Description("@#requestsReceived")]ulong RequestsReceived = default,
-    [property: Description("@#requestsSent")]ulong RequestsSent = default,
-    [property: Description("@#responsesReceived")]ulong ResponsesReceived = default,
-    [property: Description("@#responsesSent")]ulong ResponsesSent = default,
-    [property: Description("@#consentRequestsSent")]ulong ConsentRequestsSent = default,
+    [property: Description("@#requestsReceived")]Number? RequestsReceived = default,
+    [property: Description("@#requestsSent")]Number? RequestsSent = default,
+    [property: Description("@#responsesReceived")]Number? ResponsesReceived = default,
+    [property: Description("@#responsesSent")]Number? ResponsesSent = default,
+    [property: Description("@#consentRequestsSent")]Number? ConsentRequestsSent = default,
     [property: Description("@#packetsDiscardedOnSend")]uint PacketsDiscardedOnSend = default,
-    [property: Description("@#bytesDiscardedOnSend")]ulong BytesDiscardedOnSend = default) : RTCStats;
+    [property: Description("@#bytesDiscardedOnSend")]Number? BytesDiscardedOnSend = default) : RTCStats;
 
 /// <summary>
 /// If any of CapturedMouseEventInit.surfaceX or CapturedMouseEventInit.surfaceY is negative, and they are not both equal to -1, then the constructor throws a RangeError exception.
@@ -10689,7 +10689,7 @@ public record RsaHashedKeyAlgorithm(
 [ECMAScript]
 [Description("@#PerformanceObserverCallbackOptions")]
 public record PerformanceObserverCallbackOptions(
-    [property: Description("@#droppedEntriesCount")]ulong DroppedEntriesCount = default);
+    [property: Description("@#droppedEntriesCount")]Number? DroppedEntriesCount = default);
 
 /// <summary>
 /// Let certificateExpiration be the result of converting the ECMAScript object represented by keygenAlgorithm to an RTCCertificateExpiration dictionary.
@@ -10701,7 +10701,7 @@ public record PerformanceObserverCallbackOptions(
 [ECMAScript]
 [Description("@#RTCCertificateExpiration")]
 public record RTCCertificateExpiration(
-    [property: Description("@#expires")]ulong Expires = default);
+    [property: Description("@#expires")]Number? Expires = default);
 
 /// <summary>
 /// Let collection:HIDCollectionInfo be a new HIDCollectionInfo dictionary.
@@ -10738,8 +10738,8 @@ public record HIDCollectionInfo(
 [ECMAScript]
 [Description("@#StorageEstimate")]
 public record StorageEstimate(
-    [property: Description("@#usage")]ulong Usage = default,
-    [property: Description("@#quota")]ulong Quota = default);
+    [property: Description("@#usage")]Number? Usage = default,
+    [property: Description("@#quota")]Number? Quota = default);
 
 /// <summary>
 /// Let eventInitDict be a new BufferedChangeEventInit dictionary initialized with added as its addedRanges and removed as its removedRanges
@@ -10769,9 +10769,9 @@ public record BufferedChangeEventInit(
 [Description("@#ProfilerFrame")]
 public record ProfilerFrame(
     [property: Description("@#name")]string? Name = default,
-    [property: Description("@#resourceId")]ulong ResourceId = default,
-    [property: Description("@#line")]ulong Line = default,
-    [property: Description("@#column")]ulong Column = default);
+    [property: Description("@#resourceId")]Number? ResourceId = default,
+    [property: Description("@#line")]Number? Line = default,
+    [property: Description("@#column")]Number? Column = default);
 
 /// <summary>
 /// Let info:SerialPortInfo be the result of calling port.getInfo().
@@ -10888,8 +10888,8 @@ public record PermissionSetParameters(
 [ECMAScript]
 [Description("@#ProfilerStack")]
 public record ProfilerStack(
-    [property: Description("@#parentId")]ulong ParentId = default,
-    [property: Description("@#frameId")]ulong FrameId = default);
+    [property: Description("@#parentId")]Number? ParentId = default,
+    [property: Description("@#frameId")]Number? FrameId = default);
 
 /// <summary>
 /// Let report:HIDReportInfo be a new HIDReportInfo dictionary.
@@ -10983,7 +10983,7 @@ public record HIDReportItem(
 [Description("@#ProfilerSample")]
 public record ProfilerSample(
     [property: Description("@#timestamp")]double Timestamp = default,
-    [property: Description("@#stackId")]ulong StackId = default);
+    [property: Description("@#stackId")]Number? StackId = default);
 
 /// <summary>
 /// Let settings be a new MediaTrackSettings dictionary.
@@ -11376,12 +11376,12 @@ public record RTCIceGatherOptions(
 [ECMAScript]
 [Description("@#RTCReceivedRtpStreamStats")]
 public record RTCReceivedRtpStreamStats(
-    [property: Description("@#packetsReceived")]ulong PacketsReceived = default,
-    [property: Description("@#packetsReceivedWithEct1")]ulong PacketsReceivedWithEct1 = default,
-    [property: Description("@#packetsReceivedWithCe")]ulong PacketsReceivedWithCe = default,
-    [property: Description("@#packetsReportedAsLost")]ulong PacketsReportedAsLost = default,
-    [property: Description("@#packetsReportedAsLostButRecovered")]ulong PacketsReportedAsLostButRecovered = default,
-    [property: Description("@#packetsLost")]long PacketsLost = default,
+    [property: Description("@#packetsReceived")]Number? PacketsReceived = default,
+    [property: Description("@#packetsReceivedWithEct1")]Number? PacketsReceivedWithEct1 = default,
+    [property: Description("@#packetsReceivedWithCe")]Number? PacketsReceivedWithCe = default,
+    [property: Description("@#packetsReportedAsLost")]Number? PacketsReportedAsLost = default,
+    [property: Description("@#packetsReportedAsLostButRecovered")]Number? PacketsReportedAsLostButRecovered = default,
+    [property: Description("@#packetsLost")]Number? PacketsLost = default,
     [property: Description("@#jitter")]double Jitter = default) : RTCRtpStreamStats;
 
 /// <summary>
@@ -11395,8 +11395,8 @@ public record RTCReceivedRtpStreamStats(
 [ECMAScript]
 [Description("@#RTCSentRtpStreamStats")]
 public record RTCSentRtpStreamStats(
-    [property: Description("@#packetsSent")]ulong PacketsSent = default,
-    [property: Description("@#bytesSent")]ulong BytesSent = default) : RTCRtpStreamStats;
+    [property: Description("@#packetsSent")]Number? PacketsSent = default,
+    [property: Description("@#bytesSent")]Number? BytesSent = default) : RTCRtpStreamStats;
 
 /// <summary>
 /// RTCSetParameterOptions is defined as an empty dictionary to allow for extensibility.
@@ -11525,8 +11525,8 @@ public record AudioDecoderConfig(
 [Description("@#EncodedAudioChunkInit")]
 public record EncodedAudioChunkInit(
     [property: Description("@#type")]EncodedAudioChunkType? Type = default,
-    [property: Description("@#timestamp")]long Timestamp = default,
-    [property: Description("@#duration")]ulong Duration = default,
+    [property: Description("@#timestamp")]Number? Timestamp = default,
+    [property: Description("@#duration")]Number? Duration = default,
     [property: Description("@#data")]IAllowSharedBufferSource? Data = default,
     [property: Description("@#transfer")]ArrayBuffer[]? Transfer = default);
 
@@ -11557,8 +11557,8 @@ public record EncodedAudioChunkMetadata(
 [Description("@#EncodedVideoChunkInit")]
 public record EncodedVideoChunkInit(
     [property: Description("@#type")]EncodedVideoChunkType? Type = default,
-    [property: Description("@#timestamp")]long Timestamp = default,
-    [property: Description("@#duration")]ulong Duration = default,
+    [property: Description("@#timestamp")]Number? Timestamp = default,
+    [property: Description("@#duration")]Number? Duration = default,
     [property: Description("@#data")]IAllowSharedBufferSource? Data = default,
     [property: Description("@#transfer")]ArrayBuffer[]? Transfer = default);
 
@@ -11706,9 +11706,9 @@ public record RTCDataChannelStats(
     [property: Description("@#dataChannelIdentifier")]ushort DataChannelIdentifier = default,
     [property: Description("@#state")]RTCDataChannelState? State = default,
     [property: Description("@#messagesSent")]uint MessagesSent = default,
-    [property: Description("@#bytesSent")]ulong BytesSent = default,
+    [property: Description("@#bytesSent")]Number? BytesSent = default,
     [property: Description("@#messagesReceived")]uint MessagesReceived = default,
-    [property: Description("@#bytesReceived")]ulong BytesReceived = default) : RTCStats;
+    [property: Description("@#bytesReceived")]Number? BytesReceived = default) : RTCStats;
 
 /// <summary>
 /// Statistics related to the RTCPeerConnection object. It is accessed by the RTCPeerConnectionStats.
@@ -12285,7 +12285,7 @@ public record RTCAudioPlayoutStats(
     [property: Description("@#synthesizedSamplesEvents")]uint SynthesizedSamplesEvents = default,
     [property: Description("@#totalSamplesDuration")]double TotalSamplesDuration = default,
     [property: Description("@#totalPlayoutDelay")]double TotalPlayoutDelay = default,
-    [property: Description("@#totalSamplesCount")]ulong TotalSamplesCount = default) : RTCStats;
+    [property: Description("@#totalSamplesCount")]Number? TotalSamplesCount = default) : RTCStats;
 
 /// <summary>
 /// The RTCConfiguration defines a set of parameters to configure how the peer-to-peer communication established via RTCPeerConnection is established or re-established.
@@ -12430,7 +12430,7 @@ public record RTCInboundRtpStreamStats(
     [property: Description("@#frameWidth")]uint FrameWidth = default,
     [property: Description("@#frameHeight")]uint FrameHeight = default,
     [property: Description("@#framesPerSecond")]double FramesPerSecond = default,
-    [property: Description("@#qpSum")]ulong QpSum = default,
+    [property: Description("@#qpSum")]Number? QpSum = default,
     [property: Description("@#totalDecodeTime")]double TotalDecodeTime = default,
     [property: Description("@#totalInterFrameDelay")]double TotalInterFrameDelay = default,
     [property: Description("@#totalSquaredInterFrameDelay")]double TotalSquaredInterFrameDelay = default,
@@ -12439,12 +12439,12 @@ public record RTCInboundRtpStreamStats(
     [property: Description("@#freezeCount")]uint FreezeCount = default,
     [property: Description("@#totalFreezesDuration")]double TotalFreezesDuration = default,
     [property: Description("@#lastPacketReceivedTimestamp")]double LastPacketReceivedTimestamp = default,
-    [property: Description("@#headerBytesReceived")]ulong HeaderBytesReceived = default,
-    [property: Description("@#packetsDiscarded")]ulong PacketsDiscarded = default,
-    [property: Description("@#fecBytesReceived")]ulong FecBytesReceived = default,
-    [property: Description("@#fecPacketsReceived")]ulong FecPacketsReceived = default,
-    [property: Description("@#fecPacketsDiscarded")]ulong FecPacketsDiscarded = default,
-    [property: Description("@#bytesReceived")]ulong BytesReceived = default,
+    [property: Description("@#headerBytesReceived")]Number? HeaderBytesReceived = default,
+    [property: Description("@#packetsDiscarded")]Number? PacketsDiscarded = default,
+    [property: Description("@#fecBytesReceived")]Number? FecBytesReceived = default,
+    [property: Description("@#fecPacketsReceived")]Number? FecPacketsReceived = default,
+    [property: Description("@#fecPacketsDiscarded")]Number? FecPacketsDiscarded = default,
+    [property: Description("@#bytesReceived")]Number? BytesReceived = default,
     [property: Description("@#nackCount")]uint NackCount = default,
     [property: Description("@#firCount")]uint FirCount = default,
     [property: Description("@#pliCount")]uint PliCount = default,
@@ -12452,14 +12452,14 @@ public record RTCInboundRtpStreamStats(
     [property: Description("@#estimatedPlayoutTimestamp")]double EstimatedPlayoutTimestamp = default,
     [property: Description("@#jitterBufferDelay")]double JitterBufferDelay = default,
     [property: Description("@#jitterBufferTargetDelay")]double JitterBufferTargetDelay = default,
-    [property: Description("@#jitterBufferEmittedCount")]ulong JitterBufferEmittedCount = default,
+    [property: Description("@#jitterBufferEmittedCount")]Number? JitterBufferEmittedCount = default,
     [property: Description("@#jitterBufferMinimumDelay")]double JitterBufferMinimumDelay = default,
-    [property: Description("@#totalSamplesReceived")]ulong TotalSamplesReceived = default,
-    [property: Description("@#concealedSamples")]ulong ConcealedSamples = default,
-    [property: Description("@#silentConcealedSamples")]ulong SilentConcealedSamples = default,
-    [property: Description("@#concealmentEvents")]ulong ConcealmentEvents = default,
-    [property: Description("@#insertedSamplesForDeceleration")]ulong InsertedSamplesForDeceleration = default,
-    [property: Description("@#removedSamplesForAcceleration")]ulong RemovedSamplesForAcceleration = default,
+    [property: Description("@#totalSamplesReceived")]Number? TotalSamplesReceived = default,
+    [property: Description("@#concealedSamples")]Number? ConcealedSamples = default,
+    [property: Description("@#silentConcealedSamples")]Number? SilentConcealedSamples = default,
+    [property: Description("@#concealmentEvents")]Number? ConcealmentEvents = default,
+    [property: Description("@#insertedSamplesForDeceleration")]Number? InsertedSamplesForDeceleration = default,
+    [property: Description("@#removedSamplesForAcceleration")]Number? RemovedSamplesForAcceleration = default,
     [property: Description("@#audioLevel")]double AudioLevel = default,
     [property: Description("@#totalAudioEnergy")]double TotalAudioEnergy = default,
     [property: Description("@#totalSamplesDuration")]double TotalSamplesDuration = default,
@@ -12469,13 +12469,13 @@ public record RTCInboundRtpStreamStats(
     [property: Description("@#powerEfficientDecoder")]bool PowerEfficientDecoder = default,
     [property: Description("@#framesAssembledFromMultiplePackets")]uint FramesAssembledFromMultiplePackets = default,
     [property: Description("@#totalAssemblyTime")]double TotalAssemblyTime = default,
-    [property: Description("@#retransmittedPacketsReceived")]ulong RetransmittedPacketsReceived = default,
-    [property: Description("@#retransmittedBytesReceived")]ulong RetransmittedBytesReceived = default,
+    [property: Description("@#retransmittedPacketsReceived")]Number? RetransmittedPacketsReceived = default,
+    [property: Description("@#retransmittedBytesReceived")]Number? RetransmittedBytesReceived = default,
     [property: Description("@#rtxSsrc")]uint RtxSsrc = default,
     [property: Description("@#fecSsrc")]uint FecSsrc = default,
     [property: Description("@#totalCorruptionProbability")]double TotalCorruptionProbability = default,
     [property: Description("@#totalSquaredCorruptionProbability")]double TotalSquaredCorruptionProbability = default,
-    [property: Description("@#corruptionMeasurements")]ulong CorruptionMeasurements = default) : RTCReceivedRtpStreamStats;
+    [property: Description("@#corruptionMeasurements")]Number? CorruptionMeasurements = default) : RTCReceivedRtpStreamStats;
 
 /// <summary>
 /// The RTCMediaSourceStats dictionary represents a track that is currently attached to one or more senders. It contains information about media sources such as frame rate and resolution prior to encoding. This is the media passed from the MediaStreamTrack to the RTCRtpSenders. This is in contrast to RTCOutboundRtpStreamStats whose members describe metrics as measured after the encoding step. For example, a track may be captured from a high-resolution camera, its frames downscaled due to track constraints and then further downscaled by the encoders due to CPU and network conditions....
@@ -12539,12 +12539,12 @@ public record RTCOutboundRtpStreamStats(
     [property: Description("@#remoteId")]string? RemoteId = default,
     [property: Description("@#rid")]string? Rid = default,
     [property: Description("@#encodingIndex")]uint EncodingIndex = default,
-    [property: Description("@#headerBytesSent")]ulong HeaderBytesSent = default,
-    [property: Description("@#retransmittedPacketsSent")]ulong RetransmittedPacketsSent = default,
-    [property: Description("@#retransmittedBytesSent")]ulong RetransmittedBytesSent = default,
+    [property: Description("@#headerBytesSent")]Number? HeaderBytesSent = default,
+    [property: Description("@#retransmittedPacketsSent")]Number? RetransmittedPacketsSent = default,
+    [property: Description("@#retransmittedBytesSent")]Number? RetransmittedBytesSent = default,
     [property: Description("@#rtxSsrc")]uint RtxSsrc = default,
     [property: Description("@#targetBitrate")]double TargetBitrate = default,
-    [property: Description("@#totalEncodedBytesTarget")]ulong TotalEncodedBytesTarget = default,
+    [property: Description("@#totalEncodedBytesTarget")]Number? TotalEncodedBytesTarget = default,
     [property: Description("@#frameWidth")]uint FrameWidth = default,
     [property: Description("@#frameHeight")]uint FrameHeight = default,
     [property: Description("@#framesPerSecond")]double FramesPerSecond = default,
@@ -12552,9 +12552,9 @@ public record RTCOutboundRtpStreamStats(
     [property: Description("@#hugeFramesSent")]uint HugeFramesSent = default,
     [property: Description("@#framesEncoded")]uint FramesEncoded = default,
     [property: Description("@#keyFramesEncoded")]uint KeyFramesEncoded = default,
-    [property: Description("@#qpSum")]ulong QpSum = default,
+    [property: Description("@#qpSum")]Number? QpSum = default,
     [property: Description("@#psnrSum")]Dictionary<string, double>? PsnrSum = default,
-    [property: Description("@#psnrMeasurements")]ulong PsnrMeasurements = default,
+    [property: Description("@#psnrMeasurements")]Number? PsnrMeasurements = default,
     [property: Description("@#totalEncodeTime")]double TotalEncodeTime = default,
     [property: Description("@#totalPacketSendDelay")]double TotalPacketSendDelay = default,
     [property: Description("@#qualityLimitationReason")]RTCQualityLimitationReason? QualityLimitationReason = default,
@@ -12567,7 +12567,7 @@ public record RTCOutboundRtpStreamStats(
     [property: Description("@#powerEfficientEncoder")]bool PowerEfficientEncoder = default,
     [property: Description("@#active")]bool Active = default,
     [property: Description("@#scalabilityMode")]string? ScalabilityMode = default,
-    [property: Description("@#packetsSentWithEct1")]ulong PacketsSentWithEct1 = default) : RTCSentRtpStreamStats;
+    [property: Description("@#packetsSentWithEct1")]Number? PacketsSentWithEct1 = default) : RTCSentRtpStreamStats;
 
 /// <summary>
 /// The RTCRemoteInboundRtpStreamStats dictionary represents the remote endpoint&apos;s measurement metrics for a particular incoming RTP stream (corresponding to an outgoing RTP stream at the sending endpoint). The timestamp reported in the statistics object is the time at which the corresponding RTCP RR was received.
@@ -12588,8 +12588,8 @@ public record RTCRemoteInboundRtpStreamStats(
     [property: Description("@#roundTripTime")]double RoundTripTime = default,
     [property: Description("@#totalRoundTripTime")]double TotalRoundTripTime = default,
     [property: Description("@#fractionLost")]double FractionLost = default,
-    [property: Description("@#roundTripTimeMeasurements")]ulong RoundTripTimeMeasurements = default,
-    [property: Description("@#packetsWithBleachedEct1Marking")]ulong PacketsWithBleachedEct1Marking = default) : RTCReceivedRtpStreamStats;
+    [property: Description("@#roundTripTimeMeasurements")]Number? RoundTripTimeMeasurements = default,
+    [property: Description("@#packetsWithBleachedEct1Marking")]Number? PacketsWithBleachedEct1Marking = default) : RTCReceivedRtpStreamStats;
 
 /// <summary>
 /// The RTCRemoteOutboundRtpStreamStats dictionary represents the remote endpoint&apos;s measurement metrics for its outgoing RTP stream (corresponding to an outgoing RTP stream at the sending endpoint). The timestamp reported in the statistics object is the time at which the corresponding RTCP SR was received.
@@ -12608,10 +12608,10 @@ public record RTCRemoteInboundRtpStreamStats(
 public record RTCRemoteOutboundRtpStreamStats(
     [property: Description("@#localId")]string? LocalId = default,
     [property: Description("@#remoteTimestamp")]double RemoteTimestamp = default,
-    [property: Description("@#reportsSent")]ulong ReportsSent = default,
+    [property: Description("@#reportsSent")]Number? ReportsSent = default,
     [property: Description("@#roundTripTime")]double RoundTripTime = default,
     [property: Description("@#totalRoundTripTime")]double TotalRoundTripTime = default,
-    [property: Description("@#roundTripTimeMeasurements")]ulong RoundTripTimeMeasurements = default) : RTCSentRtpStreamStats;
+    [property: Description("@#roundTripTimeMeasurements")]Number? RoundTripTimeMeasurements = default) : RTCSentRtpStreamStats;
 
 /// <summary>
 /// The RTCRtpCodec dictionary provides information about codec objects.
@@ -12966,8 +12966,8 @@ public record Transformer(
 [ECMAScript]
 [Description("@#ProofreadCorrection")]
 public record ProofreadCorrection(
-    [property: Description("@#startIndex")]ulong StartIndex = default,
-    [property: Description("@#endIndex")]ulong EndIndex = default,
+    [property: Description("@#startIndex")]Number? StartIndex = default,
+    [property: Description("@#endIndex")]Number? EndIndex = default,
     [property: Description("@#correction")]string? Correction = default,
     [property: Description("@#types")]CorrectionType[]? Types = default,
     [property: Description("@#explanation")]string? Explanation = default);
@@ -13125,10 +13125,10 @@ public record MouseEventInit(
 [ECMAScript]
 [Description("@#RTCTransportStats")]
 public record RTCTransportStats(
-    [property: Description("@#packetsSent")]ulong PacketsSent = default,
-    [property: Description("@#packetsReceived")]ulong PacketsReceived = default,
-    [property: Description("@#bytesSent")]ulong BytesSent = default,
-    [property: Description("@#bytesReceived")]ulong BytesReceived = default,
+    [property: Description("@#packetsSent")]Number? PacketsSent = default,
+    [property: Description("@#packetsReceived")]Number? PacketsReceived = default,
+    [property: Description("@#bytesSent")]Number? BytesSent = default,
+    [property: Description("@#bytesReceived")]Number? BytesReceived = default,
     [property: Description("@#iceRole")]RTCIceRole? IceRole = default,
     [property: Description("@#iceLocalUsernameFragment")]string? IceLocalUsernameFragment = default,
     [property: Description("@#dtlsState")]RTCDtlsTransportState? DtlsState = default,

@@ -326,29 +326,31 @@ public sealed class ArtifactCatalogReaderTests
     {
         var catalog = CatalogReader.TryReadCatalogs(typeof(VueRawMarkup).Assembly);
 
-        Assert.HasCount(4, catalog.Modules);
+        Assert.HasCount(3, catalog.Modules);
         var rawMarkupRuntime = catalog.Modules.Single(static module =>
             module.RelativePath == "@jazor/vue-runtime/raw-markup.mjs");
         var cascadingRuntime = catalog.Modules.Single(static module =>
             module.RelativePath == "@jazor/vue-runtime/cascading.mjs");
         var routingRuntime = catalog.Modules.Single(static module =>
             module.RelativePath == "@jazor/vue-runtime/blazor-routing.mjs");
-        var componentsRuntime = catalog.Modules.Single(static module =>
-            module.RelativePath == "@jazor/vue-runtime/blazor-components.mjs");
         Assert.AreEqual("jazor.vue", rawMarkupRuntime.RuntimeProviderId);
         Assert.AreEqual("jazor.vue", cascadingRuntime.RuntimeProviderId);
         Assert.AreEqual("jazor.vue", routingRuntime.RuntimeProviderId);
-        Assert.AreEqual("jazor.vue", componentsRuntime.RuntimeProviderId);
         StringAssert.Contains(rawMarkupRuntime.Content, "export function createRawMarkup", StringComparison.Ordinal);
         StringAssert.Contains(cascadingRuntime.Content, "export const CascadingValue", StringComparison.Ordinal);
-        StringAssert.Contains(routingRuntime.Content, "export const Router", StringComparison.Ordinal);
-        StringAssert.Contains(componentsRuntime.Content, "export const DynamicComponent", StringComparison.Ordinal);
+        StringAssert.Contains(routingRuntime.Content, "createNavigationHost", StringComparison.Ordinal);
+        Assert.IsFalse(
+            routingRuntime.Content.Contains("export const Router", StringComparison.Ordinal) ||
+            routingRuntime.Content.Contains("export const RouteView", StringComparison.Ordinal) ||
+            routingRuntime.Content.Contains("export const LayoutView", StringComparison.Ordinal) ||
+            routingRuntime.Content.Contains("export const NavLink", StringComparison.Ordinal),
+            "The routing host must not expose standard Blazor UI component adapters.");
         Assert.HasCount(1, catalog.ImportMapEntries);
         Assert.AreEqual("@jazor/vue-runtime/", catalog.ImportMapEntries[0].Specifier);
 
         var inactiveComponent = CreateModule("components/plain.mjs", "export default {};\n");
         var inactive = ModuleCollector.RetainReferencedRuntimeProviderModules(
-            [inactiveComponent, rawMarkupRuntime, cascadingRuntime, routingRuntime, componentsRuntime]);
+            [inactiveComponent, rawMarkupRuntime, cascadingRuntime, routingRuntime]);
         Assert.HasCount(1, inactive);
         Assert.AreEqual("components/plain.mjs", inactive[0].RelativePath);
 
@@ -356,7 +358,7 @@ public sealed class ArtifactCatalogReaderTests
             "components/raw-markup.mjs",
             "import { createRawMarkup } from \"@jazor/vue-runtime/raw-markup.mjs\";\nexport default createRawMarkup;\n");
         var active = ModuleCollector.RetainReferencedRuntimeProviderModules(
-            [activeComponent, rawMarkupRuntime, cascadingRuntime, routingRuntime, componentsRuntime]);
+            [activeComponent, rawMarkupRuntime, cascadingRuntime, routingRuntime]);
         CollectionAssert.AreEquivalent(
             new[] { "components/raw-markup.mjs", "@jazor/vue-runtime/raw-markup.mjs" },
             active.Select(static module => module.RelativePath).ToArray());
@@ -365,7 +367,7 @@ public sealed class ArtifactCatalogReaderTests
             "components/cascading-value.mjs",
             "import { CascadingValue } from \"@jazor/vue-runtime/cascading.mjs\";\nexport default CascadingValue;\n");
         var cascading = ModuleCollector.RetainReferencedRuntimeProviderModules(
-            [cascadingComponent, rawMarkupRuntime, cascadingRuntime, routingRuntime, componentsRuntime]);
+            [cascadingComponent, rawMarkupRuntime, cascadingRuntime, routingRuntime]);
         CollectionAssert.AreEquivalent(
             new[] { "components/cascading-value.mjs", "@jazor/vue-runtime/cascading.mjs" },
             cascading.Select(static module => module.RelativePath).ToArray());

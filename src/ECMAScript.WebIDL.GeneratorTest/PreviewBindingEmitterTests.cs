@@ -101,9 +101,9 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["GlobalUsings.cs"], "global using BigInteger = ECMAScript.Uint8Array;");
-        StringAssert.Contains(files["Unions.cs"], "public readonly union CryptoKeyID(ulong, System.Numerics.BigInteger)");
-        StringAssert.Contains(files["Unions.cs"], "AsBigInteger => Value is System.Numerics.BigInteger value");
-        Assert.IsFalse(files["Unions.cs"].Contains("AsSystemNumericsBigInteger", StringComparison.Ordinal));
+        StringAssert.Contains(files["Unions.cs"], "public readonly union CryptoKeyID(Number, BigInt)");
+        StringAssert.Contains(files["Unions.cs"], "AsBigInt => Value is BigInt value");
+        Assert.IsFalse(files["Unions.cs"].Contains("System.Numerics.BigInteger", StringComparison.Ordinal));
 
         var diagnostics = CompileGeneratedFiles(
             files,
@@ -111,9 +111,113 @@ public sealed class PreviewBindingEmitterTests
             namespace ECMAScript;
 
             public class Uint8Array;
+            public readonly struct Number;
+            public abstract class BigInt;
             """);
 
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_WebIdlIntegerPrimitives_UseWidthContractsAndRuntimeHostTypes()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Typedef("Signed64", """
+                { "idlType": "long long" }
+                """),
+            Typedef("ArbitraryInteger", """
+                { "idlType": "bigint" }
+                """),
+            Interface("WebIdlIntegerWidths", """
+                [
+                  {
+                    "type": "attribute",
+                    "name": "longValue",
+                    "idlType": { "idlType": "long" },
+                    "readonly": true,
+                    "special": ""
+                  },
+                  {
+                    "type": "attribute",
+                    "name": "unsignedLongValue",
+                    "idlType": { "idlType": "unsigned long" },
+                    "readonly": true,
+                    "special": ""
+                  },
+                  {
+                    "type": "attribute",
+                    "name": "longLongValue",
+                    "idlType": { "idlType": "long long" },
+                    "readonly": true,
+                    "special": ""
+                  },
+                  {
+                    "type": "attribute",
+                    "name": "unsignedLongLongValue",
+                    "idlType": { "idlType": "unsigned long long" },
+                    "readonly": true,
+                    "special": ""
+                  },
+                  {
+                    "type": "attribute",
+                    "name": "bigIntValue",
+                    "idlType": { "idlType": "bigint" },
+                    "readonly": true,
+                    "special": ""
+                  },
+                  {
+                    "type": "const",
+                    "name": "signedLimit",
+                    "idlType": { "idlType": "long long" },
+                    "value": { "type": "number", "value": "-1" }
+                  },
+                  {
+                    "type": "const",
+                    "name": "signedLimitAlias",
+                    "idlType": { "idlType": "Signed64" },
+                    "value": { "type": "number", "value": "-1" }
+                  },
+                  {
+                    "type": "operation",
+                    "name": "setMinimum",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      {
+                        "name": "value",
+                        "idlType": { "idlType": "long long" },
+                        "default": { "type": "number", "value": "1" },
+                        "optional": true,
+                        "variadic": false
+                      }
+                    ],
+                    "special": ""
+                  }
+                ]
+                """),
+            Dictionary("WebIdlIntegerDefaults", """
+                [
+                  {
+                    "type": "field",
+                    "name": "minimum",
+                    "idlType": { "idlType": "long long" },
+                    "default": { "type": "number", "value": "1" }
+                  }
+                ]
+                """));
+
+        var interfaces = files["Interfaces.cs"];
+        StringAssert.Contains(interfaces, "public extern int LongValue { get; }");
+        StringAssert.Contains(interfaces, "public extern uint UnsignedLongValue { get; }");
+        StringAssert.Contains(interfaces, "public extern Number LongLongValue { get; }");
+        StringAssert.Contains(interfaces, "public extern Number UnsignedLongLongValue { get; }");
+        StringAssert.Contains(interfaces, "public extern BigInt BigIntValue { get; }");
+        StringAssert.Contains(interfaces, "public static extern Number SignedLimit { get; }");
+        StringAssert.Contains(interfaces, "public static extern Signed64 SignedLimitAlias { get; }");
+        Assert.IsFalse(interfaces.Contains("public const Number", StringComparison.Ordinal));
+        StringAssert.Contains(interfaces, "public extern void SetMinimum(Number? value = default);");
+        StringAssert.Contains(files["Dictionaries.cs"], "Number? Minimum = default");
+        StringAssert.Contains(files["GlobalUsings.cs"], "global using Signed64 = ECMAScript.Number;");
+        StringAssert.Contains(files["GlobalUsings.cs"], "global using ArbitraryInteger = ECMAScript.BigInt;");
     }
 
     [TestMethod]

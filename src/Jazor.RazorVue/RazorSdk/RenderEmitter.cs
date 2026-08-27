@@ -24,10 +24,7 @@ internal static class RenderEmitter
     private const string CascadingValueRuntimeExportName = "CascadingValue";
     private const string CascadingValueMetadataName = "Microsoft.AspNetCore.Components.CascadingValue`1";
     private const string CascadingValueTypePropName = "__jazorCascadeType";
-    private const string BlazorRoutingRuntimeModuleSpecifier = "@jazor/vue-runtime/blazor-routing.mjs";
-    private const string BlazorComponentsRuntimeModuleSpecifier = "@jazor/vue-runtime/blazor-components.mjs";
     private const string ChangeEventArgsRuntimeModuleSpecifier = "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js";
-    private const string StandardInputValueTypePropName = "__jazorValueType";
     private static readonly SymbolEqualityComparer SymbolComparer = SymbolEqualityComparer.Default;
 
     public static bool TryEmit(
@@ -2027,13 +2024,12 @@ internal static class RenderEmitter
                     RequireOmittableSequence(invocation.Arguments[0].Value);
                     var componentType = ResolveOpenComponentType(invocation, context);
                     var isCascadingValue = IsCascadingValueComponent(componentType);
-                    var hasStandardAdapter = TryGetStandardBlazorComponentAdapter(componentType, out var standardAdapter);
-                    if (hasStandardAdapter)
+                    if (!isCascadingValue && IsBuiltInBlazorComponent(componentType))
                     {
-                        // Microsoft Blazor UI components are intentionally outside the
-                        // RazorVue component contract. Keep CascadingValue as a framework
-                        // primitive, but never let historical browser adapters bypass the
-                        // ComponentBase + IVueComponent + import boundary.
+                        // Built-in Blazor UI has no RazorVue component contract. Keep this
+                        // usage-site rejection explicit after the historical adapter path is
+                        // removed, so unsupported tags never fall through to a guessed import.
+                        // 标准组件只在使用点稳定 Reject，不再生成 Vue 替代组件。
                         throw Unsupported(
                             invocation,
                             "Microsoft Blazor built-in UI component '" +
@@ -2046,11 +2042,7 @@ internal static class RenderEmitter
                         ? _argument.BindImportSpecifier(
                             CascadingValueRuntimeModuleSpecifier,
                             CascadingValueRuntimeExportName)
-                        : hasStandardAdapter
-                            ? _argument.BindImportSpecifier(
-                                standardAdapter.ModuleSpecifier,
-                                standardAdapter.ExportName)
-                            : BindComponentImport(componentType);
+                        : BindComponentImport(componentType);
                     var parameterNameMap = isCascadingValue
                         ? BuildCascadingValueParameterNameMap()
                         : BuildComponentParameterNameMap(runtimeComponentType);
@@ -2071,25 +2063,7 @@ internal static class RenderEmitter
                         UseWithCtx,
                         UseCreateSlots,
                         slotsAreInStableScope: _nonHoistableRenderScopeDepth == 0,
-                        isCascadingValue: isCascadingValue,
-                        standardAdapterKind: hasStandardAdapter
-                            ? standardAdapter.Kind
-                            : StandardBlazorComponentAdapterKind.None,
-                        standardValueType: hasStandardAdapter
-                            ? GetStandardBlazorComponentValueType(componentType)
-                            : null);
-                    if (hasStandardAdapter &&
-                        TryBuildStandardInputValueTypeDescriptor(
-                            standardAdapter.Kind,
-                            componentFrame.StandardValueType,
-                            out var standardInputValueTypeDescriptor))
-                    {
-                        // The closed InputBase<T> type is available when Razor opens the
-                        // component even if TypeInference later presents Value as an open T.
-                        // Install this framework-only prop at frame creation so descriptor
-                        // emission does not depend on the generated helper's local symbols.
-                        componentFrame.SetStandardInputValueTypeDescriptor(standardInputValueTypeDescriptor);
-                    }
+                        isCascadingValue: isCascadingValue);
                     state.Stack.Push(componentFrame);
                     return true;
 
@@ -2338,17 +2312,6 @@ internal static class RenderEmitter
             if (!TryGetConstantString(nameOperation, out var name))
                 throw Unsupported(nameOperation, "Attribute names must be compile-time strings for direct render lowering.");
 
-            if (frame is ComponentFrame standardComponentFrame &&
-                invocation.Arguments.Length == 3 &&
-                TryEmitStandardBlazorComponentParameter(
-                    standardComponentFrame,
-                    name,
-                    invocation.Arguments[2].Value,
-                    context))
-            {
-                return;
-            }
-
             if (frame is ComponentFrame componentFrame &&
                 invocation.Arguments.Length == 3 &&
                 TryEmitComponentParameterValue(
@@ -2395,15 +2358,6 @@ internal static class RenderEmitter
 
             if (!TryGetConstantString(invocation.Arguments[1].Value, out var name))
                 throw Unsupported(invocation.Arguments[1].Value, "Component parameter names must be compile-time strings for direct render lowering.");
-
-            if (TryEmitStandardBlazorComponentParameter(
-                    frame,
-                    name,
-                    invocation.Arguments[2].Value,
-                    context))
-            {
-                return;
-            }
 
             if (frame.IsCascadingValue && string.Equals(name, "Value", StringComparison.Ordinal))
             {
@@ -2462,90 +2416,6 @@ internal static class RenderEmitter
             return false;
         }
 
-        private bool TryEmitStandardBlazorComponentParameter(
-            ComponentFrame frame,
-            string name,
-            IOperation valueOperation,
-            EmitContext context)
-        {
-            if (frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.None)
-                return false;
-
-            // Router discovers its pages from the final generated route catalog. AppAssembly is
-            // still required by the standard Razor API, but it is intentionally not materialized
-            // as a browser reflection object.
-            // Router 页面从最终 catalog 发现；AppAssembly 保留标准作者面但不进入浏览器反射路径。
-            if (frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.Router &&
-                string.Equals(name, "AppAssembly", StringComparison.Ordinal))
-            {
-                return true;
-            }
-
-            if (frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.DynamicComponent &&
-                string.Equals(name, "Type", StringComparison.Ordinal))
-            {
-                if (!TryResolveTypeOfExpression(valueOperation, context.LocalComponentTypes, out var targetComponent))
-                {
-                    throw Unsupported(
-                        valueOperation,
-                        "DynamicComponent.Type must be a statically discoverable RazorVue component type. " +
-                        "Use typeof(MyComponent) or a local initialized from typeof(MyComponent).");
-                }
-
-                frame.AddAttribute(new DirectAttribute(
-                    "__jazorComponent",
-                    BindComponentImport(targetComponent)));
-                return true;
-            }
-
-            if ((frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.RouteView &&
-                 string.Equals(name, "DefaultLayout", StringComparison.Ordinal)) ||
-                (frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.LayoutView &&
-                 string.Equals(name, "Layout", StringComparison.Ordinal)))
-            {
-                if (!TryResolveTypeOfExpression(valueOperation, context.LocalComponentTypes, out var layoutType))
-                {
-                    throw Unsupported(
-                        valueOperation,
-                        name + " must be a statically discoverable RazorVue layout component type.");
-                }
-
-                frame.AddAttribute(new DirectAttribute(
-                    frame.StandardAdapterKind == StandardBlazorComponentAdapterKind.RouteView
-                        ? "__jazorDefaultLayout"
-                        : "__jazorLayout",
-                    BindComponentImport(layoutType)));
-                return true;
-            }
-
-            if (IsStandardInputAdapter(frame.StandardAdapterKind) &&
-                string.Equals(name, "ValueExpression", StringComparison.Ordinal))
-            {
-                // The input adapter receives the strongly typed Value/ValueChanged pair. Its
-                // browser parse path has no CLR Expression<TDelegate> reflection counterpart.
-                // Input adapter 使用 Value/ValueChanged；ValueExpression 不应落入浏览器反射。
-                return true;
-            }
-
-            if (IsStandardInputAdapter(frame.StandardAdapterKind) &&
-                string.Equals(name, "Value", StringComparison.Ordinal) &&
-                TryBuildStandardInputValueTypeDescriptor(
-                    frame.StandardAdapterKind,
-                    valueOperation.Type is { TypeKind: not TypeKind.TypeParameter }
-                        ? valueOperation.Type
-                        : frame.StandardValueType,
-                    out var valueTypeDescriptor))
-            {
-                // InputBase<T> normally uses Expression<T> and reflection to recover the
-                // parser. The browser adapter cannot materialize that server-side expression,
-                // so carry only the closed, compiler-known value contract as a hidden prop.
-                // 运行时只需要闭合后的值域描述，不把 Expression<T> 或反射对象带入浏览器。
-                frame.SetStandardInputValueTypeDescriptor(valueTypeDescriptor);
-            }
-
-            return false;
-        }
-
         private void EmitAddMultipleAttributes(IInvocationOperation invocation, EmitContext context, RenderState state)
         {
             EnsureSignature(invocation, invocation.Arguments.Length == 2);
@@ -2561,13 +2431,13 @@ internal static class RenderEmitter
                 // Runtime splats have no C# operation per entry. Normalize them in the
                 // generated setup scope so descriptor-owned Vue names still win.
                 // 动态 splat 无法逐项绑定；必须先规范化再进入 mergeProps 的覆盖顺序。
-                attributes = NormalizeDynamicComponentAttributes(component, attributes);
+                attributes = NormalizeComponentAttributes(component, attributes);
 
             if (frame.AddMultipleAttributes(attributes))
                 _usesMergeProps = true;
         }
 
-        private Expression NormalizeDynamicComponentAttributes(
+        private Expression NormalizeComponentAttributes(
             ComponentFrame component,
             Expression attributes)
         {
@@ -4929,314 +4799,30 @@ internal static class RenderEmitter
                "Microsoft.AspNetCore.Components",
                StringComparison.Ordinal);
 
-    /// <summary>
-    /// Identifies standard Blazor components whose public authoring contract is projected to a
-    /// browser runtime adapter. The enum is deliberately closed: an unregistered component must
-    /// continue through the normal generated-component path or fail at the existing boundary.
-    /// </summary>
-    private enum StandardBlazorComponentAdapterKind
-    {
-        None,
-        Router,
-        RouteView,
-        LayoutView,
-        NavLink,
-        DynamicComponent,
-        ErrorBoundary,
-        EditForm,
-        InputText,
-        InputTextArea,
-        InputCheckbox,
-        InputNumber,
-        InputDate,
-        InputSelect
-    }
-
-    private readonly record struct StandardBlazorComponentAdapter(
-        StandardBlazorComponentAdapterKind Kind,
-        string ModuleSpecifier,
-        string ExportName);
-
-    private static bool TryGetStandardBlazorComponentAdapter(
-        INamedTypeSymbol componentType,
-        out StandardBlazorComponentAdapter adapter)
+    private static bool IsBuiltInBlazorComponent(INamedTypeSymbol componentType)
     {
         var definition = componentType.OriginalDefinition;
-        var name = definition.MetadataName;
+        var metadataName = definition.MetadataName;
         var namespaceName = definition.ContainingNamespace?.ToDisplayString();
-        if (string.Equals(namespaceName, "Microsoft.AspNetCore.Components.Routing", StringComparison.Ordinal))
+        return namespaceName switch
         {
-            adapter = name switch
-            {
-                "Router" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.Router,
-                    BlazorRoutingRuntimeModuleSpecifier,
-                    "Router"),
-                "NavLink" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.NavLink,
-                    BlazorRoutingRuntimeModuleSpecifier,
-                    "NavLink"),
-                _ => default
-            };
-            return adapter.Kind != StandardBlazorComponentAdapterKind.None;
-        }
-
-        if (string.Equals(namespaceName, "Microsoft.AspNetCore.Components.Forms", StringComparison.Ordinal))
-        {
-            adapter = name switch
-            {
-                "EditForm" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.EditForm,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "EditForm"),
-                "InputText" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.InputText,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "InputText"),
-                "InputTextArea" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.InputTextArea,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "InputTextArea"),
-                "InputCheckbox" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.InputCheckbox,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "InputCheckbox"),
-                "InputNumber`1" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.InputNumber,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "InputNumber"),
-                "InputDate`1" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.InputDate,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "InputDate"),
-                "InputSelect`1" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.InputSelect,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "InputSelect"),
-                _ => default
-            };
-            return adapter.Kind != StandardBlazorComponentAdapterKind.None;
-        }
-
-        if (string.Equals(namespaceName, "Microsoft.AspNetCore.Components", StringComparison.Ordinal))
-        {
-            adapter = name switch
-            {
-                "RouteView" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.RouteView,
-                    BlazorRoutingRuntimeModuleSpecifier,
-                    "RouteView"),
-                "LayoutView" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.LayoutView,
-                    BlazorRoutingRuntimeModuleSpecifier,
-                    "LayoutView"),
-                "DynamicComponent" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.DynamicComponent,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "DynamicComponent"),
-                "ErrorBoundary" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.ErrorBoundary,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "ErrorBoundary"),
-                _ => default
-            };
-            return adapter.Kind != StandardBlazorComponentAdapterKind.None;
-        }
-
-        if (string.Equals(namespaceName, "Microsoft.AspNetCore.Components.Web", StringComparison.Ordinal))
-        {
-            adapter = name switch
-            {
-                "ErrorBoundary" => new StandardBlazorComponentAdapter(
-                    StandardBlazorComponentAdapterKind.ErrorBoundary,
-                    BlazorComponentsRuntimeModuleSpecifier,
-                    "ErrorBoundary"),
-                _ => default
-            };
-            return adapter.Kind != StandardBlazorComponentAdapterKind.None;
-        }
-
-        adapter = default;
-        return false;
-    }
-
-    private static bool IsStandardInputAdapter(StandardBlazorComponentAdapterKind kind)
-        => kind is StandardBlazorComponentAdapterKind.InputText or
-            StandardBlazorComponentAdapterKind.InputTextArea or
-            StandardBlazorComponentAdapterKind.InputCheckbox or
-            StandardBlazorComponentAdapterKind.InputNumber or
-            StandardBlazorComponentAdapterKind.InputDate or
-            StandardBlazorComponentAdapterKind.InputSelect;
-
-    private static ITypeSymbol? GetStandardBlazorComponentValueType(INamedTypeSymbol componentType)
-        => componentType.TypeArguments.Length == 1
-            ? componentType.TypeArguments[0]
-            : null;
-
-    private static bool TryBuildStandardInputValueTypeDescriptor(
-        StandardBlazorComponentAdapterKind adapterKind,
-        ITypeSymbol? valueType,
-        out Expression descriptor)
-    {
-        descriptor = null!;
-        if (valueType is null)
-            return false;
-
-        var nullable = valueType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
-        var effectiveType = nullable && valueType is INamedTypeSymbol nullableType
-            ? nullableType.TypeArguments[0]
-            : valueType;
-
-        var properties = new List<Node>
-        {
-            CreateObjectProperty("nullable", new BooleanLiteral(nullable, nullable ? "true" : "false"))
+            "Microsoft.AspNetCore.Components.Authorization" => metadataName is
+                "AuthorizeView" or "AuthorizeRouteView" or "CascadingAuthenticationState",
+            "Microsoft.AspNetCore.Components.Forms" => metadataName is
+                "DataAnnotationsValidator" or "EditForm" or "InputBase`1" or "InputCheckbox" or "InputDate`1" or "InputFile" or
+                "InputNumber`1" or "InputRadio`1" or "InputRadioGroup`1" or "InputSelect`1" or
+                "InputText" or "InputTextArea" or "ValidationMessage`1" or "ValidationSummary",
+            "Microsoft.AspNetCore.Components.Routing" => metadataName is
+                "FocusOnNavigate" or "NavigationLock" or "NavLink" or "Router",
+            "Microsoft.AspNetCore.Components.Sections" => metadataName is "SectionContent" or "SectionOutlet",
+            "Microsoft.AspNetCore.Components.Web" => metadataName is
+                "ErrorBoundary" or "HeadContent" or "HeadOutlet" or "PageTitle",
+            "Microsoft.AspNetCore.Components.Web.Virtualization" => metadataName is "Virtualize`1",
+            "Microsoft.AspNetCore.Components.QuickGrid" => metadataName is "QuickGrid`1",
+            "Microsoft.AspNetCore.Components" => metadataName is
+                "DynamicComponent" or "LayoutView" or "RouteView",
+            _ => false
         };
-
-        if (adapterKind == StandardBlazorComponentAdapterKind.InputDate)
-        {
-            var displayName = effectiveType.OriginalDefinition.ToDisplayString();
-            var kind = displayName switch
-            {
-                "System.DateOnly" => "dateonly",
-                "System.DateTimeOffset" => "datetimeoffset",
-                "System.DateTime" => "datetime",
-                _ => null
-            };
-            if (kind is null)
-                return false;
-
-            properties.Insert(0, CreateObjectProperty("kind", StringLiteral(kind)));
-            descriptor = new ObjectExpression(NodeList.From<Node>(properties));
-            return true;
-        }
-
-        if (adapterKind == StandardBlazorComponentAdapterKind.InputNumber)
-        {
-            var specialType = effectiveType.SpecialType;
-            var isBigInt = specialType is SpecialType.System_Int64 or SpecialType.System_UInt64 ||
-                           string.Equals(effectiveType.OriginalDefinition.ToDisplayString(), "System.Int128", StringComparison.Ordinal) ||
-                           string.Equals(effectiveType.OriginalDefinition.ToDisplayString(), "System.UInt128", StringComparison.Ordinal) ||
-                           string.Equals(effectiveType.OriginalDefinition.ToDisplayString(), "System.Numerics.BigInteger", StringComparison.Ordinal);
-            var isNumber = specialType is SpecialType.System_SByte or
-                SpecialType.System_Byte or
-                SpecialType.System_Int16 or
-                SpecialType.System_UInt16 or
-                SpecialType.System_Int32 or
-                SpecialType.System_UInt32 or
-                SpecialType.System_Single or
-                SpecialType.System_Double or
-                SpecialType.System_Decimal || isBigInt;
-            if (!isNumber)
-                return false;
-
-            properties.Insert(0, CreateObjectProperty("kind", StringLiteral(isBigInt ? "bigint" : "number")));
-            properties.Add(CreateObjectProperty(
-                "integer",
-                new BooleanLiteral(
-                    isBigInt || specialType is SpecialType.System_SByte or
-                        SpecialType.System_Byte or
-                        SpecialType.System_Int16 or
-                        SpecialType.System_UInt16 or
-                        SpecialType.System_Int32 or
-                        SpecialType.System_UInt32,
-                    (isBigInt || specialType is SpecialType.System_SByte or
-                        SpecialType.System_Byte or
-                        SpecialType.System_Int16 or
-                        SpecialType.System_UInt16 or
-                        SpecialType.System_Int32 or
-                        SpecialType.System_UInt32) ? "true" : "false")));
-            descriptor = new ObjectExpression(NodeList.From<Node>(properties));
-            return true;
-        }
-
-        if (adapterKind == StandardBlazorComponentAdapterKind.InputSelect)
-        {
-            if (effectiveType.TypeKind == TypeKind.Enum && effectiveType is INamedTypeSymbol enumType)
-            {
-                properties.Insert(0, CreateObjectProperty("kind", StringLiteral("enum")));
-                var values = enumType.GetMembers()
-                    .OfType<IFieldSymbol>()
-                    .Where(static field => field.HasConstantValue)
-                    .OrderBy(static field => field.Name, StringComparer.Ordinal)
-                    .Select(field => (Node)CreateObjectProperty(
-                        field.Name,
-                        CreateInputScalarLiteral(enumType.EnumUnderlyingType!, field.ConstantValue)));
-                properties.Add(CreateObjectProperty("values", new ObjectExpression(NodeList.From(values))));
-                descriptor = new ObjectExpression(NodeList.From<Node>(properties));
-                return true;
-            }
-
-            if (effectiveType.SpecialType == SpecialType.System_String)
-            {
-                properties.Insert(0, CreateObjectProperty("kind", StringLiteral("string")));
-                descriptor = new ObjectExpression(NodeList.From<Node>(properties));
-                return true;
-            }
-
-            if (effectiveType.SpecialType == SpecialType.System_Boolean)
-            {
-                properties.Insert(0, CreateObjectProperty("kind", StringLiteral("boolean")));
-                descriptor = new ObjectExpression(NodeList.From<Node>(properties));
-                return true;
-            }
-
-            if (effectiveType.SpecialType is SpecialType.System_SByte or
-                SpecialType.System_Byte or
-                SpecialType.System_Int16 or
-                SpecialType.System_UInt16 or
-                SpecialType.System_Int32 or
-                SpecialType.System_UInt32 or
-                SpecialType.System_Int64 or
-                SpecialType.System_UInt64 or
-                SpecialType.System_Single or
-                SpecialType.System_Double or
-                SpecialType.System_Decimal)
-            {
-                properties.Insert(0, CreateObjectProperty("kind", StringLiteral("number")));
-                properties.Add(CreateObjectProperty(
-                    "integer",
-                    new BooleanLiteral(
-                        effectiveType.SpecialType is SpecialType.System_SByte or
-                            SpecialType.System_Byte or
-                            SpecialType.System_Int16 or
-                            SpecialType.System_UInt16 or
-                            SpecialType.System_Int32 or
-                            SpecialType.System_UInt32 or
-                            SpecialType.System_Int64 or
-                            SpecialType.System_UInt64,
-                        effectiveType.SpecialType is SpecialType.System_SByte or
-                            SpecialType.System_Byte or
-                            SpecialType.System_Int16 or
-                            SpecialType.System_UInt16 or
-                            SpecialType.System_Int32 or
-                            SpecialType.System_UInt32 or
-                            SpecialType.System_Int64 or
-                            SpecialType.System_UInt64 ? "true" : "false")));
-                descriptor = new ObjectExpression(NodeList.From<Node>(properties));
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static Expression CreateInputScalarLiteral(ITypeSymbol type, object? value)
-    {
-        if (value is null)
-            return Null();
-        if (value is bool boolean)
-            return new BooleanLiteral(boolean, boolean ? "true" : "false");
-        if (value is string text)
-            return StringLiteral(text);
-
-        var textValue = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "0";
-        if (type.SpecialType is SpecialType.System_Int64 or SpecialType.System_UInt64)
-        {
-            var bigInteger = System.Numerics.BigInteger.Parse(textValue, System.Globalization.CultureInfo.InvariantCulture);
-            return new BigIntLiteral(bigInteger, bigInteger.ToString(System.Globalization.CultureInfo.InvariantCulture) + "n");
-        }
-
-        return new NumericLiteral(Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture), textValue);
     }
 
     private static ITypeSymbol GetCascadingValueType(IOperation operation, EmitContext context)
@@ -5303,7 +4889,7 @@ internal static class RenderEmitter
         // Official Razor SG commonly wraps component type expressions in
         // RuntimeHelpers.TypeCheck<T>(typeof(T)). The helper is compile-time only and must not
         // force page authors to introduce a local or a RazorVue-specific token.
-        // Razor SG 的 TypeCheck 只是类型绑定协议，DynamicComponent 仍可直接使用 typeof(T)。
+        // Razor SG 的 TypeCheck 只是类型绑定协议；已知类型表达式仍可直接使用 typeof(T)。
         if (operation is IInvocationOperation typeCheck &&
             string.Equals(typeCheck.TargetMethod.Name, "TypeCheck", StringComparison.Ordinal) &&
             typeCheck.Arguments.Length == 1)
@@ -6776,9 +6362,7 @@ internal static class RenderEmitter
         private readonly Action? _useCreateSlots;
         private readonly bool _slotsAreInStableScope;
         private readonly bool _isCascadingValue;
-        private readonly StandardBlazorComponentAdapterKind _standardAdapterKind;
         private bool _hasCascadingValueTypeKey;
-        private bool _hasStandardInputValueTypeDescriptor;
 
         public ComponentFrame(
             Expression componentExpression,
@@ -6808,9 +6392,7 @@ internal static class RenderEmitter
             Action? useWithCtx,
             Action? useCreateSlots,
             bool slotsAreInStableScope,
-            bool isCascadingValue = false,
-            StandardBlazorComponentAdapterKind standardAdapterKind = StandardBlazorComponentAdapterKind.None,
-            ITypeSymbol? standardValueType = null)
+            bool isCascadingValue = false)
             : base(
                 hoistStaticProps,
                 canHoistStaticProps,
@@ -6826,17 +6408,11 @@ internal static class RenderEmitter
             _useCreateSlots = useCreateSlots;
             _slotsAreInStableScope = slotsAreInStableScope;
             _isCascadingValue = isCascadingValue;
-            _standardAdapterKind = standardAdapterKind;
-            StandardValueType = standardValueType;
         }
 
         public List<DirectSlot> Slots { get; } = new();
 
         public bool IsCascadingValue => _isCascadingValue;
-
-        public StandardBlazorComponentAdapterKind StandardAdapterKind => _standardAdapterKind;
-
-        public ITypeSymbol? StandardValueType { get; }
 
         public void SetCascadingValueTypeKey(string typeKey)
         {
@@ -6849,15 +6425,6 @@ internal static class RenderEmitter
                 CascadingValueTypePropName,
                 StringLiteral(typeKey)));
             _hasCascadingValueTypeKey = true;
-        }
-
-        public void SetStandardInputValueTypeDescriptor(Expression descriptor)
-        {
-            if (!IsStandardInputAdapter(_standardAdapterKind) || _hasStandardInputValueTypeDescriptor)
-                return;
-
-            AddAttribute(new DirectAttribute(StandardInputValueTypePropName, descriptor));
-            _hasStandardInputValueTypeDescriptor = true;
         }
 
         protected override bool CanUseRenderList

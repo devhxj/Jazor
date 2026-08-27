@@ -8,7 +8,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.23.0" />
+  <PackageReference Include="Jazor" Version="0.24.0" />
 </ItemGroup>
 ```
 
@@ -37,17 +37,17 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.23.0" />
-  <PackageReference Include="ECMAScript.Style" Version="0.23.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.24.0" />
 </ItemGroup>
 ```
 
 `ECMAScript.Vue` 随 `Jazor.Vue` 提供；`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。所有 Jazor、`Jazor.Vue` 与 Vue 生态包应保持相同版本。
 
-`ECMAScript.Blazor` 不随 `Jazor` 核心包安装；其 Blazor framework-to-browser mapping declarations 随 `Jazor.Vue` 一起交付。实际 runtime module/helper 仍由 `Jazor.CLR` 提供。它保持独立程序集边界，用户无需把映射源码复制到 `Jazor.Vue` 或在核心包中引入 Blazor mapping 依赖。
+Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 生成并由 `Jazor.CLR` 唯一持有，随 `Jazor` 的静态 CLR catalog 按现有管道提供；`Jazor` 不因此引用 ASP.NET Core framework。`ECMAScript.Blazor` 不随核心包安装，只作为 `Jazor.Vue` 可选带入的标准 ECMAScript 模拟/投影扩展，不贡献 whitelist 或 runtime module。
 
 ## SSR
 
@@ -76,7 +76,7 @@ Razor SDK 项目需要额外引用 `Jazor.Vue`：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="0.23.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="0.24.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
