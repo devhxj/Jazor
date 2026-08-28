@@ -291,10 +291,322 @@ public sealed class ArtifactCatalogReaderTests
         Assert.AreEqual("adapter.test", result.Modules[0].RuntimeProviderId);
         CollectionAssert.AreEquivalent(
             new[] { "@adapter/runtime/core.mjs" },
-            result.Modules.Single(static module => module.RelativePath == "@adapter/runtime/context.mjs").RuntimeDependencies!.ToArray());
+            result.Modules.Single(static module => module.RelativePath == "@adapter/runtime/context.mjs").Dependencies!.ToArray());
         Assert.HasCount(1, result.ImportMapEntries);
         Assert.AreEqual("@adapter/runtime/", result.ImportMapEntries[0].Specifier);
         Assert.AreEqual("@adapter/runtime/", result.ImportMapEntries[0].ArtifactPath);
+    }
+
+    [TestMethod]
+    public void CatalogReader_TryReadCatalogs_NormalizesInlineAndEmbeddedRuntimeProvidersEquivalently()
+    {
+        var inlineAssembly = CompileCatalogAssembly(
+            "RuntimeProvider.Inline.Reader.Tests",
+            """
+            namespace Jazor.Artifacts
+            {
+                internal static class RuntimeProviderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const string ProviderId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly RuntimeModule[] _modules =
+                    [
+                        new RuntimeModule("adapter.context", "@adapter/runtime/context.mjs", "export function createContext() {}\r\n", ["@adapter/runtime/core.mjs"])
+                    ];
+
+                    private sealed class RuntimeModule(string id, string relativePath, string content, string[] dependencies)
+                    {
+                        public string Id { get; } = id;
+                        public string RelativePath { get; } = relativePath;
+                        public string Content { get; } = content;
+                        public string[] Dependencies { get; } = dependencies;
+                    }
+                }
+            }
+            """);
+
+        var embeddedAssembly = CompileCatalogAssembly(
+            "RuntimeProvider.Embedded.Reader.Tests",
+            """
+            namespace Jazor.Artifacts
+            {
+                internal static class RuntimeProviderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const string ProviderId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly RuntimeModule[] _modules =
+                    [
+                        new RuntimeModule("Runtime.context.mjs", "adapter.context", "@adapter/runtime/context.mjs", ["@adapter/runtime/core.mjs"])
+                    ];
+
+                    private sealed class RuntimeModule(string resourceName, string id, string relativePath, string[] dependencies)
+                    {
+                        public string ResourceName { get; } = resourceName;
+                        public string Id { get; } = id;
+                        public string RelativePath { get; } = relativePath;
+                        public string[] Dependencies { get; } = dependencies;
+                    }
+                }
+            }
+            """,
+            new ResourceDescription(
+                "Runtime.context.mjs",
+                static () => new MemoryStream(Encoding.UTF8.GetBytes("export function createContext() {}\r\n")),
+                isPublic: true));
+
+        var inline = CatalogReader.TryReadCatalogs(inlineAssembly).Modules.Single();
+        var embedded = CatalogReader.TryReadCatalogs(embeddedAssembly).Modules.Single();
+
+        Assert.AreEqual(inline.Id, embedded.Id);
+        Assert.AreEqual(inline.RelativePath, embedded.RelativePath);
+        Assert.AreEqual(inline.Content, embedded.Content);
+        Assert.AreEqual(inline.Hash, embedded.Hash);
+        CollectionAssert.AreEqual(inline.Dependencies!.ToArray(), embedded.Dependencies!.ToArray());
+        Assert.AreEqual(inline.RuntimeProviderId, embedded.RuntimeProviderId);
+    }
+
+    [TestMethod]
+    public void CatalogReader_TryReadCatalogs_RejectsRuntimeProviderModuleWithAmbiguousContentSource()
+    {
+        var assembly = CompileCatalogAssembly(
+            "RuntimeProvider.AmbiguousSource.Reader.Tests",
+            """
+            namespace Jazor.Artifacts
+            {
+                internal static class RuntimeProviderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const string ProviderId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly RuntimeModule[] _modules =
+                    [
+                        new RuntimeModule("Runtime.context.mjs", "adapter.context", "@adapter/runtime/context.mjs", "export default {};", [])
+                    ];
+
+                    private sealed class RuntimeModule(string resourceName, string id, string relativePath, string content, string[] dependencies)
+                    {
+                        public string ResourceName { get; } = resourceName;
+                        public string Id { get; } = id;
+                        public string RelativePath { get; } = relativePath;
+                        public string Content { get; } = content;
+                        public string[] Dependencies { get; } = dependencies;
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => CatalogReader.TryReadCatalogs(assembly));
+
+        StringAssert.Contains(exception.Message, "exactly one of Content or ResourceName");
+        StringAssert.Contains(exception.Message, "adapter.context");
+    }
+
+    [TestMethod]
+    public void CatalogReader_TryReadCatalogs_RejectsRuntimeProviderModuleWithoutContentSource()
+    {
+        var assembly = CompileCatalogAssembly(
+            "RuntimeProvider.MissingSource.Reader.Tests",
+            """
+            namespace Jazor.Artifacts
+            {
+                internal static class RuntimeProviderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const string ProviderId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly RuntimeModule[] _modules =
+                    [
+                        new RuntimeModule("adapter.context", "@adapter/runtime/context.mjs", [])
+                    ];
+
+                    private sealed class RuntimeModule(string id, string relativePath, string[] dependencies)
+                    {
+                        public string Id { get; } = id;
+                        public string RelativePath { get; } = relativePath;
+                        public string[] Dependencies { get; } = dependencies;
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => CatalogReader.TryReadCatalogs(assembly));
+
+        StringAssert.Contains(exception.Message, "exactly one of Content or ResourceName");
+        StringAssert.Contains(exception.Message, "adapter.context");
+    }
+
+    [TestMethod]
+    public void CatalogReader_TryReadCatalogs_RejectsMissingRuntimeProviderResource()
+    {
+        var assembly = CompileCatalogAssembly(
+            "RuntimeProvider.MissingResource.Reader.Tests",
+            """
+            namespace Jazor.Artifacts
+            {
+                internal static class RuntimeProviderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const string ProviderId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly RuntimeModule[] _modules =
+                    [
+                        new RuntimeModule("Runtime.context.mjs", "adapter.context", "@adapter/runtime/context.mjs", [])
+                    ];
+
+                    private sealed class RuntimeModule(string resourceName, string id, string relativePath, string[] dependencies)
+                    {
+                        public string ResourceName { get; } = resourceName;
+                        public string Id { get; } = id;
+                        public string RelativePath { get; } = relativePath;
+                        public string[] Dependencies { get; } = dependencies;
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => CatalogReader.TryReadCatalogs(assembly));
+
+        StringAssert.Contains(exception.Message, "Runtime.context.mjs");
+        StringAssert.Contains(exception.Message, "adapter.context");
+        StringAssert.Contains(exception.Message, "could not be opened");
+    }
+
+    [TestMethod]
+    public void CatalogReader_TryReadCatalogs_RejectsDuplicateRuntimeProviderModulePath()
+    {
+        var assembly = CompileCatalogAssembly(
+            "RuntimeProvider.DuplicatePath.Reader.Tests",
+            """
+            namespace Jazor.Artifacts
+            {
+                internal static class RuntimeProviderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const string ProviderId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly RuntimeModule[] _modules =
+                    [
+                        new RuntimeModule("adapter.context", "@adapter/runtime/context.mjs", "export default {};", []),
+                        new RuntimeModule("adapter.core", "@adapter/runtime/./context.mjs", "export default {};", [])
+                    ];
+
+                    private sealed class RuntimeModule(string id, string relativePath, string content, string[] dependencies)
+                    {
+                        public string Id { get; } = id;
+                        public string RelativePath { get; } = relativePath;
+                        public string Content { get; } = content;
+                        public string[] Dependencies { get; } = dependencies;
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => CatalogReader.TryReadCatalogs(assembly));
+
+        StringAssert.Contains(exception.Message, "duplicate module path");
+        StringAssert.Contains(exception.Message, "adapter.test");
+    }
+
+    [TestMethod]
+    public void CatalogReader_TryReadCatalogs_RejectsRuntimeProviderModuleWithInvalidHash()
+    {
+        var assembly = CompileCatalogAssembly(
+            "RuntimeProvider.BadHash.Reader.Tests",
+            """
+            namespace Jazor.Artifacts
+            {
+                internal static class RuntimeProviderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const string ProviderId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly RuntimeModule[] _modules =
+                    [
+                        new RuntimeModule("adapter.context", "@adapter/runtime/context.mjs", "export default {};", "sha256:0000000000000000000000000000000000000000000000000000000000000000", [])
+                    ];
+
+                    private sealed class RuntimeModule(string id, string relativePath, string content, string hash, string[] dependencies)
+                    {
+                        public string Id { get; } = id;
+                        public string RelativePath { get; } = relativePath;
+                        public string Content { get; } = content;
+                        public string Hash { get; } = hash;
+                        public string[] Dependencies { get; } = dependencies;
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => CatalogReader.TryReadCatalogs(assembly));
+
+        StringAssert.Contains(exception.Message, "declares hash");
+        StringAssert.Contains(exception.Message, "adapter.context");
+    }
+
+    [TestMethod]
+    public void CatalogReader_TryReadCatalogs_RejectsDuplicateRuntimeProviderModuleIdentity()
+    {
+        var assembly = CompileCatalogAssembly(
+            "RuntimeProvider.DuplicateModule.Reader.Tests",
+            """
+            namespace Jazor.Artifacts
+            {
+                internal static class RuntimeProviderCatalog
+                {
+                    internal const int SchemaVersion = 1;
+                    internal const string ProviderId = "adapter.test";
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly RuntimeModule[] _modules =
+                    [
+                        new RuntimeModule("adapter.context", "@adapter/runtime/context.mjs", "export default {};", []),
+                        new RuntimeModule("adapter.context", "@adapter/runtime/other.mjs", "export default {};", [])
+                    ];
+
+                    private sealed class RuntimeModule(string id, string relativePath, string content, string[] dependencies)
+                    {
+                        public string Id { get; } = id;
+                        public string RelativePath { get; } = relativePath;
+                        public string Content { get; } = content;
+                        public string[] Dependencies { get; } = dependencies;
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => CatalogReader.TryReadCatalogs(assembly));
+
+        StringAssert.Contains(exception.Message, "duplicate module id");
+        StringAssert.Contains(exception.Message, "adapter.context");
+    }
+
+    [TestMethod]
+    public void ModuleCollector_RetainReferencedRuntimeProviderModules_ReportsMissingDependencyWithContext()
+    {
+        var component = CreateModule(
+            "components/context-usage.mjs",
+            "import { createContext } from \"@adapter/runtime/context.mjs\";\ncreateContext();\n");
+        var context = CreateModule(
+            "@adapter/runtime/context.mjs",
+            "export function createContext() {}\n",
+            runtimeProviderId: "adapter.test",
+            runtimeDependencies: ["@adapter/runtime/missing.mjs"]);
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            ModuleCollector.RetainReferencedRuntimeProviderModules([component, context]));
+
+        StringAssert.Contains(exception.Message, "adapter.test");
+        StringAssert.Contains(exception.Message, "@adapter/runtime/context.mjs");
+        StringAssert.Contains(exception.Message, "@adapter/runtime/missing.mjs");
     }
 
     [TestMethod]
@@ -566,5 +878,5 @@ public sealed class ArtifactCatalogReaderTests
             Content: content,
             Hash: "sha256:test",
             RuntimeProviderId: runtimeProviderId,
-            RuntimeDependencies: runtimeDependencies);
+            Dependencies: runtimeDependencies);
 }

@@ -20,7 +20,7 @@
 | --- | --- |
 | `ECMAScript.Blazor` | 可选的标准 ECMAScript 模拟/投影扩展与公开 host contract；不持有 framework member key |
 | `Jazor.CLR` | C# 编写的 JavaScript runtime module、helper、Blazor CLR mapping 和运行时语义 |
-| `ECMAScript.Catalog` | 既有 runtime catalog 的发布与物化；本项目不迁移、不替代其职责 |
+| `Jazor.Artifacts.RuntimeProviderCatalog` | 标准 runtime provider 的发布与物化；本项目不拥有或替代该职责 |
 | `Jazor.RazorVue` | Razor 生成 C# 的 render/lifecycle lowering，以及 Vue listener/component framing |
 
 ## 交付边界

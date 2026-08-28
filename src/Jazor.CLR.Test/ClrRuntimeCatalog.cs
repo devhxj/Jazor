@@ -118,25 +118,28 @@ internal static class ClrRuntimeCatalog
 
     private static IReadOnlyList<ClrRuntimeModuleArtifact> ReadArtifacts()
     {
-        var catalogType = typeof(Global).Assembly.GetType("ECMAScript.Catalog", throwOnError: true)!;
+        var catalogType = typeof(Global).Assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: true)!;
         var getModules = catalogType.GetMethod("GetModules", BindingFlags.NonPublic | BindingFlags.Static)
-            ?? throw new InvalidOperationException("ECMAScript.Catalog.GetModules() was not found.");
+            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() was not found.");
         var modules = getModules.Invoke(null, null) as IEnumerable
-            ?? throw new InvalidOperationException("ECMAScript.Catalog.GetModules() returned no module collection.");
+            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() returned no module collection.");
         var artifacts = new List<ClrRuntimeModuleArtifact>();
         foreach (var module in modules)
         {
             var type = module.GetType();
             artifacts.Add(new ClrRuntimeModuleArtifact(
-                ReadProperty("AssemblyName"),
-                ReadProperty("TypeName"),
-                ReadProperty("Id"),
-                ReadProperty("RelativePath"),
-                ReadProperty("Content"),
-                ReadProperty("Hash")));
+                ReadProperty("AssemblyName") ?? typeof(Global).Assembly.GetName().Name ?? "ECMAScript",
+                ReadRequiredProperty("TypeName"),
+                ReadRequiredProperty("Id"),
+                ReadRequiredProperty("RelativePath"),
+                ReadRequiredProperty("Content"),
+                ReadRequiredProperty("Hash")));
 
-            string ReadProperty(string propertyName)
-                => type.GetProperty(propertyName)?.GetValue(module) as string
+            string? ReadProperty(string propertyName)
+                => type.GetProperty(propertyName)?.GetValue(module) as string;
+
+            string ReadRequiredProperty(string propertyName)
+                => ReadProperty(propertyName)
                     ?? throw new InvalidOperationException($"Catalog module property '{propertyName}' was not found.");
         }
 

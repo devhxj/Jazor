@@ -412,13 +412,13 @@ public sealed class SemanticWalkerEnumerableElementAtTests
 
     private static async Task MaterializeRuntimeCatalogAsync(string root)
     {
-        var catalogType = typeof(Global).Assembly.GetType("ECMAScript.Catalog", throwOnError: true)!;
+        var catalogType = typeof(Global).Assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: true)!;
         var getModules = catalogType.GetMethod(
             "GetModules",
             BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("ECMAScript.Catalog.GetModules() was not found.");
+            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() was not found.");
         var modules = getModules.Invoke(null, null) as IEnumerable
-            ?? throw new InvalidOperationException("ECMAScript.Catalog.GetModules() returned no modules.");
+            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() returned no modules.");
 
         foreach (var moduleRecord in modules)
         {

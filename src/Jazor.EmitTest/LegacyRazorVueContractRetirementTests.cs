@@ -114,21 +114,21 @@ public sealed class LegacyRazorVueContractRetirementTests
     }
 
     [TestMethod]
-    public void SdkTargets_CollectNeutralRuntimeProvidersAndVueAdapterRegistersItsAnalyzer()
+    public void SdkTargets_CollectNeutralRuntimeProvidersAndVueAdapterRegistersProviderByContractPath()
     {
         var repositoryRoot = FindRepositoryRoot();
         var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
         var vueTargets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor.Vue", "buildTransitive", "Jazor.Vue.targets"));
-        const string analyzerCondition =
-            "'%(Analyzer.Filename)' == 'Jazor.RazorVue' and '%(Analyzer.Extension)' == '.dll'";
-
         Assert.AreEqual(
             2,
             targets.Split("@(JazorArtifactProviderAssembly)", StringSplitOptions.None).Length - 1,
             "Both debug and release emission must receive adapter-owned runtime providers through the neutral item.");
         Assert.IsFalse(targets.Contains("Jazor.RazorVue", StringComparison.Ordinal), targets);
         StringAssert.Contains(vueTargets, "RegisterJazorVueArtifactProvider", StringComparison.Ordinal);
-        StringAssert.Contains(vueTargets, analyzerCondition, StringComparison.Ordinal);
+        StringAssert.Contains(vueTargets, "..\\analyzers\\dotnet\\cs\\Jazor.RazorVue.dll", StringComparison.Ordinal);
+        StringAssert.Contains(vueTargets, "..\\..\\Jazor.RazorVue\\bin\\$(Configuration)\\netstandard2.0\\Jazor.RazorVue.dll", StringComparison.Ordinal);
+        Assert.IsFalse(vueTargets.Contains("%(Analyzer.Filename)", StringComparison.Ordinal), vueTargets);
+        Assert.IsFalse(vueTargets.Contains("%(Analyzer.Extension)", StringComparison.Ordinal), vueTargets);
     }
 
     private static string FindRepositoryRoot()

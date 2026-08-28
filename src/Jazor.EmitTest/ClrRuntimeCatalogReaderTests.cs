@@ -7,11 +7,12 @@ namespace Jazor.EmitTest;
 public sealed class ClrRuntimeCatalogReaderTests
 {
     [TestMethod]
-    public void CatalogReader_TryRead_UsesECMAScriptDedicatedCatalogTypeName()
+    public void CatalogReader_TryRead_UsesStandardRuntimeProviderCatalogTypeName()
     {
-        var catalogType = typeof(ECMAScript.Number).Assembly.GetType("ECMAScript.Catalog", throwOnError: false, ignoreCase: false);
+        var catalogType = typeof(ECMAScript.Number).Assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: false, ignoreCase: false);
 
         Assert.IsNotNull(catalogType);
+        Assert.IsNull(typeof(ECMAScript.Number).Assembly.GetType("ECMAScript.Catalog", throwOnError: false, ignoreCase: false));
         Assert.IsNull(typeof(ECMAScript.Number).Assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false));
     }
 
@@ -41,14 +42,14 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.AreEqual("jazor.clr", byteModule.RuntimeProviderId);
         CollectionAssert.AreEquivalent(
             new[] { "System/RuntimeModule.js", "System/StringModule.js" },
-            byteModule.RuntimeDependencies!.ToArray());
+            byteModule.Dependencies!.ToArray());
 
         var runtimeModule = modules.Single(module =>
             string.Equals(module.RelativePath, "System/RuntimeModule.js", StringComparison.OrdinalIgnoreCase));
         Assert.AreEqual("jazor.clr", runtimeModule.RuntimeProviderId);
         CollectionAssert.AreEquivalent(
             new[] { "System/StringModule.js" },
-            runtimeModule.RuntimeDependencies!.ToArray());
+            runtimeModule.Dependencies!.ToArray());
     }
 
     [TestMethod]
@@ -465,7 +466,7 @@ public sealed class ClrRuntimeCatalogReaderTests
             if (!selected.Add(path))
                 continue;
 
-            foreach (var dependency in byPath[path].RuntimeDependencies ?? [])
+            foreach (var dependency in byPath[path].Dependencies ?? [])
                 pending.Enqueue(dependency);
         }
 

@@ -13,8 +13,6 @@ internal static class CatalogReader
 {
     private const string ArtifactCatalogTypeName = "Jazor.Generated.ArtifactCatalog";
     private const string RuntimeProviderCatalogTypeName = "Jazor.Artifacts.RuntimeProviderCatalog";
-    private const string ClrRuntimeCatalogTypeName = "ECMAScript.Catalog";
-    private const string ClrRuntimeProviderId = "jazor.clr";
     private const int ContractSchemaVersion = 1;
 
     /// <summary>Compatibility helper for callers that only need materializable modules.</summary>
@@ -49,7 +47,6 @@ internal static class CatalogReader
     private static IReadOnlyList<ModuleRecord> ReadModuleCatalog(Assembly assembly, Type catalogType)
     {
         var sourceMapsById = TryReadSourceMapsById(assembly);
-        var isClrRuntimeCatalog = string.Equals(catalogType.FullName, ClrRuntimeCatalogTypeName, StringComparison.Ordinal);
 
         var getModules = catalogType.GetMethod("GetModules", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
             ?? throw new InvalidOperationException($"GetModules was not found in '{assembly.Location}'.");
@@ -76,27 +73,14 @@ internal static class CatalogReader
                 sourceMap?.SourceMapRelativePath,
                 sourceMap?.SourceMapContent,
                 sourceMap?.MapHash,
-                PackageImports: TryReadStrings(itemType, item, "PackageImports"),
-                RuntimeProviderId: isClrRuntimeCatalog ? ClrRuntimeProviderId : null,
-                RuntimeDependencies: isClrRuntimeCatalog
-                    ? TryReadStrings(itemType, item, "RuntimeDependencies")
-                        .Select(NormalizeRelativePath)
-                        .ToArray()
-                    : null));
+                PackageImports: TryReadStrings(itemType, item, "PackageImports")));
         }
 
         return modules;
     }
 
     private static Type? ResolveModuleCatalogType(Assembly assembly)
-    {
-        var catalogType = assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false);
-        if (catalogType is not null)
-            return catalogType;
-
-        // ECMAScript ships a repository-owned CLR runtime catalog rather than a user-generated module catalog.
-        return assembly.GetType("ECMAScript.Catalog", throwOnError: false, ignoreCase: false);
-    }
+        => assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false);
 
     private static IReadOnlyList<ModuleRecord> ReadArtifactCatalog(Assembly assembly, Type catalogType)
     {
@@ -107,10 +91,11 @@ internal static class CatalogReader
         if (getModules.Invoke(null, null) is not System.Collections.IEnumerable items)
             throw new InvalidOperationException($"GetModules returned null in artifact catalog '{assembly.Location}'.");
 
-        var assets = ReadArtifactCatalogAssets(assembly, catalogType);
+        var assets = ReadCatalogAssets(assembly, catalogType, "artifact catalog");
         var assemblyName = assembly.GetName().Name ?? Path.GetFileNameWithoutExtension(assembly.Location);
         var modules = new List<ModuleRecord>();
-        var assetCarrierWritten = false;
+        var moduleIds = new HashSet<string>(StringComparer.Ordinal);
+        var modulePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in items)
         {
             if (item is null)
@@ -118,6 +103,8 @@ internal static class CatalogReader
 
             var itemType = item.GetType();
             var id = ReadString(itemType, item, "Id");
+            var relativePathValue = ReadString(itemType, item, "RelativePath");
+            EnsureModuleIdentityIsUnique(moduleIds, modulePaths, id, relativePathValue, producerId);
             var sourceMapRelativePath = TryReadString(itemType, item, "SourceMapRelativePath");
             var sourceMapContent = TryReadString(itemType, item, "SourceMapContent");
             var mapHash = TryReadString(itemType, item, "MapHash");
@@ -138,16 +125,15 @@ internal static class CatalogReader
                 assemblyName,
                 ReadString(itemType, item, "TypeName"),
                 id,
-                NormalizeRelativePath(ReadString(itemType, item, "RelativePath")),
+                NormalizeRelativePath(relativePathValue),
                 ReadString(itemType, item, "Content"),
                 ReadString(itemType, item, "Hash"),
                 hasSourceMap ? NormalizeRelativePath(sourceMapRelativePath!) : null,
                 hasSourceMap ? sourceMapContent : null,
                 hasSourceMap ? mapHash : null,
-                Assets: assetCarrierWritten ? null : assets,
+                Assets: assets,
                 PackageImports: TryReadStrings(itemType, item, "PackageImports"),
                 Hmr: TryReadHmrMetadata(itemType, item, id, producerId)));
-            assetCarrierWritten = true;
         }
 
         return modules;
@@ -176,35 +162,67 @@ internal static class CatalogReader
         return HmrMetadata.Create(providerId, hmrModuleId, payload);
     }
 
-    private static IReadOnlyList<AssetEntry> ReadArtifactCatalogAssets(Assembly assembly, Type catalogType)
+    private static IReadOnlyList<AssetEntry> ReadCatalogAssets(
+        Assembly assembly,
+        Type catalogType,
+        string catalogKind)
     {
         var getAssets = catalogType.GetMethod("GetAssets", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
         if (getAssets is null)
             return [];
 
         if (getAssets.Invoke(null, null) is not System.Collections.IEnumerable items)
-            throw new InvalidOperationException($"GetAssets returned null in artifact catalog '{assembly.Location}'.");
+            throw new InvalidOperationException($"GetAssets returned null in {catalogKind} '{assembly.Location}'.");
 
         var assets = new List<AssetEntry>();
+        var assetsByPath = new Dictionary<string, AssetEntry>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in items)
         {
             if (item is null)
                 continue;
 
             var itemType = item.GetType();
-            assets.Add(new AssetEntry(
-                NormalizeRelativePath(ReadString(itemType, item, "SourcePath")),
-                NormalizeRelativePath(ReadString(itemType, item, "ArtifactPath")),
-                TryReadString(itemType, item, "Kind") ?? AssetEntry.KindStatic,
+            var sourcePath = NormalizeRelativePath(ReadString(itemType, item, "SourcePath"));
+            var artifactPath = NormalizeRelativePath(ReadString(itemType, item, "ArtifactPath"));
+            var kind = TryReadString(itemType, item, "Kind") ?? AssetEntry.KindStatic;
+            var rawImportPath = TryReadString(itemType, item, "ImportPath");
+            var importPath = string.IsNullOrWhiteSpace(rawImportPath)
+                ? null
+                : NormalizeRelativePath(rawImportPath!);
+            if (kind is not (AssetEntry.KindStatic or AssetEntry.KindModuleSource))
+            {
+                throw new InvalidOperationException(
+                    $"Unsupported artifact asset kind '{kind}' for '{artifactPath}' in {catalogKind} '{assembly.Location}'.");
+            }
+
+            if (kind == AssetEntry.KindModuleSource && importPath is null)
+            {
+                throw new InvalidOperationException(
+                    $"Module-source asset '{artifactPath}' in {catalogKind} '{assembly.Location}' must declare ImportPath.");
+            }
+
+            var asset = new AssetEntry(
+                sourcePath,
+                artifactPath,
+                kind,
                 TryReadString(itemType, item, "ContentHash") ?? TryReadString(itemType, item, "Hash") ?? string.Empty,
-                TryReadString(itemType, item, "ImportPath") is { } importPath
-                    ? NormalizeRelativePath(importPath)
-                    : null));
+                importPath);
+            if (assetsByPath.TryGetValue(artifactPath, out var existing))
+            {
+                if (!HasSameAsset(existing, asset))
+                {
+                    throw new InvalidOperationException(
+                        $"{catalogKind} '{assembly.Location}' declares conflicting assets for '{artifactPath}'.");
+                }
+
+                continue;
+            }
+
+            assetsByPath.Add(artifactPath, asset);
+            assets.Add(asset);
         }
 
         return assets
-            .GroupBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
             .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal)
             .ToArray();
@@ -225,37 +243,88 @@ internal static class CatalogReader
         ReadRuntimeProviderImportMapEntries(assembly, catalogType, providerId, importMapEntries);
 
         var assemblyName = assembly.GetName().Name ?? Path.GetFileNameWithoutExtension(assembly.Location);
+        var assets = ReadCatalogAssets(assembly, catalogType, "runtime provider catalog");
         var modules = new List<ModuleRecord>();
+        var moduleIds = new HashSet<string>(StringComparer.Ordinal);
+        var modulePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in items)
         {
             if (item is null)
                 continue;
 
             var itemType = item.GetType();
-            var resourceName = ReadString(itemType, item, "ResourceName");
             var id = ReadString(itemType, item, "Id");
-            var relativePath = NormalizeRelativePath(ReadString(itemType, item, "RelativePath"));
-            using var stream = assembly.GetManifestResourceStream(resourceName)
-                ?? throw new InvalidOperationException(
-                    $"Runtime provider resource '{resourceName}' was listed but could not be opened from '{assembly.Location}'.");
-            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-            var content = reader.ReadToEnd().ReplaceLineEndings("\n");
+            var relativePathValue = ReadString(itemType, item, "RelativePath");
+            var relativePath = NormalizeRelativePath(relativePathValue);
+            EnsureModuleIdentityIsUnique(moduleIds, modulePaths, id, relativePathValue, providerId);
+            var content = ReadRuntimeProviderModuleContent(assembly, itemType, item, id);
+            var declaredHash = TryReadString(itemType, item, "Hash");
+            if (declaredHash is not null && !HashMatchesContent(declaredHash, content))
+            {
+                throw new InvalidOperationException(
+                    $"Runtime provider module '{id}' from provider '{providerId}' declares hash '{declaredHash}' that does not match its content.");
+            }
+
+            var sourceMapRelativePath = TryReadString(itemType, item, "SourceMapRelativePath");
+            var sourceMapContent = TryReadString(itemType, item, "SourceMapContent");
+            var mapHash = TryReadString(itemType, item, "MapHash");
+            var hasSourceMap = !string.IsNullOrWhiteSpace(sourceMapRelativePath) ||
+                               !string.IsNullOrWhiteSpace(sourceMapContent) ||
+                               !string.IsNullOrWhiteSpace(mapHash);
+            if (hasSourceMap &&
+                (string.IsNullOrWhiteSpace(sourceMapRelativePath) ||
+                 string.IsNullOrWhiteSpace(sourceMapContent) ||
+                 string.IsNullOrWhiteSpace(mapHash)))
+            {
+                throw new InvalidOperationException(
+                    $"Runtime provider module '{id}' from provider '{providerId}' must provide SourceMapRelativePath, SourceMapContent, and MapHash together.");
+            }
 
             modules.Add(new ModuleRecord(
                 assembly.Location,
                 assemblyName,
-                id,
+                TryReadString(itemType, item, "TypeName") ?? id,
                 id,
                 relativePath,
                 content,
-                ComputeSha256Hash(content),
+                declaredHash ?? ComputeSha256Hash(content),
+                hasSourceMap ? NormalizeRelativePath(sourceMapRelativePath!) : null,
+                hasSourceMap ? sourceMapContent : null,
+                hasSourceMap ? mapHash : null,
+                Assets: assets,
+                PackageImports: TryReadStrings(itemType, item, "PackageImports"),
+                Hmr: TryReadHmrMetadata(itemType, item, id, providerId),
                 RuntimeProviderId: providerId,
-                RuntimeDependencies: TryReadStrings(itemType, item, "Dependencies")
-                    .Select(NormalizeRelativePath)
-                    .ToArray()));
+                Dependencies: ReadRuntimeProviderDependencies(itemType, item, id, providerId)));
         }
 
         return modules;
+    }
+
+    private static string ReadRuntimeProviderModuleContent(
+        Assembly assembly,
+        Type itemType,
+        object item,
+        string moduleId)
+    {
+        var inlineContent = TryReadString(itemType, item, "Content");
+        var resourceName = TryReadString(itemType, item, "ResourceName");
+        var hasInlineContent = inlineContent is not null;
+        var hasResource = !string.IsNullOrWhiteSpace(resourceName);
+        if (hasInlineContent == hasResource)
+        {
+            throw new InvalidOperationException(
+                $"Runtime provider module '{moduleId}' must provide exactly one of Content or ResourceName.");
+        }
+
+        if (hasInlineContent)
+            return inlineContent!.ReplaceLineEndings("\n");
+
+        using var stream = assembly.GetManifestResourceStream(resourceName!)
+            ?? throw new InvalidOperationException(
+                $"Runtime provider resource '{resourceName}' for module '{moduleId}' was listed but could not be opened from '{assembly.Location}'.");
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        return reader.ReadToEnd().ReplaceLineEndings("\n");
     }
 
     private static void ReadRuntimeProviderImportMapEntries(
@@ -276,18 +345,106 @@ internal static class CatalogReader
                 $"GetImportMapEntries returned null in runtime provider catalog '{assembly.Location}'.");
         }
 
+        var entriesBySpecifier = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var item in items)
         {
             if (item is null)
                 continue;
 
             var itemType = item.GetType();
-            importMapEntries.Add(new ImportMapEntry(
-                providerId,
-                ReadString(itemType, item, "Specifier"),
-                NormalizeImportMapArtifactPath(ReadString(itemType, item, "ArtifactPath"))));
+            var specifier = ReadString(itemType, item, "Specifier");
+            if (string.IsNullOrWhiteSpace(specifier))
+            {
+                throw new InvalidOperationException(
+                    $"Runtime provider '{providerId}' declares an empty import-map specifier in '{assembly.Location}'.");
+            }
+
+            var artifactPath = NormalizeImportMapArtifactPath(ReadString(itemType, item, "ArtifactPath"));
+            if (entriesBySpecifier.TryGetValue(specifier, out var existingArtifactPath))
+            {
+                if (!StringComparer.Ordinal.Equals(existingArtifactPath, artifactPath))
+                {
+                    throw new InvalidOperationException(
+                        $"Runtime provider '{providerId}' declares conflicting import-map paths for '{specifier}'.");
+                }
+
+                continue;
+            }
+
+            entriesBySpecifier.Add(specifier, artifactPath);
+            importMapEntries.Add(new ImportMapEntry(providerId, specifier, artifactPath));
         }
     }
+
+    private static IReadOnlyList<string> ReadRuntimeProviderDependencies(
+        Type itemType,
+        object item,
+        string moduleId,
+        string providerId)
+    {
+        var property = itemType.GetProperty(
+            "Dependencies",
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        var propertyValue = property?.GetValue(item);
+        if (property is null || propertyValue is null)
+            return [];
+
+        if (propertyValue is string || propertyValue is not System.Collections.IEnumerable values)
+        {
+            throw new InvalidOperationException(
+                $"Runtime provider module '{moduleId}' from provider '{providerId}' must expose Dependencies as a string collection.");
+        }
+
+        var dependencies = new List<string>();
+        foreach (var value in values)
+        {
+            if (value is not string dependency || string.IsNullOrWhiteSpace(dependency))
+            {
+                throw new InvalidOperationException(
+                    $"Runtime provider module '{moduleId}' from provider '{providerId}' declares an empty or non-string dependency path.");
+            }
+
+            dependencies.Add(NormalizeRelativePath(dependency));
+        }
+
+        return dependencies
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static dependency => dependency, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static void EnsureModuleIdentityIsUnique(
+        HashSet<string> moduleIds,
+        HashSet<string> modulePaths,
+        string id,
+        string relativePath,
+        string providerId)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            throw new InvalidOperationException(
+                $"Provider '{providerId}' declares a module with an empty id.");
+        }
+
+        var normalizedPath = NormalizeRelativePath(relativePath);
+        if (!moduleIds.Add(id))
+        {
+            throw new InvalidOperationException(
+                $"Provider '{providerId}' declares duplicate module id '{id}'.");
+        }
+
+        if (!modulePaths.Add(normalizedPath))
+        {
+            throw new InvalidOperationException(
+                $"Provider '{providerId}' declares duplicate module path '{normalizedPath}'.");
+        }
+    }
+
+    private static bool HasSameAsset(AssetEntry left, AssetEntry right)
+        => StringComparer.Ordinal.Equals(left.SourcePath, right.SourcePath) &&
+           StringComparer.Ordinal.Equals(left.Kind, right.Kind) &&
+           StringComparer.Ordinal.Equals(left.Hash, right.Hash) &&
+           StringComparer.Ordinal.Equals(left.ImportPath, right.ImportPath);
 
     private static void ValidateSchema(Type catalogType, string catalogKind, Assembly assembly)
     {
@@ -387,17 +544,24 @@ internal static class CatalogReader
 
     private static string NormalizeRelativePath(string relativePath)
     {
-        var normalized = relativePath.Replace('\\', '/').TrimStart('/');
+        var normalized = relativePath.Replace('\\', '/').Trim();
         if (string.IsNullOrWhiteSpace(normalized))
             throw new InvalidOperationException("Module relative path cannot be empty.");
 
-        if (Path.IsPathRooted(normalized))
+        if (Path.IsPathRooted(normalized) ||
+            normalized.StartsWith("/", StringComparison.Ordinal) ||
+            (normalized.Length >= 2 && char.IsLetter(normalized[0]) && normalized[1] == ':'))
             throw new InvalidOperationException($"Module relative path must be relative: '{relativePath}'.");
+
+        while (normalized.StartsWith("./", StringComparison.Ordinal))
+            normalized = normalized.Substring(2);
 
         var segments = normalized
             .Split('/', StringSplitOptions.RemoveEmptyEntries)
             .Where(static segment => segment != ".")
             .ToArray();
+        if (segments.Length == 0)
+            throw new InvalidOperationException("Module relative path cannot be empty.");
         if (segments.Any(static segment => segment == ".."))
             throw new InvalidOperationException($"Module relative path cannot escape output directory: '{relativePath}'.");
 
@@ -420,6 +584,15 @@ internal static class CatalogReader
             builder.Append(item.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
 
         return "sha256:" + builder;
+    }
+
+    private static bool HashMatchesContent(string declaredHash, string content)
+    {
+        var normalizedDeclared = declaredHash.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
+            ? declaredHash.Substring("sha256:".Length)
+            : declaredHash;
+        var computed = ComputeSha256Hash(content).Substring("sha256:".Length);
+        return string.Equals(normalizedDeclared, computed, StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed record EmitModuleSourceMapRecord(

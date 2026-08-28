@@ -44,7 +44,8 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.VueContract.dll");
         CollectionAssert.Contains(vueEntryNames, "buildTransitive/Jazor.Vue.targets");
         var vueNuspec = ReadPackageEntryText(package.VuePackagePath, "Jazor.Vue.nuspec");
-        StringAssert.Contains(vueNuspec, "<dependency id=\"Jazor\"", StringComparison.Ordinal);
+        StringAssert.Contains(vueNuspec, "<dependency id=\"Jazor\" version=\"", StringComparison.Ordinal);
+        StringAssert.Contains(vueNuspec, "exclude=\"Build,Analyzers\"", StringComparison.Ordinal);
         StringAssert.Contains(vueNuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />", StringComparison.Ordinal);
         using var jazorArchiveForBlazorBoundary = ZipFile.OpenRead(package.PackagePath);
         Assert.IsFalse(
@@ -65,6 +66,36 @@ public sealed class SdkIntegrationTests
             vueAnalyzerEntries,
             "Jazor.Vue must install the RazorVue analyzer and its static-markup parser, while relying on Jazor for shared compiler dependencies.");
         CollectionAssert.Contains(vueEntryNames, "buildTransitive/Jazor.Vue.targets");
+    }
+
+    [TestMethod]
+    public async Task CreateLocalPackage_ExcludesJazorToolAssetsFromTransitiveComponentDependencies()
+    {
+        var package = await LocalPackage.Value;
+        var packageNuspecs = new[]
+        {
+            (package.VuetifyPackagePath, "ECMAScript.Vuetify.nuspec"),
+            (package.VueRoutePackagePath, "ECMAScript.VueRoute.nuspec"),
+            (package.PiniaPackagePath, "ECMAScript.Pinia.nuspec"),
+            (package.PiniaTestingPackagePath, "ECMAScript.Pinia.Testing.nuspec"),
+            (package.TDesignPackagePath, "ECMAScript.TDesign.nuspec"),
+            (package.ElementPlusPackagePath, "ECMAScript.ElementPlus.nuspec")
+        };
+
+        foreach (var (packagePath, entryName) in packageNuspecs)
+        {
+            var nuspec = ReadPackageEntryText(packagePath, entryName);
+            foreach (var dependencyLine in nuspec
+                         .Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries)
+                         .Where(static line =>
+                             line.Contains("<dependency id=\"Jazor\"", StringComparison.Ordinal) ||
+                             line.Contains("<dependency id=\"Jazor.Vue\"", StringComparison.Ordinal)))
+            {
+                Assert.IsTrue(
+                    dependencyLine.Contains("exclude=\"Build,Analyzers\"", StringComparison.Ordinal),
+                    $"Jazor tooling must be directly selected by the consumer: {entryName}");
+            }
+        }
     }
 
     [TestMethod]
@@ -402,7 +433,9 @@ public sealed class SdkIntegrationTests
 
         CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.Style.dll");
         CollectionAssert.Contains(entryNames, "README.md");
-        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\" version=\"[" + package.PackageVersion + "]\" />");
+        StringAssert.Contains(
+            nuspec,
+            "<dependency id=\"Jazor\" version=\"[" + package.PackageVersion + "]\" exclude=\"Build,Analyzers\" />");
         Assert.IsFalse(
             entryNames.Any(static path => path.StartsWith("build", StringComparison.OrdinalIgnoreCase)),
             "ECMAScript.Style must rely on Jazor's existing build integration and must not install CSS-specific targets.");
@@ -3573,6 +3606,7 @@ public sealed class SdkIntegrationTests
               </PropertyGroup>
 
               <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
                 <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
               </ItemGroup>
             </Project>

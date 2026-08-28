@@ -127,7 +127,7 @@ public sealed class StaticModuleSourceMapTests
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_ReadsEcmascriptDedicatedCatalogType()
+    public void CatalogReader_TryRead_DoesNotReadRetiredEcmascriptCatalogType()
     {
         var assembly = CompileCatalogAssembly(
             "ECMAScript.Runtime.Reader.Tests",
@@ -172,13 +172,10 @@ public sealed class StaticModuleSourceMapTests
             }
             """);
 
-        var modules = CatalogReader.TryRead(assembly);
+        var result = CatalogReader.TryReadCatalogs(assembly);
 
-        Assert.IsNotNull(modules);
-        Assert.HasCount(1, modules);
-        Assert.AreEqual("ECMAScript", modules[0].AssemblyName);
-        Assert.AreEqual("Jazor.CLR.RuntimeModule", modules[0].TypeName);
-        Assert.AreEqual("System/RuntimeModule.js", modules[0].RelativePath);
+        Assert.HasCount(0, result.Modules);
+        Assert.HasCount(0, result.ImportMapEntries);
     }
 
     [TestMethod]

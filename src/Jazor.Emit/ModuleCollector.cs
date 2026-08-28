@@ -67,19 +67,6 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                     continue;
                 }
 
-                foreach (var asset in module.Assets ?? [])
-                {
-                    if (assetsByArtifactPath.TryGetValue(asset.ArtifactPath, out var existingAsset))
-                    {
-                        if (!HasSameAsset(existingAsset, asset))
-                            return CollectResult.Fail(4, $"Conflicting asset for '{asset.ArtifactPath}'.");
-
-                        continue;
-                    }
-
-                    assetsByArtifactPath[asset.ArtifactPath] = asset;
-                }
-
                 if (byRelativePath.TryGetValue(module.RelativePath, out var existingPath))
                 {
                     if (!HasSameContent(existingPath, module) && failOnPathConflict)
@@ -105,6 +92,24 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
         catch (Exception ex)
         {
             return CollectResult.Fail(4, ex.Message);
+        }
+
+        // Provider assets follow the same activation boundary as their modules. This keeps
+        // inactive runtime providers from copying static files into an otherwise unrelated host.
+        foreach (var module in retainedModules)
+        {
+            foreach (var asset in module.Assets ?? [])
+            {
+                if (assetsByArtifactPath.TryGetValue(asset.ArtifactPath, out var existingAsset))
+                {
+                    if (!HasSameAsset(existingAsset, asset))
+                        return CollectResult.Fail(4, $"Conflicting asset for '{asset.ArtifactPath}'.");
+
+                    continue;
+                }
+
+                assetsByArtifactPath[asset.ArtifactPath] = asset;
+            }
         }
 
         var orderedModules = retainedModules
@@ -147,9 +152,22 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
         if (runtimeModules.Length == 0)
             return allModules;
 
-        var runtimeByPath = runtimeModules.ToDictionary(
-            static module => module.RelativePath,
-            StringComparer.OrdinalIgnoreCase);
+        var runtimeByPath = new Dictionary<string, ModuleRecord>(StringComparer.OrdinalIgnoreCase);
+        foreach (var runtime in runtimeModules)
+        {
+            if (runtimeByPath.TryGetValue(runtime.RelativePath, out var existingRuntime))
+            {
+                if (!HasSameContent(existingRuntime, runtime))
+                {
+                    throw new InvalidOperationException(
+                        $"Conflicting runtime provider modules for path '{runtime.RelativePath}' from providers '{existingRuntime.RuntimeProviderId}' and '{runtime.RuntimeProviderId}'.");
+                }
+
+                continue;
+            }
+
+            runtimeByPath.Add(runtime.RelativePath, runtime);
+        }
         var selectedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var pending = new Queue<ModuleRecord>();
         foreach (var runtime in runtimeModules)
@@ -167,12 +185,12 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
 
         while (pending.TryDequeue(out var importer))
         {
-            foreach (var dependencyPath in importer.RuntimeDependencies ?? [])
+            foreach (var dependencyPath in importer.Dependencies ?? [])
             {
                 if (!runtimeByPath.TryGetValue(dependencyPath, out var dependency))
                 {
                     throw new InvalidOperationException(
-                        $"Runtime provider '{importer.RuntimeProviderId}' declares missing module dependency '{dependencyPath}'.");
+                        $"Runtime provider '{importer.RuntimeProviderId}' module '{importer.Id}' declares missing module dependency '{dependencyPath}'.");
                 }
 
                 if (!selectedPaths.Add(dependency.RelativePath))
@@ -224,12 +242,19 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
     }
 
     private static bool HasSameContent(ModuleRecord left, ModuleRecord right)
-        => StringComparer.Ordinal.Equals(left.Hash, right.Hash) &&
+        => StringComparer.Ordinal.Equals(left.Content, right.Content) &&
+           StringComparer.Ordinal.Equals(left.Hash, right.Hash) &&
            StringComparer.Ordinal.Equals(left.MapHash, right.MapHash) &&
            StringComparer.Ordinal.Equals(left.SourceMapRelativePath, right.SourceMapRelativePath) &&
+           StringComparer.Ordinal.Equals(left.SourceMapContent, right.SourceMapContent) &&
+           StringComparer.Ordinal.Equals(left.AssemblyName, right.AssemblyName) &&
+           StringComparer.Ordinal.Equals(left.TypeName, right.TypeName) &&
+           StringComparer.Ordinal.Equals(left.Id, right.Id) &&
+           StringComparer.Ordinal.Equals(left.RelativePath, right.RelativePath) &&
            Equals(left.Hmr, right.Hmr) &&
            StringComparer.Ordinal.Equals(left.RuntimeProviderId, right.RuntimeProviderId) &&
-           (left.RuntimeDependencies ?? []).SequenceEqual(right.RuntimeDependencies ?? [], StringComparer.Ordinal);
+           (left.Dependencies ?? []).SequenceEqual(right.Dependencies ?? [], StringComparer.Ordinal) &&
+           (left.PackageImports ?? []).SequenceEqual(right.PackageImports ?? [], StringComparer.Ordinal);
 
     private static bool HasSameAsset(AssetEntry left, AssetEntry right)
         => StringComparer.Ordinal.Equals(left.SourcePath, right.SourcePath) &&
@@ -258,7 +283,7 @@ internal sealed record ModuleRecord(
     IReadOnlyList<string>? PackageImports = null,
     HmrMetadata? Hmr = null,
     string? RuntimeProviderId = null,
-    IReadOnlyList<string>? RuntimeDependencies = null);
+    IReadOnlyList<string>? Dependencies = null);
 
 /// <summary>Outcome of catalog collection before files are materialized.</summary>
 internal sealed record CollectResult(

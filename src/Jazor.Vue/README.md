@@ -8,14 +8,16 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.24.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.24.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.25.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.25.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
 该包是 opt-in，必须与 `Jazor` 一起引用。只引用 `Jazor` 不会安装 Razor hook、扫描 Razor 组件或生成 Vue render catalog。`Jazor.Vue` 只携带合并后的 `Jazor.RazorVue` analyzer，避免重复装载共享 generator。
 
-Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core reference symbol 生成，再由 `Jazor.CLR` 唯一持有 module、mapping、helper 和静态 catalog；用户不需要复制映射源码或手工注册 provider。`ECMAScript.Blazor` 只是随本包带入的可选标准 ECMAScript 模拟/投影扩展，不贡献 CLR whitelist 或 runtime module。当前 InProof 覆盖 Mouse/Keyboard/Focus/Change，以及 Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 的原生事件 getter；TouchList 在属性访问时惰性转换为数组 carrier。统一 Release 包边界和基本 Razor/Vue 消费路径已由 `SdkIntegrationTests.Build_LocalReleasePackages_CoreAndVueConsumers_RespectBlazorClrPackageBoundary` 验证，但各事件切片仍缺真实 BrowserSmoke、reference oracle 和事件特定 package consumer，因此尚未宣称 Support；file input、合成 `EventArgs` payload、DataTransfer files/items、TouchList 非 getter 操作仍不支持。
+`Jazor`/`Jazor.Vue` 的 analyzer、generator、build target 和 Emit 资格遵循“谁使用，谁直接引用”；它们不应因为中间类库引用而成为下游的隐式工具依赖。组件库的 ESM/CSS 等运行时资源则通过 artifact/provider manifest 传播。跨项目的完整规则见[类库产物与引用契约](../../docs/02-architecture/library-artifact-contract.md)。
+
+Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 从真实 ASP.NET Core reference symbol 生成，再由 `Jazor.CLR` 唯一持有 module、mapping、helper 和 `Jazor.Artifacts.RuntimeProviderCatalog`；用户不需要复制映射源码或手工注册 provider。`ECMAScript.Blazor` 只是随本包带入的可选标准 ECMAScript 模拟/投影扩展，不贡献 CLR whitelist 或 runtime module。当前 InProof 覆盖 Mouse/Keyboard/Focus/Change，以及 Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 的原生事件 getter；TouchList 在属性访问时惰性转换为数组 carrier。统一 Release 包边界和基本 Razor/Vue 消费路径已由 `SdkIntegrationTests.Build_LocalReleasePackages_CoreAndVueConsumers_RespectBlazorClrPackageBoundary` 验证，但各事件切片仍缺真实 BrowserSmoke、reference oracle 和事件特定 package consumer，因此尚未宣称 Support；file input、合成 `EventArgs` payload、DataTransfer files/items、TouchList 非 getter 操作仍不支持。
 
 ## 产物输出
 

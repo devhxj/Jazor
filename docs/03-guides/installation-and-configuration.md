@@ -28,7 +28,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.24.0" />
+  <PackageReference Include="Jazor" Version="0.25.0" />
 </ItemGroup>
 ```
 
@@ -41,8 +41,8 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.24.0" />
-    <PackageReference Include="Jazor.Vue" Version="0.24.0" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="0.25.0" />
+    <PackageReference Include="Jazor.Vue" Version="0.25.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -51,21 +51,23 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="0.24.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.24.0" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="0.24.0" />
-  <PackageReference Include="ECMAScript.VuIcons" Version="0.24.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.24.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.24.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.24.0" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="0.24.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.24.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.25.0" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.25.0" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="0.25.0" />
+  <PackageReference Include="ECMAScript.VuIcons" Version="0.25.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.25.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.25.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.25.0" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="0.25.0" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.25.0" />
 </ItemGroup>
 ```
 
 ## 配置产物输出
 
 将输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；宿主负责收集引用程序集中的 catalog 并写出最终产物。
+
+多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具，最终宿主直接引用并配置 Emit；只消费上游类库的中间项目不为传递 catalog 增加 `Jazor`/`Jazor.Vue`。工具资产应在类库包中使用 `PrivateAssets="all"` 隔离，生成模块、runtime provider 和 ESM/CSS 则通过声明的 artifact 依赖传播。完整规则见[类库产物与引用契约](../02-architecture/library-artifact-contract.md)。
 
 ```xml
 <PropertyGroup>
@@ -131,4 +133,5 @@ ASP.NET Core 负责路由、静态文件与响应；DenoHost 通过 generation-a
 - 核心语义与支持边界：[编译器](../02-architecture/compiler.md)
 - Razor 应用方向：[Razor-to-Vue](../02-architecture/razor-to-vue.md)
 - 产物归属：[产物管线](../02-architecture/artifact-pipeline.md)
+- 多项目类库、直接引用与资源传播：[类库产物与引用契约](../02-architecture/library-artifact-contract.md)
 - 管理壳库：[管理壳](../02-architecture/admin-shell.md)

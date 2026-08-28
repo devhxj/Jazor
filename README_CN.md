@@ -32,12 +32,12 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### Jazor 0.24.0 — 2026-08-28
+### Jazor 0.25.0 — 2026-08-28
 
-- 受支持的 Blazor CLR 类型现在统一由 `Jazor.CLR.Generator` 生成初始模块，再由 `Jazor.CLR` 持有映射、carrier 和 runtime helper。
-- Pointer、Wheel、Drag/DataTransfer、Clipboard、Touch、Error、Progress 事件参数的只读 getter 已接入 RazorVue；构造器、setter、合成 payload、文件/items 等未支持面继续明确拒绝。
-- `ECMAScript.Blazor` 现在只提供标准 ECMAScript 模拟/投影扩展，不贡献 CLR whitelist 或 runtime module；核心 `Jazor` 与 `Jazor + Jazor.Vue` 的 Release 包边界已有独立验证。
-- S5 认证状态/provider 本版本不实现，Blazor JS interop 继续是明确 Reject 边界。
+- CLR runtime module 现在统一使用标准 `Jazor.Artifacts.RuntimeProviderCatalog`；inline 与 embedded provider 共享路径、哈希、source map、asset、import-map 和依赖校验，已退休的 `ECMAScript.Catalog` 不再读取。
+- 类库产物与 ESM/CSS 资源现在通过一张声明式 artifact graph 传播，只有真实 import 入口才会激活 provider 依赖闭包；冲突路径或缺失依赖会在 Emit 阶段确定性失败。
+- 工具遵循“谁使用，谁直接引用”：定义模块/组件的类库直接引用 `Jazor` 或 `Jazor.Vue`，中间类库不会为了传递 catalog 获得工具链，最终宿主只执行一次 Emit 物化。
+- 从 `0.24.0` 或更早版本升级时必须 lockstep 更新包并重新构建 provider/catalog 产物；不提供旧 catalog 兼容 fallback。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -95,15 +95,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.24.0
+dotnet add package Jazor --version 0.25.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.24.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.24.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.25.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.25.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

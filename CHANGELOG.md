@@ -4,6 +4,21 @@
 
 ## 2026-08-28
 
+### Jazor 0.25.0
+
+> 类库 artifact/resource 依赖与 CLR runtime provider 统一为一张可验证的 artifact graph。本版本在 `0.x` 阶段按 `MINOR` 通道发布，并明确切换到新的 provider 载体，不提供旧 catalog 的兼容读取。
+
+#### 破坏性变更
+
+- **CLR provider 载体切换**：`Jazor.Emit` 现在只读取标准 `Jazor.Artifacts.RuntimeProviderCatalog`。旧 `ECMAScript.Catalog` 不再读取或 fallback；从 `0.24.0` 或更早版本升级时，必须 lockstep 升级所有 Jazor 包并重新构建类库 provider/catalog。
+- **工具引用边界收紧**：定义 ECMAScript 模块或 RazorVue 组件的类库必须直接引用对应工具包；只消费上游类库的中间项目不因传递 catalog 增加 `Jazor`/`Jazor.Vue`。封装包对工具依赖使用 `exclude="Build,Analyzers"`，最终宿主仍需直接引用并配置 Emit。
+
+#### 新增与改进
+
+- **统一 provider 读取**：inline content 与 embedded resource 经过同一 schema、路径、哈希、source map、asset、import-map 和依赖校验，归一化为相同的模块记录。
+- **按真实入口裁剪闭包**：CLR/runtime provider 只有在应用生成模块实际导入时才激活，并沿声明的依赖闭包传播；未使用的 provider 模块不会污染最终输出。
+- **统一类库资源传播**：生成模块、CLR runtime、组件 ESM/CSS、许可证和 source map 通过声明的 artifact graph 到达最终宿主；冲突路径、缺失依赖和不一致元数据会在 Emit 阶段确定性失败。
+
 ### Jazor 0.24.0
 
 > Blazor CLR 模块生成与归属边界收敛，并交付扩展 DOM 事件参数的最小垂直切片。本版本按 `MINOR` 通道发布；尚未完成真实浏览器、reference oracle 与独立 package consumer 证据的能力继续标记为 `InProof`。

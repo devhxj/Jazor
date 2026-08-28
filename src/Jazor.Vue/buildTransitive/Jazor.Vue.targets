@@ -5,14 +5,23 @@
                           Condition="Exists('$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json')" />
   </ItemGroup>
 
-  <!-- Jazor.RazorVue is packaged as an analyzer, so the core SDK cannot discover it
-       from normal runtime references. This adapter-specific target contributes the
-       provider assembly to Emit's neutral runtime-provider collection. -->
+  <!--
+    Register the provider from its package/source contract. The provider happens to be
+    deployed beside the analyzer today, but discovery is path/contract based and does not
+    depend on the current Analyzer item metadata or a filename filter.
+  -->
+  <PropertyGroup>
+    <_JazorVueProviderAssembly
+      Condition="Exists('$(MSBuildThisFileDirectory)..\analyzers\dotnet\cs\Jazor.RazorVue.dll')">$(MSBuildThisFileDirectory)..\analyzers\dotnet\cs\Jazor.RazorVue.dll</_JazorVueProviderAssembly>
+    <_JazorVueProviderAssembly
+      Condition="'$(_JazorVueProviderAssembly)' == '' and Exists('$(MSBuildThisFileDirectory)..\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')">$(MSBuildThisFileDirectory)..\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll</_JazorVueProviderAssembly>
+  </PropertyGroup>
+
   <Target Name="RegisterJazorVueArtifactProvider"
           BeforeTargets="JazorDebug;JazorRelease">
     <ItemGroup>
-      <JazorArtifactProviderAssembly Include="@(Analyzer)"
-                                     Condition="'%(Analyzer.Filename)' == 'Jazor.RazorVue' and '%(Analyzer.Extension)' == '.dll'" />
+      <JazorArtifactProviderAssembly Include="$(_JazorVueProviderAssembly)"
+                                     Condition="'$(_JazorVueProviderAssembly)' != ''" />
     </ItemGroup>
   </Target>
 </Project>

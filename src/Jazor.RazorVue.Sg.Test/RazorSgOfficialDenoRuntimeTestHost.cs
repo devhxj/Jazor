@@ -38,7 +38,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     WriteFile(Path.Combine(root, module.Key), module.Value);
             }
             MaterializeCatalogDependencies(root, moduleText, supportingModules);
-            MaterializeRazorVueRuntimeDependencies(root, moduleText, supportingModules);
+            MaterializeRazorVueRuntimeModules(root, moduleText, supportingModules);
             WriteFile(
                 Path.Combine(root, "package.json"),
                 """{"type":"module"}""");
@@ -319,7 +319,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
     /// Writes RazorVue-owned ESM helpers needed by the generated artifact under the same prefix
     /// Emit materializes in production. 测试 host 不模拟 helper 文本，直接读取 embedded resource。
     /// </summary>
-    private static void MaterializeRazorVueRuntimeDependencies(
+    private static void MaterializeRazorVueRuntimeModules(
         string root,
         string moduleText,
         IReadOnlyDictionary<string, string>? supportingModules)
@@ -391,13 +391,13 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
 
     private static IReadOnlyDictionary<string, string> ReadCatalogModules()
     {
-        var catalogType = typeof(ECMAScriptGlobal).Assembly.GetType("ECMAScript.Catalog", throwOnError: true)!;
+        var catalogType = typeof(ECMAScriptGlobal).Assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: true)!;
         var getModules = catalogType.GetMethod(
             "GetModules",
             BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
-            ?? throw new InvalidOperationException("ECMAScript.Catalog.GetModules() was not found.");
+            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() was not found.");
         var modules = getModules.Invoke(null, null) as IEnumerable
-            ?? throw new InvalidOperationException("ECMAScript.Catalog.GetModules() returned no module collection.");
+            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() returned no module collection.");
 
         var catalogModules = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var module in modules)

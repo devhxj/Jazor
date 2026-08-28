@@ -2,6 +2,8 @@
 
 > 适用范围：`Jazor.Emit`、MSBuild 输出模式、source map、manifest、Netpack bundle 与 SSR 模块图。
 
+类库如何直接引用工具、如何让 catalog 和上游资源到达最终宿主，见[类库产物与引用契约](./library-artifact-contract.md)。本文只描述物化层的职责，不把中间类库的工具依赖当作 artifact 依赖。
+
 ## 交付职责
 
 `Jazor.Emit` 消费编译器和 adapter 生成的中性 catalog，不参与 C# 或 Razor 语义降低。它负责程序集读取、模块收集、确定性文件物化、manifest 维护、本地库资源复制与浏览器打包。

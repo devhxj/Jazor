@@ -10,8 +10,8 @@
     <readme>$packageReadmeFile$</readme>
     <dependencies>
       <group targetFramework="net11.0">
-        <dependency id="Jazor" version="$dependencyVersion$" />
-        <dependency id="Jazor.Vue" version="$dependencyVersion$" />
+        <dependency id="Jazor" version="$dependencyVersion$" exclude="Build,Analyzers" />
+        <dependency id="Jazor.Vue" version="$dependencyVersion$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
     <frameworkReferences>

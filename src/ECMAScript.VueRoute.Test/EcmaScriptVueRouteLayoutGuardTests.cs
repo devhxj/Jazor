@@ -146,7 +146,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript\\ECMAScript.csproj\" />");
         StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue\\ECMAScript.Vue.csproj\" />");
         StringAssert.Contains(source, "<NuspecFile>ECMAScript.VueRoute.nuspec</NuspecFile>");
-        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\" version=\"$dependencyVersion$\" />");
+        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\" version=\"$dependencyVersion$\" exclude=\"Build,Analyzers\" />");
         StringAssert.Contains(nuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />");
 
         var jazorPackageProject = System.IO.File.ReadAllText(System.IO.Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"));
