@@ -32,12 +32,10 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### Jazor 0.26.0 - 2026-08-31
+### Jazor 0.26.2 - 2026-08-31
 
-- 类库携带 JavaScript 只允许两种形式：已有资源使用包内 `manifest.json + dist/**`；开发者编写、由 Jazor 编译的 C# 模块写入程序集内部的 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`）。
-- 生成模块、source map、package import、相对依赖、HMR 元数据和所属资源共用唯一的 `ModuleCatalog` 入口，不存在 provider 或并列 artifact/source-map catalog。
-- 工具遵循“谁使用，谁直接引用”：纯 Jazor 类库直接引用 `Jazor`；编写 RazorVue 组件的项目直接引用 `Jazor` 和 `Jazor.Vue`；普通类库引用只传递其声明的模块/资源依赖。
-- 宿主完成编译后，MSBuild 只调用一次 `Jazor.Emit`。Emit 解析选中的依赖闭包，并将 Debug、Release 或 SSR 投影原子物化到 `JazorDir`。
+- `ECMAScript.ElementPlus` 现在声明公开 `ECMAScript.VueRoute` 依赖，独立 NuGet 消费方可以还原完整的程序集与资源闭包。
+- NuGet 打包会正确转义简介中的分号，手动 dry-run 工作流也会检查全部已发布包。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -112,15 +110,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.26.0
+dotnet add package Jazor --version 0.26.2
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.26.2" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.2" PrivateAssets="all" />
 </ItemGroup>
 ```
 

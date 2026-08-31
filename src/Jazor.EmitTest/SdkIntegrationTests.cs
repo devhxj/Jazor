@@ -312,6 +312,24 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task CreateLocalPackage_ElementPlusDeclaresPublicAssemblyDependencies()
+    {
+        var package = await LocalPackage.Value;
+        var nuspec = ReadPackageEntryText(package.ElementPlusPackagePath, "ECMAScript.ElementPlus.nuspec");
+
+        StringAssert.Contains(
+            nuspec,
+            "<dependency id=\"ECMAScript.VueRoute\" version=\"",
+            "ElementPlus exposes Vue Router types and must carry the matching package dependency.");
+        Assert.IsFalse(
+            Regex.IsMatch(
+                nuspec,
+                "<dependency id=\"ECMAScript\\.VueRoute\"[^>]*exclude=",
+                RegexOptions.CultureInvariant),
+            "VueRoute's resource locator must remain transitive for ElementPlus consumers.");
+    }
+
+    [TestMethod]
     public async Task CreateLocalPackage_IncludesSelfContainedBrowserAssets()
     {
         var package = await LocalPackage.Value;

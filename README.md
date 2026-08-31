@@ -32,12 +32,10 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.26.0 - 2026-08-31
+### Jazor 0.26.2 - 2026-08-31
 
-- A library carries JavaScript in exactly one of two forms: existing resources use package-local `manifest.json + dist/**`; developer-authored C# modules compiled by Jazor are stored in the assembly's internal `Jazor.Generated.ModuleCatalog` (`ECMAScriptCode`).
-- Generated modules, source maps, package imports, relative dependencies, HMR metadata, and owned assets share the one `ModuleCatalog` entry point. There is no provider or parallel artifact/source-map catalog.
-- Tooling follows direct-use ownership: a pure Jazor library directly references `Jazor`; a project that authors RazorVue components directly references both `Jazor` and `Jazor.Vue`; ordinary references only carry their declared module/resource dependencies.
-- After the host build completes, MSBuild invokes `Jazor.Emit` once. Emit resolves the selected dependency closure and atomically materializes the requested Debug, Release, or SSR projection into `JazorDir`.
+- `ECMAScript.ElementPlus` now declares its public `ECMAScript.VueRoute` dependency, so standalone package consumers restore the complete assembly and resource closure.
+- Package descriptions containing semicolons are escaped correctly during NuGet packing, and the manual dry-run workflow now checks every published package.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -113,7 +111,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.26.0
+dotnet add package Jazor --version 0.26.2
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -121,8 +119,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.26.2" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.2" PrivateAssets="all" />
 </ItemGroup>
 ```
 

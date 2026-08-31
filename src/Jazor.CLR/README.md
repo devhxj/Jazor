@@ -38,7 +38,7 @@ Jazor.CLR module/*.cs
 dotnet build src/Jazor.CLR/Jazor.CLR.csproj --no-restore -v minimal
 dotnet test src/Jazor.CLR.Test/Jazor.CLR.Test.csproj
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
-dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version 0.26.0
+dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version 0.26.2
 ```
 
 需要生成或核对新模块骨架时：

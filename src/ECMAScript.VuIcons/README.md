@@ -11,9 +11,9 @@ RazorVue authoring contract。消费方生成的图标组件模块进入消费�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.VuIcons" Version="0.26.0" />
+  <PackageReference Include="Jazor" Version="0.26.2" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.2" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.VuIcons" Version="0.26.2" />
 </ItemGroup>
 ```
 

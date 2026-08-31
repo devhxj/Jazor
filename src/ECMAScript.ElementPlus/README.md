@@ -9,6 +9,9 @@
 authoring contract。消费方编写的 RazorVue 组件仍按纯 Jazor 规则生成到消费程序集的
 `Jazor.Generated.ModuleCatalog`。
 
+公开的 `RouteLocationRaw` 参数由 `ECMAScript.VueRoute` 提供；NuGet 已声明该依赖并保留其
+资源 locator 的传递性，应用无需手工复制 Vue Router 资源。
+
 ## 当前支持范围
 
 - 根插件与 runtime host：`ElementPlus`。

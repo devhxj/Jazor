@@ -32,7 +32,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.0" />
+  <PackageReference Include="Jazor" Version="0.26.2" />
 </ItemGroup>
 ```
 
@@ -45,8 +45,8 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.26.0" />
-    <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="0.26.2" />
+    <PackageReference Include="Jazor.Vue" Version="0.26.2" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -55,15 +55,15 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="0.26.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.26.0" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="0.26.0" />
-  <PackageReference Include="ECMAScript.VuIcons" Version="0.26.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.26.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.26.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.26.0" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="0.26.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.26.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.26.2" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.26.2" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="0.26.2" />
+  <PackageReference Include="ECMAScript.VuIcons" Version="0.26.2" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.26.2" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.26.2" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.26.2" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="0.26.2" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.26.2" />
 </ItemGroup>
 ```
 

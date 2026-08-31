@@ -125,11 +125,12 @@ jobs:
         id: package
         shell: pwsh
         run: |
-          $nupkg = Get-ChildItem 'artifacts/packages/Jazor.*.nupkg' -Exclude '*.snupkg' |
+          $nupkg = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' |
+              Where-Object { $_.BaseName -match '^Jazor\.[0-9]' } |
               Sort-Object LastWriteTimeUtc -Descending |
               Select-Object -First 1
           if (-not $nupkg) { throw 'No Jazor nupkg found in artifacts/packages.' }
-          $version = $nupkg.BaseName -replace '^Jazor\.', ''
+          $version = $nupkg.BaseName.Substring('Jazor.'.Length)
           "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: List package artifacts

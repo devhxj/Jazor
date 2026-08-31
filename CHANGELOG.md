@@ -4,6 +4,21 @@
 
 ## 2026-08-31
 
+### Jazor 0.26.2
+
+> 修复已发布资源包的依赖闭包与 NuGet 打包元数据处理。本版本按 `PATCH` 通道发布，所有
+> Jazor/ECMAScript 包继续使用同一版本。
+
+#### 修复
+
+- `ECMAScript.ElementPlus` 现在声明 `ECMAScript.VueRoute` 依赖，公开的
+  `RouteLocationRaw` 参数在独立 NuGet 消费方中可以正常还原，Vue Router 的资源 locator 也会
+  沿依赖闭包传递。
+- NuGet 描述中的分号不再被 `NuspecProperties` 误解析为属性分隔符，包含该字符的包简介可以
+  稳定打包。
+- NuGet dry-run 入口覆盖全部已发布包，且发布 artifact 的版本只从核心 `Jazor` 包解析，避免
+  发布前漏检包或误把 `Jazor.Admin` / `Jazor.Vue` 名称当作版本。
+
 ### Jazor 0.26.0
 
 > 类库 JavaScript 资源一次性固定为两种 carrier，并统一引用传递与最终宿主物化。本版本在

@@ -8,7 +8,9 @@
       <_JazorPackageVersion Condition="'$(_JazorPackageVersion)' == ''">1.0.0</_JazorPackageVersion>
       <_JazorBuildOutputDir>$([MSBuild]::EnsureTrailingSlash('$(TargetDir)'))</_JazorBuildOutputDir>
       <_JazorProjectDir>$([MSBuild]::EnsureTrailingSlash('$(MSBuildProjectDirectory)'))</_JazorProjectDir>
-      <NuspecProperties>packageId=$(PackageId);version=$(_JazorPackageVersion);packageAuthors=$(Authors);packageDescription=$(Description);repositoryUrl=$(RepositoryUrl);repositoryType=$(RepositoryType);dependencyVersion=$(_JazorPackageVersion);buildOutputDir=$(_JazorBuildOutputDir);projectDir=$(_JazorProjectDir);packageReadmeFile=$(PackageReadmeFile);buildOutputRoot=$(JazorPackageBuildOutputRoot);nugetPackageRoot=$(NuGetPackageRoot);configuration=$(Configuration);angleSharpVersion=$(AngleSharpVersion)</NuspecProperties>
+      <!-- NuspecProperties is a semicolon-delimited list; escape user-authored text before composing it. -->
+      <_JazorPackageDescription>$([MSBuild]::Escape('$(Description)'))</_JazorPackageDescription>
+      <NuspecProperties>packageId=$(PackageId);version=$(_JazorPackageVersion);packageAuthors=$(Authors);packageDescription=$(_JazorPackageDescription);repositoryUrl=$(RepositoryUrl);repositoryType=$(RepositoryType);dependencyVersion=$(_JazorPackageVersion);buildOutputDir=$(_JazorBuildOutputDir);projectDir=$(_JazorProjectDir);packageReadmeFile=$(PackageReadmeFile);buildOutputRoot=$(JazorPackageBuildOutputRoot);nugetPackageRoot=$(NuGetPackageRoot);configuration=$(Configuration);angleSharpVersion=$(AngleSharpVersion)</NuspecProperties>
     </PropertyGroup>
   </Target>
 </Project>
