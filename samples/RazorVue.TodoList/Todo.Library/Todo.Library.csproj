@@ -28,6 +28,9 @@
   <!-- The Jazor package carries the ECMAScript contract assemblies; Jazor.Vue supplies the
        RazorVue analyzer/generator that a package consumer loses with the source references. -->
   <ItemGroup Condition="'$(TodoUsePackages)' == 'true'">
+    <!-- RazorVue is a direct Jazor tooling consumer: keep the shared analyzer/compiler closure
+         explicit because Jazor.Vue intentionally excludes Build/Analyzers from its dependency. -->
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" PrivateAssets="all" />
     <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
     <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
   </ItemGroup>

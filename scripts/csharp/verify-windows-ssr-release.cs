@@ -465,9 +465,12 @@ void AssertDetachedConsumer(string consumerRoot, string workRoot)
 
     var libraryProject = Path.Combine(consumerRoot, "Todo.Library", "Todo.Library.csproj");
     var libraryText = File.ReadAllText(libraryProject);
-    if (!libraryText.Contains("TodoUsePackages", StringComparison.Ordinal))
+    if (!libraryText.Contains("TodoUsePackages", StringComparison.Ordinal) ||
+        !libraryText.Contains("PackageReference Include=\"Jazor\"", StringComparison.Ordinal) ||
+        !libraryText.Contains("PackageReference Include=\"Jazor.Vue\"", StringComparison.Ordinal))
     {
-        throw new InvalidOperationException("Copied Todo.Library does not expose the package-consumer configuration.");
+        throw new InvalidOperationException(
+            "Copied Todo.Library must directly reference both Jazor and Jazor.Vue in package-consumer mode.");
     }
 
     // Both projects express repository source references as ..\..\..\src; the consumer copy
