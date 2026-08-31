@@ -32,7 +32,7 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### Jazor 0.26.2 - 2026-08-31
+### Jazor 0.26.3 - 2026-08-31
 
 - `ECMAScript.ElementPlus` 现在声明公开 `ECMAScript.VueRoute` 依赖，独立 NuGet 消费方可以还原完整的程序集与资源闭包。
 - NuGet 打包会正确转义简介中的分号，手动 dry-run 工作流也会检查全部已发布包。
@@ -110,15 +110,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.26.2
+dotnet add package Jazor --version 0.26.3
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.2" />
-  <PackageReference Include="Jazor.Vue" Version="0.26.2" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.26.3" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 

@@ -11,9 +11,9 @@ RazorVue authoring contract。消费方生成的组件模块进入消费程序�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.2" />
-  <PackageReference Include="Jazor.Vue" Version="0.26.2" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="0.26.2" />
+  <PackageReference Include="Jazor" Version="0.26.3" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.3" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="0.26.3" />
 </ItemGroup>
 ```
 

@@ -17,7 +17,7 @@ carrier。`ModuleCatalog`（`ECMAScriptCode`）是开发者编写的 C#/RazorVue
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.2" />
+  <PackageReference Include="Jazor" Version="0.26.3" />
 </ItemGroup>
 ```
 
@@ -29,7 +29,7 @@ carrier。`ModuleCatalog`（`ECMAScriptCode`）是开发者编写的 C#/RazorVue
 定义 module 的类库应隔离这项工具引用：
 
 ```xml
-<PackageReference Include="Jazor" Version="0.26.2" PrivateAssets="all" />
+<PackageReference Include="Jazor" Version="0.26.3" PrivateAssets="all" />
 ```
 
 最终 `Exe`/`WinExe` 宿主需要 Emit 时直接引用 `Jazor`，不设置 `PrivateAssets`。包内
@@ -66,11 +66,11 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.26.2" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.26.2" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.26.2" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.26.2" />
-  <PackageReference Include="ECMAScript.Style" Version="0.26.2" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="0.26.3" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.26.3" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="0.26.3" />
+  <PackageReference Include="ECMAScript.TDesign" Version="0.26.3" />
+  <PackageReference Include="ECMAScript.Style" Version="0.26.3" />
 </ItemGroup>
 ```
 
@@ -108,8 +108,8 @@ ASP.NET Core 持有请求管线、静态资源与响应文档，DenoHost 执行�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.2" />
-  <PackageReference Include="Jazor.Vue" Version="0.26.2" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.26.3" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 

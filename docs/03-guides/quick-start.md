@@ -10,7 +10,7 @@
 
 ```bash
 dotnet new classlib -n Sample.Modules
-dotnet add Sample.Modules package Jazor --version 0.26.2
+dotnet add Sample.Modules package Jazor --version 0.26.3
 ```
 
 在类库中声明一个 ECMAScript 模块：
@@ -36,7 +36,7 @@ public static class Greetings
 ```bash
 dotnet new web -n Sample.Host
 dotnet add Sample.Host reference Sample.Modules
-dotnet add Sample.Host package Jazor --version 0.26.2
+dotnet add Sample.Host package Jazor --version 0.26.3
 ```
 
 在 `Sample.Host.csproj` 配置 debug 输出：
@@ -68,7 +68,7 @@ SDK 会把这个已物化目录复制到发布输出的 `jazor/` 位置。
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="0.26.2" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 

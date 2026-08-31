@@ -32,7 +32,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.26.2 - 2026-08-31
+### Jazor 0.26.3 - 2026-08-31
 
 - `ECMAScript.ElementPlus` now declares its public `ECMAScript.VueRoute` dependency, so standalone package consumers restore the complete assembly and resource closure.
 - Package descriptions containing semicolons are escaped correctly during NuGet packing, and the manual dry-run workflow now checks every published package.
@@ -111,7 +111,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.26.2
+dotnet add package Jazor --version 0.26.3
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -119,8 +119,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.2" />
-  <PackageReference Include="Jazor.Vue" Version="0.26.2" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.26.3" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 

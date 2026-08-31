@@ -213,15 +213,24 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "id: release_ref");
 		StringAssert.Contains(source, "$releaseRef = '${{ github.ref_name }}'");
 		StringAssert.Contains(source, "--package jazor `");
+		StringAssert.Contains(source, "--package jazor-vue `");
+		StringAssert.Contains(source, "--package style `");
+		StringAssert.Contains(source, "--package admin `");
+		StringAssert.Contains(source, "--package devtools `");
 		StringAssert.Contains(source, "--package dataui `");
+		StringAssert.Contains(source, "--package vu-icons `");
 		StringAssert.Contains(source, "--package pinia `");
 		StringAssert.Contains(source, "--package pinia-testing `");
 		StringAssert.Contains(source, "--package vueroute `");
 		StringAssert.Contains(source, "--package vuetify `");
 		StringAssert.Contains(source, "--package elementplus `");
 		StringAssert.Contains(source, "--package tdesign `");
-		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/Jazor.*.nupkg'");
 		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg'");
+		StringAssert.Contains(source, "Where-Object { $_.BaseName -match '^Jazor\\.[0-9]' }");
+		StringAssert.Contains(source, "$nupkg.BaseName.Substring('Jazor.'.Length)");
+		Assert.IsFalse(
+			source.Contains("Get-ChildItem 'artifacts/packages/Jazor.*.nupkg'", StringComparison.Ordinal),
+			"Version discovery must not confuse Jazor.Admin or Jazor.Vue with the core Jazor package.");
 		StringAssert.Contains(source, "NuGet trusted publishing login");
 		StringAssert.Contains(source, "Push to GitHub Packages");
 		StringAssert.Contains(source, "Create GitHub Release");
@@ -238,6 +247,20 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "workflow_dispatch:");
 		StringAssert.Contains(source, "ref: ${{ inputs.ref || github.ref }}");
 		StringAssert.Contains(source, "--skip-push");
+		StringAssert.Contains(source, "--package jazor `");
+		StringAssert.Contains(source, "--package jazor-vue `");
+		StringAssert.Contains(source, "--package style `");
+		StringAssert.Contains(source, "--package admin `");
+		StringAssert.Contains(source, "--package devtools `");
+		StringAssert.Contains(source, "--package dataui `");
+		StringAssert.Contains(source, "--package vu-icons `");
+		StringAssert.Contains(source, "--package pinia `");
+		StringAssert.Contains(source, "--package pinia-testing `");
+		StringAssert.Contains(source, "--package vueroute `");
+		StringAssert.Contains(source, "--package vuetify `");
+		StringAssert.Contains(source, "--package elementplus `");
+		StringAssert.Contains(source, "--package tdesign `");
+		StringAssert.Contains(source, "Where-Object { $_.BaseName -match '^Jazor\\.[0-9]' }");
 		Assert.IsFalse(source.Contains("push:", StringComparison.Ordinal), "Dry-run workflow must not run on tag pushes.");
 		Assert.IsFalse(source.Contains("id-token: write", StringComparison.Ordinal), "Dry-run workflow must not request NuGet trusted-publishing permissions.");
 		Assert.IsFalse(source.Contains("NuGet trusted publishing login", StringComparison.Ordinal), "Dry-run workflow must not publish to nuget.org.");

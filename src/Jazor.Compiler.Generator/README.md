@@ -22,7 +22,7 @@
 ## 运行
 
 ```bash
-dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version 0.26.2
+dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version 0.26.3
 ```
 
 `--version` 必须与当前 lockstep 发布版本一致。生成器不会从脏工作树或最近的旧 tag 猜测版本；
