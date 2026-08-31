@@ -1,0 +1,19 @@
+<Project>
+  <!-- Direct Jazor imports this file as well as NuGet's buildTransitive import. Add once only. -->
+  <PropertyGroup>
+    <_JazorAddCoreResourceLocators>false</_JazorAddCoreResourceLocators>
+    <_JazorAddCoreResourceLocators Condition="'$(_JazorCoreResourceLocatorsImported)' != 'true'">true</_JazorAddCoreResourceLocators>
+  </PropertyGroup>
+
+  <!-- The CLR/ECMAScript binding is a JS resource library. This is the only transitive Jazor asset. -->
+  <ItemGroup Condition="'$(_JazorAddCoreResourceLocators)' == 'true'">
+    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\ecmascript\manifest.json"
+                          Condition="Exists('$(MSBuildThisFileDirectory)..\jazor\ecmascript\manifest.json')" />
+    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\..\ECMAScript\manifest.json"
+                          Condition="Exists('$(MSBuildThisFileDirectory)..\..\ECMAScript\manifest.json')" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(_JazorAddCoreResourceLocators)' == 'true'">
+    <_JazorCoreResourceLocatorsImported>true</_JazorCoreResourceLocatorsImported>
+  </PropertyGroup>
+</Project>
