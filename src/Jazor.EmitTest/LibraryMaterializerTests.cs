@@ -977,6 +977,23 @@ public sealed class LibraryMaterializerTests
             .ToArray();
 
         Assert.IsEmpty(unresolved, "Browser import map does not provide: " + string.Join(", ", unresolved));
+
+        // A manifest can provide every bare package name while still omitting a relative ESM
+        // chunk. Verify the physical selected closure as a graph, including dynamic imports,
+        // so a browser never receives an import-map entry whose next request is a 404.
+        var unresolvedRelative = Directory.EnumerateFiles(dataUiRoot, "*", SearchOption.AllDirectories)
+            .Where(IsJavaScriptModule)
+            .SelectMany(path => GetRelativeModuleSpecifiers(path)
+                .Select(specifier => (path, specifier)))
+            .Where(edge => ResolveMaterializedModule(dataUiRoot, edge.path, edge.specifier) is null)
+            .Select(edge => $"{Path.GetRelativePath(dataUiRoot, edge.path).Replace('\\', '/')} -> {edge.specifier}")
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static edge => edge, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.IsEmpty(
+            unresolvedRelative,
+            "Materialized browser closure is missing relative modules: " + string.Join(", ", unresolvedRelative));
         Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(dataUiRoot, "jspdf.browser.mjs.LEGAL.txt")));
 
@@ -1111,9 +1128,55 @@ public sealed class LibraryMaterializerTests
     private static IEnumerable<string> GetBareModuleSpecifiers(string modulePath)
     {
         var module = new Parser().ParseModule(File.ReadAllText(modulePath));
-        var collector = new BareModuleSpecifierCollector();
+        var collector = new ModuleSpecifierCollector();
         collector.Visit(module);
-        return collector.Specifiers;
+        return collector.Specifiers.Where(static specifier =>
+            !specifier.StartsWith('.', StringComparison.Ordinal) &&
+            !specifier.StartsWith('/', StringComparison.Ordinal) &&
+            !specifier.StartsWith('#', StringComparison.Ordinal) &&
+            !Uri.TryCreate(specifier, UriKind.Absolute, out _));
+    }
+
+    private static IEnumerable<string> GetRelativeModuleSpecifiers(string modulePath)
+    {
+        var module = new Parser().ParseModule(File.ReadAllText(modulePath));
+        var collector = new ModuleSpecifierCollector();
+        collector.Visit(module);
+        return collector.Specifiers.Where(static specifier =>
+            specifier.StartsWith('.', StringComparison.Ordinal));
+    }
+
+    private static string? ResolveMaterializedModule(string root, string sourcePath, string specifier)
+    {
+        var cleanSpecifier = specifier.Split(['?', '#'], 2)[0];
+        var candidate = Path.GetFullPath(Path.Combine(
+            Path.GetDirectoryName(sourcePath)!,
+            cleanSpecifier.Replace('/', Path.DirectorySeparatorChar)));
+        var normalizedRoot = Path.GetFullPath(root);
+        var rootWithSeparator = normalizedRoot.EndsWith(Path.DirectorySeparatorChar)
+            ? normalizedRoot
+            : normalizedRoot + Path.DirectorySeparatorChar;
+        if (!candidate.StartsWith(rootWithSeparator, StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        if (File.Exists(candidate))
+            return candidate;
+
+        foreach (var extension in new[] { ".js", ".mjs", ".cjs", ".jsx", ".json" })
+        {
+            var withExtension = candidate + extension;
+            if (File.Exists(withExtension))
+                return withExtension;
+        }
+
+        foreach (var extension in new[] { ".js", ".mjs", ".cjs", ".jsx", ".json" })
+        {
+            var index = Path.Combine(candidate, "index" + extension);
+            if (File.Exists(index))
+                return index;
+        }
+
+        return null;
     }
 
     private static bool IsJavaScriptModule(string path)
@@ -1124,7 +1187,7 @@ public sealed class LibraryMaterializerTests
            (provider.EndsWith('/', StringComparison.Ordinal) &&
             specifier.StartsWith(provider, StringComparison.Ordinal));
 
-    private sealed class BareModuleSpecifierCollector : AstVisitor
+    private sealed class ModuleSpecifierCollector : AstVisitor
     {
         public HashSet<string> Specifiers { get; } = new(StringComparer.Ordinal);
 
@@ -1159,18 +1222,7 @@ public sealed class LibraryMaterializerTests
         }
 
         private void Add(StringLiteral source)
-        {
-            var specifier = source.Value;
-            if (specifier.StartsWith('.', StringComparison.Ordinal) ||
-                specifier.StartsWith('/', StringComparison.Ordinal) ||
-                specifier.StartsWith('#', StringComparison.Ordinal) ||
-                Uri.TryCreate(specifier, UriKind.Absolute, out _))
-            {
-                return;
-            }
-
-            Specifiers.Add(specifier);
-        }
+            => Specifiers.Add(source.Value);
     }
 
     private sealed class LibraryWorkspace : IDisposable
