@@ -35,6 +35,8 @@ Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vu Icons、UI 库绑�
 
 `2026-08-31` 的 JazorAdmin Release 本地 NuGet consumer gate 已通过：native 与 VueInject 两个 consumer 均完成 0 warning/0 error 构建，最终 browser mount smoke 通过；同时 `vue-data-ui` selected entry 的相对 ESM closure 已完整物化，Emit 资源回归 180/180 通过。这确认了规范化后的包与资源交付链路，但不替代逐项 Blazor framework capability 的语义证据，复杂页面的 bridge 摩擦和未完成 ledger 项仍保留。
 
+面向“目标范围内零摩擦”的缺口、阶段、owner 和验收门禁见 [RazorVue “零摩擦”执行计划](./razorvue-zero-friction-plan.md)。Microsoft/Blazor 内置 UI 组件在该计划中明确保持范围外，不计入待实现能力。
+
 `Jazor.React`、`Jazor.RazorReact` 等未来方向尚未构成已接受的产品范围或公开 API。任何新框架集成必须遵守 [框架集成层](../02-architecture/framework-integrations.md) 的边界。
 
 ## 交付与 SSR
