@@ -258,7 +258,11 @@ internal static class TDesignComponentGenerator
             {
                 builder.AppendLine();
                 builder.AppendLine($"[ECMAScript(\"tdesign-vue-next\", Transform.Component, \"{component.Component.Binding.RuntimeExport}\")]");
-                builder.AppendLine($"public sealed class {component.Component.Contract.AuthoringType} : {component.Component.Contract.AuthoringType}<{string.Join(", ", component.DefaultTypeArguments.Select(static argument => argument.Name))}>");
+                // Razor's component discovery cannot disambiguate a generic component and a
+                // same-named closed alias. Keep the generated alias for assembly-internal
+                // metadata compatibility, while typed Razor markup uses the generic component
+                // directly (explicitly or through inference).
+                builder.AppendLine($"internal sealed class {component.Component.Contract.AuthoringType} : {component.Component.Contract.AuthoringType}<{string.Join(", ", component.DefaultTypeArguments.Select(static argument => argument.Name))}>");
                 builder.AppendLine("{");
                 builder.AppendLine("}");
             }

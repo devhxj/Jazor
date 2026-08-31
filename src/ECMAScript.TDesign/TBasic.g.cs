@@ -24161,7 +24161,7 @@ public class TAutoComplete<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "AutoComplete")]
-public sealed class TAutoComplete : TAutoComplete<TAutoCompleteOption>
+internal sealed class TAutoComplete : TAutoComplete<TAutoCompleteOption>
 {
 }
 
@@ -25251,7 +25251,7 @@ public class TCascader<CascaderOption> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Cascader")]
-public sealed class TCascader : TCascader<TTreeOptionData<TCascaderCascaderOptionDefaultTDefault>>
+internal sealed class TCascader : TCascader<TTreeOptionData<TCascaderCascaderOptionDefaultTDefault>>
 {
 }
 
@@ -25416,7 +25416,7 @@ public class TCheckboxGroup<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "CheckboxGroup")]
-public sealed class TCheckboxGroup : TCheckboxGroup<TCheckboxGroupValueItem[]>
+internal sealed class TCheckboxGroup : TCheckboxGroup<TCheckboxGroupValueItem[]>
 {
 }
 
@@ -27093,7 +27093,7 @@ public class TEnhancedTable<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "EnhancedTable")]
-public sealed class TEnhancedTable : TEnhancedTable<TTableRowData>
+internal sealed class TEnhancedTable : TEnhancedTable<TTableRowData>
 {
 }
 
@@ -27202,7 +27202,7 @@ public class TForm<FormData> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Form")]
-public sealed class TForm : TForm<TJsonObject>
+internal sealed class TForm : TForm<TJsonObject>
 {
 }
 
@@ -27804,7 +27804,7 @@ public class TInput<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Input")]
-public sealed class TInput : TInput<TInputValue>
+internal sealed class TInput : TInput<TInputValue>
 {
 }
 
@@ -27965,7 +27965,7 @@ public class TInputNumber<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "InputNumber")]
-public sealed class TInputNumber : TInputNumber<TInputNumberValue>
+internal sealed class TInputNumber : TInputNumber<TInputNumberValue>
 {
 }
 
@@ -29235,7 +29235,7 @@ public class TPrimaryTable<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "PrimaryTable")]
-public sealed class TPrimaryTable : TPrimaryTable<TTableRowData>
+internal sealed class TPrimaryTable : TPrimaryTable<TTableRowData>
 {
 }
 
@@ -29376,7 +29376,7 @@ public class TRadio<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Radio")]
-public sealed class TRadio : TRadio<TRadioValue>
+internal sealed class TRadio : TRadio<TRadioValue>
 {
 }
 
@@ -29425,7 +29425,7 @@ public class TRadioButton<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "RadioButton")]
-public sealed class TRadioButton : TRadioButton<TRadioValue>
+internal sealed class TRadioButton : TRadioButton<TRadioValue>
 {
 }
 
@@ -29474,7 +29474,7 @@ public class TRadioGroup<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "RadioGroup")]
-public sealed class TRadioGroup : TRadioGroup<TRadioValue>
+internal sealed class TRadioGroup : TRadioGroup<TRadioValue>
 {
 }
 
@@ -29987,7 +29987,7 @@ public class TSelect<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Select")]
-public sealed class TSelect : TSelect<TSelectOption>
+internal sealed class TSelect : TSelect<TSelectOption>
 {
 }
 
@@ -30756,7 +30756,7 @@ public class TSwitch<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Switch")]
-public sealed class TSwitch : TSwitch<TSwitchValue>
+internal sealed class TSwitch : TSwitch<TSwitchValue>
 {
 }
 
@@ -31266,7 +31266,7 @@ public class TTable<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Table")]
-public sealed class TTable : TTable<TTableRowData>
+internal sealed class TTable : TTable<TTableRowData>
 {
 }
 
@@ -32247,7 +32247,7 @@ public class TTransfer<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Transfer")]
-public sealed class TTransfer : TTransfer<TDataOption>
+internal sealed class TTransfer : TTransfer<TDataOption>
 {
 }
 
@@ -32452,7 +32452,7 @@ public class TTree<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Tree")]
-public sealed class TTree : TTree<TTreeOptionData<TTreeTDefaultTDefault>>
+internal sealed class TTree : TTree<TTreeOptionData<TTreeTDefaultTDefault>>
 {
 }
 
@@ -32673,7 +32673,7 @@ public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "TreeSelect")]
-public sealed class TTreeSelect : TTreeSelect<TTreeOptionData<TTreeSelectDataOptionDefaultTDefault>, TTreeSelectValue>
+internal sealed class TTreeSelect : TTreeSelect<TTreeOptionData<TTreeSelectDataOptionDefaultTDefault>, TTreeSelectValue>
 {
 }
 
@@ -32939,7 +32939,7 @@ public class TUpload<T> : TContentComponentBase
 }
 
 [ECMAScript("tdesign-vue-next", Transform.Component, "Upload")]
-public sealed class TUpload : TUpload<TUploadFile>
+internal sealed class TUpload : TUpload<TUploadFile>
 {
 }
 

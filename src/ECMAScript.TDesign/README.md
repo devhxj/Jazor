@@ -32,6 +32,12 @@ dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 
 公开 authoring 类型使用 `T*` 命名，例如 `TMenuValue`、`TButtonThemeValue` 与 `TComponents`；根 host 保留 `TDesign`。字符串域使用 `[String]` enum，因此 `TButtonThemeValue.Primary` 会发射为 `"primary"`，不会变成数值序号。
 
+带类型参数的组件（例如 `TInput<T>`、`TForm<T>`、`TTable<T>` 和
+`TPrimaryTable<T>`）只公开泛型组件本身。生成器仍保留同名的默认闭式别名供程序集内部元数据使用，
+但该别名是 `internal`，不会进入消费方 official Razor Source Generator 的组件发现范围；否则同名泛型
+与非泛型组件会触发 Razor SDK 的歧义诊断。Razor 页面直接写显式类型参数（例如
+`<TInput T="string" ... />`），C# 代码使用 `TInput<string>`，无需桥接组件或 `object` 转换。
+
 Razor Source Generator 集成、render-function lowering 和产物物化分别属于 `Jazor.Vue`、`Jazor.RazorVue` 和 `Jazor.Emit`。本包只定义 host binding 与组件契约。
 
 ## 相关文档

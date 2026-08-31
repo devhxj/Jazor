@@ -40,10 +40,10 @@ public sealed class RazorSgOfficialTDesignTableCellRuntimeTests
                             builder.OpenElement(2, "strong");
                             builder.AddContent(3, context.Row.Label);
                             builder.CloseElement();
-                            builder.OpenComponent<TButton>(4);
-                            builder.AddComponentParameter(5, nameof(TButton.OnClick),
+                            builder.OpenComponent<Demo.Library.TButton>(4);
+                            builder.AddComponentParameter(5, nameof(Demo.Library.TButton.OnClick),
                                 EventCallback.Factory.Create(this, () => activated = context.Row.Id));
-                            builder.AddComponentParameter(6, nameof(TButton.ChildContent),
+                            builder.AddComponentParameter(6, nameof(Demo.Library.TButton.ChildContent),
                                 (RenderFragment)(child => child.AddContent(0, "Activate")));
                             builder.CloseComponent();
                             builder.CloseElement();
