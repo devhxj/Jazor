@@ -1,44 +1,86 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "libraryId": "vue3",
   "version": "3.5.13",
   "imports": {
-    "vue": {
-      "development": "dist/vue.runtime.esm-browser.js",
-      "production": "dist/vue.runtime.esm-browser.prod.js",
-      "files": []
-    },
-    "@vue/server-renderer": {
-      "development": "dist/server-renderer.esm-browser.js",
-      "production": "dist/server-renderer.esm-browser.prod.js",
-      "files": [
-        "licenses/VUE-SERVER-RENDERER-LICENSE"
-      ]
-    },
     "@vue/devtools-api": {
+      "type": "module",
       "development": "dist/devtools-api/vue-devtools-api.esm-browser.js",
       "production": "dist/devtools-api/vue-devtools-api.esm-browser.js",
+      "developmentHash": "d902a0d2a3d53df19aad52c88e0e4c70fe4abdd7276d31c8a7b32022aee171d3",
+      "productionHash": "d902a0d2a3d53df19aad52c88e0e4c70fe4abdd7276d31c8a7b32022aee171d3",
       "developmentDependencies": [
         "perfect-debounce"
       ],
       "productionDependencies": [
         "perfect-debounce"
       ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
       "files": [
-        "licenses/VUE-DEVTOOLS-API-LICENSE"
+        {
+          "type": "license",
+          "path": "licenses/VUE-DEVTOOLS-API-LICENSE",
+          "hash": "d0ac09e8df2b54625ea1606dfae75d5b6af1cbc5d28a17eca1350be9c367175c"
+        }
+      ]
+    },
+    "@vue/server-renderer": {
+      "type": "module",
+      "development": "dist/server-renderer.esm-browser.js",
+      "production": "dist/server-renderer.esm-browser.prod.js",
+      "developmentHash": "b80bd93432c1400332b51fd338c785dddab31795d6332e00a376faba5e17d33b",
+      "productionHash": "5a19174ffbae344935dd7c2445ef6916d20f1c4699295b5b588ef0f7586dbe40",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": [
+        {
+          "type": "license",
+          "path": "licenses/VUE-SERVER-RENDERER-LICENSE",
+          "hash": "1bb85cc9b13b81ef41c81c51866172fc345e0503c86726a6755b796590b70175"
+        }
       ]
     },
     "perfect-debounce": {
+      "type": "module",
       "development": "dist/devtools-api/perfect-debounce.mjs",
       "production": "dist/devtools-api/perfect-debounce.mjs",
+      "developmentHash": "94785b6e9d390622cc08320c75e6eedd8b32f0a6608ba3751a00942593d6c228",
+      "productionHash": "94785b6e9d390622cc08320c75e6eedd8b32f0a6608ba3751a00942593d6c228",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
       "files": [
-        "licenses/PERFECT-DEBOUNCE-LICENSE"
+        {
+          "type": "license",
+          "path": "licenses/PERFECT-DEBOUNCE-LICENSE",
+          "hash": "46231df5a7733c3f52f11b71f3df61813007745b62b09031acfb45fb42d75082"
+        }
       ]
+    },
+    "vue": {
+      "type": "module",
+      "development": "dist/vue.runtime.esm-browser.js",
+      "production": "dist/vue.runtime.esm-browser.prod.js",
+      "developmentHash": "998bf204fd015a280d9b6752c1decdbe1263f1cdef404b564c94fbf1b2d0ff44",
+      "productionHash": "beb6a8f2953386b171fb20e5c719e96082f3b0cf29a88d24158f61b824e3c1d4",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
     }
   },
   "requires": {},
   "styles": [],
   "files": [
-    "licenses/LICENSE"
+    {
+      "type": "license",
+      "path": "licenses/LICENSE",
+      "hash": "1bb85cc9b13b81ef41c81c51866172fc345e0503c86726a6755b796590b70175"
+    }
   ]
 }

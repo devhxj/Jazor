@@ -19,7 +19,7 @@
 
 - 本项目可以依赖 `System.Text.Json` 等共享实现需要的包。
 - 最小契约仍归 `ECMAScript.Contract`，例如 `JazorAttribute`、`Op` 与 `IUIComponent`。
-- 本项目不拥有 ECMAScript AST、编译器入口、Razor SDK 桥接或组件专属 manifest 模型。
+- 本项目不拥有 ECMAScript AST、编译器入口、Razor SDK 桥接或组件专属 artifact schema。
 
 ## 关键区域
 

@@ -32,12 +32,12 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### Jazor 0.25.0 — 2026-08-28
+### Jazor 0.26.0 - 2026-08-31
 
-- CLR runtime module 现在统一使用标准 `Jazor.Artifacts.RuntimeProviderCatalog`；inline 与 embedded provider 共享路径、哈希、source map、asset、import-map 和依赖校验，已退休的 `ECMAScript.Catalog` 不再读取。
-- 类库产物与 ESM/CSS 资源现在通过一张声明式 artifact graph 传播，只有真实 import 入口才会激活 provider 依赖闭包；冲突路径或缺失依赖会在 Emit 阶段确定性失败。
-- 工具遵循“谁使用，谁直接引用”：定义模块/组件的类库直接引用 `Jazor` 或 `Jazor.Vue`，中间类库不会为了传递 catalog 获得工具链，最终宿主只执行一次 Emit 物化。
-- 从 `0.24.0` 或更早版本升级时必须 lockstep 更新包并重新构建 provider/catalog 产物；不提供旧 catalog 兼容 fallback。
+- 类库携带 JavaScript 只允许两种形式：已有资源使用包内 `manifest.json + dist/**`；由 Jazor 编译的 C# 写入程序集内部的 `Jazor.Generated.ModuleCatalog`。
+- 生成模块、source map、package import、相对依赖、HMR 元数据和所属资源共用唯一的 `ModuleCatalog` 入口，不存在 provider 或并列 artifact/source-map catalog。
+- 工具遵循“谁使用，谁直接引用”：编写 Jazor 代码的项目直接引用 `Jazor` 或 `Jazor.Vue`；普通类库引用只传递其声明的模块/资源依赖。
+- 宿主完成编译后，MSBuild 只调用一次 `Jazor.Emit`。Emit 解析选中的依赖闭包，并将 Debug、Release 或 SSR 投影原子物化到 `JazorDir`。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -95,15 +95,15 @@ flowchart LR
 在声明 ECMAScript 模块的每个项目中安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.25.0
+dotnet add package Jazor --version 0.26.0
 ```
 
 需要当前 Razor-to-Vue 集成的 Razor SDK 项目，必须显式添加 opt-in 包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.25.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.25.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.26.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

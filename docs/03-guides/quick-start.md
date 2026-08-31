@@ -10,7 +10,7 @@
 
 ```bash
 dotnet new classlib -n Sample.Modules
-dotnet add Sample.Modules package Jazor --version 0.25.0
+dotnet add Sample.Modules package Jazor --version 0.26.0
 ```
 
 在类库中声明一个 ECMAScript 模块：
@@ -36,7 +36,7 @@ public static class Greetings
 ```bash
 dotnet new web -n Sample.Host
 dotnet add Sample.Host reference Sample.Modules
-dotnet add Sample.Host package Jazor --version 0.25.0
+dotnet add Sample.Host package Jazor --version 0.26.0
 ```
 
 在 `Sample.Host.csproj` 配置 debug 输出：
@@ -56,7 +56,11 @@ dotnet add Sample.Host package Jazor --version 0.25.0
 dotnet build Sample.Host
 ```
 
-构建成功后，`jazor/` 中会包含 `features/greetings.mjs`、对应的 source map 和 `jazor-manifest.json`。Web 宿主使用 `UseJazorHost()` 后，浏览器仍通过 `/jazor/*` 访问；发布时这些文件会复制到 `<publish>/jazor/`。生成模块使用标准 ECMAScript 具名导出；跨模块调用由编译器创建稳定 import。
+构建完成后，MSBuild 会在最终 `Exe`/`WinExe` 宿主的 `Build` 后调用 `Jazor.Emit`，直接把
+`features/greetings.mjs`、对应 source map、`jazor-manifest.json` 和 import map 物化到
+`JazorDir`。类库本身只在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，不会创建 `jazor/`
+输出目录。生成模块使用标准 ECMAScript 具名导出；跨模块调用由编译器创建稳定 import。发布时
+SDK 会把这个已物化目录复制到发布输出的 `jazor/` 位置。
 
 ## 4. 可选：加入 Razor-to-Vue
 
@@ -64,7 +68,7 @@ dotnet build Sample.Host
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="0.25.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

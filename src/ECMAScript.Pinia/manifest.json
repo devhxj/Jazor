@@ -1,27 +1,43 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "libraryId": "pinia",
   "version": "4.0.3",
   "imports": {
+    "nostics": {
+      "type": "module",
+      "development": "dist/nostics/index.mjs",
+      "production": "dist/nostics/index.mjs",
+      "developmentHash": "af9b0c9e5ad1480e458e059171042a840e67a826d396c153d2305ce62cfb8bf8",
+      "productionHash": "af9b0c9e5ad1480e458e059171042a840e67a826d396c153d2305ce62cfb8bf8",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": [
+        {
+          "type": "license",
+          "path": "licenses/NOSTICS-LICENSE",
+          "hash": "acf17aff719bfab70f6bec3a93f1ba82ce9fe27ab74f83c0f2e1efb1273fa220"
+        }
+      ]
+    },
     "pinia": {
+      "type": "module",
       "development": "dist/pinia.esm-browser.js",
       "production": "dist/pinia.esm-browser.prod.js",
+      "developmentHash": "b7209e5f330a7ece765a19d32b4e901f5628b55f7c6ae13681709b0ad00631a6",
+      "productionHash": "5a2e0d4029f0126851c9c44b7e51170a48eb140d81921c1fc702ac31a18ec260",
       "developmentDependencies": [
-        "vue",
+        "@vue/devtools-api",
         "nostics",
-        "@vue/devtools-api"
+        "vue"
       ],
       "productionDependencies": [
         "vue"
       ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
       "files": []
-    },
-    "nostics": {
-      "development": "dist/nostics/index.mjs",
-      "production": "dist/nostics/index.mjs",
-      "files": [
-        "licenses/NOSTICS-LICENSE"
-      ]
     }
   },
   "requires": {
@@ -29,6 +45,10 @@
   },
   "styles": [],
   "files": [
-    "licenses/LICENSE"
+    {
+      "type": "license",
+      "path": "licenses/LICENSE",
+      "hash": "91a2845c4db44e7497b514b98634a674c737986ad0db81599307cf733bf850b2"
+    }
   ]
 }

@@ -22,8 +22,11 @@
 ## 运行
 
 ```bash
-dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj
+dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version 0.26.0
 ```
+
+`--version` 必须与当前 lockstep 发布版本一致。生成器不会从脏工作树或最近的旧 tag 猜测版本；
+也可以通过 `JazorPackageVersion` 环境变量提供同一版本。
 
 修改上述扫描范围内的 `[Jazor]` 声明后，必须重新执行生成器并提交生成文件。`WhiteList.cs.Generate.cs` 及相关输出不应手工编辑。
 

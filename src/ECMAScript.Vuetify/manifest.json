@@ -1,60 +1,107 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "libraryId": "vuetify",
   "version": "4.1.8",
   "imports": {
     "vuetify": {
+      "type": "module",
       "development": "dist/vuetify.esm.js",
       "production": "dist/vuetify.esm.js",
+      "developmentHash": "7d7afa4f002ceff47da0af378621e68fcf730cff05bbbfd2b7f78be10e2bd065",
+      "productionHash": "7d7afa4f002ceff47da0af378621e68fcf730cff05bbbfd2b7f78be10e2bd065",
       "developmentDependencies": [
         "vue"
       ],
       "productionDependencies": [
         "vue"
-      ]
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
     },
     "vuetify/components": {
+      "type": "module",
       "development": "dist/components.mjs",
       "production": "dist/components.mjs",
-      "developmentDependencies": [
-        "vuetify"
-      ],
-      "productionDependencies": [
-        "vuetify"
-      ]
-    },
-    "vuetify/labs/components": {
-      "development": "dist/labs.mjs",
-      "production": "dist/labs.mjs",
+      "developmentHash": "8d407893e91d20c11a0be4bf016d6599b75b0029599a40ba2e9923951431a528",
+      "productionHash": "8d407893e91d20c11a0be4bf016d6599b75b0029599a40ba2e9923951431a528",
       "developmentDependencies": [
         "vuetify"
       ],
       "productionDependencies": [
         "vuetify"
       ],
-      "files": [
-        "dist/vuetify-labs.esm.js"
-      ]
-    },
-    "vuetify/directives": {
-      "development": "dist/directives.mjs",
-      "production": "dist/directives.mjs",
-      "developmentDependencies": [
+      "developmentModuleDependencies": [
         "vuetify"
       ],
-      "productionDependencies": [
+      "productionModuleDependencies": [
         "vuetify"
       ],
       "files": []
+    },
+    "vuetify/directives": {
+      "type": "module",
+      "development": "dist/directives.mjs",
+      "production": "dist/directives.mjs",
+      "developmentHash": "dad30d9a06c9865b72b247d2ee463275765808f8e09bc15194cb56d670d49c56",
+      "productionHash": "dad30d9a06c9865b72b247d2ee463275765808f8e09bc15194cb56d670d49c56",
+      "developmentDependencies": [
+        "vuetify"
+      ],
+      "productionDependencies": [
+        "vuetify"
+      ],
+      "developmentModuleDependencies": [
+        "vuetify"
+      ],
+      "productionModuleDependencies": [
+        "vuetify"
+      ],
+      "files": []
+    },
+    "vuetify/labs/components": {
+      "type": "module",
+      "development": "dist/labs.mjs",
+      "production": "dist/labs.mjs",
+      "developmentHash": "95d64d0b5b194f4672494da990e039b819700769d0bf8b2baa82639b4a2abb5d",
+      "productionHash": "95d64d0b5b194f4672494da990e039b819700769d0bf8b2baa82639b4a2abb5d",
+      "developmentDependencies": [
+        "vuetify"
+      ],
+      "productionDependencies": [
+        "vuetify"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vuetify-labs.esm.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vuetify-labs.esm.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vuetify-labs.esm.js",
+          "hash": "e8968b7a0416edeee089a6a3d119bfb6ef6ad974c536c4e94d02bc02d9c4b991",
+          "moduleId": "dist/vuetify-labs.esm.js"
+        }
+      ]
     }
   },
   "requires": {
     "vue3": "^3.5.0"
   },
   "styles": [
-    "dist/vuetify.min.css"
+    {
+      "type": "style",
+      "path": "dist/vuetify.min.css",
+      "hash": "fd62ad54c12c709140d81372894ac34ddd1683c91779eb9d31a7265d4f4f8bb6"
+    }
   ],
   "files": [
-    "licenses/LICENSE.md"
+    {
+      "type": "license",
+      "path": "licenses/LICENSE.md",
+      "hash": "70bfef859a7eed41e630a7257ee3772cd98345d21219e3ae3c3e75f91ff55e9c"
+    }
   ]
 }

@@ -52,6 +52,62 @@ public static class ECMAScriptModulePath
         => NormalizeCore(path, includeRelativePrefix: true);
 
     /// <summary>
+    /// Resolves a relative module import against the importer's output path.
+    ///
+    /// The normalizer intentionally rejects <c>..</c>; that is correct for an already resolved
+    /// output path, but it cannot be used while resolving a legal import such as
+    /// <c>../../components/page.mjs</c>. Resolve the segments first, then apply the same output
+    /// path rules. Both compiler and emit-side producers use this method so they cannot disagree
+    /// about generated-module dependency identities.
+    /// </summary>
+    public static string ResolveRelativePath(string importerPath, string importSpecifier)
+    {
+        if (string.IsNullOrWhiteSpace(importerPath))
+            throw new InvalidOperationException("ECMAScriptModule importer path cannot be empty.");
+        if (string.IsNullOrWhiteSpace(importSpecifier))
+            throw new InvalidOperationException("ECMAScriptModule relative import cannot be empty.");
+
+        var importer = importerPath.Replace('\\', '/').Trim();
+        var specifier = importSpecifier.Replace('\\', '/').Trim();
+        if (!specifier.StartsWith("./", StringComparison.Ordinal) &&
+            !specifier.StartsWith("../", StringComparison.Ordinal) &&
+            !string.Equals(specifier, ".", StringComparison.Ordinal) &&
+            !string.Equals(specifier, "..", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"ECMAScriptModule import '{importSpecifier}' is not a relative specifier.");
+        }
+
+        var importerSegments = importer
+            .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+            .Where(static segment => segment != ".")
+            .ToList();
+        if (importerSegments.Count == 0)
+            throw new InvalidOperationException("ECMAScriptModule importer path cannot be empty.");
+
+        // The final segment is the importer file. Do not let a relative import pop above the
+        // generated output root; an escaping path is a producer error, not a runtime fallback.
+        importerSegments.RemoveAt(importerSegments.Count - 1);
+        foreach (var segment in specifier.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (segment == ".")
+                continue;
+            if (segment == "..")
+            {
+                if (importerSegments.Count == 0)
+                    throw new InvalidOperationException(
+                        $"ECMAScriptModule import path cannot escape the output directory: '{importSpecifier}'.");
+                importerSegments.RemoveAt(importerSegments.Count - 1);
+                continue;
+            }
+
+            importerSegments.Add(segment);
+        }
+
+        return NormalizeRelativePath(string.Join("/", importerSegments));
+    }
+
+    /// <summary>
     /// Returns whether an import is resolved by a package manifest rather than Jazor's
     /// generated-module namespaces.
     /// </summary>
@@ -61,11 +117,11 @@ public static class ECMAScriptModulePath
             return false;
 
         var normalized = path.Replace('\\', '/').Trim();
+        // System/* and @jazor/* are packaged JS resources, just like vue or vuetify.
+        // Only generated-root paths and relative paths bypass a library manifest.
         return !normalized.StartsWith(".", StringComparison.Ordinal) &&
                !normalized.StartsWith("/", StringComparison.Ordinal) &&
-               !normalized.StartsWith("System/", StringComparison.Ordinal) &&
                !normalized.StartsWith("components/", StringComparison.Ordinal) &&
-               !normalized.StartsWith("@jazor/", StringComparison.Ordinal) &&
                !string.Equals(normalized, "style.mjs", StringComparison.Ordinal);
     }
 

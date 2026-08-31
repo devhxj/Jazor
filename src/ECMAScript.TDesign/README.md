@@ -2,7 +2,7 @@
 
 > 定位：TDesign Vue Next 的强类型 C# host binding 与 Razor-to-Vue authoring 接口。
 
-发布包携带 `tdesign-vue-next` 1.20.5 的浏览器 ESM、CSS、许可证和 `manifest.json`。应用只需还原 NuGet 包；Jazor 会从本地包资源物化 TDesign 与 Vue 依赖，不要求 `node_modules`、CDN 或额外的 Node.js 安装。
+发布包携带 `tdesign-vue-next` 1.20.5 的 `manifest.json + dist/**` 浏览器 ESM、CSS 和许可证资源。应用只需还原 NuGet 包；Jazor 会从本地包资源按 manifest 依赖物化 TDesign 与 Vue，不要求 `node_modules`、CDN 或额外的 Node.js 安装。
 
 ## 维护输入
 

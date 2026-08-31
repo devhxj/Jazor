@@ -1,3 +1,7 @@
+using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using Jazor.Common;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -5,17 +9,27 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 /// <summary>
-/// 扫描并编译 Jazor.CLR runtime module，生成标准 runtime provider catalog 源码。
+/// Lowers Jazor.CLR runtime modules and publishes them as the ECMAScript JS-resource package.
 /// </summary>
 /// <remarks>
-/// 该发射器使用 Roslyn 源码编译而不是反射加载 CLR 项目，因此能直接处理受限 helper 源码。
-/// 生成的 provider 携带模块文本、路径、hash 与已 lowering 的 <c>System/*</c> dependency metadata。
-/// 模块语义仍由 AstConverter/SemanticWalker 负责；Emit 只按这份结构化闭包裁剪，不重新解析 JavaScript。
+/// Roslyn source discovery and <see cref="AstConverter"/> remain the source of runtime semantics.
+/// This emitter owns only package materialization: <c>manifest.json + dist/**</c>. It must never
+/// generate a second managed catalog carrier for the ECMAScript project.
 /// </remarks>
 internal static class ClrRuntimeCatalogEmitter
 {
-    public static void Generate(string repoRoot, IEnumerable<MetadataReference> references)
+    private const int ManifestSchemaVersion = 2;
+    private const string LibraryId = "ecmascript";
+    private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
+
+    public static void Generate(
+        string repoRoot,
+        IEnumerable<MetadataReference> references,
+        string? requestedPackageVersion = null)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(repoRoot);
+        ArgumentNullException.ThrowIfNull(references);
+
         var clrSourceFiles = SharedGeneration.GetClrCompilationSourceFiles(repoRoot)
             .OrderBy(path => path, StringComparer.Ordinal)
             .ToArray();
@@ -31,88 +45,112 @@ internal static class ClrRuntimeCatalogEmitter
             [.. references],
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var moduleCandidates = DiscoverClrRuntimeModules(compilation, syntaxTrees);
-        Console.WriteLine($"clr-runtime candidates={moduleCandidates.Count}");
-        if (moduleCandidates.Count == 0)
+        var candidates = DiscoverClrRuntimeModules(compilation, syntaxTrees);
+        Console.WriteLine($"clr-runtime candidates={candidates.Count}");
+        if (candidates.Count == 0)
             return;
 
-        var generatedModules = new List<GeneratedClrRuntimeModule>();
-        var failedModules = new List<string>();
-        foreach (var candidate in moduleCandidates.OrderBy(static x => x.RelativePath, StringComparer.OrdinalIgnoreCase))
+        var generated = new List<GeneratedClrRuntimeModule>(candidates.Count);
+        var failures = new List<string>();
+        foreach (var candidate in candidates.OrderBy(static x => x.RelativePath, StringComparer.OrdinalIgnoreCase))
         {
             try
             {
                 var options = new AstConverterOptions(
                     AstConverterProfile.ClrRuntime,
                     symbol => ClrRuntimeSelection.ShouldInclude(candidate.RootType, symbol));
-
-                var converter = new AstConverter(candidate.RootType, candidate.SemanticModel, options);
-                var module = converter.Convert().GetAwaiter().GetResult();
+                var module = new AstConverter(candidate.RootType, candidate.SemanticModel, options)
+                    .Convert()
+                    .GetAwaiter()
+                    .GetResult();
                 if (module is null)
-                    continue;
+                    throw new InvalidOperationException("AstConverter returned no module.");
 
-                var content = module.ToKnRECMAScript();
-                generatedModules.Add(new GeneratedClrRuntimeModule(
+                var content = module.ToKnRECMAScript().ReplaceLineEndings("\n");
+                var imports = module.Body
+                    .OfType<Acornima.Ast.ImportDeclaration>()
+                    .Select(static declaration => declaration.Source.Value)
+                    .Where(static source => !string.IsNullOrWhiteSpace(source))
+                    .Distinct(StringComparer.Ordinal)
+                    .OrderBy(static source => source, StringComparer.Ordinal)
+                    .ToArray();
+                generated.Add(new GeneratedClrRuntimeModule(
                     candidate.RootType.ToDisplayString(Format.NameFormat),
-                    candidate.RelativePath.Replace('\\', '/'),
+                    NormalizeRelativePath(candidate.RelativePath),
                     content,
                     ComputeSha256Hex(content),
-                    CollectDependencies(module)));
+                    imports));
             }
             catch (Exception ex)
             {
                 var failure = $"{candidate.RootType.ToDisplayString(Format.NameFormat)} -> {candidate.RelativePath} :: {ex.GetType().Name}: {ex.Message}";
-                failedModules.Add(failure);
+                failures.Add(failure);
                 Console.WriteLine($"clr-runtime emit fail: {failure}");
-                foreach (System.Collections.DictionaryEntry entry in ex.Data)
-                {
-                    Console.WriteLine($"clr-runtime emit fail data: {entry.Key}={entry.Value}");
-                }
             }
         }
 
-        if (generatedModules.Count == 0)
-        {
-            Console.WriteLine("clr-runtime generated modules=0");
-            return;
-        }
+        // A partial runtime graph is unusable. Fail before touching dist or manifest so a prior
+        // complete package remains available to the next consumer.
+        if (failures.Count > 0)
+            throw new InvalidOperationException(
+                "CLR runtime resource generation failed; no partial ECMAScript package was written.\n" +
+                string.Join("\n", failures.OrderBy(static value => value, StringComparer.Ordinal)));
+        if (generated.Count == 0)
+            throw new InvalidOperationException("CLR runtime discovery produced no modules.");
 
-        Console.WriteLine($"clr-runtime generated modules={generatedModules.Count}");
-        if (failedModules.Count > 0)
-        {
-            Console.WriteLine($"clr-runtime failed modules={failedModules.Count}");
-        }
+        var modulePaths = generated
+            .Select(static module => module.RelativePath)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        generated = generated
+            .Select(module => module with
+            {
+                ModuleDependencies = module.Imports
+                    .Where(modulePaths.Contains)
+                    .Select(NormalizeRelativePath)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                PackageDependencies = module.Imports
+                    .Where(import => !modulePaths.Contains(import))
+                    .Where(ECMAScriptModulePath.IsPackageSpecifier)
+                    .Select(static import => import.Trim())
+                    .Distinct(StringComparer.Ordinal)
+                    .OrderBy(static value => value, StringComparer.Ordinal)
+                    .ToArray()
+            })
+            .OrderBy(static module => module.RelativePath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static module => module.TypeName, StringComparer.Ordinal)
+            .ToList();
 
-        var outputPath = Path.Combine(repoRoot, "src", "ECMAScript", "Catalog.g.cs");
-        File.WriteAllText(outputPath, BuildCatalogSource(generatedModules));
+        var packageRoot = Path.Combine(repoRoot, "src", "ECMAScript");
+        var manifestPath = Path.Combine(packageRoot, "manifest.json");
+        var manifest = BuildManifest(ResolveVersion(repoRoot, requestedPackageVersion), generated);
+        CommitPackage(packageRoot, manifestPath, generated, manifest);
+        Console.WriteLine($"clr-runtime generated resources={generated.Count} manifest={manifestPath}");
     }
 
-    private static List<ClrRuntimeModuleCandidate> DiscoverClrRuntimeModules(Compilation compilation, IEnumerable<SyntaxTree> syntaxTrees)
+    private static List<ClrRuntimeModuleCandidate> DiscoverClrRuntimeModules(
+        Compilation compilation,
+        IEnumerable<SyntaxTree> syntaxTrees)
     {
         var results = new List<ClrRuntimeModuleCandidate>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
-
         foreach (var syntaxTree in syntaxTrees)
         {
             var semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: true);
             var root = syntaxTree.GetRoot();
-            foreach (var typeDeclaration in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
+            foreach (var declaration in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
             {
-                if (semanticModel.GetDeclaredSymbol(typeDeclaration) is not INamedTypeSymbol typeSymbol)
+                if (semanticModel.GetDeclaredSymbol(declaration) is not INamedTypeSymbol typeSymbol ||
+                    !IsClrRuntimeModuleRoot(typeSymbol, declaration, semanticModel))
                     continue;
 
-                if (!IsClrRuntimeModuleRoot(typeSymbol, typeDeclaration, semanticModel))
-                    continue;
-
-                var relativePath = SharedGeneration.ReadModulePath(typeDeclaration.AttributeLists, semanticModel);
+                var relativePath = SharedGeneration.ReadModulePath(declaration.AttributeLists, semanticModel);
                 if (string.IsNullOrWhiteSpace(relativePath))
                     continue;
-
                 var key = typeSymbol.ToDisplayString(Format.NameFormat);
-                if (!seen.Add(key))
-                    continue;
-
-                results.Add(new ClrRuntimeModuleCandidate(typeSymbol, semanticModel, relativePath!));
+                if (seen.Add(key))
+                    results.Add(new ClrRuntimeModuleCandidate(typeSymbol, semanticModel, relativePath!));
             }
         }
 
@@ -121,124 +159,284 @@ internal static class ClrRuntimeCatalogEmitter
 
     private static bool IsClrRuntimeModuleRoot(
         INamedTypeSymbol typeSymbol,
-        TypeDeclarationSyntax typeDeclaration,
+        TypeDeclarationSyntax declaration,
         SemanticModel semanticModel)
     {
-        var modulePath = SharedGeneration.ReadModulePath(typeDeclaration.AttributeLists, semanticModel);
-        var jazorAttr = SharedGeneration.FindAttribute(typeDeclaration.AttributeLists, "Jazor");
-        var hasRuntimeContent = ClrRuntimeSelection.HasRuntimeContent(typeDeclaration);
-
-        if (!typeSymbol.IsStatic)
+        if (!typeSymbol.IsStatic || typeSymbol.ContainingType is not null ||
+            !string.Equals(typeSymbol.ContainingNamespace?.ToDisplayString(), "Jazor.CLR", StringComparison.Ordinal))
             return false;
 
-        if (typeSymbol.ContainingType is not null)
-            return false;
-
+        var modulePath = SharedGeneration.ReadModulePath(declaration.AttributeLists, semanticModel);
+        var jazorAttribute = SharedGeneration.FindAttribute(declaration.AttributeLists, "Jazor");
         var isRuntimeCarrier = string.Equals(typeSymbol.Name, "RuntimeModule", StringComparison.Ordinal);
-        var isInternalHelperModule = jazorAttr is null && !string.IsNullOrWhiteSpace(modulePath);
-        if ((!isRuntimeCarrier && !isInternalHelperModule && jazorAttr is null) || string.IsNullOrWhiteSpace(modulePath))
-            return false;
-
-        if (!string.Equals(typeSymbol.ContainingNamespace?.ToDisplayString(), "Jazor.CLR", StringComparison.Ordinal))
-            return false;
-
-        return hasRuntimeContent;
+        var isInternalHelper = jazorAttribute is null && !string.IsNullOrWhiteSpace(modulePath);
+        return !string.IsNullOrWhiteSpace(modulePath) &&
+               (isRuntimeCarrier || isInternalHelper || jazorAttribute is not null) &&
+               ClrRuntimeSelection.HasRuntimeContent(declaration);
     }
 
-    private static string BuildCatalogSource(IReadOnlyList<GeneratedClrRuntimeModule> modules)
+    private static object BuildManifest(
+        string version,
+        IReadOnlyList<GeneratedClrRuntimeModule> modules)
     {
-        var builder = new System.Text.StringBuilder();
-        builder.AppendLine("// <auto-generated/>");
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine("namespace Jazor.Artifacts");
-        builder.AppendLine("{");
-        builder.AppendLine("    [global::System.Runtime.CompilerServices.CompilerGenerated]");
-        builder.AppendLine("    internal static partial class RuntimeProviderCatalog");
-        builder.AppendLine("    {");
-        builder.AppendLine("        internal const int SchemaVersion = 1;");
-        builder.AppendLine("        internal const string ProviderId = \"jazor.clr\";");
-        builder.AppendLine();
-        builder.AppendLine("        internal static global::System.Collections.IEnumerable GetModules()");
-        builder.AppendLine("        {");
-        builder.AppendLine("            return _modules;");
-        builder.AppendLine("        }");
-        builder.AppendLine();
-        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
-        builder.AppendLine("        private sealed class RuntimeModule");
-        builder.AppendLine("        {");
-        builder.AppendLine("            public RuntimeModule(string typeName, string id, string relativePath, string content, string hash, global::System.Collections.Generic.IReadOnlyList<string> dependencies)");
-        builder.AppendLine("            {");
-        builder.AppendLine("                TypeName = typeName;");
-        builder.AppendLine("                Id = id;");
-        builder.AppendLine("                RelativePath = relativePath;");
-        builder.AppendLine("                Content = content;");
-        builder.AppendLine("                Hash = hash;");
-        builder.AppendLine("                Dependencies = dependencies;");
-        builder.AppendLine("            }");
-        builder.AppendLine();
-        builder.AppendLine("            public string TypeName { get; }");
-        builder.AppendLine("            public string Id { get; }");
-        builder.AppendLine("            public string RelativePath { get; }");
-        builder.AppendLine("            public string Content { get; }");
-        builder.AppendLine("            public string Hash { get; }");
-        builder.AppendLine("            public global::System.Collections.Generic.IReadOnlyList<string> Dependencies { get; }");
-        builder.AppendLine("        }");
-        builder.AppendLine();
-        builder.AppendLine("        private static readonly RuntimeModule[] _modules = new RuntimeModule[]");
-        builder.AppendLine("        {");
-
+        var imports = new SortedDictionary<string, object>(StringComparer.Ordinal);
         foreach (var module in modules)
         {
-            builder.AppendLine("            new RuntimeModule(");
-            builder.Append("                typeName: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.TypeName)).AppendLine("\",");
-            builder.Append("                id: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.TypeName)).AppendLine("\",");
-            builder.Append("                relativePath: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.RelativePath)).AppendLine("\",");
-            builder.Append("                content: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.Content)).AppendLine("\",");
-            builder.Append("                hash: \"").Append(SharedGeneration.EscapeForCSharpStringLiteral(module.Hash)).AppendLine("\",");
-            builder.Append("                dependencies: new string[] { ");
-            builder.Append(string.Join(", ", module.Dependencies.Select(static dependency => $"\"{SharedGeneration.EscapeForCSharpStringLiteral(dependency)}\"")));
-            builder.AppendLine(" }),");
+            var path = "dist/" + module.RelativePath;
+            imports[module.RelativePath] = new
+            {
+                type = "module",
+                development = path,
+                production = path,
+                developmentHash = module.Hash,
+                productionHash = module.Hash,
+                developmentDependencies = module.PackageDependencies,
+                productionDependencies = module.PackageDependencies,
+                developmentModuleDependencies = module.ModuleDependencies,
+                productionModuleDependencies = module.ModuleDependencies,
+                files = Array.Empty<object>()
+            };
         }
 
-        builder.AppendLine("        };");
-        builder.AppendLine("    }");
-        builder.AppendLine("}");
-        return builder.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);
+        return new
+        {
+            schemaVersion = ManifestSchemaVersion,
+            libraryId = LibraryId,
+            version,
+            imports,
+            requires = new SortedDictionary<string, string>(StringComparer.Ordinal),
+            styles = Array.Empty<object>(),
+            files = Array.Empty<object>()
+        };
     }
 
-    private static string ComputeSha256Hex(string content)
+    private static void CommitPackage(
+        string packageRoot,
+        string manifestPath,
+        IReadOnlyList<GeneratedClrRuntimeModule> modules,
+        object manifest)
     {
-        using var sha = System.Security.Cryptography.SHA256.Create();
-        var bytes = System.Text.Encoding.UTF8.GetBytes(content);
-        var hash = sha.ComputeHash(bytes);
-        return Convert.ToHexString(hash).ToLowerInvariant();
+        var parent = Directory.GetParent(packageRoot)?.FullName
+            ?? throw new InvalidOperationException($"Could not determine package parent for '{packageRoot}'.");
+        Directory.CreateDirectory(parent);
+        var staging = Path.Combine(parent, ".ecmascript-resource-" + Guid.NewGuid().ToString("N"));
+        var stagedDist = Path.Combine(staging, "dist");
+        var stagedManifest = Path.Combine(staging, "manifest.json");
+        var distRoot = Path.Combine(packageRoot, "dist");
+        var backupDist = Path.Combine(parent, ".ecmascript-resource-backup-" + Guid.NewGuid().ToString("N"));
+        var backupManifest = Path.Combine(parent, ".ecmascript-manifest-backup-" + Guid.NewGuid().ToString("N"));
+        var distMoved = false;
+        var manifestMoved = false;
+
+        try
+        {
+            Directory.CreateDirectory(stagedDist);
+            foreach (var module in modules)
+            {
+                var stagedPath = GetSafePath(stagedDist, module.RelativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(stagedPath)!);
+                File.WriteAllText(stagedPath, module.Content, Utf8WithoutBom);
+                if (!string.Equals(ComputeSha256Hex(File.ReadAllBytes(stagedPath)), module.Hash, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException($"Generated module '{module.RelativePath}' failed hash verification.");
+            }
+
+            File.WriteAllText(
+                stagedManifest,
+                JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }),
+                Utf8WithoutBom);
+            using (JsonDocument.Parse(File.ReadAllText(stagedManifest)))
+            {
+            }
+
+            if (Directory.Exists(distRoot))
+                Directory.Move(distRoot, backupDist);
+            distMoved = true;
+            Directory.Move(stagedDist, distRoot);
+
+            if (File.Exists(manifestPath))
+                File.Move(manifestPath, backupManifest);
+            manifestMoved = true;
+            File.Move(stagedManifest, manifestPath);
+
+            DeleteDirectory(backupDist);
+            DeleteFile(backupManifest);
+        }
+        catch
+        {
+            if (File.Exists(manifestPath) && manifestMoved)
+                DeleteFile(manifestPath);
+            if (File.Exists(backupManifest) && !File.Exists(manifestPath))
+                File.Move(backupManifest, manifestPath);
+            if (Directory.Exists(distRoot) && distMoved)
+                DeleteDirectory(distRoot);
+            if (Directory.Exists(backupDist) && !Directory.Exists(distRoot))
+                Directory.Move(backupDist, distRoot);
+            throw;
+        }
+        finally
+        {
+            DeleteDirectory(staging);
+            DeleteDirectory(backupDist);
+            DeleteFile(backupManifest);
+        }
     }
 
-    private static IReadOnlyList<string> CollectDependencies(Acornima.Ast.Module module)
+    private static string ResolveVersion(string repoRoot, string? requestedPackageVersion)
     {
-        // CLR imports have already passed compiler-owned symbol binding. Persist only the
-        // Jazor-owned System graph, so Emit can retain a precise closure without parsing JS.
-        return module.Body
-            .OfType<Acornima.Ast.ImportDeclaration>()
-            .Select(static declaration => declaration.Source.Value)
-            .Where(static source => source.StartsWith("System/", StringComparison.Ordinal))
-            .Select(ECMAScriptModulePath.NormalizeRelativePath)
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(static dependency => dependency, StringComparer.Ordinal)
+        var candidates = new List<(string Name, string Value)>();
+        if (!string.IsNullOrWhiteSpace(requestedPackageVersion))
+            candidates.Add(("--version", requestedPackageVersion));
+
+        foreach (var name in new[] { "JazorPackageVersion", "MinVerVersionOverride" })
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+            if (!string.IsNullOrWhiteSpace(value))
+                candidates.Add((name, value));
+        }
+
+        if (candidates.Count > 0)
+        {
+            var versions = candidates
+                .Select(candidate => (candidate.Name, Value: NormalizePackageVersion(candidate.Value, candidate.Name)))
+                .ToArray();
+            var distinct = versions
+                .Select(static candidate => candidate.Value)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            if (distinct.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    "Conflicting package versions were supplied: " +
+                    string.Join(", ", versions.Select(static candidate => candidate.Name + "=" + candidate.Value)) + ".");
+            }
+
+            return distinct[0];
+        }
+
+        // A nearest tag is not a release source: on a dirty feature branch it silently points at
+        // an older package. Only a clean checkout whose HEAD is exactly a vMAJOR.MINOR.PATCH tag
+        // is safe to infer without an explicit version.
+        try
+        {
+            using var status = Process.Start(new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "status --porcelain --untracked-files=all",
+                WorkingDirectory = repoRoot,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+            if (status is not null)
+            {
+                var statusText = status.StandardOutput.ReadToEnd();
+                status.WaitForExit();
+                if (status.ExitCode == 0 && string.IsNullOrWhiteSpace(statusText))
+                {
+                    using var tagProcess = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "git",
+                        Arguments = "describe --exact-match --tags --abbrev=0 HEAD",
+                        WorkingDirectory = repoRoot,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    });
+                    if (tagProcess is not null)
+                    {
+                        var tag = tagProcess.StandardOutput.ReadToEnd().Trim();
+                        tagProcess.WaitForExit();
+                        if (tag.StartsWith("v", StringComparison.Ordinal) &&
+                            !tag.Contains('-', StringComparison.Ordinal) &&
+                            tagProcess.ExitCode == 0)
+                        {
+                            return NormalizePackageVersion(tag[1..], "git tag");
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        throw new InvalidOperationException(
+            "ECMAScript resource generation requires an explicit package version. " +
+            "Pass '--version MAJOR.MINOR.PATCH' (or set JazorPackageVersion) when the checkout " +
+            "is not a clean exact release tag.");
+    }
+
+    private static string NormalizePackageVersion(string value, string source)
+    {
+        if (!Version.TryParse(value.Trim(), out var version) ||
+            version.Build < 0 ||
+            version.Revision >= 0)
+        {
+            throw new InvalidOperationException(
+                $"Package version from {source} must be MAJOR.MINOR.PATCH: '{value}'.");
+        }
+
+        return version.ToString(3);
+    }
+
+    private static string NormalizeRelativePath(string path)
+    {
+        var normalized = path.Replace('\\', '/').Trim();
+        if (string.IsNullOrWhiteSpace(normalized) || normalized.StartsWith('/', StringComparison.Ordinal) || Path.IsPathRooted(normalized))
+            throw new InvalidOperationException($"Runtime module path must be relative: '{path}'.");
+        var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Where(static segment => segment != ".")
             .ToArray();
+        if (segments.Length == 0 || segments.Any(static segment => segment == ".."))
+            throw new InvalidOperationException($"Runtime module path cannot escape package root: '{path}'.");
+        return string.Join('/', segments);
     }
 
-    /// <summary>待转换的 CLR runtime 模块及其语义模型。</summary>
+    private static string GetSafePath(string root, string relativePath)
+    {
+        var normalizedRoot = Path.GetFullPath(root);
+        var rootWithSeparator = normalizedRoot.EndsWith(Path.DirectorySeparatorChar)
+            ? normalizedRoot
+            : normalizedRoot + Path.DirectorySeparatorChar;
+        var candidate = Path.GetFullPath(Path.Combine(normalizedRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        if (!candidate.StartsWith(rootWithSeparator, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"Runtime module path escapes staging root: '{relativePath}'.");
+        return candidate;
+    }
+
+    private static string ComputeSha256Hex(string value)
+        => ComputeSha256Hex(Utf8WithoutBom.GetBytes(value));
+
+    private static string ComputeSha256Hex(byte[] bytes)
+        => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+
+    private static void DeleteFile(string path)
+    {
+        if (File.Exists(path))
+            File.Delete(path);
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        if (Directory.Exists(path))
+            Directory.Delete(path, recursive: true);
+    }
+
     private sealed record ClrRuntimeModuleCandidate(
         INamedTypeSymbol RootType,
         SemanticModel SemanticModel,
         string RelativePath);
 
-    /// <summary>已转换的 runtime 模块文本及其稳定内容摘要。</summary>
     private sealed record GeneratedClrRuntimeModule(
         string TypeName,
         string RelativePath,
         string Content,
         string Hash,
-        IReadOnlyList<string> Dependencies);
+        IReadOnlyList<string> Imports)
+    {
+        public IReadOnlyList<string> ModuleDependencies { get; init; } = [];
+        public IReadOnlyList<string> PackageDependencies { get; init; } = [];
+    }
 }

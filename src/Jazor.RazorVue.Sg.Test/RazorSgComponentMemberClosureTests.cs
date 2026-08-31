@@ -6866,9 +6866,8 @@ public sealed class MemberClosureTests
     }
 
     private static bool IsSha256Hash(string value)
-        => value.Length == "sha256:".Length + 64 &&
-           value.StartsWith("sha256:", StringComparison.Ordinal) &&
-           value["sha256:".Length..].All(static ch =>
+        => value.Length == 64 &&
+           value.All(static ch =>
                ch is >= '0' and <= '9' ||
                ch is >= 'a' and <= 'f');
 

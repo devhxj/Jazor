@@ -50,12 +50,12 @@ public sealed class ProductionRazorCompilerReferenceTests
             jazorVueNuspec.Contains("Jazor.RazorVue.Generator", StringComparison.Ordinal),
             "Jazor.Vue must package one RazorVue analyzer assembly, not the retired generator assembly.");
 
-        var packagedAnalyzers = System.Xml.Linq.XDocument.Load(jazorVueNuspecPath)
+        var packagedAnalyzerDependencies = System.Xml.Linq.XDocument.Load(jazorVueNuspecPath)
             .Descendants()
             .Where(static item => string.Equals(item.Name.LocalName, "file", StringComparison.Ordinal))
             .Where(static item => string.Equals(
                 ((string?)item.Attribute("target"))?.Replace('\\', '/').TrimEnd('/'),
-                "analyzers/dotnet/cs",
+                "tools/net11.0/analyzers",
                 StringComparison.OrdinalIgnoreCase))
             .Select(static item => Path.GetFileName(((string?)item.Attribute("src"))?.Replace('\\', '/')))
             .OrderBy(static name => name, StringComparer.Ordinal)
@@ -63,8 +63,16 @@ public sealed class ProductionRazorCompilerReferenceTests
 
         CollectionAssert.AreEqual(
             new[] { "AngleSharp.dll", "Jazor.RazorVue.dll", "Jazor.RazorVue.pdb" },
-            packagedAnalyzers,
+            packagedAnalyzerDependencies,
             "Jazor.Vue must package RazorVue and its HTML parser while relying on Jazor for shared analyzer dependencies.");
+
+        var targetPath = Path.Combine(root, "src", "Jazor.Vue", "buildTransitive", "Jazor.Vue.targets");
+        var target = File.ReadAllText(targetPath);
+        StringAssert.Contains(target, "analyzers\\*.dll", StringComparison.Ordinal);
+        StringAssert.Contains(target, "WithMetadataValue('Identity', 'Jazor.Vue')", StringComparison.Ordinal);
+        Assert.IsFalse(
+            File.Exists(Path.Combine(root, "src", "Jazor.Vue", "build", "Jazor.Vue.targets")),
+            "Jazor.Vue must expose one transitive target; direct activation is conditional inside that target.");
     }
 
     [TestMethod]

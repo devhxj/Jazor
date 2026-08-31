@@ -1,35 +1,35 @@
 import { defineStore } from "pinia";
-const activityStoreId = "activity";
-export let useActivityStore = defineStore("activity", {
-  state: createState,
-  getters: { summary: (__cb => function() {
+const ActivityStoreId = "activity";
+export let UseActivityStore = defineStore("activity", {
+  state: CreateState,
+  getters: { Summary: (__cb => function() {
     return __cb(this, ...arguments);
-  })(readSummary) },
-  actions: { capture: (__cb => function() {
+  })(ReadSummary) },
+  actions: { Capture: (__cb => function() {
     return __cb(this, ...arguments);
-  })(capture), queueReview: (__cb => function() {
+  })(Capture), QueueReview: (__cb => function() {
     return __cb(this, ...arguments);
-  })(queueReview) }
+  })(QueueReview) }
 });
-function createState() {
+function CreateState() {
   return {
-    completedActions: 1,
-    pendingReviews: 2,
-    highlight: "Waiting for the next workflow capture."
+    CompletedActions: 1,
+    PendingReviews: 2,
+    Highlight: "Waiting for the next workflow capture."
   };
 }
-function readSummary(self) {
-  return self.highlight + " (done: " + self.completedActions + ", pending: " + self.pendingReviews + ")";
+function ReadSummary(self) {
+  return self.Highlight + " (done: " + self.CompletedActions + ", pending: " + self.PendingReviews + ")";
 }
-function capture(self, source) {
-  self.completedActions += 1;
-  if (self.pendingReviews > 0) {
-    self.pendingReviews -= 1;
+function Capture(self, source) {
+  self.CompletedActions += 1;
+  if (self.PendingReviews > 0) {
+    self.PendingReviews -= 1;
   }
-  self.highlight = "capture(" + source + ") updated the activity store.";
+  self.Highlight = "capture(" + source + ") updated the activity store.";
 }
-function queueReview(self) {
-  self.pendingReviews += 1;
-  self.highlight = "queueReview() recorded another follow-up item.";
+function QueueReview(self) {
+  self.PendingReviews += 1;
+  self.Highlight = "queueReview() recorded another follow-up item.";
 }
 //# sourceMappingURL=activity-store.mjs.map

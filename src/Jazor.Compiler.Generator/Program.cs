@@ -10,14 +10,32 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 const string Split = $@"
 		";
 
+var requestedPackageVersion = ParsePackageVersionArgument(args);
 var repoRoot = SharedGeneration.FindRepositoryRoot();
 var references = Basic.Reference.Assemblies.Net110.References.All
     .Add(MetadataReference.CreateFromFile(typeof(JazorAttribute).Assembly.Location));
 
 GenerateWhiteListArtifacts(repoRoot, references);
-ClrRuntimeCatalogEmitter.Generate(repoRoot, references);
+ClrRuntimeCatalogEmitter.Generate(repoRoot, references, requestedPackageVersion);
 
 Console.WriteLine("生成完成");
+
+static string? ParsePackageVersionArgument(string[] arguments)
+{
+    if (arguments.Length == 0)
+        return null;
+
+    if (arguments.Length != 2 || !string.Equals(arguments[0], "--version", StringComparison.Ordinal))
+    {
+        throw new ArgumentException(
+            "The generator accepts one optional argument: --version MAJOR.MINOR.PATCH.");
+    }
+
+    if (string.IsNullOrWhiteSpace(arguments[1]))
+        throw new ArgumentException("--version requires a non-empty package version.");
+
+    return arguments[1].Trim();
+}
 
 static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataReference> references)
 {

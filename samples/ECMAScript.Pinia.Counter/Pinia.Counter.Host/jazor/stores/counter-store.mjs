@@ -1,49 +1,49 @@
 import { defineStore, storeToRefs } from "pinia";
-const counterStoreId = "counter";
-const seedCount = 2;
-export let useCounterStore = defineStore("counter", {
-  state: createState,
-  getters: { doubleCount: (__cb => function() {
+const CounterStoreId = "counter";
+const SeedCount = 2;
+export let UseCounterStore = defineStore("counter", {
+  state: CreateState,
+  getters: { DoubleCount: (__cb => function() {
     return __cb(this, ...arguments);
-  })(readDoubleCount) },
-  actions: { increment: (__cb => function() {
+  })(ReadDoubleCount) },
+  actions: { Increment: (__cb => function() {
     return __cb(this, ...arguments);
-  })(increment), decrement: (__cb => function() {
+  })(Increment), Decrement: (__cb => function() {
     return __cb(this, ...arguments);
-  })(decrement) }
+  })(Decrement) }
 });
-export let useProjectedCounterStore = useCounterStore;
-export function useCounterStoreRefs(store) {
+export let UseProjectedCounterStore = UseCounterStore;
+export function UseCounterStoreRefs(store) {
   return storeToRefs(store);
 }
-export function useProjectedCounterStoreRefs(store) {
+export function UseProjectedCounterStoreRefs(store) {
   return storeToRefs(store);
 }
-export function installAuditPlugin(context) {
+export function InstallAuditPlugin(context) {
   if (context.store.$id !== "counter") {
     return null;
   }
   let projectedStore = context.store;
   let customState = projectedStore.$state;
-  customState.persistedAt = "plugin:" + context.store.$id;
-  return { auditTag: context.store.$id + ":audited" };
+  customState.PersistedAt = "plugin:" + context.store.$id;
+  return { AuditTag: context.store.$id + ":audited" };
 }
-function createState() {
-  return { count: 2, status: "Store seeded through defineStore()." };
+function CreateState() {
+  return { Count: 2, Status: "Store seeded through defineStore()." };
 }
-function readDoubleCount(self) {
-  return self.count * 2;
+function ReadDoubleCount(self) {
+  return self.Count * 2;
 }
-function increment(self) {
-  self.count += 1;
-  self.status = "increment() updated the store.";
+function Increment(self) {
+  self.Count += 1;
+  self.Status = "increment() updated the store.";
 }
-function decrement(self) {
-  if (self.count > 0) {
-    self.count -= 1;
-    self.status = "decrement() updated the store.";
+function Decrement(self) {
+  if (self.Count > 0) {
+    self.Count -= 1;
+    self.Status = "decrement() updated the store.";
     return;
   }
-  self.status = "decrement() is clamped at zero.";
+  self.Status = "decrement() is clamped at zero.";
 }
 //# sourceMappingURL=counter-store.mjs.map

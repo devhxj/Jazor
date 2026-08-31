@@ -57,9 +57,13 @@ public sealed class VueDataUiProxyTests
                 .Select(static value => value.GetString())
                 .ToArray(),
             "jspdf");
-        CollectionAssert.Contains(
-            manifest.RootElement.GetProperty("styles").EnumerateArray().Select(static value => value.GetString()).ToArray(),
-            "dist/style.css");
+        var style = manifest.RootElement.GetProperty("styles")
+            .EnumerateArray()
+            .Single(static value => value.GetProperty("path").GetString() == "dist/style.css");
+        Assert.AreEqual("style", style.GetProperty("type").GetString());
+        var styleHash = style.GetProperty("hash").GetString();
+        Assert.IsNotNull(styleHash);
+        Assert.HasCount(64, styleHash);
     }
 
     [TestMethod]

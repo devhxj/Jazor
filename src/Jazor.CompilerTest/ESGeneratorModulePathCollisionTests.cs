@@ -102,16 +102,11 @@ public sealed class ESGeneratorModulePathCollisionTests
         }
 
         CollectionAssert.AreEquivalent(
-            new[]
-            {
-                "Jazor.Generated.ModuleCatalog.g.cs",
-                "Jazor.Generated.ModuleSourceMapCatalog.g.cs"
-            },
+            new[] { "Jazor.Generated.ModuleCatalog.g.cs" },
             generatedSources.Select(static source => source.HintName).ToArray(),
             testCase.Id);
 
         var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
-        var sourceMapCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleSourceMapCatalog.g.cs");
         Assert.HasCount(
             testCase.ExpectedOrderedPaths.Count,
             FindAllIndexes(moduleCatalog, "relativePath: \"").ToArray(),
@@ -124,7 +119,7 @@ public sealed class ESGeneratorModulePathCollisionTests
             var index = moduleCatalog.IndexOf(marker, StringComparison.Ordinal);
             Assert.IsGreaterThan(previousIndex, index, $"{testCase.Id}: missing or unordered marker '{marker}'.");
             previousIndex = index;
-            StringAssert.Contains(sourceMapCatalog, $"sourceMapRelativePath: \"{path}.map\"", testCase.Id);
+            StringAssert.Contains(moduleCatalog, $"sourceMapRelativePath: \"{path}.map\"", testCase.Id);
         }
 
         foreach (var conflict in testCase.Conflicts)

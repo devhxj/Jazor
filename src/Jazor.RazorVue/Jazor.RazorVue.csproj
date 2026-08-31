@@ -32,10 +32,4 @@
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Runtime\*.mjs">
-      <LogicalName>Jazor.RazorVue.Runtime.%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>

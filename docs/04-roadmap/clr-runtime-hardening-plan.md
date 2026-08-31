@@ -113,7 +113,7 @@ authored C# d1 < d2
 健壮性改动按触及面运行：
 
 ```bash
-dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj
+dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version <package-version>
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project clr
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project compiler
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg

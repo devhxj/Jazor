@@ -12,7 +12,7 @@
 - 不声明 `[ECMAScriptModule]`，不包含 C# 编写的 JavaScript runtime module、helper 实现或手写 `.mjs`。
 - 不拥有 Razor renderer、Vue listener/callback framing 或组件运行时实现。
 
-需要实际运行时语义时，投影只声明其公开 host contract；实现归 `Jazor.CLR`。例如需要复杂控制流、事件值捕获或可复用 helper 时，应由 `Jazor.CLR` 的 C# module 提供，并沿既有 runtime catalog/Emit 管道物化。
+需要实际运行时语义时，投影只声明其公开 host contract；实现归 `Jazor.CLR`。例如需要复杂控制流、事件值捕获或可复用 helper 时，应由 `Jazor.CLR` 的 C# module 提供，生成的 runtime resource 进入 `ECMAScript/manifest.json + dist/**`，再由 Emit 按显式依赖闭包物化。
 
 ## 职责划分
 
@@ -20,7 +20,7 @@
 | --- | --- |
 | `ECMAScript.Blazor` | 可选的标准 ECMAScript 模拟/投影扩展与公开 host contract；不持有 framework member key |
 | `Jazor.CLR` | C# 编写的 JavaScript runtime module、helper、Blazor CLR mapping 和运行时语义 |
-| `Jazor.Artifacts.RuntimeProviderCatalog` | 标准 runtime provider 的发布与物化；本项目不拥有或替代该职责 |
+| `ECMAScript` manifest/dist | CLR/runtime resource 的发布与物化输入；本项目不拥有或替代该职责 |
 | `Jazor.RazorVue` | Razor 生成 C# 的 render/lifecycle lowering，以及 Vue listener/component framing |
 
 ## 交付边界

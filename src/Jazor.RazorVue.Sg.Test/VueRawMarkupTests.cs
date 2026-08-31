@@ -1,12 +1,12 @@
-using System.Collections;
-using System.Reflection;
+using System.Security.Cryptography;
+using System.Text.Json;
 using Jazor.RazorVue.RazorSdk;
 
 namespace Jazor.RazorVue.Sg.Test;
 
 /// <summary>
-/// Verifies raw-markup HTML facts and the optional runtime-provider contract.
-/// 覆盖 hydration cardinality 与 provider ABI，避免只断言最终 JavaScript 字符串。
+    /// Verifies raw-markup HTML facts and the Vue runtime JS-resource package contract.
+    /// 覆盖 hydration cardinality 与 manifest/dist ABI，避免重新引入程序集 provider carrier。
 /// </summary>
 [TestClass]
 public sealed class VueRawMarkupTests
@@ -33,42 +33,67 @@ public sealed class VueRawMarkupTests
     }
 
     [TestMethod]
-    public void RuntimeProviderCatalog_ExposesBlazorAndCoreRuntimes()
+    public void JsResourceManifest_ExposesVueRuntimeModulesAndDependencies()
     {
-        var assembly = typeof(VueRawMarkup).Assembly;
-        var catalog = assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: true)!;
-        Assert.AreEqual(1, ReadStatic<int>(catalog, "SchemaVersion"));
-        Assert.AreEqual("jazor.vue", ReadStatic<string>(catalog, "ProviderId"));
+        var manifestPath = FindRepositoryFile("src", "Jazor.Vue", "manifest.json");
+        var packageRoot = Path.GetDirectoryName(manifestPath)!;
+        using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var root = document.RootElement;
+        Assert.AreEqual(2, root.GetProperty("schemaVersion").GetInt32());
+        Assert.AreEqual("jazor-vue-runtime", root.GetProperty("libraryId").GetString());
 
-        var modules = InvokeEnumerable(catalog, "GetModules").Cast<object>().ToArray();
-        Assert.HasCount(3, modules);
-        var rawMarkup = modules.Single(module =>
-            ReadProperty<string>(module, "RelativePath") == "@jazor/vue-runtime/raw-markup.mjs");
-        Assert.AreEqual("Jazor.RazorVue.Runtime.raw-markup.mjs", ReadProperty<string>(rawMarkup, "ResourceName"));
-        var cascading = modules.Single(module =>
-            ReadProperty<string>(module, "RelativePath") == "@jazor/vue-runtime/cascading.mjs");
-        Assert.AreEqual("Jazor.RazorVue.Runtime.cascading.mjs", ReadProperty<string>(cascading, "ResourceName"));
-        var routing = modules.Single(module =>
-            ReadProperty<string>(module, "RelativePath") == "@jazor/vue-runtime/blazor-routing.mjs");
-        Assert.AreEqual("Jazor.RazorVue.Runtime.blazor-routing.mjs", ReadProperty<string>(routing, "ResourceName"));
-        CollectionAssert.AreEquivalent(
-            new[] { "@jazor/vue-runtime/routes.mjs" },
-            ((IEnumerable)routing.GetType().GetProperty("Dependencies")!.GetValue(routing)!).Cast<string>().ToArray());
+        var imports = root.GetProperty("imports");
+        Assert.HasCount(3, imports.EnumerateObject());
+        foreach (var name in new[]
+                 {
+                     "@jazor/vue-runtime/raw-markup.mjs",
+                     "@jazor/vue-runtime/cascading.mjs",
+                     "@jazor/vue-runtime/blazor-routing.mjs"
+                 })
+        {
+            var entry = imports.GetProperty(name);
+            Assert.AreEqual("module", entry.GetProperty("type").GetString());
+            var production = entry.GetProperty("production").GetString()!;
+            var sourcePath = Path.Combine(packageRoot, production.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(sourcePath), sourcePath);
+            var actualHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(sourcePath))).ToLowerInvariant();
+            Assert.AreEqual(entry.GetProperty("productionHash").GetString(), actualHash);
+        }
+
+        var routingPath = Path.Combine(
+            packageRoot,
+            imports.GetProperty("@jazor/vue-runtime/blazor-routing.mjs")
+                .GetProperty("production").GetString()!
+                .Replace('/', Path.DirectorySeparatorChar));
+        var routing = File.ReadAllText(routingPath);
+        StringAssert.Contains(routing, "@jazor/vue-runtime/routes.mjs");
+        StringAssert.Contains(routing, "Microsoft/AspNetCore/Components/NavigationManagerModule.js");
+        CollectionAssert.DoesNotContain(
+            imports.GetProperty("@jazor/vue-runtime/blazor-routing.mjs")
+                .GetProperty("productionDependencies")
+                .EnumerateArray()
+                .Select(static value => value.GetString())
+                .ToArray(),
+            "@jazor/vue-runtime/routes.mjs");
+
+        CollectionAssert.Contains(
+            root.GetProperty("requires").EnumerateObject().Select(static property => property.Name).ToArray(),
+            "ecmascript");
         Assert.IsFalse(
-            assembly.GetManifestResourceNames().Any(static name => name.Contains("render-context", StringComparison.Ordinal)),
-            "The retired render-context runtime must not return as a provider dependency.");
+            typeof(VueRawMarkup).Assembly.GetManifestResourceNames()
+                .Any(static name => name.Contains("render-context", StringComparison.Ordinal)),
+            "The retired render-context runtime must not return as a resource package asset.");
     }
 
-    private static IEnumerable InvokeEnumerable(Type type, string methodName)
-        => type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)!
-            .Invoke(null, null) as IEnumerable
-            ?? throw new InvalidOperationException($"{type.FullName}.{methodName} returned null.");
+    private static string FindRepositoryFile(params string[] segments)
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            var candidate = Path.Combine([directory.FullName, ..segments]);
+            if (File.Exists(candidate))
+                return candidate;
+        }
 
-    private static T ReadStatic<T>(Type type, string fieldName)
-        => (T)(type.GetField(fieldName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(null)
-            ?? throw new InvalidOperationException($"Static field '{fieldName}' was not found."));
-
-    private static T ReadProperty<T>(object value, string propertyName)
-        => (T)(value.GetType().GetProperty(propertyName)?.GetValue(value)
-            ?? throw new InvalidOperationException($"Property '{propertyName}' was not found."));
+        throw new FileNotFoundException($"Could not locate repository file '{Path.Combine(segments)}'.");
+    }
 }

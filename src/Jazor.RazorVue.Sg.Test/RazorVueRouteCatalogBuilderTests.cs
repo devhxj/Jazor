@@ -74,7 +74,7 @@ public sealed class RazorVueRouteCatalogBuilderTests
         Assert.AreEqual("./same.mjs", Invoke<string>("GetRelativeImport", "@jazor/vue-runtime/routes.mjs", "@jazor/vue-runtime/same.mjs"));
         Assert.AreEqual("../../Pages/Orders.mjs", Invoke<string>("GetRelativeImport", "@jazor/vue-runtime/routes.mjs", "Pages/Orders.mjs"));
         Assert.AreEqual("\"quote\\\" slash\\\\ newline\\n tab\\t control\\u001f\"", Invoke<string>("JavaScriptString", "quote\" slash\\ newline\n tab\t control\u001f"));
-        Assert.StartsWith("sha256:", Invoke<string>("ComputeContentHash", "route-content"), StringComparison.Ordinal);
+        Assert.IsTrue(Invoke<string>("ComputeContentHash", "route-content").All(static value => value is >= '0' and <= '9' or >= 'a' and <= 'f'));
 
         var intType = fixture.Binding.Compilation.GetSpecialType(SpecialType.System_Int32);
         var nullableInt = fixture.Binding.Compilation.GetSpecialType(SpecialType.System_Nullable_T).Construct(intType);

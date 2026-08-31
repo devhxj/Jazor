@@ -10,7 +10,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <Import Project="..\..\src\Jazor\buildTransitive\Jazor.props"
+  <Import Project="..\..\src\Jazor\build\Jazor.props"
           Condition="'$(WikiUsePackages)' != 'true'" />
 
   <ItemGroup>
@@ -76,6 +76,6 @@
       <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
     </ItemGroup>
   </Target>
-  <Import Project="..\..\src\Jazor\buildTransitive\Jazor.targets"
+  <Import Project="..\..\src\Jazor\build\Jazor.targets"
           Condition="'$(WikiUsePackages)' != 'true'" />
 </Project>

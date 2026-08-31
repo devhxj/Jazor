@@ -21,7 +21,7 @@
     <JazorRazorVueOutputRoot Condition="'$(JazorRazorVueOutputRoot)' == ''">..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\</JazorRazorVueOutputRoot>
   </PropertyGroup>
 
-  <Import Project="..\Jazor\buildTransitive\Jazor.props" />
+  <Import Project="..\Jazor\build\Jazor.props" />
 
   <ItemGroup>
     <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />

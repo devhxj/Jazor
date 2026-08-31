@@ -1,6 +1,10 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Security.Cryptography;
+using System.Text;
 using Acornima;
 using Acornima.Ast;
+using Jazor.Common;
 using Jazor.Emit;
 
 namespace Jazor.EmitTest;
@@ -9,9 +13,36 @@ namespace Jazor.EmitTest;
 public sealed class LibraryMaterializerTests
 {
     [TestMethod]
+    public void Load_AllRepositoryResourceManifests_AreValidAndComplete()
+    {
+        var manifests = Directory
+            .EnumerateFiles(Path.Combine(FindRepositoryRoot(), "src"), "manifest.json", SearchOption.AllDirectories)
+            .Where(static path => !path.Contains("\\bin\\", StringComparison.OrdinalIgnoreCase))
+            .Where(static path => !path.Contains("\\obj\\", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        Assert.IsNotEmpty(manifests, "The repository must contain at least one JS resource manifest.");
+        foreach (var manifestPath in manifests)
+        {
+            var packageRoot = Path.GetDirectoryName(manifestPath)!;
+            Assert.IsTrue(
+                Directory.Exists(Path.Combine(packageRoot, "dist")),
+                $"JS resource package '{manifestPath}' must contain a dist directory.");
+
+            // Load validates schema, typed records, explicit module edges, file paths and every
+            // declared SHA-256 before the manifest can reach Emit's materialization path.
+            _ = LibraryManifest.Load(manifestPath);
+        }
+    }
+
+    [TestMethod]
     public void Materialize_CopiesPackageAssetsAndSelectsRequestedMode()
     {
         using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/dev.mjs", "export const mode = 'development';");
+        workspace.WriteFile("dist/prod.mjs", "export const mode = 'production';");
+        workspace.WriteFile("dist/main.css", ".app { color: green; }");
         var manifestPath = workspace.WriteManifest(
             "vue3",
             "3.5.13",
@@ -19,9 +50,6 @@ public sealed class LibraryMaterializerTests
             "dist/dev.mjs",
             "dist/prod.mjs",
             styles: ["dist/main.css"]);
-        workspace.WriteFile("dist/dev.mjs", "export const mode = 'development';");
-        workspace.WriteFile("dist/prod.mjs", "export const mode = 'production';");
-        workspace.WriteFile("dist/main.css", ".app { color: green; }");
 
         var outputRoot = Path.Combine(workspace.Root, "out");
         var result = new LibraryMaterializer().Materialize([manifestPath], outputRoot, BuildMode.Production);
@@ -34,15 +62,101 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Load_ValidatesProductionEntryBeforeMaterialization()
+    {
+        using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/dev.mjs", "export const mode = 'development';");
+        workspace.WriteFile("dist/prod.mjs", "export const mode = 'production';");
+        var manifestPath = workspace.WriteManifest(
+            "profile-library",
+            "1.0.0",
+            "profile-library",
+            "dist/dev.mjs",
+            "dist/prod.mjs");
+
+        File.Delete(Path.Combine(workspace.Root, "dist", "prod.mjs"));
+
+        var exception = Assert.Throws<LibraryException>(() => LibraryManifest.Load(manifestPath));
+
+        Assert.AreEqual("JAZOR_LIBRARY_FILE_MISSING", exception.Code);
+        StringAssert.Contains(exception.Message, "dist/prod.mjs", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Load_ValidatesProductionHashBeforeMaterialization()
+    {
+        using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/dev.mjs", "export const mode = 'development';");
+        workspace.WriteFile("dist/prod.mjs", "export const mode = 'production';");
+        var manifestPath = workspace.WriteManifest(
+            "profile-library",
+            "1.0.0",
+            "profile-library",
+            "dist/dev.mjs",
+            "dist/prod.mjs");
+
+        workspace.WriteFile("dist/prod.mjs", "export const mode = 'tampered';");
+
+        var exception = Assert.Throws<LibraryException>(() => LibraryManifest.Load(manifestPath));
+
+        Assert.AreEqual("JAZOR_LIBRARY_FILE_HASH_MISMATCH", exception.Code);
+        StringAssert.Contains(exception.Message, "dist/prod.mjs", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void ManifestModel_RejectsConflictingDuplicateModulePath()
+    {
+        var firstHash = ArtifactHash.ComputeSha256("export const first = true;");
+        var secondHash = ArtifactHash.ComputeSha256("export const second = true;");
+
+        var exception = Assert.Throws<InvalidOperationException>(() => new ManifestModel(
+            "Sample.Host.dll",
+            [
+                new ModuleEntry("Sample.Host", "First", "first", "components/app.mjs", firstHash),
+                new ModuleEntry("Sample.Host", "Second", "second", "components/app.mjs", secondHash)
+            ]));
+
+        StringAssert.Contains(exception.Message, "conflicting modules", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void ManifestModel_RejectsConflictingDuplicateAssetPath()
+    {
+        var firstHash = ArtifactHash.ComputeSha256("first");
+        var secondHash = ArtifactHash.ComputeSha256("second");
+        var manifest = new ManifestModel(
+            "Sample.Host.dll",
+            [new ModuleEntry(
+                "Sample.Host",
+                "App",
+                "app",
+                "components/app.mjs",
+                ArtifactHash.ComputeSha256("export const app = true;"))]);
+
+        manifest.Assets.Add(new AssetEntry("assets/first.txt", "assets/shared.txt", AssetEntry.KindStatic, firstHash));
+
+        var outputRoot = Path.Combine(Path.GetTempPath(), "jazor-invalid-manifest", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+            {
+                manifest.Assets.Add(new AssetEntry("assets/second.txt", "assets/shared.txt", AssetEntry.KindStatic, secondHash));
+                manifest.Save(Path.Combine(outputRoot, "manifest.json"));
+            });
+
+            StringAssert.Contains(exception.Message, "conflicting assets", StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (Directory.Exists(outputRoot))
+                Directory.Delete(outputRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void Materialize_FollowsRelativeEsmClosure_WithoutCopyingUnreferencedChunks()
     {
         using var workspace = new LibraryWorkspace();
-        var manifestPath = workspace.WriteManifest(
-            "component-library",
-            "1.0.0",
-            "component-library/widget",
-            "dist/components/widget.mjs",
-            "dist/components/widget.mjs");
         workspace.WriteFile("dist/components/widget.mjs", """
             import { helper } from "../shared/helper.mjs";
             export { value } from "../shared/reexport.mjs";
@@ -60,6 +174,19 @@ public sealed class LibraryMaterializerTests
         workspace.WriteFile("dist/shared/reexport.mjs", "export const value = 'ready';");
         workspace.WriteFile("dist/async/lazy.mjs", "export const lazy = true;");
         workspace.WriteFile("dist/unused.mjs", "export const unused = true;");
+        var manifestPath = workspace.WriteManifest(
+            "component-library",
+            "1.0.0",
+            "component-library/widget",
+            "dist/components/widget.mjs",
+            "dist/components/widget.mjs",
+            moduleDependencies:
+            [
+                "dist/shared/helper.mjs",
+                "dist/shared/reexport.mjs",
+                "dist/cycle.mjs",
+                "dist/async/lazy.mjs"
+            ]);
 
         var outputRoot = Path.Combine(workspace.Root, "out");
         _ = new LibraryMaterializer().Materialize(
@@ -75,6 +202,204 @@ public sealed class LibraryMaterializerTests
         Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "cycle.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(materializedRoot, "async", "lazy.mjs")));
         Assert.IsFalse(File.Exists(Path.Combine(materializedRoot, "unused.mjs")));
+    }
+
+    [TestMethod]
+    public void Materialize_ResolvesModuleDependencyOnlyWithinDeclaringManifest()
+    {
+        using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/app.mjs", "export const app = true;");
+        workspace.WriteFile("dist/shared.mjs", "export const owner = true;");
+        var ownerManifest = workspace.WriteManifest(
+            "owner",
+            "1.0.0",
+            "owner",
+            "dist/app.mjs",
+            "dist/app.mjs",
+            moduleDependencies: ["dist/shared.mjs"]);
+        UpdateEntryFile(ownerManifest, "owner", "dist/shared.mjs", file => file["moduleId"] = "shared");
+        UpdateEntryModuleDependencies(ownerManifest, "owner", "shared");
+
+        // An unrelated manifest deliberately exposes the same logical name. A module edge must
+        // still resolve to the declaring manifest's module record, never to this provider.
+        var unrelatedManifest = workspace.WriteLibrary(
+            "unrelated",
+            "unrelated",
+            "1.0.0",
+            "shared");
+
+        var outputRoot = Path.Combine(workspace.Root, "out");
+        var result = new LibraryMaterializer().Materialize(
+            [ownerManifest, unrelatedManifest],
+            outputRoot,
+            BuildMode.Production,
+            ["owner"]);
+
+        Assert.AreEqual("vendor/owner/1.0.0/dist/app.mjs", result.ImportPaths["owner"]);
+        Assert.IsFalse(result.ImportPaths.ContainsKey("shared"));
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "owner",
+            "1.0.0",
+            "dist",
+            "shared.mjs")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(outputRoot, "vendor", "unrelated")));
+    }
+
+    [TestMethod]
+    public async Task Materialize_RecursivelyMapsNamedModuleDependencies()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        // The CLR resource manifest has a real nested ESM chain:
+        // IndexModule -> RuntimeModule -> StringModule. Every named edge must be exposed in
+        // the import map, while unrelated modules remain unmaterialized.
+        var result = new LibraryMaterializer().Materialize(
+            [FindLibraryManifest("ECMAScript")],
+            outputRoot,
+            BuildMode.Production,
+            ["System/IndexModule.js"]);
+
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "System/IndexModule.js",
+                "System/RuntimeModule.js",
+                "System/StringModule.js",
+                "System/Collections/Generic/EqualityComparerT1Module.js",
+                "System/Collections/Generic/HashSetT1Module.js",
+                "System/Collections/Generic/IEqualityComparerT1Module.js"
+            },
+            result.ImportPaths.Keys.ToArray());
+        Assert.IsFalse(result.ImportPaths.ContainsKey("System/ArrayModule.js"));
+
+        await ImportMapWriter.WriteAsync(outputRoot, result);
+        using var importMap = JsonDocument.Parse(
+            await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
+        var imports = importMap.RootElement.GetProperty("imports");
+        foreach (var specifier in result.ImportPaths.Keys)
+        {
+            var target = imports.GetProperty(specifier).GetString();
+            Assert.IsTrue(target?.StartsWith("/jazor/vendor/ecmascript/", StringComparison.Ordinal));
+        }
+    }
+
+    [TestMethod]
+    public void Materialize_RejectsMissingLocalModuleDependencyEvenWhenAnotherManifestProvidesItsName()
+    {
+        using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/app.mjs", "export const app = true;");
+        var ownerManifest = workspace.WriteManifest(
+            "owner",
+            "1.0.0",
+            "owner",
+            "dist/app.mjs",
+            "dist/app.mjs");
+        UpdateEntryModuleDependencies(ownerManifest, "owner", "shared");
+        var unrelatedManifest = workspace.WriteLibrary(
+            "unrelated",
+            "unrelated",
+            "1.0.0",
+            "shared");
+
+        var exception = Assert.Throws<LibraryException>(() =>
+            new LibraryMaterializer().Materialize(
+                [ownerManifest, unrelatedManifest],
+                Path.Combine(workspace.Root, "out"),
+                BuildMode.Production,
+                ["owner"]));
+
+        Assert.AreEqual("JAZOR_LIBRARY_MODULE_DEPENDENCY_MISSING", exception.Code);
+        StringAssert.Contains(exception.Message, "shared", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Materialize_RejectsStaticFileAsModuleDependency()
+    {
+        using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/index.mjs", "import './dependency.mjs';");
+        workspace.WriteFile("dist/dependency.mjs", "export const value = 1;");
+        var manifestPath = workspace.WriteManifest(
+            "invalid-module-library",
+            "1.0.0",
+            "invalid-module-library",
+            "dist/index.mjs",
+            "dist/index.mjs",
+            moduleDependencies: ["dist/dependency.mjs"]);
+        UpdateEntryFile(manifestPath, "invalid-module-library", "dist/dependency.mjs", file =>
+        {
+            file["type"] = "static";
+            file.Remove("moduleId");
+        });
+
+        var exception = Assert.Throws<LibraryException>(() =>
+            new LibraryMaterializer().Materialize(
+                [manifestPath],
+                Path.Combine(workspace.Root, "out"),
+                BuildMode.Production));
+
+        Assert.AreEqual("JAZOR_LIBRARY_MODULE_DEPENDENCY_MISSING", exception.Code);
+        StringAssert.Contains(exception.Message, "dist/dependency.mjs", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    [DataRow("module")]
+    [DataRow("source-map")]
+    public void Materialize_RejectsModuleAssociatedFileWithoutModuleId(string type)
+    {
+        using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/index.mjs", "import './dependency.mjs';");
+        workspace.WriteFile("dist/dependency.mjs", "export const value = 1;");
+        var manifestPath = workspace.WriteManifest(
+            "missing-module-id-library",
+            "1.0.0",
+            "missing-module-id-library",
+            "dist/index.mjs",
+            "dist/index.mjs",
+            moduleDependencies: ["dist/dependency.mjs"]);
+        UpdateEntryFile(manifestPath, "missing-module-id-library", "dist/dependency.mjs", file =>
+        {
+            file["type"] = type;
+            file.Remove("moduleId");
+        });
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            new LibraryMaterializer().Materialize(
+                [manifestPath],
+                Path.Combine(workspace.Root, "out"),
+                BuildMode.Production));
+
+        StringAssert.Contains(exception.Message, "must declare moduleId", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Materialize_RejectsSourceMapForUnknownModule()
+    {
+        using var workspace = new LibraryWorkspace();
+        workspace.WriteFile("dist/index.mjs", "export const value = 1;");
+        workspace.WriteFile("dist/index.mjs.map", "{}");
+        var manifestPath = workspace.WriteManifest(
+            "orphan-map-library",
+            "1.0.0",
+            "orphan-map-library",
+            "dist/index.mjs",
+            "dist/index.mjs",
+            moduleDependencies: ["dist/index.mjs.map"]);
+        UpdateEntryFile(manifestPath, "orphan-map-library", "dist/index.mjs.map", file =>
+        {
+            file["type"] = "source-map";
+            file["moduleId"] = "missing/module";
+        });
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            new LibraryMaterializer().Materialize(
+                [manifestPath],
+                Path.Combine(workspace.Root, "out"),
+                BuildMode.Production));
+
+        StringAssert.Contains(exception.Message, "references missing module id 'missing/module'", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -96,8 +421,7 @@ public sealed class LibraryMaterializerTests
 
         await ImportMapWriter.WriteAsync(
             outputRoot,
-            materialization,
-            [new ImportMapEntry("adapter.test", "@adapter/runtime/", "@adapter/runtime/")]);
+            materialization);
 
         using var browserMap = System.Text.Json.JsonDocument.Parse(
             await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.BrowserImportMapFileName)));
@@ -112,12 +436,6 @@ public sealed class LibraryMaterializerTests
         Assert.AreEqual(
             "./vendor/vue-server-renderer/3.5.13/dist/index.mjs",
             ssrMap.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer").GetString());
-        Assert.AreEqual(
-            "/jazor/@adapter/runtime/",
-            browserMap.RootElement.GetProperty("imports").GetProperty("@adapter/runtime/").GetString());
-        Assert.AreEqual(
-            "./@adapter/runtime/",
-            ssrMap.RootElement.GetProperty("imports").GetProperty("@adapter/runtime/").GetString());
         Assert.IsFalse(
             (await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)))
                 .Contains("node_modules", StringComparison.Ordinal));
@@ -127,9 +445,9 @@ public sealed class LibraryMaterializerTests
     public void Materialize_RejectsDifferentProvidersForSameLogicalImport()
     {
         using var workspace = new LibraryWorkspace();
-        var firstManifest = workspace.WriteManifest("first", "1.0.0", "vue", "dist/dev.mjs", "dist/prod.mjs");
         workspace.WriteFile("dist/dev.mjs", "export const first = true;");
         workspace.WriteFile("dist/prod.mjs", "export const first = true;");
+        var firstManifest = workspace.WriteManifest("first", "1.0.0", "vue", "dist/dev.mjs", "dist/prod.mjs");
 
         var secondRoot = Path.Combine(workspace.Root, "second");
         Directory.CreateDirectory(Path.Combine(secondRoot, "dist"));
@@ -138,10 +456,18 @@ public sealed class LibraryMaterializerTests
         var secondManifest = Path.Combine(secondRoot, "manifest.json");
         File.WriteAllText(secondManifest, """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "libraryId": "second",
               "version": "1.0.0",
-              "imports": { "vue": { "development": "dist/dev.mjs", "production": "dist/prod.mjs" } }
+              "imports": { "vue": {
+                "type": "module",
+                "development": "dist/dev.mjs", "production": "dist/prod.mjs",
+                "developmentHash": "8fae6a0c6a49529f37de5867ce360d0a8af6f46b7673fbe5fd810fdaebc9f020",
+                "productionHash": "8fae6a0c6a49529f37de5867ce360d0a8af6f46b7673fbe5fd810fdaebc9f020",
+                "developmentDependencies": [], "productionDependencies": [],
+                "developmentModuleDependencies": [], "productionModuleDependencies": [], "files": []
+              } },
+              "requires": {}, "styles": [], "files": []
             }
             """);
 
@@ -155,8 +481,8 @@ public sealed class LibraryMaterializerTests
     public void Materialize_RejectsUnsatisfiedProviderVersion()
     {
         using var workspace = new LibraryWorkspace();
-        var vueManifest = workspace.WriteManifest("vue3", "3.4.0", "vue", "dist/vue.mjs", "dist/vue.mjs");
         workspace.WriteFile("dist/vue.mjs", "export const version = '3.4.0';");
+        var vueManifest = workspace.WriteManifest("vue3", "3.4.0", "vue", "dist/vue.mjs", "dist/vue.mjs");
 
         var componentRoot = Path.Combine(workspace.Root, "component");
         Directory.CreateDirectory(Path.Combine(componentRoot, "dist"));
@@ -164,11 +490,18 @@ public sealed class LibraryMaterializerTests
         var componentManifest = Path.Combine(componentRoot, "manifest.json");
         File.WriteAllText(componentManifest, """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "libraryId": "component",
               "version": "1.0.0",
-              "imports": { "component": { "development": "dist/component.mjs", "production": "dist/component.mjs" } },
-              "requires": { "vue3": "^3.5.0" }
+              "imports": { "component": {
+                "type": "module",
+                "development": "dist/component.mjs", "production": "dist/component.mjs",
+                "developmentHash": "6e022b4c49ef4368c407c653dda43e5b44565cfa549b47150e3f8f4427199ac7",
+                "productionHash": "6e022b4c49ef4368c407c653dda43e5b44565cfa549b47150e3f8f4427199ac7",
+                "developmentDependencies": [], "productionDependencies": [],
+                "developmentModuleDependencies": [], "productionModuleDependencies": [], "files": []
+              } },
+              "requires": { "vue3": "^3.5.0" }, "styles": [], "files": []
             }
             """);
 
@@ -233,8 +566,8 @@ public sealed class LibraryMaterializerTests
     public void Materialize_RejectsMissingRequiredImport()
     {
         using var workspace = new LibraryWorkspace();
-        var manifestPath = workspace.WriteManifest("vue3", "3.5.13", "vue", "dist/vue.mjs", "dist/vue.mjs");
         workspace.WriteFile("dist/vue.mjs", "export const version = '3.5.13';");
+        var manifestPath = workspace.WriteManifest("vue3", "3.5.13", "vue", "dist/vue.mjs", "dist/vue.mjs");
 
         var exception = Assert.Throws<LibraryException>(() =>
             new LibraryMaterializer().Materialize(
@@ -251,8 +584,8 @@ public sealed class LibraryMaterializerTests
     public void Materialize_IgnoresImportsProvidedByApplicationManifest()
     {
         using var workspace = new LibraryWorkspace();
-        var manifestPath = workspace.WriteManifest("pinia", "3.0.4", "pinia", "dist/pinia.mjs", "dist/pinia.mjs");
         workspace.WriteFile("dist/pinia.mjs", "export const version = '3.0.4';");
+        var manifestPath = workspace.WriteManifest("pinia", "3.0.4", "pinia", "dist/pinia.mjs", "dist/pinia.mjs");
 
         var result = new LibraryMaterializer().Materialize(
             [manifestPath],
@@ -262,6 +595,51 @@ public sealed class LibraryMaterializerTests
             ["host/app.mjs", "stores/counter-store.mjs"]);
 
         Assert.AreEqual("vendor/pinia/3.0.4/dist/pinia.mjs", result.ImportPaths["pinia"]);
+    }
+
+    [TestMethod]
+    public void Materialize_IgnoresInvalidManifestOutsideSelectedClosure()
+    {
+        using var workspace = new LibraryWorkspace();
+        var selectedManifest = workspace.WriteLibrary(
+            "selected",
+            "selected-library",
+            "1.0.0",
+            "selected");
+        var unrelatedManifest = workspace.WriteLibrary(
+            "unrelated",
+            "unrelated-library",
+            "1.0.0",
+            "unrelated");
+
+        // The unrelated package is present in the transitive locator set, but its bytes and
+        // provider graph are intentionally broken. Since no selected root reaches it, this must
+        // not prevent the selected package from being materialized.
+        File.Delete(Path.Combine(workspace.Root, "unrelated", "dist", "index.mjs"));
+        var unrelatedRoot = JsonNode.Parse(File.ReadAllText(unrelatedManifest))?.AsObject()
+            ?? throw new InvalidOperationException("Unrelated manifest is not an object.");
+        unrelatedRoot["requires"] = new JsonObject
+        {
+            ["missing-provider"] = "1.0.0"
+        };
+        File.WriteAllText(
+            unrelatedManifest,
+            unrelatedRoot.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+
+        var outputRoot = Path.Combine(workspace.Root, "out");
+        var result = new LibraryMaterializer().Materialize(
+            [selectedManifest, unrelatedManifest],
+            outputRoot,
+            BuildMode.Production,
+            ["selected"]);
+
+        Assert.AreEqual("vendor/selected-library/1.0.0/dist/index.mjs", result.ImportPaths["selected"]);
+        Assert.HasCount(1, result.ManifestPaths);
+        Assert.AreEqual(
+            Path.GetFullPath(selectedManifest),
+            result.ManifestPaths.Single(),
+            ignoreCase: true);
+        Assert.IsFalse(Directory.Exists(Path.Combine(outputRoot, "vendor", "unrelated-library")));
     }
 
     [TestMethod]
@@ -811,26 +1189,55 @@ public sealed class LibraryMaterializerTests
             string import,
             string development,
             string production,
-            IReadOnlyList<string>? styles = null)
+            IReadOnlyList<string>? styles = null,
+            IReadOnlyList<string>? moduleDependencies = null)
         {
-            var stylesJson = styles is null
-                ? "[]"
-                : "[" + string.Join(",", styles.Select(static item => $"\"{item}\"")) + "]";
             var manifestPath = Path.Combine(Root, "manifest.json");
-            File.WriteAllText(manifestPath, $$"""
+            var moduleFiles = (moduleDependencies ?? [])
+                .Select(path => (object)new
                 {
-                  "schemaVersion": 1,
-                  "libraryId": "{{libraryId}}",
-                  "version": "{{version}}",
-                  "imports": {
-                    "{{import}}": {
-                      "development": "{{development}}",
-                      "production": "{{production}}"
+                    type = "module",
+                    path,
+                    hash = HashFile(path),
+                    moduleId = path
+                })
+                .ToArray();
+            var styleFiles = (styles ?? [])
+                .Select(path => (object)new
+                {
+                    type = "style",
+                    path,
+                    hash = HashFile(path)
+                })
+                .ToArray();
+            var manifest = new
+            {
+                schemaVersion = 2,
+                libraryId,
+                version,
+                imports = new Dictionary<string, object>
+                {
+                    [import] = new
+                    {
+                        type = "module",
+                        development,
+                        production,
+                        developmentHash = HashFile(development),
+                        productionHash = HashFile(production),
+                        developmentDependencies = Array.Empty<string>(),
+                        productionDependencies = Array.Empty<string>(),
+                        developmentModuleDependencies = moduleDependencies ?? [],
+                        productionModuleDependencies = moduleDependencies ?? [],
+                        files = moduleFiles
                     }
-                  },
-                  "styles": {{stylesJson}}
-                }
-                """);
+                },
+                requires = new Dictionary<string, string>(),
+                styles = styleFiles,
+                files = Array.Empty<object>()
+            };
+            File.WriteAllText(
+                manifestPath,
+                JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
             return manifestPath;
         }
 
@@ -865,17 +1272,50 @@ public sealed class LibraryMaterializerTests
                 manifestPath,
                 System.Text.Json.JsonSerializer.Serialize(new
                 {
-                    schemaVersion = 1,
+                    schemaVersion = 2,
                     libraryId,
                     version,
                     imports = new Dictionary<string, object>
                     {
-                        [import] = new { development = "dist/index.mjs", production = "dist/index.mjs" }
+                        [import] = new
+                        {
+                            type = "module",
+                            development = "dist/index.mjs",
+                            production = "dist/index.mjs",
+                            developmentHash = HashFile(Path.Combine(root, "dist", "index.mjs")),
+                            productionHash = HashFile(Path.Combine(root, "dist", "index.mjs")),
+                            developmentDependencies = Array.Empty<string>(),
+                            productionDependencies = Array.Empty<string>(),
+                            developmentModuleDependencies = Array.Empty<string>(),
+                            productionModuleDependencies = Array.Empty<string>(),
+                            files = Array.Empty<object>()
+                        }
                     },
                     requires = requires ?? new Dictionary<string, string>(),
-                    styles = style is null ? Array.Empty<string>() : new[] { style }
+                    styles = style is null
+                        ? Array.Empty<object>()
+                        : new object[]
+                        {
+                            new
+                            {
+                                type = "style",
+                                path = style,
+                                hash = HashFile(Path.Combine(root, style.Replace('/', Path.DirectorySeparatorChar)))
+                            }
+                        },
+                    files = Array.Empty<object>()
                 }));
             return manifestPath;
+        }
+
+        private string HashFile(string relativePath)
+        {
+            var path = Path.IsPathRooted(relativePath)
+                ? relativePath
+                : Path.Combine(Root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path))
+                throw new FileNotFoundException($"Test fixture file '{relativePath}' was not found.", path);
+            return Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
         }
 
         public void Dispose()
@@ -883,5 +1323,42 @@ public sealed class LibraryMaterializerTests
             if (Directory.Exists(Root))
                 Directory.Delete(Root, recursive: true);
         }
+    }
+
+    private static void UpdateEntryFile(
+        string manifestPath,
+        string importSpecifier,
+        string path,
+        Action<JsonObject> update)
+    {
+        var root = JsonNode.Parse(File.ReadAllText(manifestPath))?.AsObject()
+            ?? throw new InvalidOperationException("Test manifest is not a JSON object.");
+        var files = root["imports"]?[importSpecifier]?["files"]?.AsArray()
+            ?? throw new InvalidOperationException("Test manifest entry does not contain files.");
+        var file = files
+            .Select(static item => item?.AsObject())
+            .Single(item => string.Equals(item?["path"]?.GetValue<string>(), path, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException($"Test manifest file '{path}' was not found.");
+        update(file);
+        File.WriteAllText(
+            manifestPath,
+            root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    private static void UpdateEntryModuleDependencies(
+        string manifestPath,
+        string importSpecifier,
+        params string[] dependencies)
+    {
+        var root = JsonNode.Parse(File.ReadAllText(manifestPath))?.AsObject()
+            ?? throw new InvalidOperationException("Test manifest is not a JSON object.");
+        var entry = root["imports"]?[importSpecifier]?.AsObject()
+            ?? throw new InvalidOperationException("Test manifest entry does not exist.");
+        var values = new JsonArray(dependencies.Select(static value => JsonValue.Create(value)).ToArray());
+        entry["developmentModuleDependencies"] = values.DeepClone();
+        entry["productionModuleDependencies"] = values;
+        File.WriteAllText(
+            manifestPath,
+            root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 }

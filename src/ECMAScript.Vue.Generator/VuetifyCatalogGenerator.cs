@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -50,15 +51,17 @@ internal static class VuetifyCatalogGenerator
         outputs.Add(new GeneratedFile(
             Path.Combine(projectRoot, "VuetifyCatalog.g.cs"),
             RenderCatalog(components)));
+        var componentsModule = RenderComponentShim(components, StableModule, "./vuetify.esm.js");
+        var labsModule = RenderComponentShim(components, LabsModule, "./vuetify-labs.esm.js");
         outputs.Add(new GeneratedFile(
             Path.Combine(projectRoot, "dist", "components.mjs"),
-            RenderComponentShim(components, StableModule, "./vuetify.esm.js")));
+            componentsModule));
         outputs.Add(new GeneratedFile(
             Path.Combine(projectRoot, "dist", "labs.mjs"),
-            RenderComponentShim(components, LabsModule, "./vuetify-labs.esm.js")));
+            labsModule));
         outputs.Add(new GeneratedFile(
             Path.Combine(projectRoot, "manifest.json"),
-            RenderManifest()));
+            RenderManifest(projectRoot, componentsModule, labsModule)));
 
         if (check)
         {
@@ -458,69 +461,105 @@ internal static class VuetifyCatalogGenerator
         return builder.ToString();
     }
 
-    private static string RenderManifest()
-        => $$"""
+    private static string RenderManifest(
+        string projectRoot,
+        string componentsModule,
+        string labsModule)
+    {
+        var imports = new SortedDictionary<string, object>(StringComparer.Ordinal)
         {
-          "schemaVersion": 1,
-          "libraryId": "vuetify",
-          "version": "{{Version}}",
-          "imports": {
-            "vuetify": {
-              "development": "dist/vuetify.esm.js",
-              "production": "dist/vuetify.esm.js",
-              "developmentDependencies": [
-                "vue"
-              ],
-              "productionDependencies": [
-                "vue"
-              ]
+            ["vuetify"] = CreateModuleEntry(
+                "dist/vuetify.esm.js",
+                HashFile(projectRoot, "dist/vuetify.esm.js"),
+                ["vue"],
+                []),
+            ["vuetify/components"] = CreateModuleEntry(
+                "dist/components.mjs",
+                HashContent(componentsModule),
+                ["vuetify"],
+                ["vuetify"]),
+            ["vuetify/directives"] = CreateModuleEntry(
+                "dist/directives.mjs",
+                HashFile(projectRoot, "dist/directives.mjs"),
+                ["vuetify"],
+                ["vuetify"]),
+            ["vuetify/labs/components"] = CreateModuleEntry(
+                "dist/labs.mjs",
+                HashContent(labsModule),
+                ["vuetify"],
+                ["dist/vuetify-labs.esm.js"],
+                new object[]
+                {
+                    new
+                    {
+                        type = "module",
+                        path = "dist/vuetify-labs.esm.js",
+                        hash = HashFile(projectRoot, "dist/vuetify-labs.esm.js"),
+                        moduleId = "dist/vuetify-labs.esm.js"
+                    }
+                })
+        };
+
+        var manifest = new
+        {
+            schemaVersion = 2,
+            libraryId = "vuetify",
+            version = Version,
+            imports,
+            requires = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["vue3"] = "^3.5.0"
             },
-            "vuetify/components": {
-              "development": "dist/components.mjs",
-              "production": "dist/components.mjs",
-              "developmentDependencies": [
-                "vuetify"
-              ],
-              "productionDependencies": [
-                "vuetify"
-              ]
+            styles = new object[]
+            {
+                new
+                {
+                    type = "style",
+                    path = "dist/vuetify.min.css",
+                    hash = HashFile(projectRoot, "dist/vuetify.min.css")
+                }
             },
-            "vuetify/labs/components": {
-              "development": "dist/labs.mjs",
-              "production": "dist/labs.mjs",
-              "developmentDependencies": [
-                "vuetify"
-              ],
-              "productionDependencies": [
-                "vuetify"
-              ],
-              "files": [
-                "dist/vuetify-labs.esm.js"
-              ]
-            },
-            "vuetify/directives": {
-              "development": "dist/directives.mjs",
-              "production": "dist/directives.mjs",
-              "developmentDependencies": [
-                "vuetify"
-              ],
-              "productionDependencies": [
-                "vuetify"
-              ],
-              "files": []
+            files = new object[]
+            {
+                new
+                {
+                    type = "license",
+                    path = "licenses/LICENSE.md",
+                    hash = HashFile(projectRoot, "licenses/LICENSE.md")
+                }
             }
-          },
-          "requires": {
-            "vue3": "^3.5.0"
-          },
-          "styles": [
-            "dist/vuetify.min.css"
-          ],
-          "files": [
-            "licenses/LICENSE.md"
-          ]
-        }
-        """ + Environment.NewLine;
+        };
+
+        return JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine;
+    }
+
+    private static object CreateModuleEntry(
+        string path,
+        string hash,
+        IReadOnlyList<string> packageDependencies,
+        IReadOnlyList<string> moduleDependencies,
+        IReadOnlyList<object>? files = null)
+        => new
+        {
+            type = "module",
+            development = path,
+            production = path,
+            developmentHash = hash,
+            productionHash = hash,
+            developmentDependencies = packageDependencies,
+            productionDependencies = packageDependencies,
+            developmentModuleDependencies = moduleDependencies,
+            productionModuleDependencies = moduleDependencies,
+            files = files ?? Array.Empty<object>()
+        };
+
+    private static string HashFile(string projectRoot, string relativePath)
+        => Convert.ToHexString(SHA256.HashData(SystemFile.ReadAllBytes(Path.Combine(
+            projectRoot,
+            relativePath.Replace('/', Path.DirectorySeparatorChar))))).ToLowerInvariant();
+
+    private static string HashContent(string content)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(content))).ToLowerInvariant();
 
     private static bool IsParameterProperty(PropertyDeclarationSyntax property)
         => property.AttributeLists.SelectMany(static list => list.Attributes).Any(IsParameter);

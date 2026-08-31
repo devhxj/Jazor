@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "style.mjs": "./style.mjs",
+    "components/": "./components/",
+    "features/greeter.mjs": "./features/greeter.mjs",
+    "host/app.mjs": "./host/app.mjs",
+    "shared/greetings.mjs": "./shared/greetings.mjs"
+  }
+}

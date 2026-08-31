@@ -14,6 +14,10 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageTags>jazor;csharp;javascript;compiler;analyzer;source-generator</PackageTags>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <!-- NU5129 assumes every buildTransitive target has a matching build target. The
+         resource locator is intentionally the only transitive target; tooling remains
+         direct-reference-only through build/Jazor.targets. -->
+    <NoWarn>$(NoWarn);NU5129</NoWarn>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddJazorEmitPublishOutputToPackage</TargetsForTfmSpecificContentInPackage>
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(DOTNET_CLI_HOME)' != ''">$([System.IO.Path]::Combine('$(DOTNET_CLI_HOME)', '.nuget', 'packages'))\</NuGetPackageRoot>
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(UserProfile)' != ''">$([System.IO.Path]::Combine('$(UserProfile)', '.nuget', 'packages'))\</NuGetPackageRoot>
@@ -29,8 +33,21 @@
     <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
     <None Include="..\..\NOTICE.txt" Pack="true" PackagePath="" />
-    <None Include="buildTransitive\Jazor.props" Pack="true" PackagePath="buildTransitive\Jazor.props" />
-    <None Include="buildTransitive\Jazor.targets" Pack="true" PackagePath="buildTransitive\Jazor.targets" />
+    <!-- Tooling is a direct-reference capability. Only resource manifest location propagates. -->
+    <None Include="build\Jazor.props" Pack="true" PackagePath="build\Jazor.props" />
+    <None Include="build\Jazor.targets" Pack="true" PackagePath="build\Jazor.targets" />
+    <None Include="buildTransitive\Jazor.Resources.targets"
+          Pack="true"
+          PackagePath="buildTransitive\Jazor.Resources.targets" />
+    <!-- ECMAScript is an external JS-resource library. Keep its managed projection and its
+         manifest/dist carrier separate so Emit discovers it through the same locator contract as
+         Vue, Vuetify and other resource packages. -->
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript\manifest.json"
+          Pack="true"
+          PackagePath="jazor\ecmascript\manifest.json" />
+    <None Include="$(MSBuildThisFileDirectory)..\ECMAScript\dist\**\*"
+          Pack="true"
+          PackagePath="jazor\ecmascript\dist\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,19 +73,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <!-- Do not use NuGet's automatic analyzers/ asset. build/Jazor.targets registers this
+         analyzer dependency closure only for direct Jazor references. -->
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.dll" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.pdb" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.dll" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.pdb" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.pdb" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="tools\net11.0\analyzers\" />
     <!-- 跟随 Directory.Build.props 中的统一版本，避免升级 Acornima 后打包仍读取旧缓存路径。 -->
-    <None Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Pack="true" PackagePath="tools\net11.0\analyzers\" />
+    <None Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Pack="true" PackagePath="tools\net11.0\analyzers\" />
   </ItemGroup>
 
   <ItemGroup>

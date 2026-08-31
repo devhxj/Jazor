@@ -1,0 +1,23 @@
+{
+  "imports": {
+    "style.mjs": "/jazor/style.mjs",
+    "components/": "/jazor/components/",
+    "@pinia/testing": "/jazor/vendor/pinia-testing/2.0.1/dist/index.mjs",
+    "@vue/devtools-api": "/jazor/vendor/vue3/3.5.13/dist/devtools-api/vue-devtools-api.esm-browser.js",
+    "nostics": "/jazor/vendor/pinia/4.0.3/dist/nostics/index.mjs",
+    "perfect-debounce": "/jazor/vendor/vue3/3.5.13/dist/devtools-api/perfect-debounce.mjs",
+    "pinia": "/jazor/vendor/pinia/4.0.3/dist/pinia.esm-browser.js",
+    "vue": "/jazor/vendor/vue3/3.5.13/dist/vue.runtime.esm-browser.js",
+    "components/counter-app.mjs": "/jazor/components/counter-app.mjs",
+    "components/counter-cookbook.mjs": "/jazor/components/counter-cookbook.mjs",
+    "components/counter-hmr.mjs": "/jazor/components/counter-hmr.mjs",
+    "components/counter-hydration.mjs": "/jazor/components/counter-hydration.mjs",
+    "components/counter-isolation.mjs": "/jazor/components/counter-isolation.mjs",
+    "components/counter-multi-store.mjs": "/jazor/components/counter-multi-store.mjs",
+    "components/counter-subscription.mjs": "/jazor/components/counter-subscription.mjs",
+    "host/app.mjs": "/jazor/host/app.mjs",
+    "stores/activity-store.mjs": "/jazor/stores/activity-store.mjs",
+    "stores/counter-store.mjs": "/jazor/stores/counter-store.mjs",
+    "tests/counter-testing.mjs": "/jazor/tests/counter-testing.mjs"
+  }
+}

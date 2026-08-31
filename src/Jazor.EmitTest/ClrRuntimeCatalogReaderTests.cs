@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using Jazor.Emit;
 
 namespace Jazor.EmitTest;
@@ -7,21 +8,19 @@ namespace Jazor.EmitTest;
 public sealed class ClrRuntimeCatalogReaderTests
 {
     [TestMethod]
-    public void CatalogReader_TryRead_UsesStandardRuntimeProviderCatalogTypeName()
+    public void CatalogReader_TryRead_DoesNotReadJsResourceCarrierFromAssembly()
     {
-        var catalogType = typeof(ECMAScript.Number).Assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: false, ignoreCase: false);
+        var catalogType = typeof(ECMAScript.Number).Assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false);
 
-        Assert.IsNotNull(catalogType);
+        Assert.IsNull(catalogType);
         Assert.IsNull(typeof(ECMAScript.Number).Assembly.GetType("ECMAScript.Catalog", throwOnError: false, ignoreCase: false));
-        Assert.IsNull(typeof(ECMAScript.Number).Assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false));
+        Assert.IsNull(CatalogReader.TryRead(typeof(ECMAScript.Number).Assembly));
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_ReadsClrRuntimeModules_FromEcmascriptAssembly()
+    public void JsResourceManifest_ReadsClrRuntimeModules_FromEcmascriptPackage()
     {
-        var assembly = typeof(ECMAScript.Number).Assembly;
-
-        var modules = CatalogReader.TryRead(assembly);
+        var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
         Assert.IsTrue(modules.Count >= 30, $"Expected at least 30 CLR runtime modules, but found {modules.Count}.");
@@ -33,20 +32,18 @@ public sealed class ClrRuntimeCatalogReaderTests
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_ClrRuntimeModulesExposeStructuredProviderDependencies()
+    public void JsResourceManifest_ClrRuntimeModulesExposeStructuredDependencies()
     {
-        var modules = CatalogReader.TryRead(typeof(ECMAScript.Number).Assembly)!;
+        var modules = ReadEcmascriptResourceModules();
 
         var byteModule = modules.Single(module =>
             string.Equals(module.RelativePath, "System/ByteModule.js", StringComparison.OrdinalIgnoreCase));
-        Assert.AreEqual("jazor.clr", byteModule.RuntimeProviderId);
         CollectionAssert.AreEquivalent(
             new[] { "System/RuntimeModule.js", "System/StringModule.js" },
             byteModule.Dependencies!.ToArray());
 
         var runtimeModule = modules.Single(module =>
             string.Equals(module.RelativePath, "System/RuntimeModule.js", StringComparison.OrdinalIgnoreCase));
-        Assert.AreEqual("jazor.clr", runtimeModule.RuntimeProviderId);
         CollectionAssert.AreEquivalent(
             new[] { "System/StringModule.js" },
             runtimeModule.Dependencies!.ToArray());
@@ -60,32 +57,21 @@ public sealed class ClrRuntimeCatalogReaderTests
         var collector = new ModuleCollector(loadContext);
         collector.AddAssembly(assemblyPath);
 
-        var result = collector.Collect(failOnPathConflict: true);
+        var result = collector.Collect(assemblyPath);
 
         Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
         Assert.AreEqual(1, result.AssemblyCount);
-        Assert.AreEqual(1, result.CatalogCount);
+        Assert.AreEqual(0, result.CatalogCount);
 
         Assert.HasCount(0, result.Modules);
     }
 
     [TestMethod]
-    public void ModuleCollector_RetainsOnlyReferencedClrRuntimeDependencyClosure()
+    public void JsResourceManifest_ProvidesClrRuntimeDependencyClosure()
     {
-        var runtimeModules = CatalogReader.TryRead(typeof(ECMAScript.Number).Assembly)!;
-        var app = new ModuleRecord(
-            SourceAssemblyPath: "app.dll",
-            AssemblyName: "App",
-            TypeName: "App.Page",
-            Id: "App.Page",
-            RelativePath: "components/page.mjs",
-            Content: "import { _1234444e218b96c3 } from \"System/StringModule.js\";\nexport default _1234444e218b96c3;\n",
-            Hash: "sha256:app");
+        var runtimeModules = ReadEcmascriptResourceModules();
+        var retainedPaths = CollectDependencyClosure(runtimeModules, "System/StringModule.js");
 
-        var retained = ModuleCollector.RetainReferencedRuntimeProviderModules([app, .. runtimeModules]);
-        var retainedPaths = retained.Select(static module => module.RelativePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        CollectionAssert.Contains(retainedPaths.ToArray(), "components/page.mjs");
         CollectionAssert.Contains(retainedPaths.ToArray(), "System/StringModule.js");
         CollectionAssert.Contains(retainedPaths.ToArray(), "System/RuntimeModule.js");
         CollectionAssert.DoesNotContain(retainedPaths.ToArray(), "System/DateTimeModule.js");
@@ -100,11 +86,9 @@ public sealed class ClrRuntimeCatalogReaderTests
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_ExportsClrImportMembers_WithoutWholeModuleNamespaceObjects()
+    public void JsResourceManifest_ExportsClrImportMembers_WithoutWholeModuleNamespaceObjects()
     {
-        var assembly = typeof(ECMAScript.Number).Assembly;
-
-        var modules = CatalogReader.TryRead(assembly);
+        var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
 
@@ -146,9 +130,7 @@ public sealed class ClrRuntimeCatalogReaderTests
     [TestMethod]
     public void CatalogReader_TryRead_StringIndexerGetter_UsesCharAt_WithoutSelfRecursiveImport()
     {
-        var assembly = typeof(ECMAScript.Number).Assembly;
-
-        var modules = CatalogReader.TryRead(assembly);
+        var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
 
@@ -160,9 +142,7 @@ public sealed class ClrRuntimeCatalogReaderTests
     [TestMethod]
     public void CatalogReader_TryRead_ClrBigIntStatics_InlineToNativeLiterals()
     {
-        var assembly = typeof(ECMAScript.Number).Assembly;
-
-        var modules = CatalogReader.TryRead(assembly);
+        var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
 
@@ -178,9 +158,7 @@ public sealed class ClrRuntimeCatalogReaderTests
     [TestMethod]
     public void CatalogReader_TryRead_ClrIntlHostsAndPropertyDescriptors_UseStandardJsForms()
     {
-        var assembly = typeof(ECMAScript.Number).Assembly;
-
-        var modules = CatalogReader.TryRead(assembly);
+        var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
 
@@ -215,9 +193,7 @@ public sealed class ClrRuntimeCatalogReaderTests
     [TestMethod]
     public void CatalogReader_TryRead_ClrRuntimeHelpers_UseCorrectArraySortRotateAndRegexForms()
     {
-        var assembly = typeof(ECMAScript.Number).Assembly;
-
-        var modules = CatalogReader.TryRead(assembly);
+        var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
 
@@ -296,9 +272,7 @@ public sealed class ClrRuntimeCatalogReaderTests
     [TestMethod]
     public void CatalogReader_TryRead_ClrCharModule_UsesStringCarrierSemantics()
     {
-        var assembly = typeof(ECMAScript.Number).Assembly;
-
-        var modules = CatalogReader.TryRead(assembly);
+        var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
 
@@ -327,9 +301,7 @@ public sealed class ClrRuntimeCatalogReaderTests
     [TestMethod]
     public void CatalogReader_TryRead_ClrBigIntegerModule_FollowsDotNetLogLeadingZeroAndModPowSemantics()
     {
-        var assembly = typeof(ECMAScript.Number).Assembly;
-
-        var modules = CatalogReader.TryRead(assembly);
+        var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
 
@@ -351,7 +323,7 @@ public sealed class ClrRuntimeCatalogReaderTests
     {
         var assembly = typeof(ECMAScript.Number).Assembly;
 
-        var modules = CatalogReader.TryRead(assembly);
+        var modules = ReadEcmascriptResourceModules();
 
         Assert.IsNotNull(modules);
 
@@ -403,13 +375,13 @@ public sealed class ClrRuntimeCatalogReaderTests
     }
 
     [TestMethod]
-    public void CatalogReader_TryRead_ClrTimeDoubleHelpers_FollowCurrentDotNetSemantics()
+    public void JsResourceManifest_ClrTimeDoubleHelpers_FollowCurrentDotNetSemantics()
     {
         var assembly = typeof(ECMAScript.Number).Assembly;
 
-        var modules = CatalogReader.TryRead(assembly);
-
-        Assert.IsNotNull(modules);
+        // ECMAScript is a JS-resource library. Its generated runtime modules are validated from
+        // manifest.json + dist rather than through the pure-Jazor ModuleCatalog carrier.
+        var modules = ReadEcmascriptResourceModules();
 
         var timeSpanModule = modules.Single(module => string.Equals(module.RelativePath, "System/TimeSpanModule.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(timeSpanModule.Content, "function RoundToEven(value)");
@@ -452,6 +424,62 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(module.TypeName), $"Expected '{relativePath}' to have a type name.");
         Assert.IsFalse(string.IsNullOrWhiteSpace(module.Content), $"Expected '{relativePath}' to have emitted module content.");
         Assert.IsFalse(string.IsNullOrWhiteSpace(module.Hash), $"Expected '{relativePath}' to have a content hash.");
+    }
+
+    private static IReadOnlyList<ModuleRecord> ReadEcmascriptResourceModules()
+    {
+        var manifestPath = FindEcmascriptManifest();
+        var packageRoot = Path.GetDirectoryName(manifestPath)!;
+        using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var imports = document.RootElement.GetProperty("imports");
+        var modules = new List<ModuleRecord>();
+        foreach (var import in imports.EnumerateObject())
+        {
+            var entry = import.Value;
+            var relativeFile = entry.GetProperty("production").GetString()!;
+            var distPrefix = "dist/";
+            Assert.IsTrue(relativeFile.StartsWith(distPrefix, StringComparison.Ordinal), relativeFile);
+            var relativePath = relativeFile.Substring(distPrefix.Length);
+            var sourcePath = Path.Combine(packageRoot, relativeFile.Replace('/', Path.DirectorySeparatorChar));
+            var content = File.ReadAllText(sourcePath).ReplaceLineEndings("\n");
+            modules.Add(new ModuleRecord(
+                manifestPath,
+                "ECMAScript",
+                import.Name,
+                import.Name,
+                relativePath,
+                content,
+                entry.GetProperty("productionHash").GetString()!,
+                PackageImports: ReadStringArray(entry, "productionDependencies"),
+                Dependencies: ReadStringArray(entry, "productionModuleDependencies")));
+        }
+
+        return modules;
+    }
+
+    private static IReadOnlyList<string> ReadStringArray(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var values) || values.ValueKind != JsonValueKind.Array)
+            return [];
+
+        return values.EnumerateArray()
+            .Where(static value => value.ValueKind == JsonValueKind.String)
+            .Select(static value => value.GetString()!)
+            .ToArray();
+    }
+
+    private static string FindEcmascriptManifest()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, "src", "ECMAScript", "manifest.json");
+            if (File.Exists(candidate))
+                return candidate;
+            directory = directory.Parent;
+        }
+
+        throw new FileNotFoundException("The ECMAScript JS-resource manifest was not found.");
     }
 
     private static IReadOnlySet<string> CollectDependencyClosure(

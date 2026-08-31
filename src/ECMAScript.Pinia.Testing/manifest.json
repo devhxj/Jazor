@@ -1,21 +1,26 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "libraryId": "pinia-testing",
   "version": "2.0.1",
   "imports": {
     "@pinia/testing": {
+      "type": "module",
       "development": "dist/index.mjs",
       "production": "dist/index.mjs",
+      "developmentHash": "c3e9ca4965427e3df6d0ab6ed572405a34f719db0c236f1476ac1e1bbeb3d1f2",
+      "productionHash": "c3e9ca4965427e3df6d0ab6ed572405a34f719db0c236f1476ac1e1bbeb3d1f2",
       "developmentDependencies": [
+        "nostics",
         "pinia",
-        "vue",
-        "nostics"
+        "vue"
       ],
       "productionDependencies": [
+        "nostics",
         "pinia",
-        "vue",
-        "nostics"
+        "vue"
       ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
       "files": []
     }
   },
@@ -25,6 +30,10 @@
   },
   "styles": [],
   "files": [
-    "licenses/LICENSE"
+    {
+      "type": "license",
+      "path": "licenses/LICENSE",
+      "hash": "91a2845c4db44e7497b514b98634a674c737986ad0db81599307cf733bf850b2"
+    }
   ]
 }

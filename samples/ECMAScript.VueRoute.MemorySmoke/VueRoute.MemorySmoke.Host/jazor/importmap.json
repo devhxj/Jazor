@@ -1,0 +1,14 @@
+{
+  "imports": {
+    "style.mjs": "/jazor/style.mjs",
+    "components/": "/jazor/components/",
+    "@vue/devtools-api": "/jazor/vendor/vue3/3.5.13/dist/devtools-api/vue-devtools-api.esm-browser.js",
+    "perfect-debounce": "/jazor/vendor/vue3/3.5.13/dist/devtools-api/perfect-debounce.mjs",
+    "vue": "/jazor/vendor/vue3/3.5.13/dist/vue.runtime.esm-browser.js",
+    "vue-router": "/jazor/vendor/vue-router/4.6.4/dist/vue-router.esm-browser.js",
+    "components/route-shell.mjs": "/jazor/components/route-shell.mjs",
+    "host/app.mjs": "/jazor/host/app.mjs",
+    "router/memory-router.mjs": "/jazor/router/memory-router.mjs",
+    "tests/router-testing.mjs": "/jazor/tests/router-testing.mjs"
+  }
+}

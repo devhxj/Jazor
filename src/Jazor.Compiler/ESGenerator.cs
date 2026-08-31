@@ -6,7 +6,6 @@ using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
@@ -92,19 +91,19 @@ public sealed class ESGenerator : IIncrementalGenerator
             return;
 
         var assemblyName = compilation.AssemblyName ?? "Jazor.Assembly";
-        var legacyCandidates = new List<ModuleCandidate>();
+        var moduleCatalogCandidates = new List<ModuleCandidate>();
         foreach (var candidate in candidates)
         {
             if (!candidate.ClassSymbol.IsStatic)
                 continue;
 
-            legacyCandidates.Add(candidate);
+            moduleCatalogCandidates.Add(candidate);
         }
 
-        EmitLegacyCatalog(context, compilation, assemblyName, legacyCandidates);
+        EmitModuleCatalog(context, compilation, assemblyName, moduleCatalogCandidates);
     }
 
-    private static void EmitLegacyCatalog(
+    private static void EmitModuleCatalog(
         SourceProductionContext context,
         Compilation compilation,
         string assemblyName,
@@ -163,9 +162,14 @@ public sealed class ESGenerator : IIncrementalGenerator
                     candidate.SemanticModel,
                     new AstConverterOptions(AstConverterProfile.ClrRuntime));
                 var module = converter.Convert().GetAwaiter().GetResult();
+                var moduleCatalogImportPaths = new HashSet<string>(
+                    converter.ModuleCatalogImportPaths.Select(ECMAScriptModulePath.NormalizeImportSpecifier),
+                    StringComparer.Ordinal);
                 var packageImports = module?.Body
                     .OfType<ImportDeclaration>()
                     .Select(static declaration => declaration.Source.Value)
+                    .Where(source => !moduleCatalogImportPaths.Contains(
+                        ECMAScriptModulePath.NormalizeImportSpecifier(source)))
                     .Where(ECMAScriptModulePath.IsPackageSpecifier)
                     .Distinct(StringComparer.Ordinal)
                     .OrderBy(static specifier => specifier, StringComparer.Ordinal)
@@ -198,8 +202,12 @@ public sealed class ESGenerator : IIncrementalGenerator
                             ex.Message));
                     }
 
-                    content = artifact?.Content ?? module.ToKnRECMAScript();
+                    content = Util.NormalizeLineEndingsToLf(artifact?.Content ?? module.ToKnRECMAScript());
                 }
+
+                var sourceMapContent = artifact?.SourceMapContent is null
+                    ? null
+                    : Util.NormalizeLineEndingsToLf(artifact.SourceMapContent);
 
                 generatedModules.Add(new GeneratedModuleInfo(
                     assemblyName,
@@ -207,11 +215,12 @@ public sealed class ESGenerator : IIncrementalGenerator
                     plan.TypeName,
                     plan.RelativePath,
                     content,
-                    artifact?.JsHash ?? ComputeSha256Hex(content),
+                    ComputeSha256Hex(content),
                     packageImports,
+                    CollectModuleDependencies(module, plan.RelativePath, moduleCatalogImportPaths),
                     artifact is null ? null : BuildSourceMapRelativePath(plan.RelativePath),
-                    artifact?.SourceMapContent,
-                    artifact?.MapHash));
+                    sourceMapContent,
+                    sourceMapContent is null ? null : ComputeSha256Hex(sourceMapContent)));
             }
             catch (Exception ex)
             {
@@ -230,16 +239,6 @@ public sealed class ESGenerator : IIncrementalGenerator
             StringComparer.OrdinalIgnoreCase.Compare(left.RelativePath, right.RelativePath));
 
         context.AddSource("Jazor.Generated.ModuleCatalog.g.cs", BuildModuleCatalogSource(assemblyName, generatedModules));
-
-        var sourceMapModules = generatedModules
-            .Where(static module => !string.IsNullOrWhiteSpace(module.SourceMapRelativePath) && !string.IsNullOrWhiteSpace(module.SourceMapContent))
-            .ToArray();
-        if (sourceMapModules.Length > 0)
-        {
-            context.AddSource(
-                "Jazor.Generated.ModuleSourceMapCatalog.g.cs",
-                BuildModuleSourceMapCatalogSource(assemblyName, sourceMapModules));
-        }
     }
 
     private static HashSet<string> ReportDuplicateModuleOutputPaths(
@@ -288,19 +287,33 @@ public sealed class ESGenerator : IIncrementalGenerator
         builder.AppendLine("    [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("    internal static partial class ModuleCatalog");
         builder.AppendLine("    {");
+        builder.AppendLine("        internal const int SchemaVersion = 2;");
         builder.Append("        internal static string AssemblyName { get; } = ");
         builder.Append(EscapeCSharpString(assemblyName));
         builder.AppendLine(";");
         builder.AppendLine();
         builder.AppendLine("        internal static global::System.Collections.IEnumerable GetModules()");
         builder.AppendLine("        {");
-        builder.AppendLine("            return _modules;");
+        builder.AppendLine("            var modules = new global::System.Collections.Generic.List<object>(_modules.Length);");
+        builder.AppendLine("            modules.AddRange(_modules);");
+        builder.AppendLine("            AppendModules(modules);");
+        builder.AppendLine("            return modules;");
         builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        internal static global::System.Collections.IEnumerable GetAssets()");
+        builder.AppendLine("        {");
+        builder.AppendLine("            var assets = new global::System.Collections.Generic.List<object>();");
+        builder.AppendLine("            AppendAssets(assets);");
+        builder.AppendLine("            return assets;");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        static partial void AppendModules(global::System.Collections.Generic.List<object> modules);");
+        builder.AppendLine("        static partial void AppendAssets(global::System.Collections.Generic.List<object> assets);");
         builder.AppendLine();
         builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
         builder.AppendLine("        private sealed class GeneratedModule");
         builder.AppendLine("        {");
-        builder.AppendLine("            public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash, string[] packageImports)");
+        builder.AppendLine("            public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash, string[] packageImports, string[] dependencies, string? sourceMapRelativePath, string? sourceMapContent, string? mapHash)");
         builder.AppendLine("            {");
         builder.AppendLine("                AssemblyName = assemblyName;");
         builder.AppendLine("                TypeName = typeName;");
@@ -309,6 +322,10 @@ public sealed class ESGenerator : IIncrementalGenerator
         builder.AppendLine("                Content = content;");
         builder.AppendLine("                Hash = hash;");
         builder.AppendLine("                PackageImports = packageImports;");
+        builder.AppendLine("                Dependencies = dependencies;");
+        builder.AppendLine("                SourceMapRelativePath = sourceMapRelativePath;");
+        builder.AppendLine("                SourceMapContent = sourceMapContent;");
+        builder.AppendLine("                MapHash = mapHash;");
         builder.AppendLine("            }");
         builder.AppendLine();
         builder.AppendLine("            public string AssemblyName { get; }");
@@ -318,6 +335,10 @@ public sealed class ESGenerator : IIncrementalGenerator
         builder.AppendLine("            public string Content { get; }");
         builder.AppendLine("            public string Hash { get; }");
         builder.AppendLine("            public string[] PackageImports { get; }");
+        builder.AppendLine("            public string[] Dependencies { get; }");
+        builder.AppendLine("            public string? SourceMapRelativePath { get; }");
+        builder.AppendLine("            public string? SourceMapContent { get; }");
+        builder.AppendLine("            public string? MapHash { get; }");
         builder.AppendLine("        }");
         builder.AppendLine();
         builder.AppendLine("        private static readonly GeneratedModule[] _modules = new GeneratedModule[]");
@@ -333,8 +354,12 @@ public sealed class ESGenerator : IIncrementalGenerator
             builder.Append("                content: ").Append(EscapeCSharpString(module.Content)).AppendLine(",");
             builder.Append("                hash: ").Append(EscapeCSharpString(module.Hash)).AppendLine(",");
             builder.Append("                packageImports: new string[] { ");
-            builder.Append(string.Join(", ", module.PackageImports.Select(EscapeCSharpString)));
-            builder.AppendLine(" }),");
+            builder.Append(string.Join(", ", module.PackageImports.Select(EscapeCSharpString))).AppendLine(" },");
+            builder.Append("                dependencies: new string[] { ");
+            builder.Append(string.Join(", ", module.Dependencies.Select(EscapeCSharpString))).AppendLine(" },");
+            builder.Append("                sourceMapRelativePath: ").Append(EscapeNullableCSharpString(module.SourceMapRelativePath)).AppendLine(",");
+            builder.Append("                sourceMapContent: ").Append(EscapeNullableCSharpString(module.SourceMapContent)).AppendLine(",");
+            builder.Append("                mapHash: ").Append(EscapeNullableCSharpString(module.MapHash)).AppendLine("),");
         }
 
         builder.AppendLine("        };");
@@ -343,72 +368,8 @@ public sealed class ESGenerator : IIncrementalGenerator
         return Util.NormalizeLineEndingsToLf(builder.ToString());
     }
 
-    private static string BuildModuleSourceMapCatalogSource(string assemblyName, IReadOnlyList<GeneratedModuleInfo> modules)
-    {
-        var builder = new StringBuilder();
-        builder.AppendLine("// <auto-generated/>");
-        builder.AppendLine("#nullable enable");
-        builder.AppendLine("namespace Jazor.Generated");
-        builder.AppendLine("{");
-        builder.AppendLine("    [global::System.Runtime.CompilerServices.CompilerGenerated]");
-        builder.AppendLine("    internal static partial class ModuleSourceMapCatalog");
-        builder.AppendLine("    {");
-        builder.Append("        internal static string AssemblyName { get; } = ");
-        builder.Append(EscapeCSharpString(assemblyName));
-        builder.AppendLine(";");
-        builder.AppendLine();
-        builder.AppendLine("        internal static global::System.Collections.IEnumerable GetModules()");
-        builder.AppendLine("        {");
-        builder.AppendLine("            return _modules;");
-        builder.AppendLine("        }");
-        builder.AppendLine();
-        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
-        builder.AppendLine("        private sealed class GeneratedModuleSourceMap");
-        builder.AppendLine("        {");
-        builder.AppendLine("            public GeneratedModuleSourceMap(string assemblyName, string typeName, string id, string relativePath, string sourceMapRelativePath, string sourceMapContent, string mapHash)");
-        builder.AppendLine("            {");
-        builder.AppendLine("                AssemblyName = assemblyName;");
-        builder.AppendLine("                TypeName = typeName;");
-        builder.AppendLine("                Id = id;");
-        builder.AppendLine("                RelativePath = relativePath;");
-        builder.AppendLine("                SourceMapRelativePath = sourceMapRelativePath;");
-        builder.AppendLine("                SourceMapContent = sourceMapContent;");
-        builder.AppendLine("                MapHash = mapHash;");
-        builder.AppendLine("            }");
-        builder.AppendLine();
-        builder.AppendLine("            public string AssemblyName { get; }");
-        builder.AppendLine("            public string TypeName { get; }");
-        builder.AppendLine("            public string Id { get; }");
-        builder.AppendLine("            public string RelativePath { get; }");
-        builder.AppendLine("            public string SourceMapRelativePath { get; }");
-        builder.AppendLine("            public string SourceMapContent { get; }");
-        builder.AppendLine("            public string MapHash { get; }");
-        builder.AppendLine("        }");
-        builder.AppendLine();
-        builder.AppendLine("        private static readonly GeneratedModuleSourceMap[] _modules = new GeneratedModuleSourceMap[]");
-        builder.AppendLine("        {");
-
-        foreach (var module in modules)
-        {
-            var sourceMapRelativePath = module.SourceMapRelativePath!;
-            var sourceMapContent = module.SourceMapContent!;
-            var mapHash = module.MapHash ?? ComputeSha256Hex(sourceMapContent);
-
-            builder.AppendLine("            new GeneratedModuleSourceMap(");
-            builder.Append("                assemblyName: ").Append(EscapeCSharpString(module.AssemblyName)).AppendLine(",");
-            builder.Append("                typeName: ").Append(EscapeCSharpString(module.TypeName)).AppendLine(",");
-            builder.Append("                id: ").Append(EscapeCSharpString(module.Id)).AppendLine(",");
-            builder.Append("                relativePath: ").Append(EscapeCSharpString(module.RelativePath)).AppendLine(",");
-            builder.Append("                sourceMapRelativePath: ").Append(EscapeCSharpString(sourceMapRelativePath)).AppendLine(",");
-            builder.Append("                sourceMapContent: ").Append(EscapeCSharpString(sourceMapContent)).AppendLine(",");
-            builder.Append("                mapHash: ").Append(EscapeCSharpString(mapHash)).AppendLine("),");
-        }
-
-        builder.AppendLine("        };");
-        builder.AppendLine("    }");
-        builder.AppendLine("}");
-        return Util.NormalizeLineEndingsToLf(builder.ToString());
-    }
+    private static string EscapeNullableCSharpString(string? value)
+        => value is null ? "null" : EscapeCSharpString(value);
 
     private static string? ResolveConfiguredImportPath(GeneratorAttributeSyntaxContext context)
     {
@@ -438,6 +399,37 @@ public sealed class ESGenerator : IIncrementalGenerator
 
     private static string NormalizeRelativePath(string path)
         => ECMAScriptModulePath.NormalizeRelativePath(path);
+
+    private static IReadOnlyList<string> CollectModuleDependencies(
+        Acornima.Ast.Module? module,
+        string relativePath,
+        ISet<string> moduleCatalogImportPaths)
+    {
+        if (module is null)
+            return [];
+
+        var dependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var declaration in module.Body.OfType<ImportDeclaration>())
+        {
+            var source = declaration.Source.Value;
+            var normalizedSource = ECMAScriptModulePath.NormalizeImportSpecifier(source);
+            var isModuleCatalogImport = moduleCatalogImportPaths.Contains(normalizedSource);
+            if (!isModuleCatalogImport &&
+                (string.Equals(source, "style.mjs", StringComparison.Ordinal) ||
+                 ECMAScriptModulePath.IsPackageSpecifier(source)))
+            {
+                continue;
+            }
+
+            var dependency = source.StartsWith("./", StringComparison.Ordinal) ||
+                             source.StartsWith("../", StringComparison.Ordinal)
+                ? ECMAScriptModulePath.ResolveRelativePath(relativePath, source)
+                : NormalizeRelativePath(source);
+            dependencies.Add(dependency);
+        }
+
+        return dependencies.OrderBy(static value => value, StringComparer.Ordinal).ToArray();
+    }
 
     private static string BuildSourceMapRelativePath(string relativePath)
         => $"{relativePath}.map";
@@ -532,14 +524,7 @@ public sealed class ESGenerator : IIncrementalGenerator
             : path + Path.DirectorySeparatorChar;
 
     private static string ComputeSha256Hex(string content)
-    {
-        using var sha = SHA256.Create();
-        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(content));
-        var builder = new StringBuilder(bytes.Length * 2);
-        foreach (var item in bytes)
-            builder.Append(item.ToString("X2"));
-        return builder.ToString();
-    }
+        => ArtifactHash.ComputeSha256(content);
 
     private static string EscapeCSharpString(string value)
         => Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(value, quote: true);
@@ -567,6 +552,7 @@ public sealed class ESGenerator : IIncrementalGenerator
         string Content,
         string Hash,
         IReadOnlyList<string> PackageImports,
+        IReadOnlyList<string> Dependencies,
         string? SourceMapRelativePath,
         string? SourceMapContent,
         string? MapHash);

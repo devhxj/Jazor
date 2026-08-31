@@ -42,9 +42,13 @@ public sealed class VuIconsProxyTests
         Assert.AreEqual(componentTypes.Length, imports.EnumerateObject().Count());
         Assert.AreEqual("dist/jazor-vu-icon.mjs", imports.GetProperty("vu-icons").GetProperty("production").GetString());
         Assert.AreEqual("^3.2.0", manifest.RootElement.GetProperty("requires").GetProperty("vue3").GetString());
-        CollectionAssert.Contains(
-            manifest.RootElement.GetProperty("styles").EnumerateArray().Select(static value => value.GetString()).ToArray(),
-            "dist/jazor-vu-icon.css");
+        var style = manifest.RootElement.GetProperty("styles")
+            .EnumerateArray()
+            .Single(static value => value.GetProperty("path").GetString() == "dist/jazor-vu-icon.css");
+        Assert.AreEqual("style", style.GetProperty("type").GetString());
+        var styleHash = style.GetProperty("hash").GetString();
+        Assert.IsNotNull(styleHash);
+        Assert.HasCount(64, styleHash);
 
         foreach (var (type, attribute) in componentTypes)
         {

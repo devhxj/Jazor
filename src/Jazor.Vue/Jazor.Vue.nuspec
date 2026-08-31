@@ -31,12 +31,14 @@
     <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.pdb" target="lib/net11.0" />
     <file src="$buildOutputRoot$ECMAScript.Blazor\bin\$configuration$\net11.0\ECMAScript.Blazor.dll" target="lib/net11.0" />
     <file src="$buildOutputRoot$ECMAScript.Blazor\bin\$configuration$\net11.0\ECMAScript.Blazor.pdb" target="lib/net11.0" />
-    <file src="$buildOutputRoot$Jazor.RazorVue\bin\$configuration$\netstandard2.0\Jazor.RazorVue.dll" target="analyzers/dotnet/cs" />
-    <file src="$buildOutputRoot$Jazor.RazorVue\bin\$configuration$\netstandard2.0\Jazor.RazorVue.pdb" target="analyzers/dotnet/cs" />
-    <file src="$nugetPackageRoot$anglesharp\$angleSharpVersion$\lib\netstandard2.0\AngleSharp.dll" target="analyzers/dotnet/cs" />
+    <file src="$buildOutputRoot$Jazor.RazorVue\bin\$configuration$\netstandard2.0\Jazor.RazorVue.dll" target="tools/net11.0/analyzers" />
+    <file src="$buildOutputRoot$Jazor.RazorVue\bin\$configuration$\netstandard2.0\Jazor.RazorVue.pdb" target="tools/net11.0/analyzers" />
+    <file src="$nugetPackageRoot$anglesharp\$angleSharpVersion$\lib\netstandard2.0\AngleSharp.dll" target="tools/net11.0/analyzers" />
     <file src="$projectDir$..\ECMAScript.Vue\manifest.json" target="jazor/vue3/manifest.json" />
     <file src="$projectDir$..\ECMAScript.Vue\dist\**\*" target="jazor/vue3/dist" />
     <file src="$projectDir$..\ECMAScript.Vue\licenses\**\*" target="jazor/vue3/licenses" />
+    <file src="$projectDir$manifest.json" target="jazor/vue-runtime/manifest.json" />
+    <file src="$projectDir$dist\**\*" target="jazor/vue-runtime/dist" />
     <file src="$projectDir$..\Jazor.Emit\tooling\vue\compiler-sfc.esm-browser.js"
           target="tools/net11.0/tooling/vue/compiler-sfc.esm-browser.js" />
     <file src="$projectDir$..\Jazor.Emit\tooling\vue\licenses\LICENSE"

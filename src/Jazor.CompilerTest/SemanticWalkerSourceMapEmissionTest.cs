@@ -1075,7 +1075,7 @@ public sealed class SemanticWalkerSourceMapEmissionTest
         var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(value ?? string.Empty));
         var builder = new StringBuilder(bytes.Length * 2);
         foreach (var item in bytes)
-            builder.Append(item.ToString("X2"));
+            builder.Append(item.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
 
         return builder.ToString();
     }

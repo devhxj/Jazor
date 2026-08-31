@@ -147,7 +147,7 @@ public sealed class RazorTailOutputTests
         Assert.IsNotNull(catalogSource);
         StringAssert.Contains(catalogSource, "components/razor-counter.mjs");
         StringAssert.Contains(catalogSource, "components/handwritten-status.mjs");
-        StringAssert.Contains(catalogSource, "internal static partial class ArtifactCatalog");
+        StringAssert.Contains(catalogSource, "internal static partial class ModuleCatalog");
         StringAssert.Contains(catalogSource, "hmrProviderId: \"jazor.vue\"");
         StringAssert.Contains(catalogSource, "hmrModuleId:");
         StringAssert.Contains(catalogSource, "hmrPayload:");

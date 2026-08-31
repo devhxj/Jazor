@@ -180,6 +180,56 @@ public partial class SemanticWalker
 	private static string? GetModuleImportPath(ITypeSymbol symbol)
 		=> Util.GetECMAScriptModuleImportPath(symbol);
 
+	private const string ModuleCatalogMetadataName = "Jazor.Generated.ModuleCatalog";
+
+	/// <summary>
+	/// Determines the artifact carrier for an ECMAScript module symbol without inferring from its
+	/// path. A bare logical path can belong to either a JS resource manifest or a pure Jazor
+	/// ModuleCatalog, so the owning assembly is the only authoritative boundary.
+	/// </summary>
+	private bool UsesModuleCatalogImport(ITypeSymbol symbol)
+	{
+		for (var current = symbol; current is not null; current = current.ContainingType)
+		{
+			if (!Util.IsECMAScriptModuleType(current))
+				continue;
+
+			var assembly = current.ContainingAssembly;
+			if (_moduleRootType is not null &&
+				SymbolEqualityComparer.Default.Equals(assembly, _moduleRootType.ContainingAssembly))
+			{
+				// The current compilation is being lowered into its own catalog by ESGenerator.
+				return true;
+			}
+
+			// A current-assembly module may use the same metadata attributes as a resource
+			// library. Assembly ownership wins: it is emitted into this compilation's catalog,
+			// so it must not be reclassified as an external ESM import and import itself.
+			if (Util.IsExternalECMAScriptImport(current))
+				return false;
+
+			return assembly.GetTypeByMetadataName(ModuleCatalogMetadataName) is not null;
+		}
+
+		return false;
+	}
+
+	private Identifier BindResolvedModuleImport(
+		SenseArgument context,
+		ITypeSymbol symbol,
+		string modulePath,
+		string importedName)
+	{
+		// A helper can be declared in an external CLR assembly yet resolve to the current
+		// generated module. The output path is authoritative for this local binding case.
+		if (context.IsCurrentModuleImport(modulePath))
+			return context.BindImportSpecifier(modulePath, importedName);
+
+		return UsesModuleCatalogImport(symbol)
+			? context.BindModuleCatalogImportSpecifier(modulePath, importedName)
+			: context.BindExternalImportSpecifier(modulePath, importedName);
+	}
+
 	private static bool ShouldFlattenRuntimeNestedType(ITypeSymbol symbol)
 	{
 		if (symbol is not INamedTypeSymbol namedType || namedType.ContainingType is null)
@@ -242,9 +292,7 @@ public partial class SemanticWalker
 			if (!string.IsNullOrEmpty(modulePath))
 			{
 				if (context is { } importContext)
-                    return Util.IsExternalECMAScriptImport(symbol)
-                        ? importContext.BindExternalImportSpecifier(modulePath!, flatName!)
-                        : importContext.BindImportSpecifier(modulePath!, flatName!);
+					return BindResolvedModuleImport(importContext, symbol, modulePath!, flatName!);
 			}
 
 			return new Identifier(flatName!);
@@ -268,9 +316,7 @@ public partial class SemanticWalker
 				// The loop exits before processing _moduleRootType, so every module path here
 				// belongs to an external runtime type and can be imported when a context exists.
 				if (context is { } importContext)
-                    return Util.IsExternalECMAScriptImport(type)
-                        ? importContext.BindExternalImportSpecifier(modulePath!, name!)
-                        : importContext.BindImportSpecifier(modulePath!, name!);
+					return BindResolvedModuleImport(importContext, type, modulePath!, name!);
 
 				queue.Push(name!);
 				break;
@@ -355,9 +401,7 @@ public partial class SemanticWalker
 		// C# module member that attempts to declare `export default`, so importing an existing ESM
 		// default does not silently broaden Jazor's own module export contract.
 		// 这里只允许跨模块消费既有 default export；Jazor 自身模块仍只声明 named export。
-		expression = Util.IsExternalECMAScriptImport(containingType)
-			? context.BindExternalImportSpecifier(modulePath!, memberName)
-			: context.BindImportSpecifier(modulePath!, memberName);
+		expression = BindResolvedModuleImport(context, containingType, modulePath!, memberName);
 		return true;
 	}
 
@@ -1098,7 +1142,7 @@ public partial class SemanticWalker
 		{
 			// ToList transfers a fresh Array into List<T> ownership. The runtime marker is the
 			// interface-mutation contract; ToArray deliberately remains an unmarked fixed array.
-			var markAsMutableListCarrier = context.BindImportSpecifier(
+			var markAsMutableListCarrier = context.BindExternalImportSpecifier(
 				"System/RuntimeModule.js",
 				"MarkAsMutableListCarrier");
 			intrinsicExpression = new CallExpression(
@@ -1246,9 +1290,11 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			{
 				importedIdentifierName = Util.GetConfigOrSymbolName(method);
 				if (!string.IsNullOrWhiteSpace(importedIdentifierName))
-					importedBinding = Util.IsExternalECMAScriptImport(method.ContainingType)
-						? argument.BindExternalImportSpecifier(modulePath!, importedIdentifierName!)
-						: argument.BindImportSpecifier(modulePath!, importedIdentifierName!);
+					importedBinding = BindResolvedModuleImport(
+						argument,
+						method.ContainingType,
+						modulePath!,
+						importedIdentifierName!);
 			}
 
 			expression = InstantiateInlineTemplate(

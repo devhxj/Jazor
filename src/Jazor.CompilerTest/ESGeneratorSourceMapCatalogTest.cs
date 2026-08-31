@@ -13,7 +13,7 @@ namespace Jazor.CompilerTest;
 public sealed class ESGeneratorSourceMapCatalogTest
 {
     [TestMethod]
-    public void RunGenerator_StaticModule_EmitsDedicatedSourceMapCatalogWithoutChangingModuleCatalogShape()
+    public void RunGenerator_StaticModule_EmitsSourceMapInTheModuleCatalog()
     {
         var compilation = CreateCompilation(
             "SourceMapCatalog.Generated",
@@ -58,19 +58,18 @@ public sealed class ESGeneratorSourceMapCatalogTest
             .Select(static source => source.HintName)
             .ToArray();
         CollectionAssert.Contains(hintNames, "Jazor.Generated.ModuleCatalog.g.cs");
-        CollectionAssert.Contains(hintNames, "Jazor.Generated.ModuleSourceMapCatalog.g.cs");
+        CollectionAssert.AreEquivalent(
+            new[] { "Jazor.Generated.ModuleCatalog.g.cs" },
+            hintNames);
 
         var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
         StringAssert.Contains(moduleCatalog, "internal static partial class ModuleCatalog");
-        Assert.AreEqual(-1, moduleCatalog.IndexOf("SourceMapRelativePath", StringComparison.Ordinal));
-        Assert.AreEqual(-1, moduleCatalog.IndexOf("SourceMapContent", StringComparison.Ordinal));
-        Assert.AreEqual(-1, moduleCatalog.IndexOf("MapHash", StringComparison.Ordinal));
-
-        var sourceMapCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleSourceMapCatalog.g.cs");
-        StringAssert.Contains(sourceMapCatalog, "internal static partial class ModuleSourceMapCatalog");
-        StringAssert.Contains(sourceMapCatalog, "sourceMapRelativePath:");
-        StringAssert.Contains(sourceMapCatalog, "modules/math.mjs.map");
-        StringAssert.Contains(sourceMapCatalog, "Demo/MathModule.cs");
+        StringAssert.Contains(moduleCatalog, "SourceMapRelativePath");
+        StringAssert.Contains(moduleCatalog, "SourceMapContent");
+        StringAssert.Contains(moduleCatalog, "MapHash");
+        StringAssert.Contains(moduleCatalog, "sourceMapRelativePath:");
+        StringAssert.Contains(moduleCatalog, "modules/math.mjs.map");
+        StringAssert.Contains(moduleCatalog, "Demo/MathModule.cs");
     }
 
     [TestMethod]
@@ -154,7 +153,7 @@ public sealed class ESGeneratorSourceMapCatalogTest
     }
 
     [TestMethod]
-    public void RunGenerator_StaticModule_WhenSourceMapGenerationFails_ReportsWarningAndFallsBackToJsOnlyCatalog()
+    public void RunGenerator_StaticModule_WhenSourceMapGenerationFails_ReportsWarningAndKeepsTheModuleCatalog()
     {
         var compilation = CreateCompilation(
             "SourceMapCatalog.Fallback.Generated",
@@ -209,7 +208,9 @@ public sealed class ESGeneratorSourceMapCatalogTest
             .Select(static source => source.HintName)
             .ToArray();
         CollectionAssert.Contains(hintNames, "Jazor.Generated.ModuleCatalog.g.cs");
-        CollectionAssert.DoesNotContain(hintNames, "Jazor.Generated.ModuleSourceMapCatalog.g.cs");
+        CollectionAssert.AreEquivalent(
+            new[] { "Jazor.Generated.ModuleCatalog.g.cs" },
+            hintNames);
 
         var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
         StringAssert.Contains(moduleCatalog, "modules/math.mjs");

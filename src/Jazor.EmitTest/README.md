@@ -4,12 +4,12 @@
 
 ## 覆盖范围
 
-- 基于 manifest 的 bundle 生成与根程序集 export 保留。
-- CLR runtime、生成 module catalog 与引用包 catalog 收集。
+- 基于已验证资源闭包的 bundle 生成与根程序集 export 保留。
+- CLR runtime manifest、程序集 `ModuleCatalog` 与引用资源包收集。
 - 临时 bundle workspace 中的跨模块 import 改写。
 - 静态模块、chained bundle 与 writer source map 行为。
 - `ECMAScript.Style` 的 debug 物化、source map、manifest 与 release bundle。
-- Emit 只消费当前 module/render catalog 输入的契约守护。
+- Emit 只消费 `ModuleCatalog` 和 `manifest.json + dist/**` 两种输入的契约守护。
 
 测试直接检查生成的 JavaScript 输出，不只检查进程退出码。
 

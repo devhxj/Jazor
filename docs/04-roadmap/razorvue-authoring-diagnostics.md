@@ -14,13 +14,13 @@ Razor SDK/Roslyn 负责 Razor 绑定、C# 类型和语法语义；RazorVue 只�
 | `Reject` | 稳定 ID、作者源位置、原因、HelpLink 和可执行替代 | 已完成，见 D2/D3 |
 | 静默劣化 | 生成成功但运行时必然失败、错误被吞或行为错误 | A 级已清零；新风险必须先登记 |
 
-**final Compilation pipeline 是唯一正确性裁决者。** 候选发现、generated-C# binding、member closure、VueInject、compiler bridge、RenderTree lowering、Vue module framing、catalog 生成和 hook reporting 都属于同一错误边界。只要存在错误，就不生成部分 artifact catalog 或部分 `.mjs` 声明。
+ **final Compilation pipeline 是唯一正确性裁决者。** 候选发现、generated-C# binding、member closure、VueInject、compiler bridge、RenderTree lowering、Vue module framing、descriptor 生成和 hook reporting 都属于同一错误边界。只要存在错误，就不生成部分 artifact descriptor 或部分 `.mjs` 声明。
 
 ## 交付状态
 
 | 阶段 | 决策/交付物 | 状态 |
 | --- | --- | --- |
-| D0 | typed diagnostic carrier、mapped location、稳定聚合和 no-partial-catalog | **Complete** |
+| D0 | typed diagnostic carrier、mapped location、稳定聚合和 no-partial-descriptor | **Complete** |
 | D1 | member class 进入 Vue Proxy 的 proxy-safe lowering | **Complete / Support** |
 | D2 | 作者可达失败按 Support/Reject 分类，覆盖 59 个历史 direct-render guard | **Complete** |
 | D3 | `JAZORVGA021`-`026` descriptor、HelpLink 和 source contract | **Complete** |
@@ -45,7 +45,7 @@ D0 的 official Razor SG + patched `GeneratorDriver` 回归覆盖：
 - `Jazor.Compiler`/`SemanticWalker` bridge failure -> mapped location；
 - component/member/module/registry declaration failure；
 - bootstrap/internal fallback -> `JAZORVGA020` + `Location.None`；
-- 两个独立错误组件的稳定聚合和“无部分 catalog”。
+- 两个独立错误组件的稳定聚合和“无部分 descriptor/module”。
 
 ## D1：Reactive member-class 风险闭环
 
@@ -110,7 +110,7 @@ RazorVue 的 member-closure profile 现在使用 `RuntimeClassPrivateStorage.Pro
 | VueInject | `JAZORVGA025` | VueInject declaration / `#vue-inject` |
 | VueModule | `JAZORVGA026` | Vue module / `#vue-module` |
 
-预期作者失败只能由 typed category 创建 descriptor；不存在依据 message text 选择 ID 的逻辑。`RazorVueDiagnosticDescriptorTests` 锁定每个 category 的 ID、severity 和 HelpLink；`RazorSgDirectRenderFailureMatrixTests` 对全量失败族断言 category、作者位置、detail 和替代锚点；bootstrap/tail-output tests 断言 mapped path、line/column、fallback 类型和 no-partial-catalog。
+预期作者失败只能由 typed category 创建 descriptor；不存在依据 message text 选择 ID 的逻辑。`RazorVueDiagnosticDescriptorTests` 锁定每个 category 的 ID、severity 和 HelpLink；`RazorSgDirectRenderFailureMatrixTests` 对全量失败族断言 category、作者位置、detail 和替代锚点；bootstrap/tail-output tests 断言 mapped path、line/column、fallback 类型和 no-partial-descriptor/module。
 
 ## D4：generated-code early analyzer 决策
 
@@ -125,7 +125,7 @@ M5 的产品目标不同：为了让页面作者不必预先学习 RazorVue 的�
 - 不修改 `Jazor.Analyzer` 的 generated-code 契约；
 - 不把 `JAZORVGA020`-`026` 的 final-protocol descriptor 复制到作者源码 analyzer；两者使用独立的 compatibility ID 段和共享的去重语义；
 - `RazorVueAnalyzerScopeTests` 继续保证通用 analyzer 不污染 RazorVue 组件面；新增 source-analyzer tests 保证诊断锚定作者文件，final pipeline 仍只对 RenderTree/closure/module 失败负责；
-- analyzer 诊断本身不假定能够停止 source generator。无论 analyzer 是否已报错，final generator 都必须独立执行 no-partial-catalog 不变量；同一已知形状只能由互斥 owner 报告，或由统一 build/diagnostic aggregation 层按 rule key + source span 合并，不能假定 generator 能读取 analyzer 结果；
+- analyzer 诊断本身不假定能够停止 source generator。无论 analyzer 是否已报错，final generator 都必须独立执行 no-partial-descriptor 不变量；同一已知形状只能由互斥 owner 报告，或由统一 build/diagnostic aggregation 层按 rule key + source span 合并，不能假定 generator 能读取 analyzer 结果；
 - 只有在新增作者源码规则无法证明位置、语义或零重复收益时，才将该规则留给 final diagnostic，而不是退回 generated-code analyzer。
 
 ## D5：作者指南与 SDK 升级门禁
@@ -137,7 +137,7 @@ M5 的产品目标不同：为了让页面作者不必预先学习 RazorVue 的�
 1. `SemanticWalkerOrdinaryTest`：ordinary/labeled `IBranchOperation`、`BranchKind`、labeled syntax 可见性和显式拒绝；
 2. `RazorSgOfficialForLoopRuntimeTests`：official `for`、`while`、`do while` 的生成与运行时行为，以及普通 branch 的 imperative loop path；
 3. `RazorSgOfficialNativeUnionParameterAuthoringTests`：native union component parameter 经 official Razor SG 编译、绑定并进入最终模块；
-4. `BootstrapPatchTests`（文件 `RazorSourceGeneratorBootstrapPatchTests.cs`）：mapped diagnostic、HelpLink 和错误时无 catalog；
+4. `BootstrapPatchTests`（文件 `RazorSourceGeneratorBootstrapPatchTests.cs`）：mapped diagnostic、HelpLink 和错误时无 descriptor/module；
 5. `RazorSgOfficialNestedRuntimeClassClosureRuntimeTests`：deep Proxy 下 member-class 的更新和 storage 语义；
 6. `RazorSgOfficialRuntimeAuthoringTests`：source base lifecycle/dispose、parameterless constructor replay、static module lifetime 和复杂 `@code` control flow；
 7. `dotnet test` 的 Razor SG、Compiler、Emit 主线，以及 Windows SSR consumer gate 的 packaged DenoHost/Edge hydration 验证。

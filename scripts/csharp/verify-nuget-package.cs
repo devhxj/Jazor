@@ -94,6 +94,15 @@ static void VerifyPackage(FileInfo packageFile, string packageId, string outputD
         }
     }
 
+    foreach (var relativePath in GetForbiddenPaths(packageId))
+    {
+        var fullPath = Path.Combine(expandedDirectory, relativePath);
+        if (File.Exists(fullPath) || Directory.Exists(fullPath))
+        {
+            throw new InvalidOperationException("Forbidden package entry is present: " + relativePath.Replace(Path.DirectorySeparatorChar, '\\'));
+        }
+    }
+
     var nuspecPath = Path.Combine(expandedDirectory, packageId + ".nuspec");
     if (!File.Exists(nuspecPath))
     {
@@ -146,10 +155,11 @@ static IReadOnlyList<string> GetRequiredPaths(string packageId)
     {
         "Jazor" => commonPaths.Concat(
         [
-            Path.Combine("buildTransitive", "Jazor.props"),
-            Path.Combine("buildTransitive", "Jazor.targets"),
-            Path.Combine("analyzers", "dotnet", "cs", "Jazor.Analyzer.dll"),
-            Path.Combine("analyzers", "dotnet", "cs", "Jazor.Compiler.dll"),
+            Path.Combine("build", "Jazor.props"),
+            Path.Combine("build", "Jazor.targets"),
+            Path.Combine("buildTransitive", "Jazor.Resources.targets"),
+            Path.Combine("tools", "net11.0", "analyzers", "Jazor.Analyzer.dll"),
+            Path.Combine("tools", "net11.0", "analyzers", "Jazor.Compiler.dll"),
             Path.Combine("lib", "net11.0", "ECMAScript.dll"),
             Path.Combine("lib", "net11.0", "Jazor.Compiler.dll"),
             Path.Combine("tools", "net11.0", "Jazor.Emit.dll"),
@@ -157,9 +167,28 @@ static IReadOnlyList<string> GetRequiredPaths(string packageId)
         ]).ToArray(),
         "Jazor.Vue" => commonPaths.Concat(
         [
-            Path.Combine("analyzers", "dotnet", "cs", "Jazor.RazorVue.dll")
+            Path.Combine("buildTransitive", "Jazor.Vue.targets"),
+            Path.Combine("tools", "net11.0", "analyzers", "Jazor.RazorVue.dll")
         ]).ToArray(),
         _ => throw new InvalidOperationException("Package verification is not defined for: " + packageId)
+    };
+}
+
+static IReadOnlyList<string> GetForbiddenPaths(string packageId)
+{
+    return packageId switch
+    {
+        "Jazor" =>
+        [
+            Path.Combine("buildTransitive", "Jazor.props"),
+            Path.Combine("buildTransitive", "Jazor.targets"),
+            Path.Combine("analyzers", "dotnet", "cs", "Jazor.Analyzer.dll")
+        ],
+        "Jazor.Vue" =>
+        [
+            Path.Combine("analyzers", "dotnet", "cs", "Jazor.RazorVue.dll")
+        ],
+        _ => []
     };
 }
 

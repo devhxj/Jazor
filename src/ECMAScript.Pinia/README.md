@@ -6,9 +6,9 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.25.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.25.0" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.25.0" />
+  <PackageReference Include="Jazor" Version="0.26.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.Pinia" Version="0.26.0" />
 </ItemGroup>
 ```
 
@@ -26,7 +26,7 @@
 - 公开 API 优先表达为具体 C# 类型、overload 或 named union；不使用 `object` 模拟 JavaScript `any`。
 - `StoreActionListenerContext.After<TResult>(...)` 和四参数以上的方法组有 C# 推断限制时，调用方应显式声明泛型参数或先落到委托局部变量。
 - `TestingOptions`、`TestingStubActions` 与测试 runner 相关 contract 位于独立 `ECMAScript.Pinia.Testing` 包。
-- runtime import 使用 `pinia`，最终版本解析由 Jazor 的本地 manifest 与宿主输出链路处理。
+- runtime import 使用 `pinia`，最终版本解析由资源 manifest 的 package dependency 与宿主 Emit 依赖闭包处理。
 - Pinia 4 的 development entry 会按官方依赖闭包带入 `nostics` 与 `@vue/devtools-api`。调用 `app.Use(pinia)` 后，Pinia 自行向已安装的 Vue Devtools 浏览器扩展注册面板；这不是额外的 C# authoring API，也不会进入 production entry。
 
 ## 代码结构

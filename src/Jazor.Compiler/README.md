@@ -2,13 +2,13 @@
 
 > 定位：受控 C# 编译域到 ECMAScript 的核心 lowering 层。
 
-`Jazor.Compiler` 以 Roslyn `IOperation` 为语义输入，以 Acornima ESTree 为中间表示，输出确定的 JavaScript module text、source-origin 和 catalog carrier。它不直接物化文件，也不为任何框架产品内置特判。
+`Jazor.Compiler` 以 Roslyn `IOperation` 为语义输入，以 Acornima ESTree 为中间表示，输出确定的 JavaScript module text、source-origin 和 `Jazor.Generated.ModuleCatalog` 记录。它不直接物化文件，也不为任何框架产品内置特判。
 
 ## 职责
 
 - `AstConverter` 负责模块、类型、导入、导出和运行时成员类的结构转换。
 - `SemanticWalker` 负责表达式和语句 lowering，以及运行时敏感使用点的最终验证。
-- `ESGenerator` 负责 JavaScript 文本、source map 和 catalog carrier；`.mjs`、manifest 和 bundle 由 `Jazor.Emit` 物化。
+- `ESGenerator` 负责 JavaScript 文本、source map 和 `ModuleCatalog` carrier；`.mjs`、import map 和 bundle 由 `Jazor.Emit` 物化。
 - WhiteList 与 `Alias`、`Inline`、`Import`、`Compile` 映射连接 CLR/host API 和 compiler lowering。
 
 ## 稳定边界
@@ -35,7 +35,7 @@
 
 - `AstConverter.cs`：模块和声明转换。
 - `core/SemanticWalker.cs.*`：语义 lowering 的分区实现。
-- `ESGenerator*.cs`：JavaScript writer、source map 与 catalog。
+- `ESGenerator*.cs`：JavaScript writer、source map 与 `ModuleCatalog` carrier。
 - `WhiteList.cs.*`：宿主映射消费；`WhiteList.cs.Generate.cs` 为生成结果。
 - `ImplementationPrinciples.md`：支持边界与设计理由的权威说明。
 

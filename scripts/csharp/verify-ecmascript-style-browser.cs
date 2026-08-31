@@ -31,10 +31,9 @@ try
         ReadProperty(runtime, "Content"),
         new UTF8Encoding(false));
 
-    var sourceMap = ReadSingleCatalogItem(assembly, "Jazor.Generated.ModuleSourceMapCatalog");
     await File.WriteAllTextAsync(
-        Path.Combine(root, ReadProperty(sourceMap, "SourceMapRelativePath").Replace('/', Path.DirectorySeparatorChar)),
-        ReadProperty(sourceMap, "SourceMapContent"),
+        Path.Combine(root, ReadProperty(runtime, "SourceMapRelativePath").Replace('/', Path.DirectorySeparatorChar)),
+        ReadProperty(runtime, "SourceMapContent"),
         new UTF8Encoding(false));
 
     var indexPath = Path.Combine(root, "index.html");

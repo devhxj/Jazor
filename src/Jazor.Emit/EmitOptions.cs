@@ -7,7 +7,10 @@ internal sealed record EmitOptions(
     string OutputDirectory,
     string ManifestPath,
     bool Clean,
-    bool FailOnPathConflict)
+    BuildMode Mode,
+    string? SourceRoot,
+    IReadOnlyList<string> LibraryManifests,
+    bool EnableSsr)
 {
     public static bool TryParse(string[] args, out EmitOptions? options, out string? error)
     {
@@ -19,7 +22,10 @@ internal sealed record EmitOptions(
         var manifestPath = string.Empty;
         var assemblyPaths = new List<string>();
         var clean = true;
-        var failOnPathConflict = true;
+        var mode = BuildMode.Development;
+        var sourceRoot = string.Empty;
+        var libraryManifests = new List<string>();
+        var enableSsr = false;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -53,10 +59,24 @@ internal sealed record EmitOptions(
                     }
 
                     break;
-                case "--fail-on-path-conflict":
-                    if (!bool.TryParse(value, out failOnPathConflict))
+                case "--mode":
+                    if (!TryParseMode(value, out mode))
                     {
-                        error = $"Invalid boolean for --fail-on-path-conflict: '{value}'.";
+                        error = $"Invalid Emit mode '{value}'. Expected 'debug' or 'release'.";
+                        return false;
+                    }
+
+                    break;
+                case "--source-root":
+                    sourceRoot = value;
+                    break;
+                case "--library-manifest":
+                    libraryManifests.Add(value);
+                    break;
+                case "--ssr":
+                    if (!bool.TryParse(value, out enableSsr))
+                    {
+                        error = $"Invalid boolean for --ssr: '{value}'.";
                         return false;
                     }
 
@@ -91,7 +111,32 @@ internal sealed record EmitOptions(
             Path.GetFullPath(outputDirectory),
             Path.GetFullPath(manifestPath),
             clean,
-            failOnPathConflict);
+            mode,
+            string.IsNullOrWhiteSpace(sourceRoot) ? null : Path.GetFullPath(sourceRoot),
+            [.. libraryManifests
+                .Where(static path => !string.IsNullOrWhiteSpace(path))
+                .Select(Path.GetFullPath)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)],
+            enableSsr);
         return true;
+    }
+
+    private static bool TryParseMode(string value, out BuildMode mode)
+    {
+        switch (value.Trim().ToLowerInvariant())
+        {
+            case "debug":
+            case "development":
+                mode = BuildMode.Development;
+                return true;
+            case "release":
+            case "production":
+                mode = BuildMode.Production;
+                return true;
+            default:
+                mode = default;
+                return false;
+        }
     }
 }

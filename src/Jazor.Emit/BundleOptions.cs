@@ -6,4 +6,5 @@ internal sealed record BundleOptions(
     string ManifestPath,
     string OutputPath,
     string? SourceRoot = null,
-    IReadOnlyList<string>? LibraryManifests = null);
+    IReadOnlyList<string>? LibraryManifests = null,
+    LibraryAssets? MaterializedLibraries = null);

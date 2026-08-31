@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "libraryId": "jazor-vue-runtime",
+  "version": "0.26.0",
+  "imports": {
+    "@jazor/vue-runtime/blazor-routing.mjs": {
+      "type": "module",
+      "development": "dist/blazor-routing.mjs",
+      "production": "dist/blazor-routing.mjs",
+      "developmentHash": "7e6f21325b596695e9e685919819a0e5c4929efdb4a22b50bd50d5018cfdc871",
+      "productionHash": "7e6f21325b596695e9e685919819a0e5c4929efdb4a22b50bd50d5018cfdc871",
+      "developmentDependencies": [
+        "Microsoft/AspNetCore/Components/NavigationManagerModule.js",
+        "vue"
+      ],
+      "productionDependencies": [
+        "Microsoft/AspNetCore/Components/NavigationManagerModule.js",
+        "vue"
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    },
+    "@jazor/vue-runtime/cascading.mjs": {
+      "type": "module",
+      "development": "dist/cascading.mjs",
+      "production": "dist/cascading.mjs",
+      "developmentHash": "66107f2d971dfcf44a5c09aac5e6eda571ce687b0b3b4431c09a5ad72f052742",
+      "productionHash": "66107f2d971dfcf44a5c09aac5e6eda571ce687b0b3b4431c09a5ad72f052742",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    },
+    "@jazor/vue-runtime/raw-markup.mjs": {
+      "type": "module",
+      "development": "dist/raw-markup.mjs",
+      "production": "dist/raw-markup.mjs",
+      "developmentHash": "c173f85831965d91da0c08f6362468ff1074ad57265e2687f0b10fd3edf8e41e",
+      "productionHash": "c173f85831965d91da0c08f6362468ff1074ad57265e2687f0b10fd3edf8e41e",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    }
+  },
+  "requires": {
+    "ecmascript": "^0.26.0",
+    "vue3": "^3.5.13"
+  },
+  "styles": [],
+  "files": []
+}

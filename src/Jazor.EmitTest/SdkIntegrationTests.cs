@@ -18,16 +18,33 @@ public sealed class SdkIntegrationTests
     private static readonly SemaphoreSlim SourceReferencedRazorVueBuildGate = new(1, 1);
 
     [TestMethod]
-    public async Task CreateLocalPackage_SeparatesSharedAndRazorVueAnalyzers()
+    public async Task CreateLocalPackage_SeparatesDirectToolingFromTransitiveResourceLocators()
     {
         var package = await LocalPackage.Value;
 
         using var jazorArchive = ZipFile.OpenRead(package.PackagePath);
-        var jazorAnalyzerEntries = jazorArchive.Entries
+        var jazorEntryNames = jazorArchive.Entries
             .Select(static entry => entry.FullName.Replace('\\', '/'))
-            .Where(static path => path.StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        CollectionAssert.Contains(jazorAnalyzerEntries, "analyzers/dotnet/cs/Jazor.Analyzer.dll");
+        CollectionAssert.Contains(jazorEntryNames, "build/Jazor.props");
+        CollectionAssert.Contains(jazorEntryNames, "build/Jazor.targets");
+        CollectionAssert.Contains(jazorEntryNames, "buildTransitive/Jazor.Resources.targets");
+        var jazorTransitiveEntries = jazorEntryNames
+            .Where(static path => path.StartsWith("buildTransitive/", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        CollectionAssert.AreEqual(
+            new[] { "buildTransitive/Jazor.Resources.targets" },
+            jazorTransitiveEntries,
+            "Only a JS-resource manifest locator may propagate from the Jazor package.");
+        var jazorAnalyzerEntries = jazorEntryNames
+            .Where(static path => path.StartsWith("tools/net11.0/analyzers/", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        CollectionAssert.Contains(jazorAnalyzerEntries, "tools/net11.0/analyzers/Jazor.Analyzer.dll");
+        CollectionAssert.Contains(jazorAnalyzerEntries, "tools/net11.0/analyzers/Jazor.Compiler.dll");
+        Assert.IsFalse(
+            jazorEntryNames.Any(static path => path.StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase)),
+            "NuGet automatic analyzer assets would incorrectly activate tooling for transitive package consumers.");
         Assert.IsFalse(
             jazorAnalyzerEntries.Any(static path =>
                 path.EndsWith("/Jazor.RazorVue.dll", StringComparison.OrdinalIgnoreCase) ||
@@ -43,6 +60,15 @@ public sealed class SdkIntegrationTests
         CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.Vue.dll");
         CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.VueContract.dll");
         CollectionAssert.Contains(vueEntryNames, "buildTransitive/Jazor.Vue.targets");
+        var vueBuildEntries = vueEntryNames
+            .Where(static path => path.StartsWith("build/", StringComparison.OrdinalIgnoreCase) ||
+                                  path.StartsWith("buildTransitive/", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        CollectionAssert.AreEqual(
+            new[] { "buildTransitive/Jazor.Vue.targets" },
+            vueBuildEntries,
+            "Jazor.Vue must expose one stable NuGet target; the target itself distinguishes direct tooling from transitive resources.");
         var vueNuspec = ReadPackageEntryText(package.VuePackagePath, "Jazor.Vue.nuspec");
         StringAssert.Contains(vueNuspec, "<dependency id=\"Jazor\" version=\"", StringComparison.Ordinal);
         StringAssert.Contains(vueNuspec, "exclude=\"Build,Analyzers\"", StringComparison.Ordinal);
@@ -53,19 +79,43 @@ public sealed class SdkIntegrationTests
                 string.Equals(entry.FullName.Replace('\\', '/'), "lib/net11.0/ECMAScript.Blazor.dll", StringComparison.OrdinalIgnoreCase)),
             "ECMAScript.Blazor is a Jazor.Vue payload and must not be installed by the Jazor core package.");
         var vueAnalyzerEntries = vueEntryNames
-            .Where(static path => path.StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase))
+            .Where(static path => path.StartsWith("tools/net11.0/analyzers/", StringComparison.OrdinalIgnoreCase))
             .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         CollectionAssert.AreEqual(
             new[]
             {
-                "analyzers/dotnet/cs/AngleSharp.dll",
-                "analyzers/dotnet/cs/Jazor.RazorVue.dll",
-                "analyzers/dotnet/cs/Jazor.RazorVue.pdb"
+                "tools/net11.0/analyzers/AngleSharp.dll",
+                "tools/net11.0/analyzers/Jazor.RazorVue.dll",
+                "tools/net11.0/analyzers/Jazor.RazorVue.pdb"
             },
             vueAnalyzerEntries,
             "Jazor.Vue must install the RazorVue analyzer and its static-markup parser, while relying on Jazor for shared compiler dependencies.");
-        CollectionAssert.Contains(vueEntryNames, "buildTransitive/Jazor.Vue.targets");
+        Assert.IsFalse(
+            vueEntryNames.Any(static path => path.StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase)),
+            "NuGet automatic analyzer assets would incorrectly activate RazorVue for transitive package consumers.");
+
+        var directJazorTarget = ReadPackageEntryText(package.PackagePath, "build/Jazor.targets");
+        var transitiveJazorTarget = ReadPackageEntryText(package.PackagePath, "buildTransitive/Jazor.Resources.targets");
+        StringAssert.Contains(directJazorTarget, "analyzers\\*.dll", StringComparison.Ordinal);
+        StringAssert.Contains(directJazorTarget, "JazorDebug", StringComparison.Ordinal);
+        StringAssert.Contains(transitiveJazorTarget, "JazorLibraryManifest", StringComparison.Ordinal);
+        Assert.IsFalse(transitiveJazorTarget.Contains("JazorDebug", StringComparison.Ordinal), transitiveJazorTarget);
+        Assert.IsFalse(transitiveJazorTarget.Contains("<Analyzer", StringComparison.Ordinal), transitiveJazorTarget);
+
+        var transitiveVueTarget = ReadPackageEntryText(package.VuePackagePath, "buildTransitive/Jazor.Vue.targets");
+        StringAssert.Contains(transitiveVueTarget, "JazorLibraryManifest", StringComparison.Ordinal);
+        StringAssert.Contains(transitiveVueTarget, "WithMetadataValue('Identity', 'Jazor.Vue')", StringComparison.Ordinal);
+        StringAssert.Contains(transitiveVueTarget, "<Analyzer", StringComparison.Ordinal);
+        Assert.IsFalse(
+            transitiveVueTarget.Contains("RegisterJazorVueSharedAnalyzerDependencies", StringComparison.Ordinal),
+            "Jazor.Vue must not infer or compensate for the core Jazor analyzer closure.");
+        Assert.IsFalse(
+            transitiveVueTarget.Contains("_JazorVueSharedAnalyzer", StringComparison.Ordinal),
+            "Jazor.Vue must not carry a second shared-analyzer registration path.");
+        Assert.IsFalse(
+            transitiveVueTarget.Contains("ReferencePath", StringComparison.Ordinal),
+            "Jazor.Vue must not infer tooling from transitive compile/reference items.");
     }
 
     [TestMethod]
@@ -103,7 +153,7 @@ public sealed class SdkIntegrationTests
     {
         var package = await LocalPackage.Value;
         var nuspec = ReadPackageEntryText(package.PackagePath, "Jazor.nuspec");
-        var props = ReadPackageEntryText(package.PackagePath, "buildTransitive/Jazor.props");
+        var props = ReadPackageEntryText(package.PackagePath, "build/Jazor.props");
         using var archive = ZipFile.OpenRead(package.PackagePath);
         var entryNames = archive.Entries
             .Select(static entry => entry.FullName.Replace('\\', '/'))
@@ -293,6 +343,17 @@ public sealed class SdkIntegrationTests
             "tools/net11.0/tooling/vue/compiler-sfc.esm-browser.js",
             "tools/net11.0/tooling/vue/licenses/LICENSE");
         AssertPackageEntries(
+            package.PackagePath,
+            "jazor/ecmascript/manifest.json",
+            "jazor/ecmascript/dist/System/RuntimeModule.js",
+            "jazor/ecmascript/dist/System/StringModule.js");
+        AssertPackageEntries(
+            package.VuePackagePath,
+            "jazor/vue-runtime/manifest.json",
+            "jazor/vue-runtime/dist/blazor-routing.mjs",
+            "jazor/vue-runtime/dist/cascading.mjs",
+            "jazor/vue-runtime/dist/raw-markup.mjs");
+        AssertPackageEntries(
             package.VuetifyPackagePath,
             "lib/net11.0/ECMAScript.Vuetify.dll",
             "buildTransitive/ECMAScript.Vuetify.targets",
@@ -362,16 +423,14 @@ public sealed class SdkIntegrationTests
         var serverRenderer = manifest.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer");
         Assert.AreEqual("dist/server-renderer.esm-browser.js", serverRenderer.GetProperty("development").GetString());
         Assert.AreEqual("dist/server-renderer.esm-browser.prod.js", serverRenderer.GetProperty("production").GetString());
-        var devtoolsFiles = devtools.GetProperty("files")
-            .EnumerateArray()
-            .Select(static value => value.GetString())
-            .ToArray();
-        CollectionAssert.Contains(devtoolsFiles, "licenses/VUE-DEVTOOLS-API-LICENSE");
-        var serverRendererFiles = serverRenderer.GetProperty("files")
-            .EnumerateArray()
-            .Select(static value => value.GetString())
-            .ToArray();
-        CollectionAssert.Contains(serverRendererFiles, "licenses/VUE-SERVER-RENDERER-LICENSE");
+        AssertManifestFile(
+            devtools.GetProperty("files"),
+            "license",
+            "licenses/VUE-DEVTOOLS-API-LICENSE");
+        AssertManifestFile(
+            serverRenderer.GetProperty("files"),
+            "license",
+            "licenses/VUE-SERVER-RENDERER-LICENSE");
 
         var devtoolsApi = ReadPackageEntryText(package.VuePackagePath, "jazor/vue3/dist/devtools-api/vue-devtools-api.esm-browser.js");
         StringAssert.Contains(devtoolsApi, "from 'perfect-debounce'", StringComparison.Ordinal);
@@ -401,12 +460,8 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual("dist/tdesign.mjs", entry.GetProperty("development").GetString());
         Assert.AreEqual("dist/tdesign.mjs", entry.GetProperty("production").GetString());
         Assert.AreEqual("^3.5.0", root.GetProperty("requires").GetProperty("vue3").GetString());
-        CollectionAssert.AreEqual(
-            new[] { "dist/tdesign.css" },
-            root.GetProperty("styles").EnumerateArray().Select(static value => value.GetString()).ToArray());
-        CollectionAssert.AreEqual(
-            new[] { "licenses/LICENSE" },
-            root.GetProperty("files").EnumerateArray().Select(static value => value.GetString()).ToArray());
+        AssertManifestFile(root.GetProperty("styles"), "style", "dist/tdesign.css");
+        AssertManifestFile(root.GetProperty("files"), "license", "licenses/LICENSE");
 
         var esm = ReadPackageEntryText(package.TDesignPackagePath, "jazor/tdesign-vue-next/dist/tdesign.mjs");
         var imports = Regex.Matches(esm, "\\b(?:from|import)\\s+[\\\"'](?<specifier>[^\\\"']+)[\\\"']", RegexOptions.CultureInvariant)
@@ -775,13 +830,8 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(module, "let culture = _b7486264ae338f27(\"en-US\");");
         StringAssert.Contains(module, "return culture + \"|\" + _559b27327f84f1af(culture);");
 
-        var manifestModules = LoadManifest(manifestPath).Modules;
-        var emittedRelativePaths = manifestModules
-            .Select(static module => module.RelativePath)
-            .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .ToArray();
-        CollectionAssert.Contains(emittedRelativePaths, "System/DecimalModule.js");
-        CollectionAssert.Contains(emittedRelativePaths, "System/Globalization/CultureInfoModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/DecimalModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/Globalization/CultureInfoModule.js");
     }
 
     [TestMethod]
@@ -921,25 +971,11 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(rangeImport, "_fc3dfc5dbaa397eb");
         StringAssert.Contains(rangeImport, "_1c7a1e658ed790ff");
 
-        var emittedRelativePaths = LoadManifest(manifestPath).Modules
-            .Select(static module => module.RelativePath)
-            .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .ToArray();
-        CollectionAssert.Contains(emittedRelativePaths, "System/IndexModule.js");
-        CollectionAssert.Contains(emittedRelativePaths, "System/RangeModule.js");
-        CollectionAssert.Contains(emittedRelativePaths, "System/RuntimeModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/IndexModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/RangeModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/RuntimeModule.js");
 
-        // Generated runtime imports use the deployment-time System/ module namespace. Resolve it
-        // through Deno's standard import map so the test executes the artifact without rewriting it.
-        WriteFile(
-            Path.Combine(outputRoot, "deno.json"),
-            """
-            {
-              "imports": {
-                "System/": "./System/"
-              }
-            }
-            """);
+        ConfigureDenoToUseMaterializedSsrImports(outputRoot);
         var testFile = Path.Combine(outputRoot, "materialized-index-range.test.mjs");
         WriteFile(
             testFile,
@@ -1230,25 +1266,11 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(module, "maxBy");
         StringAssert.Contains(module, "chunk");
 
-        var emittedRelativePaths = LoadManifest(manifestPath).Modules
-            .Select(static module => module.RelativePath)
-            .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .ToArray();
-        CollectionAssert.Contains(emittedRelativePaths, "System/Linq/EnumerableModule.js");
-        CollectionAssert.Contains(emittedRelativePaths, "System/Collections/Generic/ComparerT1Module.js");
-        CollectionAssert.Contains(emittedRelativePaths, "System/Collections/Generic/EqualityComparerT1Module.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/Linq/EnumerableModule.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/Collections/Generic/ComparerT1Module.js");
+        await AssertResourceImportIsMaterializedAsync(outputRoot, "System/Collections/Generic/EqualityComparerT1Module.js");
 
-        // OrderBy introduces CLR runtime imports. Keep the deployment module namespace resolvable
-        // under Deno without rewriting generated source text.
-        WriteFile(
-            Path.Combine(outputRoot, "deno.json"),
-            """
-            {
-              "imports": {
-                "System/": "./System/"
-              }
-            }
-            """);
+        ConfigureDenoToUseMaterializedSsrImports(outputRoot);
 
         var testFile = Path.Combine(outputRoot, "materialized-query.test.mjs");
         WriteFile(
@@ -1435,6 +1457,780 @@ public sealed class SdkIntegrationTests
         var module = await File.ReadAllTextAsync(Path.Combine(projectJazorRoot, "host", "app.mjs"));
         StringAssert.Contains(module, "sourceMappingURL=app.mjs.map");
         Assert.IsFalse(Directory.Exists(webRootJazor), $"Build must not materialize artifacts under '{webRootJazor}'.");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_ClassLibraryWithGlobalEmitMode_OnlyCarriesModuleCatalog()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "CatalogOnlyClassLibrary");
+        Directory.CreateDirectory(projectRoot);
+        var projectPath = Path.Combine(projectRoot, "CatalogOnlyClassLibrary.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "LibraryModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace CatalogOnlyClassLibrary;
+
+            [ECMAScriptModule("library/module.mjs")]
+            public static class LibraryModule
+            {
+                public static int Value() => 1;
+            }
+            """);
+
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=debug"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+        var generatedSource = ReadSingleGeneratedSource(
+            Path.Combine(projectRoot, "obj"),
+            "Jazor.Generated.ModuleCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "internal static partial class ModuleCatalog", StringComparison.Ordinal);
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(projectRoot, "jazor")),
+            "A class library must stop at its assembly-contained ModuleCatalog even when JazorMode is globally inherited.");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_IndirectNuGetReferenceDoesNotActivateTooling()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var feedRoot = Path.Combine(workspace.RootPath, "feed");
+        var libraryRoot = Path.Combine(workspace.RootPath, "DirectToolLibrary");
+        var hostRoot = Path.Combine(workspace.RootPath, "IndirectToolHost");
+        Directory.CreateDirectory(feedRoot);
+        Directory.CreateDirectory(libraryRoot);
+        Directory.CreateDirectory(hostRoot);
+        File.Copy(package.PackagePath, Path.Combine(feedRoot, Path.GetFileName(package.PackagePath)));
+
+        var libraryProject = Path.Combine(libraryRoot, "DirectToolLibrary.csproj");
+        WriteFile(
+            libraryProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <PackageId>DirectToolLibrary</PackageId>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(libraryRoot, "LibraryModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace DirectToolLibrary;
+
+            [ECMAScriptModule("libraries/direct-tool.mjs")]
+            public static class LibraryModule
+            {
+                public static int Value() => 41;
+            }
+            """);
+
+        var pack = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "pack",
+                libraryProject,
+                "-c",
+                "Debug",
+                "-o",
+                feedRoot,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={feedRoot}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:PackageVersion=1.0.0"
+            ]);
+        Assert.AreEqual(0, pack.ExitCode, pack.ToString());
+        var libraryPackagePath = Path.Combine(feedRoot, "DirectToolLibrary.1.0.0.nupkg");
+        Assert.IsTrue(File.Exists(libraryPackagePath), libraryPackagePath);
+        StringAssert.Contains(
+            ReadPackageEntryText(libraryPackagePath, "DirectToolLibrary.nuspec"),
+            "<dependency id=\"Jazor\"",
+            StringComparison.Ordinal);
+
+        var hostProject = Path.Combine(hostRoot, "IndirectToolHost.csproj");
+        WriteFile(
+            hostProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <JazorMode>debug</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="DirectToolLibrary" Version="1.0.0" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(hostRoot, "Program.cs"),
+            """
+            using DirectToolLibrary;
+
+            Console.WriteLine(LibraryModule.Value());
+            """);
+
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                hostProject,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={feedRoot}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+        StringAssert.Contains(
+            ReadSingleGeneratedSource(Path.Combine(libraryRoot, "obj"), "Jazor.Generated.ModuleCatalog.g.cs"),
+            "relativePath: \"libraries/direct-tool.mjs\"",
+            StringComparison.Ordinal);
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(hostRoot, "jazor")),
+            "An indirect Jazor dependency must not grant Emit to the host.");
+        Assert.IsFalse(
+            Directory.EnumerateFiles(hostRoot, "Jazor.Generated.ModuleCatalog.g.cs", SearchOption.AllDirectories).Any(),
+            "An indirect Jazor dependency must not activate the compiler generator in the host.");
+
+        var generatedTargetsPath = Path.Combine(hostRoot, "obj", "IndirectToolHost.csproj.nuget.g.targets");
+        Assert.IsTrue(File.Exists(generatedTargetsPath), generatedTargetsPath);
+        var generatedTargets = File.ReadAllText(generatedTargetsPath).Replace('\\', '/');
+        Assert.IsFalse(
+            generatedTargets.Contains("build/Jazor.targets", StringComparison.Ordinal),
+            "The direct-only target must not be imported by a project that only consumes a library using Jazor.");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_DirectVueAndCoreReferencesRespectToolingBoundary()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var feedRoot = Path.Combine(workspace.RootPath, "feed");
+        Directory.CreateDirectory(feedRoot);
+        File.Copy(package.PackagePath, Path.Combine(feedRoot, Path.GetFileName(package.PackagePath)));
+        File.Copy(package.VuePackagePath, Path.Combine(feedRoot, Path.GetFileName(package.VuePackagePath)));
+
+        var commonArguments = new[]
+        {
+            "-t:Rebuild",
+            "/m:1",
+            "/p:BuildInParallel=false",
+            $"-p:RestoreSources={feedRoot}",
+            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+            $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+            $"-p:JazorPackageVersion={package.PackageVersion}"
+        };
+
+        // A direct Vue-only consumer receives Vue resources and its opt-in analyzer, but the
+        // transitive Jazor dependency is explicitly excluded from core tooling and resources.
+        var vueOnlyRoot = Path.Combine(workspace.RootPath, "VueOnlyConsumer");
+        Directory.CreateDirectory(vueOnlyRoot);
+        var vueOnlyProject = Path.Combine(vueOnlyRoot, "VueOnlyConsumer.csproj");
+        WriteFile(
+            vueOnlyProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>debug</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" />
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+
+              <Target Name="CaptureJazorBoundary" BeforeTargets="CoreCompile">
+                <WriteLinesToFile File="$(BaseIntermediateOutputPath)tooling-state.txt"
+                                  Lines="@(Analyzer->'%(Filename)')"
+                                  Overwrite="true" />
+                <WriteLinesToFile File="$(BaseIntermediateOutputPath)manifest-state.txt"
+                                  Lines="@(JazorLibraryManifest)"
+                                  Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(vueOnlyRoot, "Program.cs"),
+            """
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        var vueOnlyBuild = await RunDotNetAsync(
+            package.RepoRoot,
+            ["build", vueOnlyProject, .. commonArguments, "-p:JazorMode=debug"]);
+        Assert.AreEqual(0, vueOnlyBuild.ExitCode, vueOnlyBuild.ToString());
+
+        var vueOnlyTargetsPath = Path.Combine(vueOnlyRoot, "obj", "VueOnlyConsumer.csproj.nuget.g.targets");
+        Assert.IsTrue(File.Exists(vueOnlyTargetsPath), vueOnlyTargetsPath);
+        var vueOnlyTargets = File.ReadAllText(vueOnlyTargetsPath).Replace('\\', '/');
+        Assert.IsTrue(
+            vueOnlyTargets.Contains("buildTransitive/Jazor.Vue.targets", StringComparison.OrdinalIgnoreCase),
+            vueOnlyTargets);
+        Assert.IsFalse(
+            vueOnlyTargets.Contains("build/Jazor.targets", StringComparison.OrdinalIgnoreCase),
+            "A Vue-only project must not import the direct Jazor target.");
+
+        var vueOnlyAnalyzers = File.ReadAllLines(Path.Combine(vueOnlyRoot, "obj", "tooling-state.txt"));
+        CollectionAssert.Contains(vueOnlyAnalyzers, "Jazor.RazorVue");
+        Assert.IsFalse(vueOnlyAnalyzers.Any(static name =>
+            string.Equals(name, "Jazor.Analyzer", StringComparison.Ordinal) ||
+            string.Equals(name, "Jazor.Compiler", StringComparison.Ordinal) ||
+            string.Equals(name, "ECMAScript", StringComparison.Ordinal)));
+
+        var vueOnlyManifestPaths = File.ReadAllLines(Path.Combine(vueOnlyRoot, "obj", "manifest-state.txt"))
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .Select(Path.GetFullPath)
+            .Select(static path => path.Replace('\\', '/'))
+            .ToArray();
+        Assert.IsTrue(
+            vueOnlyManifestPaths.Any(static path => path.EndsWith("/jazor/vue3/manifest.json", StringComparison.OrdinalIgnoreCase)),
+            string.Join(Environment.NewLine, vueOnlyManifestPaths));
+        Assert.IsTrue(
+            vueOnlyManifestPaths.Any(static path => path.EndsWith("/jazor/vue-runtime/manifest.json", StringComparison.OrdinalIgnoreCase)),
+            string.Join(Environment.NewLine, vueOnlyManifestPaths));
+        Assert.IsFalse(
+            vueOnlyManifestPaths.Any(static path => path.EndsWith("/jazor/ecmascript/manifest.json", StringComparison.OrdinalIgnoreCase)),
+            "The excluded Jazor dependency must not add the core ECMAScript resource locator.");
+        Assert.IsFalse(
+            Directory.EnumerateFiles(Path.Combine(vueOnlyRoot, "obj"), "Jazor.Generated.ModuleCatalog.g.cs", SearchOption.AllDirectories).Any(),
+            "A Vue-only project must not activate the core ModuleCatalog generator.");
+        Assert.IsFalse(Directory.Exists(Path.Combine(vueOnlyRoot, "jazor")));
+
+        // A project that directly names both packages gets the complete core/Vue tooling set. The
+        // none profile still compiles the catalog but must not materialize a host output.
+        var dualRoot = Path.Combine(workspace.RootPath, "DualVueConsumer");
+        Directory.CreateDirectory(dualRoot);
+        var dualProject = Path.Combine(dualRoot, "DualVueConsumer.csproj");
+        WriteFile(
+            dualProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>none</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" />
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+
+              <Target Name="CaptureJazorBoundary" BeforeTargets="CoreCompile">
+                <WriteLinesToFile File="$(BaseIntermediateOutputPath)tooling-state.txt"
+                                  Lines="@(Analyzer->'%(Filename)')"
+                                  Overwrite="true" />
+                <WriteLinesToFile File="$(BaseIntermediateOutputPath)manifest-state.txt"
+                                  Lines="@(JazorLibraryManifest)"
+                                  Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(dualRoot, "Program.cs"),
+            """
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+        WriteFile(
+            Path.Combine(dualRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace DualVueConsumer;
+
+            [ECMAScriptModule("host/dual-vue.mjs")]
+            public static class AppModule
+            {
+                public static int Boot() => 1;
+            }
+            """);
+
+        var dualNoneBuild = await RunDotNetAsync(
+            package.RepoRoot,
+            ["build", dualProject, .. commonArguments, "-p:JazorMode=none"]);
+        Assert.AreEqual(0, dualNoneBuild.ExitCode, dualNoneBuild.ToString());
+        Assert.IsFalse(Directory.Exists(Path.Combine(dualRoot, "jazor")),
+            "JazorMode=none must not materialize output even when both packages are direct.");
+
+        var dualTargetsPath = Path.Combine(dualRoot, "obj", "DualVueConsumer.csproj.nuget.g.targets");
+        Assert.IsTrue(File.Exists(dualTargetsPath), dualTargetsPath);
+        var dualTargets = File.ReadAllText(dualTargetsPath).Replace('\\', '/');
+        Assert.IsTrue(dualTargets.Contains("build/Jazor.targets", StringComparison.OrdinalIgnoreCase), dualTargets);
+        Assert.IsTrue(dualTargets.Contains("buildTransitive/Jazor.Vue.targets", StringComparison.OrdinalIgnoreCase), dualTargets);
+
+        var dualAnalyzers = File.ReadAllLines(Path.Combine(dualRoot, "obj", "tooling-state.txt"));
+        foreach (var analyzer in new[] { "Jazor.Analyzer", "Jazor.Compiler", "ECMAScript", "Jazor.RazorVue" })
+            CollectionAssert.Contains(dualAnalyzers, analyzer);
+
+        var dualManifestPaths = File.ReadAllLines(Path.Combine(dualRoot, "obj", "manifest-state.txt"))
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .Select(Path.GetFullPath)
+            .Select(static path => path.Replace('\\', '/'))
+            .ToArray();
+        Assert.IsTrue(
+            dualManifestPaths.Any(static path => path.EndsWith("/jazor/ecmascript/manifest.json", StringComparison.OrdinalIgnoreCase)),
+            string.Join(Environment.NewLine, dualManifestPaths));
+        Assert.IsTrue(
+            dualManifestPaths.Any(static path => path.EndsWith("/jazor/vue3/manifest.json", StringComparison.OrdinalIgnoreCase)),
+            string.Join(Environment.NewLine, dualManifestPaths));
+        Assert.IsTrue(
+            dualManifestPaths.Any(static path => path.EndsWith("/jazor/vue-runtime/manifest.json", StringComparison.OrdinalIgnoreCase)),
+            string.Join(Environment.NewLine, dualManifestPaths));
+
+        var dualDebugBuild = await RunDotNetAsync(
+            package.RepoRoot,
+            ["build", dualProject, .. commonArguments, "-p:JazorMode=debug"]);
+        Assert.AreEqual(0, dualDebugBuild.ExitCode, dualDebugBuild.ToString());
+        Assert.IsTrue(File.Exists(Path.Combine(dualRoot, "jazor", "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(dualRoot, "jazor", "host", "dual-vue.mjs")));
+        _ = ReadSingleGeneratedSource(Path.Combine(dualRoot, "obj"), "Jazor.Generated.ModuleCatalog.g.cs");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_ProjectReferenceChain_OnlyFinalHostMaterializesTransitiveModuleCatalog()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var providerRoot = Path.Combine(workspace.RootPath, "ProviderLibrary");
+        var intermediaryRoot = Path.Combine(workspace.RootPath, "IntermediaryLibrary");
+        var hostRoot = Path.Combine(workspace.RootPath, "FinalHost");
+        Directory.CreateDirectory(providerRoot);
+        Directory.CreateDirectory(intermediaryRoot);
+        Directory.CreateDirectory(hostRoot);
+
+        var providerProject = Path.Combine(providerRoot, "ProviderLibrary.csproj");
+        WriteFile(
+            providerProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(providerRoot, "ProviderModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace ProviderLibrary;
+
+            [ECMAScriptModule("libraries/provider.mjs")]
+            public static class ProviderModule
+            {
+                public static int Value() => 41;
+            }
+            """);
+
+        var intermediaryProject = Path.Combine(intermediaryRoot, "IntermediaryLibrary.csproj");
+        WriteFile(
+            intermediaryProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <ProjectReference Include="..\ProviderLibrary\ProviderLibrary.csproj" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(intermediaryRoot, "ReferenceAnchor.cs"),
+            """
+            using ProviderLibrary;
+
+            namespace IntermediaryLibrary;
+
+            public static class ReferenceAnchor
+            {
+                public static int Validate() => ProviderModule.Value();
+            }
+            """);
+
+        var hostProject = Path.Combine(hostRoot, "FinalHost.csproj");
+        WriteFile(
+            hostProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <ProjectReference Include="..\IntermediaryLibrary\IntermediaryLibrary.csproj" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(hostRoot, "Program.cs"),
+            """
+            using IntermediaryLibrary;
+
+            Console.WriteLine(ReferenceAnchor.Validate());
+            """);
+        WriteFile(
+            Path.Combine(hostRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+            using ProviderLibrary;
+
+            namespace FinalHost;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static int Boot() => ProviderModule.Value() + 1;
+            }
+            """);
+
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                hostProject,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=debug"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+        StringAssert.Contains(
+            ReadSingleGeneratedSource(Path.Combine(providerRoot, "obj"), "Jazor.Generated.ModuleCatalog.g.cs"),
+            "relativePath: \"libraries/provider.mjs\"",
+            StringComparison.Ordinal);
+        var hostCatalog = ReadSingleGeneratedSource(
+            Path.Combine(hostRoot, "obj"),
+            "Jazor.Generated.ModuleCatalog.g.cs");
+        StringAssert.Contains(
+            hostCatalog,
+            "dependencies: new string[] { \"libraries/provider.mjs\" }",
+            StringComparison.Ordinal);
+
+        Assert.IsFalse(Directory.Exists(Path.Combine(providerRoot, "jazor")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(intermediaryRoot, "jazor")));
+
+        var outputRoot = Path.Combine(hostRoot, "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "libraries", "provider.mjs")));
+        var manifest = LoadManifest(Path.Combine(outputRoot, "jazor-manifest.json"));
+        CollectionAssert.AreEquivalent(
+            new[] { "host/app.mjs", "libraries/provider.mjs" },
+            manifest.Modules.Select(static module => module.RelativePath).ToArray());
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_NuGetLibraryChain_OnlyFinalHostMaterializesTransitiveModuleCatalog()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var feedRoot = Path.Combine(workspace.RootPath, "feed");
+        var providerRoot = Path.Combine(workspace.RootPath, "CarrierProvider");
+        var intermediaryRoot = Path.Combine(workspace.RootPath, "CarrierIntermediary");
+        var hostRoot = Path.Combine(workspace.RootPath, "CarrierHost");
+        Directory.CreateDirectory(feedRoot);
+        Directory.CreateDirectory(providerRoot);
+        Directory.CreateDirectory(intermediaryRoot);
+        Directory.CreateDirectory(hostRoot);
+        File.Copy(package.PackagePath, Path.Combine(feedRoot, Path.GetFileName(package.PackagePath)));
+
+        var providerProject = Path.Combine(providerRoot, "CarrierProvider.csproj");
+        WriteFile(
+            providerProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <PackageId>CarrierProvider</PackageId>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(providerRoot, "ProviderModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace CarrierProvider;
+
+            [ECMAScriptModule("libraries/nuget-provider.mjs")]
+            public static class ProviderModule
+            {
+                public static int Value() => 41;
+            }
+            """);
+
+        var packProvider = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "pack",
+                providerProject,
+                "-c",
+                "Debug",
+                "-o",
+                feedRoot,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={feedRoot}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:PackageVersion=1.0.0"
+            ]);
+        Assert.AreEqual(0, packProvider.ExitCode, packProvider.ToString());
+
+        var providerPackagePath = Path.Combine(feedRoot, "CarrierProvider.1.0.0.nupkg");
+        Assert.IsTrue(File.Exists(providerPackagePath));
+        var providerNuspec = ReadPackageEntryText(providerPackagePath, "CarrierProvider.nuspec");
+        Assert.IsFalse(
+            providerNuspec.Contains("<dependency id=\"Jazor\"", StringComparison.Ordinal),
+            "A library's direct Jazor tooling reference must not become a consumer tool dependency.");
+
+        var intermediaryProject = Path.Combine(intermediaryRoot, "CarrierIntermediary.csproj");
+        WriteFile(
+            intermediaryProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <PackageId>CarrierIntermediary</PackageId>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="CarrierProvider" Version="1.0.0" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(intermediaryRoot, "ReferenceAnchor.cs"),
+            """
+            using CarrierProvider;
+
+            namespace CarrierIntermediary;
+
+            public static class ReferenceAnchor
+            {
+                public static int Validate() => ProviderModule.Value();
+            }
+            """);
+
+        var packIntermediary = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "pack",
+                intermediaryProject,
+                "-c",
+                "Debug",
+                "-o",
+                feedRoot,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={feedRoot}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                "-p:PackageVersion=1.0.0"
+            ]);
+        Assert.AreEqual(0, packIntermediary.ExitCode, packIntermediary.ToString());
+
+        var intermediaryPackagePath = Path.Combine(feedRoot, "CarrierIntermediary.1.0.0.nupkg");
+        Assert.IsTrue(File.Exists(intermediaryPackagePath));
+        var intermediaryNuspec = ReadPackageEntryText(intermediaryPackagePath, "CarrierIntermediary.nuspec");
+        StringAssert.Contains(
+            intermediaryNuspec,
+            "<dependency id=\"CarrierProvider\" version=\"1.0.0\" exclude=\"Build,Analyzers\"",
+            StringComparison.Ordinal);
+        Assert.IsFalse(intermediaryNuspec.Contains("id=\"Jazor\"", StringComparison.Ordinal));
+
+        var hostProject = Path.Combine(hostRoot, "CarrierHost.csproj");
+        WriteFile(
+            hostProject,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="CarrierIntermediary" Version="1.0.0" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(hostRoot, "Program.cs"),
+            """
+            using CarrierIntermediary;
+
+            Console.WriteLine(ReferenceAnchor.Validate());
+            """);
+        WriteFile(
+            Path.Combine(hostRoot, "AppModule.cs"),
+            """
+            using CarrierProvider;
+            using ECMAScript;
+
+            namespace CarrierHost;
+
+            [ECMAScriptModule("host/nuget-app.mjs")]
+            public static class AppModule
+            {
+                public static int Boot() => ProviderModule.Value() + 1;
+            }
+            """);
+
+        var buildHost = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                hostProject,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={feedRoot}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=debug"
+            ]);
+
+        Assert.AreEqual(0, buildHost.ExitCode, buildHost.ToString());
+        Assert.IsFalse(Directory.Exists(Path.Combine(providerRoot, "jazor")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(intermediaryRoot, "jazor")));
+
+        var hostCatalog = ReadSingleGeneratedSource(
+            Path.Combine(hostRoot, "obj"),
+            "Jazor.Generated.ModuleCatalog.g.cs");
+        StringAssert.Contains(
+            hostCatalog,
+            "dependencies: new string[] { \"libraries/nuget-provider.mjs\" }",
+            StringComparison.Ordinal);
+        var outputRoot = Path.Combine(hostRoot, "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "host", "nuget-app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "libraries", "nuget-provider.mjs")));
+        var manifest = LoadManifest(Path.Combine(outputRoot, "jazor-manifest.json"));
+        CollectionAssert.AreEquivalent(
+            new[] { "host/nuget-app.mjs", "libraries/nuget-provider.mjs" },
+            manifest.Modules.Select(static module => module.RelativePath).ToArray());
     }
 
     [TestMethod]
@@ -2098,8 +2894,10 @@ public sealed class SdkIntegrationTests
 
         var counterEntry = manifest.Modules.Single(static moduleEntry => moduleEntry.RelativePath == "components/counter.mjs");
         Assert.AreEqual("components/counter.mjs.map", counterEntry.SourceMapPath);
-        StringAssert.StartsWith(counterEntry.Hash, "sha256:");
-        StringAssert.StartsWith(counterEntry.MapHash, "sha256:");
+        Assert.HasCount(64, counterEntry.Hash);
+        Assert.IsTrue(counterEntry.Hash!.All(static value => value is >= '0' and <= '9' or >= 'a' and <= 'f'));
+        Assert.HasCount(64, counterEntry.MapHash!);
+        Assert.IsTrue(counterEntry.MapHash!.All(static value => value is >= '0' and <= '9' or >= 'a' and <= 'f'));
 
         var manifestText = (await File.ReadAllTextAsync(manifestPath)).ReplaceLineEndings("\n");
         Assert.IsFalse(manifestText.Contains("generatedAtUtc", StringComparison.OrdinalIgnoreCase), manifestText);
@@ -2841,7 +3639,7 @@ public sealed class SdkIntegrationTests
         AssertPackageEntries(
             vuePackagePath,
             "lib/net11.0/ECMAScript.Blazor.dll",
-            "analyzers/dotnet/cs/Jazor.RazorVue.dll");
+            "tools/net11.0/analyzers/Jazor.RazorVue.dll");
 
         return new LocalReleasePackageFixture(
             repoRoot,
@@ -3138,6 +3936,13 @@ public sealed class SdkIntegrationTests
             "Bundled DenoHost runtime test failed." + Environment.NewLine +
             await standardOutput + Environment.NewLine +
             await standardError);
+    }
+
+    private static void ConfigureDenoToUseMaterializedSsrImports(string outputRoot)
+    {
+        var ssrImportMapPath = Path.Combine(outputRoot, "ssr-importmap.json");
+        Assert.IsTrue(File.Exists(ssrImportMapPath), $"SSR import map was not generated: {ssrImportMapPath}");
+        File.Copy(ssrImportMapPath, Path.Combine(outputRoot, "deno.json"), overwrite: true);
     }
 
     private static string FindRepoRoot([CallerFilePath] string sourceFilePath = "")
@@ -4022,6 +4827,39 @@ public sealed class SdkIntegrationTests
     private static ManifestModel LoadManifest(string manifestPath)
         => ManifestModel.TryLoad(manifestPath)
             ?? throw new FileNotFoundException("Manifest was not found: " + manifestPath, manifestPath);
+
+    private static void AssertManifestFile(JsonElement entries, string expectedType, string expectedPath)
+    {
+        var entry = entries.EnumerateArray().Single(candidate =>
+            string.Equals(candidate.GetProperty("type").GetString(), expectedType, StringComparison.Ordinal) &&
+            string.Equals(candidate.GetProperty("path").GetString(), expectedPath, StringComparison.Ordinal));
+        var hash = entry.GetProperty("hash").GetString();
+        Assert.IsNotNull(hash, $"Manifest file '{expectedPath}' must declare a SHA-256 hash.");
+        Assert.HasCount(64, hash);
+        Assert.IsTrue(hash.All(static value => value is >= '0' and <= '9' or >= 'a' and <= 'f'));
+    }
+
+    private static async Task AssertResourceImportIsMaterializedAsync(string outputRoot, string specifier)
+    {
+        var importMapPath = Path.Combine(outputRoot, "importmap.json");
+        Assert.IsTrue(File.Exists(importMapPath), $"Import map was not generated: {importMapPath}");
+
+        using var importMap = JsonDocument.Parse(await File.ReadAllTextAsync(importMapPath));
+        var target = importMap.RootElement
+            .GetProperty("imports")
+            .GetProperty(specifier)
+            .GetString();
+        Assert.IsFalse(string.IsNullOrWhiteSpace(target), $"Resource import '{specifier}' has no import-map target.");
+
+        const string outputUrlPrefix = "/jazor/";
+        Assert.IsTrue(
+            target!.StartsWith(outputUrlPrefix, StringComparison.Ordinal),
+            $"Resource import '{specifier}' must target the Jazor output root: {target}");
+        var materializedPath = Path.Combine(
+            outputRoot,
+            target[outputUrlPrefix.Length..].Replace('/', Path.DirectorySeparatorChar));
+        Assert.IsTrue(File.Exists(materializedPath), $"Resource import '{specifier}' was not materialized: {materializedPath}");
+    }
 
     private static ArtifactHash[] ReadArtifactHashes(string outputRoot)
     {

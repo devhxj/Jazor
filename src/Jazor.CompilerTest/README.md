@@ -11,7 +11,7 @@
 | 模块转换 | import/export、成员类、继承、构造函数和稳定命名 | `AstConverter*Tests.cs` |
 | 语义 lowering | 表达式、控制流、模式匹配、集合、tuple、`ref/out` 与边界失败 | `SemanticWalker*Test.cs` |
 | 输出基础设施 | helper、alias、optimizer 和白名单查找 | `UniqueNameAllocatorTests.cs`、`WhiteListLookupCompatibilityTests.cs` |
-| SourceMap 与 catalog | source-origin、map、catalog 和 materialization 交接 | `*SourceMap*Tests.cs`、`ESGenerator*Tests.cs` |
+| SourceMap 与 descriptor | source-origin、map、descriptor node 和 materialization 交接 | `*SourceMap*Tests.cs`、`ESGenerator*Tests.cs` |
 
 涉及真实运行时顺序、异步回调、unmount 或浏览器交互的场景，可补 DenoHost 或样例级验证；其余情况优先断言 `IOperation -> ESTree -> JavaScript` 的结构和文本契约。
 

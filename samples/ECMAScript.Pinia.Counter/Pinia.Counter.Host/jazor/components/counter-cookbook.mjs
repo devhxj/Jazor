@@ -1,42 +1,42 @@
-import { defineComponent, h } from "npm:vue@3";
 import { mapActions, mapState } from "pinia";
-import { useProjectedCounterStore, useProjectedCounterStoreRefs } from "stores/counter-store.mjs";
-export let component = defineComponent({
+import { UseProjectedCounterStore, UseProjectedCounterStoreRefs } from "stores/counter-store.mjs";
+import { defineComponent, h } from "vue";
+export let Component = defineComponent({
   name: "PiniaCounterCookbook",
-  computed: createComputed(),
-  methods: createMethods(),
-  setup: setup
+  computed: CreateComputed(),
+  methods: CreateMethods(),
+  setup: Setup
 });
-function createComputed() {
-  return mapState(useProjectedCounterStore, {
-    count: "count",
-    status: "status",
-    doubleCount: "doubleCount",
-    tripleCount: readTripleCount,
-    auditTag: "auditTag"
+function CreateComputed() {
+  return mapState(UseProjectedCounterStore, {
+    Count: "Count",
+    Status: "Status",
+    DoubleCount: "DoubleCount",
+    TripleCount: ReadTripleCount,
+    AuditTag: "AuditTag"
   });
 }
-function createMethods() {
-  return mapActions(useProjectedCounterStore, ["increment", "decrement"]);
+function CreateMethods() {
+  return mapActions(UseProjectedCounterStore, ["Increment", "Decrement"]);
 }
-function setup() {
-  let projectedStore = useProjectedCounterStore();
-  let refs = useProjectedCounterStoreRefs(projectedStore);
+function Setup() {
+  let projectedStore = UseProjectedCounterStore();
+  let refs = UseProjectedCounterStoreRefs(projectedStore);
   let baseStore = projectedStore;
   let customState = projectedStore.$state;
-  customState.persistedAt = "component:" + baseStore.$id;
+  customState.PersistedAt = "component:" + baseStore.$id;
   return () => {
-    return h("section", { class: "counter-cookbook-shell" }, [h("h2", "Projected plugin cookbook"), h("p", "Projected store definitions flow through storeToRefs(), Options API helpers, and direct custom-property/custom-state projections without inventing a separate runtime object."), h("ul", [h("li", "auditTag: " + projectedStore.auditTag), h("li", "persistedAt: " + projectedStore.$state.persistedAt), h("li", "countRef: " + refs["count"].value), h("li", "statusRef: " + refs["status"].value), h("li", "doubleCount: " + projectedStore.doubleCount), h("li", "tripleCount: " + readTripleCount(projectedStore))]), h("div", { class: "counter-actions" }, [createActionButton("Projected increment", "action-button action-button--accent", baseStore.increment.bind(baseStore)), createActionButton("Projected decrement", "action-button", baseStore.decrement.bind(baseStore))]), h("p", { class: "counter-status" }, "Options API helpers are configured through CreateComputed()/CreateMethods(); the live card shows the projected store + projected refs path.")]);
+    return h("section", { class: "counter-cookbook-shell" }, [h("h2", "Projected plugin cookbook"), h("p", "Projected store definitions flow through storeToRefs(), Options API helpers, and direct custom-property/custom-state projections without inventing a separate runtime object."), h("ul", [h("li", "auditTag: " + projectedStore.AuditTag), h("li", "persistedAt: " + projectedStore.$state.PersistedAt), h("li", "countRef: " + refs["Count"].value), h("li", "statusRef: " + refs["Status"].value), h("li", "doubleCount: " + projectedStore.DoubleCount), h("li", "tripleCount: " + ReadTripleCount(projectedStore))]), h("div", { class: "counter-actions" }, [CreateActionButton("Projected increment", "action-button action-button--accent", baseStore.Increment.bind(baseStore)), CreateActionButton("Projected decrement", "action-button", baseStore.Decrement.bind(baseStore))]), h("p", { class: "counter-status" }, "Options API helpers are configured through CreateComputed()/CreateMethods(); the live card shows the projected store + projected refs path.")]);
   };
 }
-function createActionButton(label, className, handler) {
+function CreateActionButton(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,
     onClick: handler
   }, label);
 }
-function readTripleCount(store) {
-  return store.count * 3;
+function ReadTripleCount(store) {
+  return store.Count * 3;
 }
 //# sourceMappingURL=counter-cookbook.mjs.map

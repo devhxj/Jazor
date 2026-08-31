@@ -1,39 +1,39 @@
-import { defineComponent, h, onMounted, onUnmounted, ref } from "npm:vue@3";
-import { useCounterStore } from "stores/counter-store.mjs";
-export let component = defineComponent({ name: "PiniaCounterSubscriptionCookbook", setup: setup });
-function setup() {
-  let store = useCounterStore();
+import { UseCounterStore } from "stores/counter-store.mjs";
+import { defineComponent, h, onMounted, onUnmounted, ref } from "vue";
+export let Component = defineComponent({ name: "PiniaCounterSubscriptionCookbook", setup: Setup });
+function Setup() {
+  let store = UseCounterStore();
   let mutationKind = ref("No mutations observed yet.");
   let storeId = ref(store.$id);
-  let statusSnapshot = ref(store.status);
-  let countSnapshot = ref(store.count);
+  let statusSnapshot = ref(store.Status);
+  let countSnapshot = ref(store.Count);
   let payloadSnapshot = ref("payload appears only for $patch({ ... }) mutations.");
   let eventShape = ref("Debugger events are dev-only and may be unavailable.");
   let notificationCount = ref(0);
   let detach = null;
   let handleMutation = (mutation, state) => {
     notificationCount.value += 1;
-    mutationKind.value = describeMutationType(mutation.type);
+    mutationKind.value = DescribeMutationType(mutation.type);
     storeId.value = mutation.storeId;
-    countSnapshot.value = state.count;
-    statusSnapshot.value = state.status;
-    payloadSnapshot.value = readMutationSummary(mutation);
-    eventShape.value = describeEvents(mutation.events);
+    countSnapshot.value = state.Count;
+    statusSnapshot.value = state.Status;
+    payloadSnapshot.value = ReadMutationSummary(mutation);
+    eventShape.value = DescribeEvents(mutation.events);
     return;
   };
   let applyDirectMutation = () => {
-    store.count += 1;
-    store.status = "Direct assignment updated the counter store.";
+    store.Count += 1;
+    store.Status = "Direct assignment updated the counter store.";
     return;
   };
   let applyObjectPatch = () => {
-    store.$patch({ count: store.count + 3, status: "Object patch updated the counter store." });
+    store.$patch({ Count: store.Count + 3, Status: "Object patch updated the counter store." });
     return;
   };
   let applyFunctionPatch = () => {
     store.$patch(state => {
-      state.count += 2;
-      state.status = "Function patch updated the counter store.";
+      state.Count += 2;
+      state.Status = "Function patch updated the counter store.";
       return;
     });
     return;
@@ -49,7 +49,7 @@ function setup() {
     return;
   });
   return () => {
-    return h("section", { class: "counter-subscription-shell" }, [h("h2", "Subscription cookbook"), h("p", "$subscribe() is registered with detached + sync options so the sample can inspect direct mutations, object patches, and function patches from one stable callback. Direct assignments may report multiple sync notifications when several fields change back-to-back."), h("div", { class: "counter-actions" }, [createActionButton("Direct +1", "action-button action-button--accent", applyDirectMutation), createActionButton("Object patch", "action-button", applyObjectPatch), createActionButton("Function patch", "action-button", applyFunctionPatch)]), h("ul", { class: "counter-notes" }, [
+    return h("section", { class: "counter-subscription-shell" }, [h("h2", "Subscription cookbook"), h("p", "$subscribe() is registered with detached + sync options so the sample can inspect direct mutations, object patches, and function patches from one stable callback. Direct assignments may report multiple sync notifications when several fields change back-to-back."), h("div", { class: "counter-actions" }, [CreateActionButton("Direct +1", "action-button action-button--accent", applyDirectMutation), CreateActionButton("Object patch", "action-button", applyObjectPatch), CreateActionButton("Function patch", "action-button", applyFunctionPatch)]), h("ul", { class: "counter-notes" }, [
       h("li", "mutation kind: " + mutationKind.value),
       h("li", "store id: " + storeId.value),
       h("li", "count snapshot: " + countSnapshot.value),
@@ -60,27 +60,27 @@ function setup() {
     ])]);
   };
 }
-function describeMutationType(type) {
+function DescribeMutationType(type) {
   return (() => {
-    const __swexpr$59f6aa2a1ae075e733124215 = type;
-    if (__swexpr$59f6aa2a1ae075e733124215 === "direct")
+    const __swexpr$96f5886a201b4b0350026376 = type;
+    if (__swexpr$96f5886a201b4b0350026376 === "direct")
       return "direct assignment";
-    if (__swexpr$59f6aa2a1ae075e733124215 === "patch object")
+    if (__swexpr$96f5886a201b4b0350026376 === "patch object")
       return "$patch({ ... }) object merge";
-    if (__swexpr$59f6aa2a1ae075e733124215 === "patch function")
+    if (__swexpr$96f5886a201b4b0350026376 === "patch function")
       return "$patch((state) => ...) callback";
     return "unknown mutation";
   })();
 }
-function readMutationSummary(mutation) {
+function ReadMutationSummary(mutation) {
   if (mutation.type === "patch object") {
     let patchMutation = mutation;
     let payload = patchMutation.payload;
-    if (payload.status !== null) {
-      return "payload.status = " + payload.status;
+    if (payload.Status !== null) {
+      return "payload.status = " + payload.Status;
     }
-    if (payload.count !== null) {
-      return "payload.count = " + payload.count;
+    if (payload.Count !== null) {
+      return "payload.count = " + payload.Count;
     }
     return "object patch payload captured without known fields";
   }
@@ -89,10 +89,10 @@ function readMutationSummary(mutation) {
   }
   return "direct assignments do not expose a payload object";
 }
-function describeEvents(events) {
+function DescribeEvents(events) {
   return events === null ? "not provided" : "reported";
 }
-function createActionButton(label, className, handler) {
+function CreateActionButton(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,

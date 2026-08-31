@@ -23,7 +23,7 @@
 
 ## 交付边界
 
-Vue browser runtime 由 `Jazor.Vue` 包内的本地资源与 manifest 提供。应用不需要自行引入 CDN 或将 Vue 安装到项目 `node_modules`；输出模式和实际物化仍由 `Jazor.Emit` 持有。`ECMAScript.Vue` 源项目作为 `Jazor.Vue` 的 payload 输入，不单独作为应用安装包发布。
+Vue browser runtime 由 `ECMAScript.Vue` 包内的 `manifest.json + dist/**` 提供。应用不需要自行引入 CDN 或将 Vue 安装到项目 `node_modules`；输出模式和实际物化仍由 `Jazor.Emit` 持有。`ECMAScript.Vue` 是已有 Vue ESM/CSS 资源的 binding/resource package。
 
 `@vue/devtools-api` 是 Vue Router、Pinia 和可选 `ECMAScript.Vue.Devtools` 的本地 logical import。它与浏览器安装的 Vue Devtools 扩展通过官方插件桥接协作；仅在需要自定义 inspector、timeline、component hook、custom tab 或 command 时引用 `ECMAScript.Vue.Devtools`，普通应用和 Pinia 自动注册不需要直接调用它。
 

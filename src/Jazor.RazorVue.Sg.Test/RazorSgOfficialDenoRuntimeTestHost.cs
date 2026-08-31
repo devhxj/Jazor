@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Acornima;
 using Acornima.Ast;
-using ECMAScriptGlobal = ECMAScript.Global;
 
 namespace Jazor.RazorVue.Sg.Test;
 
@@ -18,7 +18,8 @@ namespace Jazor.RazorVue.Sg.Test;
 /// </remarks>
 internal static class RazorSgOfficialDenoRuntimeTestHost
 {
-    private static readonly IReadOnlyDictionary<string, string> CatalogModules = ReadCatalogModules();
+    private static readonly IReadOnlyDictionary<string, string> EcmascriptResourceModules = ReadEcmascriptResourceModules();
+    private static readonly IReadOnlyDictionary<string, string> VueRuntimeResourceModules = ReadVueRuntimeResourceModules();
 
     public static async Task RunModuleTestAsync(
         string moduleRelativePath,
@@ -303,10 +304,10 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
             if (!materializedPaths.Add(relativePath))
                 continue;
 
-            if (!CatalogModules.TryGetValue(relativePath, out var content))
+            if (!EcmascriptResourceModules.TryGetValue(relativePath, out var content))
             {
                 throw new InvalidOperationException(
-                    $"CLR runtime catalog does not contain imported module '{relativePath}'.");
+                    $"ECMAScript resource package does not contain imported module '{relativePath}'.");
             }
 
             WriteFile(Path.Combine(root, relativePath), content);
@@ -316,8 +317,9 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
     }
 
     /// <summary>
-    /// Writes RazorVue-owned ESM helpers needed by the generated artifact under the same prefix
-    /// Emit materializes in production. 测试 host 不模拟 helper 文本，直接读取 embedded resource。
+    /// Writes Jazor.Vue-owned ESM helpers needed by the generated artifact under the same prefix
+    /// Emit materializes in production. The test host reads the JS-resource package itself rather
+    /// than restoring the retired RazorVue embedded-resource carrier.
     /// </summary>
     private static void MaterializeRazorVueRuntimeModules(
         string root,
@@ -333,16 +335,12 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
 
         foreach (var importPath in imports)
         {
-            var resourceName = importPath switch
+            if (!VueRuntimeResourceModules.TryGetValue(importPath, out var content))
             {
-                "@jazor/vue-runtime/raw-markup.mjs" => "Jazor.RazorVue.Runtime.raw-markup.mjs",
-                "@jazor/vue-runtime/cascading.mjs" => "Jazor.RazorVue.Runtime.cascading.mjs",
-                "@jazor/vue-runtime/blazor-routing.mjs" => "Jazor.RazorVue.Runtime.blazor-routing.mjs",
-                _ => throw new InvalidOperationException(
-                    $"Official RazorVue Deno test host does not know runtime import '{importPath}'.")
-            };
+                throw new InvalidOperationException(
+                    $"Jazor.Vue JS-resource package does not contain runtime import '{importPath}'.");
+            }
 
-            var content = ReadRazorVueRuntimeResource(resourceName);
             WriteFile(
                 Path.Combine(root, importPath.Replace('/', Path.DirectorySeparatorChar)),
                 content);
@@ -368,15 +366,6 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
         }
     }
 
-    private static string ReadRazorVueRuntimeResource(string resourceName)
-    {
-        using var stream = typeof(Jazor.RazorVue.RazorSdk.RenderEmitter).Assembly.GetManifestResourceStream(resourceName)
-            ?? throw new InvalidOperationException($"RazorVue runtime resource '{resourceName}' was not found.");
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
-    }
-
-
     private static bool IsJavaScriptModulePath(string path)
         => path.EndsWith(".js", StringComparison.OrdinalIgnoreCase) ||
            path.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase);
@@ -389,42 +378,99 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 path.StartsWith("System/", StringComparison.Ordinal) ||
                 path.StartsWith("Microsoft/", StringComparison.Ordinal));
 
-    private static IReadOnlyDictionary<string, string> ReadCatalogModules()
+    private static IReadOnlyDictionary<string, string> ReadEcmascriptResourceModules()
     {
-        var catalogType = typeof(ECMAScriptGlobal).Assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: true)!;
-        var getModules = catalogType.GetMethod(
-            "GetModules",
-            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
-            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() was not found.");
-        var modules = getModules.Invoke(null, null) as IEnumerable
-            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() returned no module collection.");
+        var repositoryRoot = FindRepositoryRoot();
+        var packageRoot = Path.Combine(repositoryRoot, "src", "ECMAScript");
+        var manifestPath = Path.Combine(packageRoot, "manifest.json");
+        if (!File.Exists(manifestPath))
+            throw new FileNotFoundException("The ECMAScript JS-resource manifest was not found.", manifestPath);
 
-        var catalogModules = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var module in modules)
+        using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var resourceModules = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var entry in document.RootElement.GetProperty("imports").EnumerateObject())
         {
-            if (module is null)
+            var production = entry.Value.GetProperty("production").GetString();
+            if (string.IsNullOrWhiteSpace(production) ||
+                !production.StartsWith("dist/", StringComparison.Ordinal))
                 continue;
 
-            var moduleType = module.GetType();
-            var relativePath = ReadCatalogProperty(moduleType, module, "RelativePath");
-            var content = ReadCatalogProperty(moduleType, module, "Content");
-            if (!relativePath.StartsWith("System/", StringComparison.Ordinal) &&
-                !relativePath.StartsWith("Microsoft/", StringComparison.Ordinal))
-                continue;
+            var relativePath = production["dist/".Length..];
+            var sourcePath = Path.Combine(packageRoot, production.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(sourcePath))
+                throw new FileNotFoundException($"ECMAScript resource module '{production}' was not found.", sourcePath);
+            var content = File.ReadAllText(sourcePath);
 
-            if (!catalogModules.TryAdd(relativePath, content))
-                throw new InvalidOperationException($"CLR runtime catalog contains duplicate path '{relativePath}'.");
+            if (!resourceModules.TryAdd(relativePath, content))
+                throw new InvalidOperationException($"ECMAScript resource package contains duplicate path '{relativePath}'.");
         }
 
-        return catalogModules;
+        return resourceModules;
     }
 
-    private static string ReadCatalogProperty(Type moduleType, object module, string propertyName)
-        => moduleType.GetProperty(
-            propertyName,
-            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(module) as string
-            ?? throw new InvalidOperationException(
-                $"Catalog module property '{propertyName}' was not found on '{moduleType.FullName}'.");
+    private static IReadOnlyDictionary<string, string> ReadVueRuntimeResourceModules()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var packageRoot = Path.Combine(repositoryRoot, "src", "Jazor.Vue");
+        var manifestPath = Path.Combine(packageRoot, "manifest.json");
+        if (!File.Exists(manifestPath))
+            throw new FileNotFoundException("The Jazor.Vue JS-resource manifest was not found.", manifestPath);
+
+        using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var root = document.RootElement;
+        if (root.GetProperty("schemaVersion").GetInt32() != 2 ||
+            !string.Equals(root.GetProperty("libraryId").GetString(), "jazor-vue-runtime", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"Jazor.Vue runtime manifest '{manifestPath}' has an unexpected identity.");
+        }
+
+        var resourceModules = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var entry in root.GetProperty("imports").EnumerateObject())
+        {
+            if (!entry.Name.StartsWith("@jazor/vue-runtime/", StringComparison.Ordinal))
+                continue;
+
+            var value = entry.Value;
+            if (!string.Equals(value.GetProperty("type").GetString(), "module", StringComparison.Ordinal))
+                throw new InvalidOperationException($"Jazor.Vue runtime import '{entry.Name}' is not a module.");
+
+            var production = value.GetProperty("production").GetString();
+            var hash = value.GetProperty("productionHash").GetString();
+            if (string.IsNullOrWhiteSpace(production) ||
+                !production.StartsWith("dist/", StringComparison.Ordinal) ||
+                string.IsNullOrWhiteSpace(hash))
+            {
+                throw new InvalidOperationException($"Jazor.Vue runtime import '{entry.Name}' has an invalid production entry.");
+            }
+
+            var sourcePath = Path.Combine(packageRoot, production.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(sourcePath))
+                throw new FileNotFoundException($"Jazor.Vue runtime module '{production}' was not found.", sourcePath);
+
+            var actualHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(sourcePath))).ToLowerInvariant();
+            if (!string.Equals(actualHash, hash, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Jazor.Vue runtime module '{production}' hash does not match its manifest.");
+            }
+
+            if (!resourceModules.TryAdd(entry.Name, File.ReadAllText(sourcePath)))
+                throw new InvalidOperationException($"Jazor.Vue runtime manifest contains duplicate import '{entry.Name}'.");
+        }
+
+        return resourceModules;
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+                return directory.FullName;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate the Jazor repository root.");
+    }
 
     private static async Task RunDenoTestAsync(string testFile, string workingDirectory)
     {

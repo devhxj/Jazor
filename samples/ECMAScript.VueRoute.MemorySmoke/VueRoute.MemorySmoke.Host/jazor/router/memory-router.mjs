@@ -1,17 +1,17 @@
-import { blockedView, detailView, homeView, queryView } from "components/route-shell.mjs";
-import { createMemoryHistory, createRouter, loadRouteLocation } from "npm:vue-router@4";
-import { ref } from "npm:vue@3";
-export let globalGuardLog = ref("guard:idle");
-export let afterEachLog = ref("after:idle");
-export let errorLog = ref("error:none");
-export let componentGuardLog = ref("component:idle");
-export let lastLoadedPath = ref("");
-export function createRouterRuntime() {
-  globalGuardLog.value = "guard:idle";
-  afterEachLog.value = "after:idle";
-  errorLog.value = "error:none";
-  componentGuardLog.value = "component:idle";
-  lastLoadedPath.value = "";
+import { BlockedView, DetailView, HomeView, QueryView } from "components/route-shell.mjs";
+import { ref } from "vue";
+import { createMemoryHistory, createRouter, loadRouteLocation } from "vue-router";
+export let GlobalGuardLog = ref("guard:idle");
+export let AfterEachLog = ref("after:idle");
+export let ErrorLog = ref("error:none");
+export let ComponentGuardLog = ref("component:idle");
+export let LastLoadedPath = ref("");
+export function CreateRouterRuntime() {
+  GlobalGuardLog.value = "guard:idle";
+  AfterEachLog.value = "after:idle";
+  ErrorLog.value = "error:none";
+  ComponentGuardLog.value = "component:idle";
+  LastLoadedPath.value = "";
   let detailProps = to => {
     return { id: to.path.replaceAll("/users/", ""), source: "route-props" };
   };
@@ -32,63 +32,63 @@ export function createRouterRuntime() {
     routes: [{
       path: "/",
       name: "home",
-      component: homeView,
+      component: HomeView,
       meta: { section: "home", requiresAudit: true }
     }, {
       path: "/users/:id",
       name: "detail",
-      component: detailView,
+      component: DetailView,
       props: detailProps,
       beforeEnter: (to, from) => {
-        globalGuardLog.value = "beforeEnter:" + from.path + "->" + to.path;
+        GlobalGuardLog.value = "beforeEnter:" + from.path + "->" + to.path;
         return true;
       }
     }, {
       path: "/query",
       name: "query",
-      component: queryView,
+      component: QueryView,
       props: queryProps
     }, { path: "/legacy/:id", redirect: legacyRedirect }, {
       path: "/blocked",
       name: "blocked",
-      component: blockedView
+      component: BlockedView
     }]
   });
   router.beforeEach((to, from) => {
-    globalGuardLog.value = "beforeEach:" + from.path + "->" + to.path;
+    GlobalGuardLog.value = "beforeEach:" + from.path + "->" + to.path;
     if (to.path === "/blocked") {
-      globalGuardLog.value = "beforeEach:blocked";
+      GlobalGuardLog.value = "beforeEach:blocked";
       return false;
     }
     return true;
   });
   router.beforeResolve((to, from) => {
-    globalGuardLog.value = "beforeResolve:" + from.path + "->" + to.path;
+    GlobalGuardLog.value = "beforeResolve:" + from.path + "->" + to.path;
     return Promise.resolve(true);
   });
   router.afterEach((to, from, failure) => {
-    afterEachLog.value = "afterEach:" + from.path + "->" + to.path + ":" + (failure == null ? "ok" : "failure");
+    AfterEachLog.value = "afterEach:" + from.path + "->" + to.path + ":" + (failure == null ? "ok" : "failure");
     return;
   });
   router.onError((error, to, from) => {
-    errorLog.value = error.message + "|" + from.path + "->" + to.path;
+    ErrorLog.value = error.message + "|" + from.path + "->" + to.path;
     return;
   });
   return router;
 }
-export function snapshot(router) {
+export function Snapshot(router) {
   let currentRoute = router.currentRoute.value;
   return {
     currentPath: currentRoute.path,
     currentFullPath: currentRoute.fullPath,
-    globalGuard: globalGuardLog.value,
-    afterEach: afterEachLog.value,
-    componentGuard: componentGuardLog.value,
-    loadedPath: lastLoadedPath.value,
+    globalGuard: GlobalGuardLog.value,
+    afterEach: AfterEachLog.value,
+    componentGuard: ComponentGuardLog.value,
+    loadedPath: LastLoadedPath.value,
     isReady: router.listening
   };
 }
-export function navigateScenario(router) {
+export function NavigateScenario(router) {
   return router.push({
     name: "detail",
     params: { id: "42" },
@@ -97,10 +97,10 @@ export function navigateScenario(router) {
   }).then(() => {
     return loadRouteLocation(router.currentRoute.value);
   }).then(loaded => {
-    lastLoadedPath.value = loaded.path;
+    LastLoadedPath.value = loaded.path;
     return router.replace("/query?tab=summary#focus");
   }).then(() => {
-    return snapshot(router);
+    return Snapshot(router);
   });
 }
 //# sourceMappingURL=memory-router.mjs.map

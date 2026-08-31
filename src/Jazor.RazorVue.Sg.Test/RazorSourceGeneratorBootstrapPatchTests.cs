@@ -69,7 +69,7 @@ public sealed class BootstrapPatchTests
         Assert.IsFalse(
             allDiagnostics.Any(static diagnostic => diagnostic.Id == "JAZORVGA020"),
             string.Join(Environment.NewLine, allDiagnostics));
-        Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs"));
+        Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ModuleCatalog.g.cs"));
     }
 
     [TestMethod]
@@ -131,7 +131,7 @@ public sealed class BootstrapPatchTests
             diagnostic.Descriptor.HelpLinkUri.EndsWith("#direct-render", StringComparison.Ordinal),
             diagnostic.Descriptor.HelpLinkUri);
         Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree =>
-            tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs"));
+            tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ModuleCatalog.g.cs"));
     }
 
     [TestMethod]
@@ -176,7 +176,7 @@ public sealed class BootstrapPatchTests
         Assert.AreEqual(documentPath, diagnostic.Location.GetLineSpan().Path);
         Assert.IsGreaterThan(0, diagnostic.Location.GetLineSpan().StartLinePosition.Line + 1);
         Assert.IsFalse(outputCompilation.SyntaxTrees.Any(static tree =>
-            tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs"));
+            tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ModuleCatalog.g.cs"));
     }
 
     private static void AssertDriverCompletionCatalog()
@@ -215,7 +215,7 @@ public sealed class BootstrapPatchTests
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics));
         Assert.IsTrue(outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath.EndsWith("_razor.g.cs", StringComparison.Ordinal)));
         var catalog = outputCompilation.SyntaxTrees.SingleOrDefault(
-            static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs");
+            static tree => tree.FilePath == "obj/Jazor.RazorVue/Jazor.Generated.ModuleCatalog.g.cs");
         Assert.IsNotNull(catalog);
         Assert.IsFalse(
             outputCompilation.SyntaxTrees.Any(static tree => tree.FilePath.Contains("RazorSourceTextCatalog", StringComparison.Ordinal)),

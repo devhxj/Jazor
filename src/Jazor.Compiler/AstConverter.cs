@@ -92,6 +92,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly Dictionary<string, List<ImportDeclarationSpecifier>> _imports = [];
     private readonly Dictionary<string, string> _importBindings = [];
     private readonly Dictionary<string, string> _importLocalBindings = [];
+    private readonly HashSet<string> _moduleCatalogImportPaths = new(StringComparer.Ordinal);
     private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(
         classSymbol,
         options?.MemberFilter,
@@ -110,6 +111,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private HashSet<string> ModuleDeclaredBindings
         => _moduleDeclaredBindings ??= new HashSet<string>(ModuleDeclaredNames.Values, System.StringComparer.Ordinal);
+
+    /// <summary>
+    /// Logical imports resolved from pure Jazor assemblies during this conversion. They are
+    /// artifact-graph edges, not resource-library requirements.
+    /// </summary>
+    internal IReadOnlyCollection<string> ModuleCatalogImportPaths => _moduleCatalogImportPaths;
 
     /// <summary>
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
@@ -368,7 +375,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 _importLocalBindings,
                 ReservedImportNames,
                 _currentModuleImportPath,
-                ModuleDeclaredBindings);
+                ModuleDeclaredBindings,
+                _moduleCatalogImportPaths);
 
     private SemanticModel GetSemanticModel(SyntaxNode syntax)
         => syntax.SyntaxTree == _classModel.SyntaxTree

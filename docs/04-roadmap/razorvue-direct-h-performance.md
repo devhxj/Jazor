@@ -38,7 +38,7 @@ RazorVue 已不再通过 RenderTreeBuilder runtime bridge 组装 VNode。生产�
 
 static markup 的 cardinality 现在由 `VueRawMarkup.AnalyzeStatic(...)` 用 HTML5 fragment parser 计算，而不是沿用单 frame 的常量 `1`。这使 `createStaticVNode(markup, count)` 能准确描述多根 element、相邻 text/element、table、SVG/MathML 与 template 的顶层 sibling 数。leading comment 不满足 Vue Static hydration 的首节点条件，因此走无 wrapper 的 `createRawMarkup(...)` runtime helper；动态或 nullable `MarkupString` 也使用该 helper，payload 单次求值并以内容 key 替换对应 raw DOM range。
 
-`raw-markup.mjs` 是 RazorVue 的按需 runtime provider：只有 artifact 实际 import `@jazor/vue-runtime/raw-markup.mjs` 时，Emit 才 materialize helper 与 import-map 条目。production Vue browser/SSR gate 已覆盖 static multi-root、动态 patch、leading comment、table、SVG/MathML 与 hydration，不能再用测试专属 `<span innerHTML>` wrapper 代替该 runtime。
+`raw-markup.mjs` 是 RazorVue 的按需 JS resource：只有 artifact 实际 import `@jazor/vue-runtime/raw-markup.mjs` 时，拥有它的 resource package manifest/dist 才会被 Emit 纳入并物化 helper 与 import-map 条目。production Vue browser/SSR gate 已覆盖 static multi-root、动态 patch、leading comment、table、SVG/MathML 与 hydration，不能再用测试专属 `<span innerHTML>` wrapper 代替该 runtime。
 
 ### Block tree 与 patch flags
 

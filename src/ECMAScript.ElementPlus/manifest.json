@@ -1,17 +1,22 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "libraryId": "element-plus",
   "version": "2.14.4",
   "imports": {
     "element-plus": {
+      "type": "module",
       "development": "dist/index.full.min.mjs",
       "production": "dist/index.full.min.mjs",
+      "developmentHash": "ee707da60d54edd857ce74eede8d036ca05167a6ade708ce9144f9d8dc094d4a",
+      "productionHash": "ee707da60d54edd857ce74eede8d036ca05167a6ade708ce9144f9d8dc094d4a",
       "developmentDependencies": [
         "vue"
       ],
       "productionDependencies": [
         "vue"
       ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
       "files": []
     }
   },
@@ -19,9 +24,17 @@
     "vue3": "^3.5.0"
   },
   "styles": [
-    "dist/index.css"
+    {
+      "type": "style",
+      "path": "dist/index.css",
+      "hash": "021149175910e9ee160dcdaca04a1ad4b9ac7f80927ca0512543524754061ea2"
+    }
   ],
   "files": [
-    "licenses/LICENSE"
+    {
+      "type": "license",
+      "path": "licenses/LICENSE",
+      "hash": "0790118bb4d66681db1d63181f72ef68e632d632f6db0373ef87cf328561af27"
+    }
   ]
 }

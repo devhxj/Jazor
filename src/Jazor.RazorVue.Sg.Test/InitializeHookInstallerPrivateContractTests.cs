@@ -9,7 +9,7 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class InitializeHookInstallerPrivateContractTests
 {
     [TestMethod]
-    public void CatalogHelpers_UseExactArtifactIdentityAndHostParseOptions()
+    public void CatalogHelpers_UseExactModuleCatalogIdentityAndHostParseOptions()
     {
         var defaultCompilation = CSharpCompilation.Create(
             "RazorVue.InitializeHook.Default",
@@ -24,25 +24,35 @@ public sealed class InitializeHookInstallerPrivateContractTests
         var catalogTree = Invoke<SyntaxTree>(
             "CreateCatalogSyntaxTree",
             previewCompilation,
-            "public sealed class GeneratedCatalog { }");
+            "public sealed class GeneratedCatalog { }",
+            false);
 
-        Assert.AreEqual("obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs", catalogTree.FilePath);
+        Assert.AreEqual("obj/Jazor.RazorVue/Jazor.Generated.ModuleCatalog.g.cs", catalogTree.FilePath);
         Assert.AreEqual(LanguageVersion.Preview, ((CSharpParseOptions)catalogTree.Options).LanguageVersion);
-        Assert.IsFalse(Invoke<bool>("ContainsArtifactCatalog", previewCompilation));
-        Assert.IsTrue(Invoke<bool>("ContainsArtifactCatalog", previewCompilation.AddSyntaxTrees(catalogTree)));
+        Assert.IsFalse(Invoke<bool>("ContainsModuleCatalog", previewCompilation));
+        Assert.IsTrue(Invoke<bool>("ContainsModuleCatalog", previewCompilation.AddSyntaxTrees(catalogTree)));
 
         var differentCaseCatalog = CSharpSyntaxTree.ParseText(
             "public sealed class DifferentCaseCatalog { }",
             new CSharpParseOptions(LanguageVersion.Preview),
-            path: "obj/jazor.razorvue/Jazor.Generated.ArtifactCatalog.g.cs");
+            path: "obj/jazor.razorvue/Jazor.Generated.ModuleCatalog.g.cs");
         Assert.IsFalse(Invoke<bool>(
-            "ContainsArtifactCatalog",
+            "ContainsModuleCatalog",
             previewCompilation.AddSyntaxTrees(differentCaseCatalog)));
+
+        var compilerCatalogTree = CSharpSyntaxTree.ParseText(
+            "namespace Jazor.Generated { internal static partial class ModuleCatalog { } }",
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "Jazor.Compiler/Jazor.Compiler.ESGenerator/Jazor.Generated.ModuleCatalog.g.cs");
+        Assert.IsTrue(Invoke<bool>(
+            "ContainsModuleCatalog",
+            previewCompilation.AddSyntaxTrees(compilerCatalogTree)));
 
         var defaultCatalogTree = Invoke<SyntaxTree>(
             "CreateCatalogSyntaxTree",
             defaultCompilation,
-            "public sealed class DefaultCatalog { }");
+            "public sealed class DefaultCatalog { }",
+            false);
         Assert.AreEqual(CSharpParseOptions.Default.LanguageVersion, ((CSharpParseOptions)defaultCatalogTree.Options).LanguageVersion);
     }
 

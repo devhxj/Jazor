@@ -81,15 +81,11 @@ public sealed class ESGeneratorScenarioCatalogTests
                 break;
             case ESGeneratorCatalogOutcome.ModuleAndSourceMap:
                 CollectionAssert.AreEquivalent(
-                    new[]
-                    {
-                        "Jazor.Generated.ModuleCatalog.g.cs",
-                        "Jazor.Generated.ModuleSourceMapCatalog.g.cs"
-                    },
+                    new[] { "Jazor.Generated.ModuleCatalog.g.cs" },
                     hintNames,
                     testCase.Id);
                 AssertModuleCatalog(runResult, testCase);
-                AssertSourceMapCatalog(runResult, testCase);
+                AssertModuleCatalogSourceMaps(runResult, testCase);
                 break;
             default:
                 Assert.Fail($"{testCase.Id}: unsupported expected outcome '{testCase.Outcome}'.");
@@ -138,11 +134,11 @@ public sealed class ESGeneratorScenarioCatalogTests
             StringAssert.Contains(catalog, fragment, testCase.Id);
     }
 
-    private static void AssertSourceMapCatalog(
+    private static void AssertModuleCatalogSourceMaps(
         GeneratorDriverRunResult runResult,
         ESGeneratorScenario testCase)
     {
-        var catalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleSourceMapCatalog.g.cs");
+        var catalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
         foreach (var path in testCase.ExpectedOrderedPaths)
             StringAssert.Contains(catalog, $"sourceMapRelativePath: \"{path}.map\"", testCase.Id);
 
@@ -318,7 +314,7 @@ internal static class ESGeneratorScenarioCatalog
                 """)],
             ESGeneratorCatalogOutcome.ModuleOnly,
             ["contracts/types.mjs"],
-            ["hash: \"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855\""]),
+            ["hash: \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\""]),
         Case(
             "es-generator.traversal-path-rejected",
             "configured-path-boundary-failure",

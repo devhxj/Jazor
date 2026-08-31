@@ -6,13 +6,13 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.25.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.25.0" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="0.25.0" />
+  <PackageReference Include="Jazor" Version="0.26.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="0.26.0" />
 </ItemGroup>
 ```
 
-`Jazor` 与所有 `ECMAScript.*` package 应使用同一版本。`Jazor.Vue` 是 Razor SDK 项目的显式 RazorVue opt-in；图表包的 `buildTransitive` target 只负责注册本地 manifest。应用无需再安装 npm package、配置 CDN 或手工复制 `style.css`。
+`Jazor` 与所有 `ECMAScript.*` package 应使用同一版本。`Jazor.Vue` 是 Razor SDK 项目的显式 RazorVue opt-in；图表包的 `buildTransitive` target 只负责注册资源 manifest locator。应用无需再安装 npm package、配置 CDN 或手工复制 `style.css`。
 
 ## Razor 使用
 
@@ -49,7 +49,7 @@ Dataset 与稳定 config 字段都有具体 C# 类型。对于 upstream 仍在�
 
 - `VueUiDonut` emits `import { VueUiDonut } from "vue-data-ui/vue-ui-donut"`。
 - Emit 会从这个 entry 递归物化相对 ESM closure；无关的 chart chunk 不会被复制到应用输出。
-- 需要导出能力的图表会使用本包 manifest 中本地、无 bare import 的 `jspdf` browser ESM entry。该 entry 已包含 jsPDF 的浏览器依赖闭包；`jspdf`、其 bundled notices 与 `vue-data-ui` license 随所需运行时一同交付。
+- 需要导出能力的图表会通过本包 manifest 的 package dependency 选择本地、无 bare import 的 `jspdf` browser ESM entry。该 entry 已包含 jsPDF 的浏览器依赖闭包；`jspdf`、其 bundled notices 与 `vue-data-ui` license 随所需运行时一同交付。
 - package root `vue-data-ui` 是聚合入口，binding 故意不使用它。
 
 ## 完整组件目录

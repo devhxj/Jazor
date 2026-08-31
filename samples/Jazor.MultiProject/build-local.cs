@@ -35,7 +35,7 @@ var buildArguments = new List<string>
     "-t:Rebuild",
     "/m:1",
     "/p:BuildInParallel=false",
-    $"-p:RestoreSources={packageOutput}",
+    $"-p:RestoreAdditionalProjectSources={packageOutput}",
     $"-p:RestorePackagesPath={restorePackagesPath}",
     "-p:RestoreForce=true",
     $"-p:JazorPackageVersion={packageInfo.Version}",

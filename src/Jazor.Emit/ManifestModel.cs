@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Jazor.Common;
 
 namespace Jazor.Emit;
 
@@ -27,8 +28,7 @@ internal sealed record ManifestModel
             GeneratedAtUtc,
             Modules,
             entries: null,
-            assets: null,
-            importMapEntries: null)
+            assets: null)
     {
     }
 
@@ -41,8 +41,7 @@ internal sealed record ManifestModel
             generatedAtUtc: null,
             Modules,
             entries: null,
-            assets: null,
-            importMapEntries: null)
+            assets: null)
     {
     }
 
@@ -54,8 +53,7 @@ internal sealed record ManifestModel
         DateTime? generatedAtUtc,
         List<ModuleEntry> modules,
         List<string>? entries,
-        List<AssetEntry>? assets,
-        List<ImportMapEntry>? importMapEntries)
+        List<AssetEntry>? assets)
     {
         SchemaVersion = schemaVersion;
         RuntimeProtocolVersion = runtimeProtocolVersion;
@@ -67,7 +65,6 @@ internal sealed record ManifestModel
         Modules = NormalizeModules(modules ?? []);
         Entries = NormalizeEntries(entries, Modules, RootAssemblyName);
         Assets = NormalizeAssets(assets ?? []);
-        ImportMapEntries = NormalizeImportMapEntries(importMapEntries ?? []);
     }
 
     public int SchemaVersion { get; init; }
@@ -85,9 +82,6 @@ internal sealed record ManifestModel
     public List<ModuleEntry> Modules { get; init; }
 
     public List<AssetEntry> Assets { get; init; }
-
-    /// <summary>Provider-declared import aliases materialized beside the artifact graph.</summary>
-    public List<ImportMapEntry> ImportMapEntries { get; init; }
 
     public static ManifestModel? TryLoad(string manifestPath)
     {
@@ -115,7 +109,11 @@ internal sealed record ManifestModel
         var generatedAtUtc = ReadOptionalDateTime(root, "generatedAtUtc", "GeneratedAtUtc");
         var entries = ReadEntries(root);
         var assets = ReadAssets(root);
-        var importMapEntries = ReadImportMapEntries(root);
+        if (TryGetProperty(root, out _, "importMapEntries", "ImportMapEntries"))
+        {
+            throw new InvalidOperationException(
+                "Jazor manifest must not contain provider import-map entries; package manifests own resource imports.");
+        }
 
         return new ManifestModel(
             schemaVersion,
@@ -125,8 +123,7 @@ internal sealed record ManifestModel
             generatedAtUtc,
             modules,
             entries,
-            assets,
-            importMapEntries);
+            assets);
     }
 
     public void Save(string manifestPath)
@@ -138,7 +135,6 @@ internal sealed record ManifestModel
         var normalizedModules = NormalizeModules(Modules);
         var normalizedEntries = NormalizeEntries(Entries, normalizedModules, RootAssemblyName);
         var normalizedAssets = NormalizeAssets(Assets);
-        var normalizedImportMapEntries = NormalizeImportMapEntries(ImportMapEntries);
         var fileAssets = normalizedAssets.Count == 0
             ? null
             : normalizedAssets
@@ -149,15 +145,6 @@ internal sealed record ManifestModel
                     asset.Hash,
                     asset.ImportPath))
                 .ToList();
-        var fileImportMapEntries = normalizedImportMapEntries.Count == 0
-            ? null
-            : normalizedImportMapEntries
-                .Select(static entry => new ManifestImportMapFileEntry(
-                    entry.ProviderId,
-                    entry.Specifier,
-                    entry.ArtifactPath))
-                .ToList();
-
         var fileModel = new ManifestFileModel(
             CurrentSchemaVersion,
             CurrentRuntimeProtocolVersion,
@@ -173,10 +160,10 @@ internal sealed record ManifestModel
                     module.SourceMapPath,
                     module.MapHash,
                     module.PackageImports,
+                    module.Dependencies,
                     ToFileHmrMetadata(module.Hmr)))
                 .ToList(),
-            fileAssets,
-            fileImportMapEntries);
+            fileAssets);
 
         File.WriteAllText(manifestPath, JsonSerializer.Serialize(fileModel, JsonOptions));
     }
@@ -204,7 +191,8 @@ internal sealed record ManifestModel
                 ReadOptionalString(moduleElement, "sourceMap", "sourceMapPath", "SourceMapPath"),
                 ReadOptionalString(moduleElement, "sourceMapHash", "mapHash", "MapHash"),
                 ReadStringArray(moduleElement, "imports", "packageImports", "PackageImports"),
-                ReadHmrMetadata(moduleElement)));
+                ReadHmrMetadata(moduleElement),
+                ReadStringArray(moduleElement, "dependencies", "Dependencies")));
         }
 
         return modules;
@@ -256,29 +244,6 @@ internal sealed record ManifestModel
         return assets;
     }
 
-    private static List<ImportMapEntry>? ReadImportMapEntries(JsonElement root)
-    {
-        if (!TryGetProperty(root, out var entriesElement, "importMapEntries", "ImportMapEntries") ||
-            entriesElement.ValueKind != JsonValueKind.Array)
-        {
-            return null;
-        }
-
-        var entries = new List<ImportMapEntry>();
-        foreach (var entryElement in entriesElement.EnumerateArray())
-        {
-            if (entryElement.ValueKind != JsonValueKind.Object)
-                continue;
-
-            entries.Add(new ImportMapEntry(
-                ReadRequiredString(entryElement, "providerId", "ProviderId"),
-                ReadRequiredString(entryElement, "specifier", "Specifier"),
-                ReadRequiredString(entryElement, "path", "artifactPath", "ArtifactPath")));
-        }
-
-        return entries;
-    }
-
     private static List<ModuleEntry> NormalizeModules(IEnumerable<ModuleEntry> modules)
     {
         var normalizedModules = new List<ModuleEntry>();
@@ -286,17 +251,38 @@ internal sealed record ManifestModel
 
         foreach (var module in modules)
         {
+            var sourceMapPath = module.SourceMapPath is null ? null : NormalizeRelativePath(module.SourceMapPath);
+            var mapHash = string.IsNullOrWhiteSpace(module.MapHash) ? null : module.MapHash;
+            if ((sourceMapPath is null) != (mapHash is null))
+            {
+                throw new InvalidOperationException(
+                    $"Manifest module '{module.RelativePath}' must provide sourceMap and sourceMapHash together.");
+            }
+
             var normalizedModule = module with
             {
                 RelativePath = NormalizeRelativePath(module.RelativePath),
-                SourceMapPath = module.SourceMapPath is null ? null : NormalizeRelativePath(module.SourceMapPath),
+                Hash = ArtifactHash.RequireSha256(module.Hash, $"Manifest module '{module.RelativePath}' hash"),
+                SourceMapPath = sourceMapPath,
+                MapHash = mapHash is null
+                    ? null
+                    : ArtifactHash.RequireSha256(mapHash, $"Manifest module '{module.RelativePath}' source-map hash"),
                 PackageImports = NormalizePackageImports(module.PackageImports),
+                Dependencies = NormalizeDependencies(module.Dependencies),
                 Hmr = NormalizeHmrMetadata(module.Hmr)
             };
 
             if (indexByRelativePath.TryGetValue(normalizedModule.RelativePath, out var existingIndex))
             {
-                normalizedModules[existingIndex] = normalizedModule;
+                var existingModule = normalizedModules[existingIndex];
+                if (!Equivalent(existingModule, normalizedModule))
+                {
+                    throw new InvalidOperationException(
+                        $"Manifest declares conflicting modules for '{normalizedModule.RelativePath}'.");
+                }
+
+                // Identical duplicate declarations are harmless and are retained only once so
+                // input ordering cannot change the persisted application manifest.
                 continue;
             }
 
@@ -349,7 +335,10 @@ internal sealed record ManifestModel
                 Kind = string.IsNullOrWhiteSpace(asset.Kind) ? AssetEntry.KindStatic : asset.Kind,
                 ImportPath = string.IsNullOrWhiteSpace(asset.ImportPath)
                     ? null
-                    : NormalizeRelativePath(asset.ImportPath)
+                    : NormalizeRelativePath(asset.ImportPath),
+                Hash = string.IsNullOrWhiteSpace(asset.Hash)
+                    ? null
+                    : ArtifactHash.RequireSha256(asset.Hash, $"Manifest asset '{asset.ArtifactPath}' hash")
             };
 
             if (normalizedAsset.Kind is not (AssetEntry.KindStatic or AssetEntry.KindModuleSource))
@@ -366,7 +355,15 @@ internal sealed record ManifestModel
 
             if (indexByArtifactPath.TryGetValue(normalizedAsset.ArtifactPath, out var existingIndex))
             {
-                normalizedAssets[existingIndex] = normalizedAsset;
+                var existingAsset = normalizedAssets[existingIndex];
+                if (!Equivalent(existingAsset, normalizedAsset))
+                {
+                    throw new InvalidOperationException(
+                        $"Manifest declares conflicting assets for '{normalizedAsset.ArtifactPath}'.");
+                }
+
+                // Identical duplicate declarations are harmless and are retained only once so
+                // input ordering cannot change the persisted application manifest.
                 continue;
             }
 
@@ -377,40 +374,6 @@ internal sealed record ManifestModel
         return normalizedAssets
             .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal)
-            .ToList();
-    }
-
-    private static List<ImportMapEntry> NormalizeImportMapEntries(IEnumerable<ImportMapEntry> entries)
-    {
-        var normalizedEntries = new Dictionary<string, ImportMapEntry>(StringComparer.Ordinal);
-        foreach (var entry in entries)
-        {
-            if (string.IsNullOrWhiteSpace(entry.ProviderId))
-                throw new InvalidOperationException("Import-map provider id cannot be empty.");
-            if (string.IsNullOrWhiteSpace(entry.Specifier))
-                throw new InvalidOperationException("Import-map specifier cannot be empty.");
-
-            var normalized = entry with
-            {
-                ProviderId = entry.ProviderId.Trim(),
-                Specifier = entry.Specifier.Trim(),
-                ArtifactPath = NormalizeImportMapArtifactPath(entry.ArtifactPath)
-            };
-            var key = normalized.ProviderId + "\n" + normalized.Specifier;
-            if (normalizedEntries.TryGetValue(key, out var existing) &&
-                !StringComparer.Ordinal.Equals(existing.ArtifactPath, normalized.ArtifactPath))
-            {
-                throw new InvalidOperationException(
-                    $"Import-map provider '{normalized.ProviderId}' declares conflicting paths for '{normalized.Specifier}'.");
-            }
-
-            normalizedEntries[key] = normalized;
-        }
-
-        return normalizedEntries.Values
-            .OrderBy(static entry => entry.Specifier, StringComparer.Ordinal)
-            .ThenBy(static entry => entry.ProviderId, StringComparer.Ordinal)
-            .ThenBy(static entry => entry.ArtifactPath, StringComparer.Ordinal)
             .ToList();
     }
 
@@ -425,6 +388,17 @@ internal sealed record ManifestModel
         return normalized.Length == 0 ? null : normalized;
     }
 
+    private static IReadOnlyList<string>? NormalizeDependencies(IEnumerable<string>? dependencies)
+    {
+        var normalized = dependencies?
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(NormalizeRelativePath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray() ?? [];
+        return normalized.Length == 0 ? null : normalized;
+    }
+
     private static HmrMetadata? NormalizeHmrMetadata(HmrMetadata? hmr)
         => hmr is null
             ? null
@@ -433,13 +407,35 @@ internal sealed record ManifestModel
                 hmr.ModuleId,
                 hmr.Payload);
 
-    private static string NormalizeRelativePath(string relativePath)
+    private static bool Equivalent(ModuleEntry left, ModuleEntry right)
+        => StringComparer.Ordinal.Equals(left.AssemblyName, right.AssemblyName) &&
+           StringComparer.Ordinal.Equals(left.TypeName, right.TypeName) &&
+           StringComparer.Ordinal.Equals(left.Id, right.Id) &&
+           StringComparer.OrdinalIgnoreCase.Equals(left.RelativePath, right.RelativePath) &&
+           StringComparer.OrdinalIgnoreCase.Equals(left.Hash, right.Hash) &&
+           StringComparer.OrdinalIgnoreCase.Equals(left.SourceMapPath, right.SourceMapPath) &&
+           StringComparer.OrdinalIgnoreCase.Equals(left.MapHash, right.MapHash) &&
+           (left.PackageImports ?? []).SequenceEqual(right.PackageImports ?? [], StringComparer.Ordinal) &&
+           (left.Dependencies ?? []).SequenceEqual(right.Dependencies ?? [], StringComparer.OrdinalIgnoreCase) &&
+           Equals(left.Hmr, right.Hmr);
+
+    private static bool Equivalent(AssetEntry left, AssetEntry right)
+        => StringComparer.Ordinal.Equals(left.SourcePath, right.SourcePath) &&
+           StringComparer.OrdinalIgnoreCase.Equals(left.ArtifactPath, right.ArtifactPath) &&
+           StringComparer.Ordinal.Equals(left.Kind, right.Kind) &&
+           StringComparer.OrdinalIgnoreCase.Equals(left.Hash, right.Hash) &&
+           StringComparer.Ordinal.Equals(left.ImportPath, right.ImportPath);
+
+    private static string NormalizeRelativePath(string? relativePath)
     {
-        var normalized = relativePath.Replace('\\', '/').TrimStart('/');
-        if (string.IsNullOrWhiteSpace(normalized))
+        if (string.IsNullOrWhiteSpace(relativePath))
             throw new InvalidOperationException("Manifest relative path cannot be empty.");
 
-        if (Path.IsPathRooted(normalized))
+        var normalized = relativePath.Replace('\\', '/').Trim();
+
+        if (normalized.StartsWith('/', StringComparison.Ordinal) ||
+            Path.IsPathRooted(normalized) ||
+            (normalized.Length > 1 && char.IsLetter(normalized[0]) && normalized[1] == ':'))
             throw new InvalidOperationException($"Manifest relative path must be relative: '{relativePath}'.");
 
         var segments = normalized
@@ -450,13 +446,6 @@ internal sealed record ManifestModel
             throw new InvalidOperationException($"Manifest relative path cannot escape output directory: '{relativePath}'.");
 
         return string.Join("/", segments);
-    }
-
-    private static string NormalizeImportMapArtifactPath(string artifactPath)
-    {
-        var hasTrailingSeparator = artifactPath.Replace('\\', '/').EndsWith("/", StringComparison.Ordinal);
-        var normalized = NormalizeRelativePath(artifactPath);
-        return hasTrailingSeparator ? normalized + "/" : normalized;
     }
 
     private static string DeriveRootAssemblyName(string? rootAssemblyPath, IReadOnlyList<ModuleEntry>? modules)
@@ -614,8 +603,7 @@ internal sealed record ManifestModel
         string RootAssemblyName,
         List<string> Entries,
         List<ManifestModuleFileEntry> Modules,
-        List<ManifestAssetFileEntry>? Assets,
-        List<ManifestImportMapFileEntry>? ImportMapEntries);
+        List<ManifestAssetFileEntry>? Assets);
 
     private sealed record ManifestModuleFileEntry(
         string AssemblyName,
@@ -626,6 +614,7 @@ internal sealed record ManifestModel
         string? SourceMap = null,
         string? SourceMapHash = null,
         IReadOnlyList<string>? Imports = null,
+        IReadOnlyList<string>? Dependencies = null,
         ManifestHmrFileEntry? Hmr = null);
 
     private sealed record ManifestHmrFileEntry(
@@ -640,10 +629,6 @@ internal sealed record ManifestModel
         string? ContentHash = null,
         string? ImportPath = null);
 
-    private sealed record ManifestImportMapFileEntry(
-        string ProviderId,
-        string Specifier,
-        string Path);
 }
 
 /// <summary>One generated module persisted in the application manifest.</summary>
@@ -656,7 +641,8 @@ internal sealed record ModuleEntry(
     string? SourceMapPath = null,
     string? MapHash = null,
     IReadOnlyList<string>? PackageImports = null,
-    HmrMetadata? Hmr = null);
+    HmrMetadata? Hmr = null,
+    IReadOnlyList<string>? Dependencies = null);
 
 /// <summary>One source-controlled asset copied to the application artifact root.</summary>
 internal sealed record AssetEntry(
@@ -669,9 +655,3 @@ internal sealed record AssetEntry(
     public const string KindStatic = "static";
     public const string KindModuleSource = "module-source";
 }
-
-/// <summary>One runtime provider contribution to browser and SSR import maps.</summary>
-internal sealed record ImportMapEntry(
-    string ProviderId,
-    string Specifier,
-    string ArtifactPath);

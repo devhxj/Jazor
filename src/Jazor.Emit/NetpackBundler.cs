@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Jazor.Common;
 using NetPack;
 using NetPack.Graph;
 
@@ -65,13 +66,19 @@ internal sealed class NetpackBundler
 
         try
         {
-            var libraries = new LibraryMaterializer().Materialize(
+            var useMaterializedLibraries = options.MaterializedLibraries is not null;
+            var libraries = options.MaterializedLibraries ?? new LibraryMaterializer().Materialize(
                 options.LibraryManifests ?? [],
                 bundleWorkspace,
                 BuildMode.Production,
                 manifest.Modules.SelectMany(static module => module.PackageImports ?? []),
                 relativePaths);
-            var assets = CopyAssets(manifest, options, bundleWorkspace);
+            if (useMaterializedLibraries)
+                CopyMaterializedLibraryFiles(options.InputDirectory, bundleWorkspace, libraries);
+
+            var assets = useMaterializedLibraries
+                ? CopyMaterializedAssets(manifest, options.InputDirectory, bundleWorkspace)
+                : CopyAssets(manifest, options, bundleWorkspace);
             // Keep package ESM external to Netpack. Its printer is not a lossless pass-through
             // for modern nullish/async syntax; the assets remain local and are relinked below.
             var importRewrites = CreateImportRewrites(relativePaths, assets.ImportRewrites);
@@ -192,6 +199,76 @@ internal sealed class NetpackBundler
         }
 
         return new PreparedAssets(rewrites, staticAssets);
+    }
+
+    private static PreparedAssets CopyMaterializedAssets(
+        ManifestModel manifest,
+        string artifactRoot,
+        string bundleWorkspace)
+    {
+        var rewrites = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var staticAssets = new List<StaticAsset>();
+        foreach (var asset in manifest.Assets)
+        {
+            var sourcePath = GetSafePath(artifactRoot, asset.ArtifactPath);
+            if (!File.Exists(sourcePath))
+                throw new FileNotFoundException($"Materialized asset was not found: '{asset.ArtifactPath}'.", sourcePath);
+            if (!string.IsNullOrWhiteSpace(asset.Hash) &&
+                !string.Equals(
+                    ArtifactHash.ComputeSha256(File.ReadAllBytes(sourcePath)),
+                    ArtifactHash.RequireSha256(asset.Hash, $"Manifest asset '{asset.ArtifactPath}' hash"),
+                    StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"Materialized asset '{asset.ArtifactPath}' hash does not match the application manifest.");
+            }
+
+            var artifactPath = GetSafePath(bundleWorkspace, asset.ArtifactPath);
+            var artifactDirectory = Path.GetDirectoryName(artifactPath);
+            if (!string.IsNullOrWhiteSpace(artifactDirectory))
+                Directory.CreateDirectory(artifactDirectory);
+            File.Copy(sourcePath, artifactPath, overwrite: true);
+
+            if (string.Equals(asset.Kind, AssetEntry.KindModuleSource, StringComparison.Ordinal))
+            {
+                if (string.IsNullOrWhiteSpace(asset.ImportPath))
+                    throw new InvalidOperationException($"Module-source asset '{asset.ArtifactPath}' must declare ImportPath.");
+                rewrites[asset.ImportPath.Replace('\\', '/')] = asset.ArtifactPath.Replace('\\', '/');
+                continue;
+            }
+
+            staticAssets.Add(new StaticAsset(artifactPath, asset.ArtifactPath.Replace('\\', '/')));
+        }
+
+        return new PreparedAssets(rewrites, staticAssets);
+    }
+
+    private static void CopyMaterializedLibraryFiles(
+        string artifactRoot,
+        string bundleWorkspace,
+        LibraryAssets libraries)
+    {
+        foreach (var relativePath in libraries.ImportPaths.Values.Concat(libraries.StylePaths)
+                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
+        {
+            var sourcePath = GetSafePath(artifactRoot, relativePath);
+            if (!File.Exists(sourcePath))
+                throw new FileNotFoundException($"Materialized library file was not found: '{relativePath}'.", sourcePath);
+        }
+
+        var sourceVendorRoot = Path.Combine(artifactRoot, "vendor");
+        if (!Directory.Exists(sourceVendorRoot))
+            return;
+
+        foreach (var sourcePath in Directory.EnumerateFiles(sourceVendorRoot, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(artifactRoot, sourcePath).Replace('\\', '/');
+            var targetPath = GetSafePath(bundleWorkspace, relativePath);
+            var targetDirectory = Path.GetDirectoryName(targetPath);
+            if (!string.IsNullOrWhiteSpace(targetDirectory))
+                Directory.CreateDirectory(targetDirectory);
+            File.Copy(sourcePath, targetPath, overwrite: true);
+        }
     }
 
     private static IReadOnlyDictionary<string, string> CreateImportRewrites(
@@ -409,6 +486,12 @@ internal sealed class NetpackBundler
 
         foreach (var (name, bytes) in outputs)
         {
+            // Netpack may expose the synthetic entry module used to feed the bundler. It is an
+            // internal staging input, never a public Jazor artifact; only the named bundle and
+            // its map are committed below.
+            if (name.StartsWith("__jazor_", StringComparison.OrdinalIgnoreCase))
+                continue;
+
             var targetPath = GetSafePath(outputDirectory, name);
             var targetDirectory = Path.GetDirectoryName(targetPath);
             if (!string.IsNullOrWhiteSpace(targetDirectory))

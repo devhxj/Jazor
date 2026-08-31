@@ -1,24 +1,24 @@
-import { matchedRouteKey, onBeforeRouteLeave, onBeforeRouteUpdate, routerViewLocationKey, useLink, useRoute, useRouter, viewDepthKey } from "npm:vue-router@4";
-import { computed, defineComponent, h, inject, toRef, triggerRef } from "npm:vue@3";
-import { componentGuardLog } from "router/memory-router.mjs";
-export let homeView = defineComponent({ name: "MemorySmokeHomeView", setup: createHomeSetup });
-export let detailView = defineComponent({
+import { ComponentGuardLog } from "router/memory-router.mjs";
+import { computed, defineComponent, h, inject, toRef, triggerRef } from "vue";
+import { matchedRouteKey, onBeforeRouteLeave, onBeforeRouteUpdate, routerViewLocationKey, useLink, useRoute, useRouter, viewDepthKey } from "vue-router";
+export let HomeView = defineComponent({ name: "MemorySmokeHomeView", setup: CreateHomeSetup });
+export let DetailView = defineComponent({
   name: "MemorySmokeDetailView",
   props: ["id", "source"],
-  setup: createDetailSetup
+  setup: CreateDetailSetup
 });
-export let queryView = defineComponent({
+export let QueryView = defineComponent({
   name: "MemorySmokeQueryView",
   props: ["tab"],
-  setup: createQuerySetup
+  setup: CreateQuerySetup
 });
-export let blockedView = defineComponent({ name: "MemorySmokeBlockedView", setup: () => {
+export let BlockedView = defineComponent({ name: "MemorySmokeBlockedView", setup: () => {
   return () => {
     return h("section", { class: "route-card route-card--blocked" }, [h("h2", "Blocked"), h("p", "Navigation should not land here while the guard is active.")]);
   };
 } });
-export let routeProbe = defineComponent({ name: "MemorySmokeRouteProbe", setup: createProbeSetup });
-function createHomeSetup() {
+export let RouteProbe = defineComponent({ name: "MemorySmokeRouteProbe", setup: CreateProbeSetup });
+function CreateHomeSetup() {
   let router = useRouter();
   let route = useRoute();
   let greeting = computed(() => {
@@ -34,10 +34,10 @@ function createHomeSetup() {
     return;
   };
   return () => {
-    return h("section", { class: "route-card route-card--home" }, [h("h2", "Home"), h("p", "current name: " + route.name), h("p", "current path: " + route.path), h("p", "message: " + greeting.value), createButton("Go detail", "action-button action-button--accent", navigateToDetail)]);
+    return h("section", { class: "route-card route-card--home" }, [h("h2", "Home"), h("p", "current name: " + route.name), h("p", "current path: " + route.path), h("p", "message: " + greeting.value), CreateButton("Go detail", "action-button action-button--accent", navigateToDetail)]);
   };
 }
-function createDetailSetup(props, context) {
+function CreateDetailSetup(props, context) {
   let router = useRouter();
   let route = useRoute();
   let viewDepth = inject(viewDepthKey);
@@ -49,11 +49,11 @@ function createDetailSetup(props, context) {
     return false;
   }) });
   onBeforeRouteUpdate((to, from) => {
-    componentGuardLog.value = "update:" + from.path + "->" + to.path;
+    ComponentGuardLog.value = "update:" + from.path + "->" + to.path;
     return true;
   });
   onBeforeRouteLeave((to, from) => {
-    componentGuardLog.value = "leave:" + from.path + "->" + to.path;
+    ComponentGuardLog.value = "leave:" + from.path + "->" + to.path;
     return true;
   });
   let pushBlocked = () => {
@@ -74,19 +74,19 @@ function createDetailSetup(props, context) {
       h("p", "view depth: " + viewDepth),
       h("p", "injected route path: " + routedLocation.value.path),
       h("p", "useLink href: " + composedLink.href.value),
-      h("div", { class: "route-actions" }, [createButton("Blocked target", "action-button", pushBlocked), createButton("Follow composed link", "action-button action-button--accent", followComposedLink)]),
+      h("div", { class: "route-actions" }, [CreateButton("Blocked target", "action-button", pushBlocked), CreateButton("Follow composed link", "action-button action-button--accent", followComposedLink)]),
       h("div", { class: "route-slot-probe" }, [h("strong", "slot keys visible: "), h("span", context.slots.default == null ? "none" : "default")])
     ]);
   };
 }
-function createQuerySetup(props, context) {
+function CreateQuerySetup(props, context) {
   context;
   let route = useRoute();
   return () => {
     return h("section", { class: "route-card route-card--query" }, [h("h2", "Query"), h("p", "tab prop: " + props.tab), h("p", "hash: " + route.hash), h("p", "fullPath: " + route.fullPath)]);
   };
 }
-function createProbeSetup() {
+function CreateProbeSetup() {
   let route = useRoute();
   let router = useRouter();
   let currentRoute = router.currentRoute;
@@ -95,7 +95,7 @@ function createProbeSetup() {
     return h("aside", { class: "route-probe" }, [h("p", "probe current route: " + currentRoute.value.fullPath), h("p", "probe useRoute path: " + route.path)]);
   };
 }
-function createButton(label, className, handler) {
+function CreateButton(label, className, handler) {
   return h("button", {
     type: "button",
     class: className,

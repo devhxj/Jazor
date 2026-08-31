@@ -249,10 +249,13 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 	public void Pinia_JazorBuildTransitive_DefaultsConsumerLangVersionToPreview()
 	{
 		var repoRoot = ResolveRepositoryRoot();
-		var propsPath = Path.Combine(repoRoot, "src", "Jazor", "buildTransitive", "Jazor.props");
-		var source = System.IO.File.ReadAllText(propsPath);
+        var propsPath = Path.Combine(repoRoot, "src", "Jazor", "build", "Jazor.props");
+        var source = System.IO.File.ReadAllText(propsPath);
 
-		StringAssert.Contains(source, "<LangVersion Condition=\"'$(LangVersion)' == ''\">preview</LangVersion>");
+        StringAssert.Contains(source, "<LangVersion Condition=\"'$(LangVersion)' == ''\">preview</LangVersion>");
+        Assert.IsFalse(
+            File.Exists(Path.Combine(repoRoot, "src", "Jazor", "buildTransitive", "Jazor.props")),
+            "Jazor tooling activation must not be exposed through the transitive resource target directory.");
 	}
 
 	[TestMethod]

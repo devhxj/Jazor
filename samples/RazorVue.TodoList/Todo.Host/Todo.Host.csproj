@@ -11,7 +11,7 @@
     <NoWarn>$(NoWarn);CS0626</NoWarn>
   </PropertyGroup>
 
-  <Import Project="..\..\..\src\Jazor\buildTransitive\Jazor.props"
+  <Import Project="..\..\..\src\Jazor\build\Jazor.props"
           Condition="'$(TodoUsePackages)' != 'true'" />
 
   <ItemGroup>
@@ -60,15 +60,6 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="RegisterLocalRazorVueArtifactProvider"
-          BeforeTargets="JazorDebug;JazorRelease"
-          Condition="'$(TodoUsePackages)' != 'true'">
-    <ItemGroup>
-      <JazorArtifactProviderAssembly Include="$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll"
-                                     Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
-    </ItemGroup>
-  </Target>
-
-  <Import Project="..\..\..\src\Jazor\buildTransitive\Jazor.targets"
+  <Import Project="..\..\..\src\Jazor\build\Jazor.targets"
           Condition="'$(TodoUsePackages)' != 'true'" />
 </Project>

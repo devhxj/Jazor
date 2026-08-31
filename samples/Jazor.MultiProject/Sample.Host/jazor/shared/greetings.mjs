@@ -1,7 +1,7 @@
-export function prefix() {
+export function Prefix() {
   return "Hello";
 }
-export function compose(name) {
-  return `${prefix()}, ${name}`;
+export function Compose(name) {
+  return `${Prefix() ?? ""}, ${name ?? ""}`;
 }
 //# sourceMappingURL=greetings.mjs.map

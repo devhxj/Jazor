@@ -1,0 +1,23 @@
+{
+  "imports": {
+    "style.mjs": "./style.mjs",
+    "components/": "./components/",
+    "@pinia/testing": "./vendor/pinia-testing/2.0.1/dist/index.mjs",
+    "@vue/devtools-api": "./vendor/vue3/3.5.13/dist/devtools-api/vue-devtools-api.esm-browser.js",
+    "nostics": "./vendor/pinia/4.0.3/dist/nostics/index.mjs",
+    "perfect-debounce": "./vendor/vue3/3.5.13/dist/devtools-api/perfect-debounce.mjs",
+    "pinia": "./vendor/pinia/4.0.3/dist/pinia.esm-browser.js",
+    "vue": "./vendor/vue3/3.5.13/dist/vue.runtime.esm-browser.js",
+    "components/counter-app.mjs": "./components/counter-app.mjs",
+    "components/counter-cookbook.mjs": "./components/counter-cookbook.mjs",
+    "components/counter-hmr.mjs": "./components/counter-hmr.mjs",
+    "components/counter-hydration.mjs": "./components/counter-hydration.mjs",
+    "components/counter-isolation.mjs": "./components/counter-isolation.mjs",
+    "components/counter-multi-store.mjs": "./components/counter-multi-store.mjs",
+    "components/counter-subscription.mjs": "./components/counter-subscription.mjs",
+    "host/app.mjs": "./host/app.mjs",
+    "stores/activity-store.mjs": "./stores/activity-store.mjs",
+    "stores/counter-store.mjs": "./stores/counter-store.mjs",
+    "tests/counter-testing.mjs": "./tests/counter-testing.mjs"
+  }
+}

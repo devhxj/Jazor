@@ -32,12 +32,12 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.25.0 — 2026-08-28
+### Jazor 0.26.0 - 2026-08-31
 
-- CLR runtime modules now use the standard `Jazor.Artifacts.RuntimeProviderCatalog`; inline and embedded providers share path, hash, source-map, asset, import-map, and dependency validation, while the retired `ECMAScript.Catalog` is no longer read.
-- Library artifacts and package ESM/CSS resources now follow one declared artifact graph. Only real import roots activate provider dependency closures, and conflicting paths or missing dependencies fail deterministically during Emit.
-- Tooling follows direct-use ownership: module/component libraries reference `Jazor` or `Jazor.Vue` directly, intermediate libraries do not inherit tooling merely to pass catalogs, and final hosts perform the single Emit materialization.
-- Upgrading from `0.24.0` or earlier requires lockstep package updates and rebuilding provider/catalog artifacts; no legacy catalog compatibility fallback is provided.
+- A library carries JavaScript in exactly one of two forms: existing resources use package-local `manifest.json + dist/**`; C# compiled by Jazor is stored in the assembly's internal `Jazor.Generated.ModuleCatalog`.
+- Generated modules, source maps, package imports, relative dependencies, HMR metadata, and owned assets share the one `ModuleCatalog` entry point. There is no provider or parallel artifact/source-map catalog.
+- Tooling follows direct-use ownership: projects that author Jazor code reference `Jazor` or `Jazor.Vue` directly; ordinary references only carry their declared module/resource dependencies.
+- After the host build completes, MSBuild invokes `Jazor.Emit` once. Emit resolves the selected dependency closure and atomically materializes the requested Debug, Release, or SSR projection into `JazorDir`.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -95,15 +95,15 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 Install the core package in every project that declares ECMAScript modules:
 
 ```bash
-dotnet add package Jazor --version 0.25.0
+dotnet add package Jazor --version 0.26.0
 ```
 
 For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.25.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.25.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.26.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

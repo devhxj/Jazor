@@ -1,58 +1,68 @@
 # Jazor.Emit
 
-> 定位：面向宿主的 ECMAScript 模块物化、manifest 与浏览器 bundle 层。
+`Jazor.Emit` 是宿主构建边界的唯一物化器。它不参与 C# 或 Razor 语义 lowering，只读取
+两种已经确定的类库 carrier，并把选定的资源闭包写入最终 `JazorDir`：
 
-`Jazor.Emit` 消费 compiler 生成的 ECMAScript catalog 与 source-map carrier，负责程序集读取、确定性文件输出、manifest、清理、本地库资源物化和 Netpack 浏览器打包；它不拥有 C# lowering 语义。
+| carrier | 内容 | 来源 |
+| --- | --- | --- |
+| JS resource library | `manifest.json + dist/**` | Vue、Vuetify、Pinia、`ECMAScript` 等已有 JavaScript 资源包 |
+| 纯 Jazor library | 程序集内 `Jazor.Generated.ModuleCatalog`（ECMAScriptCode） | `Jazor.Compiler`/RazorVue 从 C# 生成的模块 |
 
-## 职责
+这两种 carrier 是并列的一等输入。Emit 可以在内存中把它们归一化为资源记录来做去重、依赖
+闭包和冲突校验，但不会生成第三种 carrier，也不会把输出目录反向当作输入。
 
-- 读取根程序集与显式引用程序集。
-- 收集 ECMAScript module catalog、`Jazor.Generated.ArtifactCatalog`、CLR runtime catalog 与 adapter-owned runtime provider。
-- 写入 `.mjs`、可选 `.mjs.map` 与 schema-v1 `jazor-manifest.json`。
-- 在受控输出范围内清理过期模块和 source map。
-- 通过 Netpack 打包应用模块，同时保留本地包提供的 library ESM 与 chained source map。
+## 唯一调用边界
 
-## Adapter 契约
+MSBuild 只收集：
 
-Emit 只识别两个结构性数据 carrier，不引用 Vue、React 或其运行时程序集：
+- 根程序集和引用程序集路径；
+- JS resource 包传递下来的 `manifest.json` locator；
+- `JazorMode`、`JazorDir`、source root 和 SSR 选项。
 
-- `Jazor.Generated.ArtifactCatalog`：producer id、模块、source map、资产、package imports 与不透明 HMR payload。
-- `Jazor.Artifacts.RuntimeProviderCatalog`：provider id、嵌入模块、静态依赖路径与 import-map contribution。
+随后每个构建 profile 只调用一次默认 Emit 入口。Emit 在目标目录同卷 staging 中完成：
 
-runtime provider 的模块仅在应用模块引用其入口时物化；provider 负责声明内部依赖闭包。`module-source` 资产以 producer 声明的 `ImportPath` 重写到其 artifact path，Emit 不再按框架类型分支处理 SFC、JSX 或其他源格式。
+1. 读取所有 `Jazor.Generated.ModuleCatalog`；
+2. 读取并校验显式 `manifest.json + dist/**`；
+3. 按模块/package 声明解析依赖闭包、版本、路径和 hash；
+4. 生成模块、source map、资源、import map 和应用 manifest；
+5. Release 时在同一请求中运行 Netpack bundle，SSR 时生成 `ssr/` profile；
+6. 所有检查成功后整体提交到 `JazorDir`。
 
-## Library Asset Contract
-
-`PackageImports` selects the package ESM entries actually used by an application. A library manifest entry may declare mode-specific logical dependencies and relative `files`; Emit copies only the selected transitive entry closure, active library styles, and shared root metadata/license files. This keeps browser and SSR graphs explicit without probing `node_modules` or parsing third-party source at build time. SSR adds its runner-owned `vue` and `@vue/server-renderer` roots explicitly.
-
-## 关键文件
-
-- `Program.cs`：CLI 入口。
-- `CatalogReader.cs`、`ModuleCollector.cs`：读取并稳定合并各程序集 catalog。
-- `ModuleWriter.cs`、`ManifestModel.cs`：物化模块、source map 与 manifest。
-- `LibraryMaterializer.cs`、`Toolchain.cs`、`NetpackBundler.cs`：本地资源与浏览器 bundle。
+任何步骤失败、取消或冲突，都不会替换上一份完整输出。staging 目录是 Emit 的私有实现
+细节，不是类库格式、MSBuild item 或可被下一次构建消费的产物。
 
 ## CLI
 
-物化模块：
+默认入口同时覆盖 Debug、Release 和可选 SSR：
 
-```bash
-dotnet run --project src/Jazor.Emit -- --root <root.dll> --assembly <ref.dll> --out <dir> --write-manifest <manifest.json>
+```text
+dotnet Jazor.Emit.dll \
+  --root <root.dll> \
+  --assembly <reference.dll> \
+  --out <jazor-dir> \
+  --write-manifest <jazor-dir>/jazor-manifest.json \
+  --mode debug|release \
+  --source-root <project-root> \
+  --ssr true|false \
+  --library-manifest <package>/manifest.json
 ```
 
-打包模块：
+`--assembly` 和 `--library-manifest` 可以重复。路径、版本、资源类型和依赖必须由输入显式
+声明；Emit 不扫描目录、不解析 JavaScript 猜依赖、不读取 provider 专名 catalog。
 
-```bash
-dotnet run --project src/Jazor.Emit -- toolchain build --manifest <manifest.json> --artifacts <dir> --source-root <source-root> --out-root <output-root>
-```
+`toolchain` 和 `manifest materialize` 不再是构建入口。Netpack、资源 materializer 和
+import-map writer 仍作为 Emit 内部实现参与同一事务，不能被 MSBuild 分段调用，也不能产生
+公开 intermediate carrier。
+
+## 输出
+
+Debug 输出生成模块、source map、资源 vendor、`jazor-manifest.json`、`importmap.json`、
+`ssr-importmap.json` 和资源 `manifest.json`。Release 在同一目录增加 bundle 及其 source map；
+启用 `--ssr` 时在 `ssr/` 下生成独立的 SSR 模块图和资源闭包。输出文件属于宿主 profile，
+不改变上游类库 carrier 的形式。
 
 ## 验证
 
-```bash
-dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
+```text
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore
 ```
-
-## 相关文档
-
-- [Jazor.EmitTest](../Jazor.EmitTest/README.md)
-- [产物管线](../../docs/02-architecture/artifact-pipeline.md)

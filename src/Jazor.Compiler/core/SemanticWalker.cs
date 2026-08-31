@@ -945,7 +945,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             else if (entry.Op == Op.Import)
             {
                 // Import 仍沿用历史参数语义：实例宿主拼到实参数组前缀。
-                var id = context.BindImportSpecifier(entry.Path!, entry.Value!);
+                var id = symbol.ContainingType is { } containingType
+                    ? BindResolvedModuleImport(context, containingType, entry.Path!, entry.Value!)
+                    : context.BindExternalImportSpecifier(entry.Path!, entry.Value!);
                 return new CallExpression(id, NodeList.From(legacyArguments), optional: false);
             }
         }

@@ -20,7 +20,7 @@ internal static class InitializeHookInstaller
     private static int _platformValidated;
     private static InitializeNativeHook? _hook;
     private static string? _failure;
-    private const string ArtifactCatalogPath = "obj/Jazor.RazorVue/Jazor.Generated.ArtifactCatalog.g.cs";
+    private const string RazorModuleCatalogPath = "obj/Jazor.RazorVue/Jazor.Generated.ModuleCatalog.g.cs";
 
     internal static bool TryInstall()
     {
@@ -131,7 +131,7 @@ internal static class InitializeHookInstaller
         outputCompilation = compilation.AddSyntaxTrees(
             runResult.GeneratedTrees.Where(static tree => !RazorSourceTextRegistry.IsCarrierTree(tree)));
         diagnostics = runResult.Diagnostics;
-        if (ContainsArtifactCatalog(outputCompilation))
+        if (ContainsRazorModuleCatalog(outputCompilation))
             return result;
 
         // Only a successful final Compilation is a valid lowering input. Razor SG diagnostics
@@ -145,7 +145,8 @@ internal static class InitializeHookInstaller
                 outputCompilation,
                 cancellationToken,
                 out var catalogSource,
-                out var tailDiagnostics))
+                out var tailDiagnostics,
+                appendToExistingModuleCatalog: ContainsModuleCatalog(outputCompilation)))
         {
             if (tailDiagnostics.IsDefaultOrEmpty)
             {
@@ -164,18 +165,37 @@ internal static class InitializeHookInstaller
         }
 
         if (catalogSource is { Length: > 0 })
-            outputCompilation = outputCompilation.AddSyntaxTrees(CreateCatalogSyntaxTree(outputCompilation, catalogSource));
+            outputCompilation = outputCompilation.AddSyntaxTrees(
+                CreateCatalogSyntaxTree(outputCompilation, catalogSource, ContainsModuleCatalog(outputCompilation)));
 
         return result;
     }
 
-    private static bool ContainsArtifactCatalog(Compilation compilation)
-        => compilation.SyntaxTrees.Any(static tree => string.Equals(
-            tree.FilePath,
-            ArtifactCatalogPath,
-            StringComparison.Ordinal));
+    private static bool ContainsModuleCatalog(Compilation compilation)
+    {
+        // Source generator trees are normally rooted under
+        // <generator assembly>/<generator type>/<hint name>, so their FilePath is not the
+        // bare hint name. The metadata identity is the stable contract shared with ESGenerator.
+        // A path check remains for this generator's own just-added tree before symbol binding.
+        if (compilation.Assembly.GetTypeByMetadataName("Jazor.Generated.ModuleCatalog") is not null)
+            return true;
 
-    private static SyntaxTree CreateCatalogSyntaxTree(Compilation compilation, string catalogSource)
+        return compilation.SyntaxTrees.Any(static tree =>
+            string.Equals(tree.FilePath, "Jazor.Generated.ModuleCatalog.g.cs", StringComparison.Ordinal) ||
+            string.Equals(tree.FilePath, RazorModuleCatalogPath, StringComparison.Ordinal) ||
+            string.Equals(tree.FilePath, RazorModuleCatalogPath.Replace('/', '\\'), StringComparison.Ordinal));
+    }
+
+    private static bool ContainsRazorModuleCatalog(Compilation compilation)
+        => compilation.SyntaxTrees.Any(static tree =>
+            string.Equals(tree.FilePath, RazorModuleCatalogPath, StringComparison.OrdinalIgnoreCase) ||
+            tree.FilePath.EndsWith("/" + RazorModuleCatalogPath, StringComparison.OrdinalIgnoreCase) ||
+            tree.FilePath.EndsWith("\\" + RazorModuleCatalogPath.Replace('/', '\\'), StringComparison.OrdinalIgnoreCase));
+
+    private static SyntaxTree CreateCatalogSyntaxTree(
+        Compilation compilation,
+        string catalogSource,
+        bool appendToExistingModuleCatalog)
     {
         var parseOptions = compilation.SyntaxTrees
             .Select(static tree => tree.Options)
@@ -184,6 +204,6 @@ internal static class InitializeHookInstaller
         return CSharpSyntaxTree.ParseText(
             SourceText.From(catalogSource, System.Text.Encoding.UTF8),
             parseOptions,
-            ArtifactCatalogPath);
+            RazorModuleCatalogPath);
     }
 }

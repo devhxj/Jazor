@@ -34,7 +34,8 @@ internal sealed record ToolchainRequest(
     IReadOnlyDictionary<string, string> Environment,
     IReadOnlySet<ToolchainCapability> RequiredCapabilities,
     IReadOnlyDictionary<string, string> VersionConstraints,
-    IReadOnlyList<string> LibraryManifests)
+    IReadOnlyList<string> LibraryManifests,
+    LibraryAssets? MaterializedLibraries)
 {
     public const string DefaultBundleFileName = "bundle.js";
 
@@ -51,7 +52,8 @@ internal sealed record ToolchainRequest(
         IReadOnlyDictionary<string, string>? environment = null,
         IReadOnlySet<ToolchainCapability>? requiredCapabilities = null,
         IReadOnlyDictionary<string, string>? versionConstraints = null,
-        IReadOnlyList<string>? libraryManifests = null)
+        IReadOnlyList<string>? libraryManifests = null,
+        LibraryAssets? materializedLibraries = null)
     {
         return new ToolchainRequest(
             Path.GetFullPath(RequirePath(manifestPath, nameof(manifestPath))),
@@ -64,7 +66,8 @@ internal sealed record ToolchainRequest(
             CopyDictionary(environment),
             CopySet(requiredCapabilities),
             CopyDictionary(versionConstraints),
-            CopyManifestPaths(libraryManifests));
+            CopyManifestPaths(libraryManifests),
+            materializedLibraries);
     }
 
     private static string RequirePath(string path, string name)
@@ -331,7 +334,8 @@ internal sealed class Toolchain
             request.ManifestPath,
             request.BundleOutputPath,
             request.SourceRoot,
-            request.LibraryManifests));
+            request.LibraryManifests,
+            request.MaterializedLibraries));
 
         return bundleResult.IsSuccess
             ? ToolchainResult.Success(bundleResult.OutputPath!, bundleResult.ModuleCount)

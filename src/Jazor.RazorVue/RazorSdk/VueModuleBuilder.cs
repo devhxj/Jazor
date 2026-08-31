@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
 using Acornima;
 using Acornima.Ast;
@@ -158,7 +157,12 @@ internal static class VueModuleBuilder
             relativePath,
             declaredNames,
             hmr.ModuleId);
-        var moduleText = moduleBuild.ModuleText;
+        // ModuleCatalog and the file writer use LF as the canonical byte representation. Normalize
+        // before hashing so a Windows generator host cannot publish a hash for CRLF content that
+        // the reader later canonicalizes to LF.
+        // ModuleCatalog 与物化层统一使用 LF 字节；先规范化再计算 hash，避免 Windows 主机
+        // 生成 CRLF 后由读取端规范化为 LF 导致内容/hash 不一致。
+        var moduleText = Util.NormalizeLineEndingsToLf(moduleBuild.ModuleText);
         var sourceMapRelativePath = relativePath + ".map";
         var sourceMapContent = BuildSourceMapContent(
             component,
@@ -166,6 +170,7 @@ internal static class VueModuleBuilder
             moduleText,
             compilerOutput.Layout?.Artifact.SourceMapContent,
             moduleBuild.CompiledLineMappings);
+        sourceMapContent = Util.NormalizeLineEndingsToLf(sourceMapContent);
 
         return new VueModuleArtifact(
             component.ComponentSymbol.ToDisplayString(),
@@ -177,7 +182,8 @@ internal static class VueModuleBuilder
             ComputeContentHash(sourceMapContent),
             moduleBuild.PackageImports,
             moduleBuild.Assets,
-            hmr);
+            hmr,
+            moduleBuild.Dependencies);
     }
 
     private static async Task<CompilerOutput> BuildCompilerOutputAsync(
@@ -723,6 +729,15 @@ internal static class VueModuleBuilder
             .Distinct(StringComparer.Ordinal)
             .OrderBy(static specifier => specifier, StringComparer.Ordinal)
             .ToImmutableArray();
+        var dependencies = moduleStatements
+            .OfType<ImportDeclaration>()
+            .Select(static declaration => declaration.Source.Value)
+            .Where(static specifier => !ECMAScriptModulePath.IsPackageSpecifier(specifier) &&
+                                       !string.Equals(specifier, "style.mjs", StringComparison.Ordinal))
+            .Select(specifier => ResolveModuleDependency(specifier, relativePath))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static specifier => specifier, StringComparer.Ordinal)
+            .ToImmutableArray();
 
         return new ModuleTextBuildResult(
             moduleText,
@@ -733,7 +748,19 @@ internal static class VueModuleBuilder
                 .Select(static group => group.First())
                 .OrderBy(static asset => asset.ArtifactPath, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal)
-                .ToImmutableArray());
+                .ToImmutableArray(),
+            dependencies);
+    }
+
+    private static string ResolveModuleDependency(string specifier, string relativePath)
+    {
+        if (!specifier.StartsWith("./", StringComparison.Ordinal) &&
+            !specifier.StartsWith("../", StringComparison.Ordinal))
+        {
+            return ECMAScriptModulePath.NormalizeRelativePath(specifier);
+        }
+
+        return ECMAScriptModulePath.ResolveRelativePath(relativePath, specifier);
     }
 
     private static FunctionDeclaration BuildSetupFactoryDeclaration(
@@ -3572,17 +3599,7 @@ internal static class VueModuleBuilder
         => value == '$' || value == '_' || char.IsLetterOrDigit(value);
 
     private static string ComputeContentHash(string content)
-    {
-        using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
-        var builder = new StringBuilder(hash.Length * 2);
-        foreach (var value in hash)
-        {
-            builder.Append(value.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
-        }
-
-        return "sha256:" + builder;
-    }
+        => ArtifactHash.ComputeSha256(content);
 
     private static string BuildSourceMapContent(
         BoundComponent component,
@@ -4311,7 +4328,8 @@ internal static class VueModuleBuilder
         string ModuleText,
         ImmutableArray<CompiledLineMapping> CompiledLineMappings,
         ImmutableArray<string> PackageImports,
-        ImmutableArray<VueAsset> Assets);
+        ImmutableArray<VueAsset> Assets,
+        ImmutableArray<string> Dependencies);
 
     private readonly record struct MappedSourcePosition(
         string SourcePath,
@@ -4421,7 +4439,8 @@ internal sealed record VueModuleArtifact(
     string MapHash,
     ImmutableArray<string> PackageImports,
     ImmutableArray<VueAsset> Assets,
-    VueHmrMetadata Hmr);
+    VueHmrMetadata Hmr,
+    ImmutableArray<string> Dependencies = default);
 
 /// <summary>One source asset copied beside the generated module. 记录 artifact 相对路径与内容哈希以支持确定性物化。</summary>
 internal sealed record VueAsset(

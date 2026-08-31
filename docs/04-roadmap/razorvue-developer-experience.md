@@ -185,7 +185,7 @@ P2 不预设全部都会变成 Direct Support。每项要么实现可保真的 a
 | 层 | 输入 | 职责 | 是否生成 artifact |
 | --- | --- | --- | --- |
 | Compatibility analyzer | 作者 `.razor`、`.razor.cs` 和普通 C# source；可使用配对 symbol 信息，但不遍历 Razor SG generated C# | 高置信识别 Blazor API、server-only dependency、已知不兼容形状和可机械替代 | 在作者源码处先解释；规则与 final generator 采用互斥 ownership 或共享聚合键；是否生成 artifact 仍由 final generator 的 no-partial 不变量决定 |
-| final Compilation generator | official Razor SG final Compilation | 最终 RenderTree protocol、generic helper、member closure、module framing 和 compiler bridge 的唯一裁决 | 有错误时无 partial catalog/module |
+ | final Compilation generator | official Razor SG final Compilation | 最终 RenderTree protocol、generic helper、member closure、module framing 和 compiler bridge 的唯一裁决 | 有错误时无 partial descriptor/module |
 | runtime smoke | 真实 browser/SSR host | 验证静态分析不能证明的响应式、生命周期、DOM、hydration 和异步行为 | 不作为首次作者错误发现机制 |
 
 当前 `Jazor.Analyzer` 保持 generic ECMAScript contract 和 `GeneratedCodeAnalysisFlags.None`。RazorVue compatibility analyzer 是独立、作者源代码范围明确的 analyzer，不把 generated-code analyzer 的旧 no-go 结论推翻为重复报错。
@@ -206,7 +206,7 @@ P2 不预设全部都会变成 Direct Support。每项要么实现可保真的 a
 
 无法在浏览器中保真的形状必须使用阻止构建的 error；仅缺少可由宿主自动补齐的 registration 才可采用明确的 warning/error 规则，并在消息中说明是否能自动修复；Direct Support 不产生 warning 噪音。
 
-新 analyzer ID 使用独立的 RazorVue compatibility ID 段（暂建议 `JAZORVCA001+`，由 M5-0 锁定）和公开 release tracking。`JAZORVGA020`-`026` 继续表示 final Compilation 失败，不改变已发布的 ID、category、severity、mapped location 和无 partial catalog 契约。
+ 新 analyzer ID 使用独立的 RazorVue compatibility ID 段（暂建议 `JAZORVCA001+`，由 M5-0 锁定）和公开 release tracking。`JAZORVGA020`-`026` 继续表示 final Compilation 失败，不改变已发布的 ID、category、severity、mapped location 和无 partial descriptor/module 契约。
 
 代码修复仅用于语义可证明的改写，例如添加缺失的浏览器 service registration、把已弃用兼容 helper 改为等价 API。涉及生命周期、服务 lifetime、动态组件或表单状态的迁移默认给出代码片段，不做危险的自动重写。
 
@@ -304,7 +304,7 @@ Ledger 每一行至少包含：Blazor 作者形状、目标语义基线、P0/P1/
 - 实现规则族、稳定 ID、HelpLink、去重和高置信边界；
 - 为 server-only DI、注入属性形状、known ParameterView/DI/cascading/form/navigation/JS 边界提供具体替代；browser service provider 缺失由 runtime adapter 给出明确激活错误，不能退化为 `undefined`；
 - 为已经存在 Direct Support 的常见写法确保零噪音；
-- 保持 final generator 的 no-partial-catalog 不变量：analyzer 先报不代表 generator 可以留下半成品；source analyzer 与 final RenderTree/closure/module 规则通过互斥 ownership 或共享聚合层去重，不能依赖 analyzer 结果改变 generator 行为；
+- 保持 final generator 的 no-partial-descriptor 不变量：analyzer 先报不代表 generator 可以留下半成品；source analyzer 与 final RenderTree/closure/module 规则通过互斥 ownership 或共享聚合层去重，不能依赖 analyzer 结果改变 generator 行为；
 - analyzer 必须增量、按文档有界执行，不读取全量 generated compilation、不访问网络、不依赖构建顺序；IDE 输入不完整时宁可静默并交给 final Compilation；
 - 在 authoring guide 中将完整限制表改为诊断的背景资料，而不是页面开发前置阅读。
 
@@ -405,7 +405,7 @@ M5 完成时必须同时满足：
 
 1. P0 全部为 Direct Support 或 Compatibility Adapter，作者样例的业务页面不含 RazorVue 内部 API、手写 JS、builder 或 object 逃生类型。
 2. P1 的高频 Blazor API 已实现等价 adapter；尚未实现的 P1/P2 项由 authored-source analyzer 在首次 build 说明，不要求作者先读限制表。
-3. 任何无法静态确定的形状仍由 final Compilation 单次、mapped diagnostic 报告；没有重复诊断、partial catalog、坏模块或 runtime-first failure。
+ 3. 任何无法静态确定的形状仍由 final Compilation 单次、mapped diagnostic 报告；没有重复诊断、partial descriptor/module、坏模块或 runtime-first failure。
 4. samples/RazorVue.Authoring、JazorAdmin 迁移页面、Release/package consumer 和适用 SSR/hydration 的用户可观察行为一致。
 5. quickstart 从 clean checkout 到 browser smoke 可复现，所有代码片段来自受测试样例。
 6. 未参与 compiler 实现的人只按 quickstart 完成一次记录管理功能；出现的额外前置知识必须优先转化为 analyzer/diagnostic、自动 adapter 或更自然的 Blazor API。文档只解释背景，不得成为完成普通功能的前置知识。

@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Jazor.ComplierTest;
 
@@ -412,19 +413,20 @@ public sealed class SemanticWalkerEnumerableElementAtTests
 
     private static async Task MaterializeRuntimeCatalogAsync(string root)
     {
-        var catalogType = typeof(Global).Assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: true)!;
-        var getModules = catalogType.GetMethod(
-            "GetModules",
-            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() was not found.");
-        var modules = getModules.Invoke(null, null) as IEnumerable
-            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() returned no modules.");
-
-        foreach (var moduleRecord in modules)
+        // ECMAScript is the JS-resource carrier. Test hosts consume its manifest/dist package
+        // directly; pure Jazor ModuleCatalog reflection is intentionally not involved here.
+        var repositoryRoot = FindRepositoryRoot();
+        var manifestPath = Path.Combine(repositoryRoot, "src", "ECMAScript", "manifest.json");
+        using var document = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
+        foreach (var entry in document.RootElement.GetProperty("imports").EnumerateObject())
         {
-            var moduleType = moduleRecord!.GetType();
-            var relativePath = (string)moduleType.GetProperty("RelativePath")!.GetValue(moduleRecord)!;
-            var content = (string)moduleType.GetProperty("Content")!.GetValue(moduleRecord)!;
+            var relativeFile = entry.Value.GetProperty("production").GetString()!;
+            if (!relativeFile.StartsWith("dist/", StringComparison.Ordinal))
+                continue;
+
+            var relativePath = relativeFile["dist/".Length..];
+            var sourcePath = Path.Combine(repositoryRoot, "src", "ECMAScript", relativeFile.Replace('/', Path.DirectorySeparatorChar));
+            var content = await File.ReadAllTextAsync(sourcePath);
             var outputPath = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
             await System.IO.File.WriteAllTextAsync(
@@ -432,6 +434,17 @@ public sealed class SemanticWalkerEnumerableElementAtTests
                 content,
                 new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         }
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+                return directory.FullName;
+        }
+
+        throw new FileNotFoundException("Could not locate the Jazor repository root.");
     }
 
     private static IBlockOperation GetBlockOperation(string source)

@@ -2,7 +2,7 @@
 
 > 定位：Element Plus、Vuetify 和 TDesign binding 的维护期生成器，不参与应用构建或运行时。
 
-该项目维护锁定的上游输入，并生成或校验 binding catalog。各 binding 包只保留其 authoring contract、生成的 C#、`manifest.json`、`dist/` 和 `licenses/`，不会在应用构建时引用本项目。
+该项目维护锁定的上游输入，并生成或校验 binding catalog。各 binding 包只保留其 authoring contract、生成的 C#、`manifest.json`、`dist/` 和 `licenses/` 资源，不会在应用构建时引用本项目。
 
 ## 运行
 

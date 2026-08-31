@@ -50,8 +50,8 @@ public sealed class LegacyRazorVueContractRetirementTests
     public void SdkTargets_DoNotDefineLegacyRazorVueConsumerOrHostContracts()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
-        var props = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.props"));
+        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.targets"));
+        var props = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.props"));
 
         foreach (var legacyContract in new[]
                  {
@@ -67,29 +67,33 @@ public sealed class LegacyRazorVueContractRetirementTests
     }
 
     [TestMethod]
-    public void SdkTargets_InvokeFixedNetpackContractForBundles()
+    public void SdkTargets_InvokeSingleEmitContractForDebugAndRelease()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
-        var props = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.props"));
+        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.targets"));
+        var props = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.props"));
 
         StringAssert.Contains(props, "<JazorMode Condition=\"'$(JazorMode)' == ''\">none</JazorMode>", StringComparison.Ordinal);
         StringAssert.Contains(props, "<JazorDir Condition=\"'$(JazorDir)' == ''\">$(MSBuildProjectDirectory)\\jazor\\</JazorDir>", StringComparison.Ordinal);
         Assert.IsFalse(props.Contains("JazorTool", StringComparison.Ordinal), props);
-        StringAssert.Contains(targets, "toolchain build --manifest", StringComparison.Ordinal);
+        Assert.IsFalse(targets.Contains("toolchain build --manifest", StringComparison.Ordinal), targets);
+        Assert.IsFalse(targets.Contains("manifest materialize", StringComparison.Ordinal), targets);
         Assert.IsFalse(targets.Contains("--toolchain", StringComparison.Ordinal), targets);
-        StringAssert.Contains(targets, "--manifest", StringComparison.Ordinal);
-        StringAssert.Contains(targets, "--artifacts", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--root", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--out", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--write-manifest", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--mode debug", StringComparison.Ordinal);
+        StringAssert.Contains(targets, "--mode release", StringComparison.Ordinal);
         StringAssert.Contains(targets, "--source-root", StringComparison.Ordinal);
-        StringAssert.Contains(targets, "--out-root", StringComparison.Ordinal);
-        Assert.IsFalse(targets.Contains(" bundle --in ", StringComparison.Ordinal), targets);
+        StringAssert.Contains(targets, "--library-manifest", StringComparison.Ordinal);
+        Assert.IsFalse(targets.Contains("JazorArtifactProviderAssembly", StringComparison.Ordinal), targets);
     }
 
     [TestMethod]
     public void SdkTargets_ResolveEmitToolForPackageAndRepositoryBuilds()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
+        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.targets"));
 
         StringAssert.Contains(targets, "<Target Name=\"_ResolveJazorEmitTool\">", StringComparison.Ordinal);
         StringAssert.Contains(targets, "..\\tools\\net11.0\\Jazor.Emit.dll", StringComparison.Ordinal);
@@ -103,7 +107,7 @@ public sealed class LegacyRazorVueContractRetirementTests
     public void SdkTargets_ExcludeNativeRuntimeAssetsFromEmit()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
+        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.targets"));
         const string managedAssemblyCondition =
             "'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'";
 
@@ -114,19 +118,21 @@ public sealed class LegacyRazorVueContractRetirementTests
     }
 
     [TestMethod]
-    public void SdkTargets_CollectNeutralRuntimeProvidersAndVueAdapterRegistersProviderByContractPath()
+    public void SdkTargets_CollectResourceManifestsThroughTheSharedCarrierContract()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.targets"));
+        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.targets"));
+        var resourceTargets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.Resources.targets"));
         var vueTargets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor.Vue", "buildTransitive", "Jazor.Vue.targets"));
-        Assert.AreEqual(
-            2,
-            targets.Split("@(JazorArtifactProviderAssembly)", StringSplitOptions.None).Length - 1,
-            "Both debug and release emission must receive adapter-owned runtime providers through the neutral item.");
-        Assert.IsFalse(targets.Contains("Jazor.RazorVue", StringComparison.Ordinal), targets);
-        StringAssert.Contains(vueTargets, "RegisterJazorVueArtifactProvider", StringComparison.Ordinal);
-        StringAssert.Contains(vueTargets, "..\\analyzers\\dotnet\\cs\\Jazor.RazorVue.dll", StringComparison.Ordinal);
-        StringAssert.Contains(vueTargets, "..\\..\\Jazor.RazorVue\\bin\\$(Configuration)\\netstandard2.0\\Jazor.RazorVue.dll", StringComparison.Ordinal);
+        Assert.IsFalse(targets.Contains("JazorArtifactProviderAssembly", StringComparison.Ordinal), targets);
+        Assert.IsFalse(resourceTargets.Contains("RuntimeProviderCatalog", StringComparison.Ordinal), resourceTargets);
+        StringAssert.Contains(targets, "Jazor.Resources.targets", StringComparison.Ordinal);
+        StringAssert.Contains(resourceTargets, "JazorLibraryManifest", StringComparison.Ordinal);
+        Assert.IsFalse(resourceTargets.Contains("JazorDebug", StringComparison.Ordinal), resourceTargets);
+        Assert.IsFalse(resourceTargets.Contains("<Analyzer", StringComparison.Ordinal), resourceTargets);
+        StringAssert.Contains(vueTargets, "JazorLibraryManifest", StringComparison.Ordinal);
+        StringAssert.Contains(vueTargets, "manifest.json", StringComparison.Ordinal);
+        Assert.IsFalse(vueTargets.Contains("RegisterJazorVueArtifactProvider", StringComparison.Ordinal), vueTargets);
         Assert.IsFalse(vueTargets.Contains("%(Analyzer.Filename)", StringComparison.Ordinal), vueTargets);
         Assert.IsFalse(vueTargets.Contains("%(Analyzer.Extension)", StringComparison.Ordinal), vueTargets);
     }

@@ -1,462 +1,2148 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "libraryId": "vue-data-ui",
   "version": "3.23.4",
   "imports": {
-    "vue-data-ui/vue-ui-xy": {
-      "development": "dist/components/vue-ui-xy.js",
-      "production": "dist/components/vue-ui-xy.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-donut": {
-      "development": "dist/components/vue-ui-donut.js",
-      "production": "dist/components/vue-ui-donut.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-gauge": {
-      "development": "dist/components/vue-ui-gauge.js",
-      "production": "dist/components/vue-ui-gauge.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-vertical-bar": {
-      "development": "dist/components/vue-ui-vertical-bar.js",
-      "production": "dist/components/vue-ui-vertical-bar.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-horizontal-bar": {
-      "development": "dist/components/vue-ui-horizontal-bar.js",
-      "production": "dist/components/vue-ui-horizontal-bar.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-stackbar": {
-      "development": "dist/components/vue-ui-stackbar.js",
-      "production": "dist/components/vue-ui-stackbar.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-stackline": {
-      "development": "dist/components/vue-ui-stackline.js",
-      "production": "dist/components/vue-ui-stackline.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-sparkline": {
-      "development": "dist/components/vue-ui-sparkline.js",
-      "production": "dist/components/vue-ui-sparkline.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-sparkbar": {
-      "development": "dist/components/vue-ui-sparkbar.js",
-      "production": "dist/components/vue-ui-sparkbar.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-sparkhistogram": {
-      "development": "dist/components/vue-ui-sparkhistogram.js",
-      "production": "dist/components/vue-ui-sparkhistogram.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-radar": {
-      "development": "dist/components/vue-ui-radar.js",
-      "production": "dist/components/vue-ui-radar.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-waffle": {
-      "development": "dist/components/vue-ui-waffle.js",
-      "production": "dist/components/vue-ui-waffle.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-treemap": {
-      "development": "dist/components/vue-ui-treemap.js",
-      "production": "dist/components/vue-ui-treemap.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-heatmap": {
-      "development": "dist/components/vue-ui-heatmap.js",
-      "production": "dist/components/vue-ui-heatmap.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-scatter": {
-      "development": "dist/components/vue-ui-scatter.js",
-      "production": "dist/components/vue-ui-scatter.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-funnel": {
-      "development": "dist/components/vue-ui-funnel.js",
-      "production": "dist/components/vue-ui-funnel.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-word-cloud": {
-      "development": "dist/components/vue-ui-word-cloud.js",
-      "production": "dist/components/vue-ui-word-cloud.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-kpi": {
-      "development": "dist/components/vue-ui-kpi.js",
-      "production": "dist/components/vue-ui-kpi.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-table": {
-      "development": "dist/components/vue-ui-table.js",
-      "production": "dist/components/vue-ui-table.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-table-heatmap": {
-      "development": "dist/components/vue-ui-table-heatmap.js",
-      "production": "dist/components/vue-ui-table-heatmap.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-table-sparkline": {
-      "development": "dist/components/vue-ui-table-sparkline.js",
-      "production": "dist/components/vue-ui-table-sparkline.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-quick-chart": {
-      "development": "dist/components/vue-ui-quick-chart.js",
-      "production": "dist/components/vue-ui-quick-chart.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-candlestick": {
-      "development": "dist/components/vue-ui-candlestick.js",
-      "production": "dist/components/vue-ui-candlestick.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-dumbbell": {
-      "development": "dist/components/vue-ui-dumbbell.js",
-      "production": "dist/components/vue-ui-dumbbell.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-bullet": {
-      "development": "dist/components/vue-ui-bullet.js",
-      "production": "dist/components/vue-ui-bullet.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-3d-bar": {
-      "development": "dist/components/vue-ui-3d-bar.js",
-      "production": "dist/components/vue-ui-3d-bar.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-accordion": {
-      "development": "dist/components/vue-ui-accordion.js",
-      "production": "dist/components/vue-ui-accordion.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-age-pyramid": {
-      "development": "dist/components/vue-ui-age-pyramid.js",
-      "production": "dist/components/vue-ui-age-pyramid.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-annotator": {
-      "development": "dist/components/vue-ui-annotator.js",
-      "production": "dist/components/vue-ui-annotator.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-bump": {
-      "development": "dist/components/vue-ui-bump.js",
-      "production": "dist/components/vue-ui-bump.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-carousel-table": {
-      "development": "dist/components/vue-ui-carousel-table.js",
-      "production": "dist/components/vue-ui-carousel-table.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-chestnut": {
-      "development": "dist/components/vue-ui-chestnut.js",
-      "production": "dist/components/vue-ui-chestnut.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-chord": {
-      "development": "dist/components/vue-ui-chord.js",
-      "production": "dist/components/vue-ui-chord.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-circle-pack": {
-      "development": "dist/components/vue-ui-circle-pack.js",
-      "production": "dist/components/vue-ui-circle-pack.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-cursor": {
-      "development": "dist/components/vue-ui-cursor.js",
-      "production": "dist/components/vue-ui-cursor.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-dag": {
-      "development": "dist/components/vue-ui-dag.js",
-      "production": "dist/components/vue-ui-dag.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-dashboard": {
-      "development": "dist/components/vue-ui-dashboard.js",
-      "production": "dist/components/vue-ui-dashboard.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-digits": {
-      "development": "dist/components/vue-ui-digits.js",
-      "production": "dist/components/vue-ui-digits.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-donut-evolution": {
-      "development": "dist/components/vue-ui-donut-evolution.js",
-      "production": "dist/components/vue-ui-donut-evolution.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-flow": {
-      "development": "dist/components/vue-ui-flow.js",
-      "production": "dist/components/vue-ui-flow.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-galaxy": {
-      "development": "dist/components/vue-ui-galaxy.js",
-      "production": "dist/components/vue-ui-galaxy.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-geo": {
-      "development": "dist/components/vue-ui-geo.js",
-      "production": "dist/components/vue-ui-geo.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-gizmo": {
-      "development": "dist/components/vue-ui-gizmo.js",
-      "production": "dist/components/vue-ui-gizmo.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-hill": {
-      "development": "dist/components/vue-ui-hill.js",
-      "production": "dist/components/vue-ui-hill.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-history-plot": {
-      "development": "dist/components/vue-ui-history-plot.js",
-      "production": "dist/components/vue-ui-history-plot.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-icon": {
-      "development": "dist/components/vue-ui-icon.js",
-      "production": "dist/components/vue-ui-icon.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-mini-loader": {
-      "development": "dist/components/vue-ui-mini-loader.js",
-      "production": "dist/components/vue-ui-mini-loader.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-molecule": {
-      "development": "dist/components/vue-ui-molecule.js",
-      "production": "dist/components/vue-ui-molecule.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-mood-radar": {
-      "development": "dist/components/vue-ui-mood-radar.js",
-      "production": "dist/components/vue-ui-mood-radar.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-nested-donuts": {
-      "development": "dist/components/vue-ui-nested-donuts.js",
-      "production": "dist/components/vue-ui-nested-donuts.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-onion": {
-      "development": "dist/components/vue-ui-onion.js",
-      "production": "dist/components/vue-ui-onion.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-parallel-coordinate-plot": {
-      "development": "dist/components/vue-ui-parallel-coordinate-plot.js",
-      "production": "dist/components/vue-ui-parallel-coordinate-plot.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-pattern": {
-      "development": "dist/components/vue-ui-pattern.js",
-      "production": "dist/components/vue-ui-pattern.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-pattern-seed": {
-      "development": "dist/components/vue-ui-pattern-seed.js",
-      "production": "dist/components/vue-ui-pattern-seed.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-quadrant": {
-      "development": "dist/components/vue-ui-quadrant.js",
-      "production": "dist/components/vue-ui-quadrant.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-rating": {
-      "development": "dist/components/vue-ui-rating.js",
-      "production": "dist/components/vue-ui-rating.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-relation-circle": {
-      "development": "dist/components/vue-ui-relation-circle.js",
-      "production": "dist/components/vue-ui-relation-circle.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-ridgeline": {
-      "development": "dist/components/vue-ui-ridgeline.js",
-      "production": "dist/components/vue-ui-ridgeline.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-rings": {
-      "development": "dist/components/vue-ui-rings.js",
-      "production": "dist/components/vue-ui-rings.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-skeleton": {
-      "development": "dist/components/vue-ui-skeleton.js",
-      "production": "dist/components/vue-ui-skeleton.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-smiley": {
-      "development": "dist/components/vue-ui-smiley.js",
-      "production": "dist/components/vue-ui-smiley.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-spark-trend": {
-      "development": "dist/components/vue-ui-spark-trend.js",
-      "production": "dist/components/vue-ui-spark-trend.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-sparkgauge": {
-      "development": "dist/components/vue-ui-sparkgauge.js",
-      "production": "dist/components/vue-ui-sparkgauge.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-sparkstackbar": {
-      "development": "dist/components/vue-ui-sparkstackbar.js",
-      "production": "dist/components/vue-ui-sparkstackbar.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-strip-plot": {
-      "development": "dist/components/vue-ui-strip-plot.js",
-      "production": "dist/components/vue-ui-strip-plot.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-thermometer": {
-      "development": "dist/components/vue-ui-thermometer.js",
-      "production": "dist/components/vue-ui-thermometer.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-timer": {
-      "development": "dist/components/vue-ui-timer.js",
-      "production": "dist/components/vue-ui-timer.js",
-      "developmentDependencies": ["vue"],
-      "productionDependencies": ["vue"]
-    },
-    "vue-data-ui/vue-ui-tiremarks": {
-      "development": "dist/components/vue-ui-tiremarks.js",
-      "production": "dist/components/vue-ui-tiremarks.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-wheel": {
-      "development": "dist/components/vue-ui-wheel.js",
-      "production": "dist/components/vue-ui-wheel.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-world": {
-      "development": "dist/components/vue-ui-world.js",
-      "production": "dist/components/vue-ui-world.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
-    "vue-data-ui/vue-ui-xy-canvas": {
-      "development": "dist/components/vue-ui-xy-canvas.js",
-      "production": "dist/components/vue-ui-xy-canvas.js",
-      "developmentDependencies": ["vue", "jspdf"],
-      "productionDependencies": ["vue", "jspdf"]
-    },
     "jspdf": {
+      "type": "module",
       "development": "dist/jspdf.browser.mjs",
       "production": "dist/jspdf.browser.mjs",
+      "developmentHash": "3e719bd17c9f18cf36aa94a000a54edb3b0d35a577db6715fe52a04ec1708f6d",
+      "productionHash": "3e719bd17c9f18cf36aa94a000a54edb3b0d35a577db6715fe52a04ec1708f6d",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
       "files": [
-        "licenses/JSPDF-LICENSE",
-        "licenses/jspdf-browser-bundle/README.md",
-        "licenses/jspdf-browser-bundle/babel-runtime-LICENSE",
-        "licenses/jspdf-browser-bundle/canvg-LICENSE",
-        "licenses/jspdf-browser-bundle/core-js-LICENSE",
-        "licenses/jspdf-browser-bundle/dompurify-LICENSE",
-        "licenses/jspdf-browser-bundle/fast-png-LICENSE",
-        "licenses/jspdf-browser-bundle/fflate-LICENSE",
-        "licenses/jspdf-browser-bundle/html2canvas-LICENSE",
-        "licenses/jspdf-browser-bundle/iobuffer-LICENSE",
-        "licenses/jspdf-browser-bundle/pako-LICENSE",
-        "licenses/jspdf-browser-bundle/performance-now-license.txt",
-        "licenses/jspdf-browser-bundle/raf-LICENSE",
-        "licenses/jspdf-browser-bundle/rgbcolor-LICENSE.md",
-        "licenses/jspdf-browser-bundle/rgbcolor-FEEL-FREE.md",
-        "licenses/jspdf-browser-bundle/stackblur-canvas-LICENSE-MIT.txt",
-        "licenses/jspdf-browser-bundle/svg-pathdata-LICENSE",
-        "dist/jspdf.browser.mjs.LEGAL.txt"
+        {
+          "type": "license",
+          "path": "dist/jspdf.browser.mjs.LEGAL.txt",
+          "hash": "6c906ff15fa6b2875a259a08a66e469ac4a09390da8017f4b1e889f59ff5511b"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/babel-runtime-LICENSE",
+          "hash": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/canvg-LICENSE",
+          "hash": "86622ffc909487e6029235d31503263b796895679b0926f4a4d6f02d2623fde0"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/core-js-LICENSE",
+          "hash": "b87653fff2d44426ab5cd4723cee3b1364dc8d35a0acdf098c54689543123bf8"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/dompurify-LICENSE",
+          "hash": "9374d882678a2c713ae0811acfefd84e8cc23c540555b34668f63dda4824fae0"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/fast-png-LICENSE",
+          "hash": "47ec9747cf2c470a505fcb20f3ec2ff2e60ea4febaf2e1e7041a24fc369fac3c"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/fflate-LICENSE",
+          "hash": "0a1df3a083d0c010560aa342e87959c8c1070e6fd54545741f083f22d0c8b551"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/html2canvas-LICENSE",
+          "hash": "86200ce4e92d9a22c41c8647a55f7a5fddff304ff89b4d36ecc699ed8c123d2c"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/iobuffer-LICENSE",
+          "hash": "bd1c70786d165cc05faa10569e13905318f5a75a0281d960038231521148d082"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/pako-LICENSE",
+          "hash": "a04665b3b2de56c66730c1f720f528175739e4104f79073614aa611da1e85539"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/performance-now-license.txt",
+          "hash": "c3af1272f30870168177e888b184c1f802e5081e75a126c794670c0b562d3783"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/raf-LICENSE",
+          "hash": "6b2194e178545b3dcde4a40a09b5f6c00bd9b5b695db0c826c14995c6c9b4ec5"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/README.md",
+          "hash": "0e9d576459a8550d4472218b07b919911f13a955d4cd53cfdaf23fb33f76010b"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/rgbcolor-FEEL-FREE.md",
+          "hash": "a9e2866e665c774ec5a968224be7a0f8d9dd6a26bd337c75ec709606be0be76c"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/rgbcolor-LICENSE.md",
+          "hash": "86045408b01f66f9319a2fe7bc7f7e115f272956ac44d2d840fc00127124a78c"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/stackblur-canvas-LICENSE-MIT.txt",
+          "hash": "609e3755e6e7a048b8ca85de25233cfc4f62ec7cb9afeea603269a03b73db197"
+        },
+        {
+          "type": "license",
+          "path": "licenses/jspdf-browser-bundle/svg-pathdata-LICENSE",
+          "hash": "cd05e8e2516f46a2cd79494bbabdea76f874e8d049dbc19a76b367534a4e013e"
+        },
+        {
+          "type": "license",
+          "path": "licenses/JSPDF-LICENSE",
+          "hash": "dc388ec35ff463288cdde3588a36fd4ed12a45deff053243b37309acc9ef583b"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-3d-bar": {
+      "type": "module",
+      "development": "dist/components/vue-ui-3d-bar.js",
+      "production": "dist/components/vue-ui-3d-bar.js",
+      "developmentHash": "7e67a7a6555f8e53e767493769ced874e85db78fca287b37f3a52da19ded57ac",
+      "productionHash": "7e67a7a6555f8e53e767493769ced874e85db78fca287b37f3a52da19ded57ac",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-3d-bar-G3GsMDp6.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-3d-bar-G3GsMDp6.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-3d-bar-G3GsMDp6.js",
+          "hash": "d8953310900bbb6756b8f978ceea3490838cd594b2fb4177ad2d9d710688d223",
+          "moduleId": "dist/vue-ui-3d-bar-G3GsMDp6.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-accordion": {
+      "type": "module",
+      "development": "dist/components/vue-ui-accordion.js",
+      "production": "dist/components/vue-ui-accordion.js",
+      "developmentHash": "511c2467a3f49d61a5496a36b3ed73ddac794f17a6bf68ebb18b51cd37895e13",
+      "productionHash": "511c2467a3f49d61a5496a36b3ed73ddac794f17a6bf68ebb18b51cd37895e13",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-accordion-DegI2lzR.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-accordion-DegI2lzR.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-accordion-DegI2lzR.js",
+          "hash": "325347c00a881b7c5f9a4779dab23b79c8dabec6773c5abb0cfbcfcfe129e2b5",
+          "moduleId": "dist/vue-ui-accordion-DegI2lzR.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-age-pyramid": {
+      "type": "module",
+      "development": "dist/components/vue-ui-age-pyramid.js",
+      "production": "dist/components/vue-ui-age-pyramid.js",
+      "developmentHash": "174656281e4c0bc7822265fee22e0b87eb965f4b4e750a35ac25965fc0ef4387",
+      "productionHash": "174656281e4c0bc7822265fee22e0b87eb965f4b4e750a35ac25965fc0ef4387",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-age-pyramid-HW1Kiqib.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-age-pyramid-HW1Kiqib.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-age-pyramid-HW1Kiqib.js",
+          "hash": "2920aca13c9b0ace9903543fcff48ce242b598ac9303669ac103561600231842",
+          "moduleId": "dist/vue-ui-age-pyramid-HW1Kiqib.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-annotator": {
+      "type": "module",
+      "development": "dist/components/vue-ui-annotator.js",
+      "production": "dist/components/vue-ui-annotator.js",
+      "developmentHash": "912e44638d66088723411e32ebcd2e7924c08a3ab4da7f5e850397727a8257a6",
+      "productionHash": "912e44638d66088723411e32ebcd2e7924c08a3ab4da7f5e850397727a8257a6",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-annotator-DfG79D4r.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-annotator-DfG79D4r.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-annotator-DfG79D4r.js",
+          "hash": "6a4dac312203539965998add9db2a38b6b8fd905b72e3debf7a04ea543d60421",
+          "moduleId": "dist/vue-ui-annotator-DfG79D4r.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-bullet": {
+      "type": "module",
+      "development": "dist/components/vue-ui-bullet.js",
+      "production": "dist/components/vue-ui-bullet.js",
+      "developmentHash": "0678f3ef145c0ee4d92f81e1d984855909d78c5d6ef64af9f5f4ee51af7376ef",
+      "productionHash": "0678f3ef145c0ee4d92f81e1d984855909d78c5d6ef64af9f5f4ee51af7376ef",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-bullet-AWT4T1Yz.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-bullet-AWT4T1Yz.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-bullet-AWT4T1Yz.js",
+          "hash": "a38ca5ab13e9417d0798cdcb278273ea7d691f38ebe3f42a826479cfc31bd4ab",
+          "moduleId": "dist/vue-ui-bullet-AWT4T1Yz.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-bump": {
+      "type": "module",
+      "development": "dist/components/vue-ui-bump.js",
+      "production": "dist/components/vue-ui-bump.js",
+      "developmentHash": "b5fd6a3efc80e0a258621ab003b89b7ab34c4554b0fd1b2fe2316872523c6fcc",
+      "productionHash": "b5fd6a3efc80e0a258621ab003b89b7ab34c4554b0fd1b2fe2316872523c6fcc",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-bump-DNDDJtRI.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-bump-DNDDJtRI.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-bump-DNDDJtRI.js",
+          "hash": "a852cff66ad5d706dc1bdd0aa61286602c566e8b33f7202be9e624dfc0a43d63",
+          "moduleId": "dist/vue-ui-bump-DNDDJtRI.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-candlestick": {
+      "type": "module",
+      "development": "dist/components/vue-ui-candlestick.js",
+      "production": "dist/components/vue-ui-candlestick.js",
+      "developmentHash": "0e41bea6726f6d2100eba250b3e794e82672dd2433ea281b41ca2312ae1aaaca",
+      "productionHash": "0e41bea6726f6d2100eba250b3e794e82672dd2433ea281b41ca2312ae1aaaca",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-candlestick-DvNtfrWd.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-candlestick-DvNtfrWd.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-candlestick-DvNtfrWd.js",
+          "hash": "731d4363779844481ea4ddcc50f3106754de89b4482ded11f4767e3d828f9849",
+          "moduleId": "dist/vue-ui-candlestick-DvNtfrWd.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-carousel-table": {
+      "type": "module",
+      "development": "dist/components/vue-ui-carousel-table.js",
+      "production": "dist/components/vue-ui-carousel-table.js",
+      "developmentHash": "382b98fdd3c81948d0e9d1d7bb882223f8854f283f75f403e6e15746d2af04a1",
+      "productionHash": "382b98fdd3c81948d0e9d1d7bb882223f8854f283f75f403e6e15746d2af04a1",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-carousel-table-BQk8CkxQ.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-carousel-table-BQk8CkxQ.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-carousel-table-BQk8CkxQ.js",
+          "hash": "4dd3cbeede6ce0460df53d1d0937dcf2ae1d1a64be78fe5a39fe4843af554841",
+          "moduleId": "dist/vue-ui-carousel-table-BQk8CkxQ.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-chestnut": {
+      "type": "module",
+      "development": "dist/components/vue-ui-chestnut.js",
+      "production": "dist/components/vue-ui-chestnut.js",
+      "developmentHash": "a77a5b3a43cf14b940bf4aeda5223edd54be4a9809f5637c66f8352b781b919c",
+      "productionHash": "a77a5b3a43cf14b940bf4aeda5223edd54be4a9809f5637c66f8352b781b919c",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-chestnut-Cc2J1iOE.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-chestnut-Cc2J1iOE.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-chestnut-Cc2J1iOE.js",
+          "hash": "c3a3ce25d87e706861aa6c774795e5646bbfc33c2ad3839efb7a44a856ed7f86",
+          "moduleId": "dist/vue-ui-chestnut-Cc2J1iOE.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-chord": {
+      "type": "module",
+      "development": "dist/components/vue-ui-chord.js",
+      "production": "dist/components/vue-ui-chord.js",
+      "developmentHash": "c250a9ee0edaa5d12d018b781171e23919881e437e9c5bdd82b7ec97a2439aa6",
+      "productionHash": "c250a9ee0edaa5d12d018b781171e23919881e437e9c5bdd82b7ec97a2439aa6",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-chord-j2Qbi0HA.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-chord-j2Qbi0HA.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-chord-j2Qbi0HA.js",
+          "hash": "666e9dd5e1b0231097d1c7733531eede6ebc71ecce589bed2ee80207a8f39fed",
+          "moduleId": "dist/vue-ui-chord-j2Qbi0HA.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-circle-pack": {
+      "type": "module",
+      "development": "dist/components/vue-ui-circle-pack.js",
+      "production": "dist/components/vue-ui-circle-pack.js",
+      "developmentHash": "18388acf0d10d3ad37986a11c40017338844a2e46491c8c28b8244f08f645e6b",
+      "productionHash": "18388acf0d10d3ad37986a11c40017338844a2e46491c8c28b8244f08f645e6b",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-circle-pack-Do8Bbh4z.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-circle-pack-Do8Bbh4z.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-circle-pack-Do8Bbh4z.js",
+          "hash": "e2cd15debbf871fa422c4c0a0d4a842e090a403c70820b13ccae6e969cca51b6",
+          "moduleId": "dist/vue-ui-circle-pack-Do8Bbh4z.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-cursor": {
+      "type": "module",
+      "development": "dist/components/vue-ui-cursor.js",
+      "production": "dist/components/vue-ui-cursor.js",
+      "developmentHash": "d60e4cb6c1d8b47e99a8aea46d49e47c59e6f97c4ce5615174e6a2ffee4643c1",
+      "productionHash": "d60e4cb6c1d8b47e99a8aea46d49e47c59e6f97c4ce5615174e6a2ffee4643c1",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-cursor-Cyzzm6Y6.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-cursor-Cyzzm6Y6.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-cursor-Cyzzm6Y6.js",
+          "hash": "61b3cca2228a707bc2ae3fc2cfd73ca57a6ab522c3a7c1028d6ad9abafb8a663",
+          "moduleId": "dist/vue-ui-cursor-Cyzzm6Y6.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-dag": {
+      "type": "module",
+      "development": "dist/components/vue-ui-dag.js",
+      "production": "dist/components/vue-ui-dag.js",
+      "developmentHash": "c23c8a6dc364a1c69711c71365caa9438038f70775228b8cacdde6bae2817182",
+      "productionHash": "c23c8a6dc364a1c69711c71365caa9438038f70775228b8cacdde6bae2817182",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-dag-0e_XFGOJ.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-dag-0e_XFGOJ.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-dag-0e_XFGOJ.js",
+          "hash": "a7a0117977be9e249f459e4c114226715d29ed32230550510958ecc63aed4b2e",
+          "moduleId": "dist/vue-ui-dag-0e_XFGOJ.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-dashboard": {
+      "type": "module",
+      "development": "dist/components/vue-ui-dashboard.js",
+      "production": "dist/components/vue-ui-dashboard.js",
+      "developmentHash": "2d385f99c31403ff3c74465d88da9bb0a4ce1041c2716b1837ee678b015fece7",
+      "productionHash": "2d385f99c31403ff3c74465d88da9bb0a4ce1041c2716b1837ee678b015fece7",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-dashboard-BJzsxyrY.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-dashboard-BJzsxyrY.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-dashboard-BJzsxyrY.js",
+          "hash": "108fdca0bfb7577819596b6eccd13e608dac10d550976264891b5bd9a989d3ee",
+          "moduleId": "dist/vue-ui-dashboard-BJzsxyrY.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-digits": {
+      "type": "module",
+      "development": "dist/components/vue-ui-digits.js",
+      "production": "dist/components/vue-ui-digits.js",
+      "developmentHash": "423b1fcf152eb8c92b9cad900e8ab0e797f75171980c2d941ff61d29278ba587",
+      "productionHash": "423b1fcf152eb8c92b9cad900e8ab0e797f75171980c2d941ff61d29278ba587",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-digits-Uy498lu-.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-digits-Uy498lu-.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-digits-Uy498lu-.js",
+          "hash": "4317c0670ac301adb6f45f768cf9035daf286a30681ab42403ae6c9d4b879876",
+          "moduleId": "dist/vue-ui-digits-Uy498lu-.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-donut": {
+      "type": "module",
+      "development": "dist/components/vue-ui-donut.js",
+      "production": "dist/components/vue-ui-donut.js",
+      "developmentHash": "3ca8276d8dc213ea9758a43819fa7b4fd3daece8dd543792d56d1d2fbfafe7e6",
+      "productionHash": "3ca8276d8dc213ea9758a43819fa7b4fd3daece8dd543792d56d1d2fbfafe7e6",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-donut-8RB-gL2J.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-donut-8RB-gL2J.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-donut-8RB-gL2J.js",
+          "hash": "d3a27b03fa1c2a7635377fef0f165d17aeb27e313bccfabcdf6b2d532ed513b8",
+          "moduleId": "dist/vue-ui-donut-8RB-gL2J.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-donut-evolution": {
+      "type": "module",
+      "development": "dist/components/vue-ui-donut-evolution.js",
+      "production": "dist/components/vue-ui-donut-evolution.js",
+      "developmentHash": "3b4efeb5708c8263cb9df97789b18a1fbe3b749cbe1afc93b096370a1ad92d23",
+      "productionHash": "3b4efeb5708c8263cb9df97789b18a1fbe3b749cbe1afc93b096370a1ad92d23",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-donut-evolution-CSYfyIbX.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-donut-evolution-CSYfyIbX.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-donut-evolution-CSYfyIbX.js",
+          "hash": "d034dde6a861e1c1bbf249e78a3c3ade0d936a58a94bc03088325262ba58afe8",
+          "moduleId": "dist/vue-ui-donut-evolution-CSYfyIbX.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-dumbbell": {
+      "type": "module",
+      "development": "dist/components/vue-ui-dumbbell.js",
+      "production": "dist/components/vue-ui-dumbbell.js",
+      "developmentHash": "222d40f34f8b4d0e23607110c732cbb0d2b83a8a8ff58da313b1ec3f811753cb",
+      "productionHash": "222d40f34f8b4d0e23607110c732cbb0d2b83a8a8ff58da313b1ec3f811753cb",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-dumbbell-8eNZFzyp.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-dumbbell-8eNZFzyp.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-dumbbell-8eNZFzyp.js",
+          "hash": "809492d659112065b3142fed9fa9816237858044e80bae45fe518f065a43e707",
+          "moduleId": "dist/vue-ui-dumbbell-8eNZFzyp.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-flow": {
+      "type": "module",
+      "development": "dist/components/vue-ui-flow.js",
+      "production": "dist/components/vue-ui-flow.js",
+      "developmentHash": "38e4d74fd85c3ac8d25cc6846966bd68185a54339cf0540707507beaaebc281b",
+      "productionHash": "38e4d74fd85c3ac8d25cc6846966bd68185a54339cf0540707507beaaebc281b",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-flow-9VbVqIpA.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-flow-9VbVqIpA.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-flow-9VbVqIpA.js",
+          "hash": "e70483be2d1a49d88e53d081ab3f4c03deb5f1ef103cef7645aeb3f40c58c543",
+          "moduleId": "dist/vue-ui-flow-9VbVqIpA.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-funnel": {
+      "type": "module",
+      "development": "dist/components/vue-ui-funnel.js",
+      "production": "dist/components/vue-ui-funnel.js",
+      "developmentHash": "9eca120d9d0acd6f7b67e0967d3fb4044e12cdc06a57cdd9bc5c55027d788380",
+      "productionHash": "9eca120d9d0acd6f7b67e0967d3fb4044e12cdc06a57cdd9bc5c55027d788380",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-funnel-BJvc2n0l.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-funnel-BJvc2n0l.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-funnel-BJvc2n0l.js",
+          "hash": "c01f7d053ec163717a9a1031e1aa6e93acade6c1804519d8f2ec9a161c9697db",
+          "moduleId": "dist/vue-ui-funnel-BJvc2n0l.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-galaxy": {
+      "type": "module",
+      "development": "dist/components/vue-ui-galaxy.js",
+      "production": "dist/components/vue-ui-galaxy.js",
+      "developmentHash": "2796b492d4045655015761cbf43f43eabea360985fd82ec36779a93403926ffe",
+      "productionHash": "2796b492d4045655015761cbf43f43eabea360985fd82ec36779a93403926ffe",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-galaxy-cpdWAYuu.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-galaxy-cpdWAYuu.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-galaxy-cpdWAYuu.js",
+          "hash": "43a546bccfc055434d5b4a93aa43e5b9141eae22638a709be0177dbe781ce433",
+          "moduleId": "dist/vue-ui-galaxy-cpdWAYuu.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-gauge": {
+      "type": "module",
+      "development": "dist/components/vue-ui-gauge.js",
+      "production": "dist/components/vue-ui-gauge.js",
+      "developmentHash": "994fa08c45d88f8ad16123b0dd2c27a0a6444f586e2bf5171b95266701f83e56",
+      "productionHash": "994fa08c45d88f8ad16123b0dd2c27a0a6444f586e2bf5171b95266701f83e56",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-gauge-CCA1unzt.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-gauge-CCA1unzt.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-gauge-CCA1unzt.js",
+          "hash": "5013ce48029a2d2f08f3f2228a0cc94e18c4518f18ff327cd3ebfea38d96c1eb",
+          "moduleId": "dist/vue-ui-gauge-CCA1unzt.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-geo": {
+      "type": "module",
+      "development": "dist/components/vue-ui-geo.js",
+      "production": "dist/components/vue-ui-geo.js",
+      "developmentHash": "f68c034671ec201730c9e94c4081c8634171ed23a97e5551fd5440de5e13e872",
+      "productionHash": "f68c034671ec201730c9e94c4081c8634171ed23a97e5551fd5440de5e13e872",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-geo-BeFmMlu5.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-geo-BeFmMlu5.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-geo-BeFmMlu5.js",
+          "hash": "67b50a2d365540bf34b8624f001d4c93283751603e032582f5199b32b43ae35d",
+          "moduleId": "dist/vue-ui-geo-BeFmMlu5.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-gizmo": {
+      "type": "module",
+      "development": "dist/components/vue-ui-gizmo.js",
+      "production": "dist/components/vue-ui-gizmo.js",
+      "developmentHash": "5d79d68ffe03b9ebcc3a9c1bf9e99b8d2fb3c182a2b9e4a1667bacd1e52aa5b7",
+      "productionHash": "5d79d68ffe03b9ebcc3a9c1bf9e99b8d2fb3c182a2b9e4a1667bacd1e52aa5b7",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-gizmo-BvShxRjx.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-gizmo-BvShxRjx.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-gizmo-BvShxRjx.js",
+          "hash": "343ae06effdd37143d498f76f274d4bfd17d285c866f6dde2295c1d4987b55f5",
+          "moduleId": "dist/vue-ui-gizmo-BvShxRjx.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-heatmap": {
+      "type": "module",
+      "development": "dist/components/vue-ui-heatmap.js",
+      "production": "dist/components/vue-ui-heatmap.js",
+      "developmentHash": "6105d51d5ea46bfa796d4b76548ccf0070422c3d8cf63711c7cbe4f03fe0e67d",
+      "productionHash": "6105d51d5ea46bfa796d4b76548ccf0070422c3d8cf63711c7cbe4f03fe0e67d",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-heatmap-DaqaYsGY.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-heatmap-DaqaYsGY.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-heatmap-DaqaYsGY.js",
+          "hash": "da7c186c2ad8b0df2271ddecc9d5b0bdd24633f21e746480277e63b3d9b81e74",
+          "moduleId": "dist/vue-ui-heatmap-DaqaYsGY.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-hill": {
+      "type": "module",
+      "development": "dist/components/vue-ui-hill.js",
+      "production": "dist/components/vue-ui-hill.js",
+      "developmentHash": "c6e4cb962ad9828d7f506ae72792d26bebc9833b4a5961cb420618608ce81d4e",
+      "productionHash": "c6e4cb962ad9828d7f506ae72792d26bebc9833b4a5961cb420618608ce81d4e",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-hill-BT5ixO2U.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-hill-BT5ixO2U.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-hill-BT5ixO2U.js",
+          "hash": "dbc4bf77d84e81e6108b2fd863b177784867911956965df82d72e38001d1c960",
+          "moduleId": "dist/vue-ui-hill-BT5ixO2U.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-history-plot": {
+      "type": "module",
+      "development": "dist/components/vue-ui-history-plot.js",
+      "production": "dist/components/vue-ui-history-plot.js",
+      "developmentHash": "5d417bc93e934b4bf7cb4dca4616ef4f1df3e542e2ce896cc1ecf18262db4a0e",
+      "productionHash": "5d417bc93e934b4bf7cb4dca4616ef4f1df3e542e2ce896cc1ecf18262db4a0e",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-history-plot-S6MAWwzs.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-history-plot-S6MAWwzs.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-history-plot-S6MAWwzs.js",
+          "hash": "2b87c5126eb1f05921397702d4bbbf54e9c8817767a5f4b83540eb8b15c9d814",
+          "moduleId": "dist/vue-ui-history-plot-S6MAWwzs.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-horizontal-bar": {
+      "type": "module",
+      "development": "dist/components/vue-ui-horizontal-bar.js",
+      "production": "dist/components/vue-ui-horizontal-bar.js",
+      "developmentHash": "daf030af0681c30611d33219ced6cec6fa55067e6fdab1685045a3b32296c1fc",
+      "productionHash": "daf030af0681c30611d33219ced6cec6fa55067e6fdab1685045a3b32296c1fc",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-horizontal-bar-DUMN2pwu.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-horizontal-bar-DUMN2pwu.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-horizontal-bar-DUMN2pwu.js",
+          "hash": "919aad5bc32613f1f10cd42167d1865716bf8c0a80efb9f6cd08e328a81435fa",
+          "moduleId": "dist/vue-ui-horizontal-bar-DUMN2pwu.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-icon": {
+      "type": "module",
+      "development": "dist/components/vue-ui-icon.js",
+      "production": "dist/components/vue-ui-icon.js",
+      "developmentHash": "7aa30cc0056934acf4cc5def74af6218712fa71204f2aad4d05e2d4d029477d7",
+      "productionHash": "7aa30cc0056934acf4cc5def74af6218712fa71204f2aad4d05e2d4d029477d7",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/BaseIcon-BfndwIWE.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/BaseIcon-BfndwIWE.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/BaseIcon-BfndwIWE.js",
+          "hash": "36da61a82b38ed0e590b279d8549d1f3b601a127ef299c66cb5ab606d14b1103",
+          "moduleId": "dist/BaseIcon-BfndwIWE.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-kpi": {
+      "type": "module",
+      "development": "dist/components/vue-ui-kpi.js",
+      "production": "dist/components/vue-ui-kpi.js",
+      "developmentHash": "0a6cbc2f44b657800d36c51452baa23504771f1bfbdf0375bea9e762487263e5",
+      "productionHash": "0a6cbc2f44b657800d36c51452baa23504771f1bfbdf0375bea9e762487263e5",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-kpi-_UO0otlH.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-kpi-_UO0otlH.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-kpi-_UO0otlH.js",
+          "hash": "e863fe98fc747e5c160a7150cd591516ef7c83f96327e3da580b53c1232d9cfc",
+          "moduleId": "dist/vue-ui-kpi-_UO0otlH.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-mini-loader": {
+      "type": "module",
+      "development": "dist/components/vue-ui-mini-loader.js",
+      "production": "dist/components/vue-ui-mini-loader.js",
+      "developmentHash": "155bd1d2b3c883940e58514c389e2fd3f862b1a9e23fce600352394b7b558205",
+      "productionHash": "155bd1d2b3c883940e58514c389e2fd3f862b1a9e23fce600352394b7b558205",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-mini-loader-CtTewZJG.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-mini-loader-CtTewZJG.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-mini-loader-CtTewZJG.js",
+          "hash": "9eede980588ec695d37694aadcc2712e72983070aa6fcd2a58c34a11a6cad70e",
+          "moduleId": "dist/vue-ui-mini-loader-CtTewZJG.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-molecule": {
+      "type": "module",
+      "development": "dist/components/vue-ui-molecule.js",
+      "production": "dist/components/vue-ui-molecule.js",
+      "developmentHash": "5b21efabbc268d13d815aa27da7cd1997c8dea839bfdd9378564699748594357",
+      "productionHash": "5b21efabbc268d13d815aa27da7cd1997c8dea839bfdd9378564699748594357",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-molecule-D0s8EZSv.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-molecule-D0s8EZSv.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-molecule-D0s8EZSv.js",
+          "hash": "3e40ea2c1f4f5baa53f22522f92d307070f64ff7aa699c354def611962860964",
+          "moduleId": "dist/vue-ui-molecule-D0s8EZSv.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-mood-radar": {
+      "type": "module",
+      "development": "dist/components/vue-ui-mood-radar.js",
+      "production": "dist/components/vue-ui-mood-radar.js",
+      "developmentHash": "bb47597032826a9e750c71ae91f2d6cd4ae73c35b118777d2177df357e425d82",
+      "productionHash": "bb47597032826a9e750c71ae91f2d6cd4ae73c35b118777d2177df357e425d82",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-mood-radar-BnvrlH3J.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-mood-radar-BnvrlH3J.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-mood-radar-BnvrlH3J.js",
+          "hash": "6066eb1ddbd7b80c168281edb97e115d3ca19bf111ad81fabdd4826a3608a590",
+          "moduleId": "dist/vue-ui-mood-radar-BnvrlH3J.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-nested-donuts": {
+      "type": "module",
+      "development": "dist/components/vue-ui-nested-donuts.js",
+      "production": "dist/components/vue-ui-nested-donuts.js",
+      "developmentHash": "dff3ad53c8362c809c3d7a7dae2ab9555ca0478c6894d9a9f42554c30f64fbfe",
+      "productionHash": "dff3ad53c8362c809c3d7a7dae2ab9555ca0478c6894d9a9f42554c30f64fbfe",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-nested-donuts-CPkrAtLj.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-nested-donuts-CPkrAtLj.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-nested-donuts-CPkrAtLj.js",
+          "hash": "60af67dfc5e1818f40791f25f3585585319e034c18a342f5537a6f155c9ff9c8",
+          "moduleId": "dist/vue-ui-nested-donuts-CPkrAtLj.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-onion": {
+      "type": "module",
+      "development": "dist/components/vue-ui-onion.js",
+      "production": "dist/components/vue-ui-onion.js",
+      "developmentHash": "fa153326cecbe9baa08d49ec4e379d53c7f67ccad14d06ead28f083ddf55c7c0",
+      "productionHash": "fa153326cecbe9baa08d49ec4e379d53c7f67ccad14d06ead28f083ddf55c7c0",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-onion-Cs-P6c1S.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-onion-Cs-P6c1S.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-onion-Cs-P6c1S.js",
+          "hash": "4dfe2173e7a833c9f451bd1179af74c1e9e373c130ea4895f3922d8c0d7b90d8",
+          "moduleId": "dist/vue-ui-onion-Cs-P6c1S.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-parallel-coordinate-plot": {
+      "type": "module",
+      "development": "dist/components/vue-ui-parallel-coordinate-plot.js",
+      "production": "dist/components/vue-ui-parallel-coordinate-plot.js",
+      "developmentHash": "6b3bdca3a70d8ae72fbd34c8f53f47b441b558112607cff586901f162622e66a",
+      "productionHash": "6b3bdca3a70d8ae72fbd34c8f53f47b441b558112607cff586901f162622e66a",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-parallel-coordinate-plot-1msZmPiM.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-parallel-coordinate-plot-1msZmPiM.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-parallel-coordinate-plot-1msZmPiM.js",
+          "hash": "588b71d492a0adf5b46059c7fda3c22530c7238e91e082fe54bdc2e3e8abc7de",
+          "moduleId": "dist/vue-ui-parallel-coordinate-plot-1msZmPiM.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-pattern": {
+      "type": "module",
+      "development": "dist/components/vue-ui-pattern.js",
+      "production": "dist/components/vue-ui-pattern.js",
+      "developmentHash": "e5ffb9089bff44cd6874e88dbc269ccf1963873771134449e8a05edf01a510ae",
+      "productionHash": "e5ffb9089bff44cd6874e88dbc269ccf1963873771134449e8a05edf01a510ae",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-pattern-DKozfnVn.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-pattern-DKozfnVn.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-pattern-DKozfnVn.js",
+          "hash": "355e267ad34e38fe8afd982c89a0381388cdf0f3b91f6695c25b56c3110e72da",
+          "moduleId": "dist/vue-ui-pattern-DKozfnVn.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-pattern-seed": {
+      "type": "module",
+      "development": "dist/components/vue-ui-pattern-seed.js",
+      "production": "dist/components/vue-ui-pattern-seed.js",
+      "developmentHash": "8aa9351043ec7d5e64eb1fe849c111594be45d3384b33e4e1be3e29bca53f817",
+      "productionHash": "8aa9351043ec7d5e64eb1fe849c111594be45d3384b33e4e1be3e29bca53f817",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-pattern-seed-BB1honLm.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-pattern-seed-BB1honLm.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-pattern-seed-BB1honLm.js",
+          "hash": "164246e91b528100861cf51671b6ec0f15187af861159a62332d20a56f11c49e",
+          "moduleId": "dist/vue-ui-pattern-seed-BB1honLm.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-quadrant": {
+      "type": "module",
+      "development": "dist/components/vue-ui-quadrant.js",
+      "production": "dist/components/vue-ui-quadrant.js",
+      "developmentHash": "4f747faa3bd0ddf9fb32310733f8042a108d471ef25b636d430087686d2e1195",
+      "productionHash": "4f747faa3bd0ddf9fb32310733f8042a108d471ef25b636d430087686d2e1195",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-quadrant-H4BH2X1n.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-quadrant-H4BH2X1n.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-quadrant-H4BH2X1n.js",
+          "hash": "2c378458611aabfb1d41fe613ef56cd3c722ee8bfbb43495242e3eaddd6910d9",
+          "moduleId": "dist/vue-ui-quadrant-H4BH2X1n.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-quick-chart": {
+      "type": "module",
+      "development": "dist/components/vue-ui-quick-chart.js",
+      "production": "dist/components/vue-ui-quick-chart.js",
+      "developmentHash": "a1bcc80b0fbc638163ed408bf39b4719d0b94cbac9106d16aa3c7b575d13c9f1",
+      "productionHash": "a1bcc80b0fbc638163ed408bf39b4719d0b94cbac9106d16aa3c7b575d13c9f1",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-quick-chart-Dn2OpR7I.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-quick-chart-Dn2OpR7I.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-quick-chart-Dn2OpR7I.js",
+          "hash": "b0003bfe5c1529091d33598f69df49d833f22037760b4c96014605e55e8b937e",
+          "moduleId": "dist/vue-ui-quick-chart-Dn2OpR7I.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-radar": {
+      "type": "module",
+      "development": "dist/components/vue-ui-radar.js",
+      "production": "dist/components/vue-ui-radar.js",
+      "developmentHash": "aae5d0303e2a4a3074412e540ef66fb58bb8b213452fd4270fae7484df922b5c",
+      "productionHash": "aae5d0303e2a4a3074412e540ef66fb58bb8b213452fd4270fae7484df922b5c",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-radar-B-0WKG9B.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-radar-B-0WKG9B.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-radar-B-0WKG9B.js",
+          "hash": "95c2e2633011e984e09133d4474957eb5cd616d945692d4de6e180929b862305",
+          "moduleId": "dist/vue-ui-radar-B-0WKG9B.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-rating": {
+      "type": "module",
+      "development": "dist/components/vue-ui-rating.js",
+      "production": "dist/components/vue-ui-rating.js",
+      "developmentHash": "37f33a0a7d52be0980c28e2f815c8abbab6179cd179e266445e6b2aaf2e21799",
+      "productionHash": "37f33a0a7d52be0980c28e2f815c8abbab6179cd179e266445e6b2aaf2e21799",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-rating-BDVSVFA0.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-rating-BDVSVFA0.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-rating-BDVSVFA0.js",
+          "hash": "380f2d4829043b6e0ac426f04b7850cf5e5bc43f6dc62ddd537a2db30d34531a",
+          "moduleId": "dist/vue-ui-rating-BDVSVFA0.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-relation-circle": {
+      "type": "module",
+      "development": "dist/components/vue-ui-relation-circle.js",
+      "production": "dist/components/vue-ui-relation-circle.js",
+      "developmentHash": "dce9f64106af0c024b5d43332c54ea37e21420280ab2eafa061e5ea50013362f",
+      "productionHash": "dce9f64106af0c024b5d43332c54ea37e21420280ab2eafa061e5ea50013362f",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-relation-circle-B9O3HmHR.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-relation-circle-B9O3HmHR.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-relation-circle-B9O3HmHR.js",
+          "hash": "9cecb50a93233d4386a207a367c6dec23c8148170a17925e9c952b8ca3e3d972",
+          "moduleId": "dist/vue-ui-relation-circle-B9O3HmHR.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-ridgeline": {
+      "type": "module",
+      "development": "dist/components/vue-ui-ridgeline.js",
+      "production": "dist/components/vue-ui-ridgeline.js",
+      "developmentHash": "4dfb844a63cfd64ad81cfa5d59231e71e9495f4858d7c520f5889e52de839318",
+      "productionHash": "4dfb844a63cfd64ad81cfa5d59231e71e9495f4858d7c520f5889e52de839318",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-ridgeline-D_8sALB0.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-ridgeline-D_8sALB0.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-ridgeline-D_8sALB0.js",
+          "hash": "c5b5bc9f5488ee83f19a7bfeda7dbd3f0dce3ca17e6085ec6e741ec862fdf646",
+          "moduleId": "dist/vue-ui-ridgeline-D_8sALB0.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-rings": {
+      "type": "module",
+      "development": "dist/components/vue-ui-rings.js",
+      "production": "dist/components/vue-ui-rings.js",
+      "developmentHash": "9a5d3e12256f18ee0944e001411d9b0cf6296ad4069c87ed5a356564b21e0712",
+      "productionHash": "9a5d3e12256f18ee0944e001411d9b0cf6296ad4069c87ed5a356564b21e0712",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-rings-lgGvyEW_.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-rings-lgGvyEW_.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-rings-lgGvyEW_.js",
+          "hash": "00cd808bc6b71cce67a3410e0444eafabde0e5e3a9a6fdd4bc0cfad73982d819",
+          "moduleId": "dist/vue-ui-rings-lgGvyEW_.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-scatter": {
+      "type": "module",
+      "development": "dist/components/vue-ui-scatter.js",
+      "production": "dist/components/vue-ui-scatter.js",
+      "developmentHash": "7cc3745b17178d5cb078abacd7462f8da6f29344f7155b32cc47d489940f0c2c",
+      "productionHash": "7cc3745b17178d5cb078abacd7462f8da6f29344f7155b32cc47d489940f0c2c",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-scatter-Dzdkyw1C.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-scatter-Dzdkyw1C.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-scatter-Dzdkyw1C.js",
+          "hash": "1581ac2175e9ac272ab66e2795d8240d966210ef6f89b03fa46b795c88af6709",
+          "moduleId": "dist/vue-ui-scatter-Dzdkyw1C.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-skeleton": {
+      "type": "module",
+      "development": "dist/components/vue-ui-skeleton.js",
+      "production": "dist/components/vue-ui-skeleton.js",
+      "developmentHash": "991f9201a223a47352000ca584e818720b3ff221deb1b49fabf0abda34b3b38e",
+      "productionHash": "991f9201a223a47352000ca584e818720b3ff221deb1b49fabf0abda34b3b38e",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-skeleton-E6Hbh29Z.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-skeleton-E6Hbh29Z.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-skeleton-E6Hbh29Z.js",
+          "hash": "85f687e8a55a316e70f545e3c5c38714393160e671d3b2dc2f050812d2d484be",
+          "moduleId": "dist/vue-ui-skeleton-E6Hbh29Z.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-smiley": {
+      "type": "module",
+      "development": "dist/components/vue-ui-smiley.js",
+      "production": "dist/components/vue-ui-smiley.js",
+      "developmentHash": "ec1a630136695b8237c2ce39e5f22a1f86e08f6ff4afa26c2f1e05a1fc690eb5",
+      "productionHash": "ec1a630136695b8237c2ce39e5f22a1f86e08f6ff4afa26c2f1e05a1fc690eb5",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-smiley-5iHJeTPc.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-smiley-5iHJeTPc.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-smiley-5iHJeTPc.js",
+          "hash": "2c0779ebc8085a2823740a8a8f70641155525259ced6e642cbfc5cf8d7138dd3",
+          "moduleId": "dist/vue-ui-smiley-5iHJeTPc.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-spark-trend": {
+      "type": "module",
+      "development": "dist/components/vue-ui-spark-trend.js",
+      "production": "dist/components/vue-ui-spark-trend.js",
+      "developmentHash": "1c83f894cbc3ac85e2139cf7270e51b252468f809f561cd34152ef660d92fe13",
+      "productionHash": "1c83f894cbc3ac85e2139cf7270e51b252468f809f561cd34152ef660d92fe13",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-spark-trend-BUQ1_7eU.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-spark-trend-BUQ1_7eU.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-spark-trend-BUQ1_7eU.js",
+          "hash": "18d96b8ae9fa6e3adcaa3ad0568cee07320a2cd7ce094d2e7f344d1ebf964adf",
+          "moduleId": "dist/vue-ui-spark-trend-BUQ1_7eU.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-sparkbar": {
+      "type": "module",
+      "development": "dist/components/vue-ui-sparkbar.js",
+      "production": "dist/components/vue-ui-sparkbar.js",
+      "developmentHash": "a1b39bb937133c53cff5ea1f09283f3e716631e951df69060f5334573ed55267",
+      "productionHash": "a1b39bb937133c53cff5ea1f09283f3e716631e951df69060f5334573ed55267",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-sparkbar-iyq8Toli.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-sparkbar-iyq8Toli.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-sparkbar-iyq8Toli.js",
+          "hash": "bb3604d827c4f55b9a659d92086054ae55a121d3575d98a64f958a507df3220b",
+          "moduleId": "dist/vue-ui-sparkbar-iyq8Toli.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-sparkgauge": {
+      "type": "module",
+      "development": "dist/components/vue-ui-sparkgauge.js",
+      "production": "dist/components/vue-ui-sparkgauge.js",
+      "developmentHash": "77436c2d226ac75b3f55b9bef8791c56b324f3a416456171140c8399c676578b",
+      "productionHash": "77436c2d226ac75b3f55b9bef8791c56b324f3a416456171140c8399c676578b",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-sparkgauge-CJXxmdWD.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-sparkgauge-CJXxmdWD.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-sparkgauge-CJXxmdWD.js",
+          "hash": "6abf994c53387827601274e78cd5628588f22723bc004f78551954457984ac64",
+          "moduleId": "dist/vue-ui-sparkgauge-CJXxmdWD.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-sparkhistogram": {
+      "type": "module",
+      "development": "dist/components/vue-ui-sparkhistogram.js",
+      "production": "dist/components/vue-ui-sparkhistogram.js",
+      "developmentHash": "580ef9bc40eccf77d4add9d2dc65c77fb70c94fe946f72b4dafc709e8dc75bb9",
+      "productionHash": "580ef9bc40eccf77d4add9d2dc65c77fb70c94fe946f72b4dafc709e8dc75bb9",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-sparkhistogram-B_zDxZp5.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-sparkhistogram-B_zDxZp5.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-sparkhistogram-B_zDxZp5.js",
+          "hash": "9a8e1ff15e4a9f46d921cfda210c0017bec4e348cbba6b51ca933b36313122f5",
+          "moduleId": "dist/vue-ui-sparkhistogram-B_zDxZp5.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-sparkline": {
+      "type": "module",
+      "development": "dist/components/vue-ui-sparkline.js",
+      "production": "dist/components/vue-ui-sparkline.js",
+      "developmentHash": "77b49542c39d372c78194db38525555c3ad8e69e742c4325cbaf3502fa7b05a6",
+      "productionHash": "77b49542c39d372c78194db38525555c3ad8e69e742c4325cbaf3502fa7b05a6",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-sparkline-jQ1WegfT.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-sparkline-jQ1WegfT.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-sparkline-jQ1WegfT.js",
+          "hash": "efd5c3a437e09e8dfd76fb930c4221d583fb4771068b25e01a2b1cbe4ccc4194",
+          "moduleId": "dist/vue-ui-sparkline-jQ1WegfT.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-sparkstackbar": {
+      "type": "module",
+      "development": "dist/components/vue-ui-sparkstackbar.js",
+      "production": "dist/components/vue-ui-sparkstackbar.js",
+      "developmentHash": "d36fccbe1692f0ccac57e2574c00c27c0262c8581a2f4bb5ef83f2f014709af2",
+      "productionHash": "d36fccbe1692f0ccac57e2574c00c27c0262c8581a2f4bb5ef83f2f014709af2",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-sparkstackbar-Bcipd2lT.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-sparkstackbar-Bcipd2lT.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-sparkstackbar-Bcipd2lT.js",
+          "hash": "95643d2ad42c49e0d4aa86aa7da36910b5c4f6a7245f59a7fbf3c0b74e4f68bc",
+          "moduleId": "dist/vue-ui-sparkstackbar-Bcipd2lT.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-stackbar": {
+      "type": "module",
+      "development": "dist/components/vue-ui-stackbar.js",
+      "production": "dist/components/vue-ui-stackbar.js",
+      "developmentHash": "392b5a0231e7cd2713a23e1e4c292fb21eed054f2a1d0dad7e4119d291257124",
+      "productionHash": "392b5a0231e7cd2713a23e1e4c292fb21eed054f2a1d0dad7e4119d291257124",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-stackbar-BH5oIVxw.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-stackbar-BH5oIVxw.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-stackbar-BH5oIVxw.js",
+          "hash": "c6312c40d530614bb6f485ed706f07752dea6ef3af3390750d29cb3c95abe19e",
+          "moduleId": "dist/vue-ui-stackbar-BH5oIVxw.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-stackline": {
+      "type": "module",
+      "development": "dist/components/vue-ui-stackline.js",
+      "production": "dist/components/vue-ui-stackline.js",
+      "developmentHash": "d7171732aba64bac0eff5ee27bfecc01dc67ee5c59db74e0821a561d69af0f34",
+      "productionHash": "d7171732aba64bac0eff5ee27bfecc01dc67ee5c59db74e0821a561d69af0f34",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-stackline-CAbvGgyL.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-stackline-CAbvGgyL.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-stackline-CAbvGgyL.js",
+          "hash": "371625910d547dddac848f29f55f1692df487df35996d5bc86563f42ff7aeef0",
+          "moduleId": "dist/vue-ui-stackline-CAbvGgyL.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-strip-plot": {
+      "type": "module",
+      "development": "dist/components/vue-ui-strip-plot.js",
+      "production": "dist/components/vue-ui-strip-plot.js",
+      "developmentHash": "e22fc7a6ba7f4554b9e712fcf837b50e017f696f0f0fdb6fcb117f0845a93f82",
+      "productionHash": "e22fc7a6ba7f4554b9e712fcf837b50e017f696f0f0fdb6fcb117f0845a93f82",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-strip-plot-CjIOca_Y.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-strip-plot-CjIOca_Y.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-strip-plot-CjIOca_Y.js",
+          "hash": "13b78b57abca21849c0dda52d5a87fa2eee80b7551d454f43fee0a021714af84",
+          "moduleId": "dist/vue-ui-strip-plot-CjIOca_Y.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-table": {
+      "type": "module",
+      "development": "dist/components/vue-ui-table.js",
+      "production": "dist/components/vue-ui-table.js",
+      "developmentHash": "a560028216decac999beac6b478d82cc6b8fa90671e519271b9f114ecf23fd5f",
+      "productionHash": "a560028216decac999beac6b478d82cc6b8fa90671e519271b9f114ecf23fd5f",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-table-DzCJOvjR.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-table-DzCJOvjR.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-table-DzCJOvjR.js",
+          "hash": "0389aa9be633523c5d03b4a7c4da509a8f6f36939bdc20ab5f2322af83ba5159",
+          "moduleId": "dist/vue-ui-table-DzCJOvjR.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-table-heatmap": {
+      "type": "module",
+      "development": "dist/components/vue-ui-table-heatmap.js",
+      "production": "dist/components/vue-ui-table-heatmap.js",
+      "developmentHash": "4436dbb7f50d99ec7b6e147ff7a0dc851272aae5c1491ad092124da2d89e1095",
+      "productionHash": "4436dbb7f50d99ec7b6e147ff7a0dc851272aae5c1491ad092124da2d89e1095",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-table-heatmap-D1bbPXKG.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-table-heatmap-D1bbPXKG.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-table-heatmap-D1bbPXKG.js",
+          "hash": "84901660435d08b89da7f1a3ad80e6a2ae47ddc26b13187e1f5103f675f1065d",
+          "moduleId": "dist/vue-ui-table-heatmap-D1bbPXKG.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-table-sparkline": {
+      "type": "module",
+      "development": "dist/components/vue-ui-table-sparkline.js",
+      "production": "dist/components/vue-ui-table-sparkline.js",
+      "developmentHash": "e7c9aba443858674481f69c6c84b0ab7821309d7932627dd3e50561237e589c5",
+      "productionHash": "e7c9aba443858674481f69c6c84b0ab7821309d7932627dd3e50561237e589c5",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-table-sparkline-Dc6HEQUQ.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-table-sparkline-Dc6HEQUQ.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-table-sparkline-Dc6HEQUQ.js",
+          "hash": "bfb240d485909ef8038e6a98e83c7e00377a7f8f69f4e5f666f4bac524fc09cc",
+          "moduleId": "dist/vue-ui-table-sparkline-Dc6HEQUQ.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-thermometer": {
+      "type": "module",
+      "development": "dist/components/vue-ui-thermometer.js",
+      "production": "dist/components/vue-ui-thermometer.js",
+      "developmentHash": "cbb3018b4736ddf10331f94d702dcd3c86957e09be39cffa8f5bf989cde1542f",
+      "productionHash": "cbb3018b4736ddf10331f94d702dcd3c86957e09be39cffa8f5bf989cde1542f",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-thermometer-DdrOgp8t.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-thermometer-DdrOgp8t.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-thermometer-DdrOgp8t.js",
+          "hash": "e113b848c6d904a57ed69b1feea49430d9fe1dcefcddc13bb0afa2333261af6f",
+          "moduleId": "dist/vue-ui-thermometer-DdrOgp8t.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-timer": {
+      "type": "module",
+      "development": "dist/components/vue-ui-timer.js",
+      "production": "dist/components/vue-ui-timer.js",
+      "developmentHash": "71ab56df6864609edcaa6fa00a501c22926273466b9f10bb5d9f2ffbae8dd871",
+      "productionHash": "71ab56df6864609edcaa6fa00a501c22926273466b9f10bb5d9f2ffbae8dd871",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-timer-BpFDnonz.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-timer-BpFDnonz.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-timer-BpFDnonz.js",
+          "hash": "21113f03e9579eaecbca82705184ff0864b6c7ce3305494c26580d7602f82cbe",
+          "moduleId": "dist/vue-ui-timer-BpFDnonz.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-tiremarks": {
+      "type": "module",
+      "development": "dist/components/vue-ui-tiremarks.js",
+      "production": "dist/components/vue-ui-tiremarks.js",
+      "developmentHash": "30e526cf4c8f9aa4e1201378780c74773152dbdd2138d24a403d90a1502d0f7f",
+      "productionHash": "30e526cf4c8f9aa4e1201378780c74773152dbdd2138d24a403d90a1502d0f7f",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-tiremarks-B19X7xfh.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-tiremarks-B19X7xfh.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-tiremarks-B19X7xfh.js",
+          "hash": "c5b1a86c8bdd332c1b9365452a15c0d09c1fe92c84c21b4269e21395ac1b75e9",
+          "moduleId": "dist/vue-ui-tiremarks-B19X7xfh.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-treemap": {
+      "type": "module",
+      "development": "dist/components/vue-ui-treemap.js",
+      "production": "dist/components/vue-ui-treemap.js",
+      "developmentHash": "dcb8268ea5e37e9b644fb026fa797bbd3917b64dce7959a7a81e4866201e6ba9",
+      "productionHash": "dcb8268ea5e37e9b644fb026fa797bbd3917b64dce7959a7a81e4866201e6ba9",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-treemap-Dd9pg6yW.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-treemap-Dd9pg6yW.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-treemap-Dd9pg6yW.js",
+          "hash": "7624f86c4b162c2c80b32c4a443f2ba03f58e4df1ebf9d8acd760032073231e7",
+          "moduleId": "dist/vue-ui-treemap-Dd9pg6yW.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-vertical-bar": {
+      "type": "module",
+      "development": "dist/components/vue-ui-vertical-bar.js",
+      "production": "dist/components/vue-ui-vertical-bar.js",
+      "developmentHash": "cb24fbe8e8a6c52e96e8502a2e33cc13962d615023b0954efdd4816a1b3b0d35",
+      "productionHash": "cb24fbe8e8a6c52e96e8502a2e33cc13962d615023b0954efdd4816a1b3b0d35",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-horizontal-bar-DUMN2pwu.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-horizontal-bar-DUMN2pwu.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-horizontal-bar-DUMN2pwu.js",
+          "hash": "919aad5bc32613f1f10cd42167d1865716bf8c0a80efb9f6cd08e328a81435fa",
+          "moduleId": "dist/vue-ui-horizontal-bar-DUMN2pwu.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-waffle": {
+      "type": "module",
+      "development": "dist/components/vue-ui-waffle.js",
+      "production": "dist/components/vue-ui-waffle.js",
+      "developmentHash": "701792637e6058c2f9d17e03be653e01a60f58a5367bc8ec9455a94454bfa98a",
+      "productionHash": "701792637e6058c2f9d17e03be653e01a60f58a5367bc8ec9455a94454bfa98a",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-waffle-JmiCg9-q.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-waffle-JmiCg9-q.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-waffle-JmiCg9-q.js",
+          "hash": "5975cd96f0069dac620280d6059cc10da5b29fce518e9bf70d62c8b612feee0c",
+          "moduleId": "dist/vue-ui-waffle-JmiCg9-q.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-wheel": {
+      "type": "module",
+      "development": "dist/components/vue-ui-wheel.js",
+      "production": "dist/components/vue-ui-wheel.js",
+      "developmentHash": "eb5fcfa39f7d7bf643d74e11c36efb13b9424b8c92af445b741ef963ab07a982",
+      "productionHash": "eb5fcfa39f7d7bf643d74e11c36efb13b9424b8c92af445b741ef963ab07a982",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-wheel-C4HHM1-P.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-wheel-C4HHM1-P.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-wheel-C4HHM1-P.js",
+          "hash": "25991b8b8c31b1d81eb114975cc15d1f2912ad108465c65ec2931f5b7dbb5ec3",
+          "moduleId": "dist/vue-ui-wheel-C4HHM1-P.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-word-cloud": {
+      "type": "module",
+      "development": "dist/components/vue-ui-word-cloud.js",
+      "production": "dist/components/vue-ui-word-cloud.js",
+      "developmentHash": "264238d4f3e1c617bd5bb0cefeb4f06aa675638fee43b2d5a8c31f0a1e3955bf",
+      "productionHash": "264238d4f3e1c617bd5bb0cefeb4f06aa675638fee43b2d5a8c31f0a1e3955bf",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-word-cloud-e86BT9TU.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-word-cloud-e86BT9TU.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-word-cloud-e86BT9TU.js",
+          "hash": "f57f5aea2df0a970b5cd965e89c328249127af1e33890351a7a571b163b20f9e",
+          "moduleId": "dist/vue-ui-word-cloud-e86BT9TU.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-world": {
+      "type": "module",
+      "development": "dist/components/vue-ui-world.js",
+      "production": "dist/components/vue-ui-world.js",
+      "developmentHash": "6319143999bd613f0d5141a9e9d6de80ce0f56c59962a9b5915a1fafca7a3538",
+      "productionHash": "6319143999bd613f0d5141a9e9d6de80ce0f56c59962a9b5915a1fafca7a3538",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-world-BYnB-6Gl.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-world-BYnB-6Gl.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-world-BYnB-6Gl.js",
+          "hash": "7e84ee9525a87ab00dcd19adbba3039e831e10f48c03173c37833bca04cb68da",
+          "moduleId": "dist/vue-ui-world-BYnB-6Gl.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-xy": {
+      "type": "module",
+      "development": "dist/components/vue-ui-xy.js",
+      "production": "dist/components/vue-ui-xy.js",
+      "developmentHash": "92713bf63d2f2776eb49e700f50bcfe2b7c204d6c92bfc4aedb3f8587c4329de",
+      "productionHash": "92713bf63d2f2776eb49e700f50bcfe2b7c204d6c92bfc4aedb3f8587c4329de",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-xy-ChUQgqEu.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-xy-ChUQgqEu.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-xy-ChUQgqEu.js",
+          "hash": "ceb974cee3f521db629d4a2908a782027eae37487c4fd28dc4c22f1ab0755c1a",
+          "moduleId": "dist/vue-ui-xy-ChUQgqEu.js"
+        }
+      ]
+    },
+    "vue-data-ui/vue-ui-xy-canvas": {
+      "type": "module",
+      "development": "dist/components/vue-ui-xy-canvas.js",
+      "production": "dist/components/vue-ui-xy-canvas.js",
+      "developmentHash": "db3fd13acd7f26042a9444b0b3255d5bf809560a5531fa1d38d26250b4e50776",
+      "productionHash": "db3fd13acd7f26042a9444b0b3255d5bf809560a5531fa1d38d26250b4e50776",
+      "developmentDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "productionDependencies": [
+        "jspdf",
+        "vue"
+      ],
+      "developmentModuleDependencies": [
+        "dist/vue-ui-xy-canvas-1rbwMA1m.js"
+      ],
+      "productionModuleDependencies": [
+        "dist/vue-ui-xy-canvas-1rbwMA1m.js"
+      ],
+      "files": [
+        {
+          "type": "module",
+          "path": "dist/vue-ui-xy-canvas-1rbwMA1m.js",
+          "hash": "9f888967bbb520f8e9df7877f10fb962d833c7eba7136d70b961cfcf1a08b16b",
+          "moduleId": "dist/vue-ui-xy-canvas-1rbwMA1m.js"
+        }
       ]
     }
   },
   "requires": {
     "vue3": "^3.5.0"
   },
-  "styles": ["dist/style.css"],
-  "files": ["licenses/VUE-DATA-UI-LICENSE"]
+  "styles": [
+    {
+      "type": "style",
+      "path": "dist/style.css",
+      "hash": "288c6bd07ce63f78571749238d0a1b9f485f9d2ed5822a90d15842dd0fc87c3d"
+    }
+  ],
+  "files": [
+    {
+      "type": "license",
+      "path": "licenses/VUE-DATA-UI-LICENSE",
+      "hash": "f5a527c7a0133b9cbc244b7c25e429b65a9f087c2ee8109d524b975342c74d17"
+    }
+  ]
 }

@@ -13,7 +13,8 @@
 | [RazorVue Blazor CLR 类型支持计划](./blazor-clr-support-plan.md) | 浏览器运行时类型与服务的专项 ledger：`Jazor.CLR.Generator -> Jazor.CLR` 的唯一 mapping owner、导航拦截、事件参数、元素引用、Blazor JS interop 的 Reject 边界、认证、表单与文件输入的依赖、顺序和验收 |
 | [CLR Runtime 健壮性与性能强化计划](./clr-runtime-hardening-plan.md) | 保留现有 `J*` 值 carrier 形态，收敛运行时行为正确性与开销：比较运算符 lowering 确认、第二布局写入方消除、不变量缓存与生成器护栏 |
 | [ECMAScriptAttribute 统一协议调整计划](./ecmascript-attribute-unification.md) | 统一外部 ESM binding 与组件描述 Attribute，固定 `Allow` / `Import` / `Component` 三类 Transform，规划编译器、RazorVue、生成器和兼容层迁移 |
-| [CLR Module Artifact Provider 统一路线图](./clr-artifact-provider-unification.md) | 将 CLR module、RazorVue runtime provider 和 package artifact 收敛到同一逻辑 artifact graph，规划 schema、Emit 读取、生成器迁移、包发现和旧特判删除 |
+| [CLR runtime 模块资源交付计划](./clr-artifact-provider-unification.md) | 将 `Jazor.CLR` 生成的 runtime JavaScript 交付为 `ECMAScript` 的 `manifest.json + dist`，并验证资源依赖、引用传递和最终 Emit 物化 |
+| [Artifact Graph 一次性统一机制设计与实施计划](./artifact-graph-stabilization-plan.md) | 固定 `ECMAScript` 外部资源与纯 Jazor `ModuleCatalog` 两种并列输入，统一依赖、引用、物化和 Debug/Release/SSR/HMR 验收；不发布第三种 carrier 或兼容阶段 |
 | [JazorAdmin 生产级参考应用路线图](./admin-reference-app.md) | 示例应用的定位收敛、IAM 边界规矩、TDesign + VueDataUi + VuIcons 界面栈分工、审计日志与 SSO 演示客户端的里程碑与验收 |
 
 新增路线图前，应先明确目标、依赖、验收标准和归属；完成或废弃后，应将结论收敛到当前状态或 [历史演进](../05-history/evolution.md)，而不是继续保留阶段清单。

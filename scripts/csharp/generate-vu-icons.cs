@@ -3,6 +3,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 
 var options = GeneratorOptions.Parse(args);
 var sourceRoot = Path.GetFullPath(options.Source);
@@ -36,6 +37,7 @@ if (!usedIconNames.SetEquals(iconData.Keys))
 
 var componentsDirectory = Path.Combine(outputRoot, "dist", "components");
 Directory.CreateDirectory(componentsDirectory);
+Directory.CreateDirectory(Path.Combine(outputRoot, "licenses"));
 foreach (var path in Directory.EnumerateFiles(componentsDirectory, "*.mjs"))
     File.Delete(path);
 
@@ -49,7 +51,7 @@ WriteFile(Path.Combine(outputRoot, "dist", "jazor-vu-icon.mjs"), GetDynamicIconM
 WriteFile(Path.Combine(outputRoot, "dist", "jazor-vu-icon.css"), GetIconStyleSheet());
 File.Copy(iconDataPath, Path.Combine(outputRoot, "dist", "icons-data.js"), overwrite: true);
 File.Copy(Path.Combine(sourceRoot, "LICENSE"), Path.Combine(outputRoot, "licenses", "VU-ICONS-LICENSE"), overwrite: true);
-WriteFile(Path.Combine(outputRoot, "manifest.json"), GenerateManifest(version, icons));
+WriteFile(Path.Combine(outputRoot, "manifest.json"), GenerateManifest(version, icons, outputRoot));
 
 Console.WriteLine($"Generated {icons.Length} vu-icons bindings for {version}.");
 
@@ -157,25 +159,39 @@ static string GenerateStaticIconModule(Icon icon)
     => "import { createVuIcon } from \"../jazor-vu-icon-runtime.mjs\";\n\n" +
        "export const " + icon.ComponentName + " = createVuIcon(\"" + icon.ComponentName + "\", \"" + icon.Data.ViewBox + "\", '" + icon.Data.Content + "');\n";
 
-static string GenerateManifest(string version, IReadOnlyList<Icon> icons)
+static string GenerateManifest(string version, IReadOnlyList<Icon> icons, string outputRoot)
 {
     using var stream = new MemoryStream();
     using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
     {
         // Stable writer order keeps the package manifest deterministic without reflection serialization.
         writer.WriteStartObject();
-        writer.WriteNumber("schemaVersion", 1);
+        writer.WriteNumber("schemaVersion", 2);
         writer.WriteString("libraryId", "vu-icons");
         writer.WriteString("version", version);
         writer.WritePropertyName("imports");
         writer.WriteStartObject();
-        WriteManifestImport(writer, "vu-icons", "dist/jazor-vu-icon.mjs");
+        WriteManifestImport(
+            writer,
+            "vu-icons",
+            "dist/jazor-vu-icon.mjs",
+            outputRoot,
+            ["vue"],
+            ["dist/icons-data.js", "dist/jazor-vu-icon-runtime.mjs"],
+            [
+                ("dist/icons-data.js", "module"),
+                ("dist/jazor-vu-icon-runtime.mjs", "module")
+            ]);
         foreach (var icon in icons)
         {
             WriteManifestImport(
                 writer,
                 "vu-icons/" + icon.ComponentName,
-                "dist/components/" + icon.ComponentName + ".mjs");
+                "dist/components/" + icon.ComponentName + ".mjs",
+                outputRoot,
+                ["vue"],
+                ["dist/jazor-vu-icon-runtime.mjs"],
+                [("dist/jazor-vu-icon-runtime.mjs", "module")]);
         }
 
         writer.WriteEndObject();
@@ -185,11 +201,19 @@ static string GenerateManifest(string version, IReadOnlyList<Icon> icons)
         writer.WriteEndObject();
         writer.WritePropertyName("styles");
         writer.WriteStartArray();
-        writer.WriteStringValue("dist/jazor-vu-icon.css");
+        writer.WriteStartObject();
+        writer.WriteString("type", "style");
+        writer.WriteString("path", "dist/jazor-vu-icon.css");
+        writer.WriteString("hash", ComputeHash(outputRoot, "dist/jazor-vu-icon.css"));
+        writer.WriteEndObject();
         writer.WriteEndArray();
         writer.WritePropertyName("files");
         writer.WriteStartArray();
-        writer.WriteStringValue("licenses/VU-ICONS-LICENSE");
+        writer.WriteStartObject();
+        writer.WriteString("type", "license");
+        writer.WriteString("path", "licenses/VU-ICONS-LICENSE");
+        writer.WriteString("hash", ComputeHash(outputRoot, "licenses/VU-ICONS-LICENSE"));
+        writer.WriteEndObject();
         writer.WriteEndArray();
         writer.WriteEndObject();
     }
@@ -197,21 +221,61 @@ static string GenerateManifest(string version, IReadOnlyList<Icon> icons)
     return Encoding.UTF8.GetString(stream.ToArray()) + Environment.NewLine;
 }
 
-static void WriteManifestImport(Utf8JsonWriter writer, string importSpecifier, string entryPath)
+static void WriteManifestImport(
+    Utf8JsonWriter writer,
+    string importSpecifier,
+    string entryPath,
+    string outputRoot,
+    IReadOnlyList<string> packageDependencies,
+    IReadOnlyList<string> moduleDependencies,
+    IReadOnlyList<(string Path, string Type)> files)
 {
     writer.WriteStartObject(importSpecifier);
+    writer.WriteString("type", "module");
     writer.WriteString("development", entryPath);
     writer.WriteString("production", entryPath);
+    writer.WriteString("developmentHash", ComputeHash(outputRoot, entryPath));
+    writer.WriteString("productionHash", ComputeHash(outputRoot, entryPath));
     writer.WritePropertyName("developmentDependencies");
     writer.WriteStartArray();
-    writer.WriteStringValue("vue");
+    foreach (var dependency in packageDependencies)
+        writer.WriteStringValue(dependency);
     writer.WriteEndArray();
     writer.WritePropertyName("productionDependencies");
     writer.WriteStartArray();
-    writer.WriteStringValue("vue");
+    foreach (var dependency in packageDependencies)
+        writer.WriteStringValue(dependency);
+    writer.WriteEndArray();
+    writer.WritePropertyName("developmentModuleDependencies");
+    writer.WriteStartArray();
+    foreach (var dependency in moduleDependencies)
+        writer.WriteStringValue(dependency);
+    writer.WriteEndArray();
+    writer.WritePropertyName("productionModuleDependencies");
+    writer.WriteStartArray();
+    foreach (var dependency in moduleDependencies)
+        writer.WriteStringValue(dependency);
+    writer.WriteEndArray();
+    writer.WritePropertyName("files");
+    writer.WriteStartArray();
+    foreach (var file in files)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("type", file.Type);
+        writer.WriteString("path", file.Path);
+        writer.WriteString("hash", ComputeHash(outputRoot, file.Path));
+        if (file.Type is "module" or "source-map")
+            writer.WriteString("moduleId", file.Path);
+        writer.WriteEndObject();
+    }
     writer.WriteEndArray();
     writer.WriteEndObject();
 }
+
+static string ComputeHash(string root, string relativePath)
+    => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(
+        root,
+        relativePath.Replace('/', Path.DirectorySeparatorChar))))).ToLowerInvariant();
 
 static void WriteFile(string path, string content)
 {

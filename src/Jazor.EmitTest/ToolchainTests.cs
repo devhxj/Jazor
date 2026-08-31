@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Jazor.Common;
 using Jazor.Emit;
 
 namespace Jazor.EmitTest;
@@ -188,8 +189,7 @@ public sealed class ToolchainTests
                     "components/LocalCard.vue",
                     "host/LocalCard.vue",
                     AssetEntry.KindModuleSource,
-                    "hash-asset-1",
-                    "host/LocalCard.vue.mjs")
+                    ImportPath: "host/LocalCard.vue.mjs")
             ],
             ["vue"]);
 
@@ -244,8 +244,7 @@ public sealed class ToolchainTests
                 new AssetEntry(
                     "assets/logo.svg",
                     "assets/logo.svg",
-                    AssetEntry.KindStatic,
-                    "hash-asset-1")
+                    AssetEntry.KindStatic)
             ]);
 
         var request = ToolchainRequest.Create(
@@ -325,8 +324,7 @@ public sealed class ToolchainTests
                     "components/LocalCard.vue",
                     "host/LocalCard.vue",
                     AssetEntry.KindModuleSource,
-                    "hash-asset-1",
-                    "host/LocalCard.vue.mjs")
+                    ImportPath: "host/LocalCard.vue.mjs")
             ],
             ["vue"]);
 
@@ -461,6 +459,11 @@ public sealed class ToolchainTests
         IReadOnlyList<AssetEntry>? assets = null,
         IReadOnlyList<string>? packageImports = null)
     {
+        var modulePath = Path.Combine(
+            workspace.ArtifactRoot,
+            relativePath.Replace('/', Path.DirectorySeparatorChar));
+        var moduleHash = ArtifactHash.ComputeSha256(
+            File.Exists(modulePath) ? File.ReadAllBytes(modulePath) : []);
         var manifest = new ManifestModel(
             RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
             GeneratedAtUtc: DateTime.UtcNow,
@@ -471,11 +474,19 @@ public sealed class ToolchainTests
                     "Sample.Host.AppModule",
                     "Sample.Host.AppModule",
                     relativePath,
-                    "hash-1",
+                    moduleHash,
                     PackageImports: packageImports)
             ]);
         if (assets is not null)
-            manifest.Assets.AddRange(assets);
+        {
+            manifest.Assets.AddRange(assets.Select(asset =>
+            {
+                var sourcePath = Path.Combine(
+                    workspace.SourceRoot,
+                    asset.SourcePath.Replace('/', Path.DirectorySeparatorChar));
+                return asset with { Hash = ArtifactHash.ComputeSha256(File.ReadAllBytes(sourcePath)) };
+            }));
+        }
 
         manifest.Save(workspace.ManifestPath);
     }

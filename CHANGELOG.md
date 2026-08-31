@@ -2,6 +2,45 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-08-31
+
+### Jazor 0.26.0
+
+> 类库 JavaScript 资源一次性固定为两种 carrier，并统一引用传递与最终宿主物化。本版本在
+> `0.x` 阶段按 `MINOR` 通道发布，不提供旧 provider/catalog 的兼容读取或中间过渡格式。
+
+#### 破坏性变更
+
+- **类库 carrier 固定为两种**：已有 JavaScript 资源的类库使用包内
+  `manifest.json + dist/**`；由 Jazor 编译 C# 的纯 Jazor 类库只生成程序集内的
+  `Jazor.Generated.ModuleCatalog`。`ECMAScriptCode` 只是后者的语义称呼，不是第三种类型。
+- **旧读取入口全部退休**：`RuntimeProviderCatalog`、`ArtifactCatalog`、独立 source-map catalog
+  和目录 fallback 不再由 Emit 读取。`src/ECMAScript` 改为标准 JS resource library，CLR
+  `System/**` 模块由其 manifest/dist 交付。
+- **工具资格不传递**：编写 Jazor 模块或 RazorVue 组件的项目必须直接引用相应工具包；只消费
+  上游类库的中间项目不会获得 analyzer、generator 或 Emit。只有最终 `Exe`/`WinExe` 宿主在
+  Build 后调用一次 Emit。
+- **NuGet tooling 资产隔离**：`build/` 只在直接引用时注册 Jazor/RazorVue analyzer 和 Emit；
+  `buildTransitive/` 仅传播 JS resource manifest locator。analyzer 依赖移至
+  `tools/net11.0/analyzers/`，不再以自动 `analyzers/dotnet/cs` 资产间接激活。
+
+#### 新增与改进
+
+- **统一依赖图**：ModuleCatalog 模块和 resource manifest entry 使用显式 module/package
+  依赖、稳定 identity、路径、hash、source map 与所属资源校验；缺失依赖、错误 hash 和路径冲突
+  在写出前确定性失败。
+- **直接原子物化**：Emit 从最终宿主的程序集闭包读取 ModuleCatalog，并从传递的 manifest
+  locator 读取 JS resource，解析选中闭包后直接原子替换 `JazorDir`。Debug、Release、SSR 和
+  HMR 只是同一闭包的输出投影，不构成新的类库 carrier。
+- **引用链一致性**：ProjectReference 与 NuGet 的 A -> B -> Console 链使用相同的资源发现、
+  去重和物化规则；中间类库不重编译上游 catalog，也不产生输出目录。
+
+#### 迁移
+
+- 从 `0.25.0` 或更早版本升级时，必须 lockstep 升级全部 Jazor/ECMAScript 包并重新构建类库与
+  最终宿主。依赖旧 provider、artifact 或并列 source-map catalog 的自定义集成必须改为上述
+  两种 carrier；本版本没有兼容 reader 或格式转换器。
+
 ## 2026-08-28
 
 ### Jazor 0.25.0

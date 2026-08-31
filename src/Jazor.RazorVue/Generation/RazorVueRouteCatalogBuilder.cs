@@ -1,7 +1,8 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Jazor.Common;
+using Jazor.Compiler;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 
@@ -73,7 +74,7 @@ internal static class RazorVueRouteCatalogBuilder
         }
 
         routes.Sort(RouteDefinitionComparer.Instance);
-        var moduleText = BuildModuleText(routes);
+        var moduleText = Util.NormalizeLineEndingsToLf(BuildModuleText(routes));
         var sourceMapContent = "{\"version\":3,\"file\":\"routes.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}";
         var contentHash = ComputeContentHash(moduleText);
         return new VueModuleArtifact(
@@ -316,15 +317,7 @@ internal static class RazorVueRouteCatalogBuilder
     }
 
     private static string ComputeContentHash(string content)
-    {
-        using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
-        var builder = new StringBuilder(hash.Length * 2 + 7);
-        builder.Append("sha256:");
-        foreach (var value in hash)
-            builder.Append(value.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
-        return builder.ToString();
-    }
+        => ArtifactHash.ComputeSha256(content);
 
     private sealed record RouteDefinition(
         string Template,

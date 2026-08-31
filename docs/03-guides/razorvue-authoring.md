@@ -18,7 +18,7 @@ RazorVue 有两个执行域。手写 `RenderTreeBuilder` 不是第三条路径�
 <a id="final-compilation"></a>
 ## Final Compilation 与错误生命周期
 
-RazorVue 的最终管线顺序是：组件发现 -> final Compilation binding -> member closure -> VueInject registry -> direct RenderTree lowering/compiler bridge -> Vue module framing -> artifact catalog -> source-generator reporting。任何阶段失败都会停止受影响组件；存在错误时不会生成部分 catalog 或部分模块声明。
+RazorVue 的最终管线顺序是：组件发现 -> final Compilation binding -> member closure -> VueInject registry -> direct RenderTree lowering/compiler bridge -> Vue module framing -> `ModuleCatalog` C# source generation -> source-generator reporting。任何阶段失败都会停止受影响组件；存在错误时不会生成部分 `ModuleCatalog` 条目或模块声明。
 
 诊断不是从异常文本猜出来的。内部使用 typed `RazorVueDiagnosticInfo` 传递 category、已渲染 detail、primary/additional locations 和 component identity；descriptor 集中拥有 ID、severity 和 HelpLink。mapped `.razor` span 优先于 generated `.razor.g.cs` span。独立组件的错误按稳定组件身份和位置排序，因此同一输入在并行构建中仍有相同输出。
 
@@ -58,7 +58,7 @@ Razor SDK/Roslyn 的 `RZ****`、`CS****` 诊断仍由对应工具报告；RazorV
 
 浏览器可执行服务的 `[Inject]`/`@inject` 属性会在 component 初始化和生命周期回调前自动解析。provider key、生命周期和缺失 provider 错误由宿主 adapter 负责；页面作者继续使用标准 Blazor 注入语法。当前 adapter 的服务入口是属性注入，参数化 constructor activation 仍按 `JAZORVGA024` 明确拒绝。
 
-Blazor JS interop 不属于 browser service adapter。`IJSRuntime` 的 identifier string、`object[]` 参数编组、动态 import 和 runtime dispatcher 会绕开 Jazor 的静态 import/manifest 约束，因此在实际类型或成员使用点由现有 compiler/final Compilation 不支持诊断拒绝；这里不新增专用 analyzer 规则或兼容层。需要 JavaScript 能力时，使用已有的强类型 `ECMAScript`/WebIDL binding，或为静态模块 API 添加同样强类型的 binding declaration；调用、导入和 artifact closure 仍由 `Jazor.Compiler` 与 `Jazor.Emit` 统一处理。
+Blazor JS interop 不属于 browser service adapter。`IJSRuntime` 的 identifier string、`object[]` 参数编组、动态 import 和 runtime dispatcher 会绕开 Jazor 的静态 import 与模块依赖约束，因此在实际类型或成员使用点由现有 compiler/final Compilation 不支持诊断拒绝；这里不新增专用 analyzer 规则或兼容层。需要 JavaScript 能力时，使用已有的强类型 `ECMAScript`/WebIDL binding，或为静态模块 API 添加同样强类型的 binding declaration；调用、导入和资源闭包仍由 `Jazor.Compiler` 与 `Jazor.Emit` 统一处理。
 
 不要把这条 Reject 理解为拒绝所有带 Blazor 形状的组件。组件类型仍按独立的 RazorVue 入口契约判断：必须可赋值给 `ComponentBase`、实现 `IVueComponent`（包括泛型或派生 marker），并声明 `[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]`。其中 `Transform.Component` 是静态库组件 import 描述；它与 `IVueComponent` 共同构成受支持的组件类型，不是 `IJSRuntime` 兼容层。
 
@@ -241,12 +241,12 @@ member closure 只物化 render、已支持 lifecycle、constructor replay 和�
 <a id="vue-inject"></a>
 ## VueInject
 
-`[VueInject]` 是 compilation 级声明协议。注入角色必须引用命名 component type，container contract、implementation 和导出名必须满足当前 registry 规则，重复或冲突声明会报告 `JAZORVGA025`。修正声明本身，不要在组件里添加运行时 fallback；registry 失败时不会生成部分 catalog。
+`[VueInject]` 是 compilation 级声明协议。注入角色必须引用命名 component type，container contract、implementation 和导出名必须满足当前 registry 规则，重复或冲突声明会报告 `JAZORVGA025`。修正声明本身，不要在组件里添加运行时 fallback；registry 失败时不会生成部分 `ModuleCatalog` 条目。
 
 <a id="vue-module"></a>
 ## Vue Module 与 Union
 
-`JAZORVGA026` 覆盖模块 framing、import alias、runtime helper 和 artifact materialization 失败。模块路径应稳定、可解析且与 package manifest 的实际 entry 一致；不要手工拼接 import 文本来绕过 `SemanticWalker` 的 import collection。
+`JAZORVGA026` 覆盖模块 framing、import alias、runtime helper 和最终 Emit 物化失败。模块路径应稳定、可解析且与对应 JS resource manifest 的实际 package entry 一致；不要手工拼接 import 文本来绕过 `SemanticWalker` 的 import collection。
 
 Vue host value domain 优先使用 C# native `union`，例如：
 
@@ -262,7 +262,7 @@ union 是 authoring/compile-time contract，运行时按其分支值擦除；保
 1. 先修复同一 compilation 中的 `CS****`/`RZ****`，它们可能使 generated C# 不完整。
 2. 查看 `JAZORVGA` ID、mapped path/line/column 和 HelpLink；不要只复制异常末尾文本。
 3. 按 ID 对照本指南章节，保留一个最小 `.razor` 或 `.razor.cs` 复现。
-4. 确认失败时没有 `Jazor.Generated.ArtifactCatalog.g.cs` 或部分 `.mjs` 输出。
+4. 确认失败时没有部分 `ModuleCatalog` 条目；最终宿主 Emit 也不会留下半套 `.mjs` 输出。
 5. 若认为形状应该被支持，请同时提交：生成的 `BuildRenderTree` 形状、预期 Vue render-function、状态/SSR 语义和最小回归；不要先添加 silent fallback。
 
 ## 升级门禁
@@ -272,7 +272,7 @@ union 是 authoring/compile-time contract，运行时按其分支值擦除；保
 - `SemanticWalkerOrdinaryTest` 的 ordinary/labeled `IBranchOperation` 与 `BranchKind` gate；
 - official Razor `for`、`while`、`do while` runtime tests；
 - `RazorSgOfficialNativeUnionParameterAuthoringTests`，验证 native union 参数可由 Razor SG 绑定并进入最终模块；
-- `BootstrapPatchTests`（文件 `RazorSourceGeneratorBootstrapPatchTests.cs`）的 mapped diagnostic 和无 partial catalog gate；
+- `BootstrapPatchTests`（文件 `RazorSourceGeneratorBootstrapPatchTests.cs`）的 mapped diagnostic 和无 partial `ModuleCatalog`/module gate；
 - `RazorSgOfficialNestedRuntimeClassClosureRuntimeTests` 的 deep Proxy regression；
 - `MemberClosureBuilderContractTests` 的显式 component/source-base constructor、未映射 runtime entry 拒绝与 mapped diagnostic gate；
 - `RazorSgOfficialRuntimeAuthoringTests.BuildComponent_OfficialRazorCodeBlock_ExecutesComplexComponentLogicOnDenoHost`，验证 `@code` 业务循环与 direct-render 循环边界；

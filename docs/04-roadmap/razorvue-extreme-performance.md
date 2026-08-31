@@ -1,6 +1,11 @@
 # RazorVue 极致性能路线图
 
 > 范围：official Razor Source Generator generated C# -> Roslyn `IOperation` -> RazorVue direct Vue render-function `.mjs`。本路线图把已完成的 G2 优化作为基线，记录下一轮端到端性能工作；它不是重新引入 RenderTreeBuilder、SFC 或 render-context 协议的理由。
+>
+> 本文中标注 `v0.26.0` 的 catalog、manifest 和 package-closure 术语只描述当前的实现
+> 基线与测量证据；最终宿主统一消费两种并列输入：资源类库的 `manifest.json + dist` 和
+> 纯 Jazor 类库的 `Jazor.Generated.ModuleCatalog`。依赖闭包在物化前解析，Debug/Release/
+> SSR/HMR 只是物化后的输出 profile。不得新增第三种 carrier 或从基线名称恢复错误 reader。
 
 ## 目标与边界
 
@@ -52,9 +57,9 @@ Razor source
 | P3 | slot classification | stable/dynamic slot 已按 scope、conditional 与 name 分类 | stable slot fast path、避免不必要动态 slot 标记 | slot scope / conditional metadata |
 | P4 | event/bind leaf lowering | 证明安全的 string/boolean DOM bind 已直接赋值 | 高频 input update 降低 wrapper/call 层数 | Roslyn direct-assignment fact |
 | P5 | parameter lifecycle watch | 已用按 prop 的 shallow projection 取代 deep watch | 避免每次 nested traversal | 明确参数变更兼容契约 |
-| P6 | CLR release payload | CLR catalog 已从 app import 根做 module-closure DCE | 减少 parse/transfer/eval | structured CLR dependency metadata |
+| P6 | CLR release payload | CLR module closure 已从 app import 根做 DCE | 减少 parse/transfer/eval | structured CLR dependency metadata |
 | P7 | SSR process lifecycle | SSR 已复用有界、generation-aware Deno worker pool | 大幅降低 warm TTFB | worker protocol、generation invalidation |
-| P8 | generation / asset delivery | artifact emission 有界并行；library asset 按 selected entry closure 物化 | build/HMR 与 deployment footprint | deterministic ordering + manifest-declared closure |
+| P8 | generation / asset delivery | artifact emission 有界并行；resource manifest 与 ModuleCatalog 按 selected entry closure 物化 | build/HMR 与 deployment footprint | deterministic ordering + explicit entry/dependency closure |
 
 ## 实施里程碑
 
@@ -70,7 +75,7 @@ Razor source
 
 **完成门槛：** real Vue DOM 与 hydration 测试覆盖静态一根、多根、相邻文本/element/comment 情况；benchmark 同时能跑 browser、SSR 和 artifact-size lane；没有把 mock render 数字写成页面性能结论。
 
-**状态：已完成。** `VueRawMarkup` 已使用 HTML5 fragment parser 计算顶层 node cardinality；production Vue gate 覆盖单/多根、text+element、table、SVG/MathML、leading comment、动态 `MarkupString` patch、SSR 与 hydration。动态 raw markup 已迁移为按需 `@jazor/vue-runtime/raw-markup.mjs` provider，Emit 只在 artifact 引用时保留并物化该 runtime 与 import-map 条目。
+**状态：已完成。** `VueRawMarkup` 已使用 HTML5 fragment parser 计算顶层 node cardinality；production Vue gate 覆盖单/多根、text+element、table、SVG/MathML、leading comment、动态 `MarkupString` patch、SSR 与 hydration。动态 raw markup 已迁移为按需 `@jazor/vue-runtime/raw-markup.mjs` 资源入口；最终应由其拥有的 JS resource package manifest/dist 声明，Emit 只在 artifact 引用时保留并物化该 runtime 与 import-map 条目，不使用 provider catalog。
 
 ### E1: RenderPlan v1 与 child block tree
 
@@ -130,14 +135,14 @@ slot object 需要区分稳定、conditional、loop-generated 和动态名字：
 
 - 对 Jazor-owned CLR runtime 实施 member/family splitting，或在不改变 runtime module semantics 的前提下实现可证明安全的 production DCE；不能把 Netpack 的非 lossless printer 风险隐藏为“tree shaking”。
 - 将 SSR 改为有界、generation-aware 的 persistent Deno worker pool：stdin/stdout request protocol、artifact generation invalidation、worker crash recovery、cancellation、bounded concurrency 与 graceful disposal。每次 request 不再落 temp JSON/起新 Deno。
-- **CLR payload 状态：已完成 module-closure DCE。** `ClrRuntimeCatalogEmitter` 从已由 `AstConverter` / `SemanticWalker` lowering 的 AST 收集确定性 `System/*` direct imports，并把它们作为 `Jazor.Artifacts.RuntimeProviderCatalog` 的 structured dependency metadata。`CatalogReader` 只按标准 provider contract 读取 `jazor.clr`；`ModuleCollector` 从 application module 的真实 import entry 出发，跟随 metadata closure 后才 materialize CLR runtime。Emit 不解析或重写 JavaScript，也不改变 package ESM external 策略。没有应用 CLR import 时，CLR provider 不再落盘；缺失声明 dependency 仍是显式 emit failure，不能静默退化为全量引入。2026-08-14 在本机 `Todo.Host` release artifact graph 上，CLR runtime 从旧基线 `67 modules / 779,397 B` 降至 `13 modules / 293,759 B`，减少 `54` 个模块和 `62.3%` 未压缩 CLR bytes；该数值不包含 Vue vendor、source map 或 Netpack bundle，作为同 fixture 的可复现 baseline，而非跨应用承诺。
-- **SSR 状态：已完成。** `SsrRenderer` 现在按应用实例复用 DenoHost-managed worker，`WorkerCount` 同时限制跨 generation 总进程数与 render 并发。worker 以 line-delimited JSON stdin/stdout 串行执行；`jazor-manifest.json`、`ssr-importmap.json` 与 packaged runner 内容哈希决定 generation，旧 generation 不再接收租约且不会污染新 ESM cache。取消会终止 leased worker，crash worker 不回池，后续请求按需恢复；应用 disposal 先 drain in-flight render 再关闭全部进程。真实 Deno integration tests 覆盖 warm PID reuse、generation invalidation、crash recovery、cancellation、bounded concurrency 与 disposal。
+- **CLR payload 状态：carrier 切换已完成。** `ClrRuntimeCatalogEmitter` 从已由 `AstConverter` / `SemanticWalker` lowering 的 AST 收集确定性 `System/*` direct imports，并写出 `ECMAScript/manifest.json + dist/System/**`；Emit 只按显式 entry/dependency closure 读取，不解析或重写 JavaScript。没有应用 CLR import 时，`System/**` 不进入输出；缺失声明 dependency 仍是显式 emit failure，不能静默退化为全量引入。2026-08-14 在本机 `Todo.Host` release artifact graph 上，CLR runtime 从旧基线 `67 modules / 779,397 B` 降至 `13 modules / 293,759 B`，减少 `54` 个模块和 `62.3%` 未压缩 CLR bytes；该数值不包含 Vue vendor、source map 或 Netpack bundle，作为同 fixture 的可复现 baseline，而非跨应用承诺。
+- **SSR 状态：已完成（v0.25.0 基线）。** `SsrRenderer` 现在按应用实例复用 DenoHost-managed worker，`WorkerCount` 同时限制 worker 总进程数与 render 并发。它可以使用内部内容标识处理 worker 生命周期和 ESM cache，但该标识不是类库 carrier、输出目录 generation 或 URL pointer。取消会终止 leased worker，crash worker 不回池，后续请求按需恢复；应用 disposal 先 drain in-flight render 再关闭全部进程。真实 Deno integration tests 覆盖 warm PID reuse、worker 重建、cancellation、bounded concurrency 与 disposal。
 - `scripts/csharp/benchmark-razorvue-ssr.cs` 使用 production `IJazorSsrRenderer`、packaged DenoHost 和 production Vue/server-renderer graph 分开测 cold/warm/concurrent。2026-08-14 在 `LAPTOP-JMGSKOP9`、Windows `10.0.26200.0`、.NET `11.0.0`、2 workers、5 cold/50 warm samples 上，cold median 为 `249.311 ms`，warm median 为 `0.397 ms`，warm PID 单一复用；20-request concurrent lane 使用恰好 2 个 PID，`82.86 req/s`，per-request temp JSON 为 0。该数字只作同机演进基线，不是跨环境承诺。
 - **Artifact generation 状态：已完成。** component/closure discovery 继续按 stable order 串行执行；彼此独立的 Vue artifact build 最多使用 `4` 个 worker 并发，结果和异常仍严格按输入顺序消费。这样提升 multi-component build 吞吐，同时保持 module text、source map、import order 与 diagnostic origin deterministic；`RazorTailOutput` regression 覆盖 byte-identical output、ordered error 和 bounded concurrency。
-- **Data-driven asset delivery 状态：已完成。** `PackageImports` 现在是 library materialization 的实际 root。package manifest entry 声明 dev/prod logical dependencies 与 relative ESM `files` closure；只复制 direct/transitive selected entries、entry-specific files、active library 的 style/root license。SSR target 显式加入 `vue` 与 `@vue/server-renderer`，browser/SSR 不再依赖全量 Vue asset copy。2026-08-14 在本机 `Todo.Host` release fixture 上，Vue vendor 文件从 `18 / 177,566 B` 变为 browser `2 / 103,110 B`（减少 `16` 个文件、`74,456 B`，`41.9%`）；SSR graph 为 `4 / 170,458 B`，只包含 Vue runtime、server renderer 和对应 license。此数字只描述 generated publish/deployment footprint，不宣称未被 import 的旧 SSR/devtools 文件曾属于首屏网络请求。
+**Data-driven asset delivery 状态：已完成（v0.26.0 基线）。** 资源类库的 `manifest.json + dist` entry/依赖与纯 Jazor `ModuleCatalog` 的 module/import 记录共同构成最终宿主的 root；只复制 direct/transitive selected entries、entry-specific files、active library 的 style/root license。SSR target 显式加入 `@jazor/ssr-runner.mjs`、`vue` 与 `@vue/server-renderer`，browser/SSR 不再依赖全量 Vue asset copy。2026-08-14 在本机 `Todo.Host` release fixture 上，Vue vendor 文件从 `18 / 177,566 B` 变为 browser `2 / 103,110 B`（减少 `16` 个文件、`74,456 B`，`41.9%`）；SSR graph 为 `4 / 170,458 B`，只包含 Vue runtime、server renderer 和对应 license。此数字只描述 generated publish/deployment footprint，不宣称未被 import 的旧 SSR/devtools 文件曾属于首屏网络请求；两类 carrier 的一次性切换已经由统一计划门禁验证。
 - immutable cache header 与 `modulepreload` 不在本轮默认启用：release entry 仍是未 content-hash 的 `bundle.js`，且没有 host-owned browser asset manifest/critical preload graph。只有在 artifact naming、cache invalidation 和真实 navigation profile 一起具备后，才把它们纳入默认策略。
 
-**完成门槛：已满足。** release bundle 保持可运行且 source-map/manifest/import rewrite 正确；未使用 CLR surface 不增加首屏解析负担；SSR warm request 复用 worker，reload 后不使用旧 artifact，取消/故障不泄漏 process；并行生成产物 byte-for-byte deterministic。library closure regression 覆盖 browser 排除 unused SSR/devtools、Pinia transitive devtools、Vuetify labs relative closure 与 SSR explicit renderer graph。
+**完成门槛：已通过统一计划门禁。** `v0.26.0` release bundle 保持可运行且 source-map/manifest projection/import rewrite 正确；未使用 CLR surface 不增加首屏解析负担；SSR warm request 复用 worker，reload 后不使用旧资源，取消/故障不泄漏 process；并行生成产物 byte-for-byte deterministic。一次性切换已经验证两类输入的同源版本、条目 hash、依赖闭包、输出清单和失败原子性。library closure regression 覆盖 browser 排除 unused SSR/devtools、Pinia transitive devtools、Vuetify labs relative closure 与 SSR explicit renderer graph。
 
 ## 通用验证与发布门禁
 

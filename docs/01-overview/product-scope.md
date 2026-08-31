@@ -13,7 +13,7 @@ Jazor 的核心价值是让 C# 作者在编写阶段保留类型检查、符号�
 | 层级 | 路径 | 输入 | 输出 | 启用方式 |
 | --- | --- | --- | --- |
 | 核心平台 | ECMAScript 模块 | 标注为 `[ECMAScriptModule]` 的 C# 模块 | `.mjs`、源映射与 manifest | 引用 `Jazor` |
-| 核心平台 | 浏览器交付 | 上游生成的模块 catalog | debug 模块或 Netpack 生产包 | 在宿主项目设置 `JazorMode` |
+| 核心平台 | 浏览器交付 | 程序集内 `ModuleCatalog` 与资源包 `manifest.json + dist/**` 的显式依赖闭包 | debug 模块或 Netpack 生产包 | 在最终宿主项目设置 `JazorMode` |
 | 框架集成层 | Razor-to-Vue（当前实现） | 官方 Razor Source Generator 生成的最终 C# 语义 | Vue render-function `.mjs` | 在 Razor 项目中额外引用 `Jazor.Vue` |
 | 应用方向 | ASP.NET Core SSR | 物化后的 Vue 模块图 | 服务器渲染 HTML 与客户端 hydration | 设置 `JazorSSR` 并注册 SSR 服务 |
 

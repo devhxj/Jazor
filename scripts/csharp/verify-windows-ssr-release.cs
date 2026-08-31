@@ -758,8 +758,9 @@ internal static class PackageVerifier
             using var archive = ZipFile.OpenRead(packageFile.FullName);
             if (packageId == "Jazor")
             {
-                RequireEntry(archive, "buildTransitive/Jazor.props", packageId);
-                RequireEntry(archive, "buildTransitive/Jazor.targets", packageId);
+                RequireEntry(archive, "build/Jazor.props", packageId);
+                RequireEntry(archive, "build/Jazor.targets", packageId);
+                RequireEntry(archive, "buildTransitive/Jazor.Resources.targets", packageId);
                 RequireEntry(archive, "tools/net11.0/Jazor.Emit.dll", packageId);
                 RequireEntry(archive, "lib/net11.0/Jazor.AspNetCore.dll", packageId);
                 RequireEntry(archive, "lib/net11.0/Jazor.AspNetCore.Dev.dll", packageId);
@@ -767,7 +768,7 @@ internal static class PackageVerifier
             else if (packageId == "Jazor.Vue")
             {
                 RequireEntry(archive, "buildTransitive/Jazor.Vue.targets", packageId);
-                RequireEntry(archive, "analyzers/dotnet/cs/Jazor.RazorVue.dll", packageId);
+                RequireEntry(archive, "tools/net11.0/analyzers/Jazor.RazorVue.dll", packageId);
                 RequireEntry(archive, "jazor/vue3/manifest.json", packageId);
             }
             else

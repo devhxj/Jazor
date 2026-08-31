@@ -6,8 +6,8 @@
 
 > **范围决策（2026-08-25）**：本计划支持 Blazor framework 的 authoring/runtime contract，以及自定义组件和第三方组件库所需的 lowering/runtime primitive；不支持 `Microsoft.AspNetCore.Components` 提供的内置 UI 组件。`Router`、`RouteView`、`NavLink`、`DynamicComponent`、`ErrorBoundary`、`EditForm`、`Input*`、`AuthorizeView`、`Virtualize`、`QuickGrid` 等标签不属于本计划的产品契约。UI 组件层由现有的 TDesign、Vuetify、Element Plus 等绑定/组件库承担。标准组件若仍被识别到，最终应走稳定的 Reject/Guidance 诊断，不得静默生成“部分兼容”的 Vue 替代品。
 > **RazorVue 组件入口**：可被本计划消费的组件类型必须可赋值给 `ComponentBase`、实现 `IVueComponent` 或其派生接口，并带有 `[ECMAScriptModule]` 或 `[ECMAScript(import, Transform.Component, exportName)]` 导入描述。应用/本地组件通常使用 `[ECMAScriptModule]`，第三方库包装组件使用 `Transform.Component`；后者是静态 ESM 元数据，不是 JS interop。`ComponentBase`/`IComponent` 本身仍属于 framework primitive；RazorVue 只拥有组件身份识别和产品级 lowering，其获准执行的原始 CLR type/member surface 同样必须先生成并复制到 `Jazor.CLR`。仅有 `ComponentBase` 但没有 Vue marker 的 Microsoft 内置 UI 组件不进入本计划。
-> **CLR 模块边界（2026-08-27）**：任何进入支持面的 Blazor CLR 类型都必须先由 `Jazor.CLR.Generator` 从真实 ASP.NET Core reference symbol 生成初始 module/doc，再把选定骨架复制到 `src/Jazor.CLR/module/` 与 `src/Jazor.CLR/doc/` 完善实现。原始 CLR type/member key、`[Jazor]`/`Op.*` 声明与实际 runtime module/helper 的源码 owner 均为 `Jazor.CLR`；生成的 `WhiteList.cs.Generate.cs` 仍由 `Jazor.Compiler` 持有，runtime module 统一通过 `Jazor.Artifacts.RuntimeProviderCatalog` 交付，不得在 `ECMAScript.Blazor` 维护第二份映射或 catalog。
-> **ECMAScript.Blazor 边界（2026-08-27）**：`ECMAScript.Blazor` 只提供与 `ECMAScript/internal/Math.cs` 同类的标准 ECMAScript 模拟/投影扩展，可使用 `[ECMAScript]`、`[ECMAScript("specifier")]`、`[ECMAScriptInline]` 与 `Description` 等公开元数据；不得使用 `[Jazor]`、`Op.*`、`[ECMAScriptModule]`，不得成为 whitelist source-root 或 CLR runtime provider。没有额外作者扩展需求时，不为维持程序集存在而复制 CLR mapping。
+> **CLR 模块边界（2026-08-27）**：任何进入支持面的 Blazor CLR 类型都必须先由 `Jazor.CLR.Generator` 从真实 ASP.NET Core reference symbol 生成初始 module/doc，再把选定骨架复制到 `src/Jazor.CLR/module/` 与 `src/Jazor.CLR/doc/` 完善实现。原始 CLR type/member key、`[Jazor]`/`Op.*` 声明与实际 runtime module/helper 的源码 owner 均为 `Jazor.CLR`；生成的 `WhiteList.cs.Generate.cs` 仍由 `Jazor.Compiler` 持有，最终 runtime module 进入 `src/ECMAScript` 的 `manifest.json + dist` 外部资源，不得在 `ECMAScript.Blazor` 维护第二份映射或资源清单。
+> **ECMAScript.Blazor 边界（2026-08-27）**：`ECMAScript.Blazor` 只提供与 `ECMAScript/internal/Math.cs` 同类的标准 ECMAScript 模拟/投影扩展，可使用 `[ECMAScript]`、`[ECMAScript("specifier")]`、`[ECMAScriptInline]` 与 `Description` 等公开元数据；不得使用 `[Jazor]`、`Op.*`、`[ECMAScriptModule]`，不得成为 whitelist source-root 或 CLR mapping/runtime resource owner。没有额外作者扩展需求时，不为维持程序集存在而复制 CLR mapping。
 
 本计划采用“统一生成入口、分切片完善实现”：先由模块生成器冻结真实 CLR surface，再在 `Jazor.CLR` 中选择 `Discard`、`Allowed`、`Alias`、`Inline`、`Import` 或 `Compile` 并补齐需要的 C# runtime 行为。S0–S5 以及后续框架级切片仍按各自的 reference、browser、package 和 profile 门禁逐步交付，不等于一次性实现全部 Blazor API，也不为内置 UI 组件建立兼容路线。
 
@@ -97,7 +97,7 @@ RazorVue 的目标是让 Blazor framework 的作者面在浏览器中保持可�
 Jazor.CLR.Generator
   -> 从真实 ASP.NET Core reference symbol 生成初始 module/doc
   -> 选定骨架复制到 Jazor.CLR，完善 [Jazor] mapping 与 C# runtime 实现
-  -> Jazor.Compiler.Generator 生成 WhiteList 与 RuntimeProviderCatalog
+  -> Jazor.Compiler.Generator 生成 WhiteList，并生成 ECMAScript 的 manifest.json + dist runtime resource
   -> SemanticWalker 按使用点收集确定性 runtime import
 
 ECMAScript.Blazor（可选作者扩展）
@@ -112,9 +112,9 @@ ECMAScript.Blazor（可选作者扩展）
 | `Jazor.CLR` | 所有获准支持的 Blazor CLR 类型/member mapping、carrier 选择、`[Jazor]`/`Op.*` 与 C# runtime module/helper；直接 Alias/Inline 类型也必须在这里拥有生成骨架 | 把原始 CLR key 或 whitelist mapping 放进 `ECMAScript.Blazor`；复制同一 mapping；用手写 `.mjs` 替代 C# module |
 | `ECMAScript.Blazor` | 使用 `[ECMAScript]`、`[ECMAScript("specifier")]`、`[ECMAScriptInline]`、`Description` 等公开协议提供额外的模拟/投影扩展作者面 | 使用 `[Jazor]`、`Op.*`、`[ECMAScriptModule]`；进入 whitelist source-root；复制 framework 原始成员表；承载 runtime helper |
 | `Jazor.Compiler` / `SemanticWalker` | 所有 C# 表达式、调用、成员访问、导入收集和使用点失败 | 对未映射外部成员静默发射原始 JavaScript |
-| `Jazor.RazorVue` | Vue listener 的原生 event 传递、`@ref` 生命周期、Vue `provide`/`inject`、组件/路由/表单 framing，以及对已由 `Jazor.CLR` 放行 symbol 的产品级 translation hook | 持有 `[Jazor]`/`Op.*` CLR member catalog 或成为 whitelist source-root；为每种 `EventArgs` 手工构造 payload；用手拼 JS 替代 C# 成员/函数语义 lowering；把导航、认证、表单状态机新增到既有 hand-written runtime `.mjs` |
-| `Jazor.Artifacts.RuntimeProviderCatalog` | 保持标准 CLR runtime provider 载体；由 generator 从 `Jazor.CLR` module source 生成模块内容与依赖元数据 | 因拆分 Blazor binding 而迁移、复制或另建第二份 CLR catalog |
-| `Jazor.Emit` | 读取标准 runtime provider，按真实 import closure 物化产物 | 在 RazorVue 中直接写入文件、重新解释 module 语义或绕过 manifest |
+| `Jazor.RazorVue` | Vue listener 的原生 event 传递、`@ref` 生命周期、Vue `provide`/`inject`、组件/路由/表单 framing，以及对已由 `Jazor.CLR` 放行 symbol 的产品级 translation hook | 持有 `[Jazor]`/`Op.*` CLR member mapping 或成为 whitelist source-root；为每种 `EventArgs` 手工构造 payload；用手拼 JS 替代 C# 成员/函数语义 lowering；把导航、认证、表单状态机新增到既有 hand-written runtime `.mjs` |
+| `ECMAScript` resource | 由 generator 从 `Jazor.CLR` module source 生成 `manifest.json + dist/System/**`，并声明 module/dependency/hash | 因拆分 Blazor binding 而迁移、复制或另建第二份 CLR resource |
+| `Jazor.Emit` | 读取 `ECMAScript` resource 和纯 Jazor `ModuleCatalog`，按真实 import closure 物化产物 | 在 RazorVue 中直接写入文件、重新解释 module 语义或绕过统一收集流程 |
 
 所有类型必须以完整垂直切片交付。这里也包括只在 RazorVue translation hook 中获得产品语义的 CLR 类型：hook 不是跳过模块生成器的例外。一个类型仅进入生成器、仅有 module/whitelist key、仅有空对象 Alias，或仅能通过 Razor 编译，都不构成 Support。
 
@@ -126,7 +126,7 @@ ECMAScript.Blazor（可选作者扩展）
 2. 运行 `dotnet run --project src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj -- .tmp/clr-scaffold`，从 Roslyn symbol 生成初始 `module/*.cs` 与 `doc/*.md`。
 3. 审核生成的完整成员面，把选定 module/doc 复制到 `src/Jazor.CLR/module/` 与 `src/Jazor.CLR/doc/`。保留生成的 canonical key、签名和默认 `Op.Discard`，只在已批准切片内修改 `Op`、carrier 与实现。
 4. 直接 host property 可使用 `Alias`/`Inline`；需要复杂控制流、共享状态或 helper 时使用同一 `Jazor.CLR` module 中的 `Import`/C# 实现；只有 AST 上下文确实不可避免时才进入 `Compile`。若成员由 RazorVue 产品 hook 投影，`Jazor.CLR` module 仍负责 canonical key 与 `Op.Allowed`/`Op.Discard`，hook 负责最终 AST；这类 framing-only 成员不要求伪造无用的 runtime export。
-5. 运行 `Jazor.Compiler.Generator`，由 `Jazor.CLR` module source 统一生成 `WhiteList.cs.Generate.cs` 和 `src/ECMAScript/Catalog.g.cs` 中的标准 `Jazor.Artifacts.RuntimeProviderCatalog`。Emit 只读取标准 provider，不读取旧 catalog 类型。
+5. 运行 `Jazor.Compiler.Generator`，由 `Jazor.CLR` module source 统一生成 `WhiteList.cs.Generate.cs` 和 `ECMAScript` 的 `manifest.json + dist`。Emit 读取该资源以及纯 Jazor 的 `ModuleCatalog`，不读取退役 catalog 载体。
 
 该流程既约束复杂 runtime 类型，也约束看似只需一行 Alias/Inline 的类型。模块骨架的意义不只是生成 JavaScript，而是冻结真实 CLR surface、明确未支持成员、避免手写 key 漂移，并让 mapping、runtime、文档和测试拥有同一 owner。
 
@@ -148,7 +148,7 @@ S0 已完成以下 ownership 收敛，后续切片沿用同一流程：
 1. 已盘点并纳入首批由 RazorVue 产品 hook 实际调用的 `ComponentBase`、`EventCallback`/`EventCallback<TValue>`、`EventCallbackFactory`、`RenderTreeBuilder`、`WebRenderTreeBuilderExtensions`，并核对 `ParameterView`、`MarkupString` 的 runtime-sensitive 使用点。
 2. 已将确认支持的类型加入 `Jazor.CLR.Generator`，生成完整 module/doc，再复制到 `Jazor.CLR`；类型 adapter 和产品 hook 接管的原始成员使用 generator 保留的 canonical key，获准 surface 为 `Op.Allowed`，其余 surface 为 `Op.Discard`。没有把旧手写 key 当作生成输入。
 3. `Jazor.CLR` module 现持有 canonical type/member key 与 `Op.Allowed` 白名单面；`Allowed` 仍只表示 symbol 可以进入编译域，不等于通用 CLR runtime 实现。`Jazor.RazorVue` 继续持有 current-component、EventCallback、RenderTreeBuilder 等产品语义的 translation hook，不把 Vue framing 塞进 `jazor.clr` runtime。
-4. 已删除 `Jazor.RazorVue/RazorSdk/Catalog` whitelist source-root 和旧 catalog 声明，metadata/key 测试已迁到 `Jazor.CLR.Test`；RazorVue SG 测试只验证 official SG 输入、hook emission、生命周期和失败路径。
+4. 已删除 `Jazor.RazorVue/RazorSdk/Catalog` whitelist source-root 和旧 mapping 声明，metadata/key 测试已迁到 `Jazor.CLR.Test`；RazorVue SG 测试只验证 official SG 输入、hook emission、生命周期和失败路径。
 
 仅在 Roslyn 中用于组件身份判定或擦除后的签名注解、从不被物化且没有成员进入 runtime-sensitive lowering 的类型，不构成 CLR runtime 支持声明，不需要创建占位 module。一旦支持其构造、成员访问、调用、类型判断或其他运行时语义，就必须触发上述 generator-first 流程。
 
@@ -156,9 +156,9 @@ S0 已完成以下 ownership 收敛，后续切片沿用同一流程：
 
 | 项目/程序集 | 负责内容 | NuGet/产物边界 |
 | --- | --- | --- |
-| `Jazor` | 框架无关 compiler、Emit、基础 contract/runtime，以及由 `Jazor.CLR` module 生成的静态 mapping/catalog | 不包含 `ECMAScript.Blazor` DLL 或 ASP.NET Core framework reference；未使用的 CLR module 由 closure DCE 排除 |
-| `Jazor.CLR` | Blazor/BCL CLR type module、`[Jazor]` mapping、carrier 与 runtime helper 的唯一源码 owner | module 源进入既有 generator；不因 Blazor 支持另建 catalog |
-| `ECMAScript` | 标准 `Jazor.Artifacts.RuntimeProviderCatalog` 载体与标准 ECMAScript host 类型 | provider catalog 由 generator 更新，结构和读取协议保持不变 |
+| `Jazor` | 框架无关 compiler、Emit、基础 contract/runtime，以及由 `Jazor.CLR` module 生成的静态 mapping 和 ECMAScript resource | 不包含 `ECMAScript.Blazor` DLL 或 ASP.NET Core framework reference；未使用的 CLR module 由 closure DCE 排除 |
+| `Jazor.CLR` | Blazor/BCL CLR type module、`[Jazor]` mapping、carrier 与 runtime helper 的唯一源码 owner | module 源进入既有 generator；不因 Blazor 支持另建资源清单或 provider |
+| `ECMAScript` | 标准 ECMAScript host 类型，以及 `manifest.json + dist` runtime resource | runtime resource 由 generator 从 `Jazor.CLR` 更新；不生成纯 Jazor `ModuleCatalog` |
 | `ECMAScript.Blazor` | 可选的标准 ECMAScript 模拟/投影扩展 | 作为 `Jazor.Vue` 的 `lib/net11.0` payload；不贡献 whitelist/runtime artifact |
 | `Jazor.Vue` | RazorVue analyzer、build-transitive 注册、Vue listener/component framing，并带入 `ECMAScript.Blazor` 作者扩展资产 | 不维护 Blazor CLR member 表或 runtime module；`Jazor.RazorVue` 的产品 hook 也不作为 whitelist producer |
 
@@ -169,10 +169,10 @@ S0 已完成以下 ownership 收敛，后续切片沿用同一流程：
 1. 保持求值顺序、副作用次数、异常传播和 async 完成时机；不能以“生成的 JS 更短”为由改变行为。
 2. 浏览器 carrier 是实现细节，不可把它误宣称为完整 CLR runtime identity；无法可靠判定的 `is`/`as`/`typeof` 必须显式失败。已知精度边界是“精确到 carrier，而非唯一 CLR 类型”，泛型实参也会擦除；详见 [hardening plan](./clr-runtime-hardening-plan.md) §1 与 R7。
 3. 不引入任意字符串执行、开放 `object` 参数、动态 import 或服务器 API fallback。
-4. 新增支持类型时必须先运行 `Jazor.CLR.Generator` 生成并核对 module/doc；复制并完善 `Jazor.CLR` 源后，再运行 `Jazor.Compiler.Generator`，同时提交 `WhiteList.cs.Generate.cs` 与标准 runtime provider 生成结果。
+4. 新增支持类型时必须先运行 `Jazor.CLR.Generator` 生成并核对 module/doc；复制并完善 `Jazor.CLR` 源后，再运行 `Jazor.Compiler.Generator`，同时提交 `WhiteList.cs.Generate.cs` 与 `ECMAScript/manifest.json + dist` 资源生成结果。
 5. 新能力改变消费者可使用的 API 面，应按 [发版与版本规则](../03-guides/release-and-versioning.md) 进入 `MINOR`，而不是 PATCH。
 6. 实现路径按以下顺序选择并记录原因：模块生成器冻结 CLR surface、C# 类型系统与既有 WebIDL binding、JS 原生语义已经正确时的 `Op.Allowed`、短 `Alias`/`Inline`、同一 `Jazor.CLR` `[ECMAScriptModule]` 中的 `Import` helper，最后才是确有上下文或 AST 级协议需要的 compiler `Compile`。标准 ECMAScript 投影扩展只用于补充作者 API，不能替代原始 CLR member mapping。
-7. Blazor 专属 mapping 与 runtime 行为从第一版就共同位于生成后完善的 `Jazor.CLR` module，并由标准 `Jazor.Artifacts.RuntimeProviderCatalog`/Emit 管道编译和物化；`ECMAScript.Blazor` 与 `Jazor.RazorVue` 都不持有对应 member key。不得新增 hand-written `.mjs`。现有 RazorVue `.mjs` 只保留 Vue 生命周期、渲染 framing 和到 `Jazor.CLR` 模块入口的薄转发，不承载新增状态机或成员语义。
+7. Blazor 专属 mapping 与 runtime 行为从第一版就共同位于生成后完善的 `Jazor.CLR` module，并生成 `ECMAScript` 的 `manifest.json + dist` resource，由统一 Emit 管道按闭包物化；`ECMAScript.Blazor` 与 `Jazor.RazorVue` 都不持有对应 member key。不得新增 hand-written `.mjs`。现有 RazorVue `.mjs` 只保留 Vue 生命周期、渲染 framing 和到 `Jazor.CLR` 模块入口的薄转发，不承载新增状态机或成员语义。
 8. 内部对象布局遵循 [CLR Runtime 健壮性与性能强化计划](./clr-runtime-hardening-plan.md)：需要 object overload/type test 的值保留推断得到的 nominal carrier，真实 browser 值使用原生 carrier，无身份 host state 使用所属模块的 plain object/closure/`WeakMap`，擦除集合使用原生 `Map`/`Array`/`Set`。不得以 `__jazorType` 或平行 tag 协议补回身份；任何生产入口重建 nominal carrier 时必须调用 CLR-owned 构造/helper。
 
 ## 3. P0：导航拦截与异步 carrier
@@ -414,16 +414,16 @@ ChangeEventArgs.Value.get -> getChangeEventValue(event)
 任一类型切片进入 Support 前，至少完成下列证据链：
 
 1. **API ledger**：记录目标 framework 版本、类型/成员、profile、decision、status、carrier、依赖、明确排除项、生成 module/doc、实现路径及其选择理由和对应测试名。实现路径必须标明 `Jazor.CLR.Generator` 输入、WebIDL receiver、`Alias`/`Inline`、C# `Import` module 或 `Compile`。ledger 的唯一事实源应是 `RazorVueUsageScenarioCatalog.cs` 中现有 M5 owner 与其明确关联的 Blazor CLR 子项；不要因为本计划提出一个名字就预设 `RazorVueBlazorClrCapabilityLedger` 必须存在，也不要建立相互矛盾的第二套 Support 状态。新增条目必须同步更新现有 `RazorVueM5CapabilityLedgerTests` / `RazorVueSemanticMatrixInventoryTests`，若确实新增子表再增加对应的专门测试。
-2. **模块生成与 CLR metadata/runtime**：断言目标类型已加入 `Jazor.CLR.Generator` 的真实 reference/type map，临时输出的完整 module/doc 可复现，选定骨架已复制到 `src/Jazor.CLR/module`/`doc`；在 `src/Jazor.CLR.Test` 断言 type alias、canonical member key、`Op`/path、未批准成员 `Discard` 与 helper 行为。由 RazorVue hook 投影的 framing-only 类型和成员也必须在这里分别断言 `Op.Allowed`，但不要求伪造 runtime export；其 observable emission 仍在 RazorVue SG 测试验证。新增 runtime helper 必须回链到同一 C# `Jazor.CLR` module，而非 `ECMAScript.Blazor`、`Jazor.RazorVue/RazorSdk/Catalog` 或 hand-written `.mjs`；随后运行 `Jazor.Compiler.Generator` 并核对 whitelist 与标准 runtime provider，确认 canonical key 和 provider 载体没有被改写。
+2. **模块生成与 CLR metadata/runtime**：断言目标类型已加入 `Jazor.CLR.Generator` 的真实 reference/type map，临时输出的完整 module/doc 可复现，选定骨架已复制到 `src/Jazor.CLR/module`/`doc`；在 `src/Jazor.CLR.Test` 断言 type alias、canonical member key、`Op`/path、未批准成员 `Discard` 与 helper 行为。由 RazorVue hook 投影的 framing-only 类型和成员也必须在这里分别断言 `Op.Allowed`，但不要求伪造 runtime export；其 observable emission 仍在 RazorVue SG 测试验证。新增 runtime helper 必须回链到同一 C# `Jazor.CLR` module，而非 `ECMAScript.Blazor`、`Jazor.RazorVue/RazorSdk/Catalog` 或 hand-written `.mjs`；随后运行 `Jazor.Compiler.Generator` 并核对 whitelist 与 `ECMAScript/manifest.json + dist`，确认 canonical key、资源路径和依赖没有被改写。
 3. **编译器 emission**：在 `src/Jazor.CompilerTest` 覆盖直接调用、成员访问、异常路径、async/await、interface/extension dispatch（存在时）和稳定 import。
 4. **official Razor SG 集成**：在 `src/Jazor.RazorVue.Sg.Test` 使用真实 `.razor` 作者写法，验证 generated C# binding、RazorVue lowering 和 mapped diagnostic。标准 Blazor 行为 oracle 与 RazorVue runtime/browser fixture 应分别有清晰 owner；当前仓库已有 `RazorSgNavigationRuntimeTests` 和 `RazorSgOfficialDenoRuntimeTestHost`，但没有名为 `RazorSgBlazorClrReferenceFixtureTests` 或 `RazorSgBlazorClrRuntimeTests` 的固定落点。新增 fixture 时可以采用这些名字，也可以扩展现有测试，但必须同步本表和 ledger，不能让不存在的文件名成为验收前提。
 5. **真实浏览器**：验证 DOM、history、事件、生命周期、Promise/异常、unmount 和交互结果；不得只断言生成 `.mjs` 文本。若 RazorVue runtime 有改动，审查其仅为 framing/薄转发，新增领域状态和成员语义必须仍在 C# CLR module。
-6. **交付**：至少确认 debug/release artifact；涉及 runtime import 的切片还要确认 isolated package consumer 的 closure。仅引用 `Jazor` 的 consumer 不应出现 `ECMAScript.Blazor` 资产或 ASP.NET Core framework reference，但 `Jazor.CLR` 生成的静态 mapping/catalog 仍按核心包既有方式提供且未使用 module 不得物化；引用 `Jazor` + `Jazor.Vue` 的 consumer 应获得 `ECMAScript.Blazor` 普通 authoring reference、RazorVue analyzer/reference 资产和既有 `jazor.clr` runtime catalog，无需 mapping contribution 注册、源码复制或第二 runtime provider。支持 SSR/hydration 时另行覆盖一次性副作用与状态 handoff。
+6. **交付**：至少确认 debug/release artifact；涉及 runtime import 的切片还要确认 isolated package consumer 的 closure。仅引用 `Jazor` 的 consumer 不应出现 `ECMAScript.Blazor` 资产或 ASP.NET Core framework reference，但 `Jazor.CLR` 生成的静态 mapping 和 `ECMAScript` manifest/dist resource 仍按核心包既有方式提供且未使用 module 不得物化；引用 `Jazor` + `Jazor.Vue` 的 consumer 应获得 `ECMAScript.Blazor` 普通 authoring reference、RazorVue analyzer/reference 资产和按闭包选取的 CLR resource，无需 mapping contribution 注册、源码复制或第二 runtime carrier。支持 SSR/hydration 时另行覆盖一次性副作用与状态 handoff。
 7. **失败体验**：未支持的 member、动态值或 server-only 入口在作者源/实际使用点得到稳定诊断，绝不留下运行时 `undefined` 或部分 artifact。当前诊断证据由 `src/Jazor.CompilerTest`（compiler usage-site failure）和 `src/Jazor.RazorVue.Sg.Test`（official Razor SG/final Compilation 与 compatibility analyzer）承载；仓库没有独立 `src/Jazor.Analyzer.Test`，因此不要把 analyzer-only 覆盖写成既有事实。若未来切片确实要求 analyzer 独有规则，再单独建立测试项目并在 ledger 中声明 owner。
 8. **模块文档**：每个获准 CLR 类型都必须由 `Jazor.CLR.Generator` 生成并同步 `src/Jazor.CLR/doc/<Module>.md`，无论最终使用 Alias、Inline 还是 Import；额外标准 ECMAScript 投影扩展才记录在 `src/ECMAScript.Blazor/README.md` 或其测试中。doc 与 module 源同 owner，落后的 doc 视为切片未完成；不要用一次性提交号或文件行号充当文档与实现的永久链接。
 9. **质量门禁**：按改动触及面分别运行 `dotnet run --file scripts/csharp/test-dotnet.cs -- --project clr`、`--project compiler`、`--project razor-sg`（脚本每次只接受一个 project 值），并以 `verify-compiler-coverage.cs` / `verify-razorvue-coverage.cs` / `verify-vue-binding-coverage.cs` 复现 [当前状态](./current-status.md) 的门槛。切片不得以“新增场景很多”为由让覆盖率下降。
 
-完成某个切片后，更新 [当前状态](./current-status.md)、作者指南和 CHANGELOG 的面向用户行为描述；已发布版本章节不回写。生成器输入、`Jazor.CLR` module/doc、生成 whitelist/catalog、RazorVue framing 和测试必须同一提交评审，避免出现“文档称支持但类型未经过生成器”“白名单已放行但没有浏览器 carrier”或“旧 `ECMAScript.Blazor`/`Jazor.RazorVue` catalog 仍形成双 owner”的灰区。
+完成某个切片后，更新 [当前状态](./current-status.md)、作者指南和 CHANGELOG 的面向用户行为描述；已发布版本章节不回写。生成器输入、`Jazor.CLR` module/doc、生成 whitelist、`ECMAScript` manifest/dist resource、RazorVue framing 和测试必须同一提交评审，避免出现“文档称支持但类型未经过生成器”“白名单已放行但没有浏览器 carrier”或“旧 `ECMAScript.Blazor`/`Jazor.RazorVue` mapping 仍形成双 owner”的灰区。
 
 ## 13. 决策门
 

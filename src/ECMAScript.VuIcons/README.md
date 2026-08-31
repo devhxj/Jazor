@@ -6,13 +6,13 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.25.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.25.0" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.VuIcons" Version="0.25.0" />
+  <PackageReference Include="Jazor" Version="0.26.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.VuIcons" Version="0.26.0" />
 </ItemGroup>
 ```
 
-`Jazor` 与所有 `ECMAScript.*` package 应使用同一版本。包的 `buildTransitive` target 会注册本地 manifest；应用不需要 npm、CDN 或手工复制 CSS。
+`Jazor` 与所有 `ECMAScript.*` package 应使用同一版本。包的 `buildTransitive` target 只注册资源 manifest locator；应用不需要 npm、CDN 或手工复制 CSS。
 
 ## Razor 使用
 
@@ -45,7 +45,7 @@
 ## 按需运行时
 
 - 静态 `<VuSearch />` emits `import { VuSearch } from "vu-icons/VuSearch";`。Emit 只物化该 SVG module、共享 renderer、样式和许可证，不复制其余 1,820 个图标或 `icons-data.js`。
-- 动态 `<VuIcon Name="@currentIcon" />` emits `import { VuIcon } from "vu-icons";`。由于名称在运行时才能确定，manifest 会物化完整 `icons-data.js` catalog。这是动态选择的必要成本。
+- 动态 `<VuIcon Name="@currentIcon" />` emits `import { VuIcon } from "vu-icons";`。由于名称在运行时才能确定，manifest 的 package entry 闭包会物化完整 `icons-data.js` catalog。这是动态选择的必要成本。
 - 两条路径均使用浏览器可执行的本地 `.mjs` bridge，而不是上游 raw `.vue` SFC；`Jazor.Emit` 无需额外 SFC compiler。
 
 应优先使用静态 `Vu*` component。只有图标名称确实来自运行时状态、配置或服务端数据时，才使用动态 `VuIcon`。
@@ -58,7 +58,7 @@
 dotnet run --file scripts/csharp/generate-vu-icons.cs -- --source .tmp/vu-icons/package --output src/ECMAScript.VuIcons
 ```
 
-生成器从 upstream `icons.json`、`icons-data.js` 和 Vue 3 wrapper source 同时验证 component/name/data 的一一对应关系，并更新 C# descriptor、`VuIconName`、manifest 与本地 browser bridge。更新后运行：
+生成器从 upstream `icons.json`、`icons-data.js` 和 Vue 3 wrapper source 同时验证 component/name/data 的一一对应关系，并更新 C# descriptor、`VuIconName` 与本地 browser bridge。更新后运行：
 
 ```bash
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project vu-icons

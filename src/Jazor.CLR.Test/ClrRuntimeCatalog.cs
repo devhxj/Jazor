@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Acornima;
 using Acornima.Ast;
 using ECMAScript;
@@ -118,31 +117,62 @@ internal static class ClrRuntimeCatalog
 
     private static IReadOnlyList<ClrRuntimeModuleArtifact> ReadArtifacts()
     {
-        var catalogType = typeof(Global).Assembly.GetType("Jazor.Artifacts.RuntimeProviderCatalog", throwOnError: true)!;
-        var getModules = catalogType.GetMethod("GetModules", BindingFlags.NonPublic | BindingFlags.Static)
-            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() was not found.");
-        var modules = getModules.Invoke(null, null) as IEnumerable
-            ?? throw new InvalidOperationException("Jazor.Artifacts.RuntimeProviderCatalog.GetModules() returned no module collection.");
-        var artifacts = new List<ClrRuntimeModuleArtifact>();
-        foreach (var module in modules)
+        var manifestPath = FindEcmascriptManifest();
+        var packageRoot = Path.GetDirectoryName(manifestPath)!;
+        using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var root = document.RootElement;
+        if (root.GetProperty("schemaVersion").GetInt32() != 2 ||
+            !string.Equals(root.GetProperty("libraryId").GetString(), "ecmascript", StringComparison.Ordinal))
         {
-            var type = module.GetType();
+            throw new InvalidOperationException("ECMAScript must expose the JS-resource manifest schema.");
+        }
+
+        var imports = root.GetProperty("imports");
+        var artifacts = new List<ClrRuntimeModuleArtifact>();
+        foreach (var import in imports.EnumerateObject())
+        {
+            var entry = import.Value;
+            if (!string.Equals(entry.GetProperty("type").GetString(), "module", StringComparison.Ordinal))
+                throw new InvalidOperationException($"ECMAScript import '{import.Name}' must be a module resource.");
+
+            var relativeFile = entry.GetProperty("production").GetString()
+                ?? throw new InvalidOperationException($"ECMAScript import '{import.Name}' has no production file.");
+            const string distPrefix = "dist/";
+            if (!relativeFile.StartsWith(distPrefix, StringComparison.Ordinal))
+                throw new InvalidOperationException($"ECMAScript import '{import.Name}' must resolve from dist: '{relativeFile}'.");
+
+            var sourcePath = Path.GetFullPath(Path.Combine(
+                packageRoot,
+                relativeFile.Replace('/', Path.DirectorySeparatorChar)));
+            var normalizedPackageRoot = Path.GetFullPath(packageRoot).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (!sourcePath.StartsWith(normalizedPackageRoot, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"ECMAScript import '{import.Name}' escapes its package root.");
+
             artifacts.Add(new ClrRuntimeModuleArtifact(
-                ReadProperty("AssemblyName") ?? typeof(Global).Assembly.GetName().Name ?? "ECMAScript",
-                ReadRequiredProperty("TypeName"),
-                ReadRequiredProperty("Id"),
-                ReadRequiredProperty("RelativePath"),
-                ReadRequiredProperty("Content"),
-                ReadRequiredProperty("Hash")));
-
-            string? ReadProperty(string propertyName)
-                => type.GetProperty(propertyName)?.GetValue(module) as string;
-
-            string ReadRequiredProperty(string propertyName)
-                => ReadProperty(propertyName)
-                    ?? throw new InvalidOperationException($"Catalog module property '{propertyName}' was not found.");
+                "ECMAScript",
+                import.Name,
+                import.Name,
+                import.Name,
+                File.ReadAllText(sourcePath).ReplaceLineEndings("\n"),
+                entry.GetProperty("productionHash").GetString()
+                    ?? throw new InvalidOperationException($"ECMAScript import '{import.Name}' has no production hash.")));
         }
 
         return artifacts.OrderBy(static artifact => artifact.RelativePath, StringComparer.Ordinal).ToArray();
+    }
+
+    private static string FindEcmascriptManifest()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, "src", "ECMAScript", "manifest.json");
+            if (File.Exists(candidate))
+                return candidate;
+
+            directory = directory.Parent;
+        }
+
+        throw new FileNotFoundException("The ECMAScript JS-resource manifest was not found.");
     }
 }

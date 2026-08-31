@@ -1,18 +1,23 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "libraryId": "vue-router",
   "version": "4.6.4",
   "imports": {
     "vue-router": {
+      "type": "module",
       "development": "dist/vue-router.esm-browser.js",
       "production": "dist/vue-router.esm-browser.prod.js",
+      "developmentHash": "39d3a1b79d029da21bda316340e4651ebfd19cc998946f2a8c9226d735e3cbb9",
+      "productionHash": "48ba299e3aca7ae7e8b8274156ffa9e9e26dde459bcebb19c9d43eab2771401d",
       "developmentDependencies": [
-        "vue",
-        "@vue/devtools-api"
+        "@vue/devtools-api",
+        "vue"
       ],
       "productionDependencies": [
         "vue"
       ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
       "files": []
     }
   },
@@ -21,6 +26,10 @@
   },
   "styles": [],
   "files": [
-    "licenses/LICENSE"
+    {
+      "type": "license",
+      "path": "licenses/LICENSE",
+      "hash": "91a2845c4db44e7497b514b98634a674c737986ad0db81599307cf733bf850b2"
+    }
   ]
 }

@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using Acornima;
 using Acornima.Ast;
+using Jazor.Common;
 
 namespace Jazor.Compiler;
 
@@ -355,16 +355,7 @@ internal static class SourceMapEmitter
     }
 
     private static string ComputeSha256Hex(string value)
-    {
-        using var sha = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(value);
-        var hashBytes = sha.ComputeHash(bytes);
-        var builder = new StringBuilder(hashBytes.Length * 2);
-        foreach (var hashByte in hashBytes)
-            builder.Append(hashByte.ToString("X2"));
-
-        return builder.ToString();
-    }
+        => ArtifactHash.ComputeSha256(value);
 
     private readonly record struct CapturedSourceSegment(
         int GeneratedLine,

@@ -1,6 +1,8 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using Basic.Reference.Assemblies;
 using Jazor.Emit;
 using Microsoft.CodeAnalysis;
@@ -12,8 +14,9 @@ namespace Jazor.EmitTest;
 public sealed class StaticModuleSourceMapTests
 {
     [TestMethod]
-    public void CatalogReader_TryRead_MergesModuleSourceMapCatalogById()
+    public void CatalogReader_TryRead_ReadsSourceMapsFromTheSingleModuleCatalog()
     {
+        const string sourceMapContent = "{\"version\":3,\"file\":\"modules/counter.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}";
         var assembly = CompileCatalogAssembly(
             "StaticModule.SourceMap.Reader.Tests",
             """
@@ -21,6 +24,7 @@ public sealed class StaticModuleSourceMapTests
             {
                 internal static partial class ModuleCatalog
                 {
+                    internal const int SchemaVersion = 2;
                     internal static System.Collections.IEnumerable GetModules() => _modules;
 
                     private static readonly GeneratedModule[] _modules = new GeneratedModule[]
@@ -31,19 +35,31 @@ public sealed class StaticModuleSourceMapTests
                             id: "Demo.Modules.Counter",
                             relativePath: "modules/counter.mjs",
                             content: "export const counter = 1;",
-                            hash: "hash-js"),
+                            hash: "b5d4cd8664deb0acbe0d9ff0c8fab4821289366b3fa917f6eae9e1f850ad75f5",
+                            sourceMapRelativePath: "modules/counter.mjs.map",
+                            sourceMapContent: {{sourceMapContent}},
+                            mapHash: {{sourceMapHash}}),
                         new GeneratedModule(
                             assemblyName: "Sample.Host",
                             typeName: "Demo.Modules.Plain",
                             id: "Demo.Modules.Plain",
                             relativePath: "modules/plain.mjs",
                             content: "export const plain = 2;",
-                            hash: "hash-plain")
+                            hash: "e30d9afd56260c9dec4497a772dd2b675e00e03983a13aba0833dd427f297b4a")
                     };
 
                     private sealed class GeneratedModule
                     {
-                        public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash)
+                        public GeneratedModule(
+                            string assemblyName,
+                            string typeName,
+                            string id,
+                            string relativePath,
+                            string content,
+                            string hash,
+                            string? sourceMapRelativePath = null,
+                            string? sourceMapContent = null,
+                            string? mapHash = null)
                         {
                             AssemblyName = assemblyName;
                             TypeName = typeName;
@@ -51,48 +67,6 @@ public sealed class StaticModuleSourceMapTests
                             RelativePath = relativePath;
                             Content = content;
                             Hash = hash;
-                        }
-
-                        public string AssemblyName { get; }
-                        public string TypeName { get; }
-                        public string Id { get; }
-                        public string RelativePath { get; }
-                        public string Content { get; }
-                        public string Hash { get; }
-                    }
-                }
-
-                internal static partial class ModuleSourceMapCatalog
-                {
-                    internal static System.Collections.IEnumerable GetModules() => _modules;
-
-                    private static readonly GeneratedModuleSourceMap[] _modules = new GeneratedModuleSourceMap[]
-                    {
-                        new GeneratedModuleSourceMap(
-                            assemblyName: "Sample.Host",
-                            typeName: "Demo.Modules.Counter",
-                            id: "Demo.Modules.Counter",
-                            relativePath: "modules/counter.mjs",
-                            sourceMapRelativePath: "modules/counter.mjs.map",
-                            sourceMapContent: "{\"version\":3,\"file\":\"modules/counter.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}",
-                            mapHash: "hash-map")
-                    };
-
-                    private sealed class GeneratedModuleSourceMap
-                    {
-                        public GeneratedModuleSourceMap(
-                            string assemblyName,
-                            string typeName,
-                            string id,
-                            string relativePath,
-                            string sourceMapRelativePath,
-                            string sourceMapContent,
-                            string mapHash)
-                        {
-                            AssemblyName = assemblyName;
-                            TypeName = typeName;
-                            Id = id;
-                            RelativePath = relativePath;
                             SourceMapRelativePath = sourceMapRelativePath;
                             SourceMapContent = sourceMapContent;
                             MapHash = mapHash;
@@ -102,13 +76,16 @@ public sealed class StaticModuleSourceMapTests
                         public string TypeName { get; }
                         public string Id { get; }
                         public string RelativePath { get; }
-                        public string SourceMapRelativePath { get; }
-                        public string SourceMapContent { get; }
-                        public string MapHash { get; }
+                        public string Content { get; }
+                        public string Hash { get; }
+                        public string? SourceMapRelativePath { get; }
+                        public string? SourceMapContent { get; }
+                        public string? MapHash { get; }
                     }
                 }
             }
-            """);
+            """.Replace("{{sourceMapContent}}", System.Text.Json.JsonSerializer.Serialize(sourceMapContent))
+                .Replace("{{sourceMapHash}}", System.Text.Json.JsonSerializer.Serialize(ComputeSha256(sourceMapContent))));
 
         var modules = CatalogReader.TryRead(assembly);
 
@@ -117,8 +94,8 @@ public sealed class StaticModuleSourceMapTests
 
         var counter = modules.Single(static module => module.Id == "Demo.Modules.Counter");
         Assert.AreEqual("modules/counter.mjs.map", counter.SourceMapRelativePath);
-        Assert.AreEqual("{\"version\":3,\"file\":\"modules/counter.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}", counter.SourceMapContent);
-        Assert.AreEqual("hash-map", counter.MapHash);
+        Assert.AreEqual(sourceMapContent, counter.SourceMapContent);
+        Assert.AreEqual(ComputeSha256(sourceMapContent), counter.MapHash);
 
         var plain = modules.Single(static module => module.Id == "Demo.Modules.Plain");
         Assert.IsNull(plain.SourceMapRelativePath);
@@ -175,7 +152,7 @@ public sealed class StaticModuleSourceMapTests
         var result = CatalogReader.TryReadCatalogs(assembly);
 
         Assert.HasCount(0, result.Modules);
-        Assert.HasCount(0, result.ImportMapEntries);
+        Assert.HasCount(0, result.Assets);
     }
 
     [TestMethod]
@@ -204,15 +181,15 @@ public sealed class StaticModuleSourceMapTests
                         Id: "Demo.Modules.Counter",
                         RelativePath: "modules/counter.mjs",
                         Content: "export const counter = 1;\n",
-                        Hash: "hash-js",
+                        Hash: ComputeSha256("export const counter = 1;\n"),
                         SourceMapRelativePath: "modules/counter.mjs.map",
                         SourceMapContent: mapContent,
-                        MapHash: "hash-map")
+                        MapHash: ComputeSha256(mapContent))
                 ],
                 clean: true);
 
             Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
-            Assert.AreEqual(1, result.Written);
+            Assert.AreEqual(2, result.Written);
             Assert.IsTrue(File.Exists(modulePath));
             Assert.IsTrue(File.Exists(mapPath));
 
@@ -227,7 +204,7 @@ public sealed class StaticModuleSourceMapTests
             Assert.IsNotNull(manifest);
             Assert.HasCount(1, manifest.Modules);
             Assert.AreEqual("modules/counter.mjs.map", manifest.Modules[0].SourceMapPath);
-            Assert.AreEqual("hash-map", manifest.Modules[0].MapHash);
+            Assert.AreEqual(ComputeSha256(mapContent), manifest.Modules[0].MapHash);
         }
         finally
         {
@@ -252,7 +229,7 @@ public sealed class StaticModuleSourceMapTests
                 Id: "Demo.Pages.Counter",
                 RelativePath: "components/counter.mjs",
                 Content: "export default {};\n",
-                Hash: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+                 Hash: ComputeSha256("export default {};\n"))
         };
 
         try
@@ -285,7 +262,7 @@ public sealed class StaticModuleSourceMapTests
             StringAssert.Contains(firstManifest, "\"entries\": [");
             StringAssert.Contains(firstManifest, "\"components/counter.mjs\"");
             StringAssert.Contains(firstManifest, "\"path\": \"components/counter.mjs\"");
-            StringAssert.Contains(firstManifest, "\"contentHash\": \"sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\"");
+            StringAssert.Contains(firstManifest, "\"contentHash\": \"" + ComputeSha256("export default {};\n") + "\"");
 
             Assert.IsFalse(firstManifest.Contains("generatedAtUtc", StringComparison.OrdinalIgnoreCase), firstManifest);
             Assert.IsFalse(firstManifest.Contains("rootAssemblyPath", StringComparison.OrdinalIgnoreCase), firstManifest);
@@ -324,10 +301,10 @@ public sealed class StaticModuleSourceMapTests
                         Id: "Demo.Modules.Counter",
                         RelativePath: "modules/counter.mjs",
                         Content: "export const counter = 1;\n",
-                        Hash: "hash-js",
+                        Hash: ComputeSha256("export const counter = 1;\n"),
                         SourceMapRelativePath: "modules/counter.mjs.map",
                         SourceMapContent: "{\"version\":3,\"file\":\"modules/counter.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}",
-                        MapHash: "hash-map")
+                        MapHash: ComputeSha256("{\"version\":3,\"file\":\"modules/counter.mjs\",\"sources\":[],\"names\":[],\"mappings\":\"\"}"))
                 ],
                 clean: true);
 
@@ -346,7 +323,7 @@ public sealed class StaticModuleSourceMapTests
                         Id: "Demo.Modules.Counter",
                         RelativePath: "modules/counter.mjs",
                         Content: "export const counter = 1;\n",
-                        Hash: "hash-js")
+                        Hash: ComputeSha256("export const counter = 1;\n"))
                 ],
                 clean: true);
 
@@ -371,7 +348,7 @@ public sealed class StaticModuleSourceMapTests
     }
 
     [TestMethod]
-    public void ModuleWriter_Write_WhenLegacyManifestUsesDotSegments_PreservesCurrentModule()
+    public void ModuleWriter_Write_WhenExistingManifestUsesDotSegments_PreservesCurrentModule()
     {
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
@@ -387,15 +364,16 @@ public sealed class StaticModuleSourceMapTests
                 manifestPath,
                 """
                 {
-                  "RootAssemblyPath": "legacy.dll",
-                  "GeneratedAtUtc": "2026-04-29T00:00:00Z",
-                  "Modules": [
+                  "schemaVersion": 1,
+                  "runtimeProtocolVersion": 1,
+                  "rootAssemblyName": "Sample.Host",
+                  "modules": [
                     {
-                      "AssemblyName": "Sample.Host",
-                      "TypeName": "Demo.Modules.WikiHome",
-                      "Id": "Demo.Modules.WikiHome",
-                      "RelativePath": "./components/wiki-home.mjs",
-                      "Hash": "legacy-hash"
+                      "assemblyName": "Sample.Host",
+                      "typeName": "Demo.Modules.WikiHome",
+                      "id": "Demo.Modules.WikiHome",
+                      "path": "./components/wiki-home.mjs",
+                      "contentHash": "a03a15b1c99da79d1d32f11a09803e9c4909efbdc65a68d27e9044a1df6b3b6b"
                     }
                   ]
                 }
@@ -414,7 +392,7 @@ public sealed class StaticModuleSourceMapTests
                         Id: "Demo.Modules.WikiHome",
                         RelativePath: "components/wiki-home.mjs",
                         Content: "export default 1;\n",
-                        Hash: "current-hash")
+                        Hash: ComputeSha256("export default 1;\n"))
                 ],
                 clean: true);
 
@@ -452,4 +430,7 @@ public sealed class StaticModuleSourceMapTests
         stream.Position = 0;
         return Assembly.Load(stream.ToArray());
     }
+
+    private static string ComputeSha256(string value)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 }

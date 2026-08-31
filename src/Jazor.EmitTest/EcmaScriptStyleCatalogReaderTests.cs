@@ -44,7 +44,7 @@ public sealed class EcmaScriptStyleCatalogReaderTests
         var collector = new ModuleCollector(loadContext);
         collector.AddAssembly(assemblyPath);
 
-        var result = collector.Collect(failOnPathConflict: true);
+        var result = collector.Collect(assemblyPath);
 
         Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
         Assert.AreEqual(1, result.AssemblyCount);
@@ -55,5 +55,5 @@ public sealed class EcmaScriptStyleCatalogReaderTests
     }
 
     private static string ComputeHash(string content)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(content)));
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(content))).ToLowerInvariant();
 }

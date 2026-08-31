@@ -1,17 +1,22 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "libraryId": "tdesign-vue-next",
   "version": "1.20.5",
   "imports": {
     "tdesign-vue-next": {
+      "type": "module",
       "development": "dist/tdesign.mjs",
       "production": "dist/tdesign.mjs",
+      "developmentHash": "9c5349277ddf642614066f6ac7772e88753c4f9b0cdfc76edd63b0cfd9a4c4b8",
+      "productionHash": "9c5349277ddf642614066f6ac7772e88753c4f9b0cdfc76edd63b0cfd9a4c4b8",
       "developmentDependencies": [
         "vue"
       ],
       "productionDependencies": [
         "vue"
       ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
       "files": []
     }
   },
@@ -19,9 +24,17 @@
     "vue3": "^3.5.0"
   },
   "styles": [
-    "dist/tdesign.css"
+    {
+      "type": "style",
+      "path": "dist/tdesign.css",
+      "hash": "b87dc6c5eb50cb797d9298b99c9c8965e7073f739b328b8d119b01fec2274c54"
+    }
   ],
   "files": [
-    "licenses/LICENSE"
+    {
+      "type": "license",
+      "path": "licenses/LICENSE",
+      "hash": "b3dbcb89dcf4a11abf1b70d043795a3da0c458af16fefd2ff315d9ff5875312f"
+    }
   ]
 }

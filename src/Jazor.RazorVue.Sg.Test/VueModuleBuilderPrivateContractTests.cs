@@ -714,7 +714,7 @@ public sealed class VueModuleBuilderPrivateContractTests
         Assert.IsTrue(Invoke<bool>("IsJavaScriptIdentifierPart", '1'));
         Assert.IsFalse(Invoke<bool>("IsJavaScriptIdentifierPart", '-'));
         Assert.AreEqual(
-            "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             Invoke<string>("ComputeContentHash", string.Empty));
         Assert.AreNotEqual(Invoke<string>("ComputeContentHash", string.Empty), Invoke<string>("ComputeContentHash", "content"));
 

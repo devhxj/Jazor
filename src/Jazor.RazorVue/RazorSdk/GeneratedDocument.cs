@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
+using Jazor.Common;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Jazor.RazorVue.RazorSdk;
@@ -15,15 +15,7 @@ internal sealed record GeneratedDocument(
     public string ContentHash { get; } = ComputeContentHash(GeneratedCSharp);
 
     private static string ComputeContentHash(SourceText text)
-    {
-        using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(text.ToString()));
-        var builder = new StringBuilder(hash.Length * 2);
-        foreach (var item in hash)
-            builder.Append(item.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
-
-        return builder.ToString();
-    }
+        => ArtifactHash.ComputeSha256(text.ToString());
 }
 
 /// <summary>One source location retained from the generated C# document. 同时表示 authored 或 generated span。</summary>

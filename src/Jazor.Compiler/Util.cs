@@ -743,7 +743,7 @@ public static class Util
     private static bool ShouldSkipMethodOverloadSuffix(IMethodSymbol methodSymbol)
         => IsRuntimeMarkerType(methodSymbol.ContainingType);
 
-    private static bool IsECMAScriptModuleType(ITypeSymbol? symbol)
+    internal static bool IsECMAScriptModuleType(ITypeSymbol? symbol)
         => symbol?.GetAttributes().Any(attribute =>
             attribute.AttributeClass?.ToDisplayString() == ECMAScriptModuleAttributeMetadataName) == true;
 }

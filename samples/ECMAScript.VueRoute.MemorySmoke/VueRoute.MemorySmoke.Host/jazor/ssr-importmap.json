@@ -1,0 +1,14 @@
+{
+  "imports": {
+    "style.mjs": "./style.mjs",
+    "components/": "./components/",
+    "@vue/devtools-api": "./vendor/vue3/3.5.13/dist/devtools-api/vue-devtools-api.esm-browser.js",
+    "perfect-debounce": "./vendor/vue3/3.5.13/dist/devtools-api/perfect-debounce.mjs",
+    "vue": "./vendor/vue3/3.5.13/dist/vue.runtime.esm-browser.js",
+    "vue-router": "./vendor/vue-router/4.6.4/dist/vue-router.esm-browser.js",
+    "components/route-shell.mjs": "./components/route-shell.mjs",
+    "host/app.mjs": "./host/app.mjs",
+    "router/memory-router.mjs": "./router/memory-router.mjs",
+    "tests/router-testing.mjs": "./tests/router-testing.mjs"
+  }
+}
