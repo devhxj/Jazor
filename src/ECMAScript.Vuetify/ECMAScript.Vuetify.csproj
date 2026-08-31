@@ -5,7 +5,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>ECMAScript.Vuetify</PackageId>
     <Authors>hanxj</Authors>
-    <Description>Vuetify bindings and RazorVue authoring component stubs for ECMAScript.</Description>
+    <Description>Vuetify C# bindings and RazorVue component contracts backed by package-local manifest.json and dist runtime resources.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

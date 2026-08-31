@@ -4,6 +4,11 @@
 
 该包提供经过验证的 Element Plus runtime 导入、组件代理和 props/slot 契约。它只覆盖当前发布的稳定 authoring surface，不以 `object` 或弱类型选择器补齐未建模 API。
 
+本包属于 JS resource library：已有 Element Plus ESM 和 CSS 位于包内
+`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
+authoring contract。消费方编写的 RazorVue 组件仍按纯 Jazor 规则生成到消费程序集的
+`Jazor.Generated.ModuleCatalog`。
+
 ## 当前支持范围
 
 - 根插件与 runtime host：`ElementPlus`。

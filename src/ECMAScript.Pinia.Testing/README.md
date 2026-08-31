@@ -4,6 +4,11 @@
 
 该项目承载测试期 Pinia root、spy 与 initial-state 的 authoring contract，避免把测试专用 API 混入生产运行时包。
 
+本包属于 JS resource library：`@pinia/testing` 的已有 runtime ESM 位于包内
+`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
+authoring contract。测试项目生成的模块仍由项目自己的 Jazor 工具写入
+`Jazor.Generated.ModuleCatalog`。
+
 ## 职责
 
 - 提供 `createTestingPinia()` 的 C# host binding。

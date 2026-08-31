@@ -5,7 +5,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Jazor.Admin</PackageId>
     <Authors>hanxj</Authors>
-    <Description>Jazor admin-shell contracts and native RazorVue components.</Description>
+    <Description>Jazor admin-shell contracts and native RazorVue components emitted through Jazor.Generated.ModuleCatalog.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

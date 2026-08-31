@@ -2,6 +2,11 @@
 
 > `vue-data-ui` 3.23.4 的 RazorVue 强类型 binding，完整覆盖上游 71 个公开 `vue-ui-*` entry。每个 Razor component 指向单独的 upstream ESM entry，因此不会因为使用一个图表而导入整个 chart bundle。
 
+本包属于 JS resource library：`vue-data-ui` 的已有 ESM 和 CSS 位于包内
+`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
+RazorVue authoring contract。消费方生成的组件模块进入消费程序集的
+`Jazor.Generated.ModuleCatalog`。
+
 ## 安装
 
 ```xml

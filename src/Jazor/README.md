@@ -7,6 +7,12 @@
 > 资源契约：已有 JavaScript 由 `manifest.json + dist/**` 携带，Jazor 编译模块由程序集内的
 > `Jazor.Generated.ModuleCatalog` 携带。两者由最终宿主构建后的 Emit 一次性物化。
 
+类库携带 JavaScript 只有这两种形式；RazorVue 是纯 Jazor 类库的 authoring 场景，不是第三种
+carrier。`ModuleCatalog`（`ECMAScriptCode`）是开发者编写的 C#/RazorVue 模块的程序集内生成载体；
+`manifest.json + dist/**` 是 `ECMAScript`、Vue、Vuetify 等已有 JavaScript 的包内资源载体。
+`ModuleCatalog` 的存在是因为 analysis/source generator 的标准输出是 C#；它是纯 Jazor 的正式
+生成格式，不是遗留兼容载体。
+
 ## 安装
 
 ```xml
@@ -15,9 +21,10 @@
 </ItemGroup>
 ```
 
-所有声明 `[ECMAScriptModule]` 的类库和最终宿主都应引用 `Jazor`。类库保留默认
-`JazorMode=none` 并把自身生成模块写入 DLL 内的 `ModuleCatalog`；最终可执行或 Web 宿主
-负责收集程序集 catalog 与传递的资源 manifest 并输出产物。
+纯 Jazor 类库（开发者编写 C# 并声明 `[ECMAScriptModule]`）直接引用 `Jazor`。类库保留默认
+`JazorMode=none`，自身生成模块写入 DLL 内的 `ModuleCatalog`；最终可执行或 Web 宿主负责
+收集程序集 catalog 与传递的资源 manifest 并输出产物。编写 RazorVue 组件的项目属于纯 Jazor
+类库，必须直接引用 `Jazor` 和 `Jazor.Vue`；只消费上游类库的项目不会因普通引用获得工具资格。
 
 定义 module 的类库应隔离这项工具引用：
 
@@ -97,10 +104,11 @@ ASP.NET Core 持有请求管线、静态资源与响应文档，DenoHost 执行�
 
 ## Razor-to-Vue
 
-Razor SDK 项目需要额外引用 `Jazor.Vue`：
+编写 RazorVue 组件的 Razor SDK 项目必须直接引用两个包：
 
 ```xml
 <ItemGroup>
+  <PackageReference Include="Jazor" Version="0.26.0" />
   <PackageReference Include="Jazor.Vue" Version="0.26.0" PrivateAssets="all" />
 </ItemGroup>
 ```

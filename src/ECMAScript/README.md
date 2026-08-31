@@ -4,6 +4,12 @@
 
 `ECMAScript` 将可支持的 JavaScript runtime surface 表达为稳定的 C# contract，并通过 `[ECMAScript]`、`[ECMAScriptModule]`、`[Description]` 和白名单映射进入 compiler。它不是 JavaScript 的弱类型镜像：未建模的 runtime 语义不能通过 `object` 或手写 import 绕过。
 
+本项目是 JS resource library，不是纯 Jazor library。它发布时固定使用包内
+`manifest.json + dist/**` 携带已有的 ECMAScript/System JavaScript；C# 程序集只提供映射和
+authoring contract，不生成或替代 `Jazor.Generated.ModuleCatalog`。`ModuleCatalog` 只属于开发者
+编写的纯 Jazor（包括 RazorVue）模块。最终宿主由 Emit 通过 manifest locator 发现本项目资源，
+并按显式依赖闭包物化。
+
 ## 职责
 
 - 提供 global host、DOM/Web API、命名 union 与基础 runtime contract。

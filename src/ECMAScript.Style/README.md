@@ -4,15 +4,21 @@
 
 `ECMAScript.Style` 将结构化 C# 值转换为标准 `style.mjs` runtime 模块。它保持普通 ECMAScript import、Razor-to-Vue 互操作、基于内容的稳定命名、隔离 registry、Shadow DOM 所有权、SSR snapshot、CSP nonce 与幂等 hydration。
 
+本包是纯 Jazor 类库：`style.mjs` 由 Jazor 编译并写入程序集内的
+`Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`），不携带外部 `manifest.json + dist/**`
+资源。编写或组合 Jazor 模块的项目应直接引用 `Jazor`；RazorVue 项目还应直接引用
+`Jazor.Vue`。最终宿主只通过一次 Emit 物化选中的 catalog 依赖闭包。
+
 ## 安装
 
 ```xml
 <ItemGroup>
+  <PackageReference Include="Jazor" Version="0.26.0" />
   <PackageReference Include="ECMAScript.Style" Version="0.26.0" />
 </ItemGroup>
 ```
 
-该包依赖同版本 `Jazor` 进行编译和产物发射，但不安装 Razor hook、CSS 专用 MSBuild target、Vue adapter 或 compiler 分支。只有调用 `css` API 才会注册样式。
+该包依赖同版本 `Jazor` 的 contract；编译器、analyzer 与 Emit 工具不会通过传递依赖安装。它不安装 Razor hook、CSS 专用 MSBuild target、Vue adapter 或 compiler 分支。可复用类库通常将直接的 `Jazor` 工具引用设置为 `PrivateAssets="all"`；最终宿主需要 Emit 时应自行直接引用 `Jazor`。只有调用 `css` API 才会注册样式。
 
 ## 编写方式
 

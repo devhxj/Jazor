@@ -1,14 +1,14 @@
 <Project>
   <PropertyGroup>
-    <AcornimaVersion>1.7.0</AcornimaVersion>
-    <AngleSharpVersion>1.7.1</AngleSharpVersion>
-    <DenoHostVersion>2.9.5</DenoHostVersion>
-    <!-- DenoHost 2.9.5 verifies its signed runtime metadata with System.Text.Json reflection on net11.0. -->
+    <AcornimaVersion>1.8.0</AcornimaVersion>
+    <AngleSharpVersion>1.7.2</AngleSharpVersion>
+    <DenoHostVersion>2.9.6</DenoHostVersion>
+    <!-- DenoHost 2.9.6 verifies its signed runtime metadata with System.Text.Json reflection on net11.0. -->
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
-    <NetPackVersion>0.8.0</NetPackVersion>
+    <NetPackVersion>0.8.2</NetPackVersion>
     <JsonNetVersion>10.0.7</JsonNetVersion>
     <CodeAnalysisVersion>5.10.0-1.26381.103</CodeAnalysisVersion>
-    <Net110AssembliesVersion>1.8.10</Net110AssembliesVersion>
+    <Net110AssembliesVersion>1.8.11</Net110AssembliesVersion>
     <CoverletVersion>10.0.1</CoverletVersion>
     <MinVerPackageVersion>7.0.0</MinVerPackageVersion>
     <MinVerTagPrefix>v</MinVerTagPrefix>

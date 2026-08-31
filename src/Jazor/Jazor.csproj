@@ -5,7 +5,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Jazor</PackageId>
     <Authors>hanxj</Authors>
-    <Description>Jazor SDK with runtime, analyzer, source generator, emit tool and MSBuild integration.</Description>
+    <Description>Deterministic C# to ECMAScript compiler SDK with analyzer, source generator, Emit tooling, MSBuild integration, and support for both library carriers: manifest.json plus dist resources and the Jazor.Generated.ModuleCatalog for Jazor-generated modules.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>

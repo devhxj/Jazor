@@ -7,7 +7,7 @@
     <RootNamespace>ECMAScript</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>Vue Router 4 host bindings for ECMAScript runtime authoring.</Description>
+    <Description>Vue Router 4 C# bindings and RazorVue contracts backed by package-local manifest.json and dist runtime resources.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

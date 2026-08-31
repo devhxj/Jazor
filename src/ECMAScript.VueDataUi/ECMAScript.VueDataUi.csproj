@@ -7,7 +7,7 @@
     <RootNamespace>ECMAScript.VueDataUi</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>Vue Data UI chart bindings and RazorVue authoring component stubs for ECMAScript.</Description>
+    <Description>vue-data-ui C# bindings and RazorVue components backed by package-local manifest.json and dist runtime resources.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

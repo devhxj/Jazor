@@ -6,7 +6,7 @@
     <PackageId>Jazor.Vue</PackageId>
     <NuspecFile>Jazor.Vue.nuspec</NuspecFile>
     <Authors>hanxj</Authors>
-    <Description>Vue authoring, Razor-to-Vue integration, bindings, and local Vue runtime assets for Jazor.</Description>
+    <Description>Opt-in Razor-to-Vue SDK integration for official Razor Source Generator output. Generated components use Jazor.Generated.ModuleCatalog and Vue runtime resources use manifest.json plus dist assets.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>

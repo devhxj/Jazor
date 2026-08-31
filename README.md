@@ -34,9 +34,9 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ### Jazor 0.26.0 - 2026-08-31
 
-- A library carries JavaScript in exactly one of two forms: existing resources use package-local `manifest.json + dist/**`; C# compiled by Jazor is stored in the assembly's internal `Jazor.Generated.ModuleCatalog`.
+- A library carries JavaScript in exactly one of two forms: existing resources use package-local `manifest.json + dist/**`; developer-authored C# modules compiled by Jazor are stored in the assembly's internal `Jazor.Generated.ModuleCatalog` (`ECMAScriptCode`).
 - Generated modules, source maps, package imports, relative dependencies, HMR metadata, and owned assets share the one `ModuleCatalog` entry point. There is no provider or parallel artifact/source-map catalog.
-- Tooling follows direct-use ownership: projects that author Jazor code reference `Jazor` or `Jazor.Vue` directly; ordinary references only carry their declared module/resource dependencies.
+- Tooling follows direct-use ownership: a pure Jazor library directly references `Jazor`; a project that authors RazorVue components directly references both `Jazor` and `Jazor.Vue`; ordinary references only carry their declared module/resource dependencies.
 - After the host build completes, MSBuild invokes `Jazor.Emit` once. Emit resolves the selected dependency closure and atomically materializes the requested Debug, Release, or SSR projection into `JazorDir`.
 
 See the [changelog](CHANGELOG.md) for the full release history.
@@ -90,15 +90,34 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 
 `samples/JazorAdmin` is the production-grade admin reference application that consumes `Jazor.Admin`; it is not part of the library's public contract.
 
+### Library forms and direct references
+
+A library has exactly one of these two JavaScript carriers. RazorVue is an authoring mode of the
+pure Jazor form, not a third carrier.
+
+| Library form | Carrier | Direct reference rule |
+| --- | --- | --- |
+| JS resource library (`ECMAScript`, Vue, Vuetify, Pinia, and other libraries that already own `.mjs`/`.js`) | Package-local `manifest.json + dist/**` | The package declares its resource dependencies. A consumer does not acquire Jazor tooling transitively. |
+| Pure Jazor library (`ECMAScript.Style`, `Jazor.Admin`, or other developer-authored C# and RazorVue) | Assembly `Jazor.Generated.ModuleCatalog` (`ECMAScriptCode`) | A pure Jazor authoring project directly references `Jazor`; a RazorVue authoring project directly references both `Jazor` and `Jazor.Vue`. |
+
+The final executable or web host directly references `Jazor` when it runs Emit. It collects the
+selected `ModuleCatalog` modules and manifest resources once; Debug, Release, SSR, and HMR are
+output projections of that same closure, not additional library forms.
+
+`ModuleCatalog` is the standard assembly output for pure Jazor because the analysis/source-generator
+pipeline emits C#; it is not a legacy compatibility carrier.
+
 ## Install
 
-Install the core package in every project that declares ECMAScript modules:
+For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the core package
+directly:
 
 ```bash
 dotnet add package Jazor --version 0.26.0
 ```
 
-For a Razor SDK project using the current Razor-to-Vue integration, add the opt-in package explicitly and keep package versions aligned:
+For a Razor SDK project that authors RazorVue components, add both packages directly and keep
+their versions aligned:
 
 ```xml
 <ItemGroup>

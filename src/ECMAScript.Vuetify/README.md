@@ -4,6 +4,11 @@
 
 `ECMAScript.Vuetify` 为当前已建模的 Vuetify runtime export、组件 props、events 和 slots 提供 C# 表达。它不拥有 Razor Source Generator、C# lowering 或产物物化。
 
+本包属于 JS resource library：Vuetify 的已有 ESM 和 CSS 位于包内
+`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
+组件 authoring contract。消费方编写的 RazorVue 组件生成到消费程序集的
+`Jazor.Generated.ModuleCatalog`。
+
 ## 安装
 
 在 Razor-to-Vue 应用中，与核心包一起引用：

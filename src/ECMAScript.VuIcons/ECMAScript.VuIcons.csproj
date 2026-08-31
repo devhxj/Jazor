@@ -7,7 +7,7 @@
     <RootNamespace>ECMAScript.VuIcons</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>vu-icons browser-ready RazorVue bindings with static and dynamic icon authoring.</Description>
+    <Description>vu-icons C# RazorVue bindings backed by package-local manifest.json and dist runtime resources.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

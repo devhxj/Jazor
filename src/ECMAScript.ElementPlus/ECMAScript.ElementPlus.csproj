@@ -5,7 +5,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>ECMAScript.ElementPlus</PackageId>
     <Authors>hanxj</Authors>
-    <Description>Element Plus Vue 3 bindings and RazorVue authoring component stubs for ECMAScript.</Description>
+    <Description>Element Plus Vue 3 C# bindings and RazorVue contracts backed by package-local manifest.json and dist runtime resources.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

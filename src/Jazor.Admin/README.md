@@ -4,6 +4,10 @@
 
 `Jazor.Admin` 是库项目，提供可复用的应用框架、导航模型和 RazorVue 管理壳组件。`samples/JazorAdmin` 是消费该库的生产级管理参考应用；示例中的 TDesign 组合、业务页面、认证和部署策略不构成此包的公共 API。
 
+本包是纯 Jazor 类库：RazorVue 组件由 Jazor 编译到程序集内的
+`Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`）。它不把组件生成结果伪装成外部资源包；
+最终宿主通过 Emit 与所声明的 JS resource package manifest 一起按依赖闭包物化。
+
 ## 安装
 
 ```xml

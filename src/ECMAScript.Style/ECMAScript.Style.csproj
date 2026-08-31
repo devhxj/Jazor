@@ -9,7 +9,7 @@
     <RootNamespace>ECMAScript.Style</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>Strongly typed, deterministic CSS-in-JS for ECMAScript modules authored in C#.</Description>
+    <Description>Strongly typed, deterministic CSS-in-JS pure Jazor library for ECMAScript modules authored in C# and emitted through Jazor.Generated.ModuleCatalog.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

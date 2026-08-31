@@ -2,6 +2,11 @@
 
 > `vu-icons` 1.5.4 的 RazorVue 强类型 binding，完整覆盖上游 1,821 个 Vue 3 `Vu*` wrapper。已知图标走单图标 ESM entry；仅运行时选择名称时才加载完整 icon catalog。
 
+本包属于 JS resource library：`vu-icons` 的已有 ESM 和 CSS 位于包内
+`manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和
+RazorVue authoring contract。消费方生成的图标组件模块进入消费程序集的
+`Jazor.Generated.ModuleCatalog`。
+
 ## 安装
 
 ```xml
