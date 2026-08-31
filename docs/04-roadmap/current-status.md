@@ -33,6 +33,8 @@ RazorVue 作者面现已使用 final Compilation typed diagnostics：`JAZORVGA02
 
 Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vu Icons、UI 库绑定、`ECMAScript.Style`、`Jazor.Admin` 和 ASP.NET Core SSR 都围绕核心平台或当前 RazorVue 集成提供能力；Vue authoring、Vue bindings 和 Vue runtime 由 `Jazor.Vue` 交付，不改变 Jazor 的框架无关核心定位。Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 生成并由 `Jazor.CLR` 唯一持有，生成的 runtime JavaScript 进入 `ECMAScript/manifest.json + dist/**`；`ECMAScript.Blazor` 仅作为随 `Jazor.Vue` 交付的可选标准 ECMAScript 模拟/投影扩展，不贡献 whitelist 或 runtime resource。`ECMAScript.VueDataUi` 完整映射 `vue-data-ui` 3.23.4 的 71 个公开 `vue-ui-*` entry，保留 typed dataset/config authoring；最终宿主按资源 manifest 的 selected entry/dependency closure 物化 runtime。`ECMAScript.VuIcons` 映射 `vu-icons` 1.5.4 的 1,821 个静态 wrapper；静态使用按单图标 entry 物化，`VuIcon` 动态名称使用则由显式 package-entry closure 物化全量 catalog。
 
+`2026-08-31` 的 JazorAdmin Release 本地 NuGet consumer gate 已通过：native 与 VueInject 两个 consumer 均完成 0 warning/0 error 构建，最终 browser mount smoke 通过；同时 `vue-data-ui` selected entry 的相对 ESM closure 已完整物化，Emit 资源回归 180/180 通过。这确认了规范化后的包与资源交付链路，但不替代逐项 Blazor framework capability 的语义证据，复杂页面的 bridge 摩擦和未完成 ledger 项仍保留。
+
 `Jazor.React`、`Jazor.RazorReact` 等未来方向尚未构成已接受的产品范围或公开 API。任何新框架集成必须遵守 [框架集成层](../02-architecture/framework-integrations.md) 的边界。
 
 ## 交付与 SSR

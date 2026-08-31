@@ -1,6 +1,6 @@
 # RazorVue Blazor-first 兼容与开发者体验路线图
 
-> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器与 P0 module-integrity proof 已落地；剩余的是 framework 行为深度、验证、LocationChanged、auth state、SSR/package/browser consumer proof 及未承诺的 P1/P2 能力。标准 Blazor 内置 UI 组件和 Blazor JS interop 不属于当前产品契约。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
+> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器与 P0 module-integrity proof 已落地；JazorAdmin 的规范化 Release package/browser consumer gate 也已通过。剩余的是 framework 行为深度、验证、LocationChanged、auth state、各 feature 的 SSR/package/browser consumer proof 及未承诺的 P1/P2 能力。标准 Blazor 内置 UI 组件和 Blazor JS interop 不属于当前产品契约。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
 >
 > 目标：开发者按标准 Blazor 的 Razor、组件生命周期、参数、事件、服务和 framework API 使用习惯编写自定义组件；UI 由 TDesign、Vuetify、Element Plus 等组件库提供。RazorVue 应优先自动提供 framework 等价行为；无法保持等价时，由源码分析诊断在作者代码处说明原因、影响和替代，而不是要求开发者预先学习 lowering、Vue 或 generated C#。
 

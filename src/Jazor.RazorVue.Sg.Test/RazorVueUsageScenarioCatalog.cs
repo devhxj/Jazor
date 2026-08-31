@@ -1198,13 +1198,14 @@ internal static class RazorVueM5CapabilityLedger
             "JazorAdmin pages as real P0/component-binding consumer regression",
             RazorVueCapabilityPriority.P0,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "samples/JazorAdmin",
             null,
-            "samples/JazorAdmin/verify-smoke.cs",
+            "samples/JazorAdmin/verify-smoke.cs (Release local package + browser mount)",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.BrowserSmoke,
-            "Only capabilities with an independent platform proof may be promoted from this consumer evidence.")
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "Consumer delivery is proven; this row does not promote independent framework capabilities without their own semantic evidence.")
     ];
 }
