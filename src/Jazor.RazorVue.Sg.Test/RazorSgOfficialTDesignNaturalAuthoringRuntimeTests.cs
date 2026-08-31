@@ -54,7 +54,7 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
             @using ECMAScript.TDesign
 
             <TButton Theme="@TButtonThemeValue.Primary" OnClick="@Activate">Save</TButton>
-            <TInput T="string" Value="@Name" OnChange="@OnNameChanged" />
+            <TInput T="string" @bind-Value="Name" @bind-Value:event="OnChange" />
             <TPrimaryTable T="Row" Data="@Rows" Columns="@Columns" RowKey="Id" />
             <span data-name="@Name" data-activated="@Activated">@Name:@Activated</span>
             """,
@@ -86,8 +86,6 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
                 ];
 
                 private void Activate() => Activated++;
-
-                private void OnNameChanged(string value) => Name = value;
             }
             """,
             rootNamespace: "Demo.Pages",
@@ -100,6 +98,11 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
                 .SelectMany(static line => line.Where(static character => !char.IsWhiteSpace(character))));
         StringAssert.Contains(normalizedGeneratedCSharp, "OpenComponent<global::ECMAScript.TDesign.TInput<string>>", StringComparison.Ordinal);
         StringAssert.Contains(normalizedGeneratedCSharp, "OpenComponent<global::ECMAScript.TDesign.TPrimaryTable<Row>>", StringComparison.Ordinal);
+        StringAssert.Contains(observation.GeneratedCSharp, "RuntimeHelpers.CreateInferredEventCallback", StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.GeneratedCSharp,
+            "nameof(global::ECMAScript.TDesign.TInput<string>.OnChange)",
+            StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "import { Button, Input, PrimaryTable } from \"tdesign-vue-next\";", StringComparison.Ordinal);
         Assert.IsFalse(observation.ModuleText.Contains("admin-input", StringComparison.Ordinal), observation.ModuleText);
