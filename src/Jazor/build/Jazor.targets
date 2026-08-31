@@ -1,0 +1,138 @@
+<Project>
+  <!-- Set while the direct Jazor package target is imported. Opt-in packages can use this
+       marker to avoid registering the same shared analyzer closure a second time. -->
+  <PropertyGroup>
+    <_JazorDirectToolingActive>true</_JazorDirectToolingActive>
+  </PropertyGroup>
+
+  <!--
+    This direct-reference target owns tooling activation. The transitive import is deliberately
+    limited to resource-manifest locators, so an assembly reference cannot grant Emit/analyzer use.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)..\buildTransitive\Jazor.Resources.targets" />
+
+  <ItemGroup>
+    <!-- Roslyn resolves analyzer dependencies only from registered analyzer paths. Register the
+         packaged closure here, inside the direct-only target, so generators cannot fail silently. -->
+    <Analyzer Include="$(MSBuildThisFileDirectory)..\tools\net11.0\analyzers\*.dll"
+              Condition="Exists('$(MSBuildThisFileDirectory)..\tools\net11.0\analyzers')" />
+  </ItemGroup>
+
+  <!--
+    JazorDir is build output, not authored content. Keep it out of the SDK default
+    items so a generated module cannot become a new dotnet watch input on the next build.
+  -->
+  <ItemGroup Condition="'$(JazorDir)' != ''">
+    <Compile Remove="$(JazorDir)**" />
+    <Content Remove="$(JazorDir)**" />
+    <EmbeddedResource Remove="$(JazorDir)**" />
+    <None Remove="$(JazorDir)**" />
+  </ItemGroup>
+
+  <Target Name="_ResolveJazorEmitTool">
+    <PropertyGroup>
+      <_JazorPackagedToolPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net11.0\Jazor.Emit.dll'))</_JazorPackagedToolPath>
+      <_JazorToolPath Condition="Exists('$(_JazorPackagedToolPath)')">$(_JazorPackagedToolPath)</_JazorToolPath>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(_JazorToolPath)' == ''">
+      <_JazorEmitToolProjectReference Include="@(ProjectReference)"
+                                      Condition="'%(ProjectReference.Filename)' == 'Jazor.Emit'" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(_JazorEmitToolProjectReference)"
+             Targets="GetTargetPath"
+             BuildInParallel="false"
+             Condition="'$(_JazorToolPath)' == '' and '@(_JazorEmitToolProjectReference)' != ''">
+      <Output TaskParameter="TargetOutputs" ItemName="_JazorEmitToolTarget" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <_JazorToolPath Condition="'$(_JazorToolPath)' == '' and '@(_JazorEmitToolTarget)' != ''">@(_JazorEmitToolTarget)</_JazorToolPath>
+    </PropertyGroup>
+
+    <Error Condition="!Exists('$(_JazorToolPath)')"
+           Text="Could not locate Jazor.Emit. Install the Jazor package with its tools assets, or add a ProjectReference to Jazor.Emit for repository source builds." />
+  </Target>
+
+  <Target Name="JazorDebug"
+          AfterTargets="Build"
+          DependsOnTargets="_ResolveJazorEmitTool"
+          Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'debug' and Exists('$(TargetPath)')">
+    <PropertyGroup>
+      <_JazorDebugOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorDebugOutputDir>
+      <_JazorDebugManifestPath>$(_JazorDebugOutputDir)\jazor-manifest.json</_JazorDebugManifestPath>
+      <_JazorDebugSourceRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))</_JazorDebugSourceRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <JazorDebugAssembly Include="$(TargetPath)" />
+      <JazorDebugAssembly Include="@(ReferenceCopyLocalPaths)"
+                         Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
+    </ItemGroup>
+
+    <!-- Emit reflects managed assemblies only. Native runtime DLLs can also use a .dll extension on Windows. -->
+    <!-- Emit 仅反射托管程序集；Windows 的原生 runtime DLL 也会使用 .dll 扩展名，必须在此排除。 -->
+
+    <!-- A single Emit invocation owns collection, dependency resolution and the atomic output commit. -->
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; --clean true @(JazorDebugAssembly->'--assembly &quot;%(Identity)&quot;', ' ') @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" />
+  </Target>
+
+  <Target Name="JazorRelease"
+          AfterTargets="Build"
+          DependsOnTargets="_ResolveJazorEmitTool"
+          Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'release' and Exists('$(TargetPath)')">
+    <PropertyGroup>
+      <_JazorReleaseOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorReleaseOutputDir>
+      <_JazorReleaseManifestPath>$(_JazorReleaseOutputDir)\jazor-manifest.json</_JazorReleaseManifestPath>
+      <_JazorReleaseSourceRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))</_JazorReleaseSourceRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <JazorReleaseAssembly Include="$(TargetPath)" />
+      <JazorReleaseAssembly Include="@(ReferenceCopyLocalPaths)"
+                           Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
+    </ItemGroup>
+
+    <!-- Keep release emission consistent with the debug managed-assembly boundary above. -->
+    <!-- Release 与 Debug 保持同一托管程序集边界，避免发布构建重新传入原生库。 -->
+
+    <!-- Release uses the same managed assembly boundary and profile transaction as Debug. -->
+    <Exec Command="dotnet &quot;$(_JazorToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; --clean true @(JazorReleaseAssembly->'--assembly &quot;%(Identity)&quot;', ' ') @(JazorLibraryManifest->'--library-manifest &quot;%(Identity)&quot;', ' ')" />
+  </Target>
+
+  <!--
+    Generated artifacts deliberately live beside the project rather than under wwwroot.
+    Publish copies that graph explicitly so Web and non-Web SDK hosts get one identical
+    /jazor layout without making the build output an authored static-file item.
+  -->
+  <Target Name="AddJazorArtifactsToPublish"
+          AfterTargets="ComputeFilesToPublish"
+          BeforeTargets="_HandleFileConflictsForPublish"
+          Condition="('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' != 'none' and Exists('$(JazorDir)')">
+    <PropertyGroup>
+      <_JazorPublishRoot>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorPublishRoot>
+    </PropertyGroup>
+
+    <FindUnderPath Path="$(_JazorPublishRoot)"
+                   Files="@(ResolvedFileToPublish)"
+                   UpdateToAbsolutePaths="true">
+      <Output TaskParameter="InPath" ItemName="_JazorSdkPublishArtifact" />
+    </FindUnderPath>
+
+    <ItemGroup>
+      <!--
+        The SDK can discover JazorDir after JazorDebug/JazorRelease creates it during
+        the same publish invocation. Run before its duplicate-output check so both SDK
+        families publish exactly one copy at the intended jazor/ relative path.
+      -->
+      <!-- Remove the SDK's exact item identities; a glob remove does not reliably match its metadata-backed items. -->
+      <ResolvedFileToPublish Remove="@(_JazorSdkPublishArtifact)" />
+      <_JazorArtifactFile Include="$(_JazorPublishRoot)\**\*" />
+      <ResolvedFileToPublish Include="@(_JazorArtifactFile)">
+        <RelativePath>jazor/%(_JazorArtifactFile.RecursiveDir)%(_JazorArtifactFile.Filename)%(_JazorArtifactFile.Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+</Project>

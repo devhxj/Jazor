@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <JazorMode Condition="'$(JazorMode)' == ''">none</JazorMode>
+    <!-- Generated modules stay outside wwwroot: the host mounts this directory at /jazor. -->
+    <JazorDir Condition="'$(JazorDir)' == ''">$(MSBuildProjectDirectory)\jazor\</JazorDir>
+    <!-- Release keeps only the browser bundle unless SSR explicitly needs the raw module graph. -->
+    <JazorSSR Condition="'$(JazorSSR)' == ''">false</JazorSSR>
+    <!-- DenoHost validates its packaged runtime metadata through System.Text.Json reflection. -->
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion Condition="'$(LangVersion)' == ''">preview</LangVersion>
+  </PropertyGroup>
+</Project>
