@@ -17,23 +17,23 @@ public static class PortalApiClient
         var roles = ReadArray(Reflect.Get(data, "roles"));
         var values = new string[roles.Length];
         for (var index = 0; index < roles.Length; index++)
-            values[index] = StringFn(roles[index]);
+            values[index] = StringValue(roles[index]);
 
         return new DemoSessionView(
-            StringFn(Reflect.Get(data, "subject")),
+            StringValue(Reflect.Get(data, "subject")),
             OptionalString(Reflect.Get(data, "name")),
             OptionalString(Reflect.Get(data, "email")),
             values,
-            BooleanFn(Reflect.Get(data, "hasAccessToken")));
+            BooleanValue(Reflect.Get(data, "hasAccessToken")));
     }
 
     public static ProtectedOverviewView ToOverview(object data)
         => new(
-            (int)NumberFn(Reflect.Get(data, "accounts")),
-            (int)NumberFn(Reflect.Get(data, "applications")),
-            (int)NumberFn(Reflect.Get(data, "tokens")),
-            (int)NumberFn(Reflect.Get(data, "auditEvents")),
-            (int)NumberFn(Reflect.Get(data, "tokenIssuances")));
+            (int)NumberValue(Reflect.Get(data, "accounts")),
+            (int)NumberValue(Reflect.Get(data, "applications")),
+            (int)NumberValue(Reflect.Get(data, "tokens")),
+            (int)NumberValue(Reflect.Get(data, "auditEvents")),
+            (int)NumberValue(Reflect.Get(data, "tokenIssuances")));
 
     private static IPromise<PortalApiOutcome> Get(string path)
     {
@@ -67,5 +67,5 @@ public static class PortalApiClient
         => value as object?[] ?? [];
 
     private static string? OptionalString(object? value)
-        => value is null ? null : StringFn(value);
+        => value is null ? null : StringValue(value);
 }

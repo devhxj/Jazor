@@ -309,8 +309,8 @@ public static class ApiClient
                 ReadString(value, "id"),
                 ReadString(value, "email"),
                 ReadString(value, "displayName"),
-                BooleanFn(Reflect.Get(value, "enabled")),
-                BooleanFn(Reflect.Get(value, "platformAdministrator")));
+                BooleanValue(Reflect.Get(value, "enabled")),
+                BooleanValue(Reflect.Get(value, "platformAdministrator")));
         }
 
         return accounts;
@@ -428,7 +428,7 @@ public static class ApiClient
                 ReadString(value, "name"),
                 ReadString(value, "description"),
                 ReadString(value, "cron"),
-                BooleanFn(Reflect.Get(value, "enabled")),
+                BooleanValue(Reflect.Get(value, "enabled")),
                 ReadOptionalString(Reflect.Get(value, "nextRunAt")),
                 ReadOptionalString(Reflect.Get(value, "lastRunAt")),
                 ReadOptionalString(Reflect.Get(value, "lastStatus")),
@@ -644,7 +644,7 @@ public static class ApiClient
             ReadString(value, "applicationType"),
             ReadString(value, "clientType"),
             ReadString(value, "consentType"),
-            BooleanFn(Reflect.Get(value, "requirePkce")),
+            BooleanValue(Reflect.Get(value, "requirePkce")),
             ReadStringArray(Reflect.Get(value, "redirectUris")),
             ReadStringArray(Reflect.Get(value, "postLogoutRedirectUris")),
             ReadStringArray(Reflect.Get(value, "endpoints")),
@@ -660,16 +660,16 @@ public static class ApiClient
         var values = ReadArray(value);
         var result = new string[values.Length];
         for (var index = 0; index < values.Length; index++)
-            result[index] = StringFn(values[index]);
+            result[index] = StringValue(values[index]);
         return result;
     }
 
     private static string ReadString(object value, string key)
-        => StringFn(Reflect.Get(value, key));
+        => StringValue(Reflect.Get(value, key));
 
     private static string? ReadOptionalString(object? value)
-        => value is null ? null : StringFn(value);
+        => value is null ? null : StringValue(value);
 
     private static int ReadInt(object? value)
-        => (int)NumberFn(value);
+        => (int)NumberValue(value);
 }
