@@ -298,4 +298,200 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
                 ["node_modules/tdesign-vue-next/index.mjs"] = "export const Form = { name: \"form\" }; export const FormItem = { name: \"form-item\" }; export const Input = { name: \"input\" }; export const RadioButton = { name: \"radio-button\" }; export const RadioGroup = { name: \"radio-group\" }; export const Switch = { name: \"switch\" };"
             });
     }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorTDesignDialogAndTableSlots_PreserveValueAndContentContractsWithoutBridge()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignDialogAndTableNaturalAuthoringRuntime.razor"),
+            documentText:
+            """
+            @using ECMAScript.TDesign
+
+            <TDialog Visible="@DialogVisible" ConfirmBtnValue="@("Publish")" OnConfirm="@Confirm">
+                <BodyContent>
+                    <span data-dialog-body="@DialogBody">Body</span>
+                </BodyContent>
+            </TDialog>
+            <TDialog Visible="@DialogVisible" ConfirmBtnValue="@ConfirmButton">
+            </TDialog>
+            <TDialog Visible="@DialogVisible">
+                <ConfirmBtnContent>
+                    <span data-dialog-confirm-slot="@DialogVisible">Confirm slot</span>
+                </ConfirmBtnContent>
+            </TDialog>
+            <TTable T="Row" Data="@Rows" RowKey="Id" LoadingValue="@IsLoading">
+                <LoadingContent>
+                    <span data-table-loading="@IsLoading">Loading</span>
+                </LoadingContent>
+                <EmptyContent>
+                    <span data-table-empty="@IsLoading">Empty</span>
+                </EmptyContent>
+            </TTable>
+            <TPrimaryTable T="Row" Data="@Rows" RowKey="Id" LoadingValue="@IsLoading">
+                <LoadingContent>
+                    <span data-primary-table-loading="@IsLoading">Loading</span>
+                </LoadingContent>
+            </TPrimaryTable>
+            <span data-confirmed="@Confirmed"></span>
+            """,
+            codeBehindSource:
+            """
+            using ECMAScript.TDesign;
+
+            namespace Demo.Pages;
+
+            public sealed record Row(int Id, string Label);
+
+            [ECMAScriptModule("./components/tdesign-dialog-table-natural-authoring-runtime")]
+            public partial class TDesignDialogAndTableNaturalAuthoringRuntime : ComponentBase, IVueComponent
+            {
+                private Row[] Rows { get; } = [new(7, "Release")];
+                private bool DialogVisible { get; } = true;
+                private bool IsLoading { get; } = true;
+                private string DialogBody { get; } = "Review release";
+                private TdButtonProps ConfirmButton { get; } = new()
+                {
+                    Theme = TdButtonPropsTheme.Primary
+                };
+                private int Confirmed { get; set; }
+
+                private void Confirm(TDialogConfirmEventContext context) => Confirmed++;
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.TDesignDialogAndTableNaturalAuthoringRuntime");
+
+        var normalizedGeneratedCSharp = string.Concat(
+            observation.GeneratedCSharp
+                .Split('\n')
+                .Where(static line => !line.TrimStart().StartsWith("#", StringComparison.Ordinal))
+                .SelectMany(static line => line.Where(static character => !char.IsWhiteSpace(character))));
+        StringAssert.Contains(normalizedGeneratedCSharp, "OpenComponent<global::ECMAScript.TDesign.TDialog>", StringComparison.Ordinal);
+        StringAssert.Contains(normalizedGeneratedCSharp, "OpenComponent<global::ECMAScript.TDesign.TTable<Row>>", StringComparison.Ordinal);
+        StringAssert.Contains(normalizedGeneratedCSharp, "OpenComponent<global::ECMAScript.TDesign.TPrimaryTable<Row>>", StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "import { Dialog, PrimaryTable, Table } from \"tdesign-vue-next\";", StringComparison.Ordinal);
+        Assert.IsFalse(observation.ModuleText.Contains("AdminDialog", StringComparison.Ordinal), observation.ModuleText);
+        Assert.IsFalse(observation.ModuleText.Contains("AdminTable", StringComparison.Ordinal), observation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/tdesign-dialog-table-natural-authoring-runtime.mjs",
+            observation.ModuleText,
+            "official-tdesign-dialog-table-natural-authoring-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/tdesign-dialog-table-natural-authoring-runtime.mjs";
+            import { Dialog, PrimaryTable, Table } from "tdesign-vue-next";
+
+            const findAll = (value, predicate) => {
+                if (Array.isArray(value)) {
+                    return value.flatMap(entry => findAll(entry, predicate));
+                }
+                if (!value || typeof value !== "object") {
+                    return [];
+                }
+                return [
+                    ...(predicate(value) ? [value] : []),
+                    ...findAll(value.children, predicate)
+                ];
+            };
+
+            test("natural TDesign dialogs and tables preserve union values and named slots", () => {
+                const render = component.setup({}, { slots: {} });
+                const initial = render();
+                const dialogs = findAll(initial, node => node?.name === Dialog);
+                const table = findAll(initial, node => node?.name === Table)[0];
+                const primaryTable = findAll(initial, node => node?.name === PrimaryTable)[0];
+
+                assert.equal(dialogs.length, 3);
+                assert.equal(dialogs[0].props.visible, true);
+                assert.equal(dialogs[0].props.confirmBtn, "Publish");
+                assert.equal(typeof dialogs[0].props.onConfirm, "function");
+                assert.equal(typeof dialogs[0].children.body, "function");
+                const body = findAll(dialogs[0].children.body(), node => node?.name === "span")[0];
+                assert.ok(body);
+                assert.equal(body.props["data-dialog-body"], "Review release");
+
+                assert.equal(dialogs[1].props.confirmBtn.theme, "primary");
+                assert.equal(dialogs[1].children, null);
+                assert.equal(typeof dialogs[2].children.confirmBtn, "function");
+                const confirmSlot = findAll(dialogs[2].children.confirmBtn(), node => node?.name === "span")[0];
+                assert.ok(confirmSlot, JSON.stringify(dialogs[2].children.confirmBtn()));
+                assert.equal(confirmSlot.props["data-dialog-confirm-slot"], true);
+
+                assert.ok(table);
+                assert.equal(table.props.rowKey, "Id");
+                assert.equal(table.props.data[0].Label, "Release");
+                assert.equal(table.props.loading, true);
+                assert.equal(typeof table.children.loading, "function");
+                assert.equal(typeof table.children.empty, "function");
+                const loading = findAll(table.children.loading(), node => node?.name === "span")[0];
+                const empty = findAll(table.children.empty(), node => node?.name === "span")[0];
+                assert.ok(loading);
+                assert.ok(empty);
+                assert.equal(loading.props["data-table-loading"], true);
+                assert.equal(empty.props["data-table-empty"], true);
+
+                assert.ok(primaryTable);
+                assert.equal(primaryTable.props.rowKey, "Id");
+                assert.equal(primaryTable.props.loading, true);
+                assert.equal(typeof primaryTable.children.loading, "function");
+                const primaryLoading = findAll(primaryTable.children.loading(), node => node?.name === "span")[0];
+                assert.ok(primaryLoading);
+                assert.equal(primaryLoading.props["data-primary-table-loading"], true);
+
+                dialogs[0].props.onConfirm({});
+                const updated = render();
+                const state = findAll(updated, node => node?.name === "span" && node.props["data-confirmed"] !== undefined)[0];
+                assert.ok(state);
+                assert.equal(state.props["data-confirmed"], 1);
+            });
+            """,
+            new Dictionary<string, string>
+            {
+                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
+                ["node_modules/tdesign-vue-next/index.mjs"] = "export const Dialog = { name: \"dialog\" }; export const PrimaryTable = { name: \"primary-table\" }; export const Table = { name: \"table\" };"
+            });
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorTDesignTables_ReportMissingRequiredRowKey()
+    {
+        var documentPath = RazorSgTestHost.GetTestDocumentPath("Pages/TDesignTableRequiredAuthoring.razor");
+        var diagnostics = await RazorSgOfficialAuthoringTestHost.GetGeneratorDiagnosticsAsync(
+            documentPath,
+            """
+            @using ECMAScript.TDesign
+
+            <TTable T="Row" Data="@Rows" />
+            <TPrimaryTable T="Row" Data="@Rows" />
+            """,
+            """
+            using ECMAScript.TDesign;
+
+            namespace Demo.Pages;
+
+            public sealed record Row(int Id);
+
+            [ECMAScriptModule("./components/tdesign-table-required-authoring")]
+            public partial class TDesignTableRequiredAuthoring : ComponentBase, IVueComponent
+            {
+                private Row[] Rows { get; } = [new(7)];
+            }
+            """,
+            "Demo.Pages");
+
+        var requiredDiagnostics = diagnostics.Where(static diagnostic => diagnostic.Id == "RZ2012").ToArray();
+        Assert.AreEqual(
+            2,
+            requiredDiagnostics.Length,
+            string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.Id + ": " + diagnostic.GetMessage())));
+        foreach (var diagnostic in requiredDiagnostics)
+        {
+            StringAssert.Contains(diagnostic.GetMessage(), "RowKey", StringComparison.Ordinal);
+        }
+    }
 }

@@ -88,6 +88,17 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.AreEqual(RazorVueCapabilityStatus.InProof, route.Status);
         Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
 
+        var tdesign = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P0-tdesign-typed-authoring");
+        Assert.AreEqual(RazorVueCapabilityDecision.DirectSupport, tdesign.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.InProof, tdesign.Status);
+        Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+        Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
+        Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsFalse(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsFalse(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+
         var standardComponents = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-standard-blazor-component-adapters");
         Assert.AreEqual("JAZORVGA021", standardComponents.DiagnosticId);

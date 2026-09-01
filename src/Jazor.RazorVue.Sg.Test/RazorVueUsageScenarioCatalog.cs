@@ -657,6 +657,27 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.DenoRuntime,
             "Dynamic runtime Type and unresolved fragment factories remain final-pipeline owned."),
         new(
+            "P0-tdesign-typed-authoring",
+            "Native TDesign generic/non-generic components, typed callbacks, attribute splats, union value branches, named slots, and required table parameters without application bridge components",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.InProof,
+            "ECMAScript.TDesign contract + RazorVue component binding",
+            null,
+            "RazorSgOfficialTDesignNaturalAuthoringRuntimeTests; RazorSgOfficialTDesignTableCellRuntimeTests",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "Natural TDesign form/control/dialog/table authoring is covered through official SG and Deno. An isolated Release package/browser fixture and the minimal authoring sample remain before Support.")
+        {
+            TargetProfiles = "Compiler authoring and Deno runtime; browser/package evidence not yet claimed",
+            Carrier = "TDesign component contracts, native erased unions, and Vue named slots",
+            ImplementationPath = "ECMAScript.TDesign generated Parameter/ECMAScriptName contracts -> official Razor SG -> RenderEmitter/VueModuleBuilder",
+            Dependencies = "ECMAScript.TDesign resource manifest; Jazor.RazorVue direct-render pipeline",
+            ExcludedSurface = "Application bridge components, object/cast escape hatches, and Microsoft built-in Blazor UI components"
+        },
+        new(
             "P0-control-flow-attributes-identity",
             "Conditional/loop rendering, conditional attributes, attribute splat, @key, and @ref",
             RazorVueCapabilityPriority.P0,

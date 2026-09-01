@@ -38,6 +38,51 @@ dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 与非泛型组件会触发 Razor SDK 的歧义诊断。Razor 页面直接写显式类型参数（例如
 `<TInput T="string" ... />`），C# 代码使用 `TInput<string>`，无需桥接组件或 `object` 转换。
 
+## 已验证的 Razor 写法
+
+以下语法已通过作者源码、official Razor Source Generator、render module 和 Deno runtime 回归；
+独立 Release package/browser 证明仍由 RazorVue zero-friction 计划追踪，因此本节不构成整体
+`Support` 状态声明。
+
+```razor
+<TForm FormData="EditorModel" Data="@FormData" OnSubmit="@Submit">
+    <TFormItem LabelValue="Name" Name="name">
+        <TInput T="string" @bind-Value="Name" @bind-Value:event="OnChange" />
+    </TFormItem>
+</TForm>
+
+<TRadioGroup T="string" @bind-Value="Stage" @bind-Value:event="OnChange">
+    <TRadioButton T="string" Value="@("draft")">Draft</TRadioButton>
+</TRadioGroup>
+```
+
+`TForm` 使用上游实际的泛型参数名 `FormData`，而不是统一的 `T`。当泛型参数的值是静态字符串时，
+使用带类型上下文的 Razor 表达式，例如 `Value="@("draft")"`；不需要 cast 或 `From(...)`。
+
+同一个 Vue prop 同时有值分支和 slot 分支时，binding 以稳定后缀区分，二者不能在同一组件实例上
+同时设置：
+
+```razor
+<TDialog ConfirmBtnValue="@("Publish")" OnConfirm="@Confirm">
+    <BodyContent>Review release</BodyContent>
+</TDialog>
+
+<TDialog ConfirmBtnValue="@ConfirmButton" />
+
+<TDialog>
+    <ConfirmBtnContent>Publish</ConfirmBtnContent>
+</TDialog>
+
+<TTable T="Row" Data="@Rows" RowKey="Id" LoadingValue="@IsLoading">
+    <LoadingContent>Loading</LoadingContent>
+    <EmptyContent>No rows</EmptyContent>
+</TTable>
+```
+
+常见命名为 `XxxValue`（JS prop 的非 fragment 分支）和 `XxxContent`（同一 prop 的 named slot）。
+`TTable<T>` 与 `TPrimaryTable<T>` 的 `RowKey` 是 `[EditorRequired]`；省略它会由 official Razor
+Source Generator 报告 `RZ2012`，不会等到 RazorVue runtime 才失败。
+
 Razor Source Generator 集成、render-function lowering 和产物物化分别属于 `Jazor.Vue`、`Jazor.RazorVue` 和 `Jazor.Emit`。本包只定义 host binding 与组件契约。
 
 ## 相关文档
