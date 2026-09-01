@@ -78,10 +78,10 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
                     new()
                     {
                         Title = "Label",
-                        Cell = (TPrimaryTableColCell<Row>)((RenderFragment<TPrimaryTableCellParams<Row>>)(context => builder =>
+                        Cell = new(context => builder =>
                         {
                             builder.AddContent(0, context.Row.Label);
-                        }))
+                        })
                     }
                 ];
 
@@ -132,6 +132,8 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
                 assert.equal(nodes[2].name, PrimaryTable);
                 assert.equal(nodes[2].props.rowKey, "Id");
                 assert.equal(nodes[2].props.data[0].Label, "Release");
+                assert.equal(nodes[2].props.columns.length, 1);
+                assert.equal(typeof nodes[2].props.columns[0].cell, "function");
                 assert.equal(typeof nodes[0].props.onClick, "function");
                 assert.equal(typeof nodes[1].props.onChange, "function");
 
