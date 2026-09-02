@@ -1,8 +1,16 @@
+using System.ComponentModel;
 using ECMAScript;
 using Microsoft.AspNetCore.Components;
 using static ECMAScript.Vue;
 
 namespace Todo.Library;
+
+[ECMAScript]
+[Description("@#")]
+public sealed class TodoBrowserService
+{
+    public string Label { get; set; } = "missing";
+}
 
 /// <summary>Small interactive RazorVue app used by the Windows development-host gate.</summary>
 [ECMAScriptModule("./components/todo-app")]
@@ -10,6 +18,9 @@ public partial class TodoApp : ComponentBase, IVueComponent
 {
     [Parameter]
     public string SsrTitle { get; set; } = "Template marker v1";
+
+    [Inject]
+    public TodoBrowserService BrowserService { get; set; } = null!;
 
     private readonly List<TodoTask> tasks =
     [
@@ -25,6 +36,8 @@ public partial class TodoApp : ComponentBase, IVueComponent
     private string LogicMarker => "logic-v1";
 
     private string TemplateLabel => SsrTitle;
+
+    private string ServiceLabel => BrowserService.Label;
 
     private string ParameterLifecycleStatus { get; set; } = "pending";
 

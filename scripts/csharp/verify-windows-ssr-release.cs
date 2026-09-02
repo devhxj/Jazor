@@ -887,6 +887,7 @@ internal static class SsrReleaseVerifier
         RequireContains(html, "<div id=\"app\">", "SSR mount element");
         RequireContains(html, "data-todo-template=\"todo-template-v1\"", "server-rendered TodoApp board");
         RequireContains(html, "data-todo-parameter=\"SSR ParameterView title\"", "server-applied ParameterView value");
+        RequireContains(html, "data-todo-service=\"ssr-provider\"", "server-applied browser service provider");
         RequireContains(html, "data-todo-parameter-status=\"ready\"", "completed async ParameterView lifecycle");
         RequireContains(html, "data-todo-initialized=\"ready\"", "completed OnInitializedAsync lifecycle");
         RequireContains(html, "id=\"todo-cascade-card\"", "server-rendered cascading child");
@@ -895,6 +896,8 @@ internal static class SsrReleaseVerifier
         RequireContains(html, "id=\"todo-done-count\">1<", "server-rendered done count");
         RequireContains(html, "id=\"todo-total-count\">3<", "server-rendered total count");
         RequireContains(html, "<script id=\"__jazor_ssr_props\" type=\"application/json\">", "serialized SSR props");
+        RequireContains(html, "<script id=\"__jazor_ssr_providers\" type=\"application/json\">", "serialized SSR providers");
+        RequireContains(html, "jazor:service:Todo.Library.TodoBrowserService", "serialized browser service provider key");
         RequireContains(html, "<script type=\"importmap\">", "browser import map");
         RequireContains(html, "createSSRApp", "hydration bootstrap");
         RequireContains(html, "\"" + pathBase + "/jazor/ssr/components/todo-app.mjs\"", "hydration component URL under the request path base");

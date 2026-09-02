@@ -24,7 +24,11 @@ public static class Bootstrap
     private static bool Start()
     {
         Todo.Library.TodoStyleSheet.EnsureLoaded();
-        CreateApp(TodoAppModule.Default).Mount("#app");
+        CreateApp(TodoAppModule.Default)
+            .Provide(
+                "jazor:service:Todo.Library.TodoBrowserService",
+                new Todo.Library.TodoBrowserService { Label = "browser-provider" })
+            .Mount("#app");
         return true;
     }
 }

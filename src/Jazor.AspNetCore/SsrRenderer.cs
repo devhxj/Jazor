@@ -60,8 +60,13 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
             ObjectDisposedException.ThrowIf(_disposed, this);
             var modulePath = SsrArtifactLocator.NormalizeRelativePath(request.ModulePath, "module path");
             var serializedProps = JsonSerializer.Serialize(request.Props, JsonOptions);
+            var serializedProviders = JsonSerializer.Serialize(request.Providers ?? [], JsonOptions);
             using var propsDocument = JsonDocument.Parse(serializedProps);
-            var payload = new SsrRenderPayload(modulePath, propsDocument.RootElement);
+            using var providersDocument = JsonDocument.Parse(serializedProviders);
+            var payload = new SsrRenderPayload(
+                modulePath,
+                propsDocument.RootElement,
+                providersDocument.RootElement);
 
             while (true)
             {
@@ -73,7 +78,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
                 try
                 {
                     var html = await pool.RenderAsync(payload, cancellationToken).ConfigureAwait(false);
-                    return new JazorSsrRenderResult(modulePath, html, serializedProps);
+                    return new JazorSsrRenderResult(modulePath, html, serializedProps, serializedProviders);
                 }
                 catch (SsrGenerationRetiredException) when (!cancellationToken.IsCancellationRequested)
                 {
@@ -404,7 +409,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
             }
 
             var requestJson = JsonSerializer.Serialize(
-                new SsrExecutionRequest(requestId, payload.ModulePath, payload.Props),
+                new SsrExecutionRequest(requestId, payload.ModulePath, payload.Props, payload.Providers),
                 _jsonOptions);
             try
             {
@@ -557,14 +562,18 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         }
     }
 
-    private sealed record SsrRenderPayload(string ModulePath, JsonElement Props);
+    private sealed record SsrRenderPayload(
+        string ModulePath,
+        JsonElement Props,
+        JsonElement Providers);
 
     // The runner protocol is a JavaScript-owned ABI. Keep field names explicit so the
     // host-wide CLR naming policy never becomes an accidental transport convention.
     private sealed record SsrExecutionRequest(
         [property: JsonPropertyName("id")] long Id,
         [property: JsonPropertyName("modulePath")] string ModulePath,
-        [property: JsonPropertyName("props")] JsonElement Props);
+        [property: JsonPropertyName("props")] JsonElement Props,
+        [property: JsonPropertyName("providers")] JsonElement Providers);
 
     private sealed record SsrArtifactStamp(
         string RootPath,

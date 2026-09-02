@@ -34,6 +34,9 @@ async function render(request) {
   }
 
   const app = createSSRApp(module.default, request.props);
+  for (const provider of request.providers ?? []) {
+    app.provide(provider.key, provider.value);
+  }
   // renderToString swallows render-hook errors and emits "<!---->" placeholders. Capture them
   // so a broken component fails the request explicitly instead of serving an empty page.
   // renderToString 会吞掉渲染期错误并输出 "<!---->"；捕获后显式失败，避免静默空页面。

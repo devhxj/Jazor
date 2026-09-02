@@ -32,11 +32,10 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Unreleased - 2026-09-01
+### Unreleased - 2026-09-02
 
-- Native TDesign typed Razor authoring is now supported through an isolated Release NuGet consumer and a real Edge browser smoke: generic/non-generic components, typed slots, `@bind`, unions, required parameters, and attribute splats require no application bridge, cast, or hand-written `BuildRenderTree`.
-- The same-base `NavigationManager.RegisterLocationChangingHandler(...)` subset is proven through the Blazor reference oracle, official Razor SG, Deno, an isolated Release package consumer, and a real HTTP-origin browser smoke, including `PreventNavigation`, async supersede/cancellation, query/hash, history state, and registration disposal.
-- The support boundary remains explicit: Microsoft/Blazor built-in UI components, `IJSRuntime`, and server-only services are still rejected.
+- SSR hosts can pass explicit browser-service providers through `JazorSsrRequest.Providers`; the same JSON provider envelope is registered during Deno server rendering and browser hydration, keeping ordinary `[Inject]` properties available across the SSR boundary.
+- The support boundary remains explicit: constructor injection, Microsoft/Blazor built-in UI components, `IJSRuntime`, and server-only services are still outside this adapter.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

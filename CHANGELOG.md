@@ -2,6 +2,17 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-02
+
+### Unreleased
+
+#### 新增与改进
+
+- SSR 宿主现在可以通过 `JazorSsrRequest.Providers` 显式传递 browser service 的字符串 key 和
+  JSON value；同一组 application providers 会在 Deno server render 与浏览器 hydration 中注册，
+  因而普通 `[Inject]` 属性可在 SSR 首屏和水合后的组件中保持可用。constructor injection 和
+  未证明的 server-only service 仍不在范围内。
+
 ## 2026-09-01
 
 ### Unreleased

@@ -57,7 +57,7 @@ Razor SDK/Roslyn 的 `RZ****`、`CS****` 诊断仍由对应工具报告；RazorV
 | `JAZORVCA006` | `[Inject]` 属性不是可写 auto-property（readonly、`init`、custom setter 或 static） | 改为普通的 `get; set;` 属性；服务由宿主 provider 注册，页面不需要写 `provide`/`inject` 或 Vue glue。 |
 | `JAZORVCA007` | `IComponentActivator`、circuit/protected-storage 等已知 Blazor host service 没有 browser adapter | 注册 typed browser adapter，或将服务调用封装到 server endpoint；不要在页面中自行调用 Vue provide/inject。 |
 
-浏览器可执行服务的 `[Inject]`/`@inject` 属性会在 component 初始化和生命周期回调前自动解析。provider key、生命周期和缺失 provider 错误由宿主 adapter 负责；页面作者继续使用标准 Blazor 注入语法。当前 adapter 的服务入口是属性注入，参数化 constructor activation 仍按 `JAZORVGA024` 明确拒绝。
+浏览器可执行服务的 `[Inject]`/`@inject` 属性会在 component 初始化和生命周期回调前自动解析。provider key、生命周期和缺失 provider 错误由宿主 adapter 负责；页面作者继续使用标准 Blazor 注入语法。启用 SSR 时，宿主可在 `JazorSsrRequest.Providers` 中携带字符串 key 与 JSON value，runner 和 hydration 会注册同一组 application providers；例如 `jazor:service:MyApp.BrowserClient`。当前 adapter 的服务入口是属性注入，参数化 constructor activation 仍按 `JAZORVGA024` 明确拒绝。
 
 Blazor JS interop 不属于 browser service adapter。`IJSRuntime` 的 identifier string、`object[]` 参数编组、动态 import 和 runtime dispatcher 会绕开 Jazor 的静态 import 与模块依赖约束，因此在实际类型或成员使用点由现有 compiler/final Compilation 不支持诊断拒绝；这里不新增专用 analyzer 规则或兼容层。需要 JavaScript 能力时，使用已有的强类型 `ECMAScript`/WebIDL binding，或为静态模块 API 添加同样强类型的 binding declaration；调用、导入和资源闭包仍由 `Jazor.Compiler` 与 `Jazor.Emit` 统一处理。
 

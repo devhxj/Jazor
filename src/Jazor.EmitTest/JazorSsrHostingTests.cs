@@ -27,7 +27,8 @@ public sealed class JazorSsrHostingTests
                 app.UseJazorArtifacts();
                 app.UseJazorSsr(new JazorSsrRequest(
                     "components/counter.mjs",
-                    new { Title = "SSR <title>" }));
+                    new { Title = "SSR <title>" },
+                    [new JazorSsrProvider("app:feature", new { Enabled = true })]));
                 app.MapGet("/api/status", () => Results.Ok(new { status = "ok" }));
             });
 
@@ -44,6 +45,8 @@ public sealed class JazorSsrHostingTests
         StringAssert.Contains(html, "import { createSSRApp } from \"vue\";");
         StringAssert.Contains(html, "await import(\"/docs/jazor/components/counter.mjs\")");
         StringAssert.Contains(html, "\"@vue/server-renderer\"");
+        StringAssert.Contains(html, "<script id=\"__jazor_ssr_providers\" type=\"application/json\">[{\"key\":\"app:feature\",\"value\":{\"Enabled\":true}}]</script>");
+        StringAssert.Contains(html, "for (const provider of providers) app.provide(provider.key, provider.value);");
         StringAssert.Contains(html, "\"Title\":\"SSR \\u003Ctitle\\u003E\"");
         Assert.IsFalse(html.Contains("node_modules", StringComparison.Ordinal));
         Assert.IsTrue(File.Exists(Path.Combine(artifactRoot, "@jazor", "ssr-runner.mjs")));
@@ -100,6 +103,38 @@ public sealed class JazorSsrHostingTests
 
         Assert.AreEqual("components/counter.mjs", result.ModulePath);
         Assert.AreEqual("<main id=\"ssr-output\">DenoHost|prefetched</main>", result.Html);
+    }
+
+    [TestMethod]
+    public async Task JazorSsrRenderer_AppliesRequestProvidersToServerComponent()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        await workspace.WriteInjectedComponentAsync();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = workspace.RootPath,
+            WebRootPath = Path.Combine(workspace.RootPath, "wwwroot"),
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddJazorSsr(options => options.ArtifactRootPath = artifactRoot);
+
+        await using var app = builder.Build();
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+
+        var result = await renderer.RenderAsync(new JazorSsrRequest(
+            "components/injected.mjs",
+            Providers:
+            [
+                new JazorSsrProvider(
+                    "jazor:service:Jazor.EmitTest.SsrBrowserProbe",
+                    new { Label = "server-provider" })
+            ]));
+
+        Assert.AreEqual("<main id=\"ssr-service\">server-provider</main>", result.Html);
+        Assert.AreEqual(
+            "[{\"key\":\"jazor:service:Jazor.EmitTest.SsrBrowserProbe\",\"value\":{\"Label\":\"server-provider\"}}]",
+            result.SerializedProviders);
     }
 
     [TestMethod]
@@ -525,6 +560,20 @@ public sealed class JazorSsrHostingTests
                     return () => {
                       throw new Error("render-boom");
                     };
+                  }
+                });
+                """);
+
+        public Task WriteInjectedComponentAsync()
+            => File.WriteAllTextAsync(
+                Path.Combine(RootPath, "jazor", "components", "injected.mjs"),
+                """
+                import { defineComponent, h, inject } from "vue";
+
+                export default defineComponent({
+                  setup() {
+                    const probe = inject("jazor:service:Jazor.EmitTest.SsrBrowserProbe");
+                    return () => h("main", { id: "ssr-service" }, probe?.Label ?? "missing");
                   }
                 });
                 """);

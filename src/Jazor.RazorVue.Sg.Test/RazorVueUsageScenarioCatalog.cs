@@ -848,14 +848,15 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.InProof,
             "VueInjectRegistry + VueModuleBuilder component activation adapter",
             null,
-            "RazorSgInjectedServiceRuntimeTests (provider, lifecycle order, missing-provider failure); RazorSgBlazorReferenceOracleTests.BlazorReferenceInjectActivator_ResolvesPropertyAndReportsMissingProvider; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser",
+            "RazorSgInjectedServiceRuntimeTests (provider, lifecycle order, missing-provider failure); RazorSgBlazorReferenceOracleTests.BlazorReferenceInjectActivator_ResolvesPropertyAndReportsMissingProvider; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser; JazorSsrHostingTests.JazorSsrRenderer_AppliesRequestProvidersToServerComponent; scripts/csharp/verify-windows-ssr-release.cs (TodoBrowserService server provider + hydration)",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime |
             RazorVueCapabilityEvidence.BrowserSmoke |
-            RazorVueCapabilityEvidence.PackageConsumer,
-            "Nested and recreated components now have isolated Release package/browser proof for property activation; constructor injection/parameterized activation remains an explicit JAZORVGA024 boundary, while service-provider lifetime and SSR proof remain before Support."),
+            RazorVueCapabilityEvidence.PackageConsumer |
+            RazorVueCapabilityEvidence.SsrHydration,
+            "Nested and recreated components now have isolated Release package/browser proof for property activation; the SSR runner and hydration document carry the same serialized application providers, while constructor injection/parameterized activation remains an explicit JAZORVGA024 boundary and service-provider lifetime/reference parity remain before Support."),
         new(
             "P1-cascading-values",
             "CascadingValue, [CascadingParameter], named cascades, nested override, and updates",

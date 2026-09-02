@@ -38,7 +38,12 @@ internal static class Program
             // same isolated Release consumer that serves and hydrates the page.
             app.UseJazorSsr(new JazorSsrRequest(
                 "components/todo-app.mjs",
-                new { SsrTitle = "SSR ParameterView title" }));
+                new { SsrTitle = "SSR ParameterView title" },
+                [
+                    new JazorSsrProvider(
+                        "jazor:service:Todo.Library.TodoBrowserService",
+                        new { Label = "ssr-provider" })
+                ]));
         }
         else
         {

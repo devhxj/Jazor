@@ -129,14 +129,19 @@ builder.Services.AddJazorSsr(options =>
 
 var app = builder.Build();
 app.UseJazorHost();
-app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
+app.UseJazorSsr(new JazorSsrRequest(
+    "components/app.mjs",
+    new { Title = "Jazor" },
+    [new JazorSsrProvider("jazor:service:MyApp.BrowserClient", new { BaseUrl = "/api" })]));
 ```
 
 ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit
 物化的 SSR runner 和本地 Vue 服务器模块，DenoHost 执行这些模块，Netpack 负责浏览器 bundle。
 `WorkerCount` 同时限制单应用实例的 Deno worker 数和 SSR 并发数，必须大于零，默认值为
 `min(Environment.ProcessorCount, 4)`。宿主不得在 Emit 提交后改写 runner；SSR 不自动传递 Vue
-server-prefetch 状态，应用应把需要共享的状态显式放入 props 或自己的 payload。
+server-prefetch 状态；需要让 `[Inject]` browser service 在 SSR 与 hydration 中保持可用时，使用
+`JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value。其他需要共享的状态仍应放入
+props 或自己的 payload。
 
 ## 后续阅读
 

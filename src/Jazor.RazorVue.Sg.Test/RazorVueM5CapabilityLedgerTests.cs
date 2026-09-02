@@ -79,6 +79,9 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.SsrHydration));
+        StringAssert.Contains(browserServiceInjection.Fixture, "JazorSsrRenderer_AppliesRequestProvidersToServerComponent", StringComparison.Ordinal);
+        StringAssert.Contains(browserServiceInjection.Blocker, "lifetime", StringComparison.Ordinal);
 
         var propertyShape = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-injection-property-shape");
