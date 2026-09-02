@@ -1733,27 +1733,6 @@ internal static class VueModuleBuilder
             CreateCallMember(new Identifier("Promise"), "resolve"));
 
         var task = new Identifier("task");
-        var failureBody = new List<Statement>();
-        if (usesUnmounted)
-        {
-            failureBody.Add(new IfStatement(
-                new Identifier("disposed"),
-                CreateBlock(new ReturnStatement(null)),
-                null));
-        }
-
-        failureBody.AddRange(
-        [
-            CreateExpressionStatement(new AssignmentExpression(
-                Operator.Assignment,
-                new Identifier("hasParameterFailure"),
-                BooleanLiteral(true))),
-            CreateExpressionStatement(new AssignmentExpression(
-                Operator.Assignment,
-                new Identifier("parameterFailure"),
-                new Identifier("error"))),
-            CreateExpressionStatement(CreateCall("stateHasChanged"))
-        ]);
 
         var queueBody = new List<Statement>();
         if (usesUnmounted)
@@ -1793,20 +1772,51 @@ internal static class VueModuleBuilder
                     CreateArrowFunction([], []),
                     CreateArrowFunction(
                         ["error"],
-                        failureBody)))),
+                        BuildParameterFailureStatements(usesUnmounted))))),
             new ReturnStatement(task)
         ]);
         yield return CreateVariableDeclaration(
             VariableDeclarationKind.Const,
             "runSetParametersAsync",
             CreateArrowFunction(["parameters"], queueBody));
+
+        // The first snapshot must enter the authored method synchronously so a setup-time
+        // render observes parameter values before Vue schedules its first watcher flush. Keep
+        // the returned task for SSR prefetch and serialize later updates behind the same tail.
+        // 首个 snapshot 要在 setup 内同步进入作者方法，避免首次 render 仍读到 CLR 默认值；
+        // 返回的 Promise 同时交给 SSR prefetch，并作为后续更新的串行队列起点。
+        var initialParameterInvocation = CreateScopeCall(
+            "SetParametersAsync",
+            new Identifier("parameterSnapshot"));
+        var initialError = new Identifier("error");
+        yield return new TryStatement(
+            CreateBlock(CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("initialParameterTask"),
+                CreateCallMember(
+                    new Identifier("Promise"),
+                    "resolve",
+                    initialParameterInvocation)))),
+            new CatchClause(
+                initialError,
+                CreateBlock(CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    new Identifier("initialParameterTask"),
+                    CreateCallMember(
+                        new Identifier("Promise"),
+                        "reject",
+                        initialError))))),
+            null);
         yield return CreateExpressionStatement(new AssignmentExpression(
             Operator.Assignment,
-            new Identifier("initialParameterTask"),
-            new CallExpression(
-                new Identifier("runSetParametersAsync"),
-                NodeList.From<Expression>(new Identifier("parameterSnapshot")),
-                optional: false)));
+            new Identifier("parameterUpdateTail"),
+            CreateCallMember(
+                new Identifier("initialParameterTask"),
+                "then",
+                CreateArrowFunction([], []),
+                CreateArrowFunction(
+                    ["error"],
+                    BuildParameterFailureStatements(usesUnmounted)))));
         yield return CreateExpressionStatement(CreateCall(
             "onServerPrefetch",
             CreateArrowFunction([], [new ReturnStatement(new Identifier("initialParameterTask"))])));
@@ -1842,6 +1852,32 @@ internal static class VueModuleBuilder
                             hasCascadingParameters)),
                         optional: false))]));
         }
+    }
+
+    private static List<Statement> BuildParameterFailureStatements(bool usesUnmounted)
+    {
+        var statements = new List<Statement>();
+        if (usesUnmounted)
+        {
+            statements.Add(new IfStatement(
+                new Identifier("disposed"),
+                CreateBlock(new ReturnStatement(null)),
+                null));
+        }
+
+        statements.AddRange(
+        [
+            CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("hasParameterFailure"),
+                BooleanLiteral(true))),
+            CreateExpressionStatement(new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("parameterFailure"),
+                new Identifier("error"))),
+            CreateExpressionStatement(CreateCall("stateHasChanged"))
+        ]);
+        return statements;
     }
 
     private static CallExpression CreateParameterViewSnapshotExpression(

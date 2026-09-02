@@ -9,6 +9,55 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class RazorSgSetParametersAsyncRuntimeTests
 {
     [TestMethod]
+    public async Task BuildComponent_ParameterViewAppliesInitialSnapshotBeforeFirstRender()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/SetParametersInitialValue.razor"),
+            documentText: "<p>@Title</p>",
+            codeBehindSource:
+            """
+            using System.Threading.Tasks;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/set-parameters-initial-value")]
+            public partial class SetParametersInitialValue : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string Title { get; set; } = "default";
+
+                public override async Task SetParametersAsync(ParameterView parameters)
+                {
+                    await base.SetParametersAsync(parameters);
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.SetParametersInitialValue");
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/set-parameters-initial-value.mjs",
+            observation.ModuleText,
+            "set-parameters-initial-value.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+            import { __runServerPrefetch } from "vue";
+
+            import component from "./components/set-parameters-initial-value.mjs";
+
+            test("the initial ParameterView snapshot is visible to the first render", async () => {
+                const render = component.setup({ Title: "first" }, { slots: {} });
+
+                assert.equal(render().children, "first");
+
+                await __runServerPrefetch();
+                assert.equal(render().children, "first");
+            });
+            """);
+    }
+
+    [TestMethod]
     public async Task BuildComponent_CustomSetParametersAsyncDrivesBaseLifecycleForInitialAndReplacementValues()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
