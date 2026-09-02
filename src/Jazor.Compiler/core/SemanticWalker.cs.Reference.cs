@@ -2785,6 +2785,14 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		if (string.IsNullOrEmpty(alias))
 			RejectUnsupportedRuntimeFallback(ownerOperation, targetMethod, "method invocation", hostType);
 
+		if (RequiresVueHNamedSlotPropsPlaceholder(targetMethod, arguments.Count))
+		{
+			// Vue interprets h(component, object) as props. The C# slot-only overload has no
+			// props argument, so preserve its contract with an explicit null placeholder before
+			// the named-slots object. Host hooks above still receive source-bound arguments.
+			arguments.Insert(1, Null);
+		}
+
 		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(targetMethod) : alias;
 		var property = new Identifier(methodName!);
 		Expression callee = property;
@@ -2838,5 +2846,37 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 
 		callee = NormalizeRuntimeReceiverHostCallee(callee, targetMethod);
 		return new CallExpression(callee, NodeList.From(arguments), optional: false);
+	}
+
+	private static bool RequiresVueHNamedSlotPropsPlaceholder(IMethodSymbol method, int argumentCount)
+	{
+		if (!Util.IsECMAScriptRuntimeSymbol(method) ||
+			!method.IsStatic ||
+			method.Name != "H" ||
+			method.Parameters.Length != 2 ||
+			argumentCount != 2 ||
+			method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat) != "ECMAScript.Vue")
+		{
+			return false;
+		}
+
+		return IsVueSlotsContractType(method.Parameters[1].Type);
+	}
+
+	private static bool IsVueSlotsContractType(ITypeSymbol? typeSymbol)
+	{
+		if (typeSymbol is ITypeParameterSymbol typeParameter)
+			return typeParameter.ConstraintTypes.Any(IsVueSlotsContractType);
+
+		if (typeSymbol is not INamedTypeSymbol namedType)
+			return false;
+
+		for (var current = namedType; current is not null; current = current.BaseType)
+		{
+			if (current.OriginalDefinition.ToDisplayString(Format.NameFormat) == "ECMAScript.Vue.VueSlots")
+				return true;
+		}
+
+		return false;
 	}
 }

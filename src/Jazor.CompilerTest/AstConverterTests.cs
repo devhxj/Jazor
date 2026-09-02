@@ -11549,7 +11549,7 @@ function Setup(props, context) {
 @"import { defineComponent, h } from ""vue"";
 export let Child = defineComponent({ name: ""ChildView"" });
 export function Render() {
-  return h(Child, { default: RenderBody });
+  return h(Child, null, { default: RenderBody });
 }
 function RenderBody() {
   return h(""span"", ""body"");
@@ -11609,7 +11609,7 @@ function RenderBody() {
 @"import { defineComponent, h } from ""vue"";
 export let Child = defineComponent({ name: ""ChildView"" });
 export function Render() {
-  return h(Child, { default: RenderBody });
+  return h(Child, null, { default: RenderBody });
 }
 function RenderBody() {
   return h(""span"", ""body"");
@@ -11671,7 +11671,7 @@ function RenderBody() {
 @"import { defineComponent, h } from ""vue"";
 export let Child = defineComponent({ name: ""ChildView"" });
 export function Render() {
-  return h(Child, { Default: RenderBody });
+  return h(Child, null, { Default: RenderBody });
 }
 function RenderBody() {
   return h(""span"", ""body"");
@@ -11901,7 +11901,7 @@ export let Child = defineComponent({
   setup: SetupChild
 });
 export function Render() {
-  return h(Child, { default: RenderBody });
+  return h(Child, null, { default: RenderBody });
 }
 function RenderBody() {
   return h(""span"", ""body"");
@@ -11981,7 +11981,7 @@ function SetupChild(context) {
 @"import { defineComponent, h } from ""vue"";
 export let Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
 export function Render() {
-  return h(Child, { default: RenderBody });
+  return h(Child, null, { default: RenderBody });
 }
 function RenderBody() {
   return h(""span"", ""body"");
@@ -12035,6 +12035,13 @@ function SetupChild(context) {
                             Header = RenderHeader
                         });
 
+                    public static IVNode RenderSlotsOnly()
+                        => H(Child, new ChildSlots
+                        {
+                            ChildContent = RenderBody,
+                            Header = RenderHeader
+                        });
+
                     private static IVNode RenderBody()
                         => H("span", "body");
 
@@ -12075,6 +12082,9 @@ function SetupChild(context) {
 export let Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
 export function Render() {
   return h(Child, { title: ""Welcome"" }, { default: RenderBody, header: RenderHeader });
+}
+export function RenderSlotsOnly() {
+  return h(Child, null, { default: RenderBody, header: RenderHeader });
 }
 function RenderBody() {
   return h(""span"", ""body"");

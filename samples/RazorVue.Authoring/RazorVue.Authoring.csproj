@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RazorLangVersion>11.0</RazorLangVersion>
+    <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+    <JazorMode>debug</JazorMode>
+    <AuthoringUsePackages Condition="'$(AuthoringUsePackages)' == ''">false</AuthoringUsePackages>
+    <NoWarn>$(NoWarn);CS0626;CS0824;IDE0130;CA1822;IDE0060;IDE1006</NoWarn>
+  </PropertyGroup>
+
+  <Import Project="..\..\src\Jazor\build\Jazor.props"
+          Condition="'$(AuthoringUsePackages)' != 'true'" />
+
+  <ItemGroup>
+    <Compile Remove="build-local.cs;verify-smoke.cs" />
+    <Compile Remove="jazor\**" />
+    <Content Remove="jazor\**" />
+    <EmbeddedResource Remove="jazor\**" />
+    <None Remove="jazor\**" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(AuthoringUsePackages)' != 'true'">
+    <JazorLibraryManifest Include="..\..\src\ECMAScript.Vue\manifest.json" />
+    <JazorLibraryManifest Include="..\..\src\ECMAScript.TDesign\manifest.json" />
+    <JazorLibraryManifest Include="..\..\src\Jazor.Vue\manifest.json" />
+    <ProjectReference Include="..\..\src\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\..\src\ECMAScript.Vue\ECMAScript.Vue.csproj" />
+    <ProjectReference Include="..\..\src\ECMAScript.TDesign\ECMAScript.TDesign.csproj" />
+    <ProjectReference Include="..\..\src\ECMAScript.Style\ECMAScript.Style.csproj" />
+    <ProjectReference Include="..\..\src\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
+    <ProjectReference Include="..\..\src\Jazor.CLR\Jazor.CLR.csproj" />
+    <ProjectReference Include="..\..\src\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <!-- Keep one compiler generator identity. The source-only analyzer paths below use the
+         same isolated build root as this project when callers opt into isolated outputs. -->
+    <ProjectReference Include="..\..\src\Jazor.RazorVue\Jazor.RazorVue.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(AuthoringUsePackages)' == 'true'">
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
+    <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(AuthoringUsePackages)' != 'true'">
+    <_AuthoringRazorVueAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll</_AuthoringRazorVueAnalyzerPath>
+    <_AuthoringCompilerAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)\..\..\src\Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll</_AuthoringCompilerAnalyzerPath>
+    <_AuthoringCommonAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)\..\..\src\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll</_AuthoringCommonAnalyzerPath>
+    <_AuthoringContractAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' == ''">$(MSBuildProjectDirectory)\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll</_AuthoringContractAnalyzerPath>
+
+    <_AuthoringRazorVueAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll</_AuthoringRazorVueAnalyzerPath>
+    <_AuthoringCompilerAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll</_AuthoringCompilerAnalyzerPath>
+    <_AuthoringCommonAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll</_AuthoringCommonAnalyzerPath>
+    <_AuthoringContractAnalyzerPath Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll</_AuthoringContractAnalyzerPath>
+  </PropertyGroup>
+
+  <Target Name="AddLocalAuthoringAnalyzerDependencies"
+          BeforeTargets="CoreCompile"
+          Condition="'$(AuthoringUsePackages)' != 'true'">
+    <ItemGroup>
+      <Analyzer Include="$(_AuthoringRazorVueAnalyzerPath)"
+                Condition="Exists('$(_AuthoringRazorVueAnalyzerPath)')" />
+      <Analyzer Include="$(_AuthoringCompilerAnalyzerPath)"
+                Condition="Exists('$(_AuthoringCompilerAnalyzerPath)')" />
+      <Analyzer Include="$(_AuthoringCommonAnalyzerPath)"
+                Condition="Exists('$(_AuthoringCommonAnalyzerPath)')" />
+      <Analyzer Include="$(_AuthoringContractAnalyzerPath)"
+                Condition="Exists('$(_AuthoringContractAnalyzerPath)')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll"
+                Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)anglesharp\$(AngleSharpVersion)\lib\netstandard2.0\AngleSharp.dll"
+                Condition="Exists('$(NuGetPackageRoot)anglesharp\$(AngleSharpVersion)\lib\netstandard2.0\AngleSharp.dll')" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="..\..\src\Jazor\build\Jazor.targets"
+          Condition="'$(AuthoringUsePackages)' != 'true'" />
+</Project>

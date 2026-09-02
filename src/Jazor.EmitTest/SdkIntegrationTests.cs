@@ -3548,6 +3548,581 @@ public sealed class SdkIntegrationTests
         Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
     }
 
+    [TestMethod]
+    [TestCategory("Browser")]
+    public async Task Build_LocalReleasePackages_WithExternalNativeTDesignRazorConsumer_MountsAndInteractsInRealBrowser()
+    {
+        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            Assert.Inconclusive(
+                "Native TDesign browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
+            return;
+        }
+
+        var package = await LocalReleasePackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalNativeTDesignReleaseConsumer");
+        var projectPath = CreateExternalNativeTDesignRazorConsumerProject(projectRoot);
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-c",
+                "Release",
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=release"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "jazor");
+        var bundlePath = Path.Combine(outputRoot, "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        Assert.IsTrue(File.Exists(bundlePath), $"Release TDesign bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Release TDesign bundle source map was not generated: {bundleMapPath}");
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
+            "The isolated TDesign package consumer must not use frontend node_modules.");
+        Assert.IsTrue(
+            Directory.EnumerateFiles(outputRoot, "tdesign.mjs", SearchOption.AllDirectories).Any(),
+            "The Release consumer did not materialize the TDesign ESM entry.");
+        Assert.IsTrue(
+            Directory.EnumerateFiles(outputRoot, "tdesign.css", SearchOption.AllDirectories).Any(),
+            "The Release consumer did not materialize the TDesign stylesheet.");
+
+        var harnessRoot = Path.Combine(workspace.RootPath, "tdesign-browser-harness");
+        CreateReleaseTDesignBrowserHarness(outputRoot, harnessRoot);
+
+        var indexPath = Path.Combine(harnessRoot, "index.html");
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 8000);
+        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
+
+        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "native TDesign RazorVue");
+        var smoke = smokePayload.RootElement;
+        Assert.IsTrue(
+            smoke.GetProperty("ok").GetBoolean(),
+            "Native TDesign browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
+        AssertJsonTextContains(smoke, "initialStatus", "Draft task:0");
+        AssertJsonTextContains(smoke, "boundStatus", "Release package task:0");
+        AssertJsonTextContains(smoke, "savedStatus", "Release package task:1");
+
+        var failures = smoke.GetProperty("failures").EnumerateArray()
+            .Select(static failure => failure.GetString() ?? "")
+            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
+            .ToArray();
+        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
+    [TestMethod]
+    [TestCategory("Browser")]
+    public async Task Build_LocalReleasePackages_WithExternalElementReferenceRazorConsumer_FocusesAndHandlesUnmountInRealBrowser()
+    {
+        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            Assert.Inconclusive(
+                "ElementReference browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
+            return;
+        }
+
+        var package = await LocalReleasePackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalElementReferenceReleaseConsumer");
+        var projectPath = CreateExternalElementReferenceRazorConsumerProject(projectRoot);
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-c",
+                "Release",
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=release"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "jazor");
+        var bundlePath = Path.Combine(outputRoot, "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        Assert.IsTrue(File.Exists(bundlePath), $"Release ElementReference bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Release ElementReference bundle source map was not generated: {bundleMapPath}");
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
+            "The isolated ElementReference package consumer must not use frontend node_modules.");
+
+        var bundleText = await File.ReadAllTextAsync(bundlePath);
+        StringAssert.Contains(bundleText, "ElementReferenceExtensionsModule.js", StringComparison.Ordinal);
+
+        // CLR Import modules remain separate, materialized ESM assets in a Release bundle.
+        // Check the helper itself instead of assuming its implementation is in bundle.js.
+        var focusHelperPaths = Directory
+            .EnumerateFiles(outputRoot, "ElementReferenceExtensionsModule.js", SearchOption.AllDirectories)
+            .ToArray();
+        Assert.HasCount(1, focusHelperPaths, "The Release consumer did not materialize the ElementReference focus helper.");
+
+        var focusHelperText = await File.ReadAllTextAsync(focusHelperPaths[0]);
+        StringAssert.Contains(
+            focusHelperText,
+            "ElementReference has not been configured correctly.",
+            StringComparison.Ordinal);
+        StringAssert.Contains(focusHelperText, "preventScroll", StringComparison.Ordinal);
+
+        var harnessRoot = Path.Combine(workspace.RootPath, "element-reference-browser-harness");
+        CreateReleaseElementReferenceBrowserHarness(outputRoot, harnessRoot);
+
+        var indexPath = Path.Combine(harnessRoot, "index.html");
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 8000);
+        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
+
+        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "ElementReference RazorVue");
+        var smoke = smokePayload.RootElement;
+        Assert.IsTrue(
+            smoke.GetProperty("ok").GetBoolean(),
+            "ElementReference browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
+        AssertJsonTextContains(smoke, "focusedStatus", "focused");
+        AssertJsonTextContains(
+            smoke,
+            "unmountedStatus",
+            "InvalidOperationException: ElementReference has not been configured correctly.");
+
+        var failures = smoke.GetProperty("failures").EnumerateArray()
+            .Select(static failure => failure.GetString() ?? "")
+            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
+            .ToArray();
+        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
+    [TestMethod]
+    [TestCategory("Browser")]
+    public async Task Build_LocalReleasePackages_WithExternalCoreDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser()
+    {
+        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            Assert.Inconclusive(
+                "Core DOM event browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
+            return;
+        }
+
+        var package = await LocalReleasePackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalCoreDomEventsReleaseConsumer");
+        var projectPath = CreateExternalCoreDomEventsRazorConsumerProject(projectRoot);
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-c",
+                "Release",
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=release"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "jazor");
+        var bundlePath = Path.Combine(outputRoot, "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        Assert.IsTrue(File.Exists(bundlePath), $"Release core DOM event bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Release core DOM event bundle source map was not generated: {bundleMapPath}");
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
+            "The isolated core DOM event package consumer must not use frontend node_modules.");
+
+        var bundleText = await File.ReadAllTextAsync(bundlePath);
+        StringAssert.Contains(bundleText, "ChangeEventArgsModule.js", StringComparison.Ordinal);
+
+        // The capture bridge is a CLR Import resource, so Release keeps it as a separate ESM
+        // file even though the application component is bundled.
+        var changeHelperPaths = Directory
+            .EnumerateFiles(outputRoot, "ChangeEventArgsModule.js", SearchOption.AllDirectories)
+            .ToArray();
+        Assert.HasCount(1, changeHelperPaths, "The Release consumer did not materialize the ChangeEventArgs helper.");
+
+        var changeHelperText = await File.ReadAllTextAsync(changeHelperPaths[0]);
+        StringAssert.Contains(changeHelperText, "captureChangeEvent", StringComparison.Ordinal);
+        StringAssert.Contains(changeHelperText, "getChangeEventValue", StringComparison.Ordinal);
+        StringAssert.Contains(changeHelperText, "WeakMap", StringComparison.Ordinal);
+
+        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
+        var mappedSources = bundleSourceMap.RootElement
+            .GetProperty("sources")
+            .EnumerateArray()
+            .Select(static source => source.GetString() ?? "")
+            .ToArray();
+        CollectionAssert.Contains(mappedSources, "components/core-dom-events.mjs");
+        var mappedSourceContents = bundleSourceMap.RootElement
+            .GetProperty("sourcesContent")
+            .EnumerateArray()
+            .Select(static source => source.GetString() ?? "")
+            .ToArray();
+        Assert.IsTrue(
+            mappedSourceContents.Any(static source =>
+                source.Contains("captureChangeEvent(event)", StringComparison.Ordinal) &&
+                source.Contains("getChangeEventValue", StringComparison.Ordinal)),
+            "The Release bundle source map did not retain the typed ChangeEventArgs capture bridge.");
+
+        var harnessRoot = Path.Combine(workspace.RootPath, "core-dom-events-browser-harness");
+        CreateReleaseCoreDomEventsBrowserHarness(outputRoot, harnessRoot);
+
+        var indexPath = Path.Combine(harnessRoot, "index.html");
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 10000);
+        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
+
+        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "core DOM events RazorVue");
+        var smoke = smokePayload.RootElement;
+        Assert.IsTrue(
+            smoke.GetProperty("ok").GetBoolean(),
+            "Core DOM event browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
+        AssertJsonTextContains(smoke, "mouseStatus", "click:37");
+        AssertJsonTextContains(smoke, "keyboardStatus", "Enter:Enter");
+        AssertJsonTextContains(smoke, "focusStatus", "focus");
+        AssertJsonTextContains(smoke, "boundStatus", "bound");
+        AssertJsonTextContains(smoke, "changeStatus", "first/first");
+        AssertJsonTextContains(smoke, "checkboxStatus", "true");
+        AssertJsonTextContains(smoke, "multipleStatus", "2:one,two");
+
+        var failures = smoke.GetProperty("failures").EnumerateArray()
+            .Select(static failure => failure.GetString() ?? "")
+            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
+            .ToArray();
+        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
+    [TestMethod]
+    [TestCategory("Browser")]
+    public async Task Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser()
+    {
+        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            Assert.Inconclusive(
+                "Framework primitive browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
+            return;
+        }
+
+        var package = await LocalReleasePackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalFrameworkPrimitivesReleaseConsumer");
+        var projectPath = CreateExternalFrameworkPrimitivesRazorConsumerProject(projectRoot);
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-c",
+                "Release",
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=release"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "jazor");
+        var bundlePath = Path.Combine(outputRoot, "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        Assert.IsTrue(File.Exists(bundlePath), $"Release framework primitive bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Release framework primitive source map was not generated: {bundleMapPath}");
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
+            "The isolated framework primitive package consumer must not use frontend node_modules.");
+
+        var bundleText = await File.ReadAllTextAsync(bundlePath);
+        StringAssert.Contains(bundleText, "jazor:service:ExternalFrameworkPrimitivesReleaseConsumer.BrowserProbe", StringComparison.Ordinal);
+        StringAssert.Contains(bundleText, "runSetParametersAsync", StringComparison.Ordinal);
+        var namespaceImportAliases = Regex.Matches(
+                bundleText,
+                "^import \\* as (?<alias>[A-Za-z0-9_$]+) from ",
+                RegexOptions.Multiline)
+            .Select(static match => match.Groups["alias"].Value)
+            .ToArray();
+        Assert.AreEqual(
+            namespaceImportAliases.Length,
+            namespaceImportAliases.Distinct(StringComparer.Ordinal).Count(),
+            "Netpack emitted duplicate namespace import bindings in the Release bundle.");
+
+        var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
+        Assert.IsTrue(
+            Directory.Exists(generatedRoot) &&
+            Directory.EnumerateFiles(generatedRoot, "*_razor.g.cs", SearchOption.AllDirectories).Any(),
+            "The external framework primitive consumer did not compile through the official Razor source generator.");
+
+        var cascadingRuntimePaths = Directory
+            .EnumerateFiles(outputRoot, "cascading.mjs", SearchOption.AllDirectories)
+            .Where(static path => path.Contains("jazor-vue-runtime", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        Assert.HasCount(1, cascadingRuntimePaths, "The Release consumer did not materialize exactly one cascading runtime module.");
+
+        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
+        var mappedSources = bundleSourceMap.RootElement
+            .GetProperty("sources")
+            .EnumerateArray()
+            .Select(static source => source.GetString() ?? "")
+            .ToArray();
+        CollectionAssert.Contains(mappedSources, "components/framework-primitives.mjs");
+        CollectionAssert.Contains(mappedSources, "components/parameter-child.mjs");
+
+        var harnessRoot = Path.Combine(workspace.RootPath, "framework-primitives-browser-harness");
+        CreateReleaseFrameworkPrimitivesBrowserHarness(outputRoot, harnessRoot);
+
+        var indexPath = Path.Combine(harnessRoot, "index.html");
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 12000);
+        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
+
+        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "framework primitives RazorVue");
+        var smoke = smokePayload.RootElement;
+        Assert.IsTrue(
+            smoke.GetProperty("ok").GetBoolean(),
+            "Framework primitive browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
+        AssertJsonTextContains(smoke, "initialInjection", "root:release-provider");
+        AssertJsonTextContains(smoke, "nestedInjection", "first:release-provider|second:release-provider");
+        AssertJsonTextContains(smoke, "outerCascade", "outer:outer-next:fixed-fallback:2");
+        AssertJsonTextContains(smoke, "innerCascade", "inner:inner-next:fixed-fallback:2");
+        AssertJsonTextContains(smoke, "fixedCascade", "fixed:outer-next:fixed:2");
+        AssertJsonTextContains(smoke, "disposedCascade", "1");
+        AssertJsonTextContains(smoke, "recreatedCascade", "inner:inner-next:fixed-fallback:1");
+        AssertJsonTextContains(smoke, "parameterLog", "before:one|parameters:two|after:two|");
+
+        var failures = smoke.GetProperty("failures").EnumerateArray()
+            .Select(static failure => failure.GetString() ?? "")
+            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
+            .ToArray();
+        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
+    [TestMethod]
+    [TestCategory("Browser")]
+    public async Task Build_LocalReleasePackages_WithExternalComplexLifecycleRazorConsumer_ProvesAsyncRacesInRealBrowser()
+    {
+        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            Assert.Inconclusive(
+                "Complex lifecycle browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
+            return;
+        }
+
+        var package = await LocalReleasePackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalComplexLifecycleReleaseConsumer");
+        var projectPath = CreateExternalComplexLifecycleRazorConsumerProject(projectRoot);
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-c",
+                "Release",
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=release"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "jazor");
+        var bundlePath = Path.Combine(outputRoot, "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        Assert.IsTrue(File.Exists(bundlePath), $"Release complex lifecycle bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Release complex lifecycle bundle source map was not generated: {bundleMapPath}");
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
+            "The isolated complex lifecycle package consumer must not use frontend node_modules.");
+
+        var bundleText = await File.ReadAllTextAsync(bundlePath);
+        StringAssert.Contains(bundleText, "components/complex-lifecycle.mjs", StringComparison.Ordinal);
+
+        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
+        var mappedSources = bundleSourceMap.RootElement
+            .GetProperty("sources")
+            .EnumerateArray()
+            .Select(static source => source.GetString() ?? "")
+            .ToArray();
+        CollectionAssert.Contains(mappedSources, "components/complex-lifecycle.mjs");
+        CollectionAssert.Contains(mappedSources, "components/async-initialization-failure.mjs");
+        CollectionAssert.Contains(mappedSources, "components/queued-parameter-lifecycle.mjs");
+        CollectionAssert.Contains(mappedSources, "components/stale-parameter-failure.mjs");
+        CollectionAssert.Contains(mappedSources, "components/async-unmount-race.mjs");
+
+        var harnessRoot = Path.Combine(workspace.RootPath, "complex-lifecycle-browser-harness");
+        CreateReleaseComplexLifecycleBrowserHarness(outputRoot, harnessRoot);
+
+        var indexPath = Path.Combine(harnessRoot, "index.html");
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(
+            browserPath,
+            indexPath,
+            virtualTimeBudgetMilliseconds: 12000);
+        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
+
+        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "complex lifecycle RazorVue");
+        var smoke = smokePayload.RootElement;
+        Assert.IsTrue(
+            smoke.GetProperty("ok").GetBoolean(),
+            "Complex lifecycle browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
+        AssertJsonTextContains(smoke, "failureCount", "2");
+        AssertJsonTextContains(smoke, "failureLog", "failure-start|");
+        var afterRenderCount = smoke.GetProperty("afterRenderCount").GetString() ?? "";
+        Assert.IsTrue(
+            int.TryParse(afterRenderCount, out var parsedAfterRenderCount) && parsedAfterRenderCount is >= 2 and <= 20,
+            $"Browser smoke payload property 'afterRenderCount' was outside the expected range [2, 20]: '{afterRenderCount}'.");
+        AssertJsonTextContains(smoke, "queueLog", "queue-first-start|");
+        AssertJsonTextContains(smoke, "queueLog", "queue-dispose|");
+        AssertJsonTextContains(smoke, "queueLog", "queue-first-done|");
+        AssertJsonTextNotContains(smoke, "queueLog", "queue-second-start|");
+        AssertJsonTextContains(smoke, "staleLog", "stale-first-start|");
+        AssertJsonTextContains(smoke, "staleLog", "stale-second-start|");
+        AssertJsonTextContains(smoke, "raceLog", "race-init-done|");
+        AssertJsonTextContains(smoke, "raceLog", "race-dispose-start|");
+        AssertJsonTextContains(smoke, "raceLog", "race-dispose-done|");
+
+        var failures = smoke.GetProperty("failures").EnumerateArray()
+            .Select(static failure => failure.GetString() ?? "")
+            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
+            .ToArray();
+        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
+    [TestMethod]
+    [TestCategory("Browser")]
+    public async Task Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser()
+    {
+        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            Assert.Inconclusive(
+                "Extended DOM event browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
+            return;
+        }
+
+        var package = await LocalReleasePackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalExtendedDomEventsReleaseConsumer");
+        var projectPath = CreateExternalExtendedDomEventsRazorConsumerProject(projectRoot);
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-c",
+                "Release",
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=release"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "jazor");
+        var bundlePath = Path.Combine(outputRoot, "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        Assert.IsTrue(File.Exists(bundlePath), $"Release extended event bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Release extended event source map was not generated: {bundleMapPath}");
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
+            "The isolated extended event package consumer must not use frontend node_modules.");
+
+        var bundleText = await File.ReadAllTextAsync(bundlePath);
+        foreach (var property in new[]
+                 {
+                     "pointerId", "pointerType", "isPrimary", "deltaX", "deltaMode", "dataTransfer",
+                     "dropEffect", "effectAllowed", "changedTouches", "clientX", "lineno", "colno",
+                     "lengthComputable", "loaded", "total"
+                 })
+        {
+            StringAssert.Contains(bundleText, property, StringComparison.Ordinal);
+        }
+
+        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
+        var mappedSources = bundleSourceMap.RootElement
+            .GetProperty("sources")
+            .EnumerateArray()
+            .Select(static source => source.GetString() ?? "")
+            .ToArray();
+        CollectionAssert.Contains(mappedSources, "components/extended-dom-events.mjs");
+
+        var harnessRoot = Path.Combine(workspace.RootPath, "extended-dom-events-browser-harness");
+        CreateReleaseExtendedDomEventsBrowserHarness(outputRoot, harnessRoot);
+
+        var indexPath = Path.Combine(harnessRoot, "index.html");
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 12000);
+        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
+
+        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "extended DOM events RazorVue");
+        var smoke = smokePayload.RootElement;
+        Assert.IsTrue(
+            smoke.GetProperty("ok").GetBoolean(),
+            "Extended DOM event browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
+        AssertJsonTextContains(smoke, "pointerStatus", "17:pen:true");
+        AssertJsonTextContains(smoke, "wheelStatus", "2.5:1");
+        AssertJsonTextContains(smoke, "dragStatus", "copy:copyMove");
+        AssertJsonTextContains(smoke, "clipboardStatus", "paste");
+        AssertJsonTextContains(smoke, "touchStatus", "3:12.5:true");
+        AssertJsonTextContains(smoke, "errorStatus", "boom:7:2:app.js:error");
+        AssertJsonTextContains(smoke, "progressStatus", "true:42:100:progress");
+
+        var failures = smoke.GetProperty("failures").EnumerateArray()
+            .Select(static failure => failure.GetString() ?? "")
+            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
+            .ToArray();
+        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
     private static async Task<LocalStylePackageFixture> CreateLocalStylePackageAsync()
     {
         var repoRoot = FindRepoRoot();
@@ -3648,8 +4223,30 @@ public sealed class SdkIntegrationTests
                 "-p:UseSharedCompilation=false"
             ]);
 
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "ECMAScript.TDesign.csproj"),
+                "-c",
+                "Release",
+                "-o",
+                packageOutputDirectory,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:PackageVersion={packageVersion}",
+                $"-p:JazorPackageVersion={packageVersion}",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+
         var jazorPackagePath = GetPackagePath(packageOutputDirectory, packageVersion);
         var vuePackagePath = GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion);
+        var tdesignPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", packageVersion);
         AssertPackageEntries(
             jazorPackagePath,
             "lib/net11.0/ECMAScript.dll",
@@ -3658,6 +4255,12 @@ public sealed class SdkIntegrationTests
             vuePackagePath,
             "lib/net11.0/ECMAScript.Blazor.dll",
             "tools/net11.0/analyzers/Jazor.RazorVue.dll");
+        AssertPackageEntries(
+            tdesignPackagePath,
+            "lib/net11.0/ECMAScript.TDesign.dll",
+            "jazor/tdesign-vue-next/manifest.json",
+            "jazor/tdesign-vue-next/dist/tdesign.mjs",
+            "jazor/tdesign-vue-next/dist/tdesign.css");
 
         return new LocalReleasePackageFixture(
             repoRoot,
@@ -3665,7 +4268,8 @@ public sealed class SdkIntegrationTests
             packageOutputDirectory,
             restorePackagesPath,
             jazorPackagePath,
-            vuePackagePath);
+            vuePackagePath,
+            tdesignPackagePath);
     }
 
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
@@ -4206,6 +4810,2450 @@ public sealed class SdkIntegrationTests
             """);
     }
 
+    private static string CreateExternalNativeTDesignRazorConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+
+        var projectPath = Path.Combine(projectRoot, "ExternalNativeTDesignReleaseConsumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <LangVersion>preview</LangVersion>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>release</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ExternalNativeTDesignReleaseConsumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "_Imports.razor"),
+            """
+            @using ECMAScript.TDesign
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "TDesignAdmin.razor.cs"),
+            """
+            using ECMAScript;
+            using ECMAScript.TDesign;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Web;
+            using static ECMAScript.Vue;
+
+            namespace ExternalNativeTDesignReleaseConsumer;
+
+            public sealed record TaskRow(int Id, string Title);
+
+            public sealed record TaskDraft
+            {
+                public string Title { get; set; } = "Draft task";
+            }
+
+            [ECMAScriptModule("./components/tdesign-admin")]
+            public partial class TDesignAdmin : ComponentBase, IVueComponent
+            {
+                private TaskDraft Draft { get; } = new() { Title = "Draft task" };
+                private int SavedCount { get; set; }
+                private TaskRow[] Rows { get; } = [new(1, "Release package task")];
+
+                private TPrimaryTableCol<TaskRow>[] Columns { get; } =
+                [
+                    new()
+                    {
+                        ColKey = "title",
+                        Title = "Title",
+                        Cell = "Title"
+                    }
+                ];
+
+                private string StatusText => $"{Draft.Title}:{SavedCount}";
+
+                private void Save(MouseEvent context)
+                {
+                    SavedCount++;
+                }
+
+                private void Submit(TSubmitContext<TaskDraft> context)
+                {
+                    SavedCount++;
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "TDesignAdmin.razor"),
+            """
+            <TForm FormData="TaskDraft" Data="@Draft" OnSubmit="@Submit">
+                <TFormItem LabelValue="Title" Name="title">
+                    <TInput T="string" Name="title" @bind-Value="Draft.Title" @bind-Value:event="OnChange" />
+                </TFormItem>
+            </TForm>
+            <TButton Theme="@TButtonThemeValue.Primary" OnClick="@Save">Save task</TButton>
+            <TPrimaryTable T="TaskRow" Data="@Rows" Columns="@Columns" RowKey="Id" />
+            <span id="tdesign-status">@StatusText</span>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Bootstrap.cs"),
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace ExternalNativeTDesignReleaseConsumer;
+
+            [ECMAScript("components/tdesign-admin.mjs")]
+            [Description("@#")]
+            internal static class TDesignAdminModule
+            {
+            #pragma warning disable CS0626 // The generated ECMAScript module supplies this export in the browser.
+                [ECMAScriptName("default")]
+                public extern static IVueComponent Default { get; }
+            #pragma warning restore CS0626
+            }
+
+            [ECMAScriptModule("app.mjs")]
+            public static class Bootstrap
+            {
+                private static readonly bool started = Start();
+
+                private static bool Start()
+                {
+                    CreateApp(TDesignAdminModule.Default).Mount("#app");
+                    return true;
+                }
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreateExternalElementReferenceRazorConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+
+        var projectPath = Path.Combine(projectRoot, "ExternalElementReferenceReleaseConsumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <LangVersion>preview</LangVersion>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>release</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ExternalElementReferenceReleaseConsumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "_Imports.razor"),
+            """
+            @using Microsoft.AspNetCore.Components
+            @using Microsoft.AspNetCore.Components.Web
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ElementReferenceFocus.razor.cs"),
+            """
+            using System;
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalElementReferenceReleaseConsumer;
+
+            [ECMAScriptModule("./components/element-reference-focus")]
+            public partial class ElementReferenceFocus : ComponentBase, IVueComponent
+            {
+                private ElementReference inputElement;
+                private bool Visible { get; set; } = true;
+                private string Status { get; set; } = "ready";
+
+                private async Task Focus()
+                {
+                    try
+                    {
+                        await inputElement.FocusAsync();
+                        await inputElement.FocusAsync(true);
+                        Status = "focused";
+                    }
+                    catch (Exception error)
+                    {
+                        Status = error.Message;
+                    }
+                }
+
+                private void Toggle()
+                {
+                    Visible = !Visible;
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ElementReferenceFocus.razor"),
+            """
+            <button id="focus" type="button" @onclick="Focus">Focus</button>
+            <button id="toggle" type="button" @onclick="Toggle">Toggle</button>
+            @if (Visible)
+            {
+                <input id="focus-target" @ref="inputElement" />
+            }
+            <span id="status">@Status</span>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Bootstrap.cs"),
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace ExternalElementReferenceReleaseConsumer;
+
+            [ECMAScript("components/element-reference-focus.mjs")]
+            [Description("@#")]
+            internal static class ElementReferenceFocusModule
+            {
+            #pragma warning disable CS0626 // The generated ECMAScript module supplies this export in the browser.
+                [ECMAScriptName("default")]
+                public extern static IVueComponent Default { get; }
+            #pragma warning restore CS0626
+            }
+
+            [ECMAScriptModule("app.mjs")]
+            public static class Bootstrap
+            {
+                private static readonly bool started = Start();
+
+                private static bool Start()
+                {
+                    CreateApp(ElementReferenceFocusModule.Default).Mount("#app");
+                    return true;
+                }
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreateExternalCoreDomEventsRazorConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+
+        var projectPath = Path.Combine(projectRoot, "ExternalCoreDomEventsReleaseConsumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <LangVersion>preview</LangVersion>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>release</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ExternalCoreDomEventsReleaseConsumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "_Imports.razor"),
+            """
+            @using Microsoft.AspNetCore.Components
+            @using Microsoft.AspNetCore.Components.Web
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "CoreDomEvents.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Web;
+            using static ECMAScript.Vue;
+
+            namespace ExternalCoreDomEventsReleaseConsumer;
+
+            [ECMAScriptModule("./components/core-dom-events")]
+            public partial class CoreDomEvents : ComponentBase, IVueComponent
+            {
+                private string MouseType { get; set; } = "none";
+                private double MouseX { get; set; }
+                private string KeyboardKey { get; set; } = "none";
+                private string KeyboardCode { get; set; } = "none";
+                private string FocusType { get; set; } = "none";
+                private string BoundText { get; set; } = "initial";
+                private string ChangeBefore { get; set; } = "none";
+                private string ChangeAfter { get; set; } = "none";
+                private bool CheckboxValue { get; set; }
+                private string CheckboxText => CheckboxValue ? "true" : "false";
+                private int MultipleCount { get; set; }
+                private string MultipleFirst { get; set; } = "none";
+                private string MultipleSecond { get; set; } = "none";
+
+                private void HandleMouse(MouseEventArgs args)
+                {
+                    MouseType = args.Type;
+                    MouseX = args.ClientX;
+                }
+
+                private void HandleKeyboard(KeyboardEventArgs args)
+                {
+                    KeyboardKey = args.Key;
+                    KeyboardCode = args.Code;
+                }
+
+                private void HandleFocus(FocusEventArgs args)
+                    => FocusType = args.Type ?? "none";
+
+                private async Task HandleChange(ChangeEventArgs args)
+                {
+                    ChangeBefore = (string)args.Value!;
+                    await Task.Yield();
+                    ChangeAfter = (string)args.Value!;
+                }
+
+                private void HandleCheckbox(ChangeEventArgs args)
+                    => CheckboxValue = (bool)args.Value!;
+
+                private void HandleMultiple(ChangeEventArgs args)
+                {
+                    var values = (string?[])args.Value!;
+                    MultipleCount = values.Length;
+                    MultipleFirst = values.Length > 0 ? values[0] ?? "none" : "none";
+                    MultipleSecond = values.Length > 1 ? values[1] ?? "none" : "none";
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "CoreDomEvents.razor"),
+            """
+            <div>
+                <button id="mouse" type="button" @onclick="HandleMouse">Mouse</button>
+                <input id="keyboard" @onkeydown="@(args => HandleKeyboard(args))" />
+                <input id="focus" @onfocus="HandleFocus" />
+                <input id="change" @bind="BoundText" @bind:event="oninput" @onchange="HandleChange" />
+                <input id="checkbox" type="checkbox" @onchange="@(args => HandleCheckbox(args))" />
+                <select id="multiple" multiple @onchange="HandleMultiple">
+                    <option value="one">One</option>
+                    <option value="two">Two</option>
+                </select>
+                <span id="mouse-type">@MouseType</span>
+                <span id="mouse-x">@MouseX</span>
+                <span id="keyboard-key">@KeyboardKey</span>
+                <span id="keyboard-code">@KeyboardCode</span>
+                <span id="focus-type">@FocusType</span>
+                <span id="bound">@BoundText</span>
+                <span id="change-before">@ChangeBefore</span>
+                <span id="change-after">@ChangeAfter</span>
+                <span id="checkbox-value">@CheckboxText</span>
+                <span id="multiple-count">@MultipleCount</span>
+                <span id="multiple-first">@MultipleFirst</span>
+                <span id="multiple-second">@MultipleSecond</span>
+            </div>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Bootstrap.cs"),
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace ExternalCoreDomEventsReleaseConsumer;
+
+            [ECMAScript("components/core-dom-events.mjs")]
+            [Description("@#")]
+            internal static class CoreDomEventsModule
+            {
+            #pragma warning disable CS0626 // The generated ECMAScript module supplies this export in the browser.
+                [ECMAScriptName("default")]
+                public extern static IVueComponent Default { get; }
+            #pragma warning restore CS0626
+            }
+
+            [ECMAScriptModule("app.mjs")]
+            public static class Bootstrap
+            {
+                private static readonly bool started = Start();
+
+                private static bool Start()
+                {
+                    CreateApp(CoreDomEventsModule.Default).Mount("#app");
+                    return true;
+                }
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreateExternalFrameworkPrimitivesRazorConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+
+        var projectPath = Path.Combine(projectRoot, "ExternalFrameworkPrimitivesReleaseConsumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <LangVersion>preview</LangVersion>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>release</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ExternalFrameworkPrimitivesReleaseConsumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "_Imports.razor"),
+            """
+            @using Microsoft.AspNetCore.Components
+            @using Microsoft.AspNetCore.Components.Web
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "FrameworkPrimitives.razor.cs"),
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalFrameworkPrimitivesReleaseConsumer;
+
+            [ECMAScript]
+            [Description("@#")]
+            public sealed class BrowserProbe
+            {
+                public string Label { get; set; } = "unset";
+
+                public int DisposedCount { get; set; }
+            }
+
+            [ECMAScriptModule("./components/framework-primitives")]
+            public partial class FrameworkPrimitives : ComponentBase, IVueComponent
+            {
+                [Inject]
+                public BrowserProbe Probe { get; set; } = null!;
+
+                private string serviceLifecycle = "unset";
+                private string OuterTheme { get; set; } = "outer";
+                private string InnerTheme { get; set; } = "inner";
+                private string FixedTheme { get; set; } = "fixed";
+                private string ParameterTitle { get; set; } = "one";
+                private bool ShowInjectedChild { get; set; } = true;
+                private bool ShowInnerCascade { get; set; } = true;
+
+                private string ServiceLifecycle => serviceLifecycle;
+
+                protected override void OnInitialized()
+                {
+                    serviceLifecycle = "root:" + Probe.Label;
+                }
+
+                private void UpdateOuterTheme()
+                    => OuterTheme = "outer-next";
+
+                private void UpdateInnerTheme()
+                    => InnerTheme = "inner-next";
+
+                private void KeepInnerTheme()
+                {
+                    var current = InnerTheme;
+                    InnerTheme = current;
+                }
+
+                private void UpdateFixedTheme()
+                    => FixedTheme = "fixed-next";
+
+                private void ToggleInjectedChild()
+                    => ShowInjectedChild = !ShowInjectedChild;
+
+                private void ToggleInnerCascade()
+                    => ShowInnerCascade = !ShowInnerCascade;
+
+                private void UpdateParameterTitle()
+                    => ParameterTitle = "two";
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "FrameworkPrimitives.razor"),
+            """
+            <div>
+                <span id="root-inject">@ServiceLifecycle</span>
+                <InjectedChild Name="first" />
+                @if (ShowInjectedChild)
+                {
+                    <InjectedChild Name="second" />
+                }
+
+                <CascadingValue Value="@OuterTheme" Name="theme">
+                    <CascadeReader Id="cascade-outer" />
+                    @if (ShowInnerCascade)
+                    {
+                        <CascadingValue Value="@InnerTheme" Name="theme">
+                            <CascadeReader Id="cascade-inner" />
+                        </CascadingValue>
+                    }
+                    <CascadingValue Value="@FixedTheme" Name="fixed" IsFixed="true">
+                        <CascadeReader Id="cascade-fixed" />
+                    </CascadingValue>
+                </CascadingValue>
+
+                <ParameterChild Title="@ParameterTitle" />
+
+                <span id="fixed-source">@FixedTheme</span>
+                <span id="dispose-count">@Probe.DisposedCount</span>
+                <button id="outer-update" type="button" @onclick="UpdateOuterTheme">Update outer cascade</button>
+                <button id="inner-update" type="button" @onclick="UpdateInnerTheme">Update inner cascade</button>
+                <button id="inner-same" type="button" @onclick="KeepInnerTheme">Keep inner cascade</button>
+                <button id="fixed-update" type="button" @onclick="UpdateFixedTheme">Update fixed cascade</button>
+                <button id="toggle-injected" type="button" @onclick="ToggleInjectedChild">Toggle injected child</button>
+                <button id="toggle-cascade" type="button" @onclick="ToggleInnerCascade">Toggle inner cascade</button>
+                <button id="parameter-update" type="button" @onclick="UpdateParameterTitle">Update parameter</button>
+            </div>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "InjectedChild.razor.cs"),
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalFrameworkPrimitivesReleaseConsumer;
+
+            [ECMAScriptModule("./components/injected-child")]
+            public partial class InjectedChild : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string Name { get; set; } = "unknown";
+
+                [Inject]
+                public BrowserProbe Probe { get; set; } = null!;
+
+                private string ActivatedLabel { get; set; } = "unset";
+
+                private string Display => Name + ":" + ActivatedLabel;
+
+                protected override void OnInitialized()
+                    => ActivatedLabel = Probe.Label;
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "InjectedChild.razor"),
+            """
+            <span id="inject-@Name">@Display</span>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "CascadeReader.razor.cs"),
+            """
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalFrameworkPrimitivesReleaseConsumer;
+
+            [ECMAScriptModule("./components/cascade-reader")]
+            public partial class CascadeReader : ComponentBase, IVueComponent, IDisposable
+            {
+                [Parameter]
+                public string Id { get; set; } = "cascade";
+
+                [CascadingParameter(Name = "theme")]
+                public string Theme { get; set; } = "theme-fallback";
+
+                [CascadingParameter(Name = "fixed")]
+                public string FixedTheme { get; set; } = "fixed-fallback";
+
+                [Inject]
+                public BrowserProbe Probe { get; set; } = null!;
+
+                private int Updates { get; set; }
+
+                private string Display => Id + ":" + Theme + ":" + FixedTheme + ":" + Updates;
+
+                protected override void OnParametersSet()
+                    => Updates++;
+
+                public void Dispose()
+                    => Probe.DisposedCount++;
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "CascadeReader.razor"),
+            """
+            <span id="@Id">@Display</span>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ParameterChild.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalFrameworkPrimitivesReleaseConsumer;
+
+            [ECMAScriptModule("./components/parameter-child")]
+            public partial class ParameterChild : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string Title { get; set; } = "default";
+
+                private string log = "";
+
+                private string Log => log;
+
+                public override async Task SetParametersAsync(ParameterView parameters)
+                {
+                    log += "before:" + Title + "|";
+                    await Task.CompletedTask;
+                    await base.SetParametersAsync(parameters);
+                    log += "after:" + Title + "|";
+                }
+
+                protected override void OnParametersSet()
+                    => log += "parameters:" + Title + "|";
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ParameterChild.razor"),
+            """
+            <span id="parameter-log">@Log</span>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Bootstrap.cs"),
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace ExternalFrameworkPrimitivesReleaseConsumer;
+
+            [ECMAScript("components/framework-primitives.mjs")]
+            [Description("@#")]
+            internal static class FrameworkPrimitivesModule
+            {
+            #pragma warning disable CS0626 // The generated ECMAScript module supplies this export in the browser.
+                [ECMAScriptName("default")]
+                public extern static IVueComponent Default { get; }
+            #pragma warning restore CS0626
+            }
+
+            [ECMAScriptModule("app.mjs")]
+            public static class Bootstrap
+            {
+                private static readonly bool started = Start();
+
+                private static bool Start()
+                {
+                    var app = CreateApp(FrameworkPrimitivesModule.Default);
+                    app.Provide(
+                        "jazor:service:ExternalFrameworkPrimitivesReleaseConsumer.BrowserProbe",
+                        new BrowserProbe { Label = "release-provider", DisposedCount = 0 });
+                    app.Mount("#app");
+                    return true;
+                }
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreateExternalComplexLifecycleRazorConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+
+        var projectPath = Path.Combine(projectRoot, "ExternalComplexLifecycleReleaseConsumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <LangVersion>preview</LangVersion>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>release</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ExternalComplexLifecycleReleaseConsumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "_Imports.razor"),
+            """
+            @using Microsoft.AspNetCore.Components
+            @using Microsoft.AspNetCore.Components.Web
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ComplexLifecycle.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalComplexLifecycleReleaseConsumer;
+
+            [ECMAScript]
+            [System.ComponentModel.Description("@#")]
+            public sealed class LifecycleProbe
+            {
+                public string FailureLog { get; set; } = "";
+
+                public string QueueLog { get; set; } = "";
+
+                public string StaleLog { get; set; } = "";
+
+                public string RaceLog { get; set; } = "";
+
+                public int ErrorCount { get; set; }
+            }
+
+            [ECMAScriptModule("./components/complex-lifecycle")]
+            public partial class ComplexLifecycle : ComponentBase, IVueComponent
+            {
+                [Inject]
+                public LifecycleProbe Probe { get; set; } = null!;
+
+                private bool ShowFailure { get; set; } = true;
+                private bool ShowQueue { get; set; } = true;
+                private bool ShowStale { get; set; } = true;
+                private bool ShowRace { get; set; } = true;
+                private int QueueValue { get; set; } = 1;
+                private int StaleValue { get; set; } = 1;
+                private int RefreshCount { get; set; }
+                private int AfterRenderCount { get; set; }
+
+                protected override void OnInitialized()
+                    => Probe.RaceLog += "host-init|";
+
+                protected override Task OnAfterRenderAsync(bool firstRender)
+                {
+                    AfterRenderCount++;
+                    return Task.CompletedTask;
+                }
+
+                private void Refresh()
+                    => RefreshCount++;
+
+                private void UpdateQueue()
+                    => QueueValue = 2;
+
+                private void UpdateStale()
+                    => StaleValue = 2;
+
+                private void ToggleFailure()
+                    => ShowFailure = !ShowFailure;
+
+                private void ToggleQueue()
+                    => ShowQueue = !ShowQueue;
+
+                private void ToggleStale()
+                    => ShowStale = !ShowStale;
+
+                private void ToggleRace()
+                    => ShowRace = !ShowRace;
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ComplexLifecycle.razor"),
+            """
+            <div>
+                <span id="failure-log">@Probe.FailureLog</span>
+                <span id="queue-log">@Probe.QueueLog</span>
+                <span id="stale-log">@Probe.StaleLog</span>
+                <span id="race-log">@Probe.RaceLog</span>
+                <span id="failure-count">@Probe.ErrorCount</span>
+                <span id="after-render-count">@AfterRenderCount</span>
+                @if (ShowFailure)
+                {
+                    <AsyncInitializationFailure />
+                }
+                @if (ShowQueue)
+                {
+                    <QueuedParameterLifecycle Value="@QueueValue" />
+                }
+                @if (ShowStale)
+                {
+                    <StaleParameterFailure Value="@StaleValue" />
+                }
+                @if (ShowRace)
+                {
+                    <AsyncUnmountRace />
+                }
+                <button id="refresh" type="button" @onclick="Refresh">Refresh</button>
+                <button id="queue-update" type="button" @onclick="UpdateQueue">Queue update</button>
+                <button id="queue-toggle" type="button" @onclick="ToggleQueue">Toggle queue</button>
+                <button id="stale-update" type="button" @onclick="UpdateStale">Stale update</button>
+                <button id="stale-toggle" type="button" @onclick="ToggleStale">Toggle stale</button>
+                <button id="failure-toggle" type="button" @onclick="ToggleFailure">Toggle failure</button>
+                <button id="race-toggle" type="button" @onclick="ToggleRace">Toggle race</button>
+            </div>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "AsyncInitializationFailure.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalComplexLifecycleReleaseConsumer;
+
+            [ECMAScriptModule("./components/async-initialization-failure")]
+            public partial class AsyncInitializationFailure : ComponentBase, IVueComponent
+            {
+                [Inject]
+                public LifecycleProbe Probe { get; set; } = null!;
+
+                protected override async Task OnInitializedAsync()
+                {
+                    Probe.FailureLog += "failure-start|";
+                    await Task.Delay(10);
+                    throw null!;
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "AsyncInitializationFailure.razor"),
+            """
+            <span id="failure-child">failure</span>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "QueuedParameterLifecycle.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalComplexLifecycleReleaseConsumer;
+
+            [ECMAScriptModule("./components/queued-parameter-lifecycle")]
+            public partial class QueuedParameterLifecycle : ComponentBase, IVueComponent, System.IDisposable
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                [Inject]
+                public LifecycleProbe Probe { get; set; } = null!;
+
+                protected override async Task OnParametersSetAsync()
+                {
+                    var value = Value;
+                    Probe.QueueLog += value == 1 ? "queue-first-start|" : "queue-second-start|";
+                    await Task.Delay(value == 1 ? 35 : 0);
+                    Probe.QueueLog += value == 1 ? "queue-first-done|" : "queue-second-done|";
+                }
+
+                public void Dispose()
+                    => Probe.QueueLog += "queue-dispose|";
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "QueuedParameterLifecycle.razor"),
+            """
+            <span id="queue-child">queued</span>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "StaleParameterFailure.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalComplexLifecycleReleaseConsumer;
+
+            [ECMAScriptModule("./components/stale-parameter-failure")]
+            public partial class StaleParameterFailure : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public int Value { get; set; }
+
+                [Inject]
+                public LifecycleProbe Probe { get; set; } = null!;
+
+                protected override async Task OnParametersSetAsync()
+                {
+                    var value = Value;
+                    Probe.StaleLog += value == 1 ? "stale-first-start|" : "stale-second-start|";
+                    await Task.Delay(value == 1 ? 35 : 0);
+                    if (value == 1)
+                        throw null!;
+
+                    Probe.StaleLog += "stale-second-done|";
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "StaleParameterFailure.razor"),
+            """
+            <span id="stale-child">stale</span>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "AsyncUnmountRace.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalComplexLifecycleReleaseConsumer;
+
+            [ECMAScriptModule("./components/async-unmount-race")]
+            public partial class AsyncUnmountRace : ComponentBase, IVueComponent, IAsyncDisposable
+            {
+                [Inject]
+                public LifecycleProbe Probe { get; set; } = null!;
+
+                protected override async Task OnInitializedAsync()
+                {
+                    Probe.RaceLog += "race-init-start|";
+                    await Task.Delay(20);
+                    Probe.RaceLog += "race-init-done|";
+                }
+
+                public async ValueTask DisposeAsync()
+                {
+                    Probe.RaceLog += "race-dispose-start|";
+                    await Task.Delay(20);
+                    Probe.RaceLog += "race-dispose-done|";
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "AsyncUnmountRace.razor"),
+            """
+            <span id="race-child">race</span>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Bootstrap.cs"),
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace ExternalComplexLifecycleReleaseConsumer;
+
+            [ECMAScript("components/complex-lifecycle.mjs")]
+            [Description("@#")]
+            internal static class ComplexLifecycleModule
+            {
+            #pragma warning disable CS0626 // The generated ECMAScript module supplies this export in the browser.
+                [ECMAScriptName("default")]
+                public extern static IVueComponent Default { get; }
+            #pragma warning restore CS0626
+            }
+
+            [ECMAScriptModule("app.mjs")]
+            public static class Bootstrap
+            {
+                private static readonly bool started = Start();
+
+                private static bool Start()
+                {
+                    var app = CreateApp(ComplexLifecycleModule.Default);
+                    var probe = Reactive(new LifecycleProbe
+                    {
+                        FailureLog = "",
+                        QueueLog = "",
+                        StaleLog = "",
+                        RaceLog = "",
+                        ErrorCount = 0
+                    });
+                    app.Config.ErrorHandler = (error, instance, info) => probe.ErrorCount++;
+                    app.Provide(
+                        "jazor:service:ExternalComplexLifecycleReleaseConsumer.LifecycleProbe",
+                        probe);
+                    app.Mount("#app");
+                    return true;
+                }
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreateExternalExtendedDomEventsRazorConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+
+        var projectPath = Path.Combine(projectRoot, "ExternalExtendedDomEventsReleaseConsumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <LangVersion>preview</LangVersion>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>release</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ExternalExtendedDomEventsReleaseConsumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "_Imports.razor"),
+            """
+            @using Microsoft.AspNetCore.Components
+            @using Microsoft.AspNetCore.Components.Web
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ExtendedDomEvents.razor.cs"),
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Web;
+            using static ECMAScript.Vue;
+
+            namespace ExternalExtendedDomEventsReleaseConsumer;
+
+            [ECMAScript]
+            [Description("@#")]
+            public sealed class BrowserProbe
+            {
+                public string PointerStatus { get; set; } = "none";
+                public string WheelStatus { get; set; } = "none";
+                public string DragStatus { get; set; } = "none";
+                public string ClipboardStatus { get; set; } = "none";
+                public string TouchStatus { get; set; } = "none";
+                public string ErrorStatus { get; set; } = "none";
+                public string ProgressStatus { get; set; } = "none";
+            }
+
+            [ECMAScriptModule("./components/extended-dom-events")]
+            public partial class ExtendedDomEvents : ComponentBase, IVueComponent
+            {
+                [Inject]
+                public BrowserProbe Probe { get; set; } = null!;
+
+                private string PointerStatus => Probe.PointerStatus;
+                private string WheelStatus => Probe.WheelStatus;
+                private string DragStatus => Probe.DragStatus;
+                private string ClipboardStatus => Probe.ClipboardStatus;
+                private string TouchStatus => Probe.TouchStatus;
+                private string ErrorStatus => Probe.ErrorStatus;
+                private string ProgressStatus => Probe.ProgressStatus;
+
+                private void HandlePointer(PointerEventArgs args)
+                    => Probe.PointerStatus = args.PointerId + ":" + args.PointerType + ":" + args.IsPrimary;
+
+                private void HandleWheel(WheelEventArgs args)
+                    => Probe.WheelStatus = args.DeltaX + ":" + args.DeltaMode;
+
+                private void HandleDrag(DragEventArgs args)
+                {
+                    var transfer = args.DataTransfer;
+                    Probe.DragStatus = transfer.DropEffect + ":" + transfer.EffectAllowed;
+                }
+
+                private void HandleClipboard(ClipboardEventArgs args)
+                    => Probe.ClipboardStatus = args.Type;
+
+                private void HandleTouch(TouchEventArgs args)
+                    => Probe.TouchStatus = args.Detail + ":" + args.ChangedTouches[0].ClientX + ":" + args.CtrlKey;
+
+                private void HandleError(Microsoft.AspNetCore.Components.Web.ErrorEventArgs args)
+                    => Probe.ErrorStatus = (args.Message ?? "none") + ":" + args.Lineno + ":" + args.Colno + ":" + (args.Filename ?? "none") + ":" + (args.Type ?? "none");
+
+                private void HandleProgress(ProgressEventArgs args)
+                    => Probe.ProgressStatus = args.LengthComputable + ":" + args.Loaded + ":" + args.Total + ":" + args.Type;
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ExtendedDomEvents.razor"),
+            """
+            <div id="events"
+                 @onpointerdown="HandlePointer"
+                 @onwheel="HandleWheel"
+                 @ondragstart="HandleDrag"
+                 @onpaste="HandleClipboard"
+                 @ontouchstart="HandleTouch"
+                 @onerror="HandleError"
+                 @onprogress="HandleProgress">
+                <span id="pointer-status">@PointerStatus</span>
+                <span id="wheel-status">@WheelStatus</span>
+                <span id="drag-status">@DragStatus</span>
+                <span id="clipboard-status">@ClipboardStatus</span>
+                <span id="touch-status">@TouchStatus</span>
+                <span id="error-status">@ErrorStatus</span>
+                <span id="progress-status">@ProgressStatus</span>
+            </div>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Bootstrap.cs"),
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace ExternalExtendedDomEventsReleaseConsumer;
+
+            [ECMAScript("components/extended-dom-events.mjs")]
+            [Description("@#")]
+            internal static class ExtendedDomEventsModule
+            {
+            #pragma warning disable CS0626 // The generated ECMAScript module supplies this export in the browser.
+                [ECMAScriptName("default")]
+                public extern static IVueComponent Default { get; }
+            #pragma warning restore CS0626
+            }
+
+            [ECMAScriptModule("app.mjs")]
+            public static class Bootstrap
+            {
+                private static readonly bool started = Start();
+
+                private static bool Start()
+                {
+                    var app = CreateApp(ExtendedDomEventsModule.Default);
+                    app.Provide(
+                        "jazor:service:ExternalExtendedDomEventsReleaseConsumer.BrowserProbe",
+                        new BrowserProbe());
+                    app.Mount("#app");
+                    return true;
+                }
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static void CreateReleaseTDesignBrowserHarness(string outputRoot, string harnessRoot)
+    {
+        var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
+        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "index.html"),
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <title>Jazor RazorVue native TDesign browser smoke</title>
+                <link rel="stylesheet" href="./jazor/bundle.css">
+                <script>
+                  window.__jazorSmokeFailures = [];
+                  (function () {
+                    function formatArg(value) {
+                      if (value instanceof Error) {
+                        return value.stack || value.message;
+                      }
+
+                      if (typeof value === "string") {
+                        return value;
+                      }
+
+                      try {
+                        return JSON.stringify(value);
+                      } catch {
+                        return String(value);
+                      }
+                    }
+
+                    function record(kind, values) {
+                      window.__jazorSmokeFailures.push(kind + ": " + Array.from(values).map(formatArg).join(" "));
+                    }
+
+                    const originalError = console.error.bind(console);
+                    const originalWarn = console.warn.bind(console);
+                    console.error = function (...args) {
+                      record("console.error", args);
+                      originalError(...args);
+                    };
+                    console.warn = function (...args) {
+                      record("console.warn", args);
+                      originalWarn(...args);
+                    };
+                    window.addEventListener("error", function (event) {
+                      record("error", [event.message || "unknown"]);
+                    });
+                    window.addEventListener("unhandledrejection", function (event) {
+                      record("unhandledrejection", [event.reason || "unknown"]);
+                    });
+                  })();
+                </script>
+              </head>
+              <body>
+                <div id="app"></div>
+                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./smoke.mjs"></script>
+              </body>
+            </html>
+            """);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "smoke.mjs"),
+            """
+            function bodyText() {
+              return document.body ? (document.body.textContent || "") : "";
+            }
+
+            function smokeFailures() {
+              return Array.isArray(window.__jazorSmokeFailures)
+                ? [...window.__jazorSmokeFailures]
+                : [];
+            }
+
+            function encodeUtf8Base64(value) {
+              const bytes = new TextEncoder().encode(value);
+              let binary = "";
+              for (const byte of bytes) {
+                binary += String.fromCharCode(byte);
+              }
+
+              return btoa(binary);
+            }
+
+            function finish(payload) {
+              document.documentElement.setAttribute(
+                "data-jazor-smoke",
+                encodeUtf8Base64(JSON.stringify(payload)));
+            }
+
+            function assertBodyContains(text, expected) {
+              if (!text.includes(expected)) {
+                throw new Error(`Expected browser body to contain '${expected}', but saw '${text}'.`);
+              }
+            }
+
+            async function waitFor(selector) {
+              for (let attempt = 0; attempt < 80; attempt++) {
+                const element = document.querySelector(selector);
+                if (element) {
+                  return element;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}'.`);
+            }
+
+            try {
+              const input = await waitFor('input[name="title"]');
+              const button = await waitFor("button");
+              await new Promise(resolve => setTimeout(resolve, 50));
+
+              const initialStatus = document.querySelector("#tdesign-status")?.textContent || "";
+              assertBodyContains(initialStatus, "Draft task:0");
+
+              const inputValue = "Release package task";
+              const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+              valueSetter.call(input, inputValue);
+              input.dispatchEvent(new Event("input", { bubbles: true }));
+              await new Promise(resolve => setTimeout(resolve, 50));
+              const boundStatus = document.querySelector("#tdesign-status")?.textContent || "";
+              assertBodyContains(boundStatus, "Release package task:0");
+
+              button.click();
+              await new Promise(resolve => setTimeout(resolve, 100));
+              const savedStatus = document.querySelector("#tdesign-status")?.textContent || "";
+              assertBodyContains(savedStatus, "Release package task:1");
+
+              finish({
+                ok: true,
+                initialStatus,
+                boundStatus,
+                savedStatus,
+                failures: smokeFailures()
+              });
+            } catch (error) {
+              finish({
+                ok: false,
+                error: error instanceof Error ? (error.stack || error.message) : String(error),
+                bodyText: bodyText(),
+                failures: smokeFailures()
+              });
+            }
+            """);
+    }
+
+    private static void CreateReleaseElementReferenceBrowserHarness(string outputRoot, string harnessRoot)
+    {
+        var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
+        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "index.html"),
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <title>Jazor RazorVue ElementReference browser smoke</title>
+                <script>
+                  window.__jazorSmokeFailures = [];
+                  (function () {
+                    function formatArg(value) {
+                      if (value instanceof Error) {
+                        return value.stack || value.message;
+                      }
+
+                      if (typeof value === "string") {
+                        return value;
+                      }
+
+                      try {
+                        return JSON.stringify(value);
+                      } catch {
+                        return String(value);
+                      }
+                    }
+
+                    function record(kind, values) {
+                      window.__jazorSmokeFailures.push(kind + ": " + Array.from(values).map(formatArg).join(" "));
+                    }
+
+                    const originalError = console.error.bind(console);
+                    const originalWarn = console.warn.bind(console);
+                    console.error = function (...args) {
+                      record("console.error", args);
+                      originalError(...args);
+                    };
+                    console.warn = function (...args) {
+                      record("console.warn", args);
+                      originalWarn(...args);
+                    };
+                    window.addEventListener("error", function (event) {
+                      record("error", [event.message || "unknown"]);
+                    });
+                    window.addEventListener("unhandledrejection", function (event) {
+                      record("unhandledrejection", [event.reason || "unknown"]);
+                    });
+                  })();
+                </script>
+              </head>
+              <body>
+                <div id="app"></div>
+                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./smoke.mjs"></script>
+              </body>
+            </html>
+            """);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "smoke.mjs"),
+            """
+            function bodyText() {
+              return document.body ? (document.body.textContent || "") : "";
+            }
+
+            function smokeFailures() {
+              return Array.isArray(window.__jazorSmokeFailures)
+                ? [...window.__jazorSmokeFailures]
+                : [];
+            }
+
+            function encodeUtf8Base64(value) {
+              const bytes = new TextEncoder().encode(value);
+              let binary = "";
+              for (const byte of bytes) {
+                binary += String.fromCharCode(byte);
+              }
+
+              return btoa(binary);
+            }
+
+            function finish(payload) {
+              document.documentElement.setAttribute(
+                "data-jazor-smoke",
+                encodeUtf8Base64(JSON.stringify(payload)));
+            }
+
+            async function waitFor(selector) {
+              for (let attempt = 0; attempt < 100; attempt++) {
+                const element = document.querySelector(selector);
+                if (element) {
+                  return element;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}'.`);
+            }
+
+            async function waitForGone(selector) {
+              for (let attempt = 0; attempt < 100; attempt++) {
+                if (!document.querySelector(selector)) {
+                  return;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}' to unmount.`);
+            }
+
+            async function waitForText(selector, expected) {
+              for (let attempt = 0; attempt < 100; attempt++) {
+                const text = document.querySelector(selector)?.textContent || "";
+                if (text.includes(expected)) {
+                  return text;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}' to contain '${expected}', but saw '${document.querySelector(selector)?.textContent || ""}'.`);
+            }
+
+            try {
+              const input = await waitFor("#focus-target");
+              const focusButton = await waitFor("#focus");
+              const toggleButton = await waitFor("#toggle");
+              const nativeFocus = input.focus;
+              const focusCalls = [];
+              input.focus = function (...args) {
+                focusCalls.push(args);
+                return nativeFocus.apply(this, args);
+              };
+
+              focusButton.click();
+              const focusedStatus = await waitForText("#status", "focused");
+              if (document.activeElement !== input) {
+                throw new Error(`Expected mounted ElementReference to focus '#focus-target', but active element was '${document.activeElement?.id || document.activeElement?.tagName || "none"}'.`);
+              }
+              if (focusCalls.length !== 2 || focusCalls[0].length !== 0) {
+                throw new Error(`Unexpected native focus calls: ${JSON.stringify(focusCalls)}.`);
+              }
+              const focusOptions = focusCalls[1][0];
+              if (focusCalls[1].length !== 1 || focusOptions?.preventScroll !== true || Object.keys(focusOptions).join(",") !== "preventScroll") {
+                throw new Error(`FocusAsync(true) must forward only { preventScroll: true }, but saw ${JSON.stringify(focusCalls)}.`);
+              }
+
+              toggleButton.click();
+              await waitForGone("#focus-target");
+
+              focusButton.click();
+              const unmountedStatus = await waitForText(
+                "#status",
+                "InvalidOperationException: ElementReference has not been configured correctly.");
+
+              finish({
+                ok: true,
+                focusedStatus,
+                unmountedStatus,
+                focusCalls: focusCalls.map(call => call.map(value => value == null ? value : { ...value })),
+                failures: smokeFailures()
+              });
+            } catch (error) {
+              finish({
+                ok: false,
+                error: error instanceof Error ? (error.stack || error.message) : String(error),
+                bodyText: bodyText(),
+                failures: smokeFailures()
+              });
+            }
+            """);
+    }
+
+    private static void CreateReleaseCoreDomEventsBrowserHarness(string outputRoot, string harnessRoot)
+    {
+        var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
+        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "index.html"),
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <title>Jazor RazorVue core DOM events browser smoke</title>
+                <script>
+                  window.__jazorSmokeFailures = [];
+                  (function () {
+                    function formatArg(value) {
+                      if (value instanceof Error) {
+                        return value.stack || value.message;
+                      }
+
+                      if (typeof value === "string") {
+                        return value;
+                      }
+
+                      try {
+                        return JSON.stringify(value);
+                      } catch {
+                        return String(value);
+                      }
+                    }
+
+                    function record(kind, values) {
+                      window.__jazorSmokeFailures.push(kind + ": " + Array.from(values).map(formatArg).join(" "));
+                    }
+
+                    const originalError = console.error.bind(console);
+                    const originalWarn = console.warn.bind(console);
+                    console.error = function (...args) {
+                      record("console.error", args);
+                      originalError(...args);
+                    };
+                    console.warn = function (...args) {
+                      record("console.warn", args);
+                      originalWarn(...args);
+                    };
+                    window.addEventListener("error", function (event) {
+                      record("error", [event.message || "unknown"]);
+                    });
+                    window.addEventListener("unhandledrejection", function (event) {
+                      record("unhandledrejection", [event.reason || "unknown"]);
+                    });
+                  })();
+                </script>
+              </head>
+              <body>
+                <div id="app"></div>
+                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./smoke.mjs"></script>
+              </body>
+            </html>
+            """);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "smoke.mjs"),
+            """
+            function bodyText() {
+              return document.body ? (document.body.textContent || "") : "";
+            }
+
+            function smokeFailures() {
+              return Array.isArray(window.__jazorSmokeFailures)
+                ? [...window.__jazorSmokeFailures]
+                : [];
+            }
+
+            function encodeUtf8Base64(value) {
+              const bytes = new TextEncoder().encode(value);
+              let binary = "";
+              for (const byte of bytes) {
+                binary += String.fromCharCode(byte);
+              }
+
+              return btoa(binary);
+            }
+
+            function finish(payload) {
+              document.documentElement.setAttribute(
+                "data-jazor-smoke",
+                encodeUtf8Base64(JSON.stringify(payload)));
+            }
+
+            async function waitFor(selector) {
+              for (let attempt = 0; attempt < 120; attempt++) {
+                const element = document.querySelector(selector);
+                if (element) {
+                  return element;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}'.`);
+            }
+
+            async function waitForText(selector, expected) {
+              for (let attempt = 0; attempt < 120; attempt++) {
+                const text = document.querySelector(selector)?.textContent || "";
+                if (text.includes(expected)) {
+                  return text;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}' to contain '${expected}', but saw '${document.querySelector(selector)?.textContent || ""}'.`);
+            }
+
+            function read(id) {
+              return document.querySelector(id)?.textContent || "";
+            }
+
+            try {
+              const mouse = await waitFor("#mouse");
+              const keyboard = await waitFor("#keyboard");
+              const focus = await waitFor("#focus");
+              const change = await waitFor("#change");
+              const checkbox = await waitFor("#checkbox");
+              const multiple = await waitFor("#multiple");
+              await new Promise(resolve => setTimeout(resolve, 75));
+
+              mouse.dispatchEvent(new MouseEvent("click", {
+                bubbles: true,
+                clientX: 37
+              }));
+              keyboard.dispatchEvent(new KeyboardEvent("keydown", {
+                bubbles: true,
+                key: "Enter",
+                code: "Enter"
+              }));
+              focus.dispatchEvent(new FocusEvent("focus", {
+                bubbles: true
+              }));
+              await waitForText("#mouse-type", "click");
+              await waitForText("#keyboard-key", "Enter");
+              await waitForText("#focus-type", "focus");
+
+              const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+              valueSetter.call(change, "first");
+              change.dispatchEvent(new Event("change", { bubbles: true }));
+              change.value = "second";
+              await waitForText("#change-before", "first");
+              await waitForText("#change-after", "first");
+
+              valueSetter.call(change, "bound");
+              change.dispatchEvent(new Event("input", { bubbles: true }));
+              await waitForText("#bound", "bound");
+
+              checkbox.checked = true;
+              checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+              await waitForText("#checkbox-value", "true");
+
+              multiple.options[0].selected = true;
+              multiple.options[1].selected = true;
+              multiple.dispatchEvent(new Event("change", { bubbles: true }));
+              await waitForText("#multiple-count", "2");
+              await waitForText("#multiple-first", "one");
+              await waitForText("#multiple-second", "two");
+
+              finish({
+                ok: true,
+                mouseStatus: `${read("#mouse-type")}:${read("#mouse-x")}`,
+                keyboardStatus: `${read("#keyboard-key")}:${read("#keyboard-code")}`,
+                focusStatus: read("#focus-type"),
+                boundStatus: read("#bound"),
+                changeStatus: `${read("#change-before")}/${read("#change-after")}`,
+                checkboxStatus: read("#checkbox-value"),
+                multipleStatus: `${read("#multiple-count")}:${read("#multiple-first")},${read("#multiple-second")}`,
+                failures: smokeFailures()
+              });
+            } catch (error) {
+              finish({
+                ok: false,
+                error: error instanceof Error ? (error.stack || error.message) : String(error),
+                bodyText: bodyText(),
+                failures: smokeFailures()
+              });
+            }
+            """);
+    }
+
+    private static void CreateReleaseFrameworkPrimitivesBrowserHarness(string outputRoot, string harnessRoot)
+    {
+        var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
+        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "index.html"),
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <title>Jazor RazorVue framework primitives browser smoke</title>
+                <script>
+                  window.__jazorSmokeFailures = [];
+                  (function () {
+                    function formatArg(value) {
+                      if (value instanceof Error) {
+                        return value.stack || value.message;
+                      }
+
+                      if (typeof value === "string") {
+                        return value;
+                      }
+
+                      try {
+                        return JSON.stringify(value);
+                      } catch {
+                        return String(value);
+                      }
+                    }
+
+                    function record(kind, values) {
+                      window.__jazorSmokeFailures.push(kind + ": " + Array.from(values).map(formatArg).join(" "));
+                    }
+
+                    const originalError = console.error.bind(console);
+                    const originalWarn = console.warn.bind(console);
+                    console.error = function (...args) {
+                      record("console.error", args);
+                      originalError(...args);
+                    };
+                    console.warn = function (...args) {
+                      record("console.warn", args);
+                      originalWarn(...args);
+                    };
+                    window.addEventListener("error", function (event) {
+                      record("error", [event.message || "unknown"]);
+                    });
+                    window.addEventListener("unhandledrejection", function (event) {
+                      record("unhandledrejection", [event.reason || "unknown"]);
+                    });
+                  })();
+                </script>
+              </head>
+              <body>
+                <div id="app"></div>
+                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./smoke.mjs"></script>
+              </body>
+            </html>
+            """);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "smoke.mjs"),
+            """
+            function bodyText() {
+              return document.body ? (document.body.textContent || "") : "";
+            }
+
+            function smokeFailures() {
+              return Array.isArray(window.__jazorSmokeFailures)
+                ? [...window.__jazorSmokeFailures]
+                : [];
+            }
+
+            function encodeUtf8Base64(value) {
+              const bytes = new TextEncoder().encode(value);
+              let binary = "";
+              for (const byte of bytes) {
+                binary += String.fromCharCode(byte);
+              }
+
+              return btoa(binary);
+            }
+
+            function finish(payload) {
+              document.documentElement.setAttribute(
+                "data-jazor-smoke",
+                encodeUtf8Base64(JSON.stringify(payload)));
+            }
+
+            async function waitFor(selector) {
+              for (let attempt = 0; attempt < 160; attempt++) {
+                const element = document.querySelector(selector);
+                if (element) {
+                  return element;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}'.`);
+            }
+
+            async function waitForGone(selector) {
+              for (let attempt = 0; attempt < 160; attempt++) {
+                if (!document.querySelector(selector)) {
+                  return;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}' to unmount.`);
+            }
+
+            async function waitForText(selector, expected) {
+              for (let attempt = 0; attempt < 160; attempt++) {
+                const text = document.querySelector(selector)?.textContent || "";
+                if (text.includes(expected)) {
+                  return text;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}' to contain '${expected}', but saw '${document.querySelector(selector)?.textContent || ""}'.`);
+            }
+
+            async function settle() {
+              await new Promise(resolve => setTimeout(resolve, 40));
+              await new Promise(resolve => setTimeout(resolve, 0));
+            }
+
+            function read(selector) {
+              return document.querySelector(selector)?.textContent || "";
+            }
+
+            try {
+              await waitForText("#root-inject", "root:release-provider");
+              await waitForText("#inject-first", "first:release-provider");
+              await waitForText("#inject-second", "second:release-provider");
+              await waitForText("#cascade-outer", "cascade-outer:outer:fixed-fallback:1");
+              await waitForText("#cascade-inner", "cascade-inner:inner:fixed-fallback:1");
+              await waitForText("#cascade-fixed", "cascade-fixed:outer:fixed:1");
+              await waitForText("#parameter-log", "before:default|parameters:one|after:one|");
+              await waitForText("#dispose-count", "0");
+
+              const initialInjection = `${read("#root-inject")}|${read("#inject-first")}|${read("#inject-second")}`;
+
+              document.querySelector("#outer-update").click();
+              await waitForText("#cascade-outer", "cascade-outer:outer-next:fixed-fallback:2");
+              await waitForText("#cascade-fixed", "cascade-fixed:outer-next:fixed:2");
+              const outerCascade = read("#cascade-outer");
+              if (!read("#cascade-inner").includes("cascade-inner:inner:fixed-fallback:1")) {
+                throw new Error(`Nested cascade changed when only the outer provider changed: '${read("#cascade-inner")}'.`);
+              }
+
+              document.querySelector("#inner-update").click();
+              await waitForText("#cascade-inner", "cascade-inner:inner-next:fixed-fallback:2");
+              const updatedInnerCascade = read("#cascade-inner");
+              if (!read("#cascade-outer").includes("cascade-outer:outer-next:fixed-fallback:2")) {
+                throw new Error(`Outer cascade changed while updating the nested provider: '${read("#cascade-outer")}'.`);
+              }
+
+              const beforeSameInner = read("#cascade-inner");
+              document.querySelector("#inner-same").click();
+              await settle();
+              if (read("#cascade-inner") !== beforeSameInner) {
+                throw new Error(`Same-value cascade update unexpectedly ran a lifecycle update: '${read("#cascade-inner")}'.`);
+              }
+
+              document.querySelector("#fixed-update").click();
+              await waitForText("#fixed-source", "fixed-next");
+              if (read("#cascade-fixed") !== "cascade-fixed:outer-next:fixed:2") {
+                throw new Error(`IsFixed cascade changed after its source changed: '${read("#cascade-fixed")}'.`);
+              }
+              const fixedCascade = read("#cascade-fixed");
+
+              document.querySelector("#toggle-cascade").click();
+              await waitForGone("#cascade-inner");
+              await waitForText("#dispose-count", "1");
+              const disposedCascade = read("#dispose-count");
+
+              document.querySelector("#toggle-cascade").click();
+              await waitForText("#cascade-inner", "cascade-inner:inner-next:fixed-fallback:1");
+              const recreatedCascade = read("#cascade-inner");
+
+              document.querySelector("#toggle-injected").click();
+              await waitForGone("#inject-second");
+              document.querySelector("#toggle-injected").click();
+              await waitForText("#inject-second", "second:release-provider");
+              const nestedInjection = `${read("#inject-first")}|${read("#inject-second")}`;
+
+              document.querySelector("#parameter-update").click();
+              await waitForText("#parameter-log", "before:one|parameters:two|after:two|");
+
+              finish({
+                ok: true,
+                initialInjection,
+                nestedInjection,
+                outerCascade,
+                innerCascade: updatedInnerCascade,
+                fixedCascade,
+                disposedCascade,
+                recreatedCascade,
+                parameterLog: read("#parameter-log"),
+                failures: smokeFailures()
+              });
+            } catch (error) {
+              finish({
+                ok: false,
+                error: error instanceof Error ? (error.stack || error.message) : String(error),
+                bodyText: bodyText(),
+                failures: smokeFailures()
+              });
+            }
+            """);
+    }
+
+    private static void CreateReleaseComplexLifecycleBrowserHarness(string outputRoot, string harnessRoot)
+    {
+        var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
+        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "index.html"),
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <title>Jazor RazorVue complex lifecycle browser smoke</title>
+                <script>
+                  window.__jazorSmokeFailures = [];
+                  (function () {
+                    function formatArg(value) {
+                      if (value instanceof Error) {
+                        return value.stack || value.message;
+                      }
+
+                      if (typeof value === "string") {
+                        return value;
+                      }
+
+                      try {
+                        return JSON.stringify(value);
+                      } catch {
+                        return String(value);
+                      }
+                    }
+
+                    function record(kind, values) {
+                      window.__jazorSmokeFailures.push(kind + ": " + Array.from(values).map(formatArg).join(" "));
+                    }
+
+                    const originalError = console.error.bind(console);
+                    const originalWarn = console.warn.bind(console);
+                    console.error = function (...args) {
+                      record("console.error", args);
+                      originalError(...args);
+                    };
+                    console.warn = function (...args) {
+                      record("console.warn", args);
+                      originalWarn(...args);
+                    };
+                    window.addEventListener("error", function (event) {
+                      record("error", [event.message || "unknown"]);
+                    });
+                    window.addEventListener("unhandledrejection", function (event) {
+                      record("unhandledrejection", [event.reason || "unknown"]);
+                    });
+                  })();
+                </script>
+              </head>
+              <body>
+                <div id="app"></div>
+                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./smoke.mjs"></script>
+              </body>
+            </html>
+            """);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "smoke.mjs"),
+            """
+            function bodyText() {
+              return document.body ? (document.body.textContent || "") : "";
+            }
+
+            function smokeFailures() {
+              return Array.isArray(window.__jazorSmokeFailures)
+                ? [...window.__jazorSmokeFailures]
+                : [];
+            }
+
+            function encodeUtf8Base64(value) {
+              const bytes = new TextEncoder().encode(value);
+              let binary = "";
+              for (const byte of bytes) {
+                binary += String.fromCharCode(byte);
+              }
+
+              return btoa(binary);
+            }
+
+            function finish(payload) {
+              document.documentElement.setAttribute(
+                "data-jazor-smoke",
+                encodeUtf8Base64(JSON.stringify(payload)));
+            }
+
+            async function waitFor(selector) {
+              for (let attempt = 0; attempt < 240; attempt++) {
+                const element = document.querySelector(selector);
+                if (element) {
+                  return element;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}'.`);
+            }
+
+            async function waitForGone(selector) {
+              for (let attempt = 0; attempt < 240; attempt++) {
+                if (!document.querySelector(selector)) {
+                  return;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}' to unmount.`);
+            }
+
+            async function waitForText(selector, expected) {
+              for (let attempt = 0; attempt < 240; attempt++) {
+                const text = document.querySelector(selector)?.textContent || "";
+                if (text.includes(expected)) {
+                  return text;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}' to contain '${expected}', but saw '${document.querySelector(selector)?.textContent || ""}'.`);
+            }
+
+            async function settle(milliseconds = 0) {
+              await new Promise(resolve => setTimeout(resolve, milliseconds));
+              await new Promise(resolve => setTimeout(resolve, 0));
+              await new Promise(resolve => setTimeout(resolve, 0));
+            }
+
+            function read(selector) {
+              return document.querySelector(selector)?.textContent || "";
+            }
+
+            try {
+              await waitFor("#queue-child");
+              await waitFor("#stale-child");
+              await waitFor("#race-child");
+              await waitForText("#failure-log", "failure-start|");
+
+              // Queue the second parameter generation and unmount before Vue flushes it.
+              document.querySelector("#queue-update").click();
+              document.querySelector("#queue-toggle").click();
+              // Start a newer stale generation while the first one is still pending.
+              document.querySelector("#stale-update").click();
+              // Unmount the async race before either continuation settles.
+              document.querySelector("#race-toggle").click();
+
+              await waitForGone("#queue-child");
+              await waitForGone("#race-child");
+              await waitForText("#stale-log", "stale-second-start|");
+              await waitForText("#race-log", "race-dispose-done|");
+              await settle(90);
+              document.querySelector("#refresh").click();
+              await settle(20);
+              const afterRenderCount = Number.parseInt(read("#after-render-count"), 10);
+              if (!Number.isFinite(afterRenderCount) || afterRenderCount < 2 || afterRenderCount > 20) {
+                throw new Error(`Expected a bounded after-render count after the root refresh, but saw '${read("#after-render-count")}'.`);
+              }
+              await settle(20);
+
+              const payload = {
+                ok: true,
+                failureCount: read("#failure-count"),
+                afterRenderCount: String(afterRenderCount),
+                failureLog: read("#failure-log"),
+                queueLog: read("#queue-log"),
+                staleLog: read("#stale-log"),
+                raceLog: read("#race-log"),
+                failures: smokeFailures()
+              };
+              finish(payload);
+            } catch (error) {
+              finish({
+                ok: false,
+                error: error instanceof Error ? (error.stack || error.message) : String(error),
+                bodyText: bodyText(),
+                failures: smokeFailures()
+              });
+            }
+            """);
+    }
+
+    private static void CreateReleaseExtendedDomEventsBrowserHarness(string outputRoot, string harnessRoot)
+    {
+        var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
+        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "index.html"),
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <title>Jazor RazorVue extended DOM events browser smoke</title>
+                <script>
+                  window.__jazorSmokeFailures = [];
+                  (function () {
+                    function formatArg(value) {
+                      if (value instanceof Error) {
+                        return value.stack || value.message;
+                      }
+
+                      if (typeof value === "string") {
+                        return value;
+                      }
+
+                      try {
+                        return JSON.stringify(value);
+                      } catch {
+                        return String(value);
+                      }
+                    }
+
+                    function record(kind, values) {
+                      window.__jazorSmokeFailures.push(kind + ": " + Array.from(values).map(formatArg).join(" "));
+                    }
+
+                    const originalError = console.error.bind(console);
+                    const originalWarn = console.warn.bind(console);
+                    console.error = function (...args) {
+                      record("console.error", args);
+                      originalError(...args);
+                    };
+                    console.warn = function (...args) {
+                      record("console.warn", args);
+                      originalWarn(...args);
+                    };
+                    window.addEventListener("error", function (event) {
+                      record("error", [event.message || "unknown"]);
+                    });
+                    window.addEventListener("unhandledrejection", function (event) {
+                      record("unhandledrejection", [event.reason || "unknown"]);
+                    });
+                  })();
+                </script>
+              </head>
+              <body>
+                <div id="app"></div>
+                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./smoke.mjs"></script>
+              </body>
+            </html>
+            """);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "smoke.mjs"),
+            """
+            function bodyText() {
+              return document.body ? (document.body.textContent || "") : "";
+            }
+
+            function smokeFailures() {
+              return Array.isArray(window.__jazorSmokeFailures)
+                ? [...window.__jazorSmokeFailures]
+                : [];
+            }
+
+            function encodeUtf8Base64(value) {
+              const bytes = new TextEncoder().encode(value);
+              let binary = "";
+              for (const byte of bytes) {
+                binary += String.fromCharCode(byte);
+              }
+
+              return btoa(binary);
+            }
+
+            function finish(payload) {
+              document.documentElement.setAttribute(
+                "data-jazor-smoke",
+                encodeUtf8Base64(JSON.stringify(payload)));
+            }
+
+            async function waitFor(selector) {
+              for (let attempt = 0; attempt < 160; attempt++) {
+                const element = document.querySelector(selector);
+                if (element) {
+                  return element;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}'.`);
+            }
+
+            async function settle() {
+              await new Promise(resolve => setTimeout(resolve, 0));
+              await new Promise(resolve => setTimeout(resolve, 0));
+            }
+
+            function read(selector) {
+              return document.querySelector(selector)?.textContent || "";
+            }
+
+            function eventWithProperties(type, properties, bubbles = true) {
+              const event = new Event(type, { bubbles, cancelable: true });
+              for (const [name, value] of Object.entries(properties)) {
+                Object.defineProperty(event, name, {
+                  configurable: true,
+                  enumerable: true,
+                  value
+                });
+              }
+
+              return event;
+            }
+
+            try {
+              const target = await waitFor("#events");
+
+              target.dispatchEvent(eventWithProperties("pointerdown", {
+                pointerId: 17,
+                pointerType: "pen",
+                isPrimary: true
+              }));
+              await settle();
+
+              target.dispatchEvent(eventWithProperties("wheel", {
+                deltaX: 2.5,
+                deltaMode: 1
+              }));
+              await settle();
+
+              target.dispatchEvent(eventWithProperties("dragstart", {
+                dataTransfer: {
+                  dropEffect: "copy",
+                  effectAllowed: "copyMove"
+                }
+              }));
+              await settle();
+
+              target.dispatchEvent(eventWithProperties("paste", { type: "paste" }));
+              await settle();
+
+              target.dispatchEvent(eventWithProperties("touchstart", {
+                detail: 3,
+                ctrlKey: true,
+                changedTouches: [{ clientX: 12.5 }],
+                touches: [],
+                targetTouches: []
+              }));
+              await settle();
+
+              target.dispatchEvent(eventWithProperties("error", {
+                message: "boom",
+                filename: "app.js",
+                lineno: 7,
+                colno: 2,
+                type: "error"
+              }, false));
+              await settle();
+
+              target.dispatchEvent(eventWithProperties("progress", {
+                lengthComputable: true,
+                loaded: 42,
+                total: 100,
+                type: "progress"
+              }));
+              await settle();
+
+              const payload = {
+                ok: true,
+                pointerStatus: read("#pointer-status"),
+                wheelStatus: read("#wheel-status"),
+                dragStatus: read("#drag-status"),
+                clipboardStatus: read("#clipboard-status"),
+                touchStatus: read("#touch-status"),
+                errorStatus: read("#error-status"),
+                progressStatus: read("#progress-status"),
+                failures: smokeFailures()
+              };
+              finish(payload);
+            } catch (error) {
+              finish({
+                ok: false,
+                error: error instanceof Error ? (error.stack || error.message) : String(error),
+                bodyText: bodyText(),
+                failures: smokeFailures()
+              });
+            }
+            """);
+    }
+
     private static async Task<ProcessResult> RunDenoAsync(
         LocalPackageFixture package,
         string workingDirectory,
@@ -4287,6 +7335,14 @@ public sealed class SdkIntegrationTests
     {
         var actual = element.GetProperty(propertyName).GetString() ?? "";
         StringAssert.Contains(actual, expected, $"Browser smoke payload property '{propertyName}' did not contain expected text.");
+    }
+
+    private static void AssertJsonTextNotContains(JsonElement element, string propertyName, string unexpected)
+    {
+        var actual = element.GetProperty(propertyName).GetString() ?? "";
+        Assert.IsFalse(
+            actual.Contains(unexpected, StringComparison.Ordinal),
+            $"Browser smoke payload property '{propertyName}' unexpectedly contained text.");
     }
 
     private static string ReadPackageEntryText(string packagePath, string entryName)
@@ -4945,7 +8001,8 @@ public sealed class SdkIntegrationTests
         string PackageOutputDirectory,
         string RestorePackagesPath,
         string PackagePath,
-        string VuePackagePath);
+        string VuePackagePath,
+        string TDesignPackagePath);
 
     private sealed record LocalStylePackageFixture(
         string RepoRoot,

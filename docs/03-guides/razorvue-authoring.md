@@ -74,7 +74,7 @@ Blazor JS interop 不属于 browser service adapter。`IJSRuntime` 的 identifie
 <a id="routing"></a>
 ### 路由
 
-`@page`、`@layout`、route parameter 和 `[SupplyParameterFromQuery]` 会由 official Razor SG symbols 自动生成稳定 route catalog；`NavigationManager` 和页面 host framing 可以消费该 contract。`Router`、`RouteView`、`LayoutView`、`NavLink` 等 Microsoft 内置 UI 组件没有 RazorVue 组件入口，不属于当前产品契约；页面应使用应用自定义 host 或明确的 Vue Router/组件库 contract。当前实现已覆盖初始匹配、query/route prop 映射、pushState 和 popstate；`replaceState`、LocationChanged 订阅、复杂 constraint/fragment/history state 和完整 SSR/hydration 证明仍在 M5 proof 阶段。
+`@page`、`@layout`、route parameter 和 `[SupplyParameterFromQuery]` 会由 official Razor SG symbols 自动生成稳定 route catalog；`NavigationManager` 和应用自有页面 host framing 可以消费该 contract。`Router`、`RouteView`、`LayoutView`、`NavLink` 等 Microsoft 内置 UI 组件没有 RazorVue 组件入口，不属于当前产品契约；页面应使用应用自定义 host 或明确的 Vue Router/组件库 contract。当前已 Support 的 route-host 子集覆盖初始匹配、layout composition、query/route prop 映射、pushState、popstate、query refresh、not-found 和 browser history；该子集已由 isolated Release package 的真实浏览器 journey 验证。`replaceState`、LocationChanged 订阅、LocationChanging cancellation、复杂 constraint/fragment/history state 和 SSR/hydration route identity 仍在对应 M5 proof 阶段。
 
 <a id="component-adapters"></a>
 ### 标准组件适配器
@@ -152,13 +152,13 @@ RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，不会因�
 | C# 入口 | Vue 映射与约束 |
 | --- | --- |
 | `OnInitialized` | 在 setup 中执行。 |
-| `OnInitializedAsync` | setup 中调用，并在 Promise settle 后请求一次重新渲染。 |
+| `OnInitializedAsync` | setup 中调用，并在 Promise settle 后请求一次重新渲染；rejection 会在下一次 render 重新抛出。 |
 | `OnParametersSet` | 初次 setup 执行，随后由 shallow props watch 触发。 |
-| `OnParametersSetAsync` | 初次及 props 更新时串行执行；旧一轮异步完成不能使新参数状态失效。 |
+| `OnParametersSetAsync` | 初次及 props 更新时串行执行；旧一轮异步完成不能使新参数状态失效，rejection 会进入下一次 render。 |
 | `OnAfterRender(bool)` | 分别映射 Vue mounted/updated，参数为 `true`/`false`。 |
-| `OnAfterRenderAsync(bool)` | 同样在 mounted/updated 调用；Vue 不等待该 hook，完成本身不会自动请求重新渲染。 |
+| `OnAfterRenderAsync(bool)` | 同样在 mounted/updated 调用；Vue 不等待该 hook，成功完成不会自动请求重新渲染，rejection 会在下一次 render 重新抛出。 |
 | `ShouldRender` | 作为 cached VNode 的 render gate。 |
-| `IDisposable.Dispose` / `IAsyncDisposable.DisposeAsync` | 映射 unmount；异步 dispose 会调用但 Vue unmount hook 不等待它。 |
+| `IDisposable.Dispose` / `IAsyncDisposable.DisposeAsync` | 映射 unmount；异步 dispose 会调用但 Vue unmount hook 不等待它，卸载后续 completion 不再触发组件失效。 |
 | `StateHasChanged` | 仅当前组件 receiver 的调用有 runtime 支持；unmount 后调用会失败。 |
 | `InvokeAsync(Action)` / `InvokeAsync(Func<Task>)` | 仅当前组件 receiver 的窄调用面有支持；unmount 后返回 rejected Promise。 |
 

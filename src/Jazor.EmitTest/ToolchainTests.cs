@@ -158,6 +158,86 @@ public sealed class ToolchainTests
     }
 
     [TestMethod]
+    public async Task BuildAsync_NetpackProduction_BundlesGeneratedRouteCatalogThroughBlazorRoutingRuntime()
+    {
+        using var workspace = new TestWorkspace();
+        WriteModule(workspace.ArtifactRoot, "host/app.mjs",
+            """
+            import { createNavigationHost } from "@jazor/vue-runtime/blazor-routing.mjs";
+
+            export const hasRouteHost = typeof createNavigationHost === "function";
+            """);
+        WriteModule(workspace.ArtifactRoot, "@jazor/vue-runtime/routes.mjs",
+            """
+            export const routes = [{
+              template: "/tasks",
+              component: "Sample.Host.Tasks",
+              layout: null,
+              parameters: [],
+              queries: []
+            }];
+            """);
+
+        var manifest = new ManifestModel(
+            RootAssemblyPath: Path.Combine(workspace.RootPath, "Sample.Host.dll"),
+            GeneratedAtUtc: DateTime.UtcNow,
+            Modules:
+            [
+                new ModuleEntry(
+                    "Sample.Host",
+                    "Sample.Host.AppModule",
+                    "Sample.Host.AppModule",
+                    "host/app.mjs",
+                    ArtifactHash.ComputeSha256(File.ReadAllBytes(Path.Combine(workspace.ArtifactRoot, "host", "app.mjs"))),
+                    PackageImports: ["@jazor/vue-runtime/blazor-routing.mjs"]),
+                new ModuleEntry(
+                    "Sample.Host",
+                    "Jazor.Generated.RazorVue.RouteCatalog",
+                    "Jazor.Generated.RazorVue.RouteCatalog",
+                    "@jazor/vue-runtime/routes.mjs",
+                    ArtifactHash.ComputeSha256(File.ReadAllBytes(Path.Combine(workspace.ArtifactRoot, "@jazor", "vue-runtime", "routes.mjs"))))
+            ]);
+        manifest.Save(workspace.ManifestPath);
+
+        var request = ToolchainRequest.Create(
+            workspace.ManifestPath,
+            workspace.ArtifactRoot,
+            workspace.SourceRoot,
+            workspace.OutputRoot,
+            requiredCapabilities: new HashSet<ToolchainCapability>
+            {
+                ToolchainCapability.ProductionBuild,
+                ToolchainCapability.SourceMaps
+            },
+            libraryManifests:
+            [
+                FindLibraryManifest("ECMAScript"),
+                FindLibraryManifest("ECMAScript.Vue"),
+                FindLibraryManifest("Jazor.Vue")
+            ]);
+
+        var result = await new Toolchain().BuildAsync(request);
+
+        Assert.IsTrue(result.IsSuccess, result.Diagnostic?.Message ?? string.Empty);
+        Assert.AreEqual(2, result.ModuleCount);
+
+        var bundle = await File.ReadAllTextAsync(request.BundleOutputPath, TestContext.CancellationTokenSource.Token);
+        Assert.DoesNotContain("blazor-routing.mjs", bundle, StringComparison.Ordinal);
+        Assert.DoesNotContain("@jazor/vue-runtime/routes.mjs", bundle, StringComparison.Ordinal);
+        Assert.Contains("createNavigationHost", bundle, StringComparison.Ordinal);
+
+        using var sourceMap = JsonDocument.Parse(
+            await File.ReadAllTextAsync(request.BundleOutputPath + ".map", TestContext.CancellationTokenSource.Token));
+        var sources = sourceMap.RootElement.GetProperty("sources")
+            .EnumerateArray()
+            .Select(static source => source.GetString() ?? string.Empty)
+            .ToArray();
+        CollectionAssert.Contains(sources, "host/app.mjs");
+        CollectionAssert.Contains(sources, "@jazor/vue-runtime/routes.mjs");
+        CollectionAssert.Contains(sources, "__jazor_runtime/blazor-routing.mjs");
+    }
+
+    [TestMethod]
     public async Task BuildAsync_NetpackProduction_UsesManifestVueSfcAssetFromGeneratedImport()
     {
         using var workspace = new TestWorkspace();

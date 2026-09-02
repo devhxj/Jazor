@@ -32,10 +32,10 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.26.3 - 2026-08-31
+### Unreleased - 2026-09-01
 
-- `ECMAScript.ElementPlus` now declares its public `ECMAScript.VueRoute` dependency, so standalone package consumers restore the complete assembly and resource closure.
-- Package descriptions containing semicolons are escaped correctly during NuGet packing, and the manual dry-run workflow now checks every published package.
+- Native TDesign typed Razor authoring is now supported through an isolated Release NuGet consumer and a real Edge browser smoke: generic/non-generic components, typed slots, `@bind`, unions, required parameters, and attribute splats require no application bridge, cast, or hand-written `BuildRenderTree`.
+- The support boundary remains explicit: Microsoft/Blazor built-in UI components, `IJSRuntime`, and server-only services are still rejected.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

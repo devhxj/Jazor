@@ -92,6 +92,56 @@ public sealed class BlazorClrWhitelistTests
     }
 
     [TestMethod]
+    public void ElementReferenceModules_UseHtmlElementCarrierAndExplicitFocusImports()
+    {
+        const string modulePath = "Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js";
+
+        AssertTypeMapping(
+            typeof(ElementReferenceModule),
+            Op.Alias,
+            "Microsoft.AspNetCore.Components.ElementReference");
+        AssertNoRuntimeModule(typeof(ElementReferenceModule));
+        AssertTypeMapping(
+            typeof(ElementReferenceExtensionsModule),
+            Op.Allowed,
+            "Microsoft.AspNetCore.Components.ElementReferenceExtensions");
+        AssertModulePath(typeof(ElementReferenceExtensionsModule), modulePath);
+
+        AssertMember(
+            typeof(ElementReferenceExtensionsModule),
+            "static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)",
+            Op.Import,
+            "focusAsync");
+        AssertMember(
+            typeof(ElementReferenceExtensionsModule),
+            "static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference, bool)",
+            Op.Import,
+            "focusAsyncWithOptions");
+
+        foreach (var member in new[]
+        {
+            "Microsoft.AspNetCore.Components.ElementReference.Id.get",
+            "Microsoft.AspNetCore.Components.ElementReference.Context.get",
+            "Microsoft.AspNetCore.Components.ElementReference.ElementReference(string, Microsoft.AspNetCore.Components.ElementReferenceContext)",
+            "Microsoft.AspNetCore.Components.ElementReference.ElementReference(string)"
+        })
+        {
+            AssertMember(typeof(ElementReferenceModule), member, Op.Discard);
+        }
+    }
+
+    [TestMethod]
+    public void ElementReferenceFocusAsync_DefaultReferenceMatchesFrameworkFailure()
+    {
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
+        {
+            _ = Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(default);
+        });
+
+        Assert.AreEqual("ElementReference has not been configured correctly.", exception.Message);
+    }
+
+    [TestMethod]
     public void ExtendedDomEventModules_ExposeNativeReadSurfaceAndRejectMutation()
     {
         AssertTypeMapping(

@@ -1,0 +1,62 @@
+@page "/"
+@page "/tasks"
+@layout AuthoringLayout
+
+<CascadingValue Value="@WorkspaceName" Name="workspace">
+    <main class="@AuthoringStyleSheet.Page" data-authoring-page="task-board">
+        <header class="@AuthoringStyleSheet.Header">
+            <div>
+                <p class="@AuthoringStyleSheet.Eyebrow">RazorVue authoring sample</p>
+                <h1>Task board</h1>
+                <p class="@AuthoringStyleSheet.Subtitle">Natural Razor, typed TDesign controls, and a browser route host.</p>
+            </div>
+            <div class="@AuthoringStyleSheet.HeaderActions">
+                <span data-route-path="@CurrentPath">@CurrentPath</span>
+                <TButton Theme="@TButtonThemeValue.Primary" OnClick="@OpenDialog">New task</TButton>
+            </div>
+        </header>
+
+        <section class="@AuthoringStyleSheet.Toolbar" aria-label="Task filters">
+            <div>
+                <span class="@AuthoringStyleSheet.Label">Workspace</span>
+                <strong data-workspace="@WorkspaceName">@WorkspaceName</strong>
+            </div>
+            <div>
+                <span class="@AuthoringStyleSheet.Label">Open tasks</span>
+                <strong data-open-count="@OpenCount">@OpenCount</strong>
+            </div>
+            <TButton Variant="@TButtonVariantValue.Text" OnClick="@GoToTasks">Open /tasks route</TButton>
+            <button type="button" data-route-action="open-task-details" @onclick="@OpenTaskDetails">Inspect task 2</button>
+        </section>
+
+        <TaskTable Rows="@Tasks" />
+
+        <TDialog Visible="@DialogVisible"
+                 HeaderValue="New task"
+                 ConfirmBtnValue="@("Create task")"
+                 CancelBtnValue="@("Cancel")"
+                 ConfirmLoading="@Saving"
+                 OnConfirm="@ConfirmDialog"
+                 OnCancel="@CancelDialog">
+            <BodyContent>
+                <TForm FormData="TaskDraft" Data="@Draft" OnSubmit="@SubmitForm">
+                    <TFormItem LabelValue="Title" Name="title">
+                        <TInput T="string"
+                                Placeholder="Write the next task"
+                                @bind-Value="Draft.Title"
+                                @bind-Value:event="OnChange" />
+                    </TFormItem>
+                    <TFormItem LabelValue="Owner" Name="owner">
+                        <TInput T="string"
+                                Placeholder="Team or person"
+                                @bind-Value="Draft.Owner"
+                                @bind-Value:event="OnChange" />
+                    </TFormItem>
+                    <TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary">Save from form</TButton>
+                </TForm>
+            </BodyContent>
+        </TDialog>
+
+        <p class="@AuthoringStyleSheet.Status" data-status="@StatusMessage">@StatusMessage</p>
+    </main>
+</CascadingValue>

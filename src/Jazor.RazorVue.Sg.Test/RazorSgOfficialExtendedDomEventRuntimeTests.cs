@@ -1,8 +1,36 @@
+using System.Reflection;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using BlazorErrorEventArgs = Microsoft.AspNetCore.Components.Web.ErrorEventArgs;
+
 namespace Jazor.RazorVue.Sg.Test;
 
 [TestClass]
 public sealed class RazorSgOfficialExtendedDomEventRuntimeTests
 {
+    [TestMethod]
+    public void BlazorReferenceEventRegistry_MapsExtendedDomNamesToTypedArguments()
+    {
+        var handlers = typeof(EventHandlers)
+            .GetCustomAttributes<EventHandlerAttribute>(inherit: false)
+            .ToDictionary(static attribute => attribute.AttributeName, static attribute => attribute.EventArgsType, StringComparer.Ordinal);
+
+        CollectionAssert.AreEquivalent(
+            new Dictionary<string, Type>(StringComparer.Ordinal)
+            {
+                ["onpointerdown"] = typeof(PointerEventArgs),
+                ["onwheel"] = typeof(WheelEventArgs),
+                ["ondragstart"] = typeof(DragEventArgs),
+                ["onpaste"] = typeof(ClipboardEventArgs),
+                ["ontouchstart"] = typeof(TouchEventArgs),
+                ["onerror"] = typeof(BlazorErrorEventArgs),
+                ["onprogress"] = typeof(ProgressEventArgs)
+            },
+            handlers
+                .Where(static pair => pair.Key is "onpointerdown" or "onwheel" or "ondragstart" or "onpaste" or "ontouchstart" or "onerror" or "onprogress")
+                .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal));
+    }
+
     [TestMethod]
     public async Task BuildComponent_OfficialRazorPointerAndWheelHandlers_ReadNativeEventCarriersOnDenoHost()
     {

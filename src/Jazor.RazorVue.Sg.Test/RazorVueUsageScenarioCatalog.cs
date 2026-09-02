@@ -661,17 +661,19 @@ internal static class RazorVueM5CapabilityLedger
             "Native TDesign generic/non-generic components, typed callbacks, attribute splats, union value branches, named slots, and required table parameters without application bridge components",
             RazorVueCapabilityPriority.P0,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "ECMAScript.TDesign contract + RazorVue component binding",
             null,
-            "RazorSgOfficialTDesignNaturalAuthoringRuntimeTests; RazorSgOfficialTDesignTableCellRuntimeTests",
+            "RazorSgOfficialTDesignNaturalAuthoringRuntimeTests; RazorSgOfficialTDesignTableCellRuntimeTests; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalNativeTDesignRazorConsumer_MountsAndInteractsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Natural TDesign form/control/dialog/table authoring is covered through official SG and Deno. An isolated Release package/browser fixture and the minimal authoring sample remain before Support.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "Natural TDesign form/control/dialog/table authoring is covered through official SG, module/Deno runtime, and an isolated Release NuGet consumer mounted and interacted with in a real Edge browser. The contract excludes application bridge components and Microsoft built-in Blazor UI components.")
         {
-            TargetProfiles = "Compiler authoring and Deno runtime; browser/package evidence not yet claimed",
+            TargetProfiles = "Compiler authoring, Deno runtime, real Edge browser, and isolated Release package consumer",
             Carrier = "TDesign component contracts, native erased unions, and Vue named slots",
             ImplementationPath = "ECMAScript.TDesign generated Parameter/ECMAScriptName contracts -> official Razor SG -> RenderEmitter/VueModuleBuilder",
             Dependencies = "ECMAScript.TDesign resource manifest; Jazor.RazorVue direct-render pipeline",
@@ -720,19 +722,51 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.DenoRuntime,
             "ParameterView/SetParametersAsync has a separate P1 entry because it needs a real snapshot protocol."),
         new(
+            "P1-complex-lifecycle",
+            "Async lifecycle rejection/cancellation, repeated render, and async disposal/unmount races",
+            RazorVueCapabilityPriority.P1,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
+            RazorVueCapabilityStatus.InProof,
+            "VueModuleBuilder setup lifecycle bridge",
+            null,
+            "RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_AsyncInitializationFailureReachesNextRender; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_CanceledParameterLifecycleAfterUnmountDoesNotInvalidate; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_QueuedParameterLifecycleDoesNotStartAfterUnmount; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_StaleParameterLifecycleFailureStillReachesNextRender; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_RepeatedRenderDoesNotRepeatAfterRenderAsyncHook; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_AsyncLifecycleCompletionAfterAsyncUnmountIsIgnored; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalComplexLifecycleRazorConsumer_ProvesAsyncRacesInRealBrowser",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "Setup-local failure capture, generation checks, and disposed guards cover the complex lifecycle matrix in official SG and Deno; an isolated Release package consumer now proves the same async races in a real browser. SSR/prerender and hydration side-effect evidence remain required before Support.")
+        {
+            TargetProfiles = "Compiler authoring, official Razor SG, module artifact, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
+            Carrier = "Setup-local lifecycle failure state plus Promise/Vue lifecycle hooks",
+            ImplementationPath = "VueModuleBuilder setup framing; Promise observation with next-render failure propagation; generation/disposed guards",
+            Dependencies = "Task/ValueTask Promise carriers; Vue onMounted/onUpdated/onUnmounted hooks; StateHasChanged invalidation",
+            ExcludedSurface = "SSR/prerender lifecycle identity and hydration side-effect parity"
+        },
+        new(
             "P0-route-layout-page-state",
             "@page, @layout, route parameters, not-found, and normal loading/error/retry page workflows (without Microsoft built-in Router/RouteView/LayoutView/NavLink tags)",
             RazorVueCapabilityPriority.P0,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "RazorVue route host",
             null,
-            "RazorSourceGeneratorTailOutputTests.RouteCatalog_EmitsDeterministicPageLayoutAndQueryMappings",
+            "RazorSourceGeneratorTailOutputTests.RouteCatalog_EmitsDeterministicPageLayoutAndQueryMappings; RazorSgNavigationRuntimeTests; samples/RazorVue.Authoring/verify-smoke.cs (isolated Release package route journey)",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "The route catalog owns @page/@layout/query mapping; Microsoft Router/RouteView/LayoutView/NavLink tags are outside the product contract."),
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The app-owned route catalog covers page/layout activation, typed route/query refresh, not-found, and browser history through an isolated Release package consumer. Microsoft Router/RouteView/LayoutView/NavLink tags and LocationChanging cancellation stay outside this P0 contract.")
+        {
+            TargetProfiles = "Compiler authoring, Deno runtime, real Chrome/Chromium/Edge browser, and isolated Release package consumer; SSR/prerender not claimed",
+            Carrier = "Generated route catalog + application-owned Vue route host + browser NavigationManager",
+            ImplementationPath = "Official Razor SG -> generated route catalog -> @jazor/vue-runtime/blazor-routing.mjs -> application-owned Vue framing",
+            Dependencies = "Jazor.RazorVue route catalog lowering; Jazor.CLR NavigationManager browser adapter; Jazor.Emit Release bundle/source-map materialization",
+            ExcludedSurface = "Microsoft Router/RouteView/LayoutView/NavLink tags; LocationChanging cancellation; server circuit and SSR/prerender route identity"
+        },
         new(
             "P1-parameter-view",
             "SetParametersAsync(ParameterView), parameter snapshot, overlay order, and async error behavior",
@@ -741,12 +775,14 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.InProof,
             "MemberClosureBuilder + VueModuleBuilder ParameterView adapter",
             null,
-            "RazorSgSetParametersAsyncRuntimeTests (sparse, alias, slot, SetParameterProperties, queue); MemberClosureBuilderContractTests.TryBuild_AcceptsParameterViewRuntimeEntryPoint",
+            "RazorSgSetParametersAsyncRuntimeTests (sparse, alias, slot, SetParameterProperties, queue); RazorSgBlazorReferenceOracleTests.BlazorReferenceParameterView_SetsKnownValuesAndPreservesSparseDefaults; RazorSgBlazorReferenceOracleTests.BlazorReferenceParameterView_RejectsUnknownParameterNames; MemberClosureBuilderContractTests.TryBuild_AcceptsParameterViewRuntimeEntryPoint; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "The adapter preserves CLR defaults before base application, sparse source-name overlay, explicit undefined, RenderFragment slots, lifecycle order, and queued updates; authored exception propagation and browser/SSR consumer proof remain before Support."),
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The adapter preserves CLR defaults before base application, sparse source-name overlay, explicit undefined, RenderFragment slots, lifecycle order, and queued updates; an isolated Release package/browser proof now covers parameter replacement and lifecycle ordering, while authored exception propagation and SSR consumer proof remain before Support."),
         new(
             "P1-parameter-view-unsupported-members",
             "ParameterView.TryGetValue, enumeration, and ToDictionary used from authored component logic",
@@ -810,12 +846,14 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.InProof,
             "VueInjectRegistry + VueModuleBuilder component activation adapter",
             null,
-            "RazorSgInjectedServiceRuntimeTests (provider, lifecycle order, missing-provider failure)",
+            "RazorSgInjectedServiceRuntimeTests (provider, lifecycle order, missing-provider failure); RazorSgBlazorReferenceOracleTests.BlazorReferenceInjectActivator_ResolvesPropertyAndReportsMissingProvider; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Constructor injection/parameterized activation remains an explicit JAZORVGA024 boundary; provider lifetime and browser/SSR consumer proof are still required before Support."),
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "Nested and recreated components now have isolated Release package/browser proof for property activation; constructor injection/parameterized activation remains an explicit JAZORVGA024 boundary, while service-provider lifetime and SSR proof remain before Support."),
         new(
             "P1-cascading-values",
             "CascadingValue, [CascadingParameter], named cascades, nested override, and updates",
@@ -824,12 +862,14 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.InProof,
             "Cascading adapter + VueModuleBuilder lifecycle bridge",
             "JAZORVCA008",
-            "RazorSgCascadingValueRuntimeTests; RazorVueCompatibilityAnalyzerTests.WritableCascadingParameter_IsHandledByBrowserAdapterWithoutDiagnostic",
+            "RazorSgCascadingValueRuntimeTests; RazorSgBlazorReferenceOracleTests.BlazorReferenceCascadingValue_MatchesNameAndTypeAndPublishesCurrentValue; RazorVueCompatibilityAnalyzerTests.WritableCascadingParameter_IsHandledByBrowserAdapterWithoutDiagnostic; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Typed/named provider lookup, nested Vue scope behavior, IsFixed and browser/package consumer proof remain before Support."),
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "Typed/named provider lookup, nested Vue scope behavior, IsFixed, same-value behavior, disposal, and update propagation now have isolated Release package/browser proof; SSR/reference parity remains before Support."),
         new(
             "P1-navigation-router",
             "NavigationManager and query/route parameter refresh through the RazorVue route catalog (Microsoft Router/RouteView/LayoutView/NavLink tags excluded)",
@@ -838,12 +878,12 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.InProof,
             "RazorVue route catalog + blazor-routing.mjs",
             null,
-            "RazorSgNavigationRuntimeTests.NavigationManager_UsesBrowserAdapterForUriAndNavigateTo; RazorTailOutputTests.RouteCatalog_EmitsDeterministicPageAndLayoutEntries",
+            "RazorSgNavigationRuntimeTests.NavigationManager_UsesBrowserAdapterForUriAndNavigateTo; RazorSgBlazorReferenceOracleTests.BlazorReferenceNavigationManager_ReportsOptionsLocationEventsAndCancellation; RazorTailOutputTests.RouteCatalog_EmitsDeterministicPageAndLayoutEntries",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime,
-            "Router component matching and standard route-host composition are intentionally excluded; route catalog and NavigationManager consumer proof remain before Support."),
+            "The narrower P0 route-host slice now has an isolated Release browser/package proof; this broader navigation row remains InProof pending a dedicated reference oracle and consumer evidence for replace/LocationChanged/complex URI behavior. Router component matching and standard Router/RouteView/LayoutView/NavLink composition remain intentionally excluded."),
         new(
             "P0-blazor-clr-mapping-package",
             "Jazor.CLR generated Blazor mapping modules; ECMAScript.Blazor remains an optional authoring projection payload",
@@ -873,7 +913,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.InProof,
             "Jazor.CLR NavigationManagerModule + RazorVue route host",
             null,
-            "RazorSgNavigationRuntimeTests; ClrRuntimeNavigationScenarios; NavigationManagerClrWhitelistTests",
+            "RazorSgNavigationRuntimeTests; RazorSgBlazorReferenceOracleTests.BlazorReferenceNavigationManager_SupersedesPendingLocationChangingDispatch; ClrRuntimeNavigationScenarios; NavigationManagerClrWhitelistTests",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
@@ -892,17 +932,19 @@ internal static class RazorVueM5CapabilityLedger
             "MouseEventArgs, KeyboardEventArgs, FocusEventArgs getter projections and ChangeEventArgs.Value event-time capture",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR event modules + Jazor.RazorVue RenderEmitter",
             null,
-            "BlazorClrMappingTests; BlazorClrWhitelistTests; RazorSgOfficialBindingAuthoringTests.BuildComponent_OfficialRazorTypedChangeHandler_CapturesValueBeforeCallback; ClrRuntimeChangeEventArgsScenarios",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; RazorSgOfficialCoreDomEventRuntimeTests.BlazorReferenceEventRegistry_MapsCoreDomNamesToTypedArguments; RazorSgOfficialCoreDomEventRuntimeTests.BlazorReferenceChangeEventReader_ShapesStringBooleanAndStringArrayValues; RazorSgOfficialCoreDomEventRuntimeTests.BuildComponent_OfficialRazorCoreDomTypedHandlers_ReadNativeMouseKeyboardFocusEventsOnDenoHost; RazorSgOfficialCoreDomEventRuntimeTests.BuildComponent_OfficialRazorChangeHandlers_CaptureEventTimeValueAndKeepBindDirectOnDenoHost; ClrRuntimeChangeEventArgsScenarios; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalCoreDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Mouse/Keyboard/Focus official handler coverage, real BrowserSmoke, and isolated mapping PackageConsumer remain; constructor/setter/identity and file input stay rejected.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "Mouse/Keyboard/Focus native getter handlers, typed lambda/method-group callbacks, direct @bind coexistence, checkbox and multiple-select shaping, and event-time async capture are covered through official SG, Deno, an isolated Release NuGet consumer, and a real browser. Constructor/setter/identity and file input remain rejected.")
         {
-            TargetProfiles = "Browser interactive; SSR/prerender not claimed",
+            TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "MouseEvent/KeyboardEvent/FocusEvent; JazorEvent + WeakMap for ChangeEventArgs",
             ImplementationPath = "Jazor.CLR generated Alias/Inline/Import modules; one typed onchange capture wrapper in RenderEmitter",
             ContributionContractVersion = "generated-clr-module/v1",
@@ -914,20 +956,23 @@ internal static class RazorVueM5CapabilityLedger
             "@ref ElementReference capture and ElementReferenceExtensions.FocusAsync overloads",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR ElementReference modules + Jazor.RazorVue VNode ref framing",
             null,
-            "BlazorClrMappingTests; BlazorClrWhitelistTests; RazorSgOfficialReferenceAuthoringTests.BuildComponent_OfficialRazorElementReferenceFocus_UsesDomCarrierMapping",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; RazorSgOfficialReferenceAuthoringTests.BuildComponent_OfficialRazorElementReferenceFocus_UsesDomCarrierMapping; RazorSgOfficialReferenceAuthoringTests.BuildComponent_OfficialRazorElementReferenceFocus_PreservesMountAndUnmountFailureContractOnDenoHost; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalElementReferenceRazorConsumer_FocusesAndHandlesUnmountInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
-            RazorVueCapabilityEvidence.ModuleArtifact,
-            "Real BrowserSmoke, isolated Release PackageConsumer, and empty/unmounted element behavior remain to be proved.")
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The @ref-captured element is focused through both FocusAsync overloads in an isolated Release NuGet consumer and a real browser; empty and unmounted refs preserve the framework failure contract. SSR/prerender is intentionally not claimed.")
         {
-            TargetProfiles = "Browser interactive; SSR/prerender not claimed",
+            TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "HTMLElement captured by Vue ref callback",
-            ImplementationPath = "Jazor.CLR generated Alias(ElementReference -> HTMLElement) + Inline(HTMLElement.Focus)",
+            ImplementationPath = "Jazor.CLR generated Alias(ElementReference -> HTMLElement) + Import(ElementReferenceExtensions focus helper) consumed by Jazor.RazorVue VNode ref framing",
             ContributionContractVersion = "generated-clr-module/v1",
-            Dependencies = "HTMLElement/FocusOptions WebIDL; ValueTask/Promise carrier; Vue ref lifecycle",
+            Dependencies = "HTMLElement/FocusOptions WebIDL; generated CLR Import resource; ValueTask/Promise carrier; Vue ref lifecycle",
             ExcludedSurface = "new ElementReference, Id/Context server identity, arbitrary DOM methods"
         },
         new(
@@ -935,17 +980,19 @@ internal static class RazorVueM5CapabilityLedger
             "PointerEventArgs DOM-origin getter projection",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR PointerEventArgsModule + official Razor SG event framing",
             null,
-            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorPointerAndWheelHandlers_ReadNativeEventCarriersOnDenoHost",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BlazorReferenceEventRegistry_MapsExtendedDomNamesToTypedArguments; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorPointerAndWheelHandlers_ReadNativeEventCarriersOnDenoHost; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction and setters remain rejected.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The getter-only pointer slice is covered by Blazor EventHandlers metadata, official SG, Deno, and one isolated Release package/browser consumer shared by the seven extended event groups; synthetic construction and setters remain rejected.")
         {
-            TargetProfiles = "Browser interactive only after group-specific proof",
+            TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "PointerEvent native event object",
             ImplementationPath = "Jazor.CLR.Generator PointerEventArgs scaffold copied to Jazor.CLR; Alias(PointerEvent) + Inline native getters",
             ContributionContractVersion = "generated-clr-module/v1",
@@ -957,17 +1004,19 @@ internal static class RazorVueM5CapabilityLedger
             "WheelEventArgs DOM-origin getter projection",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR WheelEventArgsModule + official Razor SG event framing",
             null,
-            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorPointerAndWheelHandlers_ReadNativeEventCarriersOnDenoHost",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BlazorReferenceEventRegistry_MapsExtendedDomNamesToTypedArguments; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorPointerAndWheelHandlers_ReadNativeEventCarriersOnDenoHost; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction and setters remain rejected.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The getter-only wheel slice is covered by Blazor EventHandlers metadata, official SG, Deno, and one isolated Release package/browser consumer shared by the seven extended event groups; synthetic construction and setters remain rejected.")
         {
-            TargetProfiles = "Browser interactive only after group-specific proof",
+            TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "WheelEvent native event object",
             ImplementationPath = "Jazor.CLR.Generator WheelEventArgs scaffold copied to Jazor.CLR; Alias(WheelEvent) + Inline native getters",
             ContributionContractVersion = "generated-clr-module/v1",
@@ -979,17 +1028,19 @@ internal static class RazorVueM5CapabilityLedger
             "DragEventArgs.DataTransfer and the stable read-only DataTransfer fields",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR DragEventArgs/DataTransfer modules + official Razor SG event framing",
             null,
-            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorDragAndClipboardHandlers_ReadNativeEventCarriersOnDenoHost",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BlazorReferenceEventRegistry_MapsExtendedDomNamesToTypedArguments; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorDragAndClipboardHandlers_ReadNativeEventCarriersOnDenoHost; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction, setters, files, and item payloads remain rejected.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The read-only drag/DataTransfer slice is covered by Blazor EventHandlers metadata, official SG, Deno, and one isolated Release package/browser consumer shared by the seven extended event groups; synthetic construction, setters, files, and item payloads remain rejected.")
         {
-            TargetProfiles = "Browser interactive only after group-specific proof",
+            TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "DragEvent and DataTransfer native browser objects",
             ImplementationPath = "Jazor.CLR.Generator DragEventArgs/DataTransfer scaffolds copied to Jazor.CLR; Alias + Inline native getters",
             ContributionContractVersion = "generated-clr-module/v1",
@@ -1001,17 +1052,19 @@ internal static class RazorVueM5CapabilityLedger
             "ClipboardEventArgs.Type DOM-origin getter projection",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR ClipboardEventArgsModule + official Razor SG event framing",
             null,
-            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorDragAndClipboardHandlers_ReadNativeEventCarriersOnDenoHost",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BlazorReferenceEventRegistry_MapsExtendedDomNamesToTypedArguments; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorDragAndClipboardHandlers_ReadNativeEventCarriersOnDenoHost; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; clipboard payload/permission APIs and synthetic construction remain rejected.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The clipboard event type getter is covered by Blazor EventHandlers metadata, official SG, Deno, and one isolated Release package/browser consumer shared by the seven extended event groups; clipboard payload APIs and synthetic construction remain rejected.")
         {
-            TargetProfiles = "Browser interactive only after group-specific proof",
+            TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "ClipboardEvent native event object",
             ImplementationPath = "Jazor.CLR.Generator ClipboardEventArgs scaffold copied to Jazor.CLR; Alias(ClipboardEvent) + Inline native getter",
             ContributionContractVersion = "generated-clr-module/v1",
@@ -1023,17 +1076,19 @@ internal static class RazorVueM5CapabilityLedger
             "TouchEventArgs modifier/getter projection and TouchPoint collection access",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR TouchEventArgs/TouchPoint modules + official Razor SG event framing",
             null,
-            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BlazorReferenceEventRegistry_MapsExtendedDomNamesToTypedArguments; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction, setters, and non-DOM TouchList operations remain rejected.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The getter-only touch slice is covered by Blazor EventHandlers metadata, official SG, Deno, and one isolated Release package/browser consumer shared by the seven extended event groups; synthetic construction, setters, and non-DOM TouchList operations remain rejected.")
         {
-            TargetProfiles = "Browser interactive only after group-specific proof",
+            TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "TouchEvent/Touch native browser objects; Array.from conversion at Touches/TargetTouches/ChangedTouches property access",
             ImplementationPath = "Jazor.CLR.Generator TouchEventArgs/TouchPoint scaffolds copied to Jazor.CLR; Alias(TouchEvent/Touch) + Inline native getters and lazy Array.from",
             ContributionContractVersion = "generated-clr-module/v1",
@@ -1045,17 +1100,19 @@ internal static class RazorVueM5CapabilityLedger
             "ErrorEventArgs DOM-origin getter projection",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR ErrorEventArgs module + official Razor SG event framing",
             null,
-            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BlazorReferenceEventRegistry_MapsExtendedDomNamesToTypedArguments; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction and setters remain rejected.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The error event getter slice is covered by Blazor EventHandlers metadata, official SG, Deno, and one isolated Release package/browser consumer shared by the seven extended event groups; synthetic construction and setters remain rejected.")
         {
-            TargetProfiles = "Browser interactive only after group-specific proof",
+            TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "ErrorEvent native browser object",
             ImplementationPath = "Jazor.CLR.Generator ErrorEventArgs scaffold copied to Jazor.CLR; Alias(ErrorEvent) + Inline native getters",
             ContributionContractVersion = "generated-clr-module/v1",
@@ -1067,17 +1124,19 @@ internal static class RazorVueM5CapabilityLedger
             "ProgressEventArgs DOM-origin getter projection",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.DirectSupport,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR ProgressEventArgs module + official Razor SG event framing",
             null,
-            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost",
+            "BlazorClrMappingTests; BlazorClrWhitelistTests; BlazorClrGeneratorOutputTests; RazorSgOfficialExtendedDomEventRuntimeTests.BlazorReferenceEventRegistry_MapsExtendedDomNamesToTypedArguments; RazorSgOfficialExtendedDomEventRuntimeTests.BuildComponent_OfficialRazorTouchErrorAndProgressHandlers_ReadNativeEventCarriersOnDenoHost; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Reference oracle, real BrowserSmoke, and isolated mapping PackageConsumer are still required; synthetic construction and setters remain rejected.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The progress event getter slice is covered by Blazor EventHandlers metadata, official SG, Deno, and one isolated Release package/browser consumer shared by the seven extended event groups; synthetic construction and setters remain rejected.")
         {
-            TargetProfiles = "Browser interactive only after group-specific proof",
+            TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "ProgressEvent native browser object",
             ImplementationPath = "Jazor.CLR.Generator ProgressEventArgs scaffold copied to Jazor.CLR; Alias(ProgressEvent) + Inline native getters",
             ContributionContractVersion = "generated-clr-module/v1",
@@ -1136,13 +1195,13 @@ internal static class RazorVueM5CapabilityLedger
             "P2-authentication",
             "AuthenticationStateProvider, AuthorizeView, and authorization-aware route composition",
             RazorVueCapabilityPriority.P2,
-            RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.Planned,
-            "Authentication state adapter + server endpoint contract",
-            null,
-            "JazorAdmin authenticated browser workflow",
-            RazorVueCapabilityEvidence.None,
-            "Browser state handoff and endpoint enforcement contract are not implemented."),
+            RazorVueCapabilityDecision.GuidedAdaptation,
+            RazorVueCapabilityStatus.Guidance,
+            "RazorVueCompatibilityAnalyzer + server endpoint contract",
+            "JAZORVCA007",
+            "RazorVueCompatibilityAnalyzerTests.InjectedAuthenticationStateProvider_ReportsMissingExplicitBrowserProvider; RazorVueCompatibilityAnalyzerTests.RazorAuthenticationStateProviderDirective_ReportsAtAuthoredTypeSpan",
+            RazorVueCapabilityEvidence.AuthorSource,
+            "AuthenticationStateProvider injection is diagnosed at the authored property or @inject type span until a host supplies a versioned browser provider and claims/SSR handoff. AuthorizeView and AuthorizeRouteView remain rejected built-in UI; endpoint authorization remains the security boundary."),
         new(
             "P2-js-runtime",
             "IJSRuntime/IJSObjectReference/IJSInProcessRuntime/JSInvokable Blazor JS interop facades",

@@ -10,6 +10,7 @@ let LocationChangingCancellations = new WeakMap;
 let RefreshHandlers = new WeakMap;
 export function CreateNavigationManager(refresh) {
   let instance = Object.create(null);
+  Object.defineProperty(instance, "__v_skip", { value: true });
   LocationHandlers.set(instance, []);
   NotFoundHandlers.set(instance, []);
   LocationChangingHandlers.set(instance, []);

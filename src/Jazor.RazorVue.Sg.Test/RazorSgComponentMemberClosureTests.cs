@@ -4888,7 +4888,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "parametersSetAsyncTail = parametersSetAsyncTail", StringComparison.Ordinal);
         StringAssert.Contains(script, "if (gen !== parametersSetAsyncGen) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "return Promise.resolve(scope.OnParametersSetAsync()).then(", StringComparison.Ordinal);
-        StringAssert.Contains(script, "if (gen === parametersSetAsyncGen) {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "recordLifecycleFailure(error);", StringComparison.Ordinal);
         StringAssert.Contains(script, "runOnParametersSetAsync();", StringComparison.Ordinal);
         StringAssert.Contains(script, "() => [props.Title]", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("deep: true", StringComparison.Ordinal), script);
@@ -5073,14 +5073,11 @@ public sealed class MemberClosureTests
         var script = artifact.ModuleText.ReplaceLineEndings("\n");
 
         StringAssert.Contains(script, "import { defineComponent, h, onMounted, onUpdated, reactive } from \"vue\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, "void Promise.resolve(scope.OnAfterRenderAsync(true));", StringComparison.Ordinal);
-        StringAssert.Contains(script, "void Promise.resolve(scope.OnAfterRenderAsync(false));", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Promise.resolve(scope.OnAfterRenderAsync(firstRender)).then(", StringComparison.Ordinal);
+        StringAssert.Contains(script, "invokeAfterRenderAsync(true);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "invokeAfterRenderAsync(false);", StringComparison.Ordinal);
         StringAssert.Contains(script, "function OnAfterRenderAsync(firstRender)", StringComparison.Ordinal);
-        // Completion must not auto-invalidate/render.
-        Assert.IsFalse(
-            script.Contains("onAfterRenderAsync(true)).then", StringComparison.Ordinal) ||
-            script.Contains("onAfterRenderAsync(false)).then", StringComparison.Ordinal),
-            script);
+        StringAssert.Contains(script, "recordLifecycleFailure(error)", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -6861,8 +6858,9 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "async function OnInitializedAsync()", StringComparison.Ordinal);
         StringAssert.Contains(script, "await props.Ready?.(\"ready\");", StringComparison.Ordinal);
         StringAssert.Contains(script, "Promise.resolve(scope.OnInitializedAsync()).then(", StringComparison.Ordinal);
-        Assert.IsFalse(script.Contains("try {", StringComparison.Ordinal), script);
-        Assert.IsFalse(script.Contains("catch (", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "try {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "catch (error)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "recordLifecycleFailure(error)", StringComparison.Ordinal);
     }
 
     private static bool IsSha256Hash(string value)

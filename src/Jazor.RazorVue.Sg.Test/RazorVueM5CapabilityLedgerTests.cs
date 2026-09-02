@@ -45,8 +45,29 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsNull(parameterView.DiagnosticId);
         Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, parameterView.Decision);
         Assert.AreEqual(RazorVueCapabilityStatus.InProof, parameterView.Status);
+        Assert.IsTrue(parameterView.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(parameterView.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         Assert.AreEqual("JAZORVCA003/JAZORVCA004/JAZORVCA005", parameterViewMembers.DiagnosticId);
         Assert.AreEqual(RazorVueCapabilityStatus.Guidance, parameterViewMembers.Status);
+
+        var complexLifecycle = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P1-complex-lifecycle");
+        Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, complexLifecycle.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.InProof, complexLifecycle.Status);
+        Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+        Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
+        Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        StringAssert.Contains(complexLifecycle.Fixture, "AsyncInitializationFailureReachesNextRender", StringComparison.Ordinal);
+        StringAssert.Contains(complexLifecycle.Fixture, "CanceledParameterLifecycleAfterUnmountDoesNotInvalidate", StringComparison.Ordinal);
+        StringAssert.Contains(complexLifecycle.Fixture, "QueuedParameterLifecycleDoesNotStartAfterUnmount", StringComparison.Ordinal);
+        StringAssert.Contains(complexLifecycle.Fixture, "StaleParameterLifecycleFailureStillReachesNextRender", StringComparison.Ordinal);
+        StringAssert.Contains(complexLifecycle.Fixture, "RepeatedRenderDoesNotRepeatAfterRenderAsyncHook", StringComparison.Ordinal);
+        StringAssert.Contains(complexLifecycle.Fixture, "AsyncLifecycleCompletionAfterAsyncUnmountIsIgnored", StringComparison.Ordinal);
+        StringAssert.Contains(complexLifecycle.Fixture, "ProvesAsyncRacesInRealBrowser", StringComparison.Ordinal);
+        StringAssert.Contains(complexLifecycle.Blocker, "SSR/prerender", StringComparison.Ordinal);
 
         var browserServiceInjection = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-browser-service-injection");
@@ -54,6 +75,8 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, browserServiceInjection.Decision);
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
 
         var propertyShape = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-injection-property-shape");
@@ -72,6 +95,14 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(jsInterop.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(jsInterop.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
 
+        var authentication = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P2-authentication");
+        Assert.AreEqual("JAZORVCA007", authentication.DiagnosticId);
+        Assert.AreEqual(RazorVueCapabilityDecision.GuidedAdaptation, authentication.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Guidance, authentication.Status);
+        Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        StringAssert.Contains(authentication.Blocker, "versioned browser provider", StringComparison.Ordinal);
+
         var cascading = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-cascading-values");
         Assert.AreEqual("JAZORVCA008", cascading.DiagnosticId);
@@ -81,23 +112,56 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
 
         var route = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P0-route-layout-page-state");
         Assert.IsNull(route.DiagnosticId);
-        Assert.AreEqual(RazorVueCapabilityStatus.InProof, route.Status);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, route.Status);
+        Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
+        Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        StringAssert.Contains(route.Fixture, "samples/RazorVue.Authoring/verify-smoke.cs", StringComparison.Ordinal);
+        StringAssert.Contains(route.ExcludedSurface, "LocationChanging", StringComparison.Ordinal);
 
         var tdesign = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P0-tdesign-typed-authoring");
         Assert.AreEqual(RazorVueCapabilityDecision.DirectSupport, tdesign.Decision);
-        Assert.AreEqual(RazorVueCapabilityStatus.InProof, tdesign.Status);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, tdesign.Status);
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
-        Assert.IsFalse(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
-        Assert.IsFalse(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+
+        var coreDomEvents = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P1-blazor-clr-core-dom-events");
+        Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, coreDomEvents.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, coreDomEvents.Status);
+        Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+        Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
+        Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(coreDomEvents.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        StringAssert.Contains(coreDomEvents.ImplementationPath, "typed onchange capture wrapper", StringComparison.Ordinal);
+
+        var elementReference = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P1-blazor-clr-element-reference");
+        Assert.AreEqual(RazorVueCapabilityDecision.DirectSupport, elementReference.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, elementReference.Status);
+        Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+        Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
+        Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(elementReference.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        StringAssert.Contains(elementReference.ImplementationPath, "Import(ElementReferenceExtensions focus helper)", StringComparison.Ordinal);
 
         var standardComponents = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-standard-blazor-component-adapters");
@@ -153,9 +217,11 @@ public sealed class RazorVueM5CapabilityLedgerTests
         })
         {
             var eventSlice = entries.Single(entry => entry.Id == id);
-            Assert.AreEqual(RazorVueCapabilityStatus.InProof, eventSlice.Status, id);
+            Assert.AreEqual(RazorVueCapabilityStatus.Support, eventSlice.Status, id);
             Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator), id);
             Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime), id);
+            Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke), id);
+            Assert.IsTrue(eventSlice.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer), id);
         }
 
         Assert.IsFalse(entries.Any(static entry => entry.Id == "P2-blazor-clr-remaining-dom-events"));

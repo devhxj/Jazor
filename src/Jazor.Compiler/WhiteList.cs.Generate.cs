@@ -1138,8 +1138,8 @@ internal static partial class WhiteList
 		members["static double.Tan(double)"] = new(Op.Inline, "Math.tan(__arg1)");
 		members["static double.TanPi(double)"] = new(Op.Inline, "Math.tan(__arg1 * Math.PI)");
 		members["Microsoft.AspNetCore.Components.Web.DragEventArgs.DataTransfer.get"] = new(Op.Inline, "__arg1.dataTransfer");
-		members["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)"] = new(Op.Inline, "Promise.resolve(__arg1.focus())");
-		members["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference, bool)"] = new(Op.Inline, "Promise.resolve(__arg1.focus({ preventScroll: __arg2 }))");
+		members["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)"] = new(Op.Import, "focusAsync", "Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js");
+		members["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference, bool)"] = new(Op.Import, "focusAsyncWithOptions", "Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js");
 		members["static System.Linq.Enumerable.Where<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, bool>)"] = new(Op.Compile, "EnumerableArrayLike");
 		members["static System.Linq.Enumerable.Where<TSource>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, bool>)"] = new(Op.Compile, "EnumerableArrayLike");
 		members["static System.Linq.Enumerable.Empty<TResult>()"] = new(Op.Import, "empty", "System/Linq/EnumerableModule.js");

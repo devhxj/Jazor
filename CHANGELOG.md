@@ -2,6 +2,18 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-01
+
+### Unreleased
+
+#### 新增与改进
+
+- TDesign typed component authoring 已完成自然 Razor 的完整交付证明：泛型/非泛型组件、typed
+  slots、`@bind`、union、required 参数和 attribute splat 可直接使用，不需要应用侧 bridge、cast
+  或手写 `BuildRenderTree`。
+- 独立 Release NuGet consumer 会物化 TDesign/Vue 资源并在真实 Edge 浏览器中完成表单输入和按钮
+  交互；`ECMAScript.TDesign` 的作者指南与零摩擦路线图已同步这一 `Support` 边界。
+
 ## 2026-08-31
 
 ### Jazor 0.26.3

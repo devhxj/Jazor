@@ -38,8 +38,7 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
     [
         "Microsoft.AspNetCore.Components.NavigationManager",
         "Microsoft.JSInterop.IJSRuntime",
-        "Microsoft.JSInterop.IJSObjectReference",
-        "Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider"
+        "Microsoft.JSInterop.IJSObjectReference"
     ];
     // These are framework services whose normal Blazor implementation is tied to a
     // server circuit/renderer. They are intentionally explicit: arbitrary application
@@ -54,6 +53,11 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
         "Microsoft.AspNetCore.Components.Server.Circuits.CircuitOptions",
         "Microsoft.AspNetCore.Components.Server.Circuits.CircuitClientProxy",
         "Microsoft.AspNetCore.Components.Server.Circuits.RemoteRenderer",
+        // Authentication state needs an explicit host/provider and serialized claims contract;
+        // treating the abstract Blazor provider as a normal browser service would defer that
+        // missing protocol to a runtime inject failure.
+        // 认证状态必须由宿主显式提供并定义 claims handoff，不能把抽象 provider 静默当作浏览器服务。
+        "Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider",
         "Microsoft.AspNetCore.Components.PersistentComponentState",
         "Microsoft.AspNetCore.Components.IComponentActivator",
         "Microsoft.AspNetCore.Components.IComponentContext",

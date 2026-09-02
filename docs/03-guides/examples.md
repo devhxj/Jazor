@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | `samples/Jazor.MultiProject/` | 多项目 ECMAScript 模块发射 | 核心 C# -> ECMAScript 路径 |
 | `samples/RazorVue.TodoList/` | Razor-to-Vue 组件与宿主组合 | 当前 RazorVue 集成 |
+| `samples/RazorVue.Authoring/` | 独立 Blazor-first 自然 Razor CRUD 页面 | TDesign typed table/form/dialog、slot、`@bind`、DI、route；local package 与 Release browser smoke |
 | `samples/ECMAScript.Pinia.Counter/` | Vue 3 与 Pinia 状态管理 | Pinia 绑定与浏览器运行时 |
 | `samples/ECMAScript.Vue.Devtools.Plugin/` | Vue Devtools plugin authoring | custom inspector、timeline 和 typed settings |
 | `samples/ECMAScript.VueDataUi.Dashboard/` | Vue Data UI Razor dashboard | typed dataset/config、per-chart ESM import 与本地 NuGet consumer 验证 |

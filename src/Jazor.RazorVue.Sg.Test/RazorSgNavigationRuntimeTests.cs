@@ -177,8 +177,8 @@ public sealed class RazorSgNavigationRuntimeTests
             import assert from "node:assert/strict";
             import test from "node:test";
             import component from "./components/navigation-host.mjs";
-            import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
-            import { __getProvider, __setProvider } from "vue";
+            import { CreateNavigationManager, navigateToForceLoadReplace } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
+            import { __getProvider, __setProvider, reactive } from "vue";
 
             test("NavigationManager host preserves base URI and history/event semantics", () => {
                 const historyCalls = [];
@@ -251,6 +251,15 @@ public sealed class RazorSgNavigationRuntimeTests
                 navigation.notifyLocationChanged(false);
                 assert.equal(events[2].location, "https://example.test/app/back");
                 assert.equal(events[2].isNavigationIntercepted, false);
+
+                // Generated handlers pass state.Navigation to imported CLR calls, so model Vue's
+                // nested proxy behavior here instead of accidentally testing the raw object.
+                const refreshes = [];
+                const reactiveNavigation = CreateNavigationManager(() => refreshes.push("refresh"));
+                const state = reactive({ Navigation: reactiveNavigation });
+                assert.equal(state.Navigation, reactiveNavigation);
+                navigateToForceLoadReplace(state.Navigation, "/app/proxied?x=1", false, true);
+                assert.deepEqual(refreshes, ["refresh"]);
             });
             """,
             supportingModules: new Dictionary<string, string>
@@ -263,7 +272,25 @@ public sealed class RazorSgNavigationRuntimeTests
             export function __setProvider(key, value) { providers.set(key, value); }
             export const Fragment = Symbol("Fragment");
             export function defineComponent(options) { return options; }
-            export function reactive(value) { return value; }
+            const reactiveProxies = new WeakMap();
+            function wrapReactiveValue(value) {
+                if (value === null || typeof value !== "object" || value.__v_skip === true)
+                    return value;
+                const existing = reactiveProxies.get(value);
+                if (existing !== undefined)
+                    return existing;
+                const proxy = new Proxy(value, {
+                    get(target, key, receiver) {
+                        return wrapReactiveValue(Reflect.get(target, key, receiver));
+                    },
+                    set(target, key, next, receiver) {
+                        return Reflect.set(target, key, next, receiver);
+                    }
+                });
+                reactiveProxies.set(value, proxy);
+                return proxy;
+            }
+            export function reactive(value) { return wrapReactiveValue(value); }
             export function provide(key, value) { providers.set(key, value); }
             export function inject(key, fallback) { return providers.get(key) ?? fallback; }
             export function onUnmounted() {}

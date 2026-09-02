@@ -27,6 +27,12 @@ public static class NavigationManagerModule
 	internal static object CreateNavigationManager(Action? refresh)
 	{
 		var instance = Object.Create(null);
+		// Vue would otherwise proxy an injected service held in reactive component state.
+		// These WeakMap registries require the original identity for imported CLR calls.
+		Object.DefineProperty(instance, "__v_skip", new JazorPropertyDescriptor
+		{
+			Value = true
+		});
 		LocationHandlers.Set(instance, []);
 		NotFoundHandlers.Set(instance, []);
 		LocationChangingHandlers.Set(instance, []);

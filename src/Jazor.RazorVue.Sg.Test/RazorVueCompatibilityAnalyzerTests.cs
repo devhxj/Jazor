@@ -225,6 +225,61 @@ public sealed class RazorVueCompatibilityAnalyzerTests
     }
 
     [TestMethod]
+    public async Task InjectedAuthenticationStateProvider_ReportsMissingExplicitBrowserProvider()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/AuthState.razor.cs",
+                """
+                using Microsoft.AspNetCore.Components;
+                using Microsoft.AspNetCore.Components.Authorization;
+
+                namespace Demo.Pages
+                {
+                    public sealed class AuthState : ComponentBase
+                    {
+                        [Inject]
+                        public AuthenticationStateProvider Provider { get; set; } = null!;
+                    }
+                }
+                """));
+
+        var diagnostic = diagnostics.Single(static item => item.Id == "JAZORVCA007");
+        Assert.AreEqual("Pages/AuthState.razor.cs", diagnostic.Location.GetLineSpan().Path);
+        StringAssert.Contains(diagnostic.GetMessage(), "AuthenticationStateProvider", StringComparison.Ordinal);
+        StringAssert.Contains(diagnostic.GetMessage(), "Register a typed browser adapter", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task RazorAuthenticationStateProviderDirective_ReportsAtAuthoredTypeSpan()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/AuthState.razor.cs",
+                """
+                using Microsoft.AspNetCore.Components;
+                using Microsoft.AspNetCore.Components.Authorization;
+
+                namespace Demo.Pages
+                {
+                    public sealed class AuthState : ComponentBase
+                    {
+                    }
+                }
+                """),
+            additionalFiles:
+            [
+                new InMemoryAdditionalText(
+                    "Pages/AuthState.razor",
+                    "@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider Provider\n<p>auth</p>")
+            ]);
+
+        var diagnostic = diagnostics.Single(static item => item.Id == "JAZORVCA007");
+        Assert.AreEqual("Pages/AuthState.razor", diagnostic.Location.GetLineSpan().Path);
+        StringAssert.Contains(diagnostic.GetMessage(), "AuthenticationStateProvider", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public async Task CascadingParameter_ReportsAtAuthoredAttribute()
     {
         var diagnostics = await AnalyzeAsync(

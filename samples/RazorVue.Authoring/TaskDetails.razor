@@ -1,0 +1,19 @@
+@page "/tasks/{TaskId:int}"
+@layout AuthoringLayout
+
+<main class="@AuthoringStyleSheet.Page" data-authoring-page="task-details">
+    <header class="@AuthoringStyleSheet.Header">
+        <div>
+            <p class="@AuthoringStyleSheet.Eyebrow">Route activation</p>
+            <h1>Task @TaskId</h1>
+            <p class="@AuthoringStyleSheet.Subtitle" data-route-highlight="@HighlightState">@HighlightState</p>
+        </div>
+        <button type="button" data-route-action="clear-highlight" @onclick="@ClearHighlight">Clear highlight</button>
+    </header>
+
+    <section class="@AuthoringStyleSheet.TableSection" data-route-parameter="@TaskId">
+        <p>Route parameter: @TaskId</p>
+        <p>Query highlight: @HighlightState</p>
+        <button type="button" data-route-action="back-to-board" @onclick="@BackToBoard">Back to task board</button>
+    </section>
+</main>

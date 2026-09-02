@@ -1,6 +1,6 @@
 # RazorVue Blazor-first 兼容与开发者体验路线图
 
-> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器与 P0 module-integrity proof 已落地；JazorAdmin 的规范化 Release package/browser consumer gate 也已通过。剩余的是 framework 行为深度、验证、LocationChanged、auth state、各 feature 的 SSR/package/browser consumer proof 及未承诺的 P1/P2 能力。标准 Blazor 内置 UI 组件和 Blazor JS interop 不属于当前产品契约。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
+> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器与 P0 module-integrity proof 已落地；应用自有 route-host 的 `@page`/`@layout`/typed route-query/browser-history 子集已达到 `Support`，JazorAdmin 与 RazorVue.Authoring 的规范化 Release package/browser consumer gate 也已通过。剩余的是 framework 行为深度、验证、replace/LocationChanged/LocationChanging、auth state、各 feature 的 SSR/package/browser consumer proof 及未承诺的 P1/P2 能力。标准 Blazor 内置 UI 组件和 Blazor JS interop 不属于当前产品契约。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
 >
 > 目标：开发者按标准 Blazor 的 Razor、组件生命周期、参数、事件、服务和 framework API 使用习惯编写自定义组件；UI 由 TDesign、Vuetify、Element Plus 等组件库提供。RazorVue 应优先自动提供 framework 等价行为；无法保持等价时，由源码分析诊断在作者代码处说明原因、影响和替代，而不是要求开发者预先学习 lowering、Vue 或 generated C#。
 
@@ -334,7 +334,7 @@ Ledger 每一行至少包含：Blazor 作者形状、目标语义基线、P0/P1/
 1. ParameterView 和 SetParametersAsync 的参数快照、source-name sparse 覆盖链、slot/alias 传递、异步顺序和 error behavior。
 2. browser service catalog、[Inject]/@inject property、activation lifetime 和 server-only service diagnostics；当前 property adapter 已进入 proof，constructor injection/parameterized activation 仍由 `JAZORVGA024` 明确拒绝，直到有完整 activation protocol。
 3. CascadingValue、[CascadingParameter]、named cascade、嵌套 provider 覆盖与更新传播。
-4. NavigationManager、自动生成 route catalog、route/query 参数更新和基础 history/popstate behavior；`replace`、LocationChanged 订阅和复杂 URI 状态仍需补齐。`Router`、`RouteView`、`LayoutView`、`NavLink` 标签不在本路线。
+4. NavigationManager、自动生成 route catalog、route/query 参数更新和基础 history/popstate behavior；应用自有 route-host 子集已经由 official SG、Deno、真实浏览器和 isolated Release package 证明并进入 `Support`，`replace`、LocationChanged 订阅、复杂 URI 状态与 LocationChanging cancellation 仍需独立补齐。`Router`、`RouteView`、`LayoutView`、`NavLink` 标签不在本路线。
 5. 自定义/第三方组件的静态 type token、registry、fragment/slot 和参数 descriptor contract；不以 Microsoft `DynamicComponent` 标签作为隐式 Vue 组件入口。
 6. 自定义组件的 error propagation、`@ref`、dispose 和 render/update/unmount 组合；`ErrorBoundary` 标签和其历史 adapter 不在本路线。
 

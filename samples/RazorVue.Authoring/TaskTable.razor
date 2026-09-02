@@ -1,0 +1,19 @@
+<section class="@AuthoringStyleSheet.TableSection" aria-label="Tasks">
+    <div class="@AuthoringStyleSheet.SectionHeading">
+        <div>
+            <p class="@AuthoringStyleSheet.Eyebrow">Typed data surface</p>
+            <h2>Work queue</h2>
+        </div>
+        <span data-table-workspace="@WorkspaceName">@WorkspaceName</span>
+    </div>
+
+    <TPrimaryTable T="TaskRow"
+                   Data="@Rows"
+                   Columns="@Columns"
+                   RowKey="Id"
+                   Bordered="true">
+        <CellEmptyContent Context="cell">
+            <span data-empty-cell="@cell.Row.Id">@cell.Row.Title</span>
+        </CellEmptyContent>
+    </TPrimaryTable>
+</section>

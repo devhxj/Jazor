@@ -106,14 +106,18 @@ public sealed class BlazorClrMappingTests
             ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.LengthComputable.get"] = "__arg1.lengthComputable",
             ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Loaded.get"] = "__arg1.loaded",
             ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Total.get"] = "__arg1.total",
-            ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Type.get"] = "__arg1.type",
-            ["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)"] = "Promise.resolve(__arg1.focus())",
-            ["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference, bool)"] = "Promise.resolve(__arg1.focus({ preventScroll: __arg2 }))"
+            ["Microsoft.AspNetCore.Components.Web.ProgressEventArgs.Type.get"] = "__arg1.type"
         };
-        var expectedImports = new Dictionary<string, string>(StringComparer.Ordinal)
+        var expectedImports = new Dictionary<string, (string ExportName, string ModulePath)>(StringComparer.Ordinal)
         {
-            ["Microsoft.AspNetCore.Components.ChangeEventArgs.captureChangeEvent"] = "captureChangeEvent",
-            ["Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get"] = "getChangeEventValue"
+            ["Microsoft.AspNetCore.Components.ChangeEventArgs.captureChangeEvent"] =
+                ("captureChangeEvent", "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js"),
+            ["Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get"] =
+                ("getChangeEventValue", "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js"),
+            ["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)"] =
+                ("focusAsync", "Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js"),
+            ["static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference, bool)"] =
+                ("focusAsyncWithOptions", "Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js")
         };
 
         foreach (var (typeName, runtimeName) in expectedAliases)
@@ -140,9 +144,9 @@ public sealed class BlazorClrMappingTests
             AssertInline(memberName, template);
         }
 
-        foreach (var (memberName, exportName) in expectedImports)
+        foreach (var (memberName, import) in expectedImports)
         {
-            AssertImport(memberName, exportName, "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js");
+            AssertImport(memberName, import.ExportName, import.ModulePath);
         }
     }
 
@@ -206,11 +210,31 @@ public sealed class BlazorClrMappingTests
 
         Assert.IsNotNull(body);
         var imports = argument.FlushImportSpecifiers();
-        Assert.HasCount(1, imports, body);
-        Assert.AreEqual("Microsoft/AspNetCore/Components/ChangeEventArgsModule.js", imports[0].Key, body);
-        var importSpecifier = imports[0].Value.OfType<ImportSpecifier>().Single();
-        Assert.IsInstanceOfType<Identifier>(importSpecifier.Imported, body);
-        Assert.AreEqual("getChangeEventValue", ((Identifier)importSpecifier.Imported).Name, body);
+        Assert.HasCount(2, imports, body);
+        var importsByModule = imports.ToDictionary(
+            static entry => entry.Key,
+            static entry => entry.Value
+                .OfType<ImportSpecifier>()
+                .Select(static specifier => ((Identifier)specifier.Imported).Name)
+                .Order(StringComparer.Ordinal)
+                .ToArray(),
+            StringComparer.Ordinal);
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
+                "Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js"
+            },
+            importsByModule.Keys.ToArray(),
+            body);
+        CollectionAssert.AreEqual(
+            new[] { "getChangeEventValue" },
+            importsByModule["Microsoft/AspNetCore/Components/ChangeEventArgsModule.js"],
+            body);
+        CollectionAssert.AreEqual(
+            new[] { "focusAsync", "focusAsyncWithOptions" },
+            importsByModule["Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js"],
+            body);
         StringAssert.Contains(body, "clientX", StringComparison.Ordinal);
         StringAssert.Contains(body, "keyboard.key", StringComparison.Ordinal);
         StringAssert.Contains(body, "focus.type", StringComparison.Ordinal);
@@ -234,8 +258,9 @@ public sealed class BlazorClrMappingTests
         StringAssert.Contains(body, "progress.loaded", StringComparison.Ordinal);
         StringAssert.Contains(body, "progress.total", StringComparison.Ordinal);
         StringAssert.Contains(body, "progress.type", StringComparison.Ordinal);
-        StringAssert.Contains(body, "Promise.resolve(element.focus())", StringComparison.Ordinal);
-        StringAssert.Contains(body, "Promise.resolve(element.focus({ preventScroll: true }))", StringComparison.Ordinal);
+        StringAssert.Contains(body, "focusAsync(element)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "focusAsyncWithOptions(element, true)", StringComparison.Ordinal);
+        Assert.IsFalse(body.Contains("element.focus(", StringComparison.Ordinal), body);
         _ = new Parser().ParseScript("function verify(mouse, keyboard, focus, pointer, wheel) " + body);
     }
 

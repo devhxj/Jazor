@@ -6,9 +6,12 @@
 
 ## 0. 结论先行
 
-规范化和交付链路已经达到可用基线：Emit 回归为 `180/180`，Razor Source Generator 回归为
-`4907/4907`；JazorAdmin 的 Release 本地 NuGet consumer（native 与 VueInject）均为 0 warning/0
+规范化和交付链路已经达到可用基线：Emit 回归为 `185/185`，Razor Source Generator 回归为
+`4936/4936`；JazorAdmin 的 Release 本地 NuGet consumer（native 与 VueInject）均为 0 warning/0
 error，最终 Edge mount smoke 也已通过。`vue-data-ui` 的 71 个入口相对 ESM 闭包已经补齐。
+真实浏览器证据固定保留三条互补入口：.NET `BrowserSmokeTestHelper` 负责可重复的
+Edge/Chrome/Chromium 自动门禁，Playwright CLI 负责固定 Chrome/Chromium 会话的快照和交互，
+`agent-browser` 负责独立 CDP session 的复核；任一入口都不能单独替代 package 或语义证据。
 
 这说明“分号、包复制、资源闭包和基本 TDesign 页面运行”不再是主要风险，但还不能把 RazorVue
 称为“目标范围内零摩擦”。剩余摩擦集中在三类：
@@ -97,16 +100,17 @@ error，最终 Edge mount smoke 也已通过。`vue-data-ui` 的 71 个入口相
 | 领域 | 当前状态 | 已有证据 | 未闭合原因 |
 | --- | --- | --- | --- |
 | 普通 markup、泛型、fragment/slot、control flow、bind/event、参数 lifecycle | `Support` | official SG、module、Deno 回归；JazorAdmin 消费者 | 仍需保持独立自然写法矩阵，避免桥接掩盖回归 |
+| 复杂 async lifecycle（rejection、cancellation、重复 render、async disposal race） | `InProof` | `RazorSgOfficialComplexLifecycleRuntimeTests`：official SG、module artifact、Deno；isolated Release package consumer + real browser smoke；`RazorSgBlazorReferenceOracleTests` 作为 framework primitive 对照 | SSR/prerender 与 hydration 副作用证据仍未闭合；不得因 browser/package 通过升级为 `Support` |
 | `@page`/`@layout`/route metadata 与页面状态 | `InProof` | route catalog 输出与 Deno 场景 | 真实浏览器路由切换、not-found、query refresh 和错误/重试流程 |
-| `ParameterView`/`SetParametersAsync` | `InProof` | sparse/alias/slot/queue adapter 测试 | 完整 snapshot、异常传播、browser/SSR consumer |
-| browser `[Inject]` property adapter | `InProof` | provider、lifecycle、missing-provider 测试 | lifetime、嵌套实例、browser/package/SSR 证明；constructor injection 保持 Reject |
-| cascading values | `InProof` | typed/named/nested Deno 测试 | `IsFixed`、更新传播、scope 与 browser/package 证明 |
+| `ParameterView`/`SetParametersAsync` | `InProof` | sparse/alias/slot/queue adapter 测试；isolated Release package/browser consumer 已覆盖参数替换与 lifecycle ordering | 完整 snapshot、作者异常传播、SSR consumer 与更深 reference parity |
+| browser `[Inject]` property adapter | `InProof` | provider、lifecycle、missing-provider 测试；isolated Release package/browser consumer 已覆盖嵌套与 recreated component activation | provider lifetime、完整 reference parity、SSR consumer；constructor injection 保持 Reject |
+| cascading values | `InProof` | typed/named/nested Deno 测试；isolated Release package/browser consumer 已覆盖 nested override、`IsFixed`、same-value、dispose 与 update propagation | 完整 reference parity 与 SSR consumer |
 | `NavigationManager` 与 LocationChanging | `InProof` | URI/navigate 基础映射与 CLR whitelist | reference oracle、真实 browser、Release consumer；popstate/hashchange cancellation 未承诺 |
-| Mouse/Keyboard/Focus/Change | `InProof` | CLR mapping、official SG 部分切片、Deno | 完整 handler 矩阵、browser、事件专用 package consumer |
-| Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress | `InProof` | generator、CLR、official SG、Deno 最小垂直切片 | 每组 reference/browser/package 证明；构造器/setter/files 等保持拒绝 |
-| `@ref`/`ElementReference.FocusAsync` | `InProof` | VNode ref 与 mapping 测试 | 空/未挂载语义、真实 browser、Release consumer |
-| TDesign typed API | 组件覆盖已较完整；作者体验 `InProof` | 118 runtime component binding、泛型 table cell 测试 | 自然 Razor 的 generic/non-generic、slot、union、bind、required 和命名冲突矩阵 |
-| package/artifact/HMR | 交付基线已可靠 | Emit `180/180`、JazorAdmin package/browser gate、ESM closure | 每个新增 framework slice 仍需独立 consumer；SSR feature proof 不可借用总 gate |
+| Mouse/Keyboard/Focus/Change | `Support`（Compatibility Adapter） | CLR mapping、Blazor reference metadata/value oracle、official SG、Deno、真实 browser、bundle source map、isolated Release package consumer | 仅 constructor/setter/identity、synthetic payload、file input 与 SSR/prerender 不在声明内 |
+| Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress | `Support`（browser interactive） | generator、CLR、Blazor `EventHandlers` reference metadata、official SG、Deno、真实 BrowserSmoke、isolated Release package consumer | getter-only native projection 已闭合；构造器/setter/files/items、synthetic payload 与非 getter TouchList 操作保持拒绝，SSR/prerender 不声明 |
+| `@ref`/`ElementReference.FocusAsync` | `Support`（Direct Support） | VNode ref 与 mapping、official SG/Deno、真实 browser、isolated Release consumer | 仅承诺 browser interactive；SSR/prerender 不在本切片声明内 |
+| TDesign typed API | `Support`（Direct Support） | 118 runtime component binding、自然 Razor generic/non-generic、slot、union、bind、required 矩阵；isolated Release consumer + real Edge smoke | 后续组件扩展仍需按同一四层证据门禁；不扩大到内置 Blazor UI |
+| package/artifact/HMR | 交付基线已可靠 | Emit `185/185`、JazorAdmin package/browser gate、ESM closure | 每个新增 framework slice 仍需独立 consumer；SSR feature proof 不可借用总 gate |
 | authentication state、SSR state/form handoff | `Planned` | 无行为证据 | 需要版本化 host protocol；内置认证/表单组件仍不在范围 |
 
 ## 4. 缺口归因规则
@@ -128,30 +132,30 @@ error，最终 Edge mount smoke 也已通过。`vue-data-ui` 的 71 个入口相
 
 | ID | 用户摩擦 / 当前状态 | 类型与 owner | 实施方向和依赖 | 验收与退出状态 |
 | --- | --- | --- | --- | --- |
-| ZF-P0-01 | TDesign 页面需要 `AdminInput`/`AdminForm` 等薄桥接，作者被迫接触 callback 转发和 cast。当前消费者可运行，但桥接必要性未裁决。 | Binding/API；`ECMAScript.TDesign` + `Jazor.RazorVue` | 建立同一页面的 native TDesign 与 bridge 对照；先修公共 prop/event contract，再删除可替代 wrapper。依赖官方 SG binding。 | 新增 natural-authoring fixture：无手写 builder/cast 即完成 CRUD；Release browser smoke 与 package consumer 通过。目标：`Support`。 |
-| ZF-P0-02 | `TPrimaryTable<T>` 的泛型/非泛型入口、typed cell/row slot、`RenderFragment<T>` 和 EventCallback 在 Razor 中仍可能需要固定 wrapper。 | Binding/API + RazorVue component binding | 固定 TypeInference、开放泛型、slot context、delegate variance 和跨模块 selector 的行为矩阵；不以 `object` 放宽契约。依赖 P0 generic/fragment 已有 lowering。 | 覆盖 table columns、typed slots、empty/loading、row event、bind、required 参数的 authored + official SG + Deno + browser 用例；目标：`Support` 或有明确 `Guidance`。 |
-| ZF-P0-03 | 同一 JS prop 的 C# 后缀（如 `LoadingValue`/`LoadingContent`）和 union branch assignment 增加记忆负担。 | Binding/API；`ECMAScript.TDesign` | 做命名/union API review：优先不冲突的强类型命名、native union 或 tagged fallback；保留 Razor SG 可绑定性和兼容成员，不增加弱类型 escape hatch。 | 生成 contract 报告；常见 Button/Table/Form/Modal 写法无需 cast/`From`；breaking change 按 MINOR 和迁移说明发布。目标：`Support`。 |
-| ZF-P0-04 | `@page`、layout、query/route 参数和 loading/error/retry 页面尚缺完整浏览器闭环，ledger 为 `InProof`。 | Compiler/runtime；RazorVue route host | 完成 route catalog -> host state -> component activation 的单一协议；明确 not-found、重复导航、query refresh 和取消行为。Router/RouteView/LayoutView/NavLink 不进入实现。 | route browser journey、official SG、module/source-map、package consumer；SSR 适用时补 hydration。目标：`Support`/`Compatibility Adapter`。 |
+| ZF-P0-01 | TDesign 页面需要 `AdminInput`/`AdminForm` 等薄桥接，作者被迫接触 callback 转发和 cast。 | Binding/API；`ECMAScript.TDesign` + `Jazor.RazorVue` | 已完成 native TDesign 与 bridge 对照；公共 prop/event contract 和 direct render 路径已收敛。 | natural-authoring fixture 无手写 builder/cast 完成 CRUD 交互；Release browser smoke 与 isolated package consumer 通过。目标：`Support`（完成）。 |
+| ZF-P0-02 | `TPrimaryTable<T>` 的泛型/非泛型入口、typed cell/row slot、`RenderFragment<T>` 和 EventCallback 在 Razor 中仍可能需要固定 wrapper。 | Binding/API + RazorVue component binding | TypeInference、开放泛型、slot context、delegate variance 和跨模块 selector 已纳入矩阵；不以 `object` 放宽契约。 | table columns、typed slots、empty/loading、bind、required 参数已通过 authored + official SG + Deno + real Edge + Release consumer；目标：`Support`（完成）。 |
+| ZF-P0-03 | 同一 JS prop 的 C# 后缀（如 `LoadingValue`/`LoadingContent`）和 union branch assignment 增加记忆负担。 | Binding/API；`ECMAScript.TDesign` | 命名/union API review 已完成：采用稳定后缀、native union 或 tagged fallback，并保留 Razor SG 可绑定性；不增加弱类型 escape hatch。 | Button/Table/Form/Dialog 常见写法无需 cast/`From`；breaking change 按 MINOR 和迁移说明发布。目标：`Support`（完成）。 |
+| ZF-P0-04 | `@page`、layout、typed query/route 参数、not-found 和应用自有页面状态已经完成浏览器闭环，ledger 为 `Support`（Compatibility Adapter）。 | Compiler/runtime；RazorVue route host | route catalog -> host state -> component activation 保持单一协议；Release consumer 已验证 highlighted -> standard query refresh、返回 board、三次 browser back 和 not-found。Router/RouteView/LayoutView/NavLink 与 LocationChanging cancellation 不进入实现。 | `RazorSourceGeneratorTailOutputTests`、`RazorSgNavigationRuntimeTests` 和 `samples/RazorVue.Authoring/verify-smoke.cs` 已覆盖 official SG、module/source-map、Deno、isolated Release package、真实 Chrome/Chromium/Edge browser journey 与 console errors=`0`；SSR/prerender 未声明。目标：`Support`（完成）。 |
 | ZF-P0-05 | 作者源码诊断已覆盖 D0-D5，但新失败仍可能在 generated C# 才暴露，或 analyzer/final pipeline 重复报告。 | Diagnostics；`Jazor.RazorVue` + analyzer | 为每个新边界先登记 ledger；author-source 高置信诊断与 final Compilation 单次裁决分层，保留 `JAZORVGA020`-`026` 稳定分类。 | source location、dedupe、无 partial ModuleCatalog、HelpLink 和最小替代回归；目标：Direct Support 零噪音，其他形状首建可解释。 |
-| ZF-P0-06 | 没有独立、最小、Blazor-first 作者样例来证明“不需要 JazorAdmin 经验”。 | Evidence/delivery；`samples/RazorVue.Authoring`（待建） | 建立 Todo/CRUD 页面：TDesign table/form/dialog、typed slot、`@bind`、async callback、DI、route；样例不得使用内置组件或历史 bridge。依赖 ZF-P0-01/02 的 API review。 | clean checkout -> local package -> Release browser smoke；记录首次成功构建时间和作者源内部符号计数。目标：样例只消费已达 `Support` 的能力。 |
+| ZF-P0-06 | 独立、最小、Blazor-first 作者样例已建立，证明不需要 JazorAdmin 经验即可完成常见 CRUD 页面。 | Evidence/delivery；`samples/RazorVue.Authoring` | 已建立 Todo/CRUD 页面：TDesign table/form/dialog、typed slot、`@bind`、async callback、DI、route；样例不使用内置组件、历史 bridge、手写 builder 或应用侧 cast。 | 已通过：`dotnet run --file samples/RazorVue.Authoring/build-local.cs -- --source-only --configuration Debug --work-root .tmp/authoring-local-build-debug`（首次成功构建 50.52s；0 warning、0 error，作者源 internal symbols=`0`）；`dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --configuration Release --work-root .tmp/authoring-local-build --package-output .tmp/nupkg-sample/RazorVue.Authoring`（Release/package pipeline 99.66s；isolated Release package consumer、Jazor/Vue/TDesign/Style 本地包、bundle/source map/vendor closure、无 `node_modules`、真实浏览器 mount/dialog/input/submit/route 交互通过，console errors=`0`）。目标：样例只消费已达 `Support` 的能力；`Support`（完成）。 |
 
 ### P1：补齐高频 framework primitive 的语义闭环
 
 | ID | 用户摩擦 / 当前状态 | 类型与 owner | 实施方向和依赖 | 验收与退出状态 |
 | --- | --- | --- | --- | --- |
-| ZF-P1-01 | `SetParametersAsync(ParameterView)` 已能处理部分 sparse/slot/queue 场景，但任意 snapshot/异常行为仍不完整。 | Compiler/runtime；ParameterView adapter | 固定 CLR default -> base apply -> overlay -> lifecycle -> queued update 的顺序；只实现已定义的成员，`TryGetValue`/枚举/`ToDictionary` 继续 Guidance。 | `RazorSgSetParametersAsyncRuntimeTests` 扩展异常、取消、重复更新和跨实例用例；browser + SSR package consumer；目标：`Support`。 |
-| ZF-P1-02 | `[Inject]` browser service 可运行，但 provider lifetime、缺失 provider、嵌套组件和重渲染边界尚缺交付证明。 | Runtime/host；`VueInjectRegistry` + `VueModuleBuilder` | 明确实例级 registration、初始化/Dispose 顺序和 async callback 竞态；constructor injection、primary constructor、`this(...)`、`base(args)` 保持 `Reject`。 | official SG + Deno + browser + isolated Release package + SSR（适用时）；目标：`Support`。 |
-| ZF-P1-03 | cascading 参数已有 Deno adapter，但 nested override、named provider、`IsFixed` 和更新传播未完成。 | Runtime；cascading adapter | 以 Vue scope 建立 typed/named provider；一次更新只触发必要 consumer；不可写属性继续 `JAZORVCA008`。 | nested scope、replacement、same-reference、dispose、browser/package 回归；目标：`Support`。 |
+| ZF-P1-01 | `SetParametersAsync(ParameterView)` 已能处理 sparse/slot/queue 场景；完整 snapshot/异常行为仍不完整。 | Compiler/runtime；ParameterView adapter | 固定 CLR default -> base apply -> overlay -> lifecycle -> queued update 的顺序；只实现已定义的成员，`TryGetValue`/枚举/`ToDictionary` 继续 Guidance。 | `RazorSgSetParametersAsyncRuntimeTests` 与 isolated Release package/browser consumer 已覆盖生命周期顺序、参数替换和队列；仍需异常、取消、更深 reference parity 与 SSR consumer；目标：`Support`。 |
+| ZF-P1-02 | `[Inject]` browser service 已有 property activation 的 package/browser 证明；provider lifetime 与完整 activation 语义仍未闭合。 | Runtime/host；`VueInjectRegistry` + `VueModuleBuilder` | 明确实例级 registration、初始化/Dispose 顺序和 async callback 竞态；constructor injection、primary constructor、`this(...)`、`base(args)` 保持 `Reject`。 | official SG + Deno + isolated Release package/browser 已覆盖嵌套与 recreated component；仍需 provider lifetime、reference parity 与 SSR（适用时）；目标：`Support`。 |
+| ZF-P1-03 | cascading 参数已有 nested/named/update 的 package/browser 证明；完整 reference/SSR parity 仍未闭合。 | Runtime；cascading adapter | 以 Vue scope 建立 typed/named provider；一次更新只触发必要 consumer；不可写属性继续 `JAZORVCA008`。 | `RazorSgCascadingValueRuntimeTests` 与 isolated Release package/browser 已覆盖 nested override、replacement、same-value、`IsFixed`、dispose；仍需 reference parity 与 SSR consumer；目标：`Support`。 |
 | ZF-P1-04 | `NavigationManager` 基础 URI/navigate 可用，LocationChanging 与浏览器 history 语义仍为 `InProof`。 | CLR/runtime + route host | 依照 reference oracle 定义 handler 顺序、取消、registration dispose、rapid navigation；不承诺 server circuit 或 popstate/hashchange 取消，除非另有协议。 | reference oracle 对照、真实 Edge history/hash/query journey、isolated package consumer；目标：声明支持的子集 `Support`，未实现部分稳定 `Guidance/Reject`。 |
-| ZF-P1-05 | Mouse/Keyboard/Focus/Change 事件及 typed callback 还缺完整 browser/package 证明。 | CLR mapping + RenderEmitter | 保持 native event carrier；`ChangeEventArgs.Value` 只在事件时间 capture，不引入 synthetic Args 构造或 setter。 | 每个事件的 authored/official SG/module/Deno/browser/package fixture；目标：`Support`。 |
-| ZF-P1-06 | `@ref`/`ElementReference.FocusAsync` 已有 mapping，但空 ref、未挂载和卸载时行为未裁决。 | CLR mapping + Vue ref framing | 固定 ref callback 生命周期和 Promise/ValueTask 失败语义；不扩展为任意 DOM 方法或 `new ElementReference`。 | mount/update/unmount/empty ref 的真实 browser + package consumer；目标：`Support`。 |
-| ZF-P1-07 | 普通 lifecycle 已 Support，异步异常、取消、重复 render、Dispose race 在复杂组件中仍可能产生隐性差异。 | Runtime；`VueModuleBuilder`/host | 用 generation-aware guard 和明确 queue 顺序处理可观察副作用；不增加未要求的全局防御式重试。 | lifecycle reference fixture、rapid update/unmount browser journey、SSR 不重复副作用；目标：`Support`。 |
+| ZF-P1-05 | Mouse/Keyboard/Focus/Change 事件及 typed callback 已完成 browser-interactive 闭环。 | CLR mapping + RenderEmitter | 保持 native event carrier；`ChangeEventArgs.Value` 只在事件时间 capture，不引入 synthetic Args 构造或 setter。 | `RazorSgOfficialCoreDomEventRuntimeTests`、`SdkIntegrationTests.Build_LocalReleasePackages_WithExternalCoreDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser` 已覆盖 reference metadata/value shaping、official SG、Deno、真实 DOM dispatch、source map 与 isolated Release package；目标：`Support`（完成）。SSR/prerender 不声明。 |
+| ZF-P1-06 | `@ref`/`ElementReference.FocusAsync` 已完成 browser interactive 闭环。 | CLR mapping + Vue ref framing | `Jazor.CLR` Import helper 固定 ref callback 生命周期、Promise/ValueTask 完成语义与 framework failure；不扩展为任意 DOM 方法或 `new ElementReference`。 | mount/update/unmount/empty ref 的真实 browser + isolated Release package consumer 已通过；目标：`Support`（完成）。SSR/prerender 不声明。 |
+| ZF-P1-07 | 普通 lifecycle 已 Support；复杂 async lifecycle 的 rejection、取消、重复 render、Dispose race 已完成 official SG/module/Deno 与 isolated Release package/real-browser proof，ledger 仍为 `InProof`。 | Runtime；`VueModuleBuilder`/host | 用 setup-local failure capture、generation-aware guard 和明确 queue 顺序处理可观察副作用；不增加未要求的全局防御式重试。 | `RazorSgOfficialComplexLifecycleRuntimeTests` 已覆盖六种复杂场景（含 queued-after-unmount suppression 与 stale rejection propagation），`SdkIntegrationTests.Build_LocalReleasePackages_WithExternalComplexLifecycleRazorConsumer_ProvesAsyncRacesInRealBrowser` 已覆盖真实 browser/package consumer；下一步只需补 SSR/prerender 与 hydration 副作用证据，完成后才可目标 `Support`。 |
 
 ### P2：扩大真实生产覆盖，但不扩大内置组件范围
 
 | ID | 用户摩擦 / 当前状态 | 类型与 owner | 实施方向和依赖 | 验收与退出状态 |
 | --- | --- | --- | --- | --- |
-| ZF-P2-01 | Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 已有最小垂直切片，仍缺逐组真实证据。 | CLR mapping；`Jazor.CLR` + generator | 按事件组补 reference/browser/package；构造器、setter、files/items、非 getter TouchList 操作继续拒绝。 | 每组独立 consumer、Edge smoke、Deno/reference 对照；目标：逐组 `Support` 或明确 `Guidance/Reject`。 |
+| ZF-P2-01 | Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 七组 getter-only 事件已完成 browser-interactive Support。 | CLR mapping；`Jazor.CLR` + generator | 保持 native carrier 与属性访问时的 TouchList `Array.from(...)`；构造器、setter、files/items、非 getter TouchList 操作继续拒绝。 | `RazorSgOfficialExtendedDomEventRuntimeTests` 已覆盖 reference metadata、official SG/Deno；`SdkIntegrationTests.Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser` 已覆盖真实浏览器与 isolated Release package；目标：`Support`（完成），SSR/prerender 不声明。 |
 | ZF-P2-02 | 认证状态尚未有浏览器 provider 与服务端 endpoint/claims handoff；ledger 为 `Planned`。 | Host/runtime；ASP.NET Core + RazorVue | 只定义 typed `AuthenticationStateProvider`/claims payload 和 endpoint enforcement；不实现 `AuthorizeView` 等内置组件，不把 UI 隐藏当授权。 | authenticated JazorAdmin journey、匿名/过期/刷新/403、SSR 到 hydration state 对照；目标：`Compatibility Adapter` 或明确不支持子集。 |
 | ZF-P2-03 | `PersistentComponentState`、hydration state 和 SSR/增强 post handoff 尚无版本化协议；ledger 为 `Planned`。 | SSR/host；`Jazor.AspNetCore` + `Jazor.Emit` | 先实现可序列化、版本化的 state payload 和 hydration checksum；内置 `EditForm`/antiforgery/enhanced form protocol 不纳入，表单 UI 由 TDesign 等承担。 | packaged SSR HTML、Edge hydration、刷新/重复提交/状态失配 fixture；目标：适用形状 `Support`，其余 `Guidance/Reject`。 |
 | ZF-P2-04 | 组件数量、slot 深度和高频更新增长后，作者不应为性能手动改写 API。 | Runtime/perf；`RenderEmitter` + host | 以真实样例 benchmark 决定 block/patch/handler cache；不为“看起来像 Vue”引入破坏语义的优化。 | P0/P1 authoring sample 与 JazorAdmin 的 render/update/SSR 指标、无行为回归；目标：性能门禁稳定，未达标项不阻塞语义 Support 但必须有 issue。 |
@@ -165,9 +169,9 @@ error，最终 Edge mount smoke 也已通过。`vue-data-ui` 的 71 个入口相
 - 把本文件、`RazorVueM5CapabilityLedger`、作者诊断 ID 和四层证据字段作为同一份 backlog；新能力没有 ledger 行不得宣称 Support。
 - 创建 natural-authoring baseline（优先从 JazorAdmin 抽取最小页面，不复制其 bridge），记录：手写
   `BuildRenderTree` 数量、应用侧 cast/bridge 数量、首次构建时间、浏览器 console error 数量。
-- 固定 clean checkout、Release package consumer、Edge browser 和适用 SSR 的可复现命令。
+- 固定 clean checkout、Release package consumer、Edge/Chrome/Chromium browser 和适用 SSR 的可复现命令。
 
-门禁：文档/ledger 状态一致；现有 Emit `180/180`、Razor SG `4907/4907` 和 JazorAdmin package/browser
+门禁：文档/ledger 状态一致；现有 Emit `185/185`、Razor SG `4936/4936` 和 JazorAdmin package/browser
 基线可重跑；无工作区意外改动。
 
 ### Phase 1：TDesign authoring friction
@@ -179,7 +183,7 @@ error，最终 Edge mount smoke 也已通过。`vue-data-ui` 的 71 个入口相
   `@bind`、async EventCallback、union、required parameter、attribute splat 和命名冲突。
 - 将通过的写法加入独立 authoring sample；不把页面 workaround 写成公共 API。
 
-门禁：official SG 编译、semantic/module snapshot、Deno、Edge browser、isolated Release package consumer
+门禁：official SG 编译、semantic/module snapshot、Deno、真实 Chrome/Chromium（必要时 Edge）browser、isolated Release package consumer
 全部通过；组件库内部之外的 RazorVue-specific symbol/cast/builder 为零。
 
 ### Phase 2：framework primitive
@@ -192,11 +196,11 @@ error，最终 Edge mount smoke 也已通过。`vue-data-ui` 的 71 个入口相
 
 ### Phase 3：DOM/reference/event 证据
 
-交付物：先完成 Mouse/Keyboard/Focus/Change/ElementReference，再逐组推进七类扩展事件；每组保留
+交付物：Mouse/Keyboard/Focus/Change/ElementReference 与七类扩展事件的 browser-interactive 证据已完成；每组保留
 carrier、允许 getter、明确拒绝的构造/setter/files/items 清单。
 
-门禁：reference oracle 与 Edge 真实事件 journey 的可观察结果一致；package consumer 不依赖仓库源码或
-未选择的资源入口；浏览器 console 无 error。
+门禁：reference oracle 与真实 Chrome/Chromium（必要时 Edge）事件 journey 的可观察结果一致；package consumer 不依赖仓库源码或
+未选择的资源入口；浏览器 console 无 error。七组扩展事件的当前 getter-only 子集已满足该门禁。
 
 ### Phase 4：SSR、认证与状态交接
 
@@ -216,7 +220,7 @@ carrier、允许 getter、明确拒绝的构造/setter/files/items 清单。
   但每个 framework slice 仍保留独立证据。
 - 记录性能、产物大小、模块闭包和首次成功构建指标；不把未选择的资源复制到发布目录。
 
-门禁：clean checkout 能完成一个 CRUD/admin 页面；package consumer 0 warning/0 error；Edge mount、
+门禁：clean checkout 能完成一个 CRUD/admin 页面；package consumer 0 warning/0 error；Chrome/Chromium（必要时 Edge）mount、
 交互和适用 hydration 通过；失败在作者源或 final pipeline 明确出现。
 
 ## 7. 四层证据门禁
@@ -231,6 +235,21 @@ carrier、允许 getter、明确拒绝的构造/setter/files/items 清单。
 | L4 Release package / SSR | 从 NuGet/manifest 选定闭包可交付；适用时 SSR/hydration 一致 | isolated PackageConsumer、`verify-windows-spa-release.cs`、`verify-windows-ssr-release.cs` |
 
 `Deno` 运行时测试是快速语义回归，不单独替代 L3/L4。静态 `.mjs` snapshot 也不能单独代表支持。
+
+### 7.1 浏览器验证入口与职责
+
+三条入口必须针对同一个已物化的 consumer harness（不能针对仓库源码目录拼接资源）：
+
+| 入口 | 作用 | 约束 |
+| --- | --- | --- |
+| `.NET BrowserSmokeTestHelper` | CI/测试中的自动化 mount、事件和 DOM 断言 | 通过 `RAZORVUE_BROWSER_EXE`/`RAZORVUE_BROWSER_PATH` 固定可执行文件；默认按 Edge、Chrome、Chromium 顺序发现；临时 profile 与 harness 隔离 |
+| Playwright CLI | 可复现的 Chrome/Chromium 快照、填充、点击、导航、截图和 console 检查 | 使用仓库 wrapper `C:/Users/hanxj/.codex/skills/playwright/scripts/playwright_cli.sh`；每次交互先 `snapshot`，DOM 变化后重新 snapshot；不把 `@playwright/test` spec 当作产品门禁 |
+| `agent-browser` | 与 Playwright 隔离的 CDP session 复核，用于发现 session/焦点/真实 DOM 差异 | 使用独立 `--session` 和 Chrome engine；每次交互先 `snapshot -i`，只使用当前 ref；复核后记录 `console`/`errors`，不复用 Playwright 的 session state |
+
+推荐的本地复核顺序：先运行对应的 Release/package 测试生成 harness，再用 Playwright CLI 完成
+快照和交互，最后用 `agent-browser` 以新 session 重复关键 journey。`favicon.ico` 等静态 harness
+噪声必须与 bundle/runtime error 分开记录；只有页面错误、未处理 rejection、资源闭包错误或
+可观察行为不一致才阻断 Support 升级。
 
 ## 8. 量化指标
 
@@ -260,8 +279,8 @@ carrier、允许 getter、明确拒绝的构造/setter/files/items 清单。
 
 “目标范围内零摩擦”达成需要同时满足：
 
-1. P0 作者面全部为 `Support` 或有完整证据的 `Compatibility Adapter`；route/page 也有真实浏览器
-   闭环。
+1. P0 作者面全部为 `Support` 或有完整证据的 `Compatibility Adapter`；TDesign typed authoring
+   与应用自有 route/page host 均已完成真实浏览器闭环。
 2. ParameterView、browser DI、cascading、navigation、核心 DOM event、ElementReference 的高频子集
    通过四层证据；未覆盖子集在 authored source 有稳定 Guidance/Reject。
 3. TDesign 常见管理页面不再需要不必要的 bridge、cast、手写 builder 或弱类型逃生；自然 Razor

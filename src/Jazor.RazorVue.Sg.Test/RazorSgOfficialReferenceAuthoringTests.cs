@@ -36,12 +36,150 @@ public sealed class RazorSgOfficialReferenceAuthoringTests
             rootNamespace: "Demo.Pages",
             componentMetadataName: "Demo.Pages.ReferenceFocus");
 
-        StringAssert.Contains(observation.ModuleText, "Promise.resolve(state.inputElement.focus())", StringComparison.Ordinal);
         StringAssert.Contains(
             observation.ModuleText,
-            "Promise.resolve(state.inputElement.focus({ preventScroll: true }))",
+            "from \"Microsoft/AspNetCore/Components/ElementReferenceExtensionsModule.js\"",
+            StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "focusAsync(state.inputElement)", StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "focusAsyncWithOptions(state.inputElement, true)",
             StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_OfficialRazorElementReferenceFocus_PreservesMountAndUnmountFailureContractOnDenoHost()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ReferenceFocusRuntime.razor"),
+            documentText:
+            """
+            @using Microsoft.AspNetCore.Components
+            @using Microsoft.AspNetCore.Components.Web
+
+            <button id="focus" @onclick="Focus">Focus</button>
+            <button id="toggle" @onclick="Toggle">Toggle</button>
+            @if (Visible)
+            {
+                <input id="focus-target" @ref="inputElement" />
+            }
+            <span id="status">@Status</span>
+            """,
+            codeBehindSource:
+            """
+            using System;
+            using System.Threading.Tasks;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/reference-focus-runtime")]
+            public partial class ReferenceFocusRuntime : ComponentBase, IVueComponent
+            {
+                private ElementReference inputElement;
+                private bool Visible { get; set; } = true;
+                private string Status { get; set; } = "ready";
+
+                private async Task Focus()
+                {
+                    try
+                    {
+                        await inputElement.FocusAsync();
+                        await inputElement.FocusAsync(true);
+                        Status = "focused";
+                    }
+                    catch (Exception error)
+                    {
+                        Status = error.Message;
+                    }
+                }
+
+                private void Toggle()
+                {
+                    Visible = !Visible;
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ReferenceFocusRuntime");
+
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(
+            observation.ModuleText,
+            "ElementReferenceExtensionsModule.js",
+            StringComparison.Ordinal);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/reference-focus-runtime.mjs",
+            observation.ModuleText,
+            "official-reference-focus-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/reference-focus-runtime.mjs";
+
+            function findNode(node, predicate) {
+                if (Array.isArray(node)) {
+                    for (const child of node) {
+                        const found = findNode(child, predicate);
+                        if (found) return found;
+                    }
+                    return null;
+                }
+
+                if (!node || typeof node !== "object") return null;
+                if (predicate(node)) return node;
+                return findNode(node.children, predicate);
+            }
+
+            function text(node) {
+                if (Array.isArray(node)) return node.map(text).join("");
+                if (!node || typeof node !== "object") return node == null ? "" : String(node);
+                return text(node.children);
+            }
+
+            test("official Razor @ref focus uses the mounted element and preserves the unmounted failure", async () => {
+                const render = component.setup({}, { slots: {} });
+                const initial = render();
+                const focusButton = findNode(initial, node => node.name === "button" && node.props?.id === "focus");
+                const toggleButton = findNode(initial, node => node.name === "button" && node.props?.id === "toggle");
+                const input = findNode(initial, node => node.name === "input" && node.props?.id === "focus-target");
+                assert.ok(focusButton);
+                assert.ok(toggleButton);
+                assert.ok(input);
+
+                await focusButton.props.onClick();
+                const emptyStatus = findNode(render(), node => node.name === "span" && node.props?.id === "status");
+                assert.ok(emptyStatus);
+                assert.equal(text(emptyStatus), "InvalidOperationException: ElementReference has not been configured correctly.");
+
+                const focusCalls = [];
+                input.props.ref({
+                    focus(...args) {
+                        focusCalls.push(args);
+                    }
+                });
+
+                await focusButton.props.onClick();
+                const focusedStatus = findNode(render(), node => node.name === "span" && node.props?.id === "status");
+                assert.ok(focusedStatus);
+                assert.equal(text(focusedStatus), "focused");
+                assert.deepEqual(focusCalls, [[], [{ preventScroll: true }]]);
+
+                toggleButton.props.onClick();
+                input.props.ref(null);
+                const unmounted = render();
+                assert.equal(findNode(unmounted, node => node.name === "input" && node.props?.id === "focus-target"), null);
+
+                const unmountedFocusButton = findNode(unmounted, node => node.name === "button" && node.props?.id === "focus");
+                assert.ok(unmountedFocusButton);
+                await unmountedFocusButton.props.onClick();
+                const unmountedStatus = findNode(render(), node => node.name === "span" && node.props?.id === "status");
+                assert.ok(unmountedStatus);
+                assert.equal(text(unmountedStatus), "InvalidOperationException: ElementReference has not been configured correctly.");
+            });
+            """);
     }
 
     [TestMethod]
