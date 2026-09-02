@@ -4,6 +4,15 @@
 
 ## 2026-09-03
 
+### Jazor 0.28.1
+
+> JazorAdmin 账户页的 typed form authoring 与浏览器验收补强。本版本仅包含示例体验、文档和验证改进，按 `PATCH` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。
+
+#### 改进
+
+- JazorAdmin 账户管理页的创建账户和重置密码流程现在使用 typed `TForm<T>`、`TFormRules<T>`、字段 `@bind-Value` 以及 typed submit/reset 回调，保留现有 API request DTO 边界。
+- 账户页 Release browser smoke 新增表单重置、提交后列表更新和密码重置清空的交互验收，便于示例消费者复现真实 authoring 行为。
+
 ### Jazor 0.28.0
 
 > RazorVue 作者体验与 typed UI 交付继续收口。本版本在 `0.x` 阶段按 `MINOR` 通道发布，所有

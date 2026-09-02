@@ -32,12 +32,10 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.28.0 - 2026-09-03
+### Jazor 0.28.1 - 2026-09-03
 
-- RazorVue authoring now has a focused quickstart for typed TDesign CRUD pages, form validation/reset, and application-owned route hosts.
-- JazorAdmin pages use typed TDesign forms, inputs, switches, radio groups, tables, and dialogs directly; the sample-local control bridge is gone.
-- The authoring sample exercises `TForm` rules and callbacks plus same-origin replace navigation with `HistoryEntryState` and `LocationChanged`.
-- Analyzer diagnostics now accept external events whose add/remove accessors are both explicitly compiler-whitelisted.
+- JazorAdmin's account page now uses typed `TForm<T>` drafts, `TFormRules<T>`, `@bind-Value`, and typed submit/reset callbacks for account creation and password reset.
+- Release browser smoke covers account form reset, post-submit list updates, and clearing the password-reset form so the sample's authoring behavior stays reproducible.
 - The supported boundary remains explicit: constructor injection, Microsoft/Blazor built-in UI components, `IJSRuntime`, and server-only services are still outside this adapter.
 
 See the [changelog](CHANGELOG.md) for the full release history.
@@ -114,7 +112,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.28.0
+dotnet add package Jazor --version 0.28.1
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -122,8 +120,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.28.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.28.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.28.1" />
+  <PackageReference Include="Jazor.Vue" Version="0.28.1" PrivateAssets="all" />
 </ItemGroup>
 ```
 
