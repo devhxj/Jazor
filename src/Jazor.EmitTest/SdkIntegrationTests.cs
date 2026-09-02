@@ -3932,6 +3932,107 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    public async Task Build_LocalReleasePackages_WithExternalNavigationLocationChangingRazorConsumer_ProvesInternalCancellationInRealBrowser()
+    {
+        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            Assert.Inconclusive(
+                "Navigation LocationChanging browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
+            return;
+        }
+
+        var package = await LocalReleasePackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalNavigationLocationChangingReleaseConsumer");
+        var projectPath = CreateExternalNavigationLocationChangingRazorConsumerProject(projectRoot);
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-c",
+                "Release",
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}",
+                "-p:JazorMode=release"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "jazor");
+        var bundlePath = Path.Combine(outputRoot, "bundle.js");
+        var bundleMapPath = Path.Combine(outputRoot, "bundle.js.map");
+        Assert.IsTrue(File.Exists(bundlePath), $"Release navigation bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleMapPath), $"Release navigation bundle source map was not generated: {bundleMapPath}");
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
+        Assert.IsFalse(
+            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
+            "The isolated navigation package consumer must not use frontend node_modules.");
+
+        var bundleText = await File.ReadAllTextAsync(bundlePath);
+        StringAssert.Contains(bundleText, "registerLocationChangingHandler", StringComparison.Ordinal);
+        StringAssert.Contains(bundleText, "LocationChangingContext", StringComparison.Ordinal);
+
+        var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
+        Assert.IsTrue(
+            Directory.Exists(generatedRoot) &&
+            Directory.EnumerateFiles(generatedRoot, "*_razor.g.cs", SearchOption.AllDirectories).Any(),
+            "The external navigation consumer did not compile through the official Razor source generator.");
+
+        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
+        var mappedSources = bundleSourceMap.RootElement
+            .GetProperty("sources")
+            .EnumerateArray()
+            .Select(static source => source.GetString() ?? "")
+            .ToArray();
+        CollectionAssert.Contains(mappedSources, "components/navigation-location-changing.mjs");
+
+        var navigationModulePaths = Directory
+            .EnumerateFiles(outputRoot, "NavigationManagerModule.js", SearchOption.AllDirectories)
+            .ToArray();
+        Assert.HasCount(1, navigationModulePaths, "The Release consumer did not materialize exactly one NavigationManager runtime module.");
+
+        var harnessRoot = Path.Combine(workspace.RootPath, "navigation-location-changing-browser-harness");
+        CreateReleaseNavigationLocationChangingBrowserHarness(outputRoot, harnessRoot);
+
+        var indexPath = Path.Combine(harnessRoot, "index.html");
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(
+            browserPath,
+            indexPath,
+            virtualTimeBudgetMilliseconds: 15000);
+        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
+
+        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "navigation LocationChanging RazorVue");
+        var smoke = smokePayload.RootElement;
+        Assert.IsTrue(
+            smoke.GetProperty("ok").GetBoolean(),
+            "Navigation LocationChanging browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
+        AssertJsonTextContains(smoke, "blockedLocation", "/app/blocked?reason=test#blocked");
+        AssertJsonTextContains(smoke, "allowedLocation", "/app/allowed?state=ok#done");
+        AssertJsonTextContains(smoke, "historyState", "release-state");
+        AssertJsonTextContains(smoke, "supersededLocation", "/app/second");
+        AssertJsonTextContains(smoke, "log", "prevented");
+        AssertJsonTextContains(smoke, "log", "canceled:");
+        AssertJsonTextContains(smoke, "log", "disposed");
+        Assert.AreEqual("4", smoke.GetProperty("visits").GetString());
+
+        var failures = smoke.GetProperty("failures").EnumerateArray()
+            .Select(static failure => failure.GetString() ?? "")
+            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
+            .ToArray();
+        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
+    [TestMethod]
+    [TestCategory("Browser")]
     public async Task Build_LocalReleasePackages_WithExternalComplexLifecycleRazorConsumer_ProvesAsyncRacesInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -5588,6 +5689,202 @@ public sealed class SdkIntegrationTests
         return projectPath;
     }
 
+    private static string CreateExternalNavigationLocationChangingRazorConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+
+        var projectPath = Path.Combine(projectRoot, "ExternalNavigationLocationChangingReleaseConsumer.csproj");
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <LangVersion>preview</LangVersion>
+                <RazorLangVersion>11.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>release</JazorMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ExternalNavigationLocationChangingReleaseConsumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "_Imports.razor"),
+            """
+            @using Microsoft.AspNetCore.Components
+            @using Microsoft.AspNetCore.Components.Routing
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "NavigationLocationChanging.razor.cs"),
+            """
+            using System.Threading.Tasks;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Routing;
+            using static ECMAScript.Vue;
+
+            namespace ExternalNavigationLocationChangingReleaseConsumer;
+
+            [ECMAScriptModule("./components/navigation-location-changing")]
+            public partial class NavigationLocationChanging : ComponentBase, IVueComponent, IDisposable
+            {
+                [Inject]
+                public NavigationManager Navigation { get; set; } = null!;
+
+                private IDisposable? Registration { get; set; }
+
+                private int Visits { get; set; }
+
+                private string Log { get; set; } = "unset";
+
+                private string CurrentUri => Navigation.Uri;
+
+                protected override void OnInitialized()
+                    => Registration = Navigation.RegisterLocationChangingHandler(OnLocationChanging);
+
+                private ValueTask OnLocationChanging(LocationChangingContext context)
+                {
+                    var target = context.TargetLocation;
+                    Visits++;
+                    Log += "|start:" + target;
+
+                    if (target.Contains("/blocked", StringComparison.Ordinal))
+                    {
+                        context.PreventNavigation();
+                        Log += "|prevented";
+                        return ValueTask.CompletedTask;
+                    }
+
+                    if (target.EndsWith("/first", StringComparison.Ordinal) ||
+                        target.EndsWith("/second", StringComparison.Ordinal))
+                    {
+                        context.CancellationToken.Register(() => Log += "|canceled:" + target);
+                        return new ValueTask(Task.Delay(25));
+                    }
+
+                    Log += "|allowed";
+                    return ValueTask.CompletedTask;
+                }
+
+                private void NavigateBlocked()
+                    => Navigation.NavigateTo("/app/blocked?reason=test#blocked");
+
+                private void NavigateAllowed()
+                    => Navigation.NavigateTo(
+                        "/app/allowed?state=ok#done",
+                        new Microsoft.AspNetCore.Components.NavigationOptions { HistoryEntryState = "release-state" });
+
+                private void NavigateSuperseded()
+                {
+                    Navigation.NavigateTo("/app/first");
+                    Navigation.NavigateTo("/app/second");
+                }
+
+                private void DisposeRegistration()
+                {
+                    Registration?.Dispose();
+                    Registration = null;
+                    Log += "|disposed";
+                }
+
+                private void NavigateAfterDispose()
+                    => Navigation.NavigateTo("/app/after-dispose");
+
+                public void Dispose()
+                    => Registration?.Dispose();
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "NavigationLocationChanging.razor"),
+            """
+            <div>
+                <span id="navigation-log">@Log</span>
+                <span id="navigation-uri">@CurrentUri</span>
+                <span id="navigation-visits">@Visits</span>
+                <button id="navigate-blocked" type="button" @onclick="NavigateBlocked">Blocked</button>
+                <button id="navigate-allowed" type="button" @onclick="NavigateAllowed">Allowed</button>
+                <button id="navigate-superseded" type="button" @onclick="NavigateSuperseded">Superseded</button>
+                <button id="dispose-registration" type="button" @onclick="DisposeRegistration">Dispose</button>
+                <button id="navigate-after-dispose" type="button" @onclick="NavigateAfterDispose">After dispose</button>
+            </div>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Bootstrap.cs"),
+            """
+            using System.ComponentModel;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using static ECMAScript.Vue;
+
+            namespace ExternalNavigationLocationChangingReleaseConsumer;
+
+            [ECMAScript("components/navigation-location-changing.mjs")]
+            [Description("@#")]
+            internal static class NavigationLocationChangingModule
+            {
+            #pragma warning disable CS0626 // The generated ECMAScript module supplies this export in the browser.
+                [ECMAScriptName("default")]
+                public extern static IVueComponent Default { get; }
+            #pragma warning restore CS0626
+            }
+
+            [ECMAScript("Microsoft/AspNetCore/Components/NavigationManagerModule.js", Transform.Import)]
+            internal static class NavigationManagerRuntimeModule
+            {
+                [ECMAScriptName("CreateNavigationManager")]
+                public extern static NavigationManager CreateNavigationManager(Action<NavigationManager>? refresh);
+            }
+
+            [ECMAScriptModule("app.mjs")]
+            public static class Bootstrap
+            {
+                private static readonly bool started = Start();
+
+                private static bool Start()
+                {
+                    var app = CreateApp(NavigationLocationChangingModule.Default);
+                    app.Provide(
+                        "jazor:service:Microsoft.AspNetCore.Components.NavigationManager",
+                        NavigationManagerRuntimeModule.CreateNavigationManager(null));
+                    app.Mount("#app");
+                    return true;
+                }
+            }
+            """);
+
+        return projectPath;
+    }
+
     private static string CreateExternalComplexLifecycleRazorConsumerProject(string projectRoot)
     {
         Directory.CreateDirectory(projectRoot);
@@ -6849,6 +7146,216 @@ public sealed class SdkIntegrationTests
                 disposedCascade,
                 recreatedCascade,
                 parameterLog: read("#parameter-log"),
+                failures: smokeFailures()
+              });
+            } catch (error) {
+              finish({
+                ok: false,
+                error: error instanceof Error ? (error.stack || error.message) : String(error),
+                bodyText: bodyText(),
+                failures: smokeFailures()
+              });
+            }
+            """);
+    }
+
+    private static void CreateReleaseNavigationLocationChangingBrowserHarness(string outputRoot, string harnessRoot)
+    {
+        var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
+        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "index.html"),
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="utf-8">
+                <title>Jazor RazorVue navigation LocationChanging browser smoke</title>
+                <script>
+                  window.__jazorSmokeFailures = [];
+                  (function () {
+                    function formatArg(value) {
+                      if (value instanceof Error) {
+                        return value.stack || value.message;
+                      }
+
+                      if (typeof value === "string") {
+                        return value;
+                      }
+
+                      try {
+                        return JSON.stringify(value);
+                      } catch {
+                        return String(value);
+                      }
+                    }
+
+                    function record(kind, values) {
+                      window.__jazorSmokeFailures.push(kind + ": " + Array.from(values).map(formatArg).join(" "));
+                    }
+
+                    const originalError = console.error.bind(console);
+                    const originalWarn = console.warn.bind(console);
+                    console.error = function (...args) {
+                      record("console.error", args);
+                      originalError(...args);
+                    };
+                    console.warn = function (...args) {
+                      record("console.warn", args);
+                      originalWarn(...args);
+                    };
+                    window.addEventListener("error", function (event) {
+                      record("error", [event.message || "unknown"]);
+                    });
+                    window.addEventListener("unhandledrejection", function (event) {
+                      record("unhandledrejection", [event.reason || "unknown"]);
+                    });
+                  })();
+                </script>
+              </head>
+              <body>
+                <div id="app"></div>
+                <script type="module" src="./jazor/bundle.js"></script>
+                <script type="module" src="./smoke.mjs"></script>
+              </body>
+            </html>
+            """);
+
+        WriteFile(
+            Path.Combine(harnessRoot, "smoke.mjs"),
+            """
+            function bodyText() {
+              return document.body ? (document.body.textContent || "") : "";
+            }
+
+            function smokeFailures() {
+              return Array.isArray(window.__jazorSmokeFailures)
+                ? [...window.__jazorSmokeFailures]
+                : [];
+            }
+
+            function encodeUtf8Base64(value) {
+              const bytes = new TextEncoder().encode(value);
+              let binary = "";
+              for (const byte of bytes) {
+                binary += String.fromCharCode(byte);
+              }
+
+              return btoa(binary);
+            }
+
+            function finish(payload) {
+              document.documentElement.setAttribute(
+                "data-jazor-smoke",
+                encodeUtf8Base64(JSON.stringify(payload)));
+            }
+
+            async function waitFor(selector) {
+              for (let attempt = 0; attempt < 240; attempt++) {
+                const element = document.querySelector(selector);
+                if (element) {
+                  return element;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}'.`);
+            }
+
+            async function waitForText(selector, expected) {
+              for (let attempt = 0; attempt < 240; attempt++) {
+                const text = document.querySelector(selector)?.textContent || "";
+                if (text.includes(expected)) {
+                  return text;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+              }
+
+              throw new Error(`Timed out waiting for '${selector}' to contain '${expected}', but saw '${document.querySelector(selector)?.textContent || ""}'.`);
+            }
+
+            async function settle(milliseconds = 0) {
+              await new Promise(resolve => setTimeout(resolve, milliseconds));
+              await new Promise(resolve => setTimeout(resolve, 0));
+              await new Promise(resolve => setTimeout(resolve, 0));
+            }
+
+            function read(selector) {
+              return document.querySelector(selector)?.textContent || "";
+            }
+
+            function currentLocation() {
+              return location.pathname + location.search + location.hash;
+            }
+
+            try {
+              await waitFor("#navigate-blocked");
+              const initialHistoryLength = history.length;
+
+              document.querySelector("#navigate-blocked").click();
+              await waitForText("#navigation-log", "prevented");
+              const blockedLocation = currentLocation();
+              if (blockedLocation !== "/app/blocked?reason=test#blocked") {
+                throw new Error(`Blocked navigation changed the location to '${blockedLocation}'.`);
+              }
+
+              if (history.length !== initialHistoryLength) {
+                throw new Error(`Blocked navigation changed history length from ${initialHistoryLength} to ${history.length}.`);
+              }
+
+              document.querySelector("#navigate-allowed").click();
+              await waitForText("#navigation-log", "allowed");
+              await settle(20);
+              const allowedLocation = currentLocation();
+              if (allowedLocation !== "/app/allowed?state=ok#done") {
+                throw new Error(`Allowed navigation changed the location to '${allowedLocation}'.`);
+              }
+
+              if (history.state !== "release-state") {
+                throw new Error(`Allowed navigation did not preserve history state: ${JSON.stringify(history.state)}.`);
+              }
+
+              const afterAllowedHistoryLength = history.length;
+              document.querySelector("#navigate-superseded").click();
+              await waitForText("#navigation-log", "canceled:");
+              await settle(100);
+              const supersededLocation = currentLocation();
+              if (supersededLocation !== "/app/second") {
+                throw new Error(`Superseded navigation committed '${supersededLocation}'.`);
+              }
+
+              if (history.length !== afterAllowedHistoryLength + 1) {
+                throw new Error(`Superseded navigation changed history length to ${history.length}.`);
+              }
+
+              document.querySelector("#dispose-registration").click();
+              await waitForText("#navigation-log", "disposed");
+              const visitsBeforeDisposeNavigation = read("#navigation-visits");
+              const logBeforeDisposeNavigation = read("#navigation-log");
+              document.querySelector("#navigate-after-dispose").click();
+              await settle(20);
+              const afterDisposeLocation = currentLocation();
+              if (afterDisposeLocation !== "/app/after-dispose") {
+                throw new Error(`Navigation after dispose changed the location to '${afterDisposeLocation}'.`);
+              }
+
+              if (read("#navigation-visits") !== visitsBeforeDisposeNavigation ||
+                  read("#navigation-log") !== logBeforeDisposeNavigation) {
+                throw new Error("A disposed LocationChanging registration still observed navigation.");
+              }
+
+              finish({
+                ok: true,
+                blockedLocation,
+                allowedLocation,
+                historyState: String(history.state),
+                supersededLocation,
+                afterDisposeLocation,
+                visits: read("#navigation-visits"),
+                log: read("#navigation-log"),
                 failures: smokeFailures()
               });
             } catch (error) {
