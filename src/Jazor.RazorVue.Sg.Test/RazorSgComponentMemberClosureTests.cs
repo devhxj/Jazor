@@ -4014,9 +4014,9 @@ public sealed class MemberClosureTests
 
         StringAssert.Contains(script, "import { defineComponent, h, onMounted, onUpdated, reactive } from \"vue\";", StringComparison.Ordinal);
         StringAssert.Contains(script, "onMounted(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.OnAfterRender(true);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "invokeAfterRender(true);", StringComparison.Ordinal);
         StringAssert.Contains(script, "onUpdated(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "scope.OnAfterRender(false);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "invokeAfterRender(false);", StringComparison.Ordinal);
         StringAssert.Contains(script, "function OnAfterRender(firstRender)", StringComparison.Ordinal);
     }
 

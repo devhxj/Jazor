@@ -43,6 +43,7 @@ internal static class VueModuleBuilder
         "onMounted",
         "onUnmounted",
         "onUpdated",
+        "onServerPrefetch",
         "reactive",
         "watch",
         "inject",

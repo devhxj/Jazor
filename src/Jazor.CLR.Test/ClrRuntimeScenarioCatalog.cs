@@ -228,6 +228,7 @@ internal static class ClrRuntimeScenarioCatalog
         .. ClrRuntimeDecimalScenarios.All,
         .. ClrRuntimeDecimalExtendedScenarios.All,
         .. ClrRuntimeDateTimeScenarios.All,
+        .. ClrRuntimeElementReferenceScenarios.All,
         .. ClrRuntimeTimeSpanScenarios.All,
         .. ClrRuntimeDateTimeOffsetScenarios.All,
         .. ClrRuntimeTimeOnlyScenarios.All,
