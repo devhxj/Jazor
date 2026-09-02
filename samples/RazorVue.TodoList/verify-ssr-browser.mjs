@@ -180,7 +180,7 @@ async function main() {
 
   // The server-rendered task board must arrive in the document before any client module runs.
   await waitUntil(
-    `(() => { const board = document.querySelector('main[data-todo-template="todo-template-v1"]'); const total = document.getElementById('todo-total-count'); return board && total && total.textContent === "3" ? "ssr-board" : null; })()`,
+    `(() => { const board = document.querySelector('main[data-todo-template="todo-template-v1"]'); const total = document.getElementById('todo-total-count'); const parameter = board?.getAttribute('data-todo-parameter'); const status = board?.getAttribute('data-todo-parameter-status'); return board && total && total.textContent === "3" && parameter === "SSR ParameterView title" && status === "ready" ? "ssr-board" : null; })()`,
     "server-rendered TodoApp board");
 
   // Interaction recovery: retry until the hydrated Vue app responds. Before hydration a click
@@ -239,7 +239,7 @@ async function main() {
   // Hydration must keep Vue owning the server-rendered root; a failed hydration that re-rendered
   // from scratch would still show the board, so assert the authored template marker survived.
   const boardState = await evaluate(
-    `(() => { const board = document.querySelector('main[data-todo-template="todo-template-v1"]'); const total = document.getElementById('todo-total-count'); return board && total && total.textContent === "4" ? "board-live" : "board-state:" + (total ? total.textContent : "none"); })()`);
+    `(() => { const board = document.querySelector('main[data-todo-template="todo-template-v1"]'); const total = document.getElementById('todo-total-count'); const parameter = board?.getAttribute('data-todo-parameter'); const status = board?.getAttribute('data-todo-parameter-status'); return board && total && total.textContent === "4" && parameter === "SSR ParameterView title" && status === "ready" ? "board-live" : "board-state:" + (total ? total.textContent : "none") + "/" + parameter + "/" + status; })()`);
   if (boardState !== "board-live") {
     throw new Error(`Interacted board lost its SSR root or counts: ${boardState}.`);
   }

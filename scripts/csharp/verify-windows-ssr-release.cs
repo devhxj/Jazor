@@ -872,6 +872,10 @@ internal static class SsrReleaseVerifier
         // proves the packaged runner's declared runtime closure materialized in the publish.
         RequireAnyFile(ssrRoot, "vendor", "server-renderer.esm-browser.prod.js", "SSR server renderer");
         RequireAnyFile(ssrRoot, "vendor", "vue.runtime.esm-browser.prod.js", "SSR Vue runtime");
+
+        var rootComponent = File.ReadAllText(Path.Combine(ssrRoot, "components", "todo-app.mjs"));
+        RequireContains(rootComponent, "runSetParametersAsync", "ParameterView queue in SSR component module");
+        RequireContains(rootComponent, "onServerPrefetch", "SSR wait hook in ParameterView component module");
     }
 
     public static void VerifySsrDocument(string html, string pathBase)
@@ -880,6 +884,8 @@ internal static class SsrReleaseVerifier
         // (2 open, 1 done, 3 total) can only appear when renderToString ran the lowered module.
         RequireContains(html, "<div id=\"app\">", "SSR mount element");
         RequireContains(html, "data-todo-template=\"todo-template-v1\"", "server-rendered TodoApp board");
+        RequireContains(html, "data-todo-parameter=\"SSR ParameterView title\"", "server-applied ParameterView value");
+        RequireContains(html, "data-todo-parameter-status=\"ready\"", "completed async ParameterView lifecycle");
         RequireContains(html, "id=\"todo-open-count\">2<", "server-rendered open count");
         RequireContains(html, "id=\"todo-done-count\">1<", "server-rendered done count");
         RequireContains(html, "id=\"todo-total-count\">3<", "server-rendered total count");

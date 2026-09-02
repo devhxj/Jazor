@@ -33,9 +33,12 @@ internal static class Program
         app.UseJazorReload();
         if (useSsr)
         {
-            // The module path mirrors TodoApp's [ECMAScriptModule("./components/todo-app")];
-            // TodoApp declares no parameters, so the SSR request stays prop-less.
-            app.UseJazorSsr(new JazorSsrRequest("components/todo-app.mjs"));
+            // The module path mirrors TodoApp's [ECMAScriptModule("./components/todo-app")].
+            // Passing a normal prop exercises the generated ParameterView entry point in the
+            // same isolated Release consumer that serves and hydrates the page.
+            app.UseJazorSsr(new JazorSsrRequest(
+                "components/todo-app.mjs",
+                new { SsrTitle = "SSR ParameterView title" }));
         }
         else
         {

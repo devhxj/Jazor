@@ -8,6 +8,9 @@ namespace Todo.Library;
 [ECMAScriptModule("./components/todo-app")]
 public partial class TodoApp : ComponentBase, IVueComponent
 {
+    [Parameter]
+    public string SsrTitle { get; set; } = "Template marker v1";
+
     private readonly List<TodoTask> tasks =
     [
         new("Verify the generated module", false),
@@ -21,11 +24,26 @@ public partial class TodoApp : ComponentBase, IVueComponent
     // that a logic boundary triggers a full navigation instead of Vue component replacement.
     private string LogicMarker => "logic-v1";
 
-    private string TemplateLabel => "Template marker v1";
+    private string TemplateLabel => SsrTitle;
+
+    private string ParameterLifecycleStatus { get; set; } = "pending";
 
     private int OpenCount => tasks.Count(static task => !task.IsDone);
 
     private int DoneCount => tasks.Count(static task => task.IsDone);
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        await base.SetParametersAsync(parameters);
+
+        // The marker is assigned only after the async continuation. SSR must therefore await the
+        // same ParameterView task before serializing HTML; hydration eventually observes the
+        // identical reactive state after its client-side task settles.
+        // 只有异步 continuation 完成后才写入标记，确保 SSR 序列化前确实等待参数任务；
+        // hydration 在客户端任务完成后会收敛到同一个 reactive 状态。
+        await Task.Delay(1);
+        ParameterLifecycleStatus = "ready";
+    }
 
     private void AddTask()
     {

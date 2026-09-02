@@ -775,14 +775,15 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.InProof,
             "MemberClosureBuilder + VueModuleBuilder ParameterView adapter",
             null,
-            "RazorSgSetParametersAsyncRuntimeTests (sparse, alias, slot, SetParameterProperties, queue); RazorSgBlazorReferenceOracleTests.BlazorReferenceParameterView_SetsKnownValuesAndPreservesSparseDefaults; RazorSgBlazorReferenceOracleTests.BlazorReferenceParameterView_RejectsUnknownParameterNames; MemberClosureBuilderContractTests.TryBuild_AcceptsParameterViewRuntimeEntryPoint; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser",
+            "RazorSgSetParametersAsyncRuntimeTests (sparse, alias, slot, SetParameterProperties, queue); RazorSgBlazorReferenceOracleTests.BlazorReferenceParameterView_SetsKnownValuesAndPreservesSparseDefaults; RazorSgBlazorReferenceOracleTests.BlazorReferenceParameterView_RejectsUnknownParameterNames; MemberClosureBuilderContractTests.TryBuild_AcceptsParameterViewRuntimeEntryPoint; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser; scripts/csharp/verify-windows-ssr-release.cs (TodoList ParameterView SSR/hydration consumer)",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime |
             RazorVueCapabilityEvidence.BrowserSmoke |
-            RazorVueCapabilityEvidence.PackageConsumer,
-            "The adapter preserves CLR defaults before base application, sparse source-name overlay, explicit undefined, RenderFragment slots, lifecycle order, and queued updates; an isolated Release package/browser proof now covers parameter replacement and lifecycle ordering, while authored exception propagation and SSR consumer proof remain before Support."),
+            RazorVueCapabilityEvidence.PackageConsumer |
+            RazorVueCapabilityEvidence.SsrHydration,
+            "The adapter preserves CLR defaults before base application, sparse source-name overlay, explicit undefined, RenderFragment slots, lifecycle order, and queued updates. An isolated Release package/browser proof covers parameter replacement and lifecycle ordering, while the Windows SSR Release consumer now proves an official SG component receives serialized props and completes its initial async SetParametersAsync task before server HTML and hydration. Full snapshot/reference parity, cancellation depth, and authored SSR exception coverage remain before Support."),
         new(
             "P1-parameter-view-unsupported-members",
             "ParameterView.TryGetValue, enumeration, and ToDictionary used from authored component logic",

@@ -45,6 +45,8 @@ Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vu Icons、UI 库绑�
 
 `Jazor.React`、`Jazor.RazorReact` 等未来方向尚未构成已接受的产品范围或公开 API。任何新框架集成必须遵守 [框架集成层](../02-architecture/framework-integrations.md) 的边界。
 
+`SetParametersAsync(ParameterView)` 还由 `scripts/csharp/verify-windows-ssr-release.cs` 的 isolated Release NuGet consumer 证明：serialized props 在 server HTML 生成前进入官方 SG 组件的 ParameterView，初始 async 参数任务完成后 hydration 恢复同一参数状态与交互；完整 snapshot/reference parity、取消深度和 authored SSR exception 仍保持 InProof。
+
 ## 交付与 SSR
 
 `JazorMode=debug` 直接物化模块、source map、输出 manifest 与 import map；`JazorMode=release` 通过 Netpack 生成浏览器 bundle。资源类库来自各自 `manifest.json + dist/**`，纯 Jazor 模块来自引用程序集的 `ModuleCatalog`；同一依赖闭包决定选中资源，输出 manifest/import map 只是本次物化结果，不是类库发现入口。该选择减少发布目录和部署复制量，不将未请求的文件错误计入首屏网络收益。启用 `JazorSSR=true` 的 ASP.NET Core 应用可使用本地 Vue SSR 与 hydration，DenoHost 负责服务器模块执行，Netpack 只负责浏览器构建。SSR worker 可以在内部使用内容标识管理生命周期，但这不构成类库 carrier、输出目录 generation 或 URL pointer；SSR runner 由明确资源入口物化而非请求时写入。取消、crash、并发上限与应用关闭均有真实进程回归。SSR 发布链路由独立 NuGet 消费者门禁覆盖 runner、PathBase 组合后的 URL 与 Edge hydration。

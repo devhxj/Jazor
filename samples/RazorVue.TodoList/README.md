@@ -6,6 +6,7 @@
 - `TodoStyleSheet` owns every visual rule through `ECMAScript.Style`; there is no authored CSS under `wwwroot`.
 - `Todo.Host` emits to its project-root `jazor/` directory, serves that directory with `UseJazorHost`, and enables development reload through `AddJazorReload` / `UseJazorReload`.
 - `Todo:PathBase` supports a mounted application such as `/docs`.
+- `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` publishes this sample as an isolated NuGet consumer with `JazorSSR=true`; the SSR gate exercises the standard `[Parameter]`/`SetParametersAsync(ParameterView)` entry before Edge hydration.
 
 Build the host from the repository root:
 

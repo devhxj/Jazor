@@ -89,7 +89,7 @@ RazorVue 的 member-closure profile 现在使用 `RuntimeClassPrivateStorage.Pro
 | member closure、导出名或可达成员冲突 | `Reject` | `JAZORVGA024` | member/symbol location；缩小可达成员或使用受支持类型 |
 | source component/base parameterless constructor replay、static module lifetime | `Support` | 无诊断；artifact/setup contract | constructors 与 state initializer 走 base-to-derived；static storage 不进入 setup state |
 | primary-constructor 参数、参数化 activation、`this(...)`、`base(args)` | `Reject` | `JAZORVGA024` | 改用 `[Parameter]`/VueInject 或无参 constructor/lifecycle；不能把 constructor 参数隐式当作 props |
-| `SetParametersAsync(ParameterView)` 标准 override | `Compatibility Adapter`（当前 In proof） | 无 authored reject；未支持的 ParameterView 成员使用 `JAZORVCA003+` | 保持标准 Blazor 入口；adapter 负责 snapshot、sparse overlay 和 lifecycle 顺序 |
+| `SetParametersAsync(ParameterView)` 标准 override | `Compatibility Adapter`（当前 In proof） | 无 authored reject；未支持的 ParameterView 成员使用 `JAZORVCA003+` | 保持标准 Blazor 入口；adapter 负责 snapshot、sparse overlay 和 lifecycle 顺序；isolated SSR Release consumer 已证明初始 serialized props 与 async task 等待，完整 parity 仍未宣称 |
 | `[VueInject]` container/implementation/重复声明 | `Reject` | `JAZORVGA025` | attribute/contract location；修正声明，不加 runtime fallback |
 | Vue module/import/helper/framing | `Reject` | `JAZORVGA026` | module/import location；使用稳定 module/package contract |
 | bootstrap、未知、未分类内部不变量 | `Reject`（内部） | `JAZORVGA020` | 可能为 `Location.None`；提交最小复现，不把它当作新的作者规则 |
