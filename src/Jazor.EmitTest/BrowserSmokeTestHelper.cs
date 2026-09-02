@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Net.Sockets;
 
 namespace Jazor.EmitTest;
 
@@ -65,6 +67,21 @@ internal static class BrowserSmokeTestHelper
             {
             }
         }
+    }
+
+    public static async Task<BrowserSmokeProcessResult> RunBrowserDumpDomFromHttpAsync(
+        string browserPath,
+        string indexPath,
+        int virtualTimeBudgetMilliseconds = 5000)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(indexPath);
+
+        var root = Path.GetDirectoryName(Path.GetFullPath(indexPath))
+            ?? throw new ArgumentException("The browser harness index path has no parent directory.", nameof(indexPath));
+        await using var server = await StaticFileServer.StartAsync(root);
+        var relativeIndex = Path.GetRelativePath(root, indexPath).Replace(Path.DirectorySeparatorChar, '/');
+        var pageUri = new Uri(server.BaseUri, relativeIndex);
+        return await RunBrowserDumpDomAsync(browserPath, pageUri, root, virtualTimeBudgetMilliseconds);
     }
 
     public static string? ResolveBrowserExecutable()
@@ -211,6 +228,130 @@ internal static class BrowserSmokeTestHelper
         }
 
         return null;
+    }
+
+    private sealed class StaticFileServer : IAsyncDisposable
+    {
+        private readonly HttpListener _listener;
+        private readonly string _root;
+        private readonly CancellationTokenSource _stop = new();
+        private readonly Task _serveTask;
+
+        private StaticFileServer(HttpListener listener, string root, Uri baseUri)
+        {
+            _listener = listener;
+            _root = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            BaseUri = baseUri;
+            _serveTask = ServeAsync();
+        }
+
+        public Uri BaseUri { get; }
+
+        public static Task<StaticFileServer> StartAsync(string root)
+        {
+            var port = ReserveLoopbackPort();
+            var listener = new HttpListener();
+            listener.Prefixes.Add($"http://127.0.0.1:{port}/");
+            listener.Start();
+            return Task.FromResult(new StaticFileServer(listener, root, new Uri($"http://127.0.0.1:{port}/", UriKind.Absolute)));
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _stop.Cancel();
+            _listener.Stop();
+            try
+            {
+                await _serveTask;
+            }
+            catch (HttpListenerException) when (_stop.IsCancellationRequested)
+            {
+            }
+            catch (ObjectDisposedException) when (_stop.IsCancellationRequested)
+            {
+            }
+            finally
+            {
+                _listener.Close();
+                _stop.Dispose();
+            }
+        }
+
+        private async Task ServeAsync()
+        {
+            while (!_stop.IsCancellationRequested)
+            {
+                HttpListenerContext context;
+                try
+                {
+                    context = await _listener.GetContextAsync();
+                }
+                catch (HttpListenerException) when (_stop.IsCancellationRequested)
+                {
+                    return;
+                }
+                catch (ObjectDisposedException) when (_stop.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                _ = HandleAsync(context);
+            }
+        }
+
+        private async Task HandleAsync(HttpListenerContext context)
+        {
+            try
+            {
+                var requestPath = Uri.UnescapeDataString(context.Request.Url?.AbsolutePath ?? "/");
+                var relativePath = requestPath == "/" ? "index.html" : requestPath.TrimStart('/');
+                if (relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries)
+                    .Any(static segment => segment is "." or ".."))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    return;
+                }
+
+                var filePath = Path.GetFullPath(Path.Combine(_root, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+                if (!filePath.StartsWith(_root, StringComparison.OrdinalIgnoreCase) || !File.Exists(filePath))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    return;
+                }
+
+                var bytes = await File.ReadAllBytesAsync(filePath);
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                context.Response.ContentType = ContentType(Path.GetExtension(filePath));
+                context.Response.ContentLength64 = bytes.Length;
+                await context.Response.OutputStream.WriteAsync(bytes);
+            }
+            catch
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            }
+            finally
+            {
+                context.Response.Close();
+            }
+        }
+
+        private static int ReserveLoopbackPort()
+        {
+            using var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            return ((IPEndPoint)listener.LocalEndpoint).Port;
+        }
+
+        private static string ContentType(string extension)
+            => extension.ToLowerInvariant() switch
+            {
+                ".html" => "text/html; charset=utf-8",
+                ".css" => "text/css; charset=utf-8",
+                ".js" or ".mjs" => "text/javascript; charset=utf-8",
+                ".json" or ".map" => "application/json; charset=utf-8",
+                ".svg" => "image/svg+xml",
+                _ => "application/octet-stream"
+            };
     }
 }
 

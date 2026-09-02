@@ -910,22 +910,24 @@ internal static class RazorVueM5CapabilityLedger
             "NavigationManager.RegisterLocationChangingHandler(Func<LocationChangingContext, ValueTask>), LocationChangingContext, CancellationToken, and IDisposable registration",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR NavigationManagerModule + RazorVue route host",
             null,
-            "RazorSgNavigationRuntimeTests; RazorSgBlazorReferenceOracleTests.BlazorReferenceNavigationManager_SupersedesPendingLocationChangingDispatch; ClrRuntimeNavigationScenarios; NavigationManagerClrWhitelistTests",
+            "RazorSgNavigationRuntimeTests; RazorSgBlazorReferenceOracleTests.BlazorReferenceNavigationManager_SupersedesPendingLocationChangingDispatch; ClrRuntimeNavigationScenarios; NavigationManagerClrWhitelistTests; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalNavigationLocationChangingRazorConsumer_ProvesInternalCancellationInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "Reference oracle, real BrowserSmoke, and isolated Release PackageConsumer are still required; popstate/hashchange cancellation remains unclaimed.")
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The browser-interactive internal NavigateTo subset is covered by the Blazor reference oracle, official SG, Deno, and an isolated Release package consumer in a real HTTP-origin browser: PreventNavigation, async supersede/cancellation, query/hash, history state, and registration disposal. popstate/hashchange cancellation, server circuit identity, and SSR/prerender remain unclaimed.")
         {
             TargetProfiles = "Browser interactive; SSR/prerender not claimed",
             Carrier = "Promise/AbortSignal + module-private navigation host WeakMap",
             ImplementationPath = "Jazor.CLR generated mapping and C# Import modules; RazorVue host framing",
             ContributionContractVersion = "generated-clr-module/v1",
             Dependencies = "Task/ValueTask + CancellationToken carriers; NavigationManager route host",
-            ExcludedSurface = "Router/RouteView/LayoutView/NavLink tags; popstate/hashchange cancellation; server circuit identity"
+            ExcludedSurface = "Router/RouteView/LayoutView/NavLink tags; popstate/hashchange cancellation; server circuit identity; SSR/prerender route identity"
         },
         new(
             "P1-blazor-clr-core-dom-events",

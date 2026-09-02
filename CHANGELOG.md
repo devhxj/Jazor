@@ -13,6 +13,11 @@
   或手写 `BuildRenderTree`。
 - 独立 Release NuGet consumer 会物化 TDesign/Vue 资源并在真实 Edge 浏览器中完成表单输入和按钮
   交互；`ECMAScript.TDesign` 的作者指南与零摩擦路线图已同步这一 `Support` 边界。
+- `NavigationManager.RegisterLocationChangingHandler(...)` 的同源内部 `NavigateTo` 子集已完成
+  reference、official Razor SG、Deno、真实 HTTP-origin browser 和 isolated Release package consumer
+  证明；`PreventNavigation`、异步 supersede/cancellation、query/hash、history state 与 registration
+  dispose 可直接使用。`popstate`/`hashchange` cancellation、SSR/prerender route identity 和
+  Microsoft Router/RouteView 等内置 UI 仍不在声明内。
 
 ## 2026-08-31
 

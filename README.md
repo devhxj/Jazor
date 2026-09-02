@@ -35,6 +35,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 ### Unreleased - 2026-09-01
 
 - Native TDesign typed Razor authoring is now supported through an isolated Release NuGet consumer and a real Edge browser smoke: generic/non-generic components, typed slots, `@bind`, unions, required parameters, and attribute splats require no application bridge, cast, or hand-written `BuildRenderTree`.
+- The same-base `NavigationManager.RegisterLocationChangingHandler(...)` subset is proven through the Blazor reference oracle, official Razor SG, Deno, an isolated Release package consumer, and a real HTTP-origin browser smoke, including `PreventNavigation`, async supersede/cancellation, query/hash, history state, and registration disposal.
 - The support boundary remains explicit: Microsoft/Blazor built-in UI components, `IJSRuntime`, and server-only services are still rejected.
 
 See the [changelog](CHANGELOG.md) for the full release history.

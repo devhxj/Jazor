@@ -3987,6 +3987,15 @@ public sealed class SdkIntegrationTests
             Directory.EnumerateFiles(generatedRoot, "*_razor.g.cs", SearchOption.AllDirectories).Any(),
             "The external navigation consumer did not compile through the official Razor source generator.");
 
+        var generatedNavigationSource = Directory
+            .EnumerateFiles(generatedRoot, "NavigationLocationChanging_razor.g.cs", SearchOption.AllDirectories)
+            .Single();
+        var generatedNavigationText = await File.ReadAllTextAsync(generatedNavigationSource);
+        StringAssert.Contains(
+            generatedNavigationText,
+            "\"onclick\", global::Microsoft.AspNetCore.Components.EventCallback.Factory.Create",
+            StringComparison.Ordinal);
+
         using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
         var mappedSources = bundleSourceMap.RootElement
             .GetProperty("sources")
@@ -4004,7 +4013,7 @@ public sealed class SdkIntegrationTests
         CreateReleaseNavigationLocationChangingBrowserHarness(outputRoot, harnessRoot);
 
         var indexPath = Path.Combine(harnessRoot, "index.html");
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomFromHttpAsync(
             browserPath,
             indexPath,
             virtualTimeBudgetMilliseconds: 15000);
@@ -4015,7 +4024,7 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(
             smoke.GetProperty("ok").GetBoolean(),
             "Navigation LocationChanging browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "blockedLocation", "/app/blocked?reason=test#blocked");
+        AssertJsonTextContains(smoke, "blockedTarget", "/app/blocked?reason=test#blocked");
         AssertJsonTextContains(smoke, "allowedLocation", "/app/allowed?state=ok#done");
         AssertJsonTextContains(smoke, "historyState", "release-state");
         AssertJsonTextContains(smoke, "supersededLocation", "/app/second");
@@ -5740,6 +5749,7 @@ public sealed class SdkIntegrationTests
             """
             @using Microsoft.AspNetCore.Components
             @using Microsoft.AspNetCore.Components.Routing
+            @using Microsoft.AspNetCore.Components.Web
             """);
 
         WriteFile(
@@ -7294,11 +7304,12 @@ public sealed class SdkIntegrationTests
             try {
               await waitFor("#navigate-blocked");
               const initialHistoryLength = history.length;
+              const initialLocation = currentLocation();
 
               document.querySelector("#navigate-blocked").click();
               await waitForText("#navigation-log", "prevented");
               const blockedLocation = currentLocation();
-              if (blockedLocation !== "/app/blocked?reason=test#blocked") {
+              if (blockedLocation !== initialLocation) {
                 throw new Error(`Blocked navigation changed the location to '${blockedLocation}'.`);
               }
 
@@ -7317,6 +7328,7 @@ public sealed class SdkIntegrationTests
               if (history.state !== "release-state") {
                 throw new Error(`Allowed navigation did not preserve history state: ${JSON.stringify(history.state)}.`);
               }
+              const allowedHistoryState = String(history.state);
 
               const afterAllowedHistoryLength = history.length;
               document.querySelector("#navigate-superseded").click();
@@ -7349,9 +7361,11 @@ public sealed class SdkIntegrationTests
 
               finish({
                 ok: true,
+                initialLocation,
                 blockedLocation,
+                blockedTarget: "/app/blocked?reason=test#blocked",
                 allowedLocation,
-                historyState: String(history.state),
+                historyState: allowedHistoryState,
                 supersededLocation,
                 afterDisposeLocation,
                 visits: read("#navigation-visits"),

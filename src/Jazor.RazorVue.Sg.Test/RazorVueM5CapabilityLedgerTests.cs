@@ -124,6 +124,19 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
 
+        var locationChanging = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P1-blazor-clr-navigation-location-changing");
+        Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, locationChanging.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, locationChanging.Status);
+        Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+        Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
+        Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        StringAssert.Contains(locationChanging.Fixture, "ProvesInternalCancellationInRealBrowser", StringComparison.Ordinal);
+        StringAssert.Contains(locationChanging.Blocker, "popstate/hashchange", StringComparison.Ordinal);
+
         var route = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P0-route-layout-page-state");
         Assert.IsNull(route.DiagnosticId);
