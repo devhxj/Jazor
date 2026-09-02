@@ -60,6 +60,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.SsrHydration));
         StringAssert.Contains(complexLifecycle.Fixture, "AsyncInitializationFailureReachesNextRender", StringComparison.Ordinal);
         StringAssert.Contains(complexLifecycle.Fixture, "CanceledParameterLifecycleAfterUnmountDoesNotInvalidate", StringComparison.Ordinal);
         StringAssert.Contains(complexLifecycle.Fixture, "QueuedParameterLifecycleDoesNotStartAfterUnmount", StringComparison.Ordinal);
@@ -67,6 +68,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         StringAssert.Contains(complexLifecycle.Fixture, "RepeatedRenderDoesNotRepeatAfterRenderAsyncHook", StringComparison.Ordinal);
         StringAssert.Contains(complexLifecycle.Fixture, "AsyncLifecycleCompletionAfterAsyncUnmountIsIgnored", StringComparison.Ordinal);
         StringAssert.Contains(complexLifecycle.Fixture, "ProvesAsyncRacesInRealBrowser", StringComparison.Ordinal);
+        StringAssert.Contains(complexLifecycle.Fixture, "verify-windows-ssr-release.cs", StringComparison.Ordinal);
         StringAssert.Contains(complexLifecycle.Blocker, "SSR/prerender", StringComparison.Ordinal);
 
         var browserServiceInjection = RazorVueM5CapabilityLedger.All.Single(static entry =>
@@ -123,6 +125,8 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.SsrHydration));
+        StringAssert.Contains(cascading.Fixture, "verify-windows-ssr-release.cs", StringComparison.Ordinal);
 
         var locationChanging = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-blazor-clr-navigation-location-changing");

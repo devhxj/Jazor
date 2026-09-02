@@ -1,7 +1,8 @@
 <main class="@TodoStyleSheet.Application"
       data-todo-template="todo-template-v1"
       data-todo-parameter="@SsrTitle"
-      data-todo-parameter-status="@ParameterLifecycleStatus">
+      data-todo-parameter-status="@ParameterLifecycleStatus"
+      data-todo-initialized="@AsyncLifecycleStatus">
     <header class="@TodoStyleSheet.Header">
         <div>
             <p class="@TodoStyleSheet.Eyebrow">RazorVue task board</p>
@@ -10,6 +11,10 @@
         </div>
         <output id="todo-logic-marker" class="@TodoStyleSheet.LogicMarker">@LogicMarker</output>
     </header>
+
+    <CascadingValue Value="@SsrTitle" Name="theme">
+        <TodoSummaryCard Title="SSR cascade child" />
+    </CascadingValue>
 
     <section class="@TodoStyleSheet.Composer" aria-label="Add task">
         <label class="@TodoStyleSheet.Field">

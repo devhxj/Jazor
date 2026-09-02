@@ -862,6 +862,7 @@ internal static class SsrReleaseVerifier
         var ssrRoot = Path.Combine(jazorRoot, "ssr");
         RequireFile(Path.Combine(ssrRoot, "app.mjs"), "SSR browser bootstrap entry");
         RequireFile(Path.Combine(ssrRoot, "components", "todo-app.mjs"), "SSR root component module");
+        RequireFile(Path.Combine(ssrRoot, "components", "todo-summary-card.mjs"), "SSR cascading child module");
         RequireFile(Path.Combine(ssrRoot, "components", "todo-styles.mjs"), "SSR style module");
         RequireFile(Path.Combine(ssrRoot, "jazor-manifest.json"), "SSR artifact manifest");
         RequireFile(Path.Combine(ssrRoot, "importmap.json"), "SSR browser import map");
@@ -876,6 +877,7 @@ internal static class SsrReleaseVerifier
         var rootComponent = File.ReadAllText(Path.Combine(ssrRoot, "components", "todo-app.mjs"));
         RequireContains(rootComponent, "runSetParametersAsync", "ParameterView queue in SSR component module");
         RequireContains(rootComponent, "onServerPrefetch", "SSR wait hook in ParameterView component module");
+        RequireContains(rootComponent, "cascading", "cascading adapter in SSR root component module");
     }
 
     public static void VerifySsrDocument(string html, string pathBase)
@@ -886,6 +888,9 @@ internal static class SsrReleaseVerifier
         RequireContains(html, "data-todo-template=\"todo-template-v1\"", "server-rendered TodoApp board");
         RequireContains(html, "data-todo-parameter=\"SSR ParameterView title\"", "server-applied ParameterView value");
         RequireContains(html, "data-todo-parameter-status=\"ready\"", "completed async ParameterView lifecycle");
+        RequireContains(html, "data-todo-initialized=\"ready\"", "completed OnInitializedAsync lifecycle");
+        RequireContains(html, "id=\"todo-cascade-card\"", "server-rendered cascading child");
+        RequireContains(html, "data-todo-cascade=\"SSR ParameterView title\"", "server-applied cascading value");
         RequireContains(html, "id=\"todo-open-count\">2<", "server-rendered open count");
         RequireContains(html, "id=\"todo-done-count\">1<", "server-rendered done count");
         RequireContains(html, "id=\"todo-total-count\">3<", "server-rendered total count");

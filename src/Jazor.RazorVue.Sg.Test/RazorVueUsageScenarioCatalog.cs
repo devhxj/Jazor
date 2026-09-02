@@ -729,20 +729,21 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.InProof,
             "VueModuleBuilder setup lifecycle bridge",
             null,
-            "RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_AsyncInitializationFailureReachesNextRender; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_CanceledParameterLifecycleAfterUnmountDoesNotInvalidate; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_QueuedParameterLifecycleDoesNotStartAfterUnmount; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_StaleParameterLifecycleFailureStillReachesNextRender; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_RepeatedRenderDoesNotRepeatAfterRenderAsyncHook; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_AsyncLifecycleCompletionAfterAsyncUnmountIsIgnored; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalComplexLifecycleRazorConsumer_ProvesAsyncRacesInRealBrowser",
+            "RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_AsyncInitializationFailureReachesNextRender; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_CanceledParameterLifecycleAfterUnmountDoesNotInvalidate; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_QueuedParameterLifecycleDoesNotStartAfterUnmount; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_StaleParameterLifecycleFailureStillReachesNextRender; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_RepeatedRenderDoesNotRepeatAfterRenderAsyncHook; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_AsyncLifecycleCompletionAfterAsyncUnmountIsIgnored; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalComplexLifecycleRazorConsumer_ProvesAsyncRacesInRealBrowser; scripts/csharp/verify-windows-ssr-release.cs (TodoList OnInitializedAsync SSR/hydration lifecycle marker)",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime |
             RazorVueCapabilityEvidence.BrowserSmoke |
-            RazorVueCapabilityEvidence.PackageConsumer,
-            "Setup-local failure capture, generation checks, and disposed guards cover the complex lifecycle matrix in official SG and Deno; an isolated Release package consumer now proves the same async races in a real browser. SSR/prerender and hydration side-effect evidence remain required before Support.")
+            RazorVueCapabilityEvidence.PackageConsumer |
+            RazorVueCapabilityEvidence.SsrHydration,
+            "Setup-local failure capture, generation checks, and disposed guards cover the complex lifecycle matrix in official SG and Deno; an isolated Release package consumer proves the same async races in a real browser, while the Windows SSR Release consumer proves initial OnInitializedAsync completion is awaited before server HTML and preserved through hydration. Full SSR/prerender lifecycle identity, rejection/cancellation, and hydration side-effect parity remain before Support.")
         {
-            TargetProfiles = "Compiler authoring, official Razor SG, module artifact, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
+            TargetProfiles = "Compiler authoring, official Razor SG, module artifact, Deno runtime, real browser, isolated Release package consumer, and Windows SSR Release consumer (initial async lifecycle/hydration subset)",
             Carrier = "Setup-local lifecycle failure state plus Promise/Vue lifecycle hooks",
             ImplementationPath = "VueModuleBuilder setup framing; Promise observation with next-render failure propagation; generation/disposed guards",
             Dependencies = "Task/ValueTask Promise carriers; Vue onMounted/onUpdated/onUnmounted hooks; StateHasChanged invalidation",
-            ExcludedSurface = "SSR/prerender lifecycle identity and hydration side-effect parity"
+            ExcludedSurface = "Full SSR/prerender lifecycle identity, rejection/cancellation behavior, and hydration side-effect parity"
         },
         new(
             "P0-route-layout-page-state",
@@ -863,14 +864,15 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.InProof,
             "Cascading adapter + VueModuleBuilder lifecycle bridge",
             "JAZORVCA008",
-            "RazorSgCascadingValueRuntimeTests; RazorSgBlazorReferenceOracleTests.BlazorReferenceCascadingValue_MatchesNameAndTypeAndPublishesCurrentValue; RazorVueCompatibilityAnalyzerTests.WritableCascadingParameter_IsHandledByBrowserAdapterWithoutDiagnostic; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser",
+            "RazorSgCascadingValueRuntimeTests; RazorSgBlazorReferenceOracleTests.BlazorReferenceCascadingValue_MatchesNameAndTypeAndPublishesCurrentValue; RazorVueCompatibilityAnalyzerTests.WritableCascadingParameter_IsHandledByBrowserAdapterWithoutDiagnostic; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser; scripts/csharp/verify-windows-ssr-release.cs (TodoList named cascade SSR/hydration consumer)",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime |
             RazorVueCapabilityEvidence.BrowserSmoke |
-            RazorVueCapabilityEvidence.PackageConsumer,
-            "Typed/named provider lookup, nested Vue scope behavior, IsFixed, same-value behavior, disposal, and update propagation now have isolated Release package/browser proof; SSR/reference parity remains before Support."),
+            RazorVueCapabilityEvidence.PackageConsumer |
+            RazorVueCapabilityEvidence.SsrHydration,
+            "Typed/named provider lookup, nested Vue scope behavior, IsFixed, same-value behavior, disposal, and update propagation have isolated Release package/browser proof; the Windows SSR Release consumer also proves a named cascade reaches the child in server HTML and remains present through hydration. Full reference parity and SSR update/hydration side-effect behavior remain before Support."),
         new(
             "P1-navigation-router",
             "NavigationManager and query/route parameter refresh through the RazorVue route catalog (Microsoft Router/RouteView/LayoutView/NavLink tags excluded)",

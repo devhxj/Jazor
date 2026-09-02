@@ -28,9 +28,17 @@ public partial class TodoApp : ComponentBase, IVueComponent
 
     private string ParameterLifecycleStatus { get; set; } = "pending";
 
+    private string AsyncLifecycleStatus { get; set; } = "pending";
+
     private int OpenCount => tasks.Count(static task => !task.IsDone);
 
     private int DoneCount => tasks.Count(static task => task.IsDone);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1);
+        AsyncLifecycleStatus = "ready";
+    }
 
     public override async Task SetParametersAsync(ParameterView parameters)
     {
