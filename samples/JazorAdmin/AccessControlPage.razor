@@ -24,17 +24,17 @@
                                     <p>@L("Select a role to edit its resource operations", "选择一个角色以编辑其资源操作权限")</p>
                                 </div>
                             </header>
-                            <AdminForm LabelAlign="@TFormLabelAlignValue.Top">
+                            <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
                                 <TFormItem LabelValue="@L("Role code", "角色编码")" Name="roleCode">
-                                    <span data-authorization-field="roleCode"><AdminInput Value="@roleCode" OnChange="@(value => roleCode = value)" /></span>
+                                    <span data-authorization-field="roleCode"><TInput T="string" Value="@roleCode" OnChange="@(value => roleCode = value)" /></span>
                                 </TFormItem>
                                 <TFormItem LabelValue="@L("Display name", "显示名称")" Name="roleDisplayName">
-                                    <span data-authorization-field="roleDisplayName"><AdminInput Value="@roleDisplayName" OnChange="@(value => roleDisplayName = value)" /></span>
+                                    <span data-authorization-field="roleDisplayName"><TInput T="string" Value="@roleDisplayName" OnChange="@(value => roleDisplayName = value)" /></span>
                                 </TFormItem>
                                 <div class="ja-form__commands">
                                     <TButton Theme="@TButtonThemeValue.Primary" data-authorization-command="create-role" OnClick="@(_ => CreateRole())">@L("Add role", "添加角色")</TButton>
                                 </div>
-                            </AdminForm>
+                            </TForm>
                             @if (roles.Length == 0)
                             {
                                 <TEmpty TitleValue="@L("No roles are defined.", "尚未定义角色。")" />
@@ -68,7 +68,7 @@
                                     @foreach (var operation in resourceOperations)
                                     {
                                         <label class="ja-form__option">
-                                            <AdminToggle Value="@HasGrant(operation)" OnChange="@(_ => ToggleGrant(operation))" />
+                                            <TSwitch T="bool" Value="@HasGrant(operation)" OnChange="@(_ => ToggleGrant(operation))" />
                                             <span>@operation.DisplayName</span>
                                             <small>@operation.Resource / @operation.Operation</small>
                                         </label>
@@ -98,9 +98,10 @@
                         }
                         else
                         {
-                            <AdminResourceOperationTable Data="@resourceOperations"
-                                        Columns="@OperationColumns"
-                                        RowKey="Operation" />
+                            <TTable T="ResourceOperationResponse"
+                                    Data="@resourceOperations"
+                                    Columns="@OperationColumns"
+                                    RowKey="Operation" />
                         }
                     </section>
                 }

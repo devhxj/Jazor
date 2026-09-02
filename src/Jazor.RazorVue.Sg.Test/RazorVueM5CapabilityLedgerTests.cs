@@ -71,6 +71,18 @@ public sealed class RazorVueM5CapabilityLedgerTests
         StringAssert.Contains(complexLifecycle.Fixture, "verify-windows-ssr-release.cs", StringComparison.Ordinal);
         StringAssert.Contains(complexLifecycle.Blocker, "explicitly excluded", StringComparison.Ordinal);
 
+        var moduleIntegrity = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P0-vue-module-integrity");
+        Assert.AreEqual("JAZORVGA026", moduleIntegrity.DiagnosticId);
+        Assert.AreEqual(RazorVueCapabilityDecision.DirectSupport, moduleIntegrity.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, moduleIntegrity.Status);
+        Assert.IsTrue(moduleIntegrity.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(moduleIntegrity.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+        Assert.IsTrue(moduleIntegrity.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
+        StringAssert.Contains(moduleIntegrity.Fixture, "RazorSgOfficialModuleIntegrityRuntimeTests", StringComparison.Ordinal);
+        StringAssert.Contains(moduleIntegrity.ImplementationPath, "final AST composition", StringComparison.Ordinal);
+        StringAssert.Contains(moduleIntegrity.Blocker, "Property keys", StringComparison.Ordinal);
+
         var browserServiceInjection = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-browser-service-injection");
         Assert.AreEqual(RazorVueCapabilityStatus.Support, browserServiceInjection.Status);
@@ -154,6 +166,10 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
         Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        StringAssert.Contains(navigation.Fixture, "push/replace", StringComparison.Ordinal);
+        StringAssert.Contains(navigation.Fixture, "HistoryEntryState", StringComparison.Ordinal);
+        StringAssert.Contains(navigation.Fixture, "LocationChanged", StringComparison.Ordinal);
+        StringAssert.Contains(navigation.Blocker, "popstate/hashchange", StringComparison.Ordinal);
         StringAssert.Contains(navigation.Blocker, "explicitly excluded", StringComparison.Ordinal);
 
         var route = RazorVueM5CapabilityLedger.All.Single(static entry =>
@@ -167,6 +183,9 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(route.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         StringAssert.Contains(route.Fixture, "samples/RazorVue.Authoring/verify-smoke.cs", StringComparison.Ordinal);
+        StringAssert.Contains(route.Fixture, "history", StringComparison.Ordinal);
+        StringAssert.Contains(route.Fixture, "LocationChanged", StringComparison.Ordinal);
+        StringAssert.Contains(route.Blocker, "LocationChanging", StringComparison.Ordinal);
         StringAssert.Contains(route.ExcludedSurface, "LocationChanging", StringComparison.Ordinal);
 
         var tdesign = RazorVueM5CapabilityLedger.All.Single(static entry =>
@@ -179,6 +198,10 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(tdesign.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        StringAssert.Contains(tdesign.Fixture, "typed rules", StringComparison.Ordinal);
+        StringAssert.Contains(tdesign.Fixture, "validation", StringComparison.Ordinal);
+        StringAssert.Contains(tdesign.Fixture, "reset", StringComparison.Ordinal);
+        StringAssert.Contains(tdesign.Fixture, "async submit", StringComparison.Ordinal);
 
         var coreDomEvents = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-blazor-clr-core-dom-events");

@@ -8,7 +8,7 @@ using static ECMAScript.Vue;
 namespace RazorVue.Authoring;
 
 [ECMAScriptModule("./components/task-board")]
-public partial class TaskBoard : ComponentBase, IVueComponent
+public partial class TaskBoard : ComponentBase, IVueComponent, IDisposable
 {
     [Inject]
     public NavigationManager Navigation { get; set; } = null!;
@@ -34,15 +34,43 @@ public partial class TaskBoard : ComponentBase, IVueComponent
 
     private string StatusMessage { get; set; } = "Ready for the next task.";
 
+    private string ValidationMessage { get; set; } = "Title and owner are required.";
+
+    private string LastLocationEvent { get; set; } = "none";
+
+    private string LastHistoryEntryState { get; set; } = "none";
+
+    private int LocationEventCount { get; set; }
+
+    private TFormRules<TaskDraft> Rules { get; } = new()
+    {
+        ["title"] =
+        [
+            new TFormRule { Required = true, Message = "Add a title before saving." }
+        ],
+        ["owner"] =
+        [
+            new TFormRule { Required = true, Message = "Add an owner before saving." }
+        ]
+    };
+
     private TaskRow[] Tasks => tasks.ToArray();
 
     private int OpenCount => tasks.Count(static task => task.Status == "Open");
 
     protected override void OnInitialized()
     {
+        Navigation.LocationChanged += OnLocationChanged;
         CurrentPath = Navigation.ToBaseRelativePath(Navigation.Uri);
         if (CurrentPath.Length == 0)
             CurrentPath = "/";
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        LastLocationEvent = args.Location;
+        LastHistoryEntryState = args.HistoryEntryState ?? "none";
+        LocationEventCount++;
     }
 
     private void OpenDialog()
@@ -63,6 +91,20 @@ public partial class TaskBoard : ComponentBase, IVueComponent
 
     private async Task SubmitForm(TSubmitContext<TaskDraft> context)
         => await SaveDraftAsync();
+
+    private void ValidateForm(TValidateResultContext<TaskDraft> context)
+    {
+        ValidationMessage = context.FirstError ?? "Form is valid.";
+        if (context.FirstError is not null)
+            StatusMessage = "Fix the highlighted fields before saving.";
+    }
+
+    private void ResetForm(TFormResetEventContext<TaskDraft> context)
+    {
+        Draft = NewDraft();
+        ValidationMessage = "Form reset. Title and owner are required.";
+        StatusMessage = "Draft reset.";
+    }
 
     private async Task SaveDraftAsync()
     {
@@ -90,6 +132,20 @@ public partial class TaskBoard : ComponentBase, IVueComponent
         CurrentPath = "/tasks";
     }
 
+    private void ReplaceTaskRoute()
+    {
+        var uri = Navigation.BaseUri + "tasks?view=compact";
+        Navigation.NavigateTo(
+            uri,
+            new Microsoft.AspNetCore.Components.NavigationOptions
+            {
+                ReplaceHistoryEntry = true,
+                HistoryEntryState = "authoring-replace"
+            });
+        CurrentPath = "/" + Navigation.ToBaseRelativePath(uri).TrimStart('/');
+        StatusMessage = "Current route replaced.";
+    }
+
     private void OpenTaskDetails()
         => Navigation.NavigateTo("/tasks/2?highlight=true");
 
@@ -98,4 +154,7 @@ public partial class TaskBoard : ComponentBase, IVueComponent
         Title = string.Empty,
         Owner = string.Empty
     };
+
+    public void Dispose()
+        => Navigation.LocationChanged -= OnLocationChanged;
 }

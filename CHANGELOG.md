@@ -2,6 +2,25 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-03
+
+### Jazor 0.28.0
+
+> RazorVue 作者体验与 typed UI 交付继续收口。本版本在 `0.x` 阶段按 `MINOR` 通道发布，所有
+> Jazor/ECMAScript 包继续使用同一版本。
+
+#### 新增与改进
+
+- 新增 RazorVue 快速开始和下一步开发计划，围绕 typed TDesign CRUD 页面、表单校验、应用自有
+  route host、作者诊断和可复现验证入口给出完整起步路径。
+- JazorAdmin 管理页改为直接使用 typed TDesign 组件，覆盖表单、输入、开关、单选、表格和对话框；
+  sample-local 控件桥接已移除，现有页面无需维护额外的控件转发层。
+- RazorVue authoring sample 现在覆盖 typed `TForm` 规则、校验回调、重置回调和异步提交，以及
+  PathBase 下的 `ReplaceHistoryEntry`、`HistoryEntryState` 和 `LocationChanged` 订阅/释放。
+- 对已由 compiler whitelist 完整声明的外部事件 accessor，analyzer 不再误报为不支持的运行时成员。
+- 官方 Razor Source Generator 生成的模块新增最终 AST 完整性回归，避免生成模块出现未绑定标识符或
+  不完整的 Vue artifact。
+
 ## 2026-09-02
 
 ### Jazor 0.27.0

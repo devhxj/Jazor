@@ -55,17 +55,17 @@
                                     <p>@L("Create a direct child under the active organization", "在当前组织下创建直接下级组织")</p>
                                 </div>
                             </header>
-                            <AdminForm LabelAlign="@TFormLabelAlignValue.Top">
+                            <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
                                 <TFormItem LabelValue="@L("Code", "编码")" Name="childCode">
-                                    <span data-organization-field="childCode"><AdminInput Value="@childCode" OnChange="@(value => childCode = value)" /></span>
+                                    <span data-organization-field="childCode"><TInput T="string" Value="@childCode" OnChange="@(value => childCode = value)" /></span>
                                 </TFormItem>
                                 <TFormItem LabelValue="@L("Display name", "显示名称")" Name="childDisplayName">
-                                    <span data-organization-field="childDisplayName"><AdminInput Value="@childDisplayName" OnChange="@(value => childDisplayName = value)" /></span>
+                                    <span data-organization-field="childDisplayName"><TInput T="string" Value="@childDisplayName" OnChange="@(value => childDisplayName = value)" /></span>
                                 </TFormItem>
                                 <div class="ja-form__commands">
                                     <TButton Theme="@TButtonThemeValue.Primary" data-organization-command="create-child" OnClick="@(_ => CreateChild())">@L("Create organization", "创建组织")</TButton>
                                 </div>
-                            </AdminForm>
+                            </TForm>
                         </section>
                     </div>
                 }
@@ -85,10 +85,11 @@
                             }
                             else
                             {
-                                <AdminMemberTable Data="@members"
-                                            Columns="@MemberColumns"
-                                            RowKey="MembershipId"
-                                            RowClassName="@SelectedMemberRowClassName" />
+                                <TTable T="OrganizationMemberResponse"
+                                        Data="@members"
+                                        Columns="@MemberColumns"
+                                        RowKey="MembershipId"
+                                        RowClassName="@SelectedMemberRowClassName" />
                             }
                         </section>
 
@@ -99,23 +100,23 @@
                                     <p>@L("Add a known account or change the selected member's roles", "添加已有账号或修改所选成员的角色")</p>
                                 </div>
                             </header>
-                            <AdminForm LabelAlign="@TFormLabelAlignValue.Top">
+                            <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
                                 <TFormItem LabelValue="@L("Account email", "账号邮箱")" Name="memberEmail">
-                                    <span data-organization-field="memberEmail"><AdminInput Value="@memberEmail" OnChange="@(value => memberEmail = value)" Placeholder="operator@jazor.local" /></span>
+                                    <span data-organization-field="memberEmail"><TInput T="string" Value="@memberEmail" OnChange="@(value => memberEmail = value)" Placeholder="operator@jazor.local" /></span>
                                 </TFormItem>
                                 <TFormItem LabelValue="@L("Initial role", "初始角色")" Name="newMemberRoleId">
-                                    <AdminRadioGroup Value="@newMemberRoleId" OnChange="@(value => newMemberRoleId = value)">
-                                        <AdminRadioButton Value="" LabelValue="@L("No role", "不分配角色")" />
+                                    <TRadioGroup T="string" Value="@newMemberRoleId" OnChange="@(value => newMemberRoleId = value)">
+                                        <TRadioButton T="string" Value="@string.Empty" LabelValue="@L("No role", "不分配角色")" />
                                         @foreach (var role in roles)
                                         {
-                                            <AdminRadioButton Value="@role.Id" LabelValue="@role.DisplayName" />
+                                            <TRadioButton T="string" Value="@role.Id" LabelValue="@role.DisplayName" />
                                         }
-                                    </AdminRadioGroup>
+                                    </TRadioGroup>
                                 </TFormItem>
                                 <div class="ja-form__commands">
                                     <TButton Theme="@TButtonThemeValue.Primary" data-organization-command="create-member" OnClick="@(_ => CreateMember())">@L("Add member", "添加成员")</TButton>
                                 </div>
-                            </AdminForm>
+                            </TForm>
 
                             @if (editingMembershipId is not null)
                             {
@@ -125,7 +126,7 @@
                                         @foreach (var role in roles)
                                         {
                                             <label class="ja-form__option">
-                                                <AdminToggle Value="@HasEditedMemberRole(role.Id)" OnChange="@(_ => ToggleEditedMemberRole(role.Id))" />
+                                                <TSwitch T="bool" Value="@HasEditedMemberRole(role.Id)" OnChange="@(_ => ToggleEditedMemberRole(role.Id))" />
                                                 <span>@role.DisplayName</span>
                                             </label>
                                         }

@@ -88,9 +88,10 @@
             <header class="ja-panel__header"><div><h2>@L("Organization access", "组织访问")</h2><p>@L("Organizations available to this account", "当前账号可管理的组织")</p></div></header>
             <TLoading Loading="@loading" TextValue="@L("Loading organization access", "正在加载组织访问")">
                 <ContentSlot>
-                    <AdminOrganizationSummaryTable Data="@OrganizationRows"
-                                Columns="@OrganizationColumns"
-                                RowKey="Id" />
+            <TTable T="OrganizationSummary"
+                    Data="@OrganizationRows"
+                    Columns="@OrganizationColumns"
+                    RowKey="Id" />
                 </ContentSlot>
             </TLoading>
         </section>
@@ -99,9 +100,10 @@
             <header class="ja-panel__header"><div><h2>@L("Access profile", "访问配置")</h2><p>@L("Effective platform roles", "当前生效的平台角色")</p></div></header>
             <TLoading Loading="@loading" TextValue="@L("Loading access profile", "正在加载访问配置")">
                 <ContentSlot>
-                    <AdminDashboardRoleTable Data="@RoleRows"
-                                             Columns="@RoleColumns"
-                                             RowKey="Code" />
+                    <TTable T="DashboardRoleCell"
+                            Data="@RoleRows"
+                            Columns="@RoleColumns"
+                            RowKey="Code" />
                 </ContentSlot>
             </TLoading>
         </section>

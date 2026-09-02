@@ -18,9 +18,10 @@
                     }
                     else
                     {
-                        <AdminAuthorizationTable Data="@authorizations"
-                                    Columns="@AuthorizationColumns"
-                                    RowKey="Id" />
+                        <TTable T="AuthorizationView"
+                                Data="@authorizations"
+                                Columns="@AuthorizationColumns"
+                                RowKey="Id" />
                     }
                 </section>
             }
@@ -34,9 +35,10 @@
                     }
                     else
                     {
-                        <AdminTokenTable Data="@tokens"
-                                    Columns="@TokenColumns"
-                                    RowKey="Id" />
+                        <TTable T="TokenView"
+                                Data="@tokens"
+                                Columns="@TokenColumns"
+                                RowKey="Id" />
                     }
                 </section>
             }

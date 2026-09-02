@@ -139,6 +139,37 @@ public sealed class RazorVueAnalyzerScopeTests
     }
 
     [TestMethod]
+    public async Task WhitelistedExternalEvent_IsAcceptedByTheGenericAnalyzer()
+    {
+        var diagnostics = await AnalyzeAsync(
+            """
+            using System;
+            using ECMAScript;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Routing;
+
+            [ECMAScriptModule("./navigation")]
+            public sealed class NavigationHost
+            {
+                public NavigationManager Navigation { get; set; } = null!;
+
+                public void Subscribe()
+                    => Navigation.LocationChanged += OnLocationChanged;
+
+                public void Unsubscribe()
+                    => Navigation.LocationChanged -= OnLocationChanged;
+
+                private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+                {
+                }
+            }
+            """);
+
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
     public async Task UnsupportedFieldLikeEventShapes_RemainRejectedByTheSharedCompilerProtocol()
     {
         var diagnostics = await AnalyzeAsync(

@@ -1,6 +1,6 @@
 # RazorVue Blazor-first 兼容与开发者体验路线图
 
-> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器与 P0 module-integrity proof 已落地；应用自有 route-host 的 `@page`/`@layout`/typed route-query/browser-history 子集已达到 `Support`，`NavigationManager` 同源内部 `NavigateTo` 的 LocationChanging 子集也已由 reference、official SG、Deno、真实 HTTP-origin browser 和 isolated Release package consumer 证明。JazorAdmin 与 RazorVue.Authoring 的规范化 Release package/browser consumer gate 也已通过。剩余的是 framework 行为深度、replace/LocationChanged/更宽的 routing、auth state、各 feature 的 SSR/package/browser consumer proof 及未承诺的 P1/P2 能力；`popstate`/`hashchange` cancellation、SSR/prerender route identity 仍未声明。标准 Blazor 内置 UI 组件和 Blazor JS interop 不属于当前产品契约。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
+> 状态：实施中。M5-0 ledger、author-source compatibility rules、ParameterView adapter、browser `[Inject]` property adapter、typed cascading adapter、route catalog/host、NavigationManager 基础适配器与 P0 module-integrity proof 已落地；应用自有 route-host 的 `@page`/`@layout`/typed route-query/browser-history、push/replace、`HistoryEntryState` 和 `LocationChanged` 子集已达到 `Support`，`NavigationManager` 同源内部 `NavigateTo` 的 LocationChanging 子集也已由 reference、official SG、Deno、真实 HTTP-origin browser 和 isolated Release package consumer 证明。JazorAdmin 与 RazorVue.Authoring 的规范化 Release package/browser consumer gate 也已通过。剩余的是 framework 行为深度、更宽的 routing、auth state、各 feature 的 SSR/package/browser consumer proof 及未承诺的 P1/P2 能力；`popstate`/`hashchange` cancellation、SSR/prerender route identity 仍未声明。标准 Blazor 内置 UI 组件和 Blazor JS interop 不属于当前产品契约。JazorAdmin M1-M4 完成后的下一阶段，代号 M5。
 >
 > 目标：开发者按标准 Blazor 的 Razor、组件生命周期、参数、事件、服务和 framework API 使用习惯编写自定义组件；UI 由 TDesign、Vuetify、Element Plus 等组件库提供。RazorVue 应优先自动提供 framework 等价行为；无法保持等价时，由源码分析诊断在作者代码处说明原因、影响和替代，而不是要求开发者预先学习 lowering、Vue 或 generated C#。
 
@@ -118,7 +118,7 @@ P1 消除开发者从普通 Blazor 迁移时最常见的认知断点：
 | SetParametersAsync(ParameterView) | Compatibility Adapter 或 Direct Support | 提供真实 ParameterView snapshot、参数应用顺序和 lifecycle 调度；不能把它伪装成普通 props watch |
 | `@inject`/`[Inject]` property 和 constructor injection | Compatibility Adapter | 浏览器 service catalog 与 Vue provide/inject；仅可执行的服务可以被激活 |
 | CascadingValue 和 [CascadingParameter] | Compatibility Adapter | typed provide/inject、名称/类型匹配、更新传播、嵌套覆盖和生命周期回归 |
-| NavigationManager | Compatibility Adapter | 通过宿主导航实现 URI、NavigateTo、location changed 的明确子集；不承诺 `Router`/`NavLink` 标签 |
+| NavigationManager | Compatibility Adapter | 通过宿主导航实现 URI、NavigateTo、push/replace、HistoryEntryState 和 LocationChanged 的明确子集；不承诺 `Router`/`NavLink` 标签 |
 | route catalog、`@page`、route/query 参数与页面 host framing | Compatibility Adapter | 生成页面 route metadata 和 host navigation contract；`Router`、`RouteView`、`LayoutView`、`NavLink` 等内置组件标签不在本计划中 |
 | `[SupplyParameterFromQuery]`、route parameter、query 更新 | Compatibility Adapter | 由 router/URI adapter 向标准 parameter surface 提供值，并回归 back/forward、编码、nullable 和更新时机 |
 | `@ref`、Dispose、Error propagation 和自定义 fragment/slot | Direct Support 或 Compatibility Adapter | 仅覆盖 framework/lowering primitive；`ErrorBoundary`、`DynamicComponent` 等内置组件标签不在本计划中 |
@@ -335,7 +335,7 @@ Ledger 每一行至少包含：Blazor 作者形状、目标语义基线、P0/P1/
 1. ParameterView 和 SetParametersAsync 的参数快照、source-name sparse 覆盖链、slot/alias 传递、异步顺序和 error behavior。
 2. browser service catalog、[Inject]/@inject property、activation lifetime 和 server-only service diagnostics；当前 property adapter 已进入 proof，constructor injection/parameterized activation 仍由 `JAZORVGA024` 明确拒绝，直到有完整 activation protocol。
 3. CascadingValue、[CascadingParameter]、named cascade、嵌套 provider 覆盖与更新传播。
-4. NavigationManager、自动生成 route catalog、route/query 参数更新和基础 history/popstate behavior；应用自有 route-host 子集已经由 official SG、Deno、真实浏览器和 isolated Release package 证明并进入 `Support`，同源内部 `NavigateTo` 的 LocationChanging cancellation 也已进入 `Support`（包含 PreventNavigation、异步 supersede/cancellation、query/hash、history state 和 registration dispose）。`replace`、LocationChanged 订阅、复杂 URI 状态、popstate/hashchange cancellation 与 SSR/prerender route identity 仍需独立补齐或保持边界。`Router`、`RouteView`、`LayoutView`、`NavLink` 标签不在本路线。
+4. NavigationManager、自动生成 route catalog、route/query 参数更新和基础 history/popstate behavior；应用自有 route-host 子集已经由 official SG、Deno、真实浏览器和 isolated Release package 证明并进入 `Support`，同源内部 `NavigateTo` 的 LocationChanging cancellation 也已进入 `Support`（包含 PreventNavigation、异步 supersede/cancellation、query/hash、history state 和 registration dispose）。`replace`、LocationChanged 订阅和 history length 行为也已由 Authoring Release browser journey 覆盖；复杂 URI 状态、popstate/hashchange cancellation 与 SSR/prerender route identity 仍保持边界。`Router`、`RouteView`、`LayoutView`、`NavLink` 标签不在本路线。
 5. 自定义/第三方组件的静态 type token、registry、fragment/slot 和参数 descriptor contract；不以 Microsoft `DynamicComponent` 标签作为隐式 Vue 组件入口。
 6. 自定义组件的 error propagation、`@ref`、dispose 和 render/update/unmount 组合；`ErrorBoundary` 标签和其历史 adapter 不在本路线。
 
@@ -363,11 +363,11 @@ Ledger 每一行至少包含：Blazor 作者形状、目标语义基线、P0/P1/
 
 交付物：
 
-- 从 samples/JazorAdmin/AdminControls.cs 提炼重复但非自然的 binding authoring 摩擦；先形成 API review，再决定 sample-local、共享项目或公共 NuGet package；
+- 根据 JazorAdmin M2 期间记录的重复但非自然 binding authoring 摩擦形成 API review，再决定 sample-local、共享项目或公共 NuGet package；
 - wrapper 只覆盖两个以上独立页面重复且原生 Razor 体验不自然的形状，保持 Value/ValueChanged、EventCallback<T>、Parameter、required/type contract 和 slot 类型；
 - 新增 docs/03-guides/razorvue-quickstart.md，内容全部来自 samples/RazorVue.Authoring；更新 guides index 与完整 authoring guide 的入口；
 - 将“零额外认知”作为 quickstart 的硬验收：从标准 Blazor 页面模板开始，除宿主必须选择的 API/base URL 等普通配置外，不要求页面作者记忆 RazorVue namespace、builder、module、特殊 parameter 类型或转译器术语；兼容 analyzer/runtime adapter 由正常 package 引用传递进入；
-- 将已经验证的 bridge 迁移到 JazorAdmin 的重复页面，保留旧入口兼容期；
+- JazorAdmin 的目标页面直接消费已经验证的 typed binding；只有两个以上页面重复且原生 Razor 仍不自然时才保留领域 wrapper，不恢复通用控件 bridge；
 - 公共 API/新增 Support 走 MINOR，修复与文档走 PATCH，破坏性迁移按 release-and-versioning 规则记录。
 
 退出条件：开发者可只跟 quickstart 完成记录管理页面；JazorAdmin 的复杂页面使用相同作者面；公共 package 改动由本地 package consumer 证明。

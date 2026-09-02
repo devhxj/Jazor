@@ -146,13 +146,13 @@ M5 的产品目标不同：为了让页面作者不必预先学习 RazorVue 的�
 
 ## D6：新增待裁决边界登记（2026-08-18，来自 JazorAdmin M2 设计系统实测）
 
-以下三个形状均为**编译通过、产物必然运行时失败**的 A 级静默劣化，按本文契约必须先登记再裁决。三者都在 JazorAdmin 重写中被真实触发，当前以作者侧替代绕过；浏览器 smoke 是唯一拦截线。
+以下三个形状曾是**编译通过、产物必然运行时失败**的 A 级静默劣化，按本文契约先登记再裁决。三者都在 JazorAdmin 重写中被真实触发；现已沿 final Compilation、direct-render 和 module-closure 路径完成 Support，JazorAdmin 直接使用 typed binding，浏览器 smoke 继续作为回归拦截线。
 
 | 编号 | 形状 | 现状（实测） | 决策候选 | JazorAdmin 已落地替代 |
 | --- | --- | --- | --- | --- |
-| F1 泛型组件 TypeInference 辅助 | `.razor` 标记使用泛型组件（如 `<AdminTable Data=... Columns=...>`，T 由实参推断）。official SG 生成 `TypeInference.CreateX_0<T>` 静态辅助，体内为开放式 `OpenComponent<AdminTable<T>>` | 根渲染体和宿主组件子 RenderFragment 均按同一 helper 内联路径处理；构造泛型方法的参数绑定到 `OriginalDefinition`，因此嵌套 slot 使用当前 fragment builder，最终组件类型参数擦除且不泄漏 `__builder` | **Support**。继续保持单次求值顺序；只有 helper body 本身包含未建模 RenderTree 协议时才报告对应 direct-render 诊断 | 泛型组件可直接使用，闭式 wrapper 仍可作为需要固定 API/模块名时的可选写法 |
-| F2 authored BuildRenderTree 中的开放泛型实例化 | 桥接基类（如 `AdminTable<T>`）的 `BuildRenderTree` 含 `builder.OpenComponent<TTable<T>>(0)`，T 为类自身泛型参数；最终组件可能是 `AdminTable<SettingView>` 这样的闭式派生类型 | `ResolveOpenComponentType` 沿用组件导入和类型参数擦除路径；direct-render 入口与 helper/slot 入口均把构造方法参数绑定到 `OriginalDefinition`，开放类型不会作为 JS 标识符发出，闭式 `TForm<TJsonObject>`/`TTable<ClosedRow>` 同样按 `createBlock` 翻译 | **Support**。类型参数仅是编译期注解；组件本身必须满足 `ComponentBase` + `IVueComponent`（或派生接口），并有 `[ECMAScriptModule]`/`[ECMAScript(..., Transform.Component, ...)]` 描述，运行时敏感的动态 `Type` 仍按 `JAZORVGA021` | 基类可保留泛型 BuildRenderTree；闭式 wrapper 仅在业务需要固定类型入口时使用 |
-| F3 被非渲染方法引用的 RenderFragment 成员遭静默裁剪 | `private RenderFragment<...> XxxCell => context => builder => {...}`（属性或方法形态），由普通计算成员（列定义集合初始化器）引用 `Cell = XxxCell()` | member closure 会从任意已发射成员继续遍历，RenderFragment 返回方法/属性不再被过宽的 direct-template 过滤器裁剪；`Columns()` 与 `XxxCell` 同时进入模块并保持确定性 | **Support**。可达性闭包的契约是“从任一已发射组件成员可达即保留”，不区分是否直接来自渲染树。若未来某种片段语法仍无法 lowering，必须报告 typed `JAZORVGA024`，禁止生成未定义标识符 | 集合初始化器内联 double-cast lambda 仍可用；独立 RenderFragment 成员现在也可由普通 helper 安全引用 |
+| F1 泛型组件 TypeInference 辅助 | `.razor` 标记使用泛型组件（如 `<TTable T="Row" Data=... Columns=...>`，T 由显式类型参数固定）。official SG 生成 `TypeInference.CreateX_0<T>` 静态辅助，体内为开放式 `OpenComponent<TTable<T>>` | 根渲染体和宿主组件子 RenderFragment 均按同一 helper 内联路径处理；构造泛型方法的参数绑定到 `OriginalDefinition`，因此嵌套 slot 使用当前 fragment builder，最终组件类型参数擦除且不泄漏 `__builder` | **Support**。继续保持单次求值顺序；只有 helper body 本身包含未建模 RenderTree 协议时才报告对应 direct-render 诊断 | 泛型组件可直接使用，只有需要固定领域 API/模块名时才保留闭式 wrapper |
+| F2 authored BuildRenderTree 中的开放泛型实例化 | 泛型组件基类的 `BuildRenderTree` 含 `builder.OpenComponent<TTable<T>>(0)`，T 为类自身泛型参数；最终组件可以是闭式 `TTable<SettingView>` | `ResolveOpenComponentType` 沿用组件导入和类型参数擦除路径；direct-render 入口与 helper/slot 入口均把构造方法参数绑定到 `OriginalDefinition`，开放类型不会作为 JS 标识符发出，闭式 `TForm<TJsonObject>`/`TTable<ClosedRow>` 同样按 `createBlock` 翻译 | **Support**。类型参数仅是编译期注解；组件本身必须满足 `ComponentBase` + `IVueComponent`（或派生接口），并有 `[ECMAScriptModule]`/`[ECMAScript(..., Transform.Component, ...)]` 描述，运行时敏感的动态 `Type` 仍按 `JAZORVGA021` | 泛型组件可直接保留 `BuildRenderTree`；只有需要固定领域 API/模块名时才使用闭式 wrapper |
+| F3 被非渲染方法引用的 RenderFragment 成员遭静默裁剪 | `private RenderFragment<...> XxxCell => context => builder => {...}`（属性或方法形态），由普通计算成员（列定义集合初始化器）引用 `Cell = XxxCell()` | member closure 会从任意已发射成员继续遍历，RenderFragment 返回方法/属性不再被过宽的 direct-template 过滤器裁剪；`Columns()` 与 `XxxCell` 同时进入模块并保持确定性 | **Support**。可达性闭包的契约是“从任一已发射成员可达即保留”，不区分是否直接来自渲染树。若未来某种片段语法仍无法 lowering，必须报告 typed `JAZORVGA024`，禁止生成未定义标识符 | 当前页面直接使用 typed component/slot contract；仅在需要领域 API 或稳定模块名时保留 wrapper |
 
 ### 转译器优化方向（按杠杆排序）
 
@@ -164,10 +164,10 @@ M5 的产品目标不同：为了让页面作者不必预先学习 RazorVue 的�
 
 ### 已验证的 Support 形状（建议补回归锁定）
 
-- 闭式泛型桥接组件（`TForm<TJsonObject>` / `TTable<ClosedRow>`）在 code-behind BuildRenderTree 中完整翻译；
+- 闭式泛型组件（`TForm<TJsonObject>` / `TTable<ClosedRow>`）在 code-behind BuildRenderTree 中完整翻译；
 - 集合初始化器内联 RenderFragment lambda（含嵌套组件实例化、EventCallback、透传属性）；
 - VueDataUi / VuIcons 库组件在页面渲染上下文直接实例化；
-- 每类型桥接模块的 Emit 闭包与 manifest 自动收集（`admin-table-*.mjs` 全部按需物化）。
+- typed component module 的 Emit 闭包与 manifest 自动收集；领域 wrapper 只有在 API review 后按需保留。
 
 ### 调试方法论备注
 

@@ -23,11 +23,12 @@
                     }
                     else
                     {
-                        <AdminAccountTable Data="@accounts"
-                                    Columns="@Columns"
-                                    RowKey="Id"
-                                    RowClassName="@SelectedRowClassName"
-                                    data-accounts-table="" />
+                        <TTable T="AccountResponse"
+                                Data="@accounts"
+                                Columns="@Columns"
+                                RowKey="Id"
+                                RowClassName="@SelectedRowClassName"
+                                data-accounts-table="" />
                     }
                 </section>
 
@@ -38,24 +39,24 @@
                             <p>@L("New accounts can then be assigned to organizations and roles", "创建后可将账户分配到组织和角色")</p>
                         </div>
                     </header>
-                    <AdminForm LabelAlign="@TFormLabelAlignValue.Top">
+                    <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
                         <TFormItem LabelValue="@L("Email", "邮箱")" Name="email">
-                            <span data-account-field="email"><AdminInput Value="@email" OnChange="@(value => email = value)" Placeholder="operator@jazor.local" /></span>
+                            <span data-account-field="email"><TInput T="string" Value="@email" OnChange="@(value => email = value)" Placeholder="operator@jazor.local" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Display name", "显示名称")" Name="displayName">
-                            <span data-account-field="displayName"><AdminInput Value="@displayName" OnChange="@(value => displayName = value)" /></span>
+                            <span data-account-field="displayName"><TInput T="string" Value="@displayName" OnChange="@(value => displayName = value)" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Initial password", "初始密码")" Name="password">
-                            <span data-account-field="password"><AdminInput Value="@password" OnChange="@(value => password = value)" Type="@TInputTypeValue.Password" /></span>
+                            <span data-account-field="password"><TInput T="string" Value="@password" OnChange="@(value => password = value)" Type="@TInputTypeValue.Password" /></span>
                         </TFormItem>
                         <TFormItem Name="platformAdministrator">
-                            <AdminToggle Value="@platformAdministrator" OnChange="@(value => platformAdministrator = value)" />
+                            <TSwitch T="bool" Value="@platformAdministrator" OnChange="@(value => platformAdministrator = value)" />
                             <span class="ja-form__inline-label">@L("Platform administrator", "平台管理员")</span>
                         </TFormItem>
                         <div class="ja-form__commands">
                             <TButton Theme="@TButtonThemeValue.Primary" data-account-command="create" OnClick="@(_ => CreateAccount())">@L("Create account", "创建账户")</TButton>
                         </div>
-                    </AdminForm>
+                    </TForm>
 
                     @if (SelectedAccount is not null)
                     {
@@ -63,7 +64,7 @@
                             <h3>@L("Reset password", "重置密码")</h3>
                             <p>@SelectedAccount.Email</p>
                             <div class="ja-form__inline">
-                                <span data-account-field="newPassword"><AdminInput Value="@newPassword" OnChange="@(value => newPassword = value)" Type="@TInputTypeValue.Password" Placeholder="@L("New password", "新密码")" /></span>
+                                <span data-account-field="newPassword"><TInput T="string" Value="@newPassword" OnChange="@(value => newPassword = value)" Type="@TInputTypeValue.Password" Placeholder="@L("New password", "新密码")" /></span>
                                 <TButton data-account-command="reset-password" OnClick="@(_ => ResetPassword())">@L("Update password", "更新密码")</TButton>
                             </div>
                         </div>

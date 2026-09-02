@@ -32,13 +32,13 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.27.0 - 2026-09-02
+### Jazor 0.28.0 - 2026-09-03
 
-- SSR hosts can pass explicit browser-service providers through `JazorSsrRequest.Providers`; the same JSON provider envelope is registered during Deno server rendering and browser hydration, keeping ordinary `[Inject]` properties available across the SSR boundary.
-- The bounded RazorVue framework subset now has Support evidence for ParameterView, writable browser-service injection, typed/named cascading, internal route/navigation history, and browser/initial-SSR lifecycle paths; deeper SSR/prerender identity and parity surfaces remain explicitly excluded.
-- Natural Razor authoring now has a proven TDesign path covering generic and non-generic components, typed slots, `@bind`, unions, required parameters, and attribute splatting.
-- `NavigationManager.RegisterLocationChangingHandler(...)` supports the documented same-origin internal `NavigateTo` path, including cancellation, query/hash, history state, and registration disposal in packaged browser consumers.
-- The support boundary remains explicit: constructor injection, Microsoft/Blazor built-in UI components, `IJSRuntime`, and server-only services are still outside this adapter.
+- RazorVue authoring now has a focused quickstart for typed TDesign CRUD pages, form validation/reset, and application-owned route hosts.
+- JazorAdmin pages use typed TDesign forms, inputs, switches, radio groups, tables, and dialogs directly; the sample-local control bridge is gone.
+- The authoring sample exercises `TForm` rules and callbacks plus same-origin replace navigation with `HistoryEntryState` and `LocationChanged`.
+- Analyzer diagnostics now accept external events whose add/remove accessors are both explicitly compiler-whitelisted.
+- The supported boundary remains explicit: constructor injection, Microsoft/Blazor built-in UI components, `IJSRuntime`, and server-only services are still outside this adapter.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
@@ -114,7 +114,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.27.0
+dotnet add package Jazor --version 0.28.0
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -122,8 +122,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.27.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.27.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.28.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.28.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

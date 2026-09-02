@@ -1,6 +1,6 @@
 # JazorAdmin 生产级参考应用路线图
 
-> 适用范围：`samples/JazorAdmin` 的产品定位、模块边界、界面设计指导与验收路线。`src/Jazor.Admin` 库契约不因本路线变更；应用层 UI 选型（TDesign）继续通过容器替换表达。
+> 适用范围：`samples/JazorAdmin` 的产品定位、模块边界、界面设计指导与验收路线。`src/Jazor.Admin` 库契约不因本路线变更；应用层 UI 直接通过 `ECMAScript.TDesign` 的强类型组件表达。
 
 ## 目标
 
@@ -43,15 +43,15 @@
 ### M1 定位与信息架构收敛（已完成）
 
 - 重写 `samples/JazorAdmin/README.md` 定位为生产级参考应用；本路线图即规划文档。
-- 退役 `StarterCatalog` 的 22 个上游模板复刻页与 result 页品牌资产。实施时确认的边界：壳层（页头搜索/通知/用户区）、外观抽屉（`StarterSettings` + 桥接组件 + setting 品牌资产）和仪表盘指标卡复用 Starter 复刻期的样式与组件，因此 `StarterStyles.cs` 收缩为壳层 + 仪表盘 + 外观抽屉最小规则集而不是整体删除，命名与类名（`ja-starter-*`）收敛留给 M2。属破坏性变更，走 MINOR 版本并在 CHANGELOG 写迁移说明。
+- 退役 `StarterCatalog` 的 22 个上游模板复刻页与 result 页品牌资产。实施时确认的边界：壳层（页头搜索/通知/用户区）、外观抽屉（`StarterSettings` + TDesign 控件 + setting 品牌资产）和仪表盘指标卡复用 Starter 复刻期的样式与组件，因此 `StarterStyles.cs` 收缩为壳层 + 仪表盘 + 外观抽屉最小规则集而不是整体删除，命名与类名（`ja-starter-*`）收敛留给 M2。属破坏性变更，走 MINOR 版本并在 CHANGELOG 写迁移说明。
 - 导航信息架构重组为分区：工作台（直达）、身份与访问（组织/授权/账号/SSO）、平台运营（配置/调度）。IconBar 承载分区，次级菜单承载模块与页面；“门户工作台”分区语义随 M4 落位；“开发者参考”最终未设独立导航分区，以本路线图“页面范式（开发者参考契约）”承载可复制范式。
 - 验收：`verify-smoke` 通过（分区导航断言、IconBar 分区数、英文切换迁移至真实模块页）；`docs/03-guides/examples.md` 与 `docs/01-overview/product-scope.md` 已同步。
 
 ### M2 界面设计系统落地（已完成）
 
-- 组件 spike 结论：`TTable`（含 `Cell` 渲染片段、`RowClassName` 选中态）、`TForm`/`TFormItem`、`TLoading`、`TEmpty`、`TAlert`、`TTag`、`TButton` 与 `VueUiKpi` / `VueUiVerticalBar` / `VueUiDonut` / VuIcons 全部可在 RazorVue 页面上下文组合渲染。桥接组件（`AdminControls.cs`：`AdminTable<T>`/`AdminInput`/`AdminTextarea`/`AdminForm`/`AdminRadioGroup`/`AdminRadioButton`/`AdminToggle`）负责在 C# 侧固定 TDesign 泛型参数。
-- **降级边界发现与修复**（已登记到 [RazorVue 作者面诊断路线图](./razorvue-authoring-diagnostics.md)）：官方 Razor SG 为泛型组件生成的 `TypeInference` 辅助方法，以及手写泛型基类 `BuildRenderTree` 中的开放式 `OpenComponent<T>`，现在都沿用当前 fragment/direct-render builder 作用域，并将构造泛型方法与方法体参数绑定到 `OriginalDefinition`。因此根渲染体、宿主组件子片段和闭式派生组件都保持泛型擦除语义，不会泄漏未定义的 `__builder` 或 `builder.*` 伪调用。`.razor` 标记可以直接使用泛型组件；每个行类型提供非泛型薄包装（`AdminSettingTable`/`AdminAccountTable` 等）仍是需要固定业务 API 或模块名时的可选组织方式。
-- 八个模块页（SSO 应用/作用域/授权/令牌、组织机构、角色与资源授权、账号、配置、调度）全部重写为 TDesign 组件：数据表走 `TTable`（列定义在 code-behind，组合单元格走 `Cell`），表单走 `TForm`/`TFormItem` + 桥接输入控件，加载态 `TLoading`、空态 `TEmpty`、错误态 `TAlert`、状态徽标 `TTag`。页面骨架统一为 `ja-page`/`ja-page__split`/`ja-panel` 布局工具。
+- 组件 spike 结论：`TTable`（含 `Cell` 渲染片段、`RowClassName` 选中态）、`TForm`/`TFormItem`、`TLoading`、`TEmpty`、`TAlert`、`TTag`、`TButton` 与 `VueUiKpi` / `VueUiVerticalBar` / `VueUiDonut` / VuIcons 全部可在 RazorVue 页面上下文组合渲染。管理页现在直接使用这些强类型 TDesign 组件；泛型参数由 Razor 标记显式声明，不需要应用专用控件桥接。
+- **降级边界发现与修复**（已登记到 [RazorVue 作者面诊断路线图](./razorvue-authoring-diagnostics.md)）：官方 Razor SG 为泛型组件生成的 `TypeInference` 辅助方法，以及手写泛型基类 `BuildRenderTree` 中的开放式 `OpenComponent<T>`，现在都沿用当前 fragment/direct-render builder 作用域，并将构造泛型方法与方法体参数绑定到 `OriginalDefinition`。因此根渲染体、宿主组件子片段和闭式派生组件都保持泛型擦除语义，不会泄漏未定义的 `__builder` 或 `builder.*` 伪调用。`.razor` 标记可以直接使用泛型组件；只有在需要固定领域 API 或模块名时才保留非泛型薄包装。
+- 管理模块页（SSO 应用/作用域/授权/令牌、组织机构、角色与资源授权、账号、配置、调度）全部重写为 TDesign 组件：数据表走 `TTable<T>`（列定义在 code-behind，组合单元格走 `Cell`），表单走 `TForm<TJsonObject>`/`TFormItem` 与 typed `TInput<string>`、`TTextarea`、`TSwitch<bool>`、`TRadioGroup<string>`，加载态 `TLoading`、空态 `TEmpty`、错误态 `TAlert`、状态徽标 `TTag`。页面骨架统一为 `ja-page`/`ja-page__split`/`ja-panel` 布局工具。
 - 仪表盘重写：指标卡 `VueUiKpi`、执行趋势 `VueUiVerticalBar`、资源占比 `VueUiDonut`（数据来自 `Features/Overview` 真实 API），图标面迁至 VuIcons（`VuAppWindow`/`VuUser`/`VuServer`/`VuChartLine`/`VuArrowUpRight`）。新增 `ECMAScript.VueDataUi`、`ECMAScript.VuIcons` 包引用。
 - 样式收缩：`Styles.cs` 3048→约 1800 行、`StarterStyles.cs` 953→约 600 行，死规则清零（按"定义-引用"差异删除 `ja-management__*`、`ja-overview__*`、旧仪表盘/旧壳层骨架等约 250 条语句）。剩余规则全部在用；**登录页与壳层手绘面（`ja-access`、`ja-iconbar`、TDesign 组合壳）未重写是 <1000 行目标未达的原因**；M4 完成时登录页仍保留手绘实现，接入 TDesign 表单留作后续门户工作。
 - 验收：`verify-smoke` 更新为 TDesign DOM 锚点（`.t-table`/`.t-loading`/`.t-empty`）与 `data-*` 命令锚点，新增空态验收（配置中心删除全部配置后 `TEmpty` 出现，同时覆盖两段式删除确认）；桌面与移动 viewport 断言覆盖重写页面。

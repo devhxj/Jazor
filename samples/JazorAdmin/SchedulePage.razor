@@ -18,21 +18,22 @@
                     }
                     else
                     {
-                        <AdminScheduleTable Data="@schedules"
-                                    Columns="@Columns"
-                                    RowKey="Key"
-                                    RowClassName="@SelectedRowClassName" />
+                        <TTable T="ScheduleView"
+                                Data="@schedules"
+                                Columns="@Columns"
+                                RowKey="Key"
+                                RowClassName="@SelectedRowClassName" />
                     }
                 </section>
 
                 <section class="ja-panel" aria-labelledby="schedule-editor-title">
                     <header class="ja-panel__header"><div><h2 id="schedule-editor-title">@name</h2><p>@description</p></div></header>
-                    <AdminForm LabelAlign="@TFormLabelAlignValue.Top">
+                    <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
                         <TFormItem LabelValue="@L("Quartz Cron (UTC)", "Quartz Cron（UTC）")" Name="cron">
-                            <span data-schedule-field="cron"><AdminInput Value="@cron" OnChange="@(value => cron = value)" /></span>
+                            <span data-schedule-field="cron"><TInput T="string" Value="@cron" OnChange="@(value => cron = value)" /></span>
                         </TFormItem>
                         <TFormItem Name="enabled">
-                            <AdminToggle Value="@enabled" OnChange="@(value => enabled = value)" />
+                            <TSwitch T="bool" Value="@enabled" OnChange="@(value => enabled = value)" />
                             <span class="ja-form__inline-label">@L("Enable scheduled execution", "启用定时执行")</span>
                         </TFormItem>
                         <dl class="ja-form__summary">
@@ -48,7 +49,7 @@
                             <TButton Variant="@TButtonVariantValue.Outline" data-schedule-command="run" OnClick="@(_ => RunNow())">@L("Run now", "立即执行")</TButton>
                             <TButton Variant="@TButtonVariantValue.Text" data-schedule-command="refresh-runs" OnClick="@(_ => LoadRuns())">@L("Refresh history", "刷新历史")</TButton>
                         </div>
-                    </AdminForm>
+                    </TForm>
                 </section>
             </div>
 
@@ -60,9 +61,10 @@
                 }
                 else
                 {
-                    <AdminScheduleRunTable Data="@runs"
-                                Columns="@RunColumns"
-                                RowKey="Id" />
+                    <TTable T="ScheduleRunView"
+                            Data="@runs"
+                            Columns="@RunColumns"
+                            RowKey="Id" />
                 }
             </section>
         </ContentSlot>

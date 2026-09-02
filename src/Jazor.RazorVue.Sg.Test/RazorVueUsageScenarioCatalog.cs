@@ -657,21 +657,42 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.DenoRuntime,
             "Dynamic runtime Type and unresolved fragment factories remain final-pipeline owned."),
         new(
+            "P0-vue-module-integrity",
+            "Final generated Vue module lexical bindings, imports, declarations, and explicitly allowed ECMAScript globals",
+            RazorVueCapabilityPriority.P0,
+            RazorVueCapabilityDecision.DirectSupport,
+            RazorVueCapabilityStatus.Support,
+            "Jazor.RazorVue VueModuleBuilder",
+            "JAZORVGA026",
+            "VueModuleIntegrityValidatorTests; RazorSgOfficialModuleIntegrityRuntimeTests; samples/RazorVue.Authoring/verify-smoke.cs; samples/JazorAdmin/verify-smoke.cs",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact,
+            "The final ESTree composition rejects unknown free identifiers before serialization. Property keys, member properties, labels, binding declarations, and the narrow ECMAScript/browser global set are handled structurally; browser/package consumer smoke remains indirect through the existing Authoring and JazorAdmin gates.")
+        {
+            TargetProfiles = "Official Razor SG final compilation and generated Vue module artifact; browser/package evidence is inherited from existing consumer gates",
+            Carrier = "Acornima ESTree lexical scope analysis",
+            ImplementationPath = "VueModuleBuilder final AST composition -> VueModuleIntegrityValidator -> JAZORVGA026",
+            ContributionContractVersion = "vue-module-integrity/v1",
+            Dependencies = "Jazor.RazorVue direct-render framing; compiler/direct-render/import declarations",
+            ExcludedSurface = "Regex .mjs scanning, broad global allow-lists, runtime fallbacks, and independent browser/package semantic claims"
+        },
+        new(
             "P0-tdesign-typed-authoring",
-            "Native TDesign generic/non-generic components, typed callbacks, attribute splats, union value branches, named slots, and required table parameters without application bridge components",
+            "Native TDesign generic/non-generic components, typed form rules/validation/reset/submit, typed callbacks, attribute splats, union value branches, named slots, and required table parameters without application bridge components",
             RazorVueCapabilityPriority.P0,
             RazorVueCapabilityDecision.DirectSupport,
             RazorVueCapabilityStatus.Support,
             "ECMAScript.TDesign contract + RazorVue component binding",
             null,
-            "RazorSgOfficialTDesignNaturalAuthoringRuntimeTests; RazorSgOfficialTDesignTableCellRuntimeTests; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalNativeTDesignRazorConsumer_MountsAndInteractsInRealBrowser",
+            "RazorSgOfficialTDesignNaturalAuthoringRuntimeTests; RazorSgOfficialTDesignTableCellRuntimeTests; samples/RazorVue.Authoring/verify-smoke.cs (typed rules, validation, reset, and async submit); SdkIntegrationTests.Build_LocalReleasePackages_WithExternalNativeTDesignRazorConsumer_MountsAndInteractsInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime |
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer,
-            "Natural TDesign form/control/dialog/table authoring is covered through official SG, module/Deno runtime, and an isolated Release NuGet consumer mounted and interacted with in a real Edge browser. The contract excludes application bridge components and Microsoft built-in Blazor UI components.")
+            "Natural TDesign form/control/dialog/table authoring, including typed rules, validation/reset callbacks, and async submit state, is covered through official SG, module/Deno runtime, the Authoring Release browser journey, and an isolated Release NuGet consumer mounted and interacted with in a real Edge browser. The contract excludes application bridge components and Microsoft built-in Blazor UI components.")
         {
             TargetProfiles = "Compiler authoring, Deno runtime, real Edge browser, and isolated Release package consumer",
             Carrier = "TDesign component contracts, native erased unions, and Vue named slots",
@@ -747,20 +768,20 @@ internal static class RazorVueM5CapabilityLedger
         },
         new(
             "P0-route-layout-page-state",
-            "@page, @layout, route parameters, not-found, and normal loading/error/retry page workflows (without Microsoft built-in Router/RouteView/LayoutView/NavLink tags)",
+            "@page, @layout, route parameters, not-found, push/replace history, LocationChanged, and normal loading/error/retry page workflows (without Microsoft built-in Router/RouteView/LayoutView/NavLink tags)",
             RazorVueCapabilityPriority.P0,
             RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.Support,
             "RazorVue route host",
             null,
-            "RazorSourceGeneratorTailOutputTests.RouteCatalog_EmitsDeterministicPageLayoutAndQueryMappings; RazorSgNavigationRuntimeTests; samples/RazorVue.Authoring/verify-smoke.cs (isolated Release package route journey)",
+            "RazorSourceGeneratorTailOutputTests.RouteCatalog_EmitsDeterministicPageLayoutAndQueryMappings; RazorSgNavigationRuntimeTests; samples/RazorVue.Authoring/verify-smoke.cs (isolated Release package route, history, and LocationChanged journey)",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime |
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer,
-            "The app-owned route catalog covers page/layout activation, typed route/query refresh, not-found, and browser history through an isolated Release package consumer. Microsoft Router/RouteView/LayoutView/NavLink tags and LocationChanging cancellation stay outside this P0 contract.")
+            "The app-owned route catalog covers page/layout activation, typed route/query refresh, not-found, push/replace history, HistoryEntryState, and LocationChanged through an isolated Release package consumer. Microsoft Router/RouteView/LayoutView/NavLink tags and LocationChanging cancellation stay outside this P0 contract.")
         {
             TargetProfiles = "Compiler authoring, Deno runtime, real Chrome/Chromium/Edge browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "Generated route catalog + application-owned Vue route host + browser NavigationManager",
@@ -876,20 +897,20 @@ internal static class RazorVueM5CapabilityLedger
             "Typed/named provider lookup, nested Vue scope behavior, IsFixed, same-value behavior, disposal, and update propagation have isolated Release package/browser proof; the Windows SSR Release consumer also proves a named cascade reaches the child in server HTML and remains present through hydration. Full reference parity and SSR update/hydration side-effect behavior are explicitly excluded."),
         new(
             "P1-navigation-router",
-            "NavigationManager and query/route parameter refresh through the RazorVue route catalog with internal browser history (Microsoft Router/RouteView/LayoutView/NavLink tags excluded)",
+            "NavigationManager and query/route parameter refresh through the RazorVue route catalog with internal push/replace browser history and LocationChanged (Microsoft Router/RouteView/LayoutView/NavLink tags excluded)",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.Support,
             "RazorVue route catalog + blazor-routing.mjs",
             null,
-            "RazorSgNavigationRuntimeTests.NavigationManager_UsesBrowserAdapterForUriAndNavigateTo; RazorSgBlazorReferenceOracleTests.BlazorReferenceNavigationManager_ReportsOptionsLocationEventsAndCancellation; RazorTailOutputTests.RouteCatalog_EmitsDeterministicPageAndLayoutEntries; samples/RazorVue.Authoring/verify-smoke.cs; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalNavigationLocationChangingRazorConsumer_ProvesInternalCancellationInRealBrowser",
+            "RazorSgNavigationRuntimeTests.NavigationManager_UsesBrowserAdapterForUriAndNavigateTo; RazorSgBlazorReferenceOracleTests.BlazorReferenceNavigationManager_ReportsOptionsLocationEventsAndCancellation; RazorTailOutputTests.RouteCatalog_EmitsDeterministicPageAndLayoutEntries; samples/RazorVue.Authoring/verify-smoke.cs (PathBase push/replace, HistoryEntryState, history length, and LocationChanged); SdkIntegrationTests.Build_LocalReleasePackages_WithExternalNavigationLocationChangingRazorConsumer_ProvesInternalCancellationInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.DenoRuntime |
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer,
-            "The route catalog and internal NavigationManager history subset have reference, official SG, Deno, real browser, and isolated Release package evidence for typed route/query refresh, not-found, push/pop history, and LocationChanging cancellation. External URI, forceLoad, popstate/hashchange cancellation, server circuit, SSR/prerender route identity, and standard Router/RouteView/LayoutView/NavLink composition remain explicitly excluded."),
+            "The route catalog and internal NavigationManager history subset have reference, official SG, Deno, real browser, and isolated Release package evidence for typed route/query refresh, not-found, push/replace/pop history, HistoryEntryState, LocationChanged, and LocationChanging cancellation. External URI, forceLoad, popstate/hashchange cancellation, server circuit, SSR/prerender route identity, and standard Router/RouteView/LayoutView/NavLink composition remain explicitly excluded."),
         new(
             "P0-blazor-clr-mapping-package",
             "First-party Jazor.CLR generated Blazor mapping package boundary; ECMAScript.Blazor remains an optional authoring projection payload",
@@ -1305,6 +1326,6 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer,
-            "Consumer delivery is proven; this row does not promote independent framework capabilities without their own semantic evidence.")
+            "Consumer delivery is proven with direct typed TDesign authoring; this row does not promote independent framework capabilities without their own semantic evidence.")
     ];
 }

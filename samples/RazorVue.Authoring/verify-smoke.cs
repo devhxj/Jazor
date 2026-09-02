@@ -79,11 +79,17 @@ static void AssertAuthoringSource(string sampleRoot)
     }
 
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor")), "<TForm FormData=\"TaskDraft\"", "typed TForm authoring");
+    RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor")), "Rules=\"@Rules\"", "typed TForm validation rules");
+    RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor")), "OnReset=\"@ResetForm\"", "typed TForm reset callback");
+    RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor")), "OnValidate=\"@ValidateForm\"", "typed TForm validation callback");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor")), "<TInput T=\"string\"", "typed TInput authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor")), "@bind-Value=\"Draft.Title\"", "Razor bind authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskTable.razor")), "<TPrimaryTable T=\"TaskRow\"", "typed primary-table authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskTable.razor")), "<CellEmptyContent Context=\"cell\">", "typed empty-cell slot authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor.cs")), "[Inject]", "writable injected NavigationManager");
+    RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor.cs")), "LocationChanged +=", "LocationChanged subscription authoring");
+    RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor.cs")), "Navigation.BaseUri + \"tasks?view=compact\"", "PathBase-aware replace target");
+    RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor.cs")), "ReplaceHistoryEntry = true", "replace-history authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskTable.razor.cs")), "[CascadingParameter", "cascading parameter authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor")), "@layout AuthoringLayout", "standard Razor layout authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "AuthoringLayout.razor")), "@Body", "LayoutComponentBase Body authoring");
@@ -129,6 +135,11 @@ static void AssertDebugArtifacts(string root)
     RequireContains(board, "CascadingValue", "cascading provider lowering");
     RequireContains(board, "Button, Dialog, Form, FormItem, Input", "TDesign form/dialog imports");
     RequireContains(board, "onChange", "TInput bind lowering");
+    RequireContains(board, "onValidate", "TForm validation callback lowering");
+    RequireContains(board, "onReset", "TForm reset callback lowering");
+    RequireContains(board, "required", "TForm rule lowering");
+    RequireContains(board, "addLocationChanged", "LocationChanged subscription lowering");
+    RequireContains(board, "replaceHistoryEntry", "replace-history lowering");
     RequireContains(table, "PrimaryTable", "typed table import");
     RequireContains(table, "cellEmptyContent", "typed table slot lowering");
     RequireContains(layout, "slots.Body()", "LayoutComponentBase Body slot lowering");
@@ -163,6 +174,9 @@ static void AssertReleaseArtifacts(string root)
     RequireContains(bundle, "RazorVueAuthoringRoot", "sample root in Release bundle");
     RequireContains(bundle, "cellEmptyContent", "typed table slot in Release bundle");
     RequireContains(bundle, "Task created from the typed form.", "async form result in Release bundle");
+    RequireContains(bundle, "Form reset. Title and owner are required.", "form reset result in Release bundle");
+    RequireContains(bundle, "Fix the highlighted fields before saving.", "form validation result in Release bundle");
+    RequireContains(bundle, "authoring-replace", "replace-history state in Release bundle");
     RequireContains(bundle, "Route catalog layout", "layout content in Release bundle");
     RequireContains(bundle, "data-route-highlight", "query-parameter rendering in Release bundle");
     RequireDoesNotContain(bundle, "@jazor/vue-runtime/routes.mjs", "bare generated route-catalog import in Release bundle");
@@ -282,6 +296,37 @@ static async Task VerifyReleaseHostInBrowserAsync(
         RequireContains(board, "Review the generated module", "mounted typed table row");
         RequireContains(board, "RazorVue workspace", "mounted cascading value");
 
+        await browser.ClickButtonAsync("New task");
+        await browser.WaitUntilAsync(
+            "document.querySelector('input[placeholder=\"Write the next task\"]') !== null",
+            "opened typed task form",
+            TimeSpan.FromSeconds(20));
+        await browser.ClickButtonAsync("Save from form");
+        await browser.WaitUntilAsync(
+            "document.querySelector('[data-validation]')?.textContent === 'Add a title before saving.'",
+            "field validation error after empty form submit",
+            TimeSpan.FromSeconds(20));
+
+        await browser.FillAsync("input[placeholder=\"Write the next task\"]", "Release checklist");
+        await browser.FillAsync("input[placeholder=\"Team or person\"]", "Platform");
+        await browser.WaitUntilAsync(
+            "document.querySelector('input[placeholder=\"Write the next task\"]')?.value === 'Release checklist' && document.querySelector('input[placeholder=\"Team or person\"]')?.value === 'Platform'",
+            "typed form values",
+            TimeSpan.FromSeconds(20));
+        await browser.ClickButtonAsync("Reset");
+        await browser.WaitUntilAsync(
+            "document.querySelector('input[placeholder=\"Write the next task\"]')?.value === '' && document.querySelector('input[placeholder=\"Team or person\"]')?.value === '' && document.querySelector('[data-status]')?.textContent === 'Draft reset.' && document.querySelector('[data-validation]')?.textContent === 'Form reset. Title and owner are required.'",
+            "typed form reset",
+            TimeSpan.FromSeconds(20));
+
+        await browser.FillAsync("input[placeholder=\"Write the next task\"]", "Release checklist");
+        await browser.FillAsync("input[placeholder=\"Team or person\"]", "Platform");
+        await browser.ClickButtonAsync("Save from form");
+        await browser.WaitUntilAsync(
+            "document.querySelector('[data-status]')?.textContent === 'Task created from the typed form.' && Array.from(document.querySelectorAll('td')).some(cell => cell.textContent?.includes('Release checklist') === true)",
+            "typed form async submit",
+            TimeSpan.FromSeconds(20));
+
         await browser.ClickAsync("[data-route-action=\"open-task-details\"]");
         await browser.WaitUntilAsync(
             "location.pathname === '/tasks/2' && location.search === '?highlight=true' && document.querySelector('[data-route-highlight=\"highlighted\"]') !== null",
@@ -328,6 +373,17 @@ static async Task VerifyReleaseHostInBrowserAsync(
             "location.pathname === '/authoring/' && document.querySelector('[data-authoring-page=\"task-board\"]') !== null",
             "root board state after browser back",
             TimeSpan.FromSeconds(20));
+
+        var historyLengthBeforeReplace = await browser.ReadHistoryLengthAsync();
+        await browser.ClickAsync("[data-route-action=\"replace-task-route\"]");
+        await browser.WaitUntilAsync(
+            "location.pathname === '/authoring/tasks' && location.search === '?view=compact' && history.state === 'authoring-replace' && history.length === " + historyLengthBeforeReplace + " && document.querySelector('[data-authoring-page=\"task-board\"]') !== null && document.querySelector('[data-location-event]')?.getAttribute('data-location-event')?.includes('/authoring/tasks?view=compact') === true && (document.querySelector('[data-location-state]')?.textContent || '').includes('History state: authoring-replace') && !(document.querySelector('[data-location-state]')?.textContent || '').endsWith('(0)')",
+            "replace-history route",
+            TimeSpan.FromSeconds(20));
+        var replaced = await browser.ReadDocumentHtmlAsync();
+        RequireContains(replaced, "tasks?view=compact", "replace-history path rendering");
+        RequireContains(replaced, "authoring-replace", "replace-history state rendering");
+        RequireContains(replaced, "Location event:", "LocationChanged status rendering");
 
         await browser.NavigateAsync(new Uri(baseUri, "missing-route"), TimeSpan.FromSeconds(20));
         await browser.WaitUntilAsync(
@@ -836,8 +892,35 @@ internal sealed class BrowserSession : IAsyncDisposable
             throw new InvalidOperationException("Browser could not click selector: " + selector);
     }
 
+    public async Task ClickButtonAsync(string text)
+    {
+        var textLiteral = JsonString(text);
+        var clicked = await EvaluateAsync(
+            "(() => { const button = Array.from(document.querySelectorAll('button')).find(element => element.textContent?.trim() === " + textLiteral + "); if (!button) return false; button.click(); return true; })()");
+        if (clicked is not { ValueKind: JsonValueKind.True })
+            throw new InvalidOperationException("Browser could not click button: " + text);
+    }
+
+    public async Task FillAsync(string selector, string value)
+    {
+        var selectorLiteral = JsonString(selector);
+        var valueLiteral = JsonString(value);
+        var filled = await EvaluateAsync(
+            "(() => { const element = document.querySelector(" + selectorLiteral + "); if (!element) return false; element.focus(); element.value = " + valueLiteral + "; element.dispatchEvent(new Event('input', { bubbles: true })); element.dispatchEvent(new Event('change', { bubbles: true })); return true; })()");
+        if (filled is not { ValueKind: JsonValueKind.True })
+            throw new InvalidOperationException("Browser could not fill selector: " + selector);
+    }
+
     public async Task GoBackAsync()
         => await EvaluateAsync("history.back(); true");
+
+    public async Task<int> ReadHistoryLengthAsync()
+    {
+        var value = await EvaluateAsync("history.length");
+        if (value is not { ValueKind: JsonValueKind.Number } || !value.Value.TryGetInt32(out var length))
+            throw new InvalidOperationException("Browser did not return history.length.");
+        return length;
+    }
 
     public async Task WaitUntilAsync(string expression, string description, TimeSpan timeout)
     {

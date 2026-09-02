@@ -10,22 +10,22 @@
          OnClose="@(_ => CloseAsync())"
          OnCloseBtnClick="@(_ => CloseAsync())">
     <div class="setting-container" data-starter-settings="">
-        <AdminForm LabelAlign="@TFormLabelAlignValue.Left">
+        <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Left">
             <div class="setting-group-title">@L("主题模式", "Theme Mode")</div>
-            <AdminRadioGroup Value="@ThemeKey" Size="@TSizeEnum.Medium" OnChange="@(value => ChangeThemeAsync(value))">
-                <div class="setting-layout-drawer"><div><AdminRadioButton Value="light"><img src="/brand/starter-assets-setting-light.svg" alt="" aria-hidden="true" /></AdminRadioButton><p>@L("明亮", "Light")</p></div></div>
-                <div class="setting-layout-drawer"><div><AdminRadioButton Value="dark"><img src="/brand/starter-assets-setting-dark.svg" alt="" aria-hidden="true" /></AdminRadioButton><p>@L("暗色", "Dark")</p></div></div>
-                <div class="setting-layout-drawer"><div><AdminRadioButton Value="auto"><img src="/brand/starter-assets-setting-auto.svg" alt="" aria-hidden="true" /></AdminRadioButton><p>@L("跟随系统", "Auto")</p></div></div>
-            </AdminRadioGroup>
+            <TRadioGroup T="string" Value="@ThemeKey" Size="@TSizeEnum.Medium" OnChange="@(value => ChangeThemeAsync(value))">
+                <div class="setting-layout-drawer"><div><TRadioButton T="string" Value="@("light")"><img src="/brand/starter-assets-setting-light.svg" alt="" aria-hidden="true" /></TRadioButton><p>@L("明亮", "Light")</p></div></div>
+                <div class="setting-layout-drawer"><div><TRadioButton T="string" Value="@("dark")"><img src="/brand/starter-assets-setting-dark.svg" alt="" aria-hidden="true" /></TRadioButton><p>@L("暗色", "Dark")</p></div></div>
+                <div class="setting-layout-drawer"><div><TRadioButton T="string" Value="@("auto")"><img src="/brand/starter-assets-setting-auto.svg" alt="" aria-hidden="true" /></TRadioButton><p>@L("跟随系统", "Auto")</p></div></div>
+            </TRadioGroup>
 
             <div class="setting-group-title">@L("主题色", "Theme Color")</div>
-            <AdminRadioGroup Value="@BrandTheme" Size="@TSizeEnum.Medium" OnChange="@(value => ChangeBrandAsync(value))">
+            <TRadioGroup T="string" Value="@BrandTheme" Size="@TSizeEnum.Medium" OnChange="@(value => ChangeBrandAsync(value))">
                 @foreach (var color in BrandColors)
                 {
                     <div class="setting-layout-drawer">
-                        <AdminRadioButton Value="@color" CssClass="@ColorGroupCssClass">
+                        <TRadioButton T="string" Value="@color" CssClass="@ColorGroupCssClass">
                             <span class="setting-color-preview" style="@("background: " + color)"></span>
-                        </AdminRadioButton>
+                        </TRadioButton>
                     </div>
                 }
                 <div class="setting-layout-drawer">
@@ -44,40 +44,40 @@
                                                OnChange="@(value => ChangeCustomColorAsync(value))" />
                         </ContentSlot>
                         <TriggerElementContent>
-                            <AdminRadioButton Value="@BrandTheme" CssClass="@DynamicColorCssClass">
+                            <TRadioButton T="string" Value="@BrandTheme" CssClass="@DynamicColorCssClass">
                                 <span class="setting-color-preview" style="@("background: " + BrandTheme)"></span>
-                            </AdminRadioButton>
+                            </TRadioButton>
                         </TriggerElementContent>
                     </TPopup>
                 </div>
-            </AdminRadioGroup>
+            </TRadioGroup>
 
             <div class="setting-group-title">@L("导航布局", "Navigation Layout")</div>
-            <AdminRadioGroup Value="@LayoutKey" Size="@TSizeEnum.Medium" OnChange="@(value => ChangeLayoutAsync(value))">
-                <div class="setting-layout-drawer"><AdminRadioButton Value="side"><img class="thumbnail-layout" src="https://tdesign.gtimg.com/tdesign-pro/setting/side.png" alt="@SideLayoutLabel" /></AdminRadioButton></div>
-                <div class="setting-layout-drawer"><AdminRadioButton Value="top"><img class="thumbnail-layout" src="https://tdesign.gtimg.com/tdesign-pro/setting/top.png" alt="@TopLayoutLabel" /></AdminRadioButton></div>
-                <div class="setting-layout-drawer"><AdminRadioButton Value="mix"><img class="thumbnail-layout" src="https://tdesign.gtimg.com/tdesign-pro/setting/mix.png" alt="@MixedLayoutLabel" /></AdminRadioButton></div>
-            </AdminRadioGroup>
+            <TRadioGroup T="string" Value="@LayoutKey" Size="@TSizeEnum.Medium" OnChange="@(value => ChangeLayoutAsync(value))">
+                <div class="setting-layout-drawer"><TRadioButton T="string" Value="@("side")"><img class="thumbnail-layout" src="https://tdesign.gtimg.com/tdesign-pro/setting/side.png" alt="@SideLayoutLabel" /></TRadioButton></div>
+                <div class="setting-layout-drawer"><TRadioButton T="string" Value="@("top")"><img class="thumbnail-layout" src="https://tdesign.gtimg.com/tdesign-pro/setting/top.png" alt="@TopLayoutLabel" /></TRadioButton></div>
+                <div class="setting-layout-drawer"><TRadioButton T="string" Value="@("mix")"><img class="thumbnail-layout" src="https://tdesign.gtimg.com/tdesign-pro/setting/mix.png" alt="@MixedLayoutLabel" /></TRadioButton></div>
+            </TRadioGroup>
 
-            <TFormItem LabelValue="@SplitMenuLabel" Name="splitMenu" CssStyle="@MixOnlyStyle"><AdminToggle Value="@SplitMenu" OnChange="@(value => ChangeSplitMenuAsync(value))" /></TFormItem>
-            <TFormItem LabelValue="@FixedSidebarLabel" Name="isSidebarFixed" CssStyle="@MixOnlyStyle"><AdminToggle Value="@IsSidebarFixed" OnChange="@(value => ChangeSidebarFixedAsync(value))" /></TFormItem>
+            <TFormItem LabelValue="@SplitMenuLabel" Name="splitMenu" CssStyle="@MixOnlyStyle"><TSwitch T="bool" Value="@SplitMenu" OnChange="@(value => ChangeSplitMenuAsync(value))" /></TFormItem>
+            <TFormItem LabelValue="@FixedSidebarLabel" Name="isSidebarFixed" CssStyle="@MixOnlyStyle"><TSwitch T="bool" Value="@IsSidebarFixed" OnChange="@(value => ChangeSidebarFixedAsync(value))" /></TFormItem>
 
             <div class="setting-group-title">@L("界面元素", "Interface Elements")</div>
             <TFormItem LabelValue="@SideModeLabel" Name="sideMode">
-                <AdminRadioGroup Value="@SideModeKey" Size="@TSizeEnum.Medium" CssClass="@SideModeRadioCssClass" OnChange="@(value => ChangeSideModeAsync(value))">
-                    <AdminRadioButton Value="light" LabelValue="@LightLabel" />
-                    <AdminRadioButton Value="dark" LabelValue="@DarkLabel" />
-                </AdminRadioGroup>
+                <TRadioGroup T="string" Value="@SideModeKey" Size="@TSizeEnum.Medium" CssClass="@SideModeRadioCssClass" OnChange="@(value => ChangeSideModeAsync(value))">
+                    <TRadioButton T="string" Value="@("light")" LabelValue="@LightLabel" />
+                    <TRadioButton T="string" Value="@("dark")" LabelValue="@DarkLabel" />
+                </TRadioGroup>
             </TFormItem>
             @if (LayoutKey == "side")
             {
-                <TFormItem LabelValue="@ShowHeaderLabel" Name="showHeader"><AdminToggle Value="@ShowHeader" OnChange="@(value => ChangeShowHeaderAsync(value))" /></TFormItem>
+                <TFormItem LabelValue="@ShowHeaderLabel" Name="showHeader"><TSwitch T="bool" Value="@ShowHeader" OnChange="@(value => ChangeShowHeaderAsync(value))" /></TFormItem>
             }
-            <TFormItem LabelValue="@ShowBreadcrumbLabel" Name="showBreadcrumb"><AdminToggle Value="@ShowBreadcrumb" OnChange="@(value => ChangeShowBreadcrumbAsync(value))" /></TFormItem>
-            <TFormItem LabelValue="@ShowFooterLabel" Name="showFooter"><AdminToggle Value="@ShowFooter" OnChange="@(value => ChangeShowFooterAsync(value))" /></TFormItem>
-            <TFormItem LabelValue="@UseTabsLabel" Name="isUseTabsRouter"><AdminToggle Value="@IsUseTabsRouter" OnChange="@(value => ChangeUseTabsAsync(value))" /></TFormItem>
-            <TFormItem LabelValue="@MenuAutoCollapsedLabel" Name="menuAutoCollapsed"><AdminToggle Value="@MenuAutoCollapsed" OnChange="@(value => ChangeMenuAutoCollapsedAsync(value))" /></TFormItem>
-        </AdminForm>
+            <TFormItem LabelValue="@ShowBreadcrumbLabel" Name="showBreadcrumb"><TSwitch T="bool" Value="@ShowBreadcrumb" OnChange="@(value => ChangeShowBreadcrumbAsync(value))" /></TFormItem>
+            <TFormItem LabelValue="@ShowFooterLabel" Name="showFooter"><TSwitch T="bool" Value="@ShowFooter" OnChange="@(value => ChangeShowFooterAsync(value))" /></TFormItem>
+            <TFormItem LabelValue="@UseTabsLabel" Name="isUseTabsRouter"><TSwitch T="bool" Value="@IsUseTabsRouter" OnChange="@(value => ChangeUseTabsAsync(value))" /></TFormItem>
+            <TFormItem LabelValue="@MenuAutoCollapsedLabel" Name="menuAutoCollapsed"><TSwitch T="bool" Value="@MenuAutoCollapsed" OnChange="@(value => ChangeMenuAutoCollapsedAsync(value))" /></TFormItem>
+        </TForm>
         <div class="setting-info">
             <p>@L("配置会持久化保存在当前浏览器。", "Settings persist in the current browser.")</p>
             <TButton Theme="@TButtonThemeValue.Primary" Variant="@TButtonVariantValue.Text" OnClick="@(_ => CopyConfig())">@CopyConfigLabel</TButton>

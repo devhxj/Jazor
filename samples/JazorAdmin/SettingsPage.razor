@@ -25,10 +25,11 @@
                     }
                     else
                     {
-                        <AdminTable Data="@settings"
-                                    Columns="@Columns"
-                                    RowKey="Key"
-                                    RowClassName="@SelectedRowClassName" />
+                        <TTable T="SettingView"
+                                Data="@settings"
+                                Columns="@Columns"
+                                RowKey="Key"
+                                RowClassName="@SelectedRowClassName" />
                     }
                 </section>
 
@@ -36,31 +37,31 @@
                     <header class="ja-panel__header">
                         <div><h2 id="setting-editor-title">@(IsNew ? L("Create setting", "创建配置") : L("Setting details", "配置详情"))</h2><p>@L("Keys are immutable after creation", "键名创建后不可修改")</p></div>
                     </header>
-                    <AdminForm LabelAlign="@TFormLabelAlignValue.Top">
+                    <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
                         <TFormItem LabelValue="@L("Key", "键名")" Name="key">
-                            <span data-setting-field="key"><AdminInput Value="@key" OnChange="@(value => key = value)" Readonly="@(!IsNew)" Placeholder="feature.audit.enabled" /></span>
+                            <span data-setting-field="key"><TInput T="string" Value="@key" OnChange="@(value => key = value)" Readonly="@(!IsNew)" Placeholder="feature.audit.enabled" /></span>
                         </TFormItem>
                         <div class="ja-form__grid">
                             <TFormItem LabelValue="@L("Group", "分组")" Name="group">
-                                <span data-setting-field="group"><AdminInput Value="@group" OnChange="@(value => group = value)" Placeholder="feature" /></span>
+                                <span data-setting-field="group"><TInput T="string" Value="@group" OnChange="@(value => group = value)" Placeholder="feature" /></span>
                             </TFormItem>
                             <TFormItem LabelValue="@L("Label", "标签")" Name="label">
-                                <span data-setting-field="label"><AdminInput Value="@label" OnChange="@(value => label = value)" /></span>
+                                <span data-setting-field="label"><TInput T="string" Value="@label" OnChange="@(value => label = value)" /></span>
                             </TFormItem>
                         </div>
                         <TFormItem LabelValue="@L("Type", "类型")" Name="kind">
-                            <AdminRadioGroup Value="@kind" OnChange="@(value => kind = value)">
-                                <AdminRadioButton Value="text" LabelValue="@L("Text", "文本")" />
-                                <AdminRadioButton Value="boolean" LabelValue="@L("Boolean", "布尔")" />
-                                <AdminRadioButton Value="number" LabelValue="@L("Number", "数值")" />
-                                <AdminRadioButton Value="json" LabelValue="JSON" />
-                            </AdminRadioGroup>
+                            <TRadioGroup T="string" Value="@kind" OnChange="@(value => kind = value)">
+                                <TRadioButton T="string" Value="@("text")" LabelValue="@L("Text", "文本")" />
+                                <TRadioButton T="string" Value="@("boolean")" LabelValue="@L("Boolean", "布尔")" />
+                                <TRadioButton T="string" Value="@("number")" LabelValue="@L("Number", "数值")" />
+                                <TRadioButton T="string" Value="@("json")" LabelValue="JSON" />
+                            </TRadioGroup>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Description", "描述")" Name="description">
-                            <span data-setting-field="description"><AdminInput Value="@description" OnChange="@(value => description = value)" /></span>
+                            <span data-setting-field="description"><TInput T="string" Value="@description" OnChange="@(value => description = value)" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Value", "值")" Name="value">
-                            <span data-setting-field="value"><AdminTextarea Value="@value" OnChange="@(newValue => value = newValue)" Placeholder="true" /></span>
+                            <span data-setting-field="value"><TTextarea Value="@value" OnChange="@(newValue => value = newValue.Value as string ?? string.Empty)" Placeholder="true" /></span>
                         </TFormItem>
                         <div class="ja-form__commands">
                             <TButton Theme="@TButtonThemeValue.Primary" data-settings-command="save" OnClick="@(_ => Save())">@(IsNew ? L("Create", "创建") : L("Save changes", "保存修改"))</TButton>
@@ -69,7 +70,7 @@
                                 <TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Outline" data-settings-command="delete" OnClick="@(_ => DeleteSetting())">@(deleteArmed ? L("Confirm delete", "确认删除") : L("Delete", "删除"))</TButton>
                             }
                         </div>
-                    </AdminForm>
+                    </TForm>
                 </section>
             </div>
         </ContentSlot>

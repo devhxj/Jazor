@@ -1216,6 +1216,17 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 	private static bool IsSupportedRuntimeMemberEvent(IEventSymbol eventSymbol)
 	{
+		// External host events do not use the member-class storage protocol. They are valid only
+		// when both accessor symbols have an explicit compiler whitelist mapping; checking the
+		// complete pair prevents an incomplete adapter from passing analysis and failing later.
+		if (eventSymbol.AddMethod is not null &&
+			eventSymbol.RemoveMethod is not null &&
+			IsWhiteListedMember(eventSymbol.AddMethod) &&
+			IsWhiteListedMember(eventSymbol.RemoveMethod))
+		{
+			return true;
+		}
+
 		if (!EventLowering.IsSupportedFieldLikeInstanceEvent(eventSymbol, out _))
 			return false;
 

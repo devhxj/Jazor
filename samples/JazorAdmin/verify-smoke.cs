@@ -163,6 +163,32 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
         AssertDoesNotContain(module, "builder.finish()", "legacy render builder completion in " + description);
     }
 
+    // Management pages must consume the public TDesign bindings directly. Keep this assertion at
+    // the emitted-module boundary so a reintroduced sample-local bridge cannot hide in a package.
+    var nativeTDesignModules = new[]
+    {
+        (organizationModulePath, "organization management module"),
+        (accessControlModulePath, "access control management module"),
+        (accountModulePath, "account management module"),
+        (ssoAppModulePath, "SSO application module"),
+        (ssoScopeModulePath, "SSO scope module"),
+        (ssoGrantModulePath, "SSO grant module"),
+        (settingsModulePath, "configuration center module"),
+        (schedulesModulePath, "task scheduling module"),
+        (dashboardModulePath, "administration dashboard module"),
+        (auditModulePath, "audit log module")
+    };
+    foreach (var (relativePath, description) in nativeTDesignModules)
+    {
+        var module = File.ReadAllText(Path.Combine(generatedOutputRoot, relativePath));
+        AssertContains(module, "from \"tdesign-vue-next\"", "direct TDesign binding import in " + description);
+        AssertDoesNotContain(module, "AdminControls", "sample-local controls bridge in " + description);
+        AssertDoesNotContain(module, "AdminInput", "sample-local input bridge in " + description);
+        AssertDoesNotContain(module, "AdminForm", "sample-local form bridge in " + description);
+        AssertDoesNotContain(module, "AdminTable", "sample-local table bridge in " + description);
+        AssertDoesNotContain(module, "AdminToggle", "sample-local toggle bridge in " + description);
+    }
+
     foreach (var (relativePath, description) in componentModules.Where((_, index) => index == 0 || (index >= 4 && index != 9 && index != 11)))
     {
         var module = File.ReadAllText(Path.Combine(generatedOutputRoot, relativePath));
@@ -200,7 +226,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(appModule, "JazorAdmin", "JazorAdmin app text in generated module");
     AssertContains(appModule, "useRoute", "Vue Router route injection in JazorAdmin app module");
     AssertContains(appModule, "onMounted", "session restoration mount hook in JazorAdmin app module");
-    AssertContains(appModule, "scope.OnAfterRender(true)", "initial Razor lifecycle invocation in JazorAdmin app module");
+    AssertContains(appModule, "scope.OnAfterRender(firstRender)", "initial Razor lifecycle invocation in JazorAdmin app module");
     AssertContains(appModule, "RestoreSession();", "mounted session restoration invocation in JazorAdmin app module");
     AssertContains(bootstrapModule, "createRouter", "Vue Router creation in JazorAdmin bootstrap module");
     AssertContains(bootstrapModule, "createWebHistory", "Vue Router web history in JazorAdmin bootstrap module");
@@ -262,7 +288,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(accessControlModule, "scope.OnParametersSet();", "route parameter lifecycle in access control management module");
     AssertContains(accountModule, "GetAccounts", "account query in account management module");
     AssertContains(accountModule, "ResetAccountPassword", "account password command in account management module");
-    AssertContains(accountModule, "scope.OnAfterRender(true)", "initial Razor lifecycle invocation in account management module");
+    AssertContains(accountModule, "scope.OnAfterRender(firstRender)", "initial Razor lifecycle invocation in account management module");
     AssertContains(ssoAppModule, "GetApps", "OpenIddict application query in application module");
     AssertContains(ssoAppModule, "RotateAppSecret", "OpenIddict secret rotation in application module");
     AssertContains(ssoScopeModule, "GetScopes", "OpenIddict scope query in scope module");

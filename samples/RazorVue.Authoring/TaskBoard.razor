@@ -26,6 +26,7 @@
                 <strong data-open-count="@OpenCount">@OpenCount</strong>
             </div>
             <TButton Variant="@TButtonVariantValue.Text" OnClick="@GoToTasks">Open /tasks route</TButton>
+            <button type="button" data-route-action="replace-task-route" @onclick="@ReplaceTaskRoute">Replace route</button>
             <button type="button" data-route-action="open-task-details" @onclick="@OpenTaskDetails">Inspect task 2</button>
         </section>
 
@@ -39,7 +40,12 @@
                  OnConfirm="@ConfirmDialog"
                  OnCancel="@CancelDialog">
             <BodyContent>
-                <TForm FormData="TaskDraft" Data="@Draft" OnSubmit="@SubmitForm">
+                <TForm FormData="TaskDraft"
+                       Data="@Draft"
+                       Rules="@Rules"
+                       OnSubmit="@SubmitForm"
+                       OnReset="@ResetForm"
+                       OnValidate="@ValidateForm">
                     <TFormItem LabelValue="Title" Name="title">
                         <TInput T="string"
                                 Placeholder="Write the next task"
@@ -52,11 +58,15 @@
                                 @bind-Value="Draft.Owner"
                                 @bind-Value:event="OnChange" />
                     </TFormItem>
+                    <TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text">Reset</TButton>
                     <TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary">Save from form</TButton>
                 </TForm>
             </BodyContent>
         </TDialog>
 
         <p class="@AuthoringStyleSheet.Status" data-status="@StatusMessage">@StatusMessage</p>
+        <p class="@AuthoringStyleSheet.Status" data-validation="@ValidationMessage">@ValidationMessage</p>
+        <p class="@AuthoringStyleSheet.Status" data-location-event="@LastLocationEvent">Location event: @LastLocationEvent</p>
+        <p class="@AuthoringStyleSheet.Status" data-location-state="@LastHistoryEntryState">History state: @LastHistoryEntryState (@LocationEventCount)</p>
     </main>
 </CascadingValue>

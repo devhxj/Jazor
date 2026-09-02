@@ -57,6 +57,7 @@ dotnet run --file scripts/csharp/generate-jazoradmin-brand-assets.cs -- --check
 ## 示例边界
 
 - `Jazor.Admin` 提供应用框架和强类型模型；JazorAdmin 选择 TDesign 组件、页面结构和领域功能。
+- 管理页直接使用 `TTable<T>`、`TForm<TJsonObject>`、`TInput<string>`、`TSwitch<bool>` 和 `TRadioGroup<string>` 等 typed TDesign 组件；不依赖 sample-local 控件桥接。
 - 应用样式由 `ECMAScript.Style` 和项目自身的 `ja-*` 命名空间管理，不依赖外部 CDN。
 - 上游 TDesign Starter 模板复刻页已退役；TDesign 绑定覆盖率由 binding-contract 审计门禁保证，不在本示例重复维护。
 
