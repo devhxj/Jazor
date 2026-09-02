@@ -16,6 +16,7 @@ JAZORVCA007 | Jazor.RazorVue.Compatibility | Error | Known Blazor host service h
 JAZORVCA008 | Jazor.RazorVue.Compatibility | Error | CascadingParameter property is not a writable auto-property for the RazorVue browser adapter
 JAZORVCA009 | Jazor.RazorVue.Compatibility | Error | Retained route-host descriptor; generated route catalogs no longer report it for supported `@page` authoring
 JAZORVCA010 | Jazor.RazorVue.Compatibility | Error | Retained standard-component descriptor; registered adapters no longer report it for supported component tags
+JAZORVCA011 | Jazor.RazorVue.Compatibility | Error | Persistent SSR state and server form handoff require an explicit versioned RazorVue host contract
 
 ### Removed Rules
 

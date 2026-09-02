@@ -21,7 +21,10 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
     private const string IComponentMetadataName = "Microsoft.AspNetCore.Components.IComponent";
     private const string ParameterViewMetadataName = "Microsoft.AspNetCore.Components.ParameterView";
     private const string CascadingParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.CascadingParameterAttribute";
+    private const string SupplyParameterFromFormAttributeMetadataName = "Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute";
+    private const string PersistentStateAttributeMetadataName = "Microsoft.AspNetCore.Components.PersistentStateAttribute";
     private const string DbContextMetadataName = "Microsoft.EntityFrameworkCore.DbContext";
+    private const string PersistentComponentStateMetadataName = "Microsoft.AspNetCore.Components.PersistentComponentState";
     private static readonly ImmutableArray<string> ServerOnlyServiceMetadataNames =
     [
         "Microsoft.AspNetCore.Http.HttpContext",
@@ -168,6 +171,16 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
         helpLinkUri: HelpLink("browser-services"),
         customTags: [WellKnownDiagnosticTags.CompilationEnd]);
 
+    internal static readonly DiagnosticDescriptor SsrStateHandoffUnavailable = new(
+        id: "JAZORVCA011",
+        title: "SSR state handoff is not available in the RazorVue browser adapter",
+        messageFormat: "Razor API '{0}' requires a versioned RazorVue SSR/hydration state contract that is not available in this profile. Use an explicit typed endpoint/bootstrap payload, or keep the state on the server; do not rely on PersistentComponentState or server form handoff in a browser component.",
+        category: "Jazor.RazorVue.Compatibility",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        helpLinkUri: HelpLink("ssr-state-handoff"),
+        customTags: [WellKnownDiagnosticTags.CompilationEnd]);
+
     internal static readonly DiagnosticDescriptor CascadingParameterUnsupported = new(
         id: "JAZORVCA008",
         title: "CascadingParameter property must be writable",
@@ -207,6 +220,7 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
             ParameterViewToDictionaryUnsupported,
             InjectPropertyMustBeWritableAutoProperty,
             BrowserAdapterServiceUnavailable,
+            SsrStateHandoffUnavailable,
             CascadingParameterUnsupported,
             RouteDirectiveRequiresHostAdapter,
             BlazorComponentAdapterUnavailable
@@ -259,9 +273,12 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
             var componentBase = startContext.Compilation.GetTypeByMetadataName(ComponentBaseMetadataName);
             var componentContract = startContext.Compilation.GetTypeByMetadataName(IComponentMetadataName);
             var cascadingParameterAttribute = startContext.Compilation.GetTypeByMetadataName(CascadingParameterAttributeMetadataName);
+            var supplyParameterFromFormAttribute = startContext.Compilation.GetTypeByMetadataName(SupplyParameterFromFormAttributeMetadataName);
+            var persistentStateAttribute = startContext.Compilation.GetTypeByMetadataName(PersistentStateAttributeMetadataName);
             var hasComponentContract = componentBase is not null || componentContract is not null;
             var hasInjectAnalysis = injectAttribute is not null && hasComponentContract;
             var hasCascadingAnalysis = cascadingParameterAttribute is not null && hasComponentContract;
+            var hasSsrStateAnalysis = (supplyParameterFromFormAttribute is not null || persistentStateAttribute is not null) && hasComponentContract;
             var parameterView = startContext.Compilation.GetTypeByMetadataName(ParameterViewMetadataName);
             var hasParameterViewAnalysis = parameterView is not null && hasComponentContract;
             var hasRazorAuthoringAnalysis = startContext.Options.AdditionalFiles.Any(static file =>
@@ -271,7 +288,7 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
             // activation (JAZORVCA006) and ParameterView rules remain useful in a minimal
             // Blazor project that references no EF/ASP.NET host assemblies.
             // 不能因为没有可选的 server-only 类型就跳过独立的作者面规则。
-            if (!hasInjectAnalysis && !hasCascadingAnalysis && !hasParameterViewAnalysis && !hasRazorAuthoringAnalysis)
+            if (!hasInjectAnalysis && !hasCascadingAnalysis && !hasParameterViewAnalysis && !hasSsrStateAnalysis && !hasRazorAuthoringAnalysis)
                 return;
 
             if (hasInjectAnalysis)
@@ -317,6 +334,21 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
                     symbolContext => AnalyzeCascadingParameterProperty(
                         (IPropertySymbol)symbolContext.Symbol,
                         resolvedCascadingParameterAttribute,
+                        componentBase,
+                        componentContract,
+                        symbolContext),
+                    SymbolKind.Property);
+            }
+
+            if (hasSsrStateAnalysis)
+            {
+                var resolvedSupplyParameterFromFormAttribute = supplyParameterFromFormAttribute;
+                var resolvedPersistentStateAttribute = persistentStateAttribute;
+                startContext.RegisterSymbolAction(
+                    symbolContext => AnalyzeSsrStateProperty(
+                        (IPropertySymbol)symbolContext.Symbol,
+                        resolvedSupplyParameterFromFormAttribute,
+                        resolvedPersistentStateAttribute,
                         componentBase,
                         componentContract,
                         symbolContext),
@@ -485,11 +517,21 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
                 var unavailableLocation = attribute.ApplicationSyntaxReference?
                         .GetSyntax(context.CancellationToken).GetLocation() ??
                     GetAuthoredLocation(property);
-                context.ReportDiagnostic(Diagnostic.Create(
-                    BrowserAdapterServiceUnavailable,
-                    unavailableLocation,
-                    FormatTypeName(property.Type),
-                    unavailable.MetadataName));
+                if (string.Equals(unavailable.MetadataName, PersistentComponentStateMetadataName, StringComparison.Ordinal))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        SsrStateHandoffUnavailable,
+                        unavailableLocation,
+                        FormatTypeName(property.Type)));
+                }
+                else
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        BrowserAdapterServiceUnavailable,
+                        unavailableLocation,
+                        FormatTypeName(property.Type),
+                        unavailable.MetadataName));
+                }
                 return;
             }
 
@@ -587,6 +629,41 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
             property.Name));
     }
 
+    private static void AnalyzeSsrStateProperty(
+        IPropertySymbol property,
+        INamedTypeSymbol? supplyParameterFromFormAttribute,
+        INamedTypeSymbol? persistentStateAttribute,
+        INamedTypeSymbol? componentBase,
+        INamedTypeSymbol? componentContract,
+        SymbolAnalysisContext context)
+    {
+        if (!IsAuthoredSource(property) ||
+            !IsComponent(property.ContainingType, componentBase, componentContract))
+        {
+            return;
+        }
+
+        var attribute = property.GetAttributes().FirstOrDefault(candidate =>
+            (supplyParameterFromFormAttribute is not null &&
+             SymbolEqualityComparer.Default.Equals(candidate.AttributeClass, supplyParameterFromFormAttribute)) ||
+            (persistentStateAttribute is not null &&
+             SymbolEqualityComparer.Default.Equals(candidate.AttributeClass, persistentStateAttribute)));
+        if (attribute is null)
+            return;
+
+        var attributeName = attribute.AttributeClass?.Name ?? "SSR state handoff";
+        if (attributeName.EndsWith("Attribute", StringComparison.Ordinal))
+            attributeName = attributeName.Substring(0, attributeName.Length - "Attribute".Length);
+
+        var location = attribute.ApplicationSyntaxReference?
+                           .GetSyntax(context.CancellationToken).GetLocation() ??
+                       GetAuthoredLocation(property);
+        context.ReportDiagnostic(Diagnostic.Create(
+            SsrStateHandoffUnavailable,
+            location,
+            attributeName));
+    }
+
     private static void AnalyzeRazorAuthoringFiles(
         CompilationAnalysisContext context,
         INamedTypeSymbol? dbContext,
@@ -665,10 +742,14 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
             var descriptor = resolved.Kind switch
             {
                 InjectionKind.DbContext => BrowserIneligibleDbContext,
+                InjectionKind.BrowserUnavailable when string.Equals(
+                    resolved.ContractName,
+                    PersistentComponentStateMetadataName,
+                    StringComparison.Ordinal) => SsrStateHandoffUnavailable,
                 InjectionKind.BrowserUnavailable => BrowserAdapterServiceUnavailable,
                 _ => BrowserIneligibleServerService
             };
-            var arguments = descriptor == BrowserIneligibleDbContext
+            var arguments = descriptor == BrowserIneligibleDbContext || descriptor == SsrStateHandoffUnavailable
                 ? new object[] { FormatTypeName(resolved.Type) }
                 : [FormatTypeName(resolved.Type), resolved.ContractName];
             context.ReportDiagnostic(Diagnostic.Create(descriptor, location, arguments));

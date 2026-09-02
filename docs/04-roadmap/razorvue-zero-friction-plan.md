@@ -111,7 +111,8 @@ Edge/Chrome/Chromium 自动门禁，Playwright CLI 负责固定 Chrome/Chromium 
 | `@ref`/`ElementReference.FocusAsync` | `Support`（Direct Support） | VNode ref 与 mapping、official SG/Deno、真实 browser、isolated Release consumer | 仅承诺 browser interactive；SSR/prerender 不在本切片声明内 |
 | TDesign typed API | `Support`（Direct Support） | 118 runtime component binding、自然 Razor generic/non-generic、slot、union、bind、required 矩阵；isolated Release consumer + real Edge smoke | 后续组件扩展仍需按同一四层证据门禁；不扩大到内置 Blazor UI |
 | package/artifact/HMR | 交付基线已可靠 | Emit `185/185`、JazorAdmin package/browser gate、ESM closure | 每个新增 framework slice 仍需独立 consumer；SSR feature proof 不可借用总 gate |
-| authentication state、SSR state/form handoff | `Planned` | 无行为证据 | 需要版本化 host protocol；内置认证/表单组件仍不在范围 |
+| authentication state | `Guidance` | authored `[Inject]`/`@inject` 诊断 `JAZORVCA007`；`AuthorizeView`/`AuthorizeRouteView` 保持 `Reject` | 尚无版本化 browser provider、claims/SSR handoff；endpoint authorization 是安全边界 |
+| SSR state/form handoff | `Guidance` | authored `PersistentComponentState`、`[PersistentState]`、`[SupplyParameterFromForm]` 诊断 `JAZORVCA011` | 尚无版本化 payload/form protocol；使用 typed endpoint/bootstrap payload，内置表单协议仍不在范围 |
 
 ## 4. 缺口归因规则
 
@@ -156,8 +157,8 @@ Edge/Chrome/Chromium 自动门禁，Playwright CLI 负责固定 Chrome/Chromium 
 | ID | 用户摩擦 / 当前状态 | 类型与 owner | 实施方向和依赖 | 验收与退出状态 |
 | --- | --- | --- | --- | --- |
 | ZF-P2-01 | Pointer/Wheel/Drag/Clipboard/Touch/Error/Progress 七组 getter-only 事件已完成 browser-interactive Support。 | CLR mapping；`Jazor.CLR` + generator | 保持 native carrier 与属性访问时的 TouchList `Array.from(...)`；构造器、setter、files/items、非 getter TouchList 操作继续拒绝。 | `RazorSgOfficialExtendedDomEventRuntimeTests` 已覆盖 reference metadata、official SG/Deno；`SdkIntegrationTests.Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser` 已覆盖真实浏览器与 isolated Release package；目标：`Support`（完成），SSR/prerender 不声明。 |
-| ZF-P2-02 | 认证状态尚未有浏览器 provider 与服务端 endpoint/claims handoff；ledger 为 `Planned`。 | Host/runtime；ASP.NET Core + RazorVue | 只定义 typed `AuthenticationStateProvider`/claims payload 和 endpoint enforcement；不实现 `AuthorizeView` 等内置组件，不把 UI 隐藏当授权。 | authenticated JazorAdmin journey、匿名/过期/刷新/403、SSR 到 hydration state 对照；目标：`Compatibility Adapter` 或明确不支持子集。 |
-| ZF-P2-03 | `PersistentComponentState`、hydration state 和 SSR/增强 post handoff 尚无版本化协议；ledger 为 `Planned`。 | SSR/host；`Jazor.AspNetCore` + `Jazor.Emit` | 先实现可序列化、版本化的 state payload 和 hydration checksum；内置 `EditForm`/antiforgery/enhanced form protocol 不纳入，表单 UI 由 TDesign 等承担。 | packaged SSR HTML、Edge hydration、刷新/重复提交/状态失配 fixture；目标：适用形状 `Support`，其余 `Guidance/Reject`。 |
+| ZF-P2-02 | 认证状态尚未有 browser provider 与服务端 endpoint/claims handoff；ledger 已明确为 `Guidance`。 | Host/runtime；ASP.NET Core + RazorVue | 保持 `AuthenticationStateProvider` 缺失 provider 的 authored `JAZORVCA007` 诊断；不实现 `AuthorizeView` 等内置组件，不把 UI 隐藏当授权。 | authored source 能在首次构建给出 typed provider/endpoint 替代，匿名/过期/403 由 endpoint 测试覆盖后再升级；当前目标：稳定 `Guidance`，不伪称 `Compatibility Adapter`。 |
+| ZF-P2-03 | `PersistentComponentState`、hydration state 和 SSR/增强 post handoff 尚无版本化协议；ledger 已明确为 `Guidance`。 | SSR/host；`Jazor.AspNetCore` + `Jazor.Emit` | `JAZORVCA011` 在 authored property/attribute 注入点阻断未定义 handoff；使用 typed endpoint/bootstrap payload；内置 `EditForm`/antiforgery/enhanced form protocol 不纳入，表单 UI 由 TDesign 等承担。 | authored source 首建稳定诊断、无 partial artifact，并有最小 typed endpoint 替代 fixture；版本化 state protocol、重复提交/失配 hydration 证据完成后才考虑 `Support`。 |
 | ZF-P2-04 | 组件数量、slot 深度和高频更新增长后，作者不应为性能手动改写 API。 | Runtime/perf；`RenderEmitter` + host | 以真实样例 benchmark 决定 block/patch/handler cache；不为“看起来像 Vue”引入破坏语义的优化。 | P0/P1 authoring sample 与 JazorAdmin 的 render/update/SSR 指标、无行为回归；目标：性能门禁稳定，未达标项不阻塞语义 Support 但必须有 issue。 |
 
 ## 6. 分阶段执行顺序与门禁
@@ -204,10 +205,12 @@ carrier、允许 getter、明确拒绝的构造/setter/files/items 清单。
 
 ### Phase 4：SSR、认证与状态交接
 
-交付物：先确定 endpoint/claims 和 serialized state 版本协议，再实现 provider/hydration adapter；不
-借用 `AuthorizeView`、`EditForm` 或其他内置组件作为入口。
+交付物：先确定 endpoint/claims 和 serialized state 版本协议；在协议尚未存在时，认证与 SSR state/form
+入口必须由 authored-source Guidance（`JAZORVCA007`/`JAZORVCA011`）明确阻断，并提供 typed endpoint/bootstrap
+替代。协议完成后再实现 provider/hydration adapter；不借用 `AuthorizeView`、`EditForm` 或其他内置组件作为入口。
 
-门禁：匿名/认证/过期、SSR 首屏、hydration、刷新和状态失配均有 packaged consumer；服务端 endpoint
+门禁：当前 Guidance 阶段要求诊断在 authored source 首次构建出现且无 partial artifact；升级为 adapter
+前，匿名/认证/过期、SSR 首屏、hydration、刷新和状态失配必须均有 packaged consumer，服务端 endpoint
 仍是授权事实来源。
 
 ### Phase 5：quickstart、包和发布质量门禁

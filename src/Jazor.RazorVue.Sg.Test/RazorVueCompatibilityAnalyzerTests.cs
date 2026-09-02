@@ -280,6 +280,80 @@ public sealed class RazorVueCompatibilityAnalyzerTests
     }
 
     [TestMethod]
+    public async Task InjectedPersistentComponentState_ReportsExplicitSsrHandoffBoundary()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/State.razor.cs",
+                """
+                using Microsoft.AspNetCore.Components;
+
+                namespace Demo.Pages
+                {
+                    public sealed class State : ComponentBase
+                    {
+                        [Inject]
+                        public PersistentComponentState StateStore { get; set; } = null!;
+                    }
+                }
+                """));
+
+        var diagnostic = diagnostics.Single(static item => item.Id == "JAZORVCA011");
+        Assert.AreEqual("Pages/State.razor.cs", diagnostic.Location.GetLineSpan().Path);
+        StringAssert.Contains(diagnostic.GetMessage(), "PersistentComponentState", StringComparison.Ordinal);
+        StringAssert.Contains(diagnostic.GetMessage(), "typed endpoint/bootstrap payload", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task PersistentStateProperty_ReportsAtAuthoredAttribute()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/State.razor.cs",
+                """
+                using Microsoft.AspNetCore.Components;
+
+                namespace Demo.Pages
+                {
+                    public sealed class State : ComponentBase
+                    {
+                        [PersistentState]
+                        public string? Snapshot { get; set; }
+                    }
+                }
+                """));
+
+        var diagnostic = diagnostics.Single(static item => item.Id == "JAZORVCA011");
+        Assert.AreEqual("Pages/State.razor.cs", diagnostic.Location.GetLineSpan().Path);
+        Assert.IsTrue(diagnostic.Location.GetLineSpan().StartLinePosition.Character > 0);
+        StringAssert.Contains(diagnostic.GetMessage(), "PersistentState", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task SupplyParameterFromFormProperty_ReportsExplicitSsrHandoffBoundary()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/FormState.razor.cs",
+                """
+                using Microsoft.AspNetCore.Components;
+
+                namespace Demo.Pages
+                {
+                    public sealed class FormState : ComponentBase
+                    {
+                        [SupplyParameterFromForm]
+                        public string? Value { get; set; }
+                    }
+                }
+                """));
+
+        var diagnostic = diagnostics.Single(static item => item.Id == "JAZORVCA011");
+        Assert.AreEqual("Pages/FormState.razor.cs", diagnostic.Location.GetLineSpan().Path);
+        StringAssert.Contains(diagnostic.GetMessage(), "SupplyParameterFromForm", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public async Task CascadingParameter_ReportsAtAuthoredAttribute()
     {
         var diagnostics = await AnalyzeAsync(
@@ -887,13 +961,17 @@ public sealed class RazorVueCompatibilityAnalyzerTests
         Assert.AreEqual("JAZORVCA005", RazorVueCompatibilityAnalyzer.ParameterViewToDictionaryUnsupported.Id);
         Assert.AreEqual("JAZORVCA006", RazorVueCompatibilityAnalyzer.InjectPropertyMustBeWritableAutoProperty.Id);
         Assert.AreEqual("JAZORVCA007", RazorVueCompatibilityAnalyzer.BrowserAdapterServiceUnavailable.Id);
+        Assert.AreEqual("JAZORVCA011", RazorVueCompatibilityAnalyzer.SsrStateHandoffUnavailable.Id);
+        Assert.IsTrue(RazorVueCompatibilityAnalyzer.SsrStateHandoffUnavailable.HelpLinkUri.EndsWith(
+            "#ssr-state-handoff",
+            StringComparison.Ordinal));
         Assert.AreEqual("JAZORVCA008", RazorVueCompatibilityAnalyzer.CascadingParameterUnsupported.Id);
         Assert.IsTrue(RazorVueCompatibilityAnalyzer.CascadingParameterUnsupported.HelpLinkUri.EndsWith(
             "#cascading-parameters",
             StringComparison.Ordinal));
         Assert.AreEqual("JAZORVCA009", RazorVueCompatibilityAnalyzer.RouteDirectiveRequiresHostAdapter.Id);
         Assert.AreEqual("JAZORVCA010", RazorVueCompatibilityAnalyzer.BlazorComponentAdapterUnavailable.Id);
-        Assert.HasCount(10, new RazorVueCompatibilityAnalyzer().SupportedDiagnostics);
+        Assert.HasCount(11, new RazorVueCompatibilityAnalyzer().SupportedDiagnostics);
     }
 
     [TestMethod]

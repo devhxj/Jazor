@@ -218,7 +218,8 @@ P2 不预设全部都会变成 Direct Support。每项要么实现可保真的 a
 | Parameter lifecycle | SetParametersAsync、ParameterView、parameter mutation | 说明 adapter 支持状态；未实现时给出 OnParametersSet 或已定义兼容入口 |
 | Cascading/DI | `[CascadingParameter]`、名称/类型冲突、无 provider、生命周期不匹配 | typed provider/inject adapter 已处理类型/名称匹配、最近值和生命周期；`JAZORVCA008` 只诊断不可写属性形状 |
 | Forms/validation | 未支持的 validator、反射型 rule、不可序列化 field expression | 指出第三方 typed form contract 或明确 Reject；不把 `EditForm`/`Input*` adapter 当作 framework Support |
-| Navigation/auth/JS | server authentication dependency、动态 JS invocation、尚未注册的 host capability | `NavigationManager`、route metadata 和 framework host contract 可被消费；`Router`/`RouteView`/`NavLink`/`AuthorizeView` 等内置组件标签不在本计划 |
+| Navigation/auth/JS | server authentication dependency、动态 JS invocation、尚未注册的 host capability | `NavigationManager`、route metadata 和 framework host contract 可被消费；认证 provider 缺失由 `JAZORVCA007` Guidance，`Router`/`RouteView`/`NavLink`/`AuthorizeView` 等内置组件标签不在本计划 |
+| SSR state/form handoff | `PersistentComponentState`、`[PersistentState]`、`[SupplyParameterFromForm]` 或隐式 hydration payload | `JAZORVCA011` 在 authored property/attribute 位置阻断未定义协议；改用版本化 typed endpoint/bootstrap payload |
 | Standard component adapter | 任意未纳入独立组件路线的 Microsoft 内置标签 | `JAZORVCA010` 作为稳定 Reject/Guidance descriptor；不得因历史 adapter 注册而静默放行或生成部分 Vue substitute |
 | Render shape | 高置信 dynamic component、fragment recursion、跨 frame control flow | 能在作者源码判断时提前解释；不能确定时让 final Compilation 维持唯一诊断 |
 

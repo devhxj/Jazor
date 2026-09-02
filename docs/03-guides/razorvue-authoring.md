@@ -41,6 +41,7 @@ RazorVue 的最终管线顺序是：组件发现 -> final Compilation binding ->
 | `JAZORVCA008` | `[CascadingParameter]` 不是可激活的 writable auto-property | `#cascading-parameters` | 改为普通 `get; set;` 属性；标准 `CascadingValue`/命名级联由 browser adapter 自动处理。 |
 | `JAZORVCA009` | 保留的旧 route-host descriptor（当前生成 route catalog 的 `@page` 不触发） | `#routing` | 正常页面无需注册 route host；若未来使用未覆盖的 host profile，按诊断给出的宿主配置处理。 |
 | `JAZORVCA010` | 标准组件 adapter descriptor（不在当前产品契约中的 Microsoft 内置组件） | `#component-adapters` | 使用自定义组件或 TDesign/Vuetify/Element Plus 的 typed contract；不要依赖历史/实验 adapter。 |
+| `JAZORVCA011` | `PersistentComponentState`、`[PersistentState]` 或 `[SupplyParameterFromForm]` 需要未定义的 SSR/form handoff | `#ssr-state-handoff` | 使用显式版本化的 typed endpoint/bootstrap payload；当前不支持隐式 hydration state、antiforgery 或 enhanced form protocol。 |
 
 Razor SDK/Roslyn 的 `RZ****`、`CS****` 诊断仍由对应工具报告；RazorVue 不复制这些检查。
 
@@ -164,9 +165,16 @@ RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，不会因�
 
 ### 仍有明确环境边界的标准 API
 
-Razor SDK 能编译不等于每个 ASP.NET Core runtime API 都能在浏览器执行。已注册、可执行的服务可直接使用标准 `[Inject]`/`@inject`；数据库上下文、请求上下文、服务器 host/Identity 服务由 `JAZORVCA001`/`JAZORVCA002` 在作者源码处拒绝，已知但没有 adapter 的 Blazor host service 由 `JAZORVCA007` 说明。`NavigationManager` 和 `AuthenticationStateProvider` 的属性注入可由 browser service adapter 提供；`IJSRuntime` 家族没有 RazorVue 兼容层，实际调用或成员访问由现有 compiler/final Compilation 在使用点报告不支持，作者应改用强类型 ECMAScript/WebIDL binding。标准 cascading 和基础 route catalog 仍属于 framework primitive。Microsoft 内置 UI 组件不因存在历史 adapter 而进入产品契约；复杂 forms/validation、LocationChanged 订阅、SSR/hydration 和其它未证明能力不会静默生成运行时 `undefined`，而由对应 guidance 或 final Compilation 在作者映射位置说明。
+Razor SDK 能编译不等于每个 ASP.NET Core runtime API 都能在浏览器执行。已注册、可执行的服务可直接使用标准 `[Inject]`/`@inject`；数据库上下文、请求上下文、服务器 host/Identity 服务由 `JAZORVCA001`/`JAZORVCA002` 在作者源码处拒绝，已知但没有 adapter 的 Blazor host service 由 `JAZORVCA007` 说明。当前 profile 没有隐式 `AuthenticationStateProvider`；除非宿主另行注册并证明 typed browser provider，否则该注入保持 Guidance。`NavigationManager` 的基础属性注入可由 browser service adapter 提供；`IJSRuntime` 家族没有 RazorVue 兼容层，实际调用或成员访问由现有 compiler/final Compilation 在使用点报告不支持，作者应改用强类型 ECMAScript/WebIDL binding。标准 cascading 和基础 route catalog 仍属于 framework primitive。Microsoft 内置 UI 组件不因存在历史 adapter 而进入产品契约；复杂 forms/validation、LocationChanged 订阅、SSR/hydration 和其它未证明能力不会静默生成运行时 `undefined`，而由对应 guidance 或 final Compilation 在作者映射位置说明。
 
 `ParameterView` 的标准 `SetParametersAsync(ParameterView)` 入口已经由 compatibility adapter 支持；不要枚举参数、调用 `TryGetValue` 或 `ToDictionary`。这些未物化操作会分别报告 `JAZORVCA003`、`JAZORVCA004`、`JAZORVCA005`，建议改用已声明的 typed parameters。`[VueInject]` 仍是组件库级 contract（见 [VueInject](#vue-inject)），不是页面作者完成普通服务注入的前置知识。
+
+<a id="ssr-state-handoff"></a>
+### SSR 状态与表单交接
+
+`PersistentComponentState`、`[PersistentState]` 和 `[SupplyParameterFromForm]` 依赖服务器 renderer、序列化 payload、请求边界和 hydration 时机。当前 RazorVue 没有版本化的 state envelope、checksum、失配处理或 enhanced form/antiforgery 协议，因此不会把这些 API 静默降级成浏览器全局状态。作者源中出现注入或特性时会报告 `JAZORVCA011`，位置落在对应类型或 attribute 上；这不是要求作者改写成 builder 或 Vue API。
+
+对于需要 SSR 首屏数据的页面，使用显式、强类型 endpoint 返回 bootstrap DTO，并在组件初始化时消费该 DTO；服务端仍是授权和数据事实来源。重复提交、过期 payload、状态失配和表单防伪需要由 endpoint/host 自己处理。只有在未来版本化 payload 与 hydration 副作用矩阵完成后，才会把具体子集提升为 Compatibility Adapter 或 Support；内置 `EditForm`、`Input*`、`AuthorizeView` 等组件仍不属于本路线。
 
 <a id="direct-render"></a>
 ## Direct Render

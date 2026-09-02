@@ -103,6 +103,15 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         StringAssert.Contains(authentication.Blocker, "versioned browser provider", StringComparison.Ordinal);
 
+        var ssrState = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P2-ssr-state-and-forms");
+        Assert.AreEqual("JAZORVCA011", ssrState.DiagnosticId);
+        Assert.AreEqual(RazorVueCapabilityDecision.GuidedAdaptation, ssrState.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Guidance, ssrState.Status);
+        Assert.IsTrue(ssrState.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        StringAssert.Contains(ssrState.Fixture, "SupplyParameterFromFormProperty", StringComparison.Ordinal);
+        StringAssert.Contains(ssrState.Blocker, "versioned SSR/hydration", StringComparison.Ordinal);
+
         var cascading = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-cascading-values");
         Assert.AreEqual("JAZORVCA008", cascading.DiagnosticId);
