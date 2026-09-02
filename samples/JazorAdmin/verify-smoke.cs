@@ -288,6 +288,10 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(accessControlModule, "scope.OnParametersSet();", "route parameter lifecycle in access control management module");
     AssertContains(accountModule, "GetAccounts", "account query in account management module");
     AssertContains(accountModule, "ResetAccountPassword", "account password command in account management module");
+    AssertContains(accountModule, "DraftRules", "typed account form rules in account management module");
+    AssertContains(accountModule, "PasswordRules", "typed password form rules in account management module");
+    AssertContains(accountModule, "data-account-form", "typed account form markers in account management module");
+    AssertContains(accountModule, "onSubmit: CreateAccount", "typed account submit callback in account management module");
     AssertContains(accountModule, "scope.OnAfterRender(firstRender)", "initial Razor lifecycle invocation in account management module");
     AssertContains(ssoAppModule, "GetApps", "OpenIddict application query in application module");
     AssertContains(ssoAppModule, "RotateAppSecret", "OpenIddict secret rotation in application module");
@@ -714,7 +718,27 @@ static async Task VerifyBrowserSmokeAsync(
                         displayName: "North Clinic"
                       }]
                     });
-                    if (url.pathname === "/api/accounts/") return json(accounts);
+                    if (url.pathname === "/api/accounts/" && method === "POST") {
+                      const account = {
+                        id: `account-${accounts.length + 1}`,
+                        email: body.Email,
+                        displayName: body.DisplayName,
+                        enabled: true,
+                        platformAdministrator: body.PlatformAdministrator
+                      };
+                      accounts.push(account);
+                      return json(account, 201);
+                    }
+                    if (url.pathname === "/api/accounts/" && method === "GET") return json(accounts);
+                    if (url.pathname.startsWith("/api/accounts/") && url.pathname.endsWith("/enabled") && method === "PUT") {
+                      const id = url.pathname.split("/").at(-2);
+                      const account = accounts.find((value) => value.id === id);
+                      if (account) account.enabled = body.Enabled;
+                      return json(account ?? {}, 200);
+                    }
+                    if (url.pathname.startsWith("/api/accounts/") && url.pathname.endsWith("/password") && method === "PUT") {
+                      return json({}, 200);
+                    }
                     if (url.pathname === "/api/sso/applications" && method === "GET") return json(applications);
                     if (url.pathname === "/api/sso/applications" && method === "POST") {
                       const application = {
@@ -1088,6 +1112,37 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitFor(() => document.querySelectorAll('[data-management-area="accounts"] .t-table tbody tr').length === 1, "account table");
                       const accountsPathname = location.pathname;
                       const accountRowText = document.querySelector('[data-management-area="accounts"] .t-table tbody tr')?.textContent ?? "";
+                      await waitFor(() => document.querySelector('[data-account-form="create"]') !== null, "typed account create form");
+                      await setInput('[data-account-field="email"] input', "new.operator@example.test");
+                      await setInput('[data-account-field="displayName"] input', "New operator");
+                      await setInput('[data-account-field="password"] input', "NewOperator123!");
+                      await click('[data-account-command="reset-draft"]', "account draft reset command");
+                      await waitFor(
+                        () => document.querySelector('[data-account-field="email"] input')?.value === "" &&
+                          document.querySelector('[data-account-field="displayName"] input')?.value === "" &&
+                          document.querySelector('[data-account-field="password"] input')?.value === "",
+                        "account typed form reset");
+                      const accountCreateFormReset = true;
+                      await setInput('[data-account-field="email"] input', "new.operator@example.test");
+                      await setInput('[data-account-field="displayName"] input', "New operator");
+                      await setInput('[data-account-field="password"] input', "NewOperator123!");
+                      await click('[data-account-command="create"]', "typed account create command");
+                      await waitFor(
+                        () => document.querySelectorAll('[data-management-area="accounts"] .t-table tbody tr').length === 2,
+                        "created account table row");
+                      const accountCount = document.querySelectorAll('[data-management-area="accounts"] .t-table tbody tr').length;
+                      const createdAccountRowText = document.querySelector('[data-management-area="accounts"] .t-table tbody tr:last-child')?.textContent ?? "";
+                      const accountSelectButtons = Array.from(document.querySelectorAll('[data-management-area="accounts"] [data-account-command="select"]'));
+                      const createdAccountSelect = accountSelectButtons.at(-1);
+                      if (!(createdAccountSelect instanceof HTMLElement)) throw new Error("Created account select command is missing.");
+                      createdAccountSelect.click();
+                      await waitFor(() => document.querySelector('[data-account-form="reset-password"]') !== null, "typed password reset form");
+                      await setInput('[data-account-field="newPassword"] input', "ResetOperator123!");
+                      await click('[data-account-command="reset-password"]', "typed password reset command");
+                      await waitFor(
+                        () => document.querySelector('[data-account-field="newPassword"] input')?.value === "",
+                        "typed password reset clear");
+                      const passwordFormReset = true;
 
                       await click('[data-nav-key="sso.applications"] a', "OpenIddict application navigation item");
                       await waitForTitle("OpenID 应用");
@@ -1264,6 +1319,10 @@ static async Task VerifyBrowserSmokeAsync(
                         resourceText,
                         accountsPathname,
                         accountRowText,
+                        accountCount,
+                        createdAccountRowText,
+                        accountCreateFormReset,
+                        passwordFormReset,
                         applicationsPathname,
                         applicationRowText,
                         applicationCount,
@@ -1380,6 +1439,10 @@ static async Task VerifyBrowserSmokeAsync(
         AssertDoesNotContain(root.GetProperty("resourceText").GetString() ?? string.Empty, "Recruitment", "JazorAdmin removed recruitment resource");
         AssertContains(root.GetProperty("accountsPathname").GetString() ?? string.Empty, "/accounts", "JazorAdmin account navigation", root.GetRawText());
         AssertContains(root.GetProperty("accountRowText").GetString() ?? string.Empty, "平台管理员", "JazorAdmin account row", root.GetRawText());
+        AssertJsonInt(root, "accountCount", 2, "JazorAdmin typed account create form", root.GetRawText());
+        AssertContains(root.GetProperty("createdAccountRowText").GetString() ?? string.Empty, "new.operator@example.test", "JazorAdmin created account row", root.GetRawText());
+        AssertJsonBoolean(root, "accountCreateFormReset", true, "JazorAdmin typed account form reset", root.GetRawText());
+        AssertJsonBoolean(root, "passwordFormReset", true, "JazorAdmin typed password reset form", root.GetRawText());
         AssertContains(root.GetProperty("applicationsPathname").GetString() ?? string.Empty, "/sso/applications", "JazorAdmin OpenIddict application navigation", root.GetRawText());
         AssertContains(root.GetProperty("applicationRowText").GetString() ?? string.Empty, "JazorAdmin SPA", "JazorAdmin OpenIddict application row", root.GetRawText());
         AssertJsonInt(root, "applicationCount", 3, "JazorAdmin created Machine and API applications", root.GetRawText());

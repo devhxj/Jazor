@@ -1,6 +1,6 @@
 # RazorVue “零摩擦”执行计划
 
-> 日期：2026-08-31
+> 日期：2026-09-03
 > 状态：执行计划，不是 Support 声明。每项能力仍以 `RazorVueM5CapabilityLedger` 和本文件的验收门禁为准。
 > 目标范围：标准 Blazor **自定义组件作者面** + TDesign 等第三方 typed component library；Microsoft/Blazor 内置 UI 组件不在本计划支持范围内。
 
@@ -184,6 +184,11 @@ Edge/Chrome/Chromium 自动门禁，Playwright CLI 负责固定 Chrome/Chromium 
 - 覆盖 Button/Input/Form/Table/Modal 等高频组件的自然 Razor：generic/non-generic、typed slot、
   `@bind`、async EventCallback、union、required parameter、attribute splat 和命名冲突。
 - 将通过的写法加入独立 authoring sample；不把页面 workaround 写成公共 API。
+- 2026-09-03：JazorAdmin `AccountPage` 的创建账户和重置密码已消费
+  `TForm<T>`、`TFormRules<T>`、`@bind-Value`、typed `OnSubmit`/`OnReset`；Release
+  package/browser smoke 覆盖重置、提交后列表更新和密码清空。账户页表格列的
+  `RenderFragment`/`RenderTreeBuilder` 组合，以及其他页面的 `TJsonObject` + 手写 callback
+  状态，保留为下一轮 API review 和逐页迁移要点。
 
 门禁：official SG 编译、semantic/module snapshot、Deno、真实 Chrome/Chromium（必要时 Edge）browser、isolated Release package consumer
 全部通过；组件库内部之外的 RazorVue-specific symbol/cast/builder 为零。

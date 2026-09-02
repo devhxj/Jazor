@@ -39,22 +39,39 @@
                             <p>@L("New accounts can then be assigned to organizations and roles", "创建后可将账户分配到组织和角色")</p>
                         </div>
                     </header>
-                    <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
+                    <TForm FormData="AccountDraft"
+                           Data="@Draft"
+                           Rules="@DraftRules"
+                           OnSubmit="@CreateAccount"
+                           OnReset="@ResetDraft"
+                           LabelAlign="@TFormLabelAlignValue.Top"
+                           data-account-form="create">
                         <TFormItem LabelValue="@L("Email", "邮箱")" Name="email">
-                            <span data-account-field="email"><TInput T="string" Value="@email" OnChange="@(value => email = value)" Placeholder="operator@jazor.local" /></span>
+                            <span data-account-field="email"><TInput T="string"
+                                @bind-Value="Draft.Email"
+                                @bind-Value:event="OnChange"
+                                Placeholder="operator@jazor.local" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Display name", "显示名称")" Name="displayName">
-                            <span data-account-field="displayName"><TInput T="string" Value="@displayName" OnChange="@(value => displayName = value)" /></span>
+                            <span data-account-field="displayName"><TInput T="string"
+                                @bind-Value="Draft.DisplayName"
+                                @bind-Value:event="OnChange" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Initial password", "初始密码")" Name="password">
-                            <span data-account-field="password"><TInput T="string" Value="@password" OnChange="@(value => password = value)" Type="@TInputTypeValue.Password" /></span>
+                            <span data-account-field="password"><TInput T="string"
+                                @bind-Value="Draft.Password"
+                                @bind-Value:event="OnChange"
+                                Type="@TInputTypeValue.Password" /></span>
                         </TFormItem>
                         <TFormItem Name="platformAdministrator">
-                            <TSwitch T="bool" Value="@platformAdministrator" OnChange="@(value => platformAdministrator = value)" />
+                            <TSwitch T="bool"
+                                @bind-Value="Draft.PlatformAdministrator"
+                                @bind-Value:event="OnChange" />
                             <span class="ja-form__inline-label">@L("Platform administrator", "平台管理员")</span>
                         </TFormItem>
                         <div class="ja-form__commands">
-                            <TButton Theme="@TButtonThemeValue.Primary" data-account-command="create" OnClick="@(_ => CreateAccount())">@L("Create account", "创建账户")</TButton>
+                            <TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text" data-account-command="reset-draft">@L("Reset", "重置")</TButton>
+                            <TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary" data-account-command="create">@L("Create account", "创建账户")</TButton>
                         </div>
                     </TForm>
 
@@ -63,10 +80,25 @@
                         <div class="ja-panel__section">
                             <h3>@L("Reset password", "重置密码")</h3>
                             <p>@SelectedAccount.Email</p>
-                            <div class="ja-form__inline">
-                                <span data-account-field="newPassword"><TInput T="string" Value="@newPassword" OnChange="@(value => newPassword = value)" Type="@TInputTypeValue.Password" Placeholder="@L("New password", "新密码")" /></span>
-                                <TButton data-account-command="reset-password" OnClick="@(_ => ResetPassword())">@L("Update password", "更新密码")</TButton>
-                            </div>
+                            <TForm FormData="PasswordDraft"
+                                   Data="@Password"
+                                   Rules="@PasswordRules"
+                                   OnSubmit="@ResetPassword"
+                                   OnReset="@ResetPasswordDraft"
+                                   LabelAlign="@TFormLabelAlignValue.Top"
+                                   data-account-form="reset-password">
+                                <TFormItem LabelValue="@L("New password", "新密码")" Name="password">
+                                    <span data-account-field="newPassword"><TInput T="string"
+                                        @bind-Value="Password.Value"
+                                        @bind-Value:event="OnChange"
+                                        Type="@TInputTypeValue.Password"
+                                        Placeholder="@L("New password", "新密码")" /></span>
+                                </TFormItem>
+                                <div class="ja-form__commands">
+                                    <TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text" data-account-command="reset-password-clear">@L("Clear", "清空")</TButton>
+                                    <TButton Type="@TButtonTypeValue.Submit" data-account-command="reset-password">@L("Update password", "更新密码")</TButton>
+                                </div>
+                            </TForm>
                         </div>
                     }
                 </section>

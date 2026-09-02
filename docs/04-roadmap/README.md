@@ -11,7 +11,7 @@
 | [RazorVue 作者面诊断与支持决策路线图](./razorvue-authoring-diagnostics.md) | Razor/C# 合法作者面与支持切片差值的分级清单、final-pipeline 诊断契约、支持/拒绝决策与静默劣化清零计划 |
 | [RazorVue 开发者体验完善路线图](./razorvue-developer-experience.md) | Blazor-first 作者面兼容：标准 Razor/C# 直接工作；无法保真时由作者源码分析在代码位置解释并给出替代，另含组件适配、运行时证明和发布门禁 |
 | [RazorVue “零摩擦”执行计划](./razorvue-zero-friction-plan.md) | 以 TDesign 自然 Razor authoring 为优先，按 compiler/runtime、binding/API、证据/交付三类缺口分阶段执行；Microsoft/Blazor 内置 UI 组件明确范围外 |
-| [RazorVue v0.27.0 之后的下一步开发计划](./razorvue-next-development-plan.md) | 基于 v0.27.0 实际支持边界排序下一轮工作：优先作者诊断、强类型表单、导航常用闭环和 binding 收敛；认证/SSR/构造注入先做协议，固定 Reject 边界不扩张 |
+| [RazorVue v0.28.0 之后的下一步开发计划](./razorvue-next-development-plan.md) | 基于 v0.28.0 实际支持边界排序下一轮工作：优先作者诊断、强类型表单、导航常用闭环和 binding 收敛；认证/SSR/构造注入先做协议，固定 Reject 边界不扩张 |
 | [RazorVue Blazor CLR 类型支持计划](./blazor-clr-support-plan.md) | 浏览器运行时类型与服务的专项 ledger：`Jazor.CLR.Generator -> Jazor.CLR` 的唯一 mapping owner、导航拦截、事件参数、元素引用、Blazor JS interop 的 Reject 边界、认证、表单与文件输入的依赖、顺序和验收 |
 | [CLR Runtime 健壮性与性能强化计划](./clr-runtime-hardening-plan.md) | 保留现有 `J*` 值 carrier 形态，收敛运行时行为正确性与开销：比较运算符 lowering 确认、第二布局写入方消除、不变量缓存与生成器护栏 |
 | [ECMAScriptAttribute 统一协议调整计划](./ecmascript-attribute-unification.md) | 统一外部 ESM binding 与组件描述 Attribute，固定 `Allow` / `Import` / `Component` 三类 Transform，规划编译器、RazorVue、生成器和兼容层迁移 |

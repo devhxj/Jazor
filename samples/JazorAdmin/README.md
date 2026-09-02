@@ -48,6 +48,23 @@ dotnet test samples/JazorAdmin.Test/JazorAdmin.Test.csproj
 
 管理端 smoke 会基于当前仓库打包本地依赖，验证 Razor SG 模块、manifest、容器替换、分区导航、审计筛选与浏览器交互。DemoClient smoke 额外验证 CAPTCHA 登录、授权码 + PKCE、Bearer API、令牌审计和单点登出。生成的验证产物写入 `.tmp/sample-smoke/JazorAdmin/`。
 
+## 当前 authoring 观察
+
+账户管理页的创建账户和重置密码流程已直接使用 `TForm<T>`：页面状态分别由
+`AccountDraft`/`PasswordDraft` 承载，字段使用 `@bind-Value`，规则使用
+`TFormRules<T>`，提交与重置使用 typed `OnSubmit`/`OnReset`。服务端仍只接收现有的
+`CreateAccountRequest`/密码 request，表单模型不会泄漏到 API 边界。
+
+下一步实现要点：
+
+- 账户、组织和 SSO 页面的大量表格操作列仍在 `.razor.cs` 中通过
+  `RenderFragment`/`RenderTreeBuilder` 组合；先建立独立 typed column/slot fixture，再决定
+  是否需要 binding API 调整。
+- 其他页面仍有 `TForm<TJsonObject>` 加手写 `Value`/`OnChange` 状态；应逐页迁移并验证错误保留、
+  异步提交和重置语义，不恢复通用 sample-local bridge。
+- Microsoft `EditForm`、`InputBase<T>`、认证状态和 SSR form handoff 仍按作者指南保持
+  Guidance/Reject，不以本页迁移扩大支持范围。
+
 品牌图标的再生成和一致性检查：
 
 ```bash
@@ -57,7 +74,7 @@ dotnet run --file scripts/csharp/generate-jazoradmin-brand-assets.cs -- --check
 ## 示例边界
 
 - `Jazor.Admin` 提供应用框架和强类型模型；JazorAdmin 选择 TDesign 组件、页面结构和领域功能。
-- 管理页直接使用 `TTable<T>`、`TForm<TJsonObject>`、`TInput<string>`、`TSwitch<bool>` 和 `TRadioGroup<string>` 等 typed TDesign 组件；不依赖 sample-local 控件桥接。
+- 管理页直接使用 `TTable<T>`、`TForm<T>`、`TInput<string>`、`TSwitch<bool>` 和 `TRadioGroup<string>` 等 typed TDesign 组件；账户页已采用 typed draft/bind/rules/submit/reset，不依赖 sample-local 控件桥接。
 - 应用样式由 `ECMAScript.Style` 和项目自身的 `ja-*` 命名空间管理，不依赖外部 CDN。
 - 上游 TDesign Starter 模板复刻页已退役；TDesign 绑定覆盖率由 binding-contract 审计门禁保证，不在本示例重复维护。
 

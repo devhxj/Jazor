@@ -9,15 +9,52 @@ namespace JazorAdmin;
 [ECMAScriptModule("components/accounts.mjs")]
 public partial class AccountPage : AppComponentBase, IVueContainerComponent
 {
+    private sealed record AccountDraft
+    {
+        public string Email { get; set; } = string.Empty;
+
+        public string DisplayName { get; set; } = string.Empty;
+
+        public string Password { get; set; } = string.Empty;
+
+        public bool PlatformAdministrator { get; set; }
+    }
+
+    private sealed record PasswordDraft
+    {
+        public string Value { get; set; } = string.Empty;
+    }
+
     private bool loading = true;
     private string? error;
     private AccountResponse[] accounts = [];
-    private string email = string.Empty;
-    private string displayName = string.Empty;
-    private string password = string.Empty;
-    private bool platformAdministrator;
     private string? selectedAccountId;
-    private string newPassword = string.Empty;
+    private AccountDraft Draft { get; set; } = NewDraft();
+    private PasswordDraft Password { get; set; } = NewPasswordDraft();
+
+    private TFormRules<AccountDraft> DraftRules { get; } = new()
+    {
+        ["email"] =
+        [
+            new TFormRule { Required = true, Message = "Enter an email address." }
+        ],
+        ["displayName"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a display name." }
+        ],
+        ["password"] =
+        [
+            new TFormRule { Required = true, Message = "Enter an initial password." }
+        ]
+    };
+
+    private TFormRules<PasswordDraft> PasswordRules { get; } = new()
+    {
+        ["password"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a new password." }
+        ]
+    };
 
     // TDesign 表格列：组合单元格走 Cell 渲染片段，行数据经 C# 成员访问保持类型安全。
     private TPrimaryTableCol<AccountResponse>[] Columns =>
@@ -101,12 +138,18 @@ public partial class AccountPage : AppComponentBase, IVueContainerComponent
         accounts = ApiClient.ToAccounts(outcome.Data);
     }
 
-    private void CreateAccount()
+    private void CreateAccount(TSubmitContext<AccountDraft> context)
     {
-        if (Text.Normalize(email) is null || Text.Normalize(displayName) is null || Text.Normalize(password) is null)
+        if (Text.Normalize(Draft.Email) is null ||
+            Text.Normalize(Draft.DisplayName) is null ||
+            Text.Normalize(Draft.Password) is null)
             return;
 
-        ApiClient.CreateAccount(email, displayName, password, platformAdministrator).Then(outcome =>
+        ApiClient.CreateAccount(
+            Draft.Email,
+            Draft.DisplayName,
+            Draft.Password,
+            Draft.PlatformAdministrator).Then(outcome =>
         {
             if (!outcome.Ok)
             {
@@ -114,18 +157,21 @@ public partial class AccountPage : AppComponentBase, IVueContainerComponent
                 return;
             }
 
-            email = string.Empty;
-            displayName = string.Empty;
-            password = string.Empty;
-            platformAdministrator = false;
+            Draft = NewDraft();
             Load();
         });
+    }
+
+    private void ResetDraft(TFormResetEventContext<AccountDraft> context)
+    {
+        Draft = NewDraft();
+        error = null;
     }
 
     private void SelectAccount(AccountResponse account)
     {
         selectedAccountId = account.Id;
-        newPassword = string.Empty;
+        Password = NewPasswordDraft();
     }
 
     private void SetEnabled(AccountResponse account)
@@ -142,12 +188,12 @@ public partial class AccountPage : AppComponentBase, IVueContainerComponent
         });
     }
 
-    private void ResetPassword()
+    private void ResetPassword(TSubmitContext<PasswordDraft> context)
     {
-        if (SelectedAccount is null || Text.Normalize(newPassword) is null)
+        if (SelectedAccount is null || Text.Normalize(Password.Value) is null)
             return;
 
-        ApiClient.ResetAccountPassword(SelectedAccount.Id, newPassword).Then(outcome =>
+        ApiClient.ResetAccountPassword(SelectedAccount.Id, Password.Value).Then(outcome =>
         {
             if (!outcome.Ok)
             {
@@ -155,7 +201,26 @@ public partial class AccountPage : AppComponentBase, IVueContainerComponent
                 return;
             }
 
-            newPassword = string.Empty;
+            Password = NewPasswordDraft();
         });
     }
+
+    private void ResetPasswordDraft(TFormResetEventContext<PasswordDraft> context)
+    {
+        Password = NewPasswordDraft();
+        error = null;
+    }
+
+    private static AccountDraft NewDraft() => new()
+    {
+        Email = string.Empty,
+        DisplayName = string.Empty,
+        Password = string.Empty,
+        PlatformAdministrator = false
+    };
+
+    private static PasswordDraft NewPasswordDraft() => new()
+    {
+        Value = string.Empty
+    };
 }

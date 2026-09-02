@@ -1,9 +1,9 @@
-# RazorVue v0.27.0 之后的下一步开发计划
+# RazorVue v0.28.0 之后的下一步开发计划
 
-> 日期：2026-09-02
+> 日期：2026-09-03
 > 状态：下一阶段的决策与执行计划，不是新的 Support 声明。每项能力仍必须以当前
 > ledger、实现、测试和适用运行 profile 的证据为准。
-> 基线：`v0.27.0`，分支 `feature/unified-library-carriers`。
+> 基线：`v0.28.0`，分支 `feature/unified-library-carriers`。
 
 本文件回答一个比“还能支持什么”更实际的问题：在当前边界下，下一步支持什么最能提高
 页面和组件作者的开发效率，同时不会把 RazorVue 变成一个无法兑现的“完整 Blazor 兼容层”。
@@ -13,7 +13,7 @@
 
 ## 0. 结论先行
 
-`v0.27.0` 已经越过“能不能生成和发布”的阶段。核心编译器、CLR 映射、官方 Razor Source
+`v0.28.0` 已经越过“能不能生成和发布”的阶段。核心编译器、CLR 映射、官方 Razor Source
 Generator、Vue 组件绑定、Emit carrier、SPA/SSR 发布消费者和真实浏览器门禁都有可复现证据。
 下一阶段最有价值的工作不是再造一套产物管线，也不是盲目扩大 CLR 白名单，而是让常见页面在
 三处更自然：
@@ -32,7 +32,7 @@ Generator、Vue 组件绑定、Emit carrier、SPA/SSR 发布消费者和真实�
 
 ### 1.1 已经足够可靠的部分
 
-| 领域 | `v0.27.0` 结论 | 下一步处理 |
+| 领域 | `v0.28.0` 结论 | 下一步处理 |
 | --- | --- | --- |
 | C# -> ESTree -> ECMAScript module | `Support`；求值顺序、导入、source origin、稳定命名和失败传播已有核心回归 | 只做回归保护和性能观测，不为 RazorVue 添加旁路 lowering |
 | 普通 Razor、组件组合、fragment/slot、泛型、`@bind`、事件、循环、生命周期、`@key`、`@ref` | `Support`，部分复杂形状为 Compatibility Adapter | 继续扩展自然写法矩阵；不要以 JazorAdmin 的单页 bridge 作为新公共 API |
@@ -55,6 +55,22 @@ publishing 和 GitHub Release。数字用于说明基线，不代表可以跳过
 | CRUD 页面需要统一的字段错误、提交中和异步校验表达 | 内置 `EditForm`/`InputBase` 协议被明确排除，第三方组件间没有共同的强类型表单契约 | TDesign/组件库 contract + RazorVue bind/runtime |
 | `replace`、LocationChanged 和复杂 history 状态边界分散 | 同源内部 replace/`LocationChanged` 的公开矩阵已由 Authoring browser smoke 固化；复杂 history 仍未覆盖 | CLR navigation mapping + route host |
 | 认证和 SSR 初始数据能工作，但没有稳定的状态 envelope | 需要版本、生命周期、失配和授权边界；不能靠全局 JS 状态补齐 | `Jazor.AspNetCore` + `Jazor.Emit` + typed endpoint |
+
+### 1.3 2026-09-03 JazorAdmin consumer slice
+
+账户管理页已将创建账户和重置密码迁移到现有的 typed TDesign form contract：
+`TForm<AccountDraft>`/`TForm<PasswordDraft>`、`TFormRules<T>`、字段 `@bind-Value`、
+typed `OnSubmit`/`OnReset`。这只是 N0-02 已交付能力在第二个真实页面的消费验证，不新增
+ledger 条目或扩大平台支持面；`JazorAdmin` Release package/browser smoke 已覆盖表单重置、
+提交后列表更新、密码重置清空，构建结果为 0 warning/0 error。
+
+本轮保留的下一实现要点：
+
+- 表格列和操作列仍在多个页面的 `.razor.cs` 中手写 `RenderFragment`/`RenderTreeBuilder`；
+  owner 是 `ECMAScript.TDesign` binding API review，下一步先补最小独立 typed column/slot
+  fixture，再决定是否变更公共 contract。
+- 组织、SSO、审计等页面仍有 `TForm<TJsonObject>` 与重复的 `Value`/`OnChange` 状态；按页面
+  迁移时要分别证明错误保留、异步失败和 reset 行为，不能用通用 bridge 掩盖差异。
 
 ## 2. 取舍标准
 
@@ -103,7 +119,7 @@ P0 的共同特点是收益高、可以沿现有架构实现，且不需要改�
 | owner | 首选 `ECMAScript.TDesign`（必要时同步 Vuetify/Element Plus contract），`Jazor.RazorVue` 负责 bind/event/lifecycle 语义；表单提交的服务端事实由应用 endpoint 负责。 |
 | 实现路线 | 以强类型 model、字段/校验结果、`Value`/`ValueChanged`、submit/reset/pending 事件为核心；保留 union、overload 和 collection initializer 的自然 Razor 写法；只在 C# 无法表达的窄边界提供显式 factory。组件库负责 UI，RazorVue 负责单次求值、异步 callback 和错误传播。 |
 | 依赖与风险 | 需要与 official Razor SG 的 generic component、typed slot、`@bind:get/set/after` 和 async lifecycle 矩阵对齐；不能靠 `object?` 或反射扫描 `DataAnnotations` 让任意模型“自动工作”。 |
-| 最低验收 | 当前已由 `samples/RazorVue.Authoring` 证明 typed form 的初始值、空值校验、字段规则、reset、异步 submit、dialog 状态和 isolated Release browser/package closure；完整 create/edit/delete、取消/重试、重复提交、路由离开和 SSR 首屏副作用矩阵尚未交付，不得据此宣称完整 form protocol。 |
+| 最低验收 | 当前由 `samples/RazorVue.Authoring` 与 JazorAdmin `AccountPage` 共同证明 typed form 的初始值、空值校验、字段规则、reset、异步 submit、列表更新、密码重置清空和 isolated Release browser/package closure；完整 create/edit/delete、取消/重试、重复提交、路由离开和 SSR 首屏副作用矩阵尚未交付，不得据此宣称完整 form protocol。 |
 | 不包含 | `EditForm`、`InputBase<T>`、`Input*`、`ValidationMessage`、`InputFile`、antiforgery、enhanced form post、隐式 server validation protocol。 |
 | 版本 | 新公共 contract 或新的 bind/runtime 能力进入 `MINOR`；仅修复 binding 名称/诊断进入 `PATCH`。 |
 
@@ -137,7 +153,7 @@ P0 的共同特点是收益高、可以沿现有架构实现，且不需要改�
 
 | 项目 | 决策 |
 | --- | --- |
-| 用户痛点 | TDesign 的主要自然 Razor 场景已通过，但 JazorAdmin 仍可用来发现重复的 callback 转发、命名后缀、generic/non-generic 入口和 slot 类型摩擦。 |
+| 用户痛点 | TDesign 的主要自然 Razor 场景已通过；账户表单已完成 typed bind/submit/reset 迁移，但 JazorAdmin 的表格列仍可发现重复的 callback 转发、命名后缀、generic/non-generic 入口和 slot 类型摩擦。 |
 | 推荐状态 | `Support` 按需扩展；单页面 workaround 不升级为公共 API。 |
 | owner | 对应 `ECMAScript.TDesign`/`ECMAScript.Vuetify`/`ECMAScript.ElementPlus` binding，必要时 `Jazor.RazorVue`。 |
 | 实现路线 | 先建立两个独立消费者或一个自然 authoring fixture + 一个真实页面的证据；再决定删除 bridge、调整 binding 类型、增加窄 overload，或保留领域 wrapper。保持 native union、required 参数、typed slot 和 attribute splat，不引入弱类型逃生口。 |
@@ -276,7 +292,7 @@ Release package。没有完整协议前，应用可使用页面级显式 guard�
 ### Phase A：下一次 minor 前
 
 1. N0-01 已完成：quickstart、作者诊断入口、失败矩阵和正常用法零噪音回归。
-2. N0-02 已完成最小 typed form contract；完整 create/edit/delete、SSR form protocol 和第二个真实页面消费者仍需单独验收。
+2. N0-02 已完成最小 typed form contract，且 JazorAdmin `AccountPage` 已完成第二个真实页面消费者验收；完整 create/edit/delete、SSR form protocol 和更多页面迁移仍需单独验收。
 3. N0-03 已完成 replace/LocationChanged 小闭环，并冻结同源内部 route host 行为矩阵。
 4. 以 N0-04 作为所有改动的共同门禁；同步执行 N0-05 的 binding/API review，不因时间压力添加
    `object?`、字符串路由或页面专用公共类型。
