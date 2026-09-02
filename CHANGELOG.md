@@ -12,6 +12,10 @@
   JSON value；同一组 application providers 会在 Deno server render 与浏览器 hydration 中注册，
   因而普通 `[Inject]` 属性可在 SSR 首屏和水合后的组件中保持可用。constructor injection 和
   未证明的 server-only service 仍不在范围内。
+- RazorVue 的已声明高频 framework 子集现已完成四层证据收口：ParameterView sparse/default/slot/queue、
+  writable `[Inject]` provider、typed/named cascading、内部 route/navigation history，以及复杂 lifecycle
+  的浏览器与首屏 SSR hydration 路径均按 Compatibility Adapter 提供；完整 SSR/prerender identity、
+  深层 reference parity、SSR 更新/异常和 hydration side-effect parity 仍明确排除。
 
 ## 2026-09-01
 

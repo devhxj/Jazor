@@ -35,6 +35,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 ### Unreleased - 2026-09-02
 
 - SSR hosts can pass explicit browser-service providers through `JazorSsrRequest.Providers`; the same JSON provider envelope is registered during Deno server rendering and browser hydration, keeping ordinary `[Inject]` properties available across the SSR boundary.
+- The bounded RazorVue framework subset now has Support evidence for ParameterView, writable browser-service injection, typed/named cascading, internal route/navigation history, and browser/initial-SSR lifecycle paths; deeper SSR/prerender identity and parity surfaces remain explicitly excluded.
 - The support boundary remains explicit: constructor injection, Microsoft/Blazor built-in UI components, `IJSRuntime`, and server-only services are still outside this adapter.
 
 See the [changelog](CHANGELOG.md) for the full release history.

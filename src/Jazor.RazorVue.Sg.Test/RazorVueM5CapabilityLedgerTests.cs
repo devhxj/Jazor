@@ -44,7 +44,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.AreEqual(RazorVueCapabilityStatus.Reject, serverOnlyAspNetInjection.Status);
         Assert.IsNull(parameterView.DiagnosticId);
         Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, parameterView.Decision);
-        Assert.AreEqual(RazorVueCapabilityStatus.InProof, parameterView.Status);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, parameterView.Status);
         Assert.IsTrue(parameterView.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
         Assert.IsTrue(parameterView.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         Assert.AreEqual("JAZORVCA003/JAZORVCA004/JAZORVCA005", parameterViewMembers.DiagnosticId);
@@ -53,7 +53,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
         var complexLifecycle = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-complex-lifecycle");
         Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, complexLifecycle.Decision);
-        Assert.AreEqual(RazorVueCapabilityStatus.InProof, complexLifecycle.Status);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, complexLifecycle.Status);
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(complexLifecycle.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
@@ -69,11 +69,11 @@ public sealed class RazorVueM5CapabilityLedgerTests
         StringAssert.Contains(complexLifecycle.Fixture, "AsyncLifecycleCompletionAfterAsyncUnmountIsIgnored", StringComparison.Ordinal);
         StringAssert.Contains(complexLifecycle.Fixture, "ProvesAsyncRacesInRealBrowser", StringComparison.Ordinal);
         StringAssert.Contains(complexLifecycle.Fixture, "verify-windows-ssr-release.cs", StringComparison.Ordinal);
-        StringAssert.Contains(complexLifecycle.Blocker, "SSR/prerender", StringComparison.Ordinal);
+        StringAssert.Contains(complexLifecycle.Blocker, "explicitly excluded", StringComparison.Ordinal);
 
         var browserServiceInjection = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-browser-service-injection");
-        Assert.AreEqual(RazorVueCapabilityStatus.InProof, browserServiceInjection.Status);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, browserServiceInjection.Status);
         Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, browserServiceInjection.Decision);
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(browserServiceInjection.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
@@ -121,7 +121,7 @@ public sealed class RazorVueM5CapabilityLedgerTests
             entry.Id == "P1-cascading-values");
         Assert.AreEqual("JAZORVCA008", cascading.DiagnosticId);
         Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, cascading.Decision);
-        Assert.AreEqual(RazorVueCapabilityStatus.InProof, cascading.Status);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, cascading.Status);
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         Assert.IsTrue(cascading.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
@@ -143,6 +143,18 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(locationChanging.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
         StringAssert.Contains(locationChanging.Fixture, "ProvesInternalCancellationInRealBrowser", StringComparison.Ordinal);
         StringAssert.Contains(locationChanging.Blocker, "popstate/hashchange", StringComparison.Ordinal);
+
+        var navigation = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P1-navigation-router");
+        Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, navigation.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, navigation.Status);
+        Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+        Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
+        Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(navigation.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+        StringAssert.Contains(navigation.Blocker, "explicitly excluded", StringComparison.Ordinal);
 
         var route = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P0-route-layout-page-state");
@@ -231,8 +243,23 @@ public sealed class RazorVueM5CapabilityLedgerTests
             entry.ImplementationPath.Contains("source-root", StringComparison.Ordinal)));
 
         var package = entries.Single(static entry => entry.Id == "P0-blazor-clr-mapping-package");
-        Assert.AreEqual(RazorVueCapabilityStatus.InProof, package.Status);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, package.Status);
         Assert.IsTrue(package.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
+
+        var ssrPackage = RazorVueM5CapabilityLedger.All.Single(static entry => entry.Id == "crosscut-ssr-package");
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, ssrPackage.Status);
+        Assert.AreEqual(RazorVueCapabilityDecision.CompatibilityAdapter, ssrPackage.Decision);
+        Assert.IsTrue(!string.IsNullOrWhiteSpace(ssrPackage.TargetProfiles));
+        Assert.IsTrue(!string.IsNullOrWhiteSpace(ssrPackage.Carrier));
+        Assert.IsTrue(!string.IsNullOrWhiteSpace(ssrPackage.ImplementationPath));
+        Assert.AreEqual("ssr-package-consumer/v1", ssrPackage.ContributionContractVersion);
+        Assert.IsTrue(!string.IsNullOrWhiteSpace(ssrPackage.Dependencies));
+        Assert.IsTrue(!string.IsNullOrWhiteSpace(ssrPackage.ExcludedSurface));
+        Assert.IsTrue(ssrPackage.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(ssrPackage.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
+        Assert.IsTrue(ssrPackage.Evidence.HasFlag(RazorVueCapabilityEvidence.BrowserSmoke));
+        Assert.IsTrue(ssrPackage.Evidence.HasFlag(RazorVueCapabilityEvidence.SsrHydration));
+        Assert.IsTrue(ssrPackage.Evidence.HasFlag(RazorVueCapabilityEvidence.PackageConsumer));
 
         foreach (var id in new[]
         {

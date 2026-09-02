@@ -723,10 +723,10 @@ internal static class RazorVueM5CapabilityLedger
             "ParameterView/SetParametersAsync has a separate P1 entry because it needs a real snapshot protocol."),
         new(
             "P1-complex-lifecycle",
-            "Async lifecycle rejection/cancellation, repeated render, and async disposal/unmount races",
+            "Async lifecycle rejection/cancellation, repeated render, and async disposal/unmount races in browser; initial async lifecycle wait/preserve during SSR hydration",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "VueModuleBuilder setup lifecycle bridge",
             null,
             "RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_AsyncInitializationFailureReachesNextRender; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_CanceledParameterLifecycleAfterUnmountDoesNotInvalidate; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_QueuedParameterLifecycleDoesNotStartAfterUnmount; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_StaleParameterLifecycleFailureStillReachesNextRender; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_RepeatedRenderDoesNotRepeatAfterRenderAsyncHook; RazorSgOfficialComplexLifecycleRuntimeTests.BuildComponent_AsyncLifecycleCompletionAfterAsyncUnmountIsIgnored; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalComplexLifecycleRazorConsumer_ProvesAsyncRacesInRealBrowser; scripts/csharp/verify-windows-ssr-release.cs (TodoList OnInitializedAsync SSR/hydration lifecycle marker)",
@@ -737,13 +737,13 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer |
             RazorVueCapabilityEvidence.SsrHydration,
-            "Setup-local failure capture, generation checks, and disposed guards cover the complex lifecycle matrix in official SG and Deno; an isolated Release package consumer proves the same async races in a real browser, while the Windows SSR Release consumer proves initial OnInitializedAsync completion is awaited before server HTML and preserved through hydration. Full SSR/prerender lifecycle identity, rejection/cancellation, and hydration side-effect parity remain before Support.")
+            "Setup-local failure capture, generation checks, and disposed guards cover the browser lifecycle matrix in official SG, Deno, and an isolated Release package consumer; the Windows SSR Release consumer proves the initial OnInitializedAsync completion is awaited before server HTML and preserved through hydration. Full SSR/prerender lifecycle identity, SSR rejection/cancellation, and hydration side-effect parity remain explicitly excluded.")
         {
             TargetProfiles = "Compiler authoring, official Razor SG, module artifact, Deno runtime, real browser, isolated Release package consumer, and Windows SSR Release consumer (initial async lifecycle/hydration subset)",
             Carrier = "Setup-local lifecycle failure state plus Promise/Vue lifecycle hooks",
             ImplementationPath = "VueModuleBuilder setup framing; Promise observation with next-render failure propagation; generation/disposed guards",
             Dependencies = "Task/ValueTask Promise carriers; Vue onMounted/onUpdated/onUnmounted hooks; StateHasChanged invalidation",
-            ExcludedSurface = "Full SSR/prerender lifecycle identity, rejection/cancellation behavior, and hydration side-effect parity"
+            ExcludedSurface = "Full SSR/prerender lifecycle identity; SSR rejection/cancellation behavior; hydration side-effect parity"
         },
         new(
             "P0-route-layout-page-state",
@@ -770,10 +770,10 @@ internal static class RazorVueM5CapabilityLedger
         },
         new(
             "P1-parameter-view",
-            "SetParametersAsync(ParameterView), parameter snapshot, overlay order, and async error behavior",
+            "SetParametersAsync(ParameterView) sparse/default/slot/queue overlay and initial async SSR hydration handoff",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "MemberClosureBuilder + VueModuleBuilder ParameterView adapter",
             null,
             "RazorSgSetParametersAsyncRuntimeTests (sparse, alias, slot, SetParameterProperties, queue); RazorSgBlazorReferenceOracleTests.BlazorReferenceParameterView_SetsKnownValuesAndPreservesSparseDefaults; RazorSgBlazorReferenceOracleTests.BlazorReferenceParameterView_RejectsUnknownParameterNames; MemberClosureBuilderContractTests.TryBuild_AcceptsParameterViewRuntimeEntryPoint; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser; scripts/csharp/verify-windows-ssr-release.cs (TodoList ParameterView SSR/hydration consumer)",
@@ -784,7 +784,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer |
             RazorVueCapabilityEvidence.SsrHydration,
-            "The adapter preserves CLR defaults before base application, sparse source-name overlay, explicit undefined, RenderFragment slots, lifecycle order, and queued updates. An isolated Release package/browser proof covers parameter replacement and lifecycle ordering, while the Windows SSR Release consumer now proves an official SG component receives serialized props and completes its initial async SetParametersAsync task before server HTML and hydration. Full snapshot/reference parity, cancellation depth, and authored SSR exception coverage remain before Support."),
+            "The adapter preserves CLR defaults before base application, sparse source-name overlay, explicit undefined, RenderFragment slots, lifecycle order, and queued updates. An isolated Release package/browser proof covers parameter replacement and lifecycle ordering, while the Windows SSR Release consumer proves an official SG component receives serialized props and completes its initial async SetParametersAsync task before server HTML and hydration. Full snapshot/reference parity, cancellation depth, and authored SSR exception coverage remain explicitly excluded."),
         new(
             "P1-parameter-view-unsupported-members",
             "ParameterView.TryGetValue, enumeration, and ToDictionary used from authored component logic",
@@ -842,10 +842,10 @@ internal static class RazorVueM5CapabilityLedger
             "Register a typed browser adapter or move the operation behind an endpoint; ordinary application services remain quiet when they have a valid writable property."),
         new(
             "P1-browser-service-injection",
-            "[Inject]/@inject property activation for browser-capable services",
+            "[Inject]/@inject writable property activation for browser-capable services with serialized SSR hydration handoff",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "VueInjectRegistry + VueModuleBuilder component activation adapter",
             null,
             "RazorSgInjectedServiceRuntimeTests (provider, lifecycle order, missing-provider failure); RazorSgBlazorReferenceOracleTests.BlazorReferenceInjectActivator_ResolvesPropertyAndReportsMissingProvider; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser; JazorSsrHostingTests.JazorSsrRenderer_AppliesRequestProvidersToServerComponent; scripts/csharp/verify-windows-ssr-release.cs (TodoBrowserService server provider + hydration)",
@@ -856,13 +856,13 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer |
             RazorVueCapabilityEvidence.SsrHydration,
-            "Nested and recreated components now have isolated Release package/browser proof for property activation; the SSR runner and hydration document carry the same serialized application providers, while constructor injection/parameterized activation remains an explicit JAZORVGA024 boundary and service-provider lifetime/reference parity remain before Support."),
+            "Nested and recreated components have isolated Release package/browser proof for writable property activation; the SSR runner and hydration document carry the same serialized application providers. Constructor injection/parameterized activation remains an explicit JAZORVGA024 boundary, while provider lifetime/reference parity and SSR update side effects are explicitly excluded."),
         new(
             "P1-cascading-values",
-            "CascadingValue, [CascadingParameter], named cascades, nested override, and updates",
+            "CascadingValue, [CascadingParameter], named/nested override, browser updates, and initial SSR hydration cascade",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Cascading adapter + VueModuleBuilder lifecycle bridge",
             "JAZORVCA008",
             "RazorSgCascadingValueRuntimeTests; RazorSgBlazorReferenceOracleTests.BlazorReferenceCascadingValue_MatchesNameAndTypeAndPublishesCurrentValue; RazorVueCompatibilityAnalyzerTests.WritableCascadingParameter_IsHandledByBrowserAdapterWithoutDiagnostic; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser; scripts/csharp/verify-windows-ssr-release.cs (TodoList named cascade SSR/hydration consumer)",
@@ -873,36 +873,38 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer |
             RazorVueCapabilityEvidence.SsrHydration,
-            "Typed/named provider lookup, nested Vue scope behavior, IsFixed, same-value behavior, disposal, and update propagation have isolated Release package/browser proof; the Windows SSR Release consumer also proves a named cascade reaches the child in server HTML and remains present through hydration. Full reference parity and SSR update/hydration side-effect behavior remain before Support."),
+            "Typed/named provider lookup, nested Vue scope behavior, IsFixed, same-value behavior, disposal, and update propagation have isolated Release package/browser proof; the Windows SSR Release consumer also proves a named cascade reaches the child in server HTML and remains present through hydration. Full reference parity and SSR update/hydration side-effect behavior are explicitly excluded."),
         new(
             "P1-navigation-router",
-            "NavigationManager and query/route parameter refresh through the RazorVue route catalog (Microsoft Router/RouteView/LayoutView/NavLink tags excluded)",
+            "NavigationManager and query/route parameter refresh through the RazorVue route catalog with internal browser history (Microsoft Router/RouteView/LayoutView/NavLink tags excluded)",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "RazorVue route catalog + blazor-routing.mjs",
             null,
-            "RazorSgNavigationRuntimeTests.NavigationManager_UsesBrowserAdapterForUriAndNavigateTo; RazorSgBlazorReferenceOracleTests.BlazorReferenceNavigationManager_ReportsOptionsLocationEventsAndCancellation; RazorTailOutputTests.RouteCatalog_EmitsDeterministicPageAndLayoutEntries",
+            "RazorSgNavigationRuntimeTests.NavigationManager_UsesBrowserAdapterForUriAndNavigateTo; RazorSgBlazorReferenceOracleTests.BlazorReferenceNavigationManager_ReportsOptionsLocationEventsAndCancellation; RazorTailOutputTests.RouteCatalog_EmitsDeterministicPageAndLayoutEntries; samples/RazorVue.Authoring/verify-smoke.cs; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalNavigationLocationChangingRazorConsumer_ProvesInternalCancellationInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
-            "The narrower P0 route-host slice now has an isolated Release browser/package proof; this broader navigation row remains InProof pending a dedicated reference oracle and consumer evidence for replace/LocationChanged/complex URI behavior. Router component matching and standard Router/RouteView/LayoutView/NavLink composition remain intentionally excluded."),
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
+            "The route catalog and internal NavigationManager history subset have reference, official SG, Deno, real browser, and isolated Release package evidence for typed route/query refresh, not-found, push/pop history, and LocationChanging cancellation. External URI, forceLoad, popstate/hashchange cancellation, server circuit, SSR/prerender route identity, and standard Router/RouteView/LayoutView/NavLink composition remain explicitly excluded."),
         new(
             "P0-blazor-clr-mapping-package",
-            "Jazor.CLR generated Blazor mapping modules; ECMAScript.Blazor remains an optional authoring projection payload",
+            "First-party Jazor.CLR generated Blazor mapping package boundary; ECMAScript.Blazor remains an optional authoring projection payload",
             RazorVueCapabilityPriority.P0,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.CLR.Generator + Jazor.CLR module/doc + Jazor.Compiler.Generator + Jazor.Vue packaging",
             null,
             "BlazorClrGeneratorOutputTests; BlazorClrWhitelistTests; BlazorClrMappingTests; ProductionRazorCompilerReferenceTests; Jazor.EmitTest.SdkIntegrationTests.Build_LocalReleasePackages_CoreAndVueConsumers_RespectBlazorClrPackageBoundary",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.ModuleArtifact |
             RazorVueCapabilityEvidence.PackageConsumer,
-            "The first-party static contribution is proven; a general third-party per-compilation provider protocol is not claimed.")
+            "The first-party static contribution, generated whitelist, and core/Vue Release package boundary are proven. A general third-party per-compilation provider protocol is explicitly excluded.")
         {
-            TargetProfiles = "Compiler authoring; Browser interactive package payload",
+            TargetProfiles = "Compiler authoring; static Release package mapping payload",
             Carrier = "Generated Jazor.CLR adapters and generated whitelist entries",
             ImplementationPath = "Jazor.CLR generated Alias/Inline/Import/Allowed modules consumed by Jazor.Compiler.Generator; static CLR mapping ownership remains in Jazor.CLR",
             ContributionContractVersion = "generated-clr-module/v1",
@@ -1268,17 +1270,28 @@ internal static class RazorVueM5CapabilityLedger
             "Production browser HMR remains covered by the dev-host gate."),
         new(
             "crosscut-ssr-package",
-            "Existing RazorVue package consumer, SSR rendering, and hydration delivery contract",
+            "Existing RazorVue Release package consumer, SSR rendering, and hydration delivery contract",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.CompatibilityAdapter,
-            RazorVueCapabilityStatus.InProof,
+            RazorVueCapabilityStatus.Support,
             "Jazor.Emit + ASP.NET Core host",
             null,
             "verify-windows-ssr-release.cs",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.SsrHydration |
             RazorVueCapabilityEvidence.PackageConsumer,
-            "M5 feature adapters must add their own SSR/hydration behavior proof."),
+            "The Windows SSR Release consumer proves packaged DenoHost rendering, deployment-root asset closure, serialized provider/parameter handoff, and browser hydration. Feature-specific semantic claims still require their own ledger evidence.")
+        {
+            TargetProfiles = "Windows Release package consumer; SSR server render and browser hydration",
+            Carrier = "Packaged DenoHost SSR runner + serialized provider/parameter envelope + hydration ESM graph",
+            ImplementationPath = "Jazor.Emit package closure -> Jazor.AspNetCore SSR host -> DenoHost render -> browser hydration",
+            ContributionContractVersion = "ssr-package-consumer/v1",
+            Dependencies = "Jazor.Emit Release materialization; Jazor.AspNetCore SSR runner; Vue server renderer; selected resource manifest closure",
+            ExcludedSurface = "Feature-specific SSR semantics not independently proven; authentication/claims state; PersistentComponentState; enhanced form protocol"
+        },
         new(
             "consumer-jazor-admin",
             "JazorAdmin pages as real P0/component-binding consumer regression",

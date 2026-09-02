@@ -68,14 +68,14 @@ Blazor JS interop 不属于 browser service adapter。`IJSRuntime` 的 identifie
 <a id="cascading-parameters"></a>
 ### Cascading 参数
 
-`CascadingValue<T>` 与 `[CascadingParameter]` 已由 browser adapter 物化。页面作者继续使用标准 Blazor 写法，支持按类型或 `Name` 匹配、嵌套 provider 的最近值覆盖、显式 `null`、无 provider 时保留属性默认值，以及 `IsFixed` 对后续更新的语义。provider 更新会先同步级联属性，再运行 `OnParametersSet`/`OnParametersSetAsync`，最后请求渲染；不会只更新 DOM 而跳过生命周期。Windows SSR Release consumer 还证明 named cascade 会在 server HTML 中传给真实子组件，并在 hydration 后保持；SSR 更新传播与完整 reference parity 仍未宣称。
+`CascadingValue<T>` 与 `[CascadingParameter]` 已由 browser adapter 物化。页面作者继续使用标准 Blazor 写法，支持按类型或 `Name` 匹配、嵌套 provider 的最近值覆盖、显式 `null`、无 provider 时保留属性默认值，以及 `IsFixed` 对后续更新的语义。provider 更新会先同步级联属性，再运行 `OnParametersSet`/`OnParametersSetAsync`，最后请求渲染；不会只更新 DOM 而跳过生命周期。Windows SSR Release consumer 还证明 named cascade 会在 server HTML 中传给真实子组件，并在 hydration 后保持；完整 reference parity、SSR 更新传播与 hydration side-effect parity 明确不在本子集声明内。
 
 `JAZORVCA008` 只针对无法由 adapter 激活的属性形状（readonly、`init`、custom setter 或 static）。改为普通 writable auto-property 即可；不需要写 Vue `provide`/`inject`，也不需要增加 RazorVue 专属参数类型。
 
 <a id="routing"></a>
 ### 路由
 
-`@page`、`@layout`、route parameter 和 `[SupplyParameterFromQuery]` 会由 official Razor SG symbols 自动生成稳定 route catalog；`NavigationManager` 和应用自有页面 host framing 可以消费该 contract。`Router`、`RouteView`、`LayoutView`、`NavLink` 等 Microsoft 内置 UI 组件没有 RazorVue 组件入口，不属于当前产品契约；页面应使用应用自定义 host 或明确的 Vue Router/组件库 contract。当前已 Support 的 route-host 子集覆盖初始匹配、layout composition、query/route prop 映射、pushState、popstate、query refresh、not-found 和 browser history；该子集已由 isolated Release package 的真实浏览器 journey 验证。`replaceState`、LocationChanged 订阅、复杂 constraint/fragment/history state 和 SSR/hydration route identity 仍在对应 M5 proof 阶段。
+`@page`、`@layout`、route parameter 和 `[SupplyParameterFromQuery]` 会由 official Razor SG symbols 自动生成稳定 route catalog；`NavigationManager` 和应用自有页面 host framing 可以消费该 contract。`Router`、`RouteView`、`LayoutView`、`NavLink` 等 Microsoft 内置 UI 组件没有 RazorVue 组件入口，不属于当前产品契约；页面应使用应用自定义 host 或明确的 Vue Router/组件库 contract。当前已 Support 的 route-host 子集覆盖初始匹配、layout composition、query/route prop 映射、pushState、popstate、query refresh、not-found 和 browser history；该子集已由 isolated Release package 的真实浏览器 journey 验证。`replaceState`、复杂 constraint/fragment/history state 和 SSR/hydration route identity 仍明确排除；更宽的 `LocationChanged`/routing 组合仍按对应 ledger 条目裁决。
 
 `NavigationManager.RegisterLocationChangingHandler(...)` 的 browser-interactive 支持范围是同一 base URI 的内部 `NavigateTo`：handler 可以读取 `TargetLocation`、`HistoryEntryState` 和 `CancellationToken`，调用 `PreventNavigation()`，通过 `CancellationToken.Register` 观察被后续导航 supersede 的取消，并在返回的 `IDisposable` dispose 后停止拦截。该子集已通过 Blazor reference oracle、official Razor SG、Deno、真实 HTTP-origin browser 和 isolated Release package consumer；`forceLoad`、外部 URI、`popstate`/`hashchange` cancellation、server circuit 与 SSR/prerender route identity 不在声明内。`NavigationOptions` 在 C# 中使用 `Microsoft.AspNetCore.Components.NavigationOptions`，避免与 `ECMAScript.NavigationOptions` 绑定产生歧义；后者对应 Web Platform Navigation API 的 options dictionary，不应重命名。
 
@@ -97,8 +97,8 @@ Microsoft.AspNetCore.Components 提供的 `DynamicComponent`、`ErrorBoundary`�
 | 普通 instance/static helper、事件处理器、相互调用的可达方法 | **Support with constraints** | 只有 render、handler、lifecycle 或另一可达成员能到达的方法会发射。业务计算应收敛在这些方法中，而不是塞进 VNode-producing block。 |
 | 普通方法中的 local、赋值、条件、`for`/`foreach`/`while`/`do while`、非标签 `break`/`continue`、return、switch expression | **Support with compiler constraints** | 这些是 component logic，不受 direct-render 的 straight-line loop 限制。每个表达式、类型和 member 仍需可由 `Jazor.Compiler` 降低；官方运行时回归覆盖了 `@code` handler 中的 `foreach`、`break`、`continue`、helper 调用和 switch expression。 |
 | `goto`、无法投影的 labeled branch | **Reject** | 当前 compiler 没有跨 imperative/render fragment 边界的稳定目标协议；改为显式条件、返回或拆分 helper。普通 loop `break`/`continue` 不属于此行。 |
-| `async` handler、`Task`/`ValueTask` lifecycle、`EventCallback` | **Support with constraints** | 仅使用已有 CLR/host mapping；不要把任意 .NET task/service API 当作浏览器运行时 API。`EventCallback` 的 listener await 语义与 Razor SG 绑定形状一起覆盖；Windows SSR Release consumer 已证明初始 `OnInitializedAsync` 完成后才序列化 HTML 并在 hydration 后保留状态，复杂 rejection/cancellation/disposal race 仍需完整 SSR 证据。 |
-| `SetParametersAsync(ParameterView)` override | **Compatibility Adapter (In proof)** | 保持标准 Blazor 写法。RazorVue 为该入口建立 per-instance ParameterView snapshot，按 source parameter name 应用 sparse overlay，再按 Blazor 顺序调用 `OnInitialized*`/`OnParametersSet*`；异步更新串行排队。Windows SSR Release consumer 也证明 serialized props 会在 server HTML/hydration 入口等待初始参数任务；完整 snapshot/reference parity、取消深度和 SSR 异常仍未宣称。未支持的 `ParameterView` API 会在作者源码处给出兼容性诊断。 |
+| `async` handler、`Task`/`ValueTask` lifecycle、`EventCallback` | **Support with constraints** | 仅使用已有 CLR/host mapping；不要把任意 .NET task/service API 当作浏览器运行时 API。`EventCallback` 的 listener await 语义与 Razor SG 绑定形状一起覆盖；Windows SSR Release consumer 已证明初始 `OnInitializedAsync` 完成后才序列化 HTML 并在 hydration 后保留状态。复杂 rejection/cancellation/disposal race 的浏览器语义已覆盖；完整 SSR/prerender identity、SSR rejection/cancellation 与 hydration side-effect parity 明确排除。 |
+| `SetParametersAsync(ParameterView)` override | **Compatibility Adapter (Support)** | 保持标准 Blazor 写法。RazorVue 为该入口建立 per-instance ParameterView snapshot，按 source parameter name 应用 sparse overlay，再按 Blazor 顺序调用 `OnInitialized*`/`OnParametersSet*`；异步更新串行排队。Windows SSR Release consumer 也证明 serialized props 会在 server HTML/hydration 入口等待初始参数任务。完整 snapshot/reference parity、取消深度和 SSR 异常明确排除；未支持的 `ParameterView` API 会在作者源码处给出兼容性诊断。 |
 | 源码基类声明的 lifecycle/dispose entry point，或间接 lifecycle override | **Support with CLR dispatch constraints** | 当前组件及其源码基类属于同一 member closure；按真实 virtual/interface dispatch 选择最派生实现，再在 Vue setup/unmount 中执行。外部已编译基类仍不进入源码 closure。 |
 | static field、static auto-property、可达 static helper/accessor | **Support with module lifetime** | static storage、helper 和可达 nested runtime class 在 artifact module 作用域只初始化一次，不进入每个 setup 的 `reactive` state。不要把它们当作组件实例隔离状态。 |
 | 嵌套 non-record runtime class | **Support with constraints** | 可达的创建和成员会进入闭包。实例可能被 Vue deep Proxy 包装，因此 private storage 会降为 `$jazor$private$...` ordinary property；不要在作者代码中依赖该实现名。 |
@@ -150,7 +150,7 @@ Microsoft.AspNetCore.Components 提供的 `DynamicComponent`、`ErrorBoundary`�
 <a id="parameter-lifecycle"></a>
 ### 生命周期与组件运行时入口
 
-RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，不会因一个普通方法恰好同名就赋予 lifecycle 语义。当前组件和源码基类的可达 hook 会按 CLR 的 virtual/interface dispatch 解析到实际目标。`SetParametersAsync(ParameterView)` 使用 per-instance compatibility adapter；页面作者仍只写标准 Blazor 入口，不需要接触 Vue props 或 generated C#。初始 `OnInitializedAsync` 会在 SSR server HTML 序列化前等待，hydration 后继续使用同一状态；这只是已验证的首屏子集，不代表复杂 lifecycle 的完整 SSR/prerender identity、rejection、cancellation 或 hydration side-effect parity。
+RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，不会因一个普通方法恰好同名就赋予 lifecycle 语义。当前组件和源码基类的可达 hook 会按 CLR 的 virtual/interface dispatch 解析到实际目标。`SetParametersAsync(ParameterView)` 使用 per-instance compatibility adapter；页面作者仍只写标准 Blazor 入口，不需要接触 Vue props 或 generated C#。初始 `OnInitializedAsync` 会在 SSR server HTML 序列化前等待，hydration 后继续使用同一状态；复杂 lifecycle 的浏览器与首屏 SSR 子集已 Support，完整 SSR/prerender identity、rejection、cancellation 或 hydration side-effect parity 仍明确排除。
 
 | C# 入口 | Vue 映射与约束 |
 | --- | --- |
