@@ -32,10 +32,13 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### Jazor 0.26.3 - 2026-08-31
+### Jazor 0.27.0 - 2026-09-02
 
-- `ECMAScript.ElementPlus` 现在声明公开 `ECMAScript.VueRoute` 依赖，独立 NuGet 消费方可以还原完整的程序集与资源闭包。
-- NuGet 打包会正确转义简介中的分号，手动 dry-run 工作流也会检查全部已发布包。
+- SSR 宿主可以通过 `JazorSsrRequest.Providers` 显式传递 browser service provider；同一 JSON provider 负载会在 Deno server render 与浏览器 hydration 中注册，普通 `[Inject]` 属性可以跨 SSR 边界继续可用。
+- RazorVue 已声明的高频 framework 子集现有 ParameterView、可写 `[Inject]`、typed/named cascading、内部 route/navigation history，以及浏览器和首屏 SSR lifecycle 的 Support 证据；更深层的 SSR/prerender identity 与 parity 仍明确排除。
+- 自然 Razor authoring 已完成 TDesign 证明，覆盖泛型/非泛型组件、typed slots、`@bind`、union、required 参数和 attribute splat。
+- `NavigationManager.RegisterLocationChangingHandler(...)` 的同源内部 `NavigateTo` 路径已在打包浏览器消费者中验证，支持取消、query/hash、history state 与 registration dispose。
+- 支持边界仍明确：constructor injection、Microsoft/Blazor 内置 UI、`IJSRuntime` 和 server-only service 不属于此适配器。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 
@@ -110,15 +113,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.26.3
+dotnet add package Jazor --version 0.27.0
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.3" />
-  <PackageReference Include="Jazor.Vue" Version="0.26.3" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.27.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.27.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

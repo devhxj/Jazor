@@ -4,22 +4,10 @@
 
 ## 2026-09-02
 
-### Unreleased
+### Jazor 0.27.0
 
-#### 新增与改进
-
-- SSR 宿主现在可以通过 `JazorSsrRequest.Providers` 显式传递 browser service 的字符串 key 和
-  JSON value；同一组 application providers 会在 Deno server render 与浏览器 hydration 中注册，
-  因而普通 `[Inject]` 属性可在 SSR 首屏和水合后的组件中保持可用。constructor injection 和
-  未证明的 server-only service 仍不在范围内。
-- RazorVue 的已声明高频 framework 子集现已完成四层证据收口：ParameterView sparse/default/slot/queue、
-  writable `[Inject]` provider、typed/named cascading、内部 route/navigation history，以及复杂 lifecycle
-  的浏览器与首屏 SSR hydration 路径均按 Compatibility Adapter 提供；完整 SSR/prerender identity、
-  深层 reference parity、SSR 更新/异常和 hydration side-effect parity 仍明确排除。
-
-## 2026-09-01
-
-### Unreleased
+> RazorVue framework 与 SSR 宿主的有界支持面完成一轮能力收口。本版本在 `0.x` 阶段按
+> `MINOR` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。
 
 #### 新增与改进
 
@@ -33,6 +21,14 @@
   证明；`PreventNavigation`、异步 supersede/cancellation、query/hash、history state 与 registration
   dispose 可直接使用。`popstate`/`hashchange` cancellation、SSR/prerender route identity 和
   Microsoft Router/RouteView 等内置 UI 仍不在声明内。
+- SSR 宿主现在可以通过 `JazorSsrRequest.Providers` 显式传递 browser service 的字符串 key 和
+  JSON value；同一组 application providers 会在 Deno server render 与浏览器 hydration 中注册，
+  因而普通 `[Inject]` 属性可在 SSR 首屏和水合后的组件中保持可用。constructor injection 和
+  未证明的 server-only service 仍不在范围内。
+- RazorVue 的已声明高频 framework 子集现已完成四层证据收口：ParameterView sparse/default/slot/queue、
+  writable `[Inject]` provider、typed/named cascading、内部 route/navigation history，以及复杂 lifecycle
+  的浏览器与首屏 SSR hydration 路径均按 Compatibility Adapter 提供；完整 SSR/prerender identity、
+  深层 reference parity、SSR 更新/异常和 hydration side-effect parity 仍明确排除。
 
 ## 2026-08-31
 
