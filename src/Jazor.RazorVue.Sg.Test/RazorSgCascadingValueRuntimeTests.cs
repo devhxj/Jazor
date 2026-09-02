@@ -20,6 +20,7 @@ public sealed class RazorSgCascadingValueRuntimeTests
         export function unref(value) { return value && typeof value === "object" && "value" in value ? value.value : value; }
         export function provide(key, value) { providers.set(key, value); }
         export function inject(key, fallback) { return providers.has(key) ? providers.get(key) : fallback; }
+        export function onServerPrefetch(callback) { callback(); }
         export function watch(source, callback) {
             let previous = source();
             watchers.push(() => {
