@@ -641,7 +641,8 @@ internal static class VueModuleBuilder
             directRender.UsesCreateSlots || ordinaryRenderFeatures.UsesCreateSlots,
             usesMergeProps,
             usesInject: features.UsesInject,
-            usesCascading: !cascadingBindings.IsDefaultOrEmpty));
+            usesCascading: !cascadingBindings.IsDefaultOrEmpty,
+            usesServerPrefetch: features.UsesParameterViewState));
 
         if (directRender.UsesRawMarkupRuntime || ordinaryRenderFeatures.UsesRawMarkupRuntime)
         {
@@ -1722,6 +1723,14 @@ internal static class VueModuleBuilder
             VariableDeclarationKind.Let,
             "parameterUpdateTail",
             CreateCallMember(new Identifier("Promise"), "resolve"));
+        // Vue SSR does not run the browser scheduler before the first render. Register the
+        // initial ParameterView queue with onServerPrefetch so renderToString waits for the
+        // same authored SetParametersAsync task that the browser watcher observes.
+        // SSR 首屏必须等待同一条参数队列，否则会把 CLR 默认值误当成已应用参数。
+        yield return CreateVariableDeclaration(
+            VariableDeclarationKind.Let,
+            "initialParameterTask",
+            CreateCallMember(new Identifier("Promise"), "resolve"));
 
         var task = new Identifier("task");
         var failureBody = new List<Statement>();
@@ -1791,10 +1800,16 @@ internal static class VueModuleBuilder
             VariableDeclarationKind.Const,
             "runSetParametersAsync",
             CreateArrowFunction(["parameters"], queueBody));
-        yield return CreateExpressionStatement(new CallExpression(
-            new Identifier("runSetParametersAsync"),
-            NodeList.From<Expression>(new Identifier("parameterSnapshot")),
-            optional: false));
+        yield return CreateExpressionStatement(new AssignmentExpression(
+            Operator.Assignment,
+            new Identifier("initialParameterTask"),
+            new CallExpression(
+                new Identifier("runSetParametersAsync"),
+                NodeList.From<Expression>(new Identifier("parameterSnapshot")),
+                optional: false)));
+        yield return CreateExpressionStatement(CreateCall(
+            "onServerPrefetch",
+            CreateArrowFunction([], [new ReturnStatement(new Identifier("initialParameterTask"))])));
         if (!parameterBindings.IsDefaultOrEmpty)
         {
             yield return CreateExpressionStatement(CreateCall(
@@ -3371,7 +3386,8 @@ internal static class VueModuleBuilder
         bool usesCreateSlots,
         bool usesMergeProps,
         bool usesInject,
-        bool usesCascading)
+        bool usesCascading,
+        bool usesServerPrefetch)
     {
         var imports = new List<string>
         {
@@ -3410,6 +3426,8 @@ internal static class VueModuleBuilder
             imports.Add("onUnmounted");
         if (usesUpdated)
             imports.Add("onUpdated");
+        if (usesServerPrefetch)
+            imports.Add("onServerPrefetch");
 
         if (usesReactive)
             imports.Add("reactive");

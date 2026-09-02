@@ -85,6 +85,7 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 const mounted = [];
                 const updated = [];
                 const unmounted = [];
+                const serverPrefetch = [];
                 const watchers = [];
 
                 export function watch(source, callback) {
@@ -104,6 +105,10 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                     unmounted.push(callback);
                 }
 
+                export function onServerPrefetch(callback) {
+                    serverPrefetch.push(callback);
+                }
+
                 export function __runMounted() {
                     for (const callback of mounted) {
                         callback();
@@ -119,6 +124,12 @@ internal static class RazorSgOfficialDenoRuntimeTestHost
                 export function __runUnmounted() {
                     for (const callback of unmounted) {
                         callback();
+                    }
+                }
+
+                export async function __runServerPrefetch() {
+                    for (const callback of serverPrefetch) {
+                        await callback();
                     }
                 }
 

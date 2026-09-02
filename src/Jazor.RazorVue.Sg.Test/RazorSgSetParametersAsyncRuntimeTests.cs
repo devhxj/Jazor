@@ -65,7 +65,7 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             """
             import assert from "node:assert/strict";
             import test from "node:test";
-            import { __runWatchers } from "vue";
+            import { __runServerPrefetch, __runWatchers } from "vue";
 
             import component from "./components/set-parameters-runtime.mjs";
 
@@ -74,6 +74,8 @@ public sealed class RazorSgSetParametersAsyncRuntimeTests
             test("custom SetParametersAsync delegates lifecycle through ComponentBase", async () => {
                 const props = { Title: "first" };
                 const render = component.setup(props, { slots: {} });
+
+                await __runServerPrefetch();
 
                 await settle();
                 assert.equal(
