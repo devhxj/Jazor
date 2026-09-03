@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 var options = ScriptArguments.Parse(args);
 
@@ -357,6 +358,7 @@ void AssertDebugArtifacts(string artifactRoot)
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs"), "emitted main module");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "main.mjs.map"), "emitted main source map");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "jazor-manifest.json"), "emit manifest");
+    AssertImportMapTargetExists(artifactRoot, "System/StringModule.js");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs"), "emitted wiki component module");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-home.mjs.map"), "emitted wiki component source map");
     WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "components", "wiki-styles.mjs"), "emitted Wiki CSS module");
@@ -374,6 +376,9 @@ void AssertReleaseArtifacts(string artifactRoot)
     {
         Path.Combine(artifactRoot, "main.mjs"),
         Path.Combine(artifactRoot, "jazor-manifest.json"),
+        Path.Combine(artifactRoot, "importmap.json"),
+        Path.Combine(artifactRoot, "ssr-importmap.json"),
+        Path.Combine(artifactRoot, "manifest.json"),
         Path.Combine(artifactRoot, "style.mjs"),
         Path.Combine(artifactRoot, "components")
     })
@@ -383,6 +388,31 @@ void AssertReleaseArtifacts(string artifactRoot)
             throw new InvalidOperationException("Release publish unexpectedly retained debug artifact: " + unexpectedPath);
         }
     }
+}
+
+void AssertImportMapTargetExists(string artifactRoot, string specifier)
+{
+    var importMapPath = Path.Combine(artifactRoot, "importmap.json");
+    WikiScriptHelpers.EnsureFileExists(importMapPath, "browser import map");
+
+    using var document = JsonDocument.Parse(File.ReadAllText(importMapPath, Encoding.UTF8));
+    if (!document.RootElement.TryGetProperty("imports", out var imports) ||
+        imports.ValueKind != JsonValueKind.Object ||
+        !imports.TryGetProperty(specifier, out var targetElement) ||
+        targetElement.ValueKind != JsonValueKind.String ||
+        targetElement.GetString() is not { } target)
+    {
+        throw new InvalidOperationException("Browser import map is missing string entry '" + specifier + "'.");
+    }
+
+    const string artifactPrefix = "/jazor/";
+    if (!target.StartsWith(artifactPrefix, StringComparison.Ordinal))
+        throw new InvalidOperationException("Browser import target for '" + specifier + "' is not a Jazor artifact URL: " + target);
+
+    var relativePath = target[artifactPrefix.Length..].Replace('/', Path.DirectorySeparatorChar);
+    WikiScriptHelpers.EnsureFileExists(
+        Path.Combine(artifactRoot, relativePath),
+        "materialized browser import target for " + specifier);
 }
 
 BrowserVerificationRoutes ReadBrowserVerificationRoutes(string generatedCatalogPath)

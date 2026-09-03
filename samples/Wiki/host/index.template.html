@@ -20,15 +20,7 @@
 <body>
   <div id="app"></div>
   <script type="importmap" nonce="__WIKI_SCRIPT_NONCE__">
-    {
-      "imports": {
-        "style.mjs": "__WIKI_STYLE_IMPORT_URL__",
-        "components/": "__WIKI_COMPONENTS_IMPORT_BASE__",
-        "System/": "__WIKI_SYSTEM_IMPORT_BASE__",
-        "vue": "__WIKI_VENDOR_VUE_URL__",
-        "npm:vue@3": "__WIKI_VENDOR_VUE_URL__"
-      }
-    }
+    __WIKI_BROWSER_IMPORT_MAP__
   </script>
   <!-- Sober 先于主模块加载：custom elements 先定义，Vue 才能把组件属性设为 DOM property -->
   <script src="__WIKI_SOBER_URL__" defer></script>

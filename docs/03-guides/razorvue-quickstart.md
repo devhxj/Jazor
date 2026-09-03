@@ -6,7 +6,7 @@
 
 ## 1. 建立页面
 
-先运行仓库里的 [RazorVue.Authoring](../../samples/RazorVue.Authoring) sample，或从它的
+先运行仓库里的 [RazorVue.Authoring](../../samples/RazorVue.Authoring/README.md) sample，或从它的
 [TaskBoard.razor](../../samples/RazorVue.Authoring/TaskBoard.razor) 和
 [TaskBoard.razor.cs](../../samples/RazorVue.Authoring/TaskBoard.razor.cs) 开始复制。下面的片段
 保持已验证 sample 的作者面；`TaskDraft`、`TaskRow` 和 `TaskTable` 的完整定义也在该 sample
