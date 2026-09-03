@@ -4,6 +4,21 @@
 
 ## 2026-09-03
 
+### Jazor 0.30.0
+
+> JazorAdmin 的高频运营页面继续收束到 typed TDesign authoring；Jazor Wiki 现在在首屏清楚说明产品定义、价值与适用边界。本版本在 `0.x` 阶段按 `MINOR` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。
+
+#### 新增与改进
+
+- JazorAdmin 的组织、角色、审计与排班页面现在使用 typed TDesign 组件完成查询、筛选、编辑、校验与状态更新；参考应用 smoke 同步覆盖这些真实操作路径。
+- Wiki 首页新增“Jazor 是什么、它解决什么、适用边界”三项导览，并直接复用 `docs/README.md` 的章节摘要；产品叙事、正文与导航因此保持同一份事实来源。
+- 路线图收束为当前可依赖的能力、下一阶段投入与写入状态的验收门槛，历史实施过程继续由 Git 历史承载。
+
+#### 修复
+
+- Wiki 现在消费生成的浏览器 import map，发布后的模块解析不再依赖模板中的重复映射。
+- ECMAScript 资源 hash 在不同 checkout 的行尾规则下保持稳定，避免相同资源因工作区格式差异产生无效变更。
+
 ### Jazor 0.29.0
 
 > JazorAdmin 现在完整提供 TDesign Starter 的 22 个功能页面，并通过真实浏览器 smoke 验收。本版本在 `0.x` 阶段按 `MINOR` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。

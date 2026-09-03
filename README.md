@@ -32,12 +32,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.29.0 - 2026-09-03
+### Jazor 0.30.0 - 2026-09-03
 
-- JazorAdmin now includes all 22 TDesign Starter feature routes across dashboard, list, form, detail, result, account, and login page groups, implemented with typed Jazor TDesign components.
-- Starter workflows cover multi-select, search, pagination, delete confirmation, step validation, notification filtering, approval status changes, uploads, charts, and real result-page assets.
-- Release browser smoke visits every Starter route and verifies the key table, form, dialog, chart, and state interactions.
-- Structural record auto-property initializers are preserved in RazorVue state objects, preventing missing defaults from becoming browser `undefined` reads.
+- JazorAdmin extends typed TDesign authoring to organization, role, audit, and schedule workflows, with browser smoke coverage for their key interactions.
+- The Wiki homepage now introduces what Jazor is, the problem it solves, and its supported boundary in the first viewport; its roadmap is consolidated around current capability and next-stage evidence.
+- Generated browser import maps and checkout-stable resource hashes make deployed Wiki and package artifacts more predictable.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
