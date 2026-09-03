@@ -5805,6 +5805,49 @@ public sealed class MemberClosureTests
     }
 
     [TestMethod]
+    public async Task BuildVueComponentModule_PreservesStructuralRecordAutoPropertyInitializersInState()
+    {
+        var fixture = CreateManualGeneratedFixture(
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/login")]
+                public partial class Login : ComponentBase, IVueComponent
+                {
+                    private sealed record LoginDraft
+                    {
+                        public string Email { get; set; } = string.Empty;
+                        public string Error { get; set; } = string.Empty;
+                    }
+
+                    private readonly LoginDraft draft = new();
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.AddContent(0, draft.Error.Length);
+                    }
+                }
+            }
+            """);
+        var closure = BuildClosure(fixture);
+
+        var artifact = await VueModuleBuilder.BuildAsync(
+            fixture.Binding,
+            fixture.Component,
+            closure);
+        var script = artifact.ModuleText.ReplaceLineEndings("\n");
+
+        StringAssert.Contains(script, "draft: { Email: \"\", Error: \"\" }", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("draft: {}", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "state.draft.Error.length", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public async Task BuildVueComponentModule_SourceMapChainsCompilerSegmentsToOriginalRazor()
     {
         var fixture = CreateOfficialCounterFixture();

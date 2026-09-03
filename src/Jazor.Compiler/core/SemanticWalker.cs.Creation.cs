@@ -332,6 +332,30 @@ public partial class SemanticWalker
 				GetRecordStructuralMemberOrder(memberOrder, keyName)));
 		}
 
+		// Structural records erase their CLR constructor shape, but their source-declared
+		// auto-property initializers remain observable for fields that the construction site
+		// leaves unset. Explicit constructor/object-initializer assignments own their emitted
+		// key; retaining the default as a second key would create a duplicate JavaScript key.
+		// record 虽然擦除为字面量，但未赋值字段的自动属性初始值不能丢失；显式赋值字段由调用点直接持有，不能重复输出同名 key。
+		var overriddenNames = new HashSet<string>(suppliedNames, StringComparer.Ordinal);
+		if (operation.Initializer is not null)
+		{
+			foreach (var initializer in operation.Initializer.Initializers)
+			{
+				var name = GetObjectInitializerMemberName(initializer);
+				if (!string.IsNullOrEmpty(name))
+					overriddenNames.Add(name);
+			}
+		}
+
+		AppendStructuralPropertyInitializers(
+			namedType,
+			operation,
+			argument,
+			memberOrder,
+			overriddenNames,
+			members);
+
 		if (operation.Initializer is not null)
 		{
 			var initializerNodes = BuildObjectLiteralMembers(operation.Initializer, argument, expandRecordMembers: true);
@@ -347,6 +371,103 @@ public partial class SemanticWalker
 		AppendInferredRecordMembers(namedType, operation.Initializer, memberOrder, members, operation);
 
 		return new ObjectExpression(NodeList.From(members.Select(static member => member.Node)));
+	}
+
+	private void AppendStructuralPropertyInitializers(
+		INamedTypeSymbol type,
+		IObjectCreationOperation ownerOperation,
+		SenseArgument argument,
+		IReadOnlyDictionary<string, int> memberOrder,
+		ISet<string> overriddenNames,
+		List<(Node Node, string Name, int Order)> members)
+	{
+		var compilation = ownerOperation.SemanticModel!.Compilation;
+
+		foreach (var current in EnumerateNamedTypeHierarchyBaseFirst(type))
+		{
+			foreach (var property in current.GetMembers()
+					 .OfType<IPropertySymbol>()
+					 .Where(property => !property.IsStatic &&
+										 !property.IsIndexer &&
+										 IsStructuralMember(property))
+					 .OrderBy(GetStructuralMemberSourceOrder, StringComparer.Ordinal))
+			{
+				foreach (var reference in property.DeclaringSyntaxReferences
+							 .OrderBy(static reference => reference.Span.Start))
+				{
+					if (reference.GetSyntax() is not PropertyDeclarationSyntax { Initializer: { } syntaxInitializer })
+						continue;
+
+					var name = Util.GetConfigOrSymbolName(property);
+					if (overriddenNames.Contains(name))
+						continue;
+
+					var semanticModel = compilation.GetSemanticModel(syntaxInitializer.SyntaxTree);
+					if (semanticModel.GetOperation(syntaxInitializer) is not IPropertyInitializerOperation initializer)
+					{
+						throw new InvalidOperationException(
+							$"Structural record property initializer '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' was not bound by Roslyn.");
+					}
+
+					if (ShouldOmitStaticNullObjectLiteralMember(initializer.Value, property, current))
+						continue;
+
+					// A nested member initializer mutates the instance created by the property's
+					// default initializer (`Child = { ... }`). Emitting that default as a second
+					// top-level object key would produce `{ child: {}, child: { ... } }` and change
+					// the structural record contract. The nested initializer owns the key; its
+					// members are emitted below as one object literal.
+					// 嵌套成员初始化器是在属性默认实例上继续赋值；顶层不能再输出同名空 key。
+					if (HasNestedMemberInitializer(ownerOperation.Initializer, property))
+						continue;
+
+					if (TryGetSpreadAttribute(property, out _))
+					{
+						AppendExpandedRecordMembers(
+							property,
+							initializer.Value,
+							argument,
+							members,
+							memberOrder,
+							ownerOperation);
+						continue;
+					}
+
+					var value = TranslateTupleForTarget(initializer.Value, property.Type, argument);
+					var node = WithOriginIfMissing(new ObjectProperty(
+						PropertyKind.Init,
+						key: CreateObjectPropertyKey(name),
+						value: value,
+						computed: false,
+						shorthand: false,
+						method: false), initializer);
+					members.Add((node, name, GetRecordStructuralMemberOrder(memberOrder, name)));
+				}
+			}
+		}
+	}
+
+	private static bool HasNestedMemberInitializer(
+		IObjectOrCollectionInitializerOperation? initializer,
+		IPropertySymbol property)
+		=> initializer?.Initializers
+			.OfType<IMemberInitializerOperation>()
+			.Any(current => current.InitializedMember is IMemberReferenceOperation memberReference &&
+				SymbolEqualityComparer.Default.Equals(memberReference.Member, property)) == true;
+
+	private static string GetStructuralMemberSourceOrder(ISymbol symbol)
+	{
+		foreach (var location in symbol.Locations)
+		{
+			if (!location.IsInSource)
+				continue;
+
+			return (location.SourceTree?.FilePath ?? string.Empty).Replace('\\', '/') + "|" +
+				location.SourceSpan.Start.ToString("D10", System.Globalization.CultureInfo.InvariantCulture) + "|" +
+				symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+		}
+
+		return "~|" + symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 	}
 
 	private Dictionary<string, int> BuildStructuralMemberOrderMap(INamedTypeSymbol type)

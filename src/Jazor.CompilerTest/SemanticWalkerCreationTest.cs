@@ -1386,6 +1386,82 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_RecordAutoPropertyInitializers_PreserveUnassignedDefaults()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var draft = new Draft
+                    {
+                        Priority = 2
+                    };
+                }
+
+                public sealed record Draft
+                {
+                    public string Name { get; set; } = ""seed"";
+                    public int Priority { get; set; } = 1;
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var script = new SemanticWalker(true)
+            .VisitObjectCreation(operation, new SenseArgument())?
+            .ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ Name: ""seed"", Priority: 2 }", script);
+        _ = new Acornima.Parser().ParseExpression(script!);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_RecordAutoPropertyInitializers_CoversSpreadAndNestedOverrides()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var defaults = new Wrapper();
+                    var nested = new Wrapper { Child = { Name = ""override"" } };
+                    var spread = new SpreadWrapper();
+                }
+
+                public sealed record ChildProps
+                {
+                    [Description(""@#name"")]
+                    public string Name { get; set; } = ""seed"";
+                }
+
+                public sealed record Wrapper
+                {
+                    public ChildProps Child { get; set; } = new ChildProps();
+                }
+
+                public sealed record SpreadWrapper
+                {
+                    [Spread]
+                    public ChildProps Child { get; init; } = new ChildProps { Name = ""spread"" };
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var defaults = walker.VisitObjectCreation(GetObjectCreationOperationAt(block), new())?.ToKnRECMAScript();
+        var nested = walker.VisitObjectCreation(GetObjectCreationOperationAt(block, 1), new())?.ToKnRECMAScript();
+        var spread = walker.VisitObjectCreation(GetObjectCreationOperationAt(block, 2), new())?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ Child: { name: ""seed"" } }", defaults);
+        AssertScriptEqual(@"{ Child: { name: ""override"" } }", nested);
+        AssertScriptEqual(@"{ name: ""spread"" }", spread);
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_RecordAliases_UseJavaScriptIdentifierNameGrammarForPropertyKeys()
     {
         var block = GetBlockOperation(@"
