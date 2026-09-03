@@ -50,8 +50,8 @@ dotnet test samples/JazorAdmin.Test/JazorAdmin.Test.csproj
 
 ## 当前 authoring 观察
 
-账户管理、组织管理和角色授权的写入表单已直接使用 `TForm<T>`：页面状态由具名 draft
-承载，字段使用 `@bind-Value`，规则使用 `TFormRules<T>`，提交与重置使用 typed
+账户管理、组织管理、角色授权和审计筛选已直接使用 `TForm<T>`：页面状态由具名 draft
+承载，字段使用 `@bind-Value`，规则按业务需要使用 `TFormRules<T>`，提交与重置使用 typed
 `OnSubmit`/`OnReset`。异步请求失败时保留 draft；成功后才替换为新的空 draft。服务端仍只
 接收既有 request DTO，表单模型不会泄漏到 API 边界。
 
@@ -60,8 +60,8 @@ dotnet test samples/JazorAdmin.Test/JazorAdmin.Test.csproj
 - 账户、组织和 SSO 页面的大量表格操作列仍在 `.razor.cs` 中通过
   `RenderFragment`/`RenderTreeBuilder` 组合；先建立独立 typed column/slot fixture，再决定
   是否需要 binding API 调整。
-- 设置、审计、调度和 SSO 页面仍有 `TForm<TJsonObject>` 加手写 `Value`/`OnChange` 状态；应逐页
-  迁移并验证错误保留、异步提交和重置语义，不恢复通用 sample-local bridge。
+- 设置、调度和 SSO 页面仍有 `TForm<TJsonObject>` 加手写 `Value`/`OnChange` 状态；应逐页迁移并
+  验证错误保留、异步提交和重置语义，不恢复通用 sample-local bridge。
 - `TTextarea` 的公开值类型是 `TTextareaValue` 联合值，尚未证明可将 `string` draft 直接作为
   `@bind-Value` 目标。先建立独立 typed textarea fixture，确认最终 authoring 契约后再迁移设置页；
   不以 sample-local 转换器掩盖该边界。

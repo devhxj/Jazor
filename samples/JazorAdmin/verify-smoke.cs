@@ -315,6 +315,9 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(dashboardModule, "data-portal", "dashboard application portal marker");
     AssertContains(dashboardModule, "PortalApplications", "dashboard portal application data");
     AssertContains(auditModule, "GetAudit", "audit log query transport");
+    AssertContains(auditModule, "data: state.Filters", "typed audit filter draft data in audit log module");
+    AssertContains(auditModule, "onSubmit: ApplyFilters", "typed audit filter submit callback in audit log module");
+    AssertContains(auditModule, "onReset: ResetFilters", "typed audit filter reset callback in audit log module");
     AssertContains(auditModule, "data-audit-filter", "audit filter markers");
     AssertContains(auditModule, "data-audit-command", "audit filter commands");
     AssertContains(auditModule, "data-audit-event", "audit row marker");
@@ -1387,7 +1390,12 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitFor(
                         () => document.querySelectorAll('[data-management-area="audit"] [data-audit-event]').length === 2,
                         "cleared audit event filters");
+                      await waitFor(
+                        () => document.querySelector('[data-audit-filter="object"] input')?.value === "" &&
+                          document.querySelector('[data-audit-filter="action"] input')?.value === "",
+                        "typed audit filter reset");
                       const auditClearedCount = document.querySelectorAll('[data-management-area="audit"] [data-audit-event]').length;
+                      const auditFilterFormReset = true;
 
                       await click('[data-iconbar-key="dashboard"]', "dashboard IconBar item");
                       await waitForTitle("工作台");
@@ -1454,6 +1462,7 @@ static async Task VerifyBrowserSmokeAsync(
                         auditFilteredCount,
                         auditFilteredRowText,
                         auditClearedCount,
+                        auditFilterFormReset,
                         dashboardReturnPathname,
                         searchResultKeys,
                         searchSelectedTitle,
@@ -1582,6 +1591,7 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("auditFilteredRowText").GetString() ?? string.Empty, "sso-application", "JazorAdmin filtered audit object", root.GetRawText());
         AssertContains(root.GetProperty("auditFilteredRowText").GetString() ?? string.Empty, "created", "JazorAdmin filtered audit action", root.GetRawText());
         AssertJsonInt(root, "auditClearedCount", 2, "JazorAdmin cleared audit event count", root.GetRawText());
+        AssertJsonBoolean(root, "auditFilterFormReset", true, "JazorAdmin typed audit filter form reset", root.GetRawText());
         AssertContains(root.GetProperty("dashboardReturnPathname").GetString() ?? string.Empty, "/", "JazorAdmin dashboard IconBar return", root.GetRawText());
         if (root.GetProperty("hasLegacyVueReference").GetBoolean())
             throw new InvalidOperationException("JazorAdmin browser smoke found a legacy .vue script reference.");

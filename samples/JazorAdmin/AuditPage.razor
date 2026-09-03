@@ -17,27 +17,50 @@
                     </div>
                 </header>
 
-                <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
+                <TForm FormData="AuditFilterDraft"
+                       Data="@Filters"
+                       OnSubmit="@ApplyFilters"
+                       OnReset="@ResetFilters"
+                       LabelAlign="@TFormLabelAlignValue.Top"
+                       data-audit-form="filters">
                     <div class="ja-audit__filters">
                         <TFormItem LabelValue="@L("From (UTC)", "开始时间（UTC）")" Name="from">
-                            <span data-audit-filter="from"><TInput T="string" Value="@from" Placeholder="2026-08-19T00:00:00Z" OnChange="@(value => from = value)" /></span>
+                            <span data-audit-filter="from"><TInput T="string"
+                                @bind-Value="Filters.From"
+                                @bind-Value:event="OnChange"
+                                Placeholder="2026-08-19T00:00:00Z" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("To (UTC)", "结束时间（UTC）")" Name="to">
-                            <span data-audit-filter="to"><TInput T="string" Value="@to" Placeholder="2026-08-19T23:59:59Z" OnChange="@(value => to = value)" /></span>
+                            <span data-audit-filter="to"><TInput T="string"
+                                @bind-Value="Filters.To"
+                                @bind-Value:event="OnChange"
+                                Placeholder="2026-08-19T23:59:59Z" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Actor", "操作者")" Name="actor">
-                            <span data-audit-filter="actor"><TInput T="string" Value="@actor" Clearable="@true" Placeholder="admin@jazor.local" OnChange="@(value => actor = value)" /></span>
+                            <span data-audit-filter="actor"><TInput T="string"
+                                @bind-Value="Filters.Actor"
+                                @bind-Value:event="OnChange"
+                                Clearable="@true"
+                                Placeholder="admin@jazor.local" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Object", "对象")" Name="object">
-                            <span data-audit-filter="object"><TInput T="string" Value="@target" Clearable="@true" Placeholder="sso-application" OnChange="@(value => target = value)" /></span>
+                            <span data-audit-filter="object"><TInput T="string"
+                                @bind-Value="Filters.Target"
+                                @bind-Value:event="OnChange"
+                                Clearable="@true"
+                                Placeholder="sso-application" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Action", "操作类型")" Name="action">
-                            <span data-audit-filter="action"><TInput T="string" Value="@action" Clearable="@true" Placeholder="created / revoked" OnChange="@(value => action = value)" /></span>
+                            <span data-audit-filter="action"><TInput T="string"
+                                @bind-Value="Filters.Action"
+                                @bind-Value:event="OnChange"
+                                Clearable="@true"
+                                Placeholder="created / revoked" /></span>
                         </TFormItem>
                     </div>
                     <div class="ja-form__commands">
-                        <TButton Theme="@TButtonThemeValue.Primary" data-audit-command="apply" OnClick="@(_ => Load())">@L("Apply filters", "应用筛选")</TButton>
-                        <TButton Variant="@TButtonVariantValue.Text" data-audit-command="clear" OnClick="@(_ => Clear())">@L("Clear", "清空")</TButton>
+                        <TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text" data-audit-command="clear">@L("Clear", "清空")</TButton>
+                        <TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary" data-audit-command="apply">@L("Apply filters", "应用筛选")</TButton>
                     </div>
                 </TForm>
 

@@ -7,14 +7,23 @@ namespace JazorAdmin;
 [ECMAScriptModule("components/audit")]
 public partial class AuditPage : AppComponentBase, IVueContainerComponent
 {
+    private sealed record AuditFilterDraft
+    {
+        public string From { get; set; } = string.Empty;
+
+        public string To { get; set; } = string.Empty;
+
+        public string Actor { get; set; } = string.Empty;
+
+        public string Target { get; set; } = string.Empty;
+
+        public string Action { get; set; } = string.Empty;
+    }
+
     private bool loading = true;
     private string? error;
     private AuditEventView[] events = [];
-    private string from = string.Empty;
-    private string to = string.Empty;
-    private string actor = string.Empty;
-    private string target = string.Empty;
-    private string action = string.Empty;
+    private AuditFilterDraft Filters { get; set; } = NewFilters();
 
     private TPrimaryTableCol<AuditEventView>[] Columns =>
     [
@@ -57,8 +66,11 @@ public partial class AuditPage : AppComponentBase, IVueContainerComponent
     {
         loading = true;
         error = null;
-        ApiClient.GetAudit(from, to, actor, target, action).Then(Apply);
+        ApiClient.GetAudit(Filters.From, Filters.To, Filters.Actor, Filters.Target, Filters.Action).Then(Apply);
     }
+
+    private void ApplyFilters(TSubmitContext<AuditFilterDraft> context)
+        => Load();
 
     private void Apply(ApiOutcome outcome)
     {
@@ -72,13 +84,10 @@ public partial class AuditPage : AppComponentBase, IVueContainerComponent
         events = ApiClient.ToAuditEvents(outcome.Data);
     }
 
-    private void Clear()
+    private void ResetFilters(TFormResetEventContext<AuditFilterDraft> context)
     {
-        from = string.Empty;
-        to = string.Empty;
-        actor = string.Empty;
-        target = string.Empty;
-        action = string.Empty;
+        Filters = NewFilters();
+        error = null;
         Load();
     }
 
@@ -96,4 +105,13 @@ public partial class AuditPage : AppComponentBase, IVueContainerComponent
     // UTC 是审计契约的一部分；表格只为扫读截断 ISO 值，完整值仍保留在 datetime 属性。
     private static string FormatTime(string value)
         => value.Length <= 19 ? value : value.Substring(0, 19).Replace("T", " ") + " UTC";
+
+    private static AuditFilterDraft NewFilters() => new()
+    {
+        From = string.Empty,
+        To = string.Empty,
+        Actor = string.Empty,
+        Target = string.Empty,
+        Action = string.Empty
+    };
 }
