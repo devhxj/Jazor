@@ -939,6 +939,22 @@ static async Task VerifyBrowserSmokeAsync(
                         errorDescription,
                         returnPathname: location.pathname
                       };
+                    } else if (location.pathname.startsWith("/starter/")) {
+                      const starterPage = document.querySelector("[data-starter-page]");
+                      if (!starterPage) {
+                        throw new Error(`Starter page did not render for ${location.pathname}.`);
+                      }
+                      globalThis.__jazorAdminBrowserSmoke = {
+                        ok: true,
+                        mode: "starter",
+                        pathname: location.pathname,
+                        template: starterPage.getAttribute("data-starter-page") ?? "",
+                        pageTitleText: document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "",
+                        pageText: starterPage.textContent ?? "",
+                        contentElementCount: starterPage.querySelectorAll("article, button, input, select, textarea, table, img, svg, li").length,
+                        documentFitsViewport: document.documentElement.scrollWidth <= innerWidth,
+                        styleRuntimeLoaded: document.querySelector("style#ecmascript-style") !== null
+                      };
                     } else if (location.pathname === "/organizations/structure") {
                       for (let attempt = 0; attempt < 100 && document.querySelector(".t-loading"); attempt++) {
                         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -1401,7 +1417,7 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("pageTitleText").GetString() ?? string.Empty, "工作台", "JazorAdmin browser dashboard title", root.GetRawText());
         AssertContains(root.GetProperty("dashboardText").GetString() ?? string.Empty, "组织访问", "JazorAdmin browser administration overview", root.GetRawText());
         AssertJsonInt(root, "metricCount", 4, "JazorAdmin administration metric count", root.GetRawText());
-        AssertJsonInt(root, "iconBarItemCount", 3, "JazorAdmin IconBar zone count", root.GetRawText());
+        AssertJsonInt(root, "iconBarItemCount", 4, "JazorAdmin IconBar zone count", root.GetRawText());
         AssertJsonInt(root, "iconBarBrandCount", 1, "JazorAdmin IconBar single brand mark", root.GetRawText());
         AssertJsonInt(root, "headerBrandCount", 0, "JazorAdmin mixed layout header duplicate brand", root.GetRawText());
         foreach (var action in new[] { "文档", "助手", "账号", "退出登录" })
@@ -1471,6 +1487,27 @@ static async Task VerifyBrowserSmokeAsync(
         var englishLanguage = root.GetProperty("englishLanguage");
         AssertContains(englishLanguage.GetProperty("value").GetString() ?? string.Empty, "en-US", "JazorAdmin English language selection", englishLanguage.GetRawText());
         AssertContains(englishLanguage.GetProperty("title").GetString() ?? string.Empty, "Accounts", "JazorAdmin English localized title", englishLanguage.GetRawText());
+
+        AssertStarterPageMatrix(root.GetProperty("starterPages"));
+        var starterInteractions = root.GetProperty("starterInteractions");
+        AssertJsonInt(starterInteractions, "initialRows", 5, "JazorAdmin Starter base list initial rows", starterInteractions.GetRawText());
+        AssertJsonInt(starterInteractions, "selectedRows", 2, "JazorAdmin Starter base list multi-select", starterInteractions.GetRawText());
+        AssertJsonInt(starterInteractions, "searchedRows", 1, "JazorAdmin Starter list search", starterInteractions.GetRawText());
+        AssertJsonBoolean(starterInteractions, "paginationVisible", true, "JazorAdmin Starter base list pagination", starterInteractions.GetRawText());
+        AssertJsonBoolean(starterInteractions, "deleteDialogVisible", true, "JazorAdmin Starter delete confirmation", starterInteractions.GetRawText());
+        AssertJsonBoolean(starterInteractions, "cardDialogVisible", true, "JazorAdmin Starter card create dialog", starterInteractions.GetRawText());
+        AssertContains(starterInteractions.GetProperty("stepValidationError").GetString() ?? string.Empty, "合同", "JazorAdmin Starter step validation", starterInteractions.GetRawText());
+        if (starterInteractions.GetProperty("blockedStep").GetString() != starterInteractions.GetProperty("stepBefore").GetString())
+            throw new InvalidOperationException("JazorAdmin Starter step validation did not keep the first step active: " + starterInteractions.GetRawText());
+        if (starterInteractions.GetProperty("stepBefore").GetString() == starterInteractions.GetProperty("stepAfter").GetString())
+            throw new InvalidOperationException("JazorAdmin Starter step form did not advance after valid input: " + starterInteractions.GetRawText());
+        AssertJsonInt(starterInteractions, "noticeTabs", 3, "JazorAdmin Starter notification tabs", starterInteractions.GetRawText());
+        if (starterInteractions.GetProperty("noticeUnread").GetInt32() >= starterInteractions.GetProperty("noticeBefore").GetInt32())
+            throw new InvalidOperationException("JazorAdmin Starter notification unread filter did not narrow the list: " + starterInteractions.GetRawText());
+        if (starterInteractions.GetProperty("chartCount").GetInt32() < 2)
+            throw new InvalidOperationException("JazorAdmin Starter dashboard chart coverage failed: " + starterInteractions.GetRawText());
+        if (starterInteractions.GetProperty("advancedStatusBefore").GetString() == starterInteractions.GetProperty("advancedStatusAfter").GetString())
+            throw new InvalidOperationException("JazorAdmin Starter advanced detail approval did not change status: " + starterInteractions.GetRawText());
 
         var routeTabs = root.GetProperty("routeTabs");
         AssertJsonStringArrayContains(routeTabs, "before", "/", "JazorAdmin permanent home tab", routeTabs.GetRawText());
@@ -1585,6 +1622,143 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               result.desktopLayout = await page.readLayout();
               await page.navigate(`http://127.0.0.1:${server.port}/organizations/structure`);
               const deepLink = await page.waitForSmoke();
+              const starterRoutes = [
+                { path: "/starter/dashboard/base", template: "dashboard-base" },
+                { path: "/starter/dashboard/detail", template: "dashboard-detail" },
+                { path: "/starter/list/base", template: "list-base" },
+                { path: "/starter/list/card", template: "list-card" },
+                { path: "/starter/list/filter", template: "list-filter" },
+                { path: "/starter/list/tree", template: "list-tree" },
+                { path: "/starter/form/base", template: "form-base" },
+                { path: "/starter/form/step", template: "form-step" },
+                { path: "/starter/detail/base", template: "detail-base" },
+                { path: "/starter/detail/advanced", template: "detail-advanced" },
+                { path: "/starter/detail/deploy", template: "detail-deploy" },
+                { path: "/starter/detail/secondary", template: "detail-secondary" },
+                { path: "/starter/result/success", template: "result-success" },
+                { path: "/starter/result/fail", template: "result-fail" },
+                { path: "/starter/result/network-error", template: "result-network" },
+                { path: "/starter/result/403", template: "result-403" },
+                { path: "/starter/result/404", template: "result-404" },
+                { path: "/starter/result/500", template: "result-500" },
+                { path: "/starter/result/browser-incompatible", template: "result-browser" },
+                { path: "/starter/result/maintenance", template: "result-maintenance" },
+                { path: "/starter/user", template: "user" },
+                { path: "/starter/login", template: "login" }
+              ];
+              const starterPages = [];
+              for (const route of starterRoutes) {
+                await page.navigate(`http://127.0.0.1:${server.port}${route.path}`);
+                const starter = await page.waitForSmoke();
+                if (starter.mode !== "starter" || starter.pathname !== route.path || starter.template !== route.template) {
+                  throw new Error(`Starter route mismatch for ${route.path}: ${JSON.stringify(starter)}`);
+                }
+                if (!starter.pageTitleText.trim() || starter.pageText.trim().length < 12 || starter.contentElementCount === 0) {
+                  throw new Error(`Starter route rendered insufficient content for ${route.path}.`);
+                }
+                if (!starter.documentFitsViewport || !starter.styleRuntimeLoaded) {
+                  throw new Error(`Starter route layout/runtime check failed for ${route.path}.`);
+                }
+                starterPages.push({ path: route.path, template: route.template, title: starter.pageTitleText.trim() });
+              }
+              await page.navigate(`http://127.0.0.1:${server.port}/starter/list/base`);
+              await page.waitForSmoke();
+              const starterInteractions = await page.evaluate(`(async () => {
+                const waitFor = async (predicate, message) => {
+                  for (let attempt = 0; attempt < 120; attempt++) {
+                    await new Promise((resolvePromise) => setTimeout(resolvePromise, 10));
+                    if (predicate()) return;
+                  }
+                  throw new Error(message);
+                };
+                const click = async (selector, description) => {
+                  const target = document.querySelector(selector);
+                  if (!(target instanceof HTMLElement)) throw new Error("Missing " + description + ".");
+                  target.click();
+                  await waitFor(() => true, "render tick");
+                };
+                const setInput = async (selector, value) => {
+                  const target = document.querySelector(selector);
+                  if (!(target instanceof HTMLInputElement)) throw new Error("Missing input " + selector + ".");
+                  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(target, value);
+                  target.dispatchEvent(new Event("input", { bubbles: true }));
+                  target.dispatchEvent(new Event("change", { bubbles: true }));
+                  await new Promise((resolvePromise) => setTimeout(resolvePromise, 0));
+                };
+                const initialRows = document.querySelectorAll(".t-table tbody tr").length;
+                const paginationVisible = document.querySelector('[data-starter-page="list-base"] .t-pagination') !== null;
+                const selectionInputs = document.querySelectorAll('[data-starter-page="list-base"] .t-table input[type="checkbox"]');
+                if (selectionInputs.length < 3) throw new Error("Missing Starter table multi-select inputs.");
+                const firstRowSelection = selectionInputs[1];
+                const secondRowSelection = selectionInputs[2];
+                if (!(firstRowSelection instanceof HTMLInputElement) || !(secondRowSelection instanceof HTMLInputElement)) {
+                  throw new Error("Starter table row selection inputs are not native checkboxes.");
+                }
+                if (!firstRowSelection.checked) firstRowSelection.click();
+                if (!secondRowSelection.checked) secondRowSelection.click();
+                await new Promise((resolvePromise) => setTimeout(resolvePromise, 0));
+                const selectedRows = document.querySelectorAll('[data-starter-page="list-base"] .t-table input[type="checkbox"]:checked').length;
+                await setInput('[data-starter-page="list-base"] .t-input input', "Jazor identity");
+                await waitFor(() => document.querySelectorAll(".t-table tbody tr").length === 1, "list search result");
+                const searchedRows = document.querySelectorAll(".t-table tbody tr").length;
+                await click('[data-starter-command="delete"]', "list delete command");
+                await waitFor(() => document.querySelector('[data-starter-dialog="delete"]') !== null, "delete confirmation dialog");
+                const deleteDialogVisible = document.querySelector('[data-starter-dialog="delete"]') !== null;
+                const confirm = Array.from(document.querySelectorAll(".t-dialog button")).find((button) => button.textContent?.trim() === "删除" || button.textContent?.trim() === "Delete");
+                if (!(confirm instanceof HTMLElement)) throw new Error("Missing delete confirmation action.");
+                confirm.click();
+                await new Promise((resolvePromise) => setTimeout(resolvePromise, 0));
+                await pageNavigate("/starter/list/card");
+                const cardCreate = document.querySelector('[data-starter-page="list-card"] .ja-panel__header button');
+                if (!(cardCreate instanceof HTMLElement)) throw new Error("Missing card create command.");
+                cardCreate.click();
+                await waitFor(() => document.querySelector(".t-dialog") !== null, "card create dialog");
+                const cardDialogVisible = document.querySelector(".t-dialog") !== null;
+                await pageNavigate("/starter/form/step");
+                const stepBefore = document.querySelector('[data-starter-page="form-step"] .t-card__title')?.textContent?.trim() ?? "";
+                const next = Array.from(document.querySelectorAll("button")).find((button) => button.textContent?.trim() === "下一步" || button.textContent?.trim() === "Next");
+                if (!(next instanceof HTMLElement)) throw new Error("Missing step next command.");
+                next.click();
+                await waitFor(() => document.querySelector('[data-starter-message="step-error"]') !== null, "step validation error");
+                const stepValidationError = document.querySelector('[data-starter-message="step-error"]')?.textContent?.trim() ?? "";
+                const blockedStep = document.querySelector('[data-starter-page="form-step"] .t-card__title')?.textContent?.trim() ?? "";
+                if (!stepValidationError || blockedStep !== stepBefore) throw new Error("Step validation did not block incomplete input.");
+                await setInput('[data-starter-page="form-step"] .t-input input', "Jazor identity center");
+                const nextAfterValidation = Array.from(document.querySelectorAll("button")).find((button) => button.textContent?.trim() === "下一步" || button.textContent?.trim() === "Next");
+                if (!(nextAfterValidation instanceof HTMLElement)) throw new Error("Missing step next command after validation.");
+                nextAfterValidation.click();
+                await waitFor(() => (document.querySelector('[data-starter-page="form-step"] .t-card__title')?.textContent?.trim() ?? "") !== stepBefore, "step progression");
+                const stepAfter = document.querySelector('[data-starter-page="form-step"] .t-card__title')?.textContent?.trim() ?? "";
+                await pageNavigate("/starter/detail/secondary");
+                const noticeTabSelector = '[data-starter-page="detail-secondary"] .t-tabs__nav-item';
+                const noticeTabs = document.querySelectorAll(noticeTabSelector).length;
+                const noticeBefore = document.querySelectorAll(".ja-starter-notice").length;
+                const unread = Array.from(document.querySelectorAll(noticeTabSelector)).find((tab) => tab.textContent?.includes("未读") || tab.textContent?.includes("Unread"));
+                if (unread instanceof HTMLElement) unread.click();
+                await new Promise((resolvePromise) => setTimeout(resolvePromise, 0));
+                const noticeUnread = document.querySelectorAll(".ja-starter-notice").length;
+                await pageNavigate("/starter/dashboard/base");
+                const chartCount = document.querySelectorAll('[data-starter-page="dashboard-base"] .ja-chart-host').length;
+                if (chartCount < 2) throw new Error("Starter dashboard charts did not mount.");
+                await pageNavigate("/starter/detail/advanced");
+                const advancedStatusBefore = document.querySelector('[data-starter-page="detail-advanced"] .t-alert .t-tag')?.textContent?.trim() ?? "";
+                const approve = Array.from(document.querySelectorAll('[data-starter-page="detail-advanced"] button')).find((button) => button.textContent?.includes("审核"));
+                if (!(approve instanceof HTMLElement)) throw new Error("Missing advanced detail approval command.");
+                approve.click();
+                await waitFor(() => document.querySelector(".t-dialog") !== null, "advanced approval dialog");
+                const dialogApprove = Array.from(document.querySelectorAll(".t-dialog button")).find((button) => button.textContent?.includes("审核通过") || button.textContent?.trim() === "Approve");
+                if (!(dialogApprove instanceof HTMLElement)) throw new Error("Missing advanced approval confirmation.");
+                dialogApprove.click();
+                await waitFor(() => (document.querySelector('[data-starter-page="detail-advanced"] .t-alert .t-tag')?.textContent?.trim() ?? "") !== advancedStatusBefore, "advanced approval status");
+                const advancedStatusAfter = document.querySelector('[data-starter-page="detail-advanced"] .t-alert .t-tag')?.textContent?.trim() ?? "";
+                return { initialRows, selectedRows, searchedRows, paginationVisible, deleteDialogVisible, cardDialogVisible, stepBefore, blockedStep, stepValidationError, stepAfter, noticeTabs, noticeBefore, noticeUnread, chartCount, advancedStatusBefore, advancedStatusAfter };
+                async function pageNavigate(path) {
+                  history.pushState({}, "", path);
+                  window.dispatchEvent(new PopStateEvent("popstate"));
+                  await waitFor(() => location.pathname === path, "navigation to " + path);
+                  await new Promise((resolvePromise) => setTimeout(resolvePromise, 50));
+                }
+              })()`);
               // Language switching is verified on a real module page: the header dropdown must
               // relocalize navigation and breadcrumbs without a reload.
               await page.navigate(`http://127.0.0.1:${server.port}/accounts`);
@@ -1710,6 +1884,8 @@ static string BuildBrowserSmokeTestScript(string browserPath)
               await page.navigate(`http://127.0.0.1:${server.port}/missing/admin/page`);
               const notFound = await page.waitForSmoke();
               result.deepLink = deepLink;
+              result.starterPages = starterPages;
+              result.starterInteractions = starterInteractions;
               result.englishLanguage = englishLanguage;
               result.internalError = internalError;
               result.notFound = notFound;
@@ -2323,6 +2499,47 @@ static void AssertJsonStringArrayContains(JsonElement root, string propertyName,
         throw new InvalidOperationException(
             $"Missing {description}: expected '{expected}'." +
             FormatDetails(details ?? actual.GetRawText()));
+    }
+}
+
+static void AssertStarterPageMatrix(JsonElement pages)
+{
+    var expected = new[]
+    {
+        ("/starter/dashboard/base", "dashboard-base"),
+        ("/starter/dashboard/detail", "dashboard-detail"),
+        ("/starter/list/base", "list-base"),
+        ("/starter/list/card", "list-card"),
+        ("/starter/list/filter", "list-filter"),
+        ("/starter/list/tree", "list-tree"),
+        ("/starter/form/base", "form-base"),
+        ("/starter/form/step", "form-step"),
+        ("/starter/detail/base", "detail-base"),
+        ("/starter/detail/advanced", "detail-advanced"),
+        ("/starter/detail/deploy", "detail-deploy"),
+        ("/starter/detail/secondary", "detail-secondary"),
+        ("/starter/result/success", "result-success"),
+        ("/starter/result/fail", "result-fail"),
+        ("/starter/result/network-error", "result-network"),
+        ("/starter/result/403", "result-403"),
+        ("/starter/result/404", "result-404"),
+        ("/starter/result/500", "result-500"),
+        ("/starter/result/browser-incompatible", "result-browser"),
+        ("/starter/result/maintenance", "result-maintenance"),
+        ("/starter/user", "user"),
+        ("/starter/login", "login")
+    };
+    if (pages.ValueKind != JsonValueKind.Array || pages.GetArrayLength() != expected.Length)
+        throw new InvalidOperationException($"Unexpected Starter page count: expected {expected.Length}." + Environment.NewLine + pages.GetRawText());
+
+    var actual = pages.EnumerateArray().ToDictionary(
+        page => page.GetProperty("path").GetString() ?? string.Empty,
+        page => (Template: page.GetProperty("template").GetString() ?? string.Empty, Title: page.GetProperty("title").GetString() ?? string.Empty),
+        StringComparer.Ordinal);
+    foreach (var (path, template) in expected)
+    {
+        if (!actual.TryGetValue(path, out var page) || page.Template != template || string.IsNullOrWhiteSpace(page.Title))
+            throw new InvalidOperationException($"Starter page coverage failed for '{path}': expected template '{template}'." + Environment.NewLine + pages.GetRawText());
     }
 }
 

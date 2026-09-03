@@ -158,6 +158,10 @@ public partial class App : ComponentBase, IVueComponent
 
     private bool IsAuditPage => SelectedKey == AuditKey;
 
+    private bool IsStarterPage => StarterCatalog.IsStarter(SelectedKey);
+
+    private string StarterTemplate => StarterCatalog.GetTemplate(SelectedKey);
+
     private AdminBreadcrumbItem[] SelectedBreadcrumbItems
         => AdminRouteCatalog.BuildBreadcrumbs(LocalizedItems, SelectedKey);
 

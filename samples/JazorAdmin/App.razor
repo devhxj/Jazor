@@ -368,6 +368,12 @@
                     {
                         <AuditPage Language="@Language" />
                     }
+                    else if (IsStarterPage)
+                    {
+                        <StarterPage Language="@Language"
+                                     Template="@StarterTemplate"
+                                     Session="@session" />
+                    }
                     else
                     {
                         <DashboardPage Language="@Language"

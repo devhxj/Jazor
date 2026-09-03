@@ -1,0 +1,207 @@
+@inherits AppComponentBase
+
+@if (Template == "dashboard-base")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="dashboard-base">
+        <header class="ja-panel__header">
+            <div><h2>@L("Overview", "概览")</h2><p>@L("A focused view of current platform work.", "查看当前平台工作的核心指标。")</p></div>
+            <TButton Theme="@TButtonThemeValue.Primary" data-starter-command="refresh" OnClick="@(_ => submitted = true)">@L("Refresh", "刷新")</TButton>
+        </header>
+        <div class="ja-starter-metrics">
+            <TCard TitleValue="@L("Total visits", "总访问量")" Bordered="@true"><ContentSlot><strong class="ja-starter-metric-value">46,982</strong><TTag Theme="@TTagThemeValue.Success" ContentValue="+12.5%" /></ContentSlot></TCard>
+            <TCard TitleValue="@L("New users", "新增用户")" Bordered="@true"><ContentSlot><strong class="ja-starter-metric-value">1,268</strong><TTag Theme="@TTagThemeValue.Success" ContentValue="+8.2%" /></ContentSlot></TCard>
+            <TCard TitleValue="@L("Conversion", "转化率")" Bordered="@true"><ContentSlot><strong class="ja-starter-metric-value">32.8%</strong><TTag Theme="@TTagThemeValue.Primary" ContentValue="+3.1%" /></ContentSlot></TCard>
+            <TCard TitleValue="@L("Pending work", "待处理事项")" Bordered="@true"><ContentSlot><strong class="ja-starter-metric-value">18</strong><TTag Theme="@TTagThemeValue.Warning" ContentValue="-4" /></ContentSlot></TCard>
+        </div>
+        <div class="ja-page__split">
+            <TCard TitleValue="@L("Visit trend", "访问趋势")" SubtitleValue="@L("Last seven days", "最近七天")" Bordered="@true">
+                <ContentSlot><div class="ja-chart-host" aria-label="@L("Visit trend", "访问趋势")"><VueUiVerticalBar Dataset="@StarterTrendItems" Config="@StarterTrendConfig" /></div></ContentSlot>
+            </TCard>
+            <TCard TitleValue="@L("Channel distribution", "渠道分布")" Bordered="@true">
+                <ContentSlot><div class="ja-chart-host"><VueUiDonut Dataset="@StarterDistributionItems" Config="@StarterDistributionConfig" /></div></ContentSlot>
+            </TCard>
+        </div>
+        <TCard TitleValue="@L("Recent projects", "最近项目")" Bordered="@true">
+            <ContentSlot><TTable T="StarterRow" Data="@rows" Columns="@TableColumns" RowKey="Code" OnRowClick="@SelectRow" /></ContentSlot>
+        </TCard>
+        @if (submitted) { <TAlert Theme="@TAlertThemeValue.Success" MessageValue="@L("Dashboard refreshed.", "仪表盘已刷新。")" data-starter-message="refresh" /> }
+    </section>
+}
+else if (Template == "dashboard-detail")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="dashboard-detail">
+        <header class="ja-panel__header"><div><h2>@L("Operational dashboard", "运营数据报表")</h2><p>@L("Detailed indicators for the current operating window.", "当前运行窗口的详细指标。")</p></div><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => submitted = true)">@L("Export report", "导出报表")</TButton></header>
+        <div class="ja-starter-metrics"><TCard TitleValue="@L("Total visits", "总访问量")"><ContentSlot><strong class="ja-starter-metric-value">46,982</strong><TTag Theme="@TTagThemeValue.Success" ContentValue="+12.5%" /></ContentSlot></TCard><TCard TitleValue="@L("New users", "新增用户")"><ContentSlot><strong class="ja-starter-metric-value">1,268</strong><TTag Theme="@TTagThemeValue.Success" ContentValue="+8.2%" /></ContentSlot></TCard><TCard TitleValue="@L("Conversion", "转化率")"><ContentSlot><strong class="ja-starter-metric-value">32.8%</strong><TTag Theme="@TTagThemeValue.Primary" ContentValue="+3.1%" /></ContentSlot></TCard><TCard TitleValue="@L("Pending work", "待处理事项")"><ContentSlot><strong class="ja-starter-metric-value">18</strong><TTag Theme="@TTagThemeValue.Warning" ContentValue="-4" /></ContentSlot></TCard></div>
+        <div class="ja-page__split"><TCard TitleValue="@L("Visit trend", "访问趋势")"><ContentSlot><div class="ja-chart-host"><VueUiVerticalBar Dataset="@StarterTrendItems" Config="@StarterTrendConfig" /></div></ContentSlot></TCard><TCard TitleValue="@L("Channel distribution", "渠道分布")"><ContentSlot><div class="ja-chart-host"><VueUiDonut Dataset="@StarterDistributionItems" Config="@StarterDistributionConfig" /></div></ContentSlot></TCard></div>
+        <TCard TitleValue="@L("Recent projects", "最近项目")"><ContentSlot><TTable T="StarterRow" Data="@rows" Columns="@TableColumns" RowKey="Code" /></ContentSlot></TCard>
+    </section>
+}
+else if (Template == "list-base")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="list-base">
+        <header class="ja-panel__header"><div><h2>@L("Base list", "基础列表")</h2><p>@L("Manage contracts with typed table actions.", "使用强类型表格管理合同。")</p></div><div class="ja-form__commands"><TButton Theme="@TButtonThemeValue.Primary" data-starter-command="create-contract" OnClick="@(_ => OpenBaseContract())"><IconContent><TIcon Name="add" /></IconContent><ContentSlot>@L("Create contract", "新建合同")</ContentSlot></TButton><TButton Variant="@TButtonVariantValue.Outline" Disabled="@(selectedCode.Length == 0)" data-starter-command="export">@L("Export", "导出")</TButton><TButton Variant="@TButtonVariantValue.Text" Disabled="@(selectedCode.Length == 0)" data-starter-command="delete" OnClick="@(_ => RequestDeleteSelected())">@L("Delete selected", "删除所选")</TButton></div></header>
+        <div class="ja-starter-toolbar"><TInput T="string" Value="@query" OnChange="@ChangeListQuery" Placeholder="@L("Search contract name", "搜索合同名称")" Clearable="@true" /><span>@L("Selected", "已选") <strong>@selectedCode</strong></span></div>
+        <TCard Bordered="@true"><ContentSlot><TTable T="StarterRow" Data="@VisibleRows" Columns="@BaseTableColumns" RowKey="Code" RowSelectionType="@TTableRowSelectionTypeValue.Multiple" SelectedRowKeys="@SelectedRowKeys" OnSelectChange="@SelectRows" OnRowClick="@SelectRow" /><div class="ja-starter-row-actions"><TButton Variant="@TButtonVariantValue.Text" OnClick="@OpenBaseDetail">@L("Details", "详情")</TButton><TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Text" OnClick="@RequestDeleteSelected">@L("Delete", "删除")</TButton></div></ContentSlot></TCard>
+        <TPagination Current="@((Number)listPage)" Total="@((Number)VisibleRowTotal)" PageSize="@((Number)PageSize)" ShowPageSize="@false" OnCurrentChange="@ChangePage" />
+    </section>
+}
+else if (Template == "list-card")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="list-card">
+        <header class="ja-panel__header"><div><h2>@L("Card list", "卡片列表")</h2><p>@L("A responsive collection with compact actions.", "带紧凑操作区的响应式卡片集合。")</p></div><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => OpenCardDialog())"><IconContent><TIcon Name="add" /></IconContent><ContentSlot>@L("Create", "新建")</ContentSlot></TButton></header>
+        <div class="ja-starter-toolbar"><TInput T="string" Value="@query" OnChange="@ChangeCardQuery" Placeholder="@L("Search project", "搜索项目")" /><TButton OnClick="@(_ => ApplyCardSearch())">@L("Filter", "筛选")</TButton><TButton Variant="@TButtonVariantValue.Outline" OnClick="@(_ => SortCards())">@L("Sort", "排序")</TButton></div>
+        @if (submitted) { <TAlert Theme="@TAlertThemeValue.Success" MessageValue="@L("New card draft created.", "已创建新的卡片草稿。")" /> }
+        @if (VisibleCardRows.Length == 0)
+        {
+            <TEmpty TitleValue="@L("No cards found", "没有找到卡片")" />
+        }
+        else
+        {
+            <div class="ja-starter-card-grid">
+                @foreach (var row in VisibleCardRows)
+                {
+                    <TCard TitleValue="@row.Name" SubtitleValue="@row.Code" Bordered="@true" HoverShadow="@true" data-starter-card="@row.Code">
+                        <ContentSlot><p>@L("Owner", "负责人"): @row.Owner</p><p>@L("Updated", "更新时间"): @row.UpdatedAt</p><TTag Theme="@StatusTheme(row.Status)" ContentValue="@row.Status" /><div class="ja-form__commands"><TButton Variant="@TButtonVariantValue.Text" OnClick="@OpenBaseDetail">@L("Manage", "管理")</TButton><TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Text" OnClick="@(_ => RequestCardDelete(row))">@L("Delete", "删除")</TButton></div></ContentSlot>
+                    </TCard>
+                }
+            </div>
+        }
+        <TPagination Current="@((Number)cardPage)" Total="@((Number)VisibleCardTotal)" PageSize="@((Number)PageSize)" ShowPageSize="@false" OnCurrentChange="@ChangeCardPage" />
+        <TDialog Visible="@cardDialogVisible" HeaderValue="@L("Create product", "新建产品")" CloseBtnValue="@true" FooterValue="@false" DestroyOnClose="@true" OnClose="@(_ => CloseCardDialog())" OnCloseBtnClick="@(_ => CloseCardDialog())">
+            <BodyContent>
+                <TForm FormData="StarterCardDraft" Data="@cardDraft" OnSubmit="@SaveCard">
+                    <TFormItem LabelValue="@L("Name", "名称")" Name="name"><TInput T="string" @bind-Value="cardDraft.Name" @bind-Value:event="OnChange" Placeholder="@L("Enter name", "请输入名称")" /></TFormItem>
+                    <TFormItem LabelValue="@L("Description", "描述")" Name="description"><TTextarea Value="@cardDraft.Description" OnChange="@(value => cardDraft.Description = value.Value as string ?? string.Empty)" /></TFormItem>
+                    <TFormItem LabelValue="@L("Type", "类型")" Name="type"><TRadioGroup T="string" Value="@cardDraft.Type" OnChange="@(value => cardDraft.Type = value)"><TRadioButton T="string" Value="@("Application")" LabelValue="@L("Application", "应用")" /><TRadioButton T="string" Value="@("Service")" LabelValue="@L("Service", "服务")" /></TRadioGroup></TFormItem>
+                    <div class="ja-form__commands"><TButton Variant="@TButtonVariantValue.Text" OnClick="@(_ => CloseCardDialog())">@L("Cancel", "取消")</TButton><TButton Theme="@TButtonThemeValue.Primary" Type="@TButtonTypeValue.Submit">@L("Save", "保存")</TButton></div>
+                </TForm>
+            </BodyContent>
+        </TDialog>
+        <TDialog Visible="@(cardDeleteCandidate is not null)" HeaderValue="@L("Delete product", "删除产品")" ConfirmBtnValue="@L("Delete", "删除")" CancelBtnValue="@L("Cancel", "取消")" OnConfirm="@(_ => ConfirmCardDelete())" OnCancel="@(_ => CancelCardDelete())" OnClose="@(_ => CancelCardDelete())"><BodyContent>@L("Delete this product?", "确认删除此产品？") <strong>@cardDeleteCandidate?.Name</strong></BodyContent></TDialog>
+    </section>
+}
+else if (Template == "list-filter")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="list-filter">
+        <TCard TitleValue="@L("Filter list", "筛选列表")" Bordered="@true"><ContentSlot><TForm FormData="StarterFilterDraft" Data="@filterDraft" OnSubmit="@ApplyContractFilters" OnReset="@ResetContractFilters" LabelAlign="@TFormLabelAlignValue.Top" data-starter-form="filter"><div class="ja-form__grid"><TFormItem LabelValue="@L("Contract name", "合同名称")" Name="name"><TInput T="string" @bind-Value="filterDraft.Name" @bind-Value:event="OnChange" /></TFormItem><TFormItem LabelValue="@L("Contract number", "合同编号")" Name="code"><TInput T="string" @bind-Value="filterDraft.Code" @bind-Value:event="OnChange" /></TFormItem><TFormItem LabelValue="@L("Contract status", "合同状态")" Name="status"><TRadioGroup T="string" Value="@filterDraft.Status" OnChange="@(value => filterDraft.Status = value)"><TRadioButton T="string" Value="@string.Empty" LabelValue="@L("All", "全部")" /><TRadioButton T="string" Value="@("In progress")" LabelValue="@L("In progress", "进行中")" /><TRadioButton T="string" Value="@("Completed")" LabelValue="@L("Completed", "已完成")" /><TRadioButton T="string" Value="@("Pending")" LabelValue="@L("Pending", "待处理")" /></TRadioGroup></TFormItem><TFormItem LabelValue="@L("Contract type", "合同类型")" Name="type"><TRadioGroup T="string" Value="@filterDraft.Type" OnChange="@(value => filterDraft.Type = value)"><TRadioButton T="string" Value="@string.Empty" LabelValue="@L("All", "全部")" /><TRadioButton T="string" Value="@("main")" LabelValue="@L("Main contract", "主合同")" /><TRadioButton T="string" Value="@("supplement")" LabelValue="@L("Supplementary contract", "补充合同")" /></TRadioGroup></TFormItem></div><div class="ja-form__commands"><TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text">@L("Reset", "重置")</TButton><TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary">@L("Query", "查询")</TButton></div></TForm></ContentSlot></TCard>
+        <TCard TitleValue="@L("Results", "查询结果")"><ContentSlot><TTable T="StarterRow" Data="@FilteredContractRows" Columns="@TableColumns" RowKey="Code" OnRowClick="@SelectRow" /><div class="ja-starter-row-actions"><TButton Variant="@TButtonVariantValue.Text" OnClick="@OpenBaseDetail">@L("Details", "详情")</TButton><TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Text" OnClick="@RequestDeleteSelected">@L("Delete", "删除")</TButton></div></ContentSlot></TCard>
+    </section>
+}
+else if (Template == "list-tree")
+{
+    <section class="ja-page ja-starter-page ja-starter-tree-page" data-starter-page="list-tree">
+        <aside class="ja-panel"><TInput T="string" Value="@treeFilter" OnChange="@(value => treeFilter = value)" Placeholder="@L("Filter tree", "筛选树节点")" /><TTree T="string" Data="@FilteredTrees" ExpandAll="@true" Activable="@true" OnClick="@SelectTree" /></aside>
+        <section class="ja-panel"><header class="ja-panel__header"><div><h2>@selectedTree</h2><p>@L("Contracts in the selected catalog.", "当前目录下的合同。")</p></div><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => OpenBaseContract())">@L("Create", "新建")</TButton></header><TTable T="StarterRow" Data="@TreeRows" Columns="@TableColumns" RowKey="Code" OnRowClick="@SelectRow" /><div class="ja-starter-row-actions"><TButton Variant="@TButtonVariantValue.Text" OnClick="@OpenBaseDetail">@L("Details", "详情")</TButton><TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Text" OnClick="@RequestDeleteSelected">@L("Delete", "删除")</TButton></div></section>
+    </section>
+}
+else if (Template == "form-base")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="form-base">
+        <TForm FormData="StarterContractDraft" Data="@contractDraft" OnSubmit="@SubmitBaseForm" OnReset="@ResetBaseForm" LabelAlign="@TFormLabelAlignValue.Top" data-starter-form="base">
+            <TCard TitleValue="@L("Basic information", "基本信息")" Bordered="@true"><ContentSlot><div class="ja-form__grid">
+                <TFormItem LabelValue="@L("Contract name", "合同名称")" Name="name"><TInput T="string" @bind-Value="contractDraft.Name" @bind-Value:event="OnChange" Placeholder="@L("Enter contract name", "请输入合同名称")" /></TFormItem>
+                <TFormItem LabelValue="@L("Contract type", "合同类型")" Name="type"><TSelect T="TSelectOption" Options="@ContractTypeOptions" Value="@SelectValue(contractDraft.Type)" OnChange="@(value => contractDraft.Type = value.Value is string text ? text : contractDraft.Type)" /></TFormItem>
+                <TFormItem LabelValue="@L("Payment type", "收付类型")" Name="payment"><TSelect T="TSelectOption" Options="@PaymentTypeOptions" Value="@SelectValue(contractDraft.Payment)" OnChange="@(value => contractDraft.Payment = value.Value is string text ? text : contractDraft.Payment)" /></TFormItem>
+                <TFormItem LabelValue="@L("Amount", "合同金额")" Name="amount"><TInput T="string" @bind-Value="contractDraft.Amount" @bind-Value:event="OnChange" Placeholder="5000000" /></TFormItem>
+                <TFormItem LabelValue="@L("Company", "公司")" Name="company"><TSelect T="TSelectOption" Options="@CompanyOptions" Value="@SelectValue(contractDraft.Company)" OnChange="@(value => contractDraft.Company = value.Value is string text ? text : contractDraft.Company)" /></TFormItem>
+                <TFormItem LabelValue="@L("Employee", "员工")" Name="employee"><TSelect T="TSelectOption" Options="@EmployeeOptions" Value="@SelectValue(contractDraft.Employee)" OnChange="@(value => contractDraft.Employee = value.Value is string text ? text : contractDraft.Employee)" /></TFormItem>
+                <TFormItem LabelValue="@L("Signing date", "签订日期")" Name="signingDate"><TDatePicker Value="@DateValue(contractDraft.SigningDate)" ValueType="@TDatePickerValueType.YYYYMMDD" Placeholder="2026-08-07" OnChange="@(value => contractDraft.SigningDate = value.Value is string text ? text : contractDraft.SigningDate)" /></TFormItem>
+                <TFormItem LabelValue="@L("Effective date", "生效日期")" Name="effectiveDate"><TDatePicker Value="@DateValue(contractDraft.EffectiveDate)" ValueType="@TDatePickerValueType.YYYYMMDD" Placeholder="2026-08-08" OnChange="@(value => contractDraft.EffectiveDate = value.Value is string text ? text : contractDraft.EffectiveDate)" /></TFormItem>
+                <TFormItem LabelValue="@L("End date", "结束日期")" Name="endDate"><TDatePicker Value="@DateValue(contractDraft.EndDate)" ValueType="@TDatePickerValueType.YYYYMMDD" Placeholder="2027-08-07" OnChange="@(value => contractDraft.EndDate = value.Value is string text ? text : contractDraft.EndDate)" /></TFormItem>
+            </div></ContentSlot></TCard>
+            <TCard TitleValue="@L("Other information", "其他信息")" Bordered="@true"><ContentSlot><TFormItem LabelValue="@L("Remark", "备注")" Name="remark"><TTextarea Value="@contractDraft.Remark" OnChange="@(value => contractDraft.Remark = value.Value as string ?? string.Empty)" Placeholder="@L("Add a remark", "添加备注")" /></TFormItem><TFormItem LabelValue="@L("Attachments", "附件")" Name="attachments"><TUpload T="TUploadFile" Files="@attachments" Accept=".pdf,.doc,.docx" AutoUpload="@false" Multiple="@true" Theme="@TUploadThemeValue.File" OnChange="@UpdateAttachments" /></TFormItem></ContentSlot></TCard>
+            <div class="ja-form__commands"><TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text">@L("Cancel", "取消")</TButton><TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary">@L("Confirm", "确认")</TButton></div>
+        </TForm>
+        @if (submitted) { <TAlert Theme="@TAlertThemeValue.Success" MessageValue="@L("Form submitted successfully.", "表单提交成功。")" data-starter-message="form-submit" /> }
+    </section>
+}
+else if (Template == "form-step")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="form-step">
+        <TSteps Current="@StepCurrent(currentStep)" Options="@StepOptions" OnChange="@ChangeStep" data-starter-steps="" />
+        @if (currentStep < 4)
+        {
+            <TForm FormData="StarterStepDraft" Data="@stepDraft" OnSubmit="@SubmitStep" OnReset="@ResetStep" LabelAlign="@TFormLabelAlignValue.Top" data-starter-form="step">
+                @if (currentStep == 1)
+                {
+                    <TCard TitleValue="@L("Choose a contract", "选择合同")"><ContentSlot><TFormItem LabelValue="@L("Contract name", "合同名称")" Name="contractName"><TInput T="string" @bind-Value="stepDraft.ContractName" @bind-Value:event="OnChange" /></TFormItem><TFormItem LabelValue="@L("Invoice type", "发票类型")" Name="invoiceType"><TSelect T="TSelectOption" Options="@InvoiceTypeOptions" Value="@SelectValue(stepDraft.InvoiceType)" OnChange="@(value => stepDraft.InvoiceType = value.Value is string text ? text : stepDraft.InvoiceType)" /></TFormItem><p class="ja-form__summary"><span>@L("Amount", "金额")</span><strong>@(string.IsNullOrWhiteSpace(stepDraft.ContractName) ? "--" : "¥ 565,421")</strong></p></ContentSlot></TCard>
+                }
+                else if (currentStep == 2)
+                {
+                    <TCard TitleValue="@L("Invoice details", "发票信息")"><ContentSlot><TFormItem LabelValue="@L("Invoice title", "发票抬头")" Name="invoiceTitle"><TInput T="string" @bind-Value="stepDraft.InvoiceTitle" @bind-Value:event="OnChange" /></TFormItem><TFormItem LabelValue="@L("Tax number", "税号")" Name="taxNumber"><TInput T="string" @bind-Value="stepDraft.TaxNumber" @bind-Value:event="OnChange" /></TFormItem></ContentSlot></TCard>
+                }
+                else
+                {
+                    <TCard TitleValue="@L("Delivery details", "收货信息")"><ContentSlot><TFormItem LabelValue="@L("Consignee", "收货人")" Name="consignee"><TInput T="string" @bind-Value="stepDraft.Consignee" @bind-Value:event="OnChange" /></TFormItem><TFormItem LabelValue="@L("Mobile number", "手机号码")" Name="mobile"><TInput T="string" @bind-Value="stepDraft.MobileNumber" @bind-Value:event="OnChange" /></TFormItem><TFormItem LabelValue="@L("Address", "详细地址")" Name="address"><TTextarea Value="@stepDraft.Address" OnChange="@(value => stepDraft.Address = value.Value as string ?? string.Empty)" /></TFormItem></ContentSlot></TCard>
+                }
+                <div class="ja-form__commands"><TButton Type="@TButtonTypeValue.Button" Variant="@TButtonVariantValue.Text" OnClick="@(_ => PreviousStep())" Disabled="@(currentStep == 1)">@L("Previous", "上一步")</TButton><TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary">@(currentStep == 3 ? L("Submit", "提交") : L("Next", "下一步"))</TButton></div>
+                @if (stepError.Length > 0) { <TAlert Theme="@TAlertThemeValue.Error" MessageValue="@stepError" role="alert" data-starter-message="step-error" /> }
+            </TForm>
+        }
+        else
+        {
+            <TEmpty TitleValue="@L("Application complete", "申请完成")"><DescriptionContent>@L("Your contract workflow has been submitted for processing.", "合同流程已提交，正在处理中。")</DescriptionContent><ActionContent><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => RestartStepForm())">@L("Apply again", "再次申请")</TButton><TButton Variant="@TButtonVariantValue.Text" OnClick="@OpenBaseDetail">@L("View details", "查看详情")</TButton></ActionContent></TEmpty>
+        }
+    </section>
+}
+else if (Template == "detail-base")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="detail-base">
+        <TCard TitleValue="@L("Basic information", "基本信息")" Bordered="@true"><ContentSlot><TDescriptions Bordered="@true" Column="@((Number)3)"><TDescriptionsItem LabelValue="@L("Contract name", "合同名称")" ContentValue="Jazor platform delivery" /><TDescriptionsItem LabelValue="@L("Status", "合同状态")"><ContentSlot><TTag Theme="@TTagThemeValue.Primary" ContentValue="@L("In progress", "进行中")" /></ContentSlot></TDescriptionsItem><TDescriptionsItem LabelValue="@L("Contract number", "合同编号")" ContentValue="BH00010" /><TDescriptionsItem LabelValue="@L("Contract type", "合同类型")" ContentValue="@L("Main contract", "主合同")" /><TDescriptionsItem LabelValue="@L("Payment type", "收付类型")" ContentValue="@L("Pay", "付款")" /><TDescriptionsItem LabelValue="@L("Amount", "合同金额")" ContentValue="¥ 5,000,000" /><TDescriptionsItem LabelValue="@L("Company", "公司")" ContentValue="Jazor Technology" /><TDescriptionsItem LabelValue="@L("Employee", "员工")" ContentValue="Zhang San" /><TDescriptionsItem LabelValue="@L("Attachment", "附件")" ContentValue="contract.pdf" /></TDescriptions></ContentSlot></TCard>
+        <TCard TitleValue="@L("Change log", "变更记录")"><ContentSlot><TTimeline><TTimelineItem LabelValue="2026-08-01" ContentValue="@L("Created", "创建")" DotColor="#0052d9" /><TTimelineItem LabelValue="2026-08-05" ContentValue="@L("Reviewed", "审核")" DotColor="#00a870" /><TTimelineItem LabelValue="2026-08-07" ContentValue="@L("In progress", "执行中")" DotColor="#ed7b2f" /></TTimeline></ContentSlot></TCard>
+    </section>
+}
+else if (Template == "detail-advanced")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="detail-advanced">
+         <TAlert Theme="@TAlertThemeValue.Info" TitleValue="BH00010" MessageValue="@L("Main contract for the Jazor platform delivery.", "Jazor 平台交付的主合同。")"><OperationContent><TTag Theme="@AdvancedStatusTheme" ContentValue="@AdvancedStatusText" /><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => OpenAdvancedDialog())">@L("Approve", "审核")</TButton></OperationContent></TAlert>
+        <TCard TitleValue="@L("Basic information", "基本信息")"><ContentSlot><TDescriptions Column="@((Number)3)"><TDescriptionsItem LabelValue="@L("Contract name", "合同名称")" ContentValue="Jazor platform delivery" /><TDescriptionsItem LabelValue="@L("Status", "状态")" ContentValue="@L("In progress", "进行中")" /><TDescriptionsItem LabelValue="@L("Amount", "金额")" ContentValue="¥ 5,000,000" /><TDescriptionsItem LabelValue="@L("Company", "公司")" ContentValue="Jazor Technology" /><TDescriptionsItem LabelValue="@L("Signing date", "签订日期")" ContentValue="2026-08-07" /></TDescriptions><div class="ja-form__commands"><TButton Variant="@TButtonVariantValue.Outline" OnClick="@(_ => OpenAdvancedDialog())">@L("Edit", "编辑")</TButton></div></ContentSlot></TCard>
+        <TCard TitleValue="@L("Invoice progress", "发票进度")"><ContentSlot><TSteps Current="@StepCurrent(3)" Options="@StepOptions" /></ContentSlot></TCard>
+        <TCard TitleValue="@L("Product catalog", "产品目录")"><ContentSlot><TTabs Value="@Tab(selectedProductTab)" OnChange="@SelectProductTab"><TTabPanel Value="@Tab("quarter")" LabelValue="@L("Quarter", "季度")"><PanelContent><TTable T="StarterRow" Data="@rows" Columns="@TableColumns" RowKey="Code" /></PanelContent></TTabPanel><TTabPanel Value="@Tab("month")" LabelValue="@L("Month", "月份")"><PanelContent><TTable T="StarterRow" Data="@rows.Take(3).ToArray()" Columns="@TableColumns" RowKey="Code" /></PanelContent></TTabPanel></TTabs></ContentSlot></TCard>
+        <TDialog Visible="@advancedDialogVisible" HeaderValue="@L("Basic information", "基本信息")" CloseBtnValue="@true" FooterValue="@false" OnClose="@(_ => CloseAdvancedDialog())" OnCloseBtnClick="@(_ => CloseAdvancedDialog())"><BodyContent><TDescriptions Bordered="@true"><TDescriptionsItem LabelValue="@L("Contract number", "合同编号")" ContentValue="BH00010" /><TDescriptionsItem LabelValue="@L("Status", "状态")"><ContentSlot><TTag Theme="@AdvancedStatusTheme" ContentValue="@AdvancedStatusText" /></ContentSlot></TDescriptionsItem><TDescriptionsItem LabelValue="@L("Amount", "金额")" ContentValue="¥ 5,000,000" /></TDescriptions><div class="ja-form__commands"><TButton Variant="@TButtonVariantValue.Text" OnClick="@(_ => CloseAdvancedDialog())">@L("Cancel", "取消")</TButton><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => ApproveAdvanced())">@L("Approve", "审核通过")</TButton></div></BodyContent></TDialog>
+    </section>
+}
+else if (Template == "detail-deploy")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="detail-deploy">
+         <div class="ja-page__split"><TCard TitleValue="@L("Deployment trend", "部署趋势")"><ContentSlot><div class="ja-chart-host"><VueUiVerticalBar Dataset="@DeploymentTrendItems" Config="@StarterTrendConfig" /></div></ContentSlot></TCard><TCard TitleValue="@L("Warning trend", "告警趋势")"><ContentSlot><div class="ja-chart-host"><VueUiVerticalBar Dataset="@WarningTrendItems" Config="@StarterTrendConfig" /></div></ContentSlot></TCard></div>
+        <TCard TitleValue="@L("Project list", "项目列表")"><ContentSlot><div class="ja-form__commands"><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => OpenDeployDialog())">@L("Add project", "添加项目")</TButton></div><TTable T="StarterRow" Data="@rows.Take(4).ToArray()" Columns="@TableColumns" RowKey="Code" /></ContentSlot></TCard>
+        <TDialog Visible="@deployDialogVisible" HeaderValue="@L("Project details", "项目详情")" CloseBtnValue="@true" FooterValue="@false" OnClose="@(_ => CloseDeployDialog())" OnCloseBtnClick="@(_ => CloseDeployDialog())"><BodyContent><TDescriptions Bordered="@true"><TDescriptionsItem LabelValue="@L("Project", "项目")" ContentValue="Jazor identity center" /><TDescriptionsItem LabelValue="@L("Administrator", "管理员")" ContentValue="Zhang San" /></TDescriptions></BodyContent></TDialog>
+    </section>
+}
+else if (Template == "detail-secondary")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="detail-secondary">
+        <TCard TitleValue="@L("Notifications", "消息通知")"><ContentSlot><TTabs Value="@Tab(selectedNoticeTab)" OnChange="@SelectNoticeTab"><TTabPanel Value="@Tab("all")" LabelValue="@L("All", "全部")" /><TTabPanel Value="@Tab("unread")" LabelValue="@L("Unread", "未读")" /><TTabPanel Value="@Tab("read")" LabelValue="@L("Read", "已读")" /></TTabs><div class="ja-starter-notices">@foreach (var notice in VisibleNotices) { <article class="ja-starter-notice"><TTag Theme="@(notice.Kind == "success" ? TTagThemeValue.Success : TTagThemeValue.Warning)" ContentValue="@notice.Kind" /><div><strong>@notice.Title</strong><p>@notice.Content</p><small>@notice.Date</small></div><TButton Variant="@TButtonVariantValue.Text" OnClick="@(_ => ToggleNotice(notice))">@(notice.Unread ? L("Mark read", "标为已读") : L("Mark unread", "标为未读"))</TButton><TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Text" OnClick="@(_ => RemoveNotice(notice))">@L("Delete", "删除")</TButton></article> }</div>@if (VisibleNotices.Length == 0) { <TEmpty TitleValue="@L("No notifications", "暂无消息")" /> }</ContentSlot></TCard>
+    </section>
+}
+else if (IsResult)
+{
+    var result = GetResult();
+    <section class="ja-page ja-starter-page ja-starter-result" data-starter-page="@Template">
+        @if (result.Asset is not null) { <img class="ja-starter-result-art" src="@result.Asset" alt="" aria-hidden="true" /> } else { <TIcon Name="@result.Icon" Size="64px" /> }
+        <TTag Theme="@result.Theme" ContentValue="@result.Title" Size="@TSizeEnum.Large" />
+        <p>@result.Description</p>
+        @if (Template == "result-browser") { <TCard TitleValue="@L("Recommended browsers", "推荐浏览器")"><ContentSlot><TTag Theme="@TTagThemeValue.Success" ContentValue="Chrome" /><TTag Theme="@TTagThemeValue.Primary" ContentValue="QQ Browser" /></ContentSlot></TCard> }
+        <div class="ja-form__commands">@if (result.SecondaryLabel is not null) { <TButton Variant="@TButtonVariantValue.Text" OnClick="@(_ => Navigate(result.SecondaryTarget))">@result.SecondaryLabel</TButton> }<TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => Navigate(result.PrimaryTarget))">@result.PrimaryLabel</TButton></div>
+    </section>
+}
+else if (Template == "user")
+{
+    <section class="ja-page ja-starter-page" data-starter-page="user">
+        <header class="ja-panel__header"><div><h2>@L("Good morning", "早上好")，@Session?.DisplayName</h2><p>@L("Start a productive day from your personal workspace.", "从个人工作台开始高效的一天。")</p></div><TTag Theme="@TTagThemeValue.Primary" ContentValue="@(Session?.DisplayName ?? "J")" Size="@TSizeEnum.Large" /></header>
+        <div class="ja-page__split"><TCard TitleValue="@L("Personal information", "个人信息")"><ContentSlot><TDescriptions Bordered="@true"><TDescriptionsItem LabelValue="@L("Account", "账号")" ContentValue="@Session?.Email" /><TDescriptionsItem LabelValue="@L("Role", "角色")" ContentValue="@string.Join(", ", Session?.Roles ?? [])" /><TDescriptionsItem LabelValue="@L("Department", "部门")" ContentValue="Platform" /><TDescriptionsItem LabelValue="@L("Position", "职位")" ContentValue="@L("Platform administrator", "平台管理员")" /></TDescriptions></ContentSlot></TCard><TCard TitleValue="@L("Team members", "团队成员")"><ContentSlot><ul class="ja-starter-team"><li>JazorAdmin <TTag Theme="@TTagThemeValue.Primary" ContentValue="Platform" /></li><li>Administrator <TTag Theme="@TTagThemeValue.Success" ContentValue="Identity" /></li><li>Quartz <TTag Theme="@TTagThemeValue.Warning" ContentValue="Operations" /></li></ul></ContentSlot></TCard></div>
+         <TCard TitleValue="@L("Workspace activity", "工作区动态")"><ContentSlot><TTabs Value="@Tab(selectedUserTab)" OnChange="@SelectUserTab"><TTabPanel Value="@Tab("content")" LabelValue="@L("Content", "内容")" /><TTabPanel Value="@Tab("visit")" LabelValue="@L("Visit data", "访问数据")" /><TTabPanel Value="@Tab("activity")" LabelValue="@L("Activity", "动态")" /></TTabs>@if (selectedUserTab == "visit") { <div class="ja-chart-host"><VueUiSparkline Dataset="@UserVisitItems" Config="@UserVisitConfig" /></div> } else if (selectedUserTab == "activity") { <TTimeline><TTimelineItem LabelValue="2026-08-07" ContentValue="@L("Updated authorization policy", "更新了授权策略")" /><TTimelineItem LabelValue="2026-08-06" ContentValue="@L("Created a scheduled task", "创建了计划任务")" /></TTimeline> } else { <TEmpty TitleValue="@L("Your latest workspace content appears here.", "最近的工作区内容会显示在这里。")" /> }</ContentSlot></TCard>
+    </section>
+}
+else if (Template == "login")
+{
+    <section class="ja-page ja-starter-page ja-starter-login" data-starter-page="login">
+        <TCard TitleValue="@L("Welcome back", "欢迎回来")" SubtitleValue="@L("TDesign Starter login", "TDesign Starter 登录页")" Bordered="@true">
+            <ContentSlot><TButton Variant="@TButtonVariantValue.Text" OnClick="@(_ => ToggleLoginMode())">@(isRegistering ? L("Sign in", "去登录") : L("Create account", "创建账号"))</TButton><TForm FormData="StarterLoginDraft" Data="@loginDraft" OnSubmit="@(isRegistering ? SubmitStarterRegistration : SubmitStarterLogin)" LabelAlign="@TFormLabelAlignValue.Top" data-starter-form="login"><TFormItem LabelValue="@L("Account", "账号")" Name="email"><TInput T="string" @bind-Value="loginDraft.Email" @bind-Value:event="OnChange" Placeholder="admin@example.com" /></TFormItem><TFormItem LabelValue="@L("Password", "密码")" Name="password"><TInput T="string" Type="@TInputTypeValue.Password" @bind-Value="loginDraft.Password" @bind-Value:event="OnChange" /></TFormItem>@if (isRegistering) { <TFormItem LabelValue="@L("Confirm password", "确认密码")" Name="confirmPassword"><TInput T="string" Type="@TInputTypeValue.Password" @bind-Value="loginDraft.ConfirmPassword" @bind-Value:event="OnChange" /></TFormItem> }<div class="ja-form__commands"><TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary">@(isRegistering ? L("Create account", "创建账号") : L("Sign in", "登录"))</TButton></div></TForm>@if (loginDraft.Error.Length > 0) { <TAlert Theme="@TAlertThemeValue.Error" MessageValue="@loginDraft.Error" role="alert" /> }@if (submitted) { <TAlert Theme="@TAlertThemeValue.Success" MessageValue="@(isRegistering ? L("Account created. You can now sign in.", "账号已创建，请登录。") : L("Starter login form submitted.", "Starter 登录表单已提交。") )" /> }</ContentSlot>
+        </TCard>
+    </section>
+}
+<TDialog Visible="@(deleteCandidates.Length > 0)" HeaderValue="@L("Delete contract", "删除合同")" ConfirmBtnValue="@L("Delete", "删除")" CancelBtnValue="@L("Cancel", "取消")" OnConfirm="@(_ => ConfirmDelete())" OnCancel="@(_ => CancelDelete())" OnClose="@(_ => CancelDelete())" data-starter-dialog="delete">
+    <BodyContent>@L("This action cannot be undone. Delete", "此操作无法撤销，确认删除") <strong>@string.Join(", ", deleteCandidates.Select(item => item.Name))</strong>?</BodyContent>
+</TDialog>

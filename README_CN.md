@@ -32,11 +32,12 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### Jazor 0.28.1 - 2026-09-03
+### Jazor 0.29.0 - 2026-09-03
 
-- JazorAdmin 账户页的创建账户和重置密码流程现在使用 typed `TForm<T>` draft、`TFormRules<T>`、字段 `@bind-Value` 以及 typed submit/reset 回调。
-- Release browser smoke 已覆盖账户表单重置、提交后列表更新和密码重置清空，示例 authoring 行为可以稳定复现。
-- 支持边界仍明确：constructor injection、Microsoft/Blazor 内置 UI、`IJSRuntime` 和 server-only service 不属于此适配器。
+- JazorAdmin 现在完整提供 Dashboard、List、Form、Detail、Result、个人中心和 Login 七组 TDesign Starter 页面，共 22 个路由，全部使用 typed Jazor TDesign 组件实现。
+- Starter 工作流覆盖多选、搜索、分页、删除确认、分步表单校验、通知筛选、审核状态变更、上传、图表和真实结果页资源。
+- Release browser smoke 会逐一访问全部 Starter 路由，并验证关键表格、表单、对话框、图表和状态交互。
+- 结构化 record 的自动属性初始化会保留在 RazorVue 状态对象中，避免默认字段缺失后在浏览器中读取 `undefined`。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 

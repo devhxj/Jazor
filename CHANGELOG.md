@@ -4,6 +4,20 @@
 
 ## 2026-09-03
 
+### Jazor 0.29.0
+
+> JazorAdmin 现在完整提供 TDesign Starter 的 22 个功能页面，并通过真实浏览器 smoke 验收。本版本在 `0.x` 阶段按 `MINOR` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。
+
+#### 新增与改进
+
+- JazorAdmin 新增 Dashboard、List、Form、Detail、Result、User 和 Login 七组 Starter 页面，共 22 个可访问路由；页面直接使用 typed Jazor TDesign 组件，不再落到空白占位页。
+- Starter 页面补齐多选、搜索、分页、删除确认、分步表单校验、通知筛选、审核状态变更、上传、图表和真实结果页资源等交互。
+- Release browser smoke 现在逐一访问 22 个 Starter 路由，并验证关键表格、表单、对话框、图表和状态交互。
+
+#### 修复
+
+- 结构化 record 的自动属性初始化现在会保留在 RazorVue 状态对象中，避免默认字段缺失导致浏览器运行时读取 `undefined`。
+
 ### Jazor 0.28.1
 
 > JazorAdmin 账户页的 typed form authoring 与浏览器验收补强。本版本仅包含示例体验、文档和验证改进，按 `PATCH` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。

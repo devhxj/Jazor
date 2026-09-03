@@ -77,6 +77,7 @@ public static class Routes
             Title = Localization.Get(language, TextKey.Dashboard),
             Subtitle = Localization.Get(language, TextKey.DashboardSubtitle)
         },
+        .. StarterCatalog.CreateRoutes(language),
         new()
         {
             Key = IamZoneKey,

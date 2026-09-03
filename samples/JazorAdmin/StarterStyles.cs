@@ -5,10 +5,9 @@ using static ECMAScript.Style.css;
 namespace JazorAdmin;
 
 /// <summary>
-/// Shell-chrome, appearance-drawer and dashboard rules inherited from the retired TDesign
-/// Starter reproduction. Page-template rules were removed with the starter pages; these
-/// remain until the M2 design-system rewrite. All selectors stay under the `ja-` prefix.
-/// 壳层、外观抽屉与仪表盘沿用样式；复刻页模板规则已随页面退役，M2 设计系统重写时收敛。
+/// Shell chrome, appearance drawer and Starter page layout rules. TDesign owns control
+/// visuals; this module only supplies the page composition that the templates need.
+/// 壳层、外观抽屉与 Starter 页面布局规则；控件视觉由 TDesign 负责，本模块只补页面编排。
 /// </summary>
 [ECMAScriptModule("./components/starter-styles")]
 internal static class StarterStyles
@@ -441,6 +440,222 @@ internal static class StarterStyles
                 font_size = px(13),
                 font_weight = 600
             });
+
+        // Starter templates share a compact, responsive work surface. Keep these rules here
+        // so the page component stays focused on typed TDesign composition and state.
+        // Starter 模板共享紧凑且响应式的工作台；布局规则集中在样式模块，页面只负责组件组合。
+        global(".ja-starter-page",
+            new CssRule
+            {
+                display = grid,
+                gap = px(16),
+                min_width = px(0)
+            });
+
+        global(".ja-starter-page > .t-card",
+            new CssRule { min_width = px(0) });
+
+        global(".ja-starter-metrics",
+            new CssRule
+            {
+                display = grid,
+                grid_template_columns = tracks(repeat(4, min_max(px(0), fr(1)))),
+                gap = px(16)
+            });
+
+        global(".ja-starter-metric-value",
+            new CssRule
+            {
+                display = block,
+                margin_top = px(12),
+                color = raw("var(--td-text-color-primary)"),
+                font_size = px(28),
+                font_weight = 600,
+                line_height = raw("1.1")
+            });
+
+        global(".ja-starter-bars",
+            new CssRule
+            {
+                display = grid,
+                align_content = end,
+                gap = px(12),
+                min_height = px(180),
+                padding = padding(px(12), px(0))
+            });
+
+        global(".ja-starter-bars > .t-progress",
+            new CssRule { width = percent(100) });
+
+        global(".ja-starter-distribution",
+            new CssRule
+            {
+                display = flex,
+                flex_wrap = wrap,
+                align_items = center,
+                gap = px(8),
+                min_height = px(180),
+                align_content = center
+            });
+
+        global(".ja-starter-donut",
+            new CssRule
+            {
+                display = grid,
+                grid_template_columns = tracks(min_max(px(120), px(160)), min_max(px(0), fr(1))),
+                align_items = center,
+                gap = px(14),
+                min_height = px(180)
+            });
+
+        global(".ja-starter-donut > strong",
+            new CssRule
+            {
+                display = grid,
+                width = px(126),
+                height = px(126),
+                place_items = center,
+                color = raw("var(--td-brand-color)"),
+                font_size = px(28),
+                border = px(14) | solid | raw("var(--td-brand-color-light)"),
+                border_radius = percent(50)
+            });
+
+        global(".ja-starter-donut > strong small",
+            new CssRule { font_size = px(13), font_weight = 400 });
+
+        global(".ja-starter-toolbar",
+            new CssRule
+            {
+                display = flex,
+                flex_wrap = wrap,
+                align_items = center,
+                justify_content = space_between,
+                gap = px(8)
+            });
+
+        global(".ja-starter-toolbar > .t-input",
+            new CssRule { width = px(280), max_width = percent(100) });
+
+        global(".ja-starter-row-actions",
+            new CssRule
+            {
+                display = flex,
+                justify_content = flex_end,
+                gap = px(8),
+                margin_top = px(10)
+            });
+
+        global(".ja-starter-card-grid",
+            new CssRule
+            {
+                display = grid,
+                grid_template_columns = tracks(repeat(3, min_max(px(0), fr(1)))),
+                gap = px(16)
+            });
+
+        global(".ja-starter-card-grid .t-card",
+            new CssRule { min_width = px(0), height = percent(100) });
+
+        global(".ja-starter-card-grid .t-card__body",
+            new CssRule { display = grid, align_content = start, gap = px(8) });
+
+        global(".ja-starter-card-grid p",
+            new CssRule { margin = px(0), color = raw("var(--td-text-color-secondary)"), font_size = px(13) });
+
+        global(".ja-starter-tree-page",
+            new CssRule
+            {
+                grid_template_columns = tracks(min_max(px(220), px(260)), min_max(px(0), fr(1))),
+                align_items = start
+            });
+
+        global(".ja-starter-tree-page .ja-panel",
+            new CssRule { min_width = px(0) });
+
+        global(".ja-starter-notices",
+            new CssRule { display = grid, gap = px(0) });
+
+        global(".ja-starter-notice",
+            new CssRule
+            {
+                display = grid,
+                grid_template_columns = tracks(px(78), min_max(px(0), fr(1)), auto, auto),
+                align_items = center,
+                gap = px(10),
+                padding = padding(px(14), px(0)),
+                border_bottom = px(1) | solid | raw("var(--td-component-stroke)")
+            });
+
+        global(".ja-starter-notice p",
+            new CssRule { margin = margin(px(4), px(0), px(0)), color = raw("var(--td-text-color-secondary)"), font_size = px(12) });
+
+        global(".ja-starter-notice small",
+            new CssRule { color = raw("var(--td-text-color-placeholder)"), font_size = px(12) });
+
+        global(".ja-starter-result",
+            new CssRule
+            {
+                display = flex,
+                flex_direction = column,
+                align_items = center,
+                justify_content = center,
+                min_height = raw("min(620px, calc(100vh - 240px))"),
+                padding = px(32),
+                text_align = center
+            });
+
+        global(".ja-starter-result-art",
+            new CssRule { width = px(200), max_width = percent(100), height = px(140), object_fit = contain });
+
+        global(".ja-starter-result > p",
+            new CssRule { max_width = px(520), margin = margin(px(12), px(0), px(20)), color = raw("var(--td-text-color-secondary)"), line_height = raw("1.6") });
+
+        global(".ja-starter-login",
+            new CssRule
+            {
+                display = grid,
+                place_items = center,
+                min_height = raw("min(680px, calc(100vh - 240px))")
+            });
+
+        global(".ja-starter-login > .t-card",
+            new CssRule { width = min(percent(100), px(440)) });
+
+        global(".ja-starter-login .t-form",
+            new CssRule { margin_top = px(16) });
+
+        global(".ja-starter-team",
+            new CssRule
+            {
+                display = grid,
+                gap = px(12),
+                margin = px(0),
+                padding = px(0),
+                list_style = none
+            });
+
+        global(".ja-starter-page .t-descriptions, .ja-starter-page .t-table",
+            new CssRule { min_width = px(0) });
+
+        Media(".ja-starter-metrics", "(max-width: 980px)",
+            new CssRule { grid_template_columns = tracks(repeat(2, min_max(px(0), fr(1)))) });
+        Media(".ja-starter-card-grid", "(max-width: 900px)",
+            new CssRule { grid_template_columns = tracks(repeat(2, min_max(px(0), fr(1)))) });
+        Media(".ja-starter-tree-page", "(max-width: 760px)",
+            new CssRule { grid_template_columns = tracks(min_max(px(0), fr(1))) });
+        Media(".ja-starter-notice", "(max-width: 620px)",
+            new CssRule { grid_template_columns = tracks(min_max(px(0), fr(1)), auto), align_items = start });
+        Media(".ja-starter-notice > .t-tag", "(max-width: 620px)",
+            new CssRule { grid_column = raw("1 / -1") });
+        Media(".ja-starter-notice > .t-button", "(max-width: 620px)",
+            new CssRule { grid_row = raw("2") });
+        Media(".ja-starter-donut", "(max-width: 520px)",
+            new CssRule { grid_template_columns = tracks(min_max(px(0), fr(1))), justify_items = center });
+        Media(".ja-starter-toolbar > .t-input", "(max-width: 520px)",
+            new CssRule { width = percent(100) });
+        Media(".ja-starter-metrics, .ja-starter-card-grid", "(max-width: 520px)",
+            new CssRule { grid_template_columns = tracks(min_max(px(0), fr(1))) });
 
         // Dashboard (M2): KPI cards, chart hosts and service tiles. Charts need a definite
         // height because Responsive only resolves width upstream.

@@ -32,11 +32,12 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.28.1 - 2026-09-03
+### Jazor 0.29.0 - 2026-09-03
 
-- JazorAdmin's account page now uses typed `TForm<T>` drafts, `TFormRules<T>`, `@bind-Value`, and typed submit/reset callbacks for account creation and password reset.
-- Release browser smoke covers account form reset, post-submit list updates, and clearing the password-reset form so the sample's authoring behavior stays reproducible.
-- The supported boundary remains explicit: constructor injection, Microsoft/Blazor built-in UI components, `IJSRuntime`, and server-only services are still outside this adapter.
+- JazorAdmin now includes all 22 TDesign Starter feature routes across dashboard, list, form, detail, result, account, and login page groups, implemented with typed Jazor TDesign components.
+- Starter workflows cover multi-select, search, pagination, delete confirmation, step validation, notification filtering, approval status changes, uploads, charts, and real result-page assets.
+- Release browser smoke visits every Starter route and verifies the key table, form, dialog, chart, and state interactions.
+- Structural record auto-property initializers are preserved in RazorVue state objects, preventing missing defaults from becoming browser `undefined` reads.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 
