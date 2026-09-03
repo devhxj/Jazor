@@ -1,11 +1,40 @@
 # Jazor 文档中心
 
-本目录是 Jazor 的中文技术文档入口。文档按照读者的阅读目的组织：先了解产品与架构，再选择使用或维护路径；当前计划与历史记录不会混入产品契约。
+> **Jazor 是一套面向 .NET 的 C# 到 ECMAScript 工具链，为 C# 与浏览器模块之间建立可验证、可交付的语义通道。**
+>
+> 它以 Roslyn 的语义模型为基础，将受支持的 C# 编译为确定、可交付的 ECMAScript 模块；在 Razor 项目中，Jazor 以官方 Razor Source Generator 的最终编译结果为输入，生成 Vue render function。
+
+## Jazor 是什么
+
+Jazor 让 C# 作者保留类型检查、符号绑定和明确的宿主 API 边界，同时得到可被标准 JavaScript 工具链消费的浏览器产物。核心平台负责 C# 语义到 ECMAScript 的转换、模块依赖、source map 与最终物化；Razor-to-Vue 是建立在核心平台之上的当前框架集成，而不是另一套编译路线。
+
+它不尝试把任意 .NET 程序搬到浏览器运行。对于需要运行时语义的外部类型和成员，Jazor 要求存在明确映射；无法忠实表达的能力会在实际使用点明确失败，不以原始 JavaScript 或静默 fallback 掩盖差异。
+
+## 它解决什么
+
+| 需求 | Jazor 的处理方式 |
+| --- | --- |
+| 用 C# 编写可交付的浏览器模块 | 通过 Roslyn `IOperation` 和 ESTree lowering 生成确定性的 ECMAScript 模块，并由 `Jazor.Emit` 物化 source map、import map 与发布产物。 |
+| 在 Razor 应用中使用 Vue 组件生态 | 使用官方 Razor SG 的最终 C# 语义，经 Razor-to-Vue 直接生成 Vue render-function `.mjs`，不依赖 Razor IR、生成 SFC 或中间 wrapper 协议。 |
+| 保持跨语言边界可验证 | CLR 和 ECMAScript API 由强类型映射与白名单定义；导入、模块名、临时变量和 source map 锚点保持确定性。 |
+| 交付真实应用 | 支持 Debug 模块、Release bundle，以及已声明范围内的 ASP.NET Core SSR 与 hydration；资源按显式依赖闭包交付。 |
+
+## 适用边界
+
+| 适合的场景 | 不属于当前产品契约 |
+| --- | --- |
+| 希望以 C# 的类型系统编写受控浏览器模块或组件库 | 在浏览器中运行完整 CLR 或任意未映射 .NET API |
+| 需要将自定义 Razor 组件与 Vue 3、TDesign、Vue Router、Pinia 等绑定组合 | 把 Microsoft/Blazor 内置 UI 组件当作 Vue 组件的自动替代品 |
+| 需要明确的模块、资源、发布与诊断边界 | 通过 `IJSRuntime`、反射或弱类型 `object?` 逃逸到未经验证的运行时语义 |
+| 希望从生产级参考应用验证 RazorVue authoring 与交付链路 | 未建立浏览器和发布证据的认证状态、SSR 状态交接或复杂浏览器历史协议 |
+
+产品范围、支持边界和非目标见[产品范围](./01-overview/product-scope.md)。
 
 ## 推荐阅读
 
 | 读者与目标 | 建议入口 |
 | --- | --- |
+| 第一次评估 Jazor | [产品范围](./01-overview/product-scope.md) -> [系统架构](./01-overview/system-architecture.md) |
 | 第一次使用 Jazor | [安装与配置](./03-guides/installation-and-configuration.md) -> [快速开始](./03-guides/quick-start.md) |
 | 在 Razor 项目中启用 Vue | [Razor-to-Vue 架构](./02-architecture/razor-to-vue.md) -> [包配置](./03-guides/installation-and-configuration.md) |
 | 理解 Jazor 核心 | [系统架构](./01-overview/system-architecture.md) -> [编译器](./02-architecture/compiler.md) -> [产物管线](./02-architecture/artifact-pipeline.md) |

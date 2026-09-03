@@ -8,7 +8,7 @@ JazorAdmin 在一个 ASP.NET Core 宿主中组合 RazorVue UI、Web API、ASP.NE
 - **身份与访问**：组织机构（结构/成员）、角色与资源操作授权、平台账号、SSO 中心（OpenIddict 应用/作用域/授权/令牌）。
 - **平台运营**：强类型配置中心、Quartz 任务调度、页头通知中心、统一操作审计日志。
 
-所有管理页共享统一页面范式（页头 → 筛选/工具条 → 内容 → 反馈），范式契约见[参考应用路线图](../../docs/04-roadmap/admin-reference-app.md)。
+所有管理页共享统一页面范式（页头 → 筛选/工具条 → 内容 → 反馈）。应用边界见[管理壳架构](../../docs/02-architecture/admin-shell.md)，当前平台能力与后续优先级见[当前状态](../../docs/04-roadmap/current-status.md)和[下一阶段](../../docs/04-roadmap/next-development.md)。
 
 边界规矩：平台 IAM 只管身份与平台资源；下游应用的业务权限归下游应用，只消费 OIDC claims，不注册为本应用的 resource operations。
 
@@ -80,7 +80,8 @@ dotnet run --file scripts/csharp/generate-jazoradmin-brand-assets.cs -- --check
 
 ## 相关文档
 
-- [JazorAdmin 生产级参考应用路线图](../../docs/04-roadmap/admin-reference-app.md)
+- [当前状态](../../docs/04-roadmap/current-status.md)
+- [下一阶段](../../docs/04-roadmap/next-development.md)
 - [Jazor.Admin](../../src/Jazor.Admin/README.md)
 - [管理壳架构](../../docs/02-architecture/admin-shell.md)
 - [示例总览](../../docs/03-guides/examples.md)

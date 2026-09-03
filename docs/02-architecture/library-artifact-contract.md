@@ -1,7 +1,7 @@
 # 类库资源与引用契约
 
 > 适用范围：多项目解决方案、NuGet 类库、最终可执行宿主，以及 Jazor 生成模块和外部 ESM/CSS
-> 资源的交付。完整实施顺序见 [类库资源与 Emit 物化一次性统一计划](../04-roadmap/artifact-graph-stabilization-plan.md)。
+> 资源的交付。本文是当前稳定契约；交付状态与验证门槛见[当前状态](../04-roadmap/current-status.md)。
 
 ## 核心结论
 
@@ -154,4 +154,4 @@ Jazor、JS resource、混合依赖、重复 identity、路径冲突、缺失依�
    HMR 行为正常。
 5. 同一输入重复构建字节稳定；所有清单/hash/路径/依赖错误在写目标目录前明确失败。
 
-具体的一次性改造步骤和删除旧实现的顺序见 [Artifact Graph 计划](../04-roadmap/artifact-graph-stabilization-plan.md)。
+一次性迁移的过程材料已归入历史记录；当前实现以本文定义的两类 carrier 和验收边界为准。

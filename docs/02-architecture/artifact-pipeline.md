@@ -1,7 +1,7 @@
 # 产物管线
 
 > 适用范围：`Jazor.Compiler` 的生成 carrier、JS resource package、`Jazor.Emit` 物化、source
-> map、Netpack bundle、SSR 和 HMR。类库 carrier 的稳定定义见 [类库资源与 Emit 物化一次性统一计划](../04-roadmap/artifact-graph-stabilization-plan.md)。
+> map、Netpack bundle、SSR 和 HMR。类库 carrier 的稳定定义由本文和[类库资源与引用契约](./library-artifact-contract.md)共同给出；交付状态见[当前状态](../04-roadmap/current-status.md)。
 
 ## 核心边界
 
@@ -133,4 +133,4 @@ Debug、Release、SSR 和 HMR 都使用同一发现和闭包规则；HMR snapsho
 - 禁止目录扫描、源码 `bin` fallback、隐式全量物化、last-write-wins 和 JavaScript 文本猜图。
 - 禁止中间类库执行 Emit、改写上游资源或把工具资产隐式传给下游。
 
-具体一次性实施顺序和门禁见 [类库资源与 Emit 物化一次性统一计划](../04-roadmap/artifact-graph-stabilization-plan.md)。
+一次性实施过程已归入历史记录；当前变更应遵守本文的固定数据流、失败原子性和验证边界。

@@ -36,4 +36,4 @@ Jazor 不试图成为任意 .NET 程序的完整 CLR 运行时，也不把不受
 | 生态与 UI | `ECMAScript.*`、`Jazor.Admin` | Vue 生态绑定、样式和管理壳库 |
 | 示例 | `samples/` | 真实集成、浏览器验证和使用参考 |
 
-`Jazor.Admin` 是可发布的管理壳库；`samples/JazorAdmin` 是消费该库的生产级管理参考应用（定位与里程碑见 [JazorAdmin 生产级参考应用路线图](../04-roadmap/admin-reference-app.md)），两者的职责不可混用。
+`Jazor.Admin` 是可发布的管理壳库；`samples/JazorAdmin` 是消费该库的生产级管理参考应用。前者定义可复用的壳与模型契约，后者选择 TDesign、页面结构和领域流程，两者的职责不可混用。示例入口见[示例](../03-guides/examples.md)。
