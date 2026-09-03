@@ -1,19 +1,19 @@
 # 下一阶段
 
-> 定位：当前已接受的开发优先级，不是新的 `Support` 声明。能力是否可用始终以[当前状态](./current-status.md)、源码和可复现验证为准。
+> 本页约束下一轮投入的优先次序，而不是新增 `Support` 声明。能力是否可用，始终以[当前状态](./current-status.md)、源码和可复现验证为准。
 
-## 工作原则
+## 投入准则
 
-Jazor 的下一阶段不再重新设计编译产物、类库 carrier 或 Razor-to-Vue 主链路。工作以高频页面和真实消费者为起点，先让已有能力更自然、更易诊断、更便于在发布环境中证明；只有 C# 类型系统无法表达，或浏览器语义确有缺口时，才新增 runtime 协议。
+下一阶段不重开编译产物、类库 carrier 或 Razor-to-Vue 主链路的设计。工作从高频页面和真实消费者出发，先让既有能力更自然、更易诊断、更容易在发布环境中证明；只有 C# 类型系统无法表达，或浏览器语义确有缺口时，才新增 runtime 协议。
 
 每个条目必须遵守以下原则：
 
-1. **C# 契约优先**：用明确参数、返回值、union 和 overload 表达作者面；不以 `object?`、裸字符串或示例局部桥接转移问题。
-2. **责任清晰**：C# 语义归 `Jazor.Compiler`，CLR/browser 映射归 `Jazor.CLR`，组件 API 归对应绑定，SSR 与宿主协议归 `Jazor.AspNetCore` / `Jazor.Emit`。
-3. **不做静默降级**：不引入原始 JavaScript fallback、第三种 carrier、第二套组件协议或未经证明的运行时猜测。
+1. **C# 契约优先**：以明确参数、返回值、union 和 overload 表达作者面；不以 `object?`、裸字符串或示例局部桥接转移问题。
+2. **责任清晰**：C# 语义归 `Jazor.Compiler`，CLR/browser 映射归 `Jazor.CLR`，组件 API 归对应 binding，SSR 与宿主协议归 `Jazor.AspNetCore` / `Jazor.Emit`。
+3. **拒绝静默降级**：不引入原始 JavaScript fallback、第三种 carrier、第二套组件协议或未经证明的运行时猜测。
 4. **证据先于声明**：官方 Razor SG、模块运行时、真实浏览器、隔离的 package consumer，以及适用的 SSR/hydration 必须共同证明新增能力。
 
-## P0: 编写体验与交付闭环
+## P0：编写体验与交付闭环
 
 | 优先级 | 目标 | 主要责任层 | 完成条件 |
 | --- | --- | --- | --- |
@@ -22,9 +22,9 @@ Jazor 的下一阶段不再重新设计编译产物、类库 carrier 或 Razor-t
 | P0-3 | 巩固已声明 framework primitive 与宿主交付的真实证据。覆盖 Debug、Release、HMR、PathBase、SSR/hydration 的一致性，以及新 binding 或 framework slice 的独立消费者回归。 | `Jazor.Emit`、`Jazor.AspNetCore`、`Jazor.CLR`、RazorVue | 产物闭包、source map、浏览器交互和适用 SSR 行为可复现；失败显式传播，不以静默 CSR 或旧产物回退。 |
 | P0-4 | 先测量，再优化 direct render 与 CLR runtime。性能候选必须先建立固定输入、warm-up、多轮测量、产物体积和行为基线，再决定是否实施。 | `Jazor.RazorVue`、`Jazor.Compiler`、`Jazor.CLR` | 改动前记录阈值和基线；优化在不改变求值顺序、值语义、导入稳定性和 source map 的前提下达到阈值，否则不实施。 |
 
-## P1: 需要先确立协议的能力
+## P1：需要先确立协议的能力
 
-这些方向有明确价值，但会影响状态所有权、生命周期或浏览器 history 语义。在协议、失败矩阵和真实消费者证据完整前，它们保持 `Guidance` 或 `Reject`，不以部分实现宣传为 `Support`。
+这些方向具有明确价值，但会触及状态所有权、生命周期或 browser history 语义。在协议、失败矩阵和真实消费者证据完整之前，它们保持 `Guidance` 或 `Reject`，不以局部实现宣传为 `Support`。
 
 | 方向 | 预期边界 | 前置条件 |
 | --- | --- | --- |
@@ -33,16 +33,16 @@ Jazor 的下一阶段不再重新设计编译产物、类库 carrier 或 Razor-t
 | 构造函数注入与复杂 activation | 只考虑有界的强类型子集，保持 base/derived、字段初始化、生命周期和 SSR/browser lifetime 的一致性。 | 至少两个真实消费者、完整 activation 矩阵与所有 profile 验证；不使用 selector 猜测或 `arguments.length` fallback。 |
 | 后退/前进与复杂 URI 状态 | 不把已发生的 `popstate`/`hashchange` 伪装成可取消内部导航。 | URL 恢复、竞态、注册释放与用户确认行为先由 reference 和真实浏览器定义。 |
 
-## 固定边界
+## 不扩张的边界
 
 - 不实现完整 CLR、任意外部 .NET API 或未经映射的运行时类型。
 - 不将 Microsoft/Blazor 内置 UI 组件、`IJSRuntime` 字符串互操作或仅服务器端服务包装为 Vue 的兼容层。
 - 不因 JavaScript 端接受 `any` 而弱化 C# binding 的类型契约。
 - 不将 JazorAdmin 的单页临时绕行上升为公共平台 API。
 
-## 进入当前状态的门槛
+## 写入当前状态的门槛
 
-一个计划条目完成时，必须同时更新实现、测试、作者指南和[当前状态](./current-status.md)。至少满足：
+一个计划条目完成后，必须同步更新实现、测试、作者指南和[当前状态](./current-status.md)。至少满足：
 
 1. C# API 通过正常类型检查和官方 Razor SG 绑定，不依赖私有作者语法。
 2. compiler lowering、CLR/runtime 或 binding 行为具有针对性的回归测试。
