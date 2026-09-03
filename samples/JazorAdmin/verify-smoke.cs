@@ -310,6 +310,10 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(settingsModule, "UpdateSetting", "configuration center update command");
     AssertContains(schedulesModule, "TriggerSchedule", "task scheduling manual run command");
     AssertContains(schedulesModule, "GetScheduleRuns", "task scheduling history query");
+    AssertContains(schedulesModule, "data: state.Draft", "typed schedule draft data in task scheduling module");
+    AssertContains(schedulesModule, "DraftRules", "typed schedule form rules in task scheduling module");
+    AssertContains(schedulesModule, "onSubmit: Save", "typed schedule submit callback in task scheduling module");
+    AssertContains(schedulesModule, "onReset: ResetDraft", "typed schedule reset callback in task scheduling module");
     AssertContains(dashboardModule, "SignInTrendItems", "audit-backed sign-in trend projection");
     AssertContains(dashboardModule, "TokenIssuances", "dashboard token issuance KPI");
     AssertContains(dashboardModule, "data-portal", "dashboard application portal marker");
@@ -625,6 +629,7 @@ static async Task VerifyBrowserSmokeAsync(
                     lastStatus: null,
                     lastMessage: null
                   }];
+                  const scheduleRequests = [];
                   const scheduleRuns = [];
                   const auditEvents = [
                     {
@@ -899,6 +904,7 @@ static async Task VerifyBrowserSmokeAsync(
                     if (url.pathname === "/api/schedules/" && method === "GET") return json(schedules);
                     if (url.pathname === "/api/schedules/openid-prune/runs" && method === "GET") return json(scheduleRuns);
                     if (url.pathname === "/api/schedules/openid-prune" && method === "PUT") {
+                      scheduleRequests.push({ method, cron: body.Cron, enabled: body.Enabled });
                       schedules[0] = {
                         ...schedules[0],
                         cron: body.Cron,
@@ -1365,6 +1371,22 @@ static async Task VerifyBrowserSmokeAsync(
                         () => document.querySelector('[data-management-area="schedules"] [data-schedule-field="cron"] input')?.value.length > 0,
                         "selected scheduled task");
                       const schedulesPathname = location.pathname;
+                      const initialScheduleCron = document.querySelector('[data-management-area="schedules"] [data-schedule-field="cron"] input')?.value ?? "";
+                      await setInput('[data-management-area="schedules"] [data-schedule-field="cron"] input', "0 30 3 * * ?");
+                      await click('[data-schedule-command="reset"]', "schedule draft reset command");
+                      await waitFor(
+                        () => document.querySelector('[data-management-area="schedules"] [data-schedule-field="cron"] input')?.value === initialScheduleCron,
+                        "typed schedule form reset");
+                      const scheduleFormReset = true;
+                      await setInput('[data-management-area="schedules"] [data-schedule-field="cron"] input', "0 30 3 * * ?");
+                      await click('[data-schedule-command="save"]', "typed schedule save command");
+                      await waitFor(
+                        () => scheduleRequests.some((request) => request.method === "PUT" && request.cron === "0 30 3 * * ?"),
+                        "updated schedule request");
+                      await waitFor(
+                        () => document.querySelector('[data-management-area="schedules"] .t-table tbody tr')?.textContent?.includes("0 30 3 * * ?") === true,
+                        "updated scheduled task table");
+                      const savedScheduleCron = schedules[0].cron;
                       await click('[data-schedule-command="run"]', "manual schedule run command");
                       // The anchor belongs to the Started column; status is rendered in a
                       // sibling TDesign column, so assert the entire execution row.
@@ -1456,6 +1478,8 @@ static async Task VerifyBrowserSmokeAsync(
                         settingRowText,
                         settingsEmptyVisible,
                         schedulesPathname,
+                        scheduleFormReset,
+                        savedScheduleCron,
                         scheduleRunText,
                         auditPathname,
                         auditInitialCount,
@@ -1584,6 +1608,8 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("settingRowText").GetString() ?? string.Empty, "Smoke feature", "JazorAdmin configuration center create", root.GetRawText());
         AssertJsonBoolean(root, "settingsEmptyVisible", true, "JazorAdmin configuration center empty state", root.GetRawText());
         AssertContains(root.GetProperty("schedulesPathname").GetString() ?? string.Empty, "/schedules", "JazorAdmin task scheduling navigation", root.GetRawText());
+        AssertJsonBoolean(root, "scheduleFormReset", true, "JazorAdmin typed schedule form reset", root.GetRawText());
+        AssertContains(root.GetProperty("savedScheduleCron").GetString() ?? string.Empty, "0 30 3 * * ?", "JazorAdmin typed schedule save", root.GetRawText());
         AssertContains(root.GetProperty("scheduleRunText").GetString() ?? string.Empty, "succeeded", "JazorAdmin task scheduling manual run", root.GetRawText());
         AssertContains(root.GetProperty("auditPathname").GetString() ?? string.Empty, "/audit", "JazorAdmin audit navigation", root.GetRawText());
         AssertJsonInt(root, "auditInitialCount", 2, "JazorAdmin initial audit event count", root.GetRawText());

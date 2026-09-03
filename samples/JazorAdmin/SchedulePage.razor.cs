@@ -7,6 +7,13 @@ namespace JazorAdmin;
 [ECMAScriptModule("components/schedules")]
 public partial class SchedulePage : AppComponentBase, IVueContainerComponent
 {
+    private sealed record ScheduleDraft
+    {
+        public string Cron { get; set; } = string.Empty;
+
+        public bool Enabled { get; set; }
+    }
+
     private bool loading = true;
     private string? error;
     private ScheduleView[] schedules = [];
@@ -14,11 +21,18 @@ public partial class SchedulePage : AppComponentBase, IVueContainerComponent
     private string? selectedKey;
     private string name = string.Empty;
     private string description = string.Empty;
-    private string cron = string.Empty;
-    private bool enabled;
+    private ScheduleDraft Draft { get; set; } = new();
     private string? nextRunAt;
     private string? lastStatus;
     private string? lastMessage;
+
+    private TFormRules<ScheduleDraft> DraftRules { get; } = new()
+    {
+        ["cron"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a Quartz Cron expression." }
+        ]
+    };
 
     // 任务表首列承载 data-schedule-key，执行历史表承载 data-schedule-run，
     // 浏览器验证通过这些锚点断言选择态与手动执行结果。
@@ -124,20 +138,27 @@ public partial class SchedulePage : AppComponentBase, IVueContainerComponent
         selectedKey = schedule.Key;
         name = schedule.Name;
         description = schedule.Description;
-        cron = schedule.Cron;
-        enabled = schedule.Enabled;
+        Draft = NewDraft(schedule);
         nextRunAt = schedule.NextRunAt;
         lastStatus = schedule.LastStatus;
         lastMessage = schedule.LastMessage;
         LoadRuns();
     }
 
-    private void Save()
+    private void Save(TSubmitContext<ScheduleDraft> context)
     {
         if (selectedKey is null)
             return;
 
-        ApiClient.UpdateSchedule(selectedKey, new ScheduleUpdate(cron, enabled)).Then(ApplySaved);
+        ApiClient.UpdateSchedule(selectedKey, new ScheduleUpdate(Draft.Cron, Draft.Enabled)).Then(ApplySaved);
+    }
+
+    private void ResetDraft(TFormResetEventContext<ScheduleDraft> context)
+    {
+        var selected = schedules.FirstOrDefault(item => item.Key == selectedKey);
+        if (selected is not null)
+            Draft = NewDraft(selected);
+        error = null;
     }
 
     private void ApplySaved(ApiOutcome outcome)
@@ -181,4 +202,10 @@ public partial class SchedulePage : AppComponentBase, IVueContainerComponent
             runs = ApiClient.ToScheduleRuns(outcome.Data);
         });
     }
+
+    private static ScheduleDraft NewDraft(ScheduleView schedule) => new()
+    {
+        Cron = schedule.Cron,
+        Enabled = schedule.Enabled
+    };
 }
