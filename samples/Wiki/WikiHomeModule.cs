@@ -497,6 +497,7 @@ public static partial class WikiHomeModule
 
         if (isHomePage)
         {
+            heroChildren.Add(RenderHomeHeroBrief(GetPageIndex(currentPath)));
             heroChildren.Add(H("div", new VueObject { Class = "hero-cta-row" },
             [
                 H("s-button", new VueObject

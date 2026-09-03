@@ -41,6 +41,10 @@ public static partial class WikiHomeModule
         for (var blockIndex = 0; blockIndex < blocks.Length; blockIndex++)
         {
             var block = blocks[blockIndex];
+            // 首页的首个引用由 Hero 摘要承载；正文再次渲染会形成重复的首屏陈述。
+            if (PagePaths[pageIndex] == OverviewPath && blockIndex == 0 && block.Kind == DocsBlockQuote)
+                continue;
+
             if (block.Kind == DocsBlockHeading && block.Level == 2)
             {
                 FlushDocsSection(children, introChildren, sectionChildren, sectionId, sectionTitle, ref inSection);
@@ -59,6 +63,54 @@ public static partial class WikiHomeModule
         FlushDocsSection(children, introChildren, sectionChildren, sectionId, sectionTitle, ref inSection);
 
         return H("div", new VueObject { Class = "doc-body" }, children.ToArray());
+    }
+
+    // 首页首屏从 docs/README.md 的前三个一级章节提取引导语，避免页面文案出现第二个事实来源。
+    internal static IVNode RenderHomeHeroBrief(int pageIndex)
+    {
+        var blocks = PageBlockSets[pageIndex];
+        var items = new List<IVNode>();
+
+        for (var blockIndex = 0; blockIndex < blocks.Length && items.Count < 3; blockIndex++)
+        {
+            var block = blocks[blockIndex];
+            if (block.Kind != DocsBlockHeading || block.Level != 2)
+                continue;
+
+            var leadRuns = FindSectionLeadRuns(blocks, blockIndex + 1, block.Text);
+
+            items.Add(H("a", new VueObject
+            {
+                Class = "home-brief-item",
+                Href = BuildBrowserUrl(OverviewPath, block.AnchorId, ""),
+                Events = CreateTocClickEvents()
+            },
+            [
+                H("span", new VueObject { Class = "home-brief-title" }, block.Text),
+                H("span", new VueObject { Class = "home-brief-copy" }, RenderDocsRuns(leadRuns))
+            ]));
+        }
+
+        if (items.Count != 3)
+            throw new Error("The homepage brief requires the first three docs/README.md sections.");
+
+        return H("div", new VueObject { Class = "home-brief" }, items.ToArray());
+    }
+
+    private static DocsRun[] FindSectionLeadRuns(DocsBlock[] blocks, int startIndex, string sectionTitle)
+    {
+        for (var blockIndex = startIndex; blockIndex < blocks.Length; blockIndex++)
+        {
+            var block = blocks[blockIndex];
+            if (block.Kind == DocsBlockHeading && block.Level == 2)
+                break;
+
+            if (block.Kind == DocsBlockParagraph && block.Runs.Length > 0)
+                return block.Runs;
+        }
+
+        throw new Error(
+            "Homepage section '" + sectionTitle + "' must begin with a Markdown paragraph for the homepage brief.");
     }
 
     // 收束当前分节（或首个 h2 前的 intro 容器） / Flush current section or the pre-h2 intro container

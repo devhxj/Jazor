@@ -17,6 +17,7 @@ const isDevelopmentVerification = verificationMode === "development";
 const pathBase = configuredPathBase && configuredPathBase !== "/"
   ? (configuredPathBase.endsWith("/") ? configuredPathBase.slice(0, -1) : configuredPathBase)
   : "";
+const expectedHomeBriefTitles = ["Jazor 是什么", "它解决什么", "适用边界"];
 
 function externalPath(logicalPath) {
   if (!logicalPath.startsWith("/")) {
@@ -404,6 +405,7 @@ async function main() {
         expectedSourceContentMarkers: [
           "public static partial class WikiHomeModule",
           "internal static IVNode RenderDocsPage(int pageIndex)",
+          "internal static IVNode RenderHomeHeroBrief(int pageIndex)",
           "internal static string[] PagePaths => WikiDocsContent.PagePaths;"
         ]
       }
@@ -487,7 +489,9 @@ async function main() {
       const html = (element.innerHTML || '').trim();
       return html === '' || html === '<!---->';
     })()`),
-    primaryLinkCount: await evaluate(`Array.from(document.querySelectorAll('a')).filter(node => node.getAttribute('href') === '${externalPath(primaryPath)}').length`)
+    primaryLinkCount: await evaluate(`Array.from(document.querySelectorAll('a')).filter(node => node.getAttribute('href') === '${externalPath(primaryPath)}').length`),
+    briefTitles: await evaluate(`Array.from(document.querySelectorAll('.home-brief-title')).map(node => (node.textContent || '').trim())`),
+    duplicatedHeroQuote: await evaluate("!!document.querySelector('.doc-body > .doc-section-intro .md-quote')")
   };
 
   if (!report.home.mounted) {
@@ -498,6 +502,13 @@ async function main() {
   }
   if (report.home.primaryLinkCount < 1) {
     failures.push("Home page did not render the generated primary docs route link.");
+  }
+  if (report.home.briefTitles.length !== expectedHomeBriefTitles.length ||
+      report.home.briefTitles.some((title, index) => title !== expectedHomeBriefTitles[index])) {
+    failures.push(`Home page did not render the expected product brief: ${report.home.briefTitles.join(" | ")}`);
+  }
+  if (report.home.duplicatedHeroQuote) {
+    failures.push("Home page rendered the Hero summary again in the document body.");
   }
   if (report.home.title !== homeTitle) {
     failures.push(`Home page title was unexpected before SPA navigation: ${report.home.title}`);

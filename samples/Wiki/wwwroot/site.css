@@ -473,8 +473,8 @@ pre {
 
 /* 首页专属 hero：更大的标题与品牌陈述 / Home hero */
 .doc-hero-home {
-  gap: 16px;
-  padding: 26px 0 30px;
+  gap: 14px;
+  padding: 22px 0 26px;
 }
 
 .breadcrumbs {
@@ -567,6 +567,45 @@ pre {
 
 .doc-summary-hero {
   font-size: clamp(1.05rem, 2.8vw, 1.18rem);
+}
+
+/* 首页三项导览：正文来自 docs/README.md，使用分隔与留白而非卡片叠层。 */
+.home-brief {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: 1px solid var(--s-color-outline-variant);
+  border-bottom: 1px solid var(--s-color-outline-variant);
+}
+
+.home-brief-item {
+  display: block;
+  min-width: 0;
+  padding: 12px 0;
+  color: var(--s-color-on-surface-variant);
+  transition: color 140ms ease, background 140ms ease;
+}
+
+.home-brief-item + .home-brief-item {
+  border-top: 1px solid var(--s-color-outline-variant);
+}
+
+.home-brief-item:hover {
+  color: var(--s-color-on-surface);
+}
+
+.home-brief-title {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--s-color-primary);
+}
+
+.home-brief-copy {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--s-color-on-surface-variant);
 }
 
 /* 首页 CTA / Home call-to-action */
@@ -1186,6 +1225,20 @@ pre {
 
 /* ── 响应式（移动优先，逐级加密） / Responsive upgrades ── */
 @media (min-width: 700px) {
+  .home-brief {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .home-brief-item {
+    padding: 14px 16px 14px 0;
+  }
+
+  .home-brief-item + .home-brief-item {
+    padding-left: 16px;
+    border-top: none;
+    border-left: 1px solid var(--s-color-outline-variant);
+  }
+
   .route-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1230,5 +1283,12 @@ pre {
     width: min(320px, 85vw);
     border-right: none;
     border-left: none;
+  }
+}
+
+/* 窄屏顶部工具位有限；仓库入口仍在页脚保留，避免品牌和核心导航发生横向截断。 */
+@media (max-width: 440px) {
+  .wiki-github-link {
+    display: none;
   }
 }

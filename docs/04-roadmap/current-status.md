@@ -1,8 +1,8 @@
 # 当前状态
 
-> 本页只记录已经成立的产品契约与可复现的验证入口。计划、一次性实施过程和历史构建数字，不应被包装为当前能力。
+> 本页列出当前可以被项目依赖的产品契约，以及证明这些契约的可复现入口。计划、一次性实施过程和历史构建数字，不应被包装为当前能力。
 
-每一项状态都应回答同一个问题：开发者今天能否据此设计、编写和交付。答案来自实现、测试与真实消费者证据，而不是愿景或阶段性进展。
+开发者只需要用一个问题审视这里的每项状态：今天能否据此设计、编写和交付。答案来自实现、测试与真实消费者证据，而不是愿景、阶段性进展或一次成功的构建。
 
 ## 已交付的核心能力
 
@@ -15,21 +15,21 @@
 
 ## RazorVue 作者面
 
-RazorVue 已覆盖自定义组件和已声明第三方组件绑定的常用编写形态：组件组合、泛型组件、slot/fragment、`@bind`、事件、循环、生命周期、`@key`、`@ref`、可达的 `@code` / `.razor.cs` helper，以及 direct Vue render-function 产物。`ParameterView`、可写 `[Inject]` property、typed/named/nested cascading value、应用自有 route host 和限定的同源内部导航，均只在经证明的浏览器交互或首屏 SSR 子集内声明支持。
+RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用作者形态：组件组合、泛型组件、slot/fragment、`@bind`、事件、循环、生命周期、`@key`、`@ref`、可达的 `@code` / `.razor.cs` helper，以及 direct Vue render-function 产物。`ParameterView`、可写 `[Inject]` property、typed/named/nested cascading value、应用自有 route host 和限定的同源内部导航，只在已经证明的浏览器交互或首屏 SSR 子集内声明支持。
 
-框架 primitive 的事件支持限于已验证的只读原生投影：核心 Mouse、Keyboard、Focus、Change，以及 Pointer、Wheel、Drag、Clipboard、Touch、Error、Progress 事件组；`ElementReference.FocusAsync` 也只覆盖其已证明的浏览器交互子集。复杂 lifecycle、导航取消、参数和 cascade 的完整 reference parity、SSR/prerender identity 仍不在声明范围内。
+框架 primitive 的事件支持限于已验证的只读原生投影：核心 Mouse、Keyboard、Focus、Change，以及 Pointer、Wheel、Drag、Clipboard、Touch、Error、Progress 事件组；`ElementReference.FocusAsync` 也只覆盖已经证明的浏览器交互子集。复杂 lifecycle、导航取消、参数和 cascade 的完整 reference parity、SSR/prerender identity 仍不在声明范围内。
 
 作者失败会通过 source compatibility analyzer 或 final Compilation diagnostics 回到 `.razor` / `.razor.cs` 位置；生成失败不会留下 partial module、`ModuleCatalog` 或 bundle。具体支持矩阵、诊断与替代写法见[RazorVue 作者指南](../03-guides/razorvue-authoring.md)。
 
 ## 生态与参考应用
 
-- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vu Icons、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 均以强类型绑定或资源库的形式构成 Jazor 核心之上的生态层。
-- `Jazor.Admin` 是 UI 库无关的管理壳库；`samples/JazorAdmin` 是消费它的生产级参考应用，以强类型 TDesign 组件实现当前 Starter 功能页面以及门户、IAM、运营场景。它用于验证编写体验、资源闭包与 Release browser 行为，不反向定义库 API。
+- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vu Icons、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；它们以强类型 binding 或资源库形式交付。
+- `Jazor.Admin` 是 UI 库无关的管理壳库；`samples/JazorAdmin` 是它的生产级参考应用，以强类型 TDesign 组件实现当前 Starter 功能页面以及门户、IAM、运营场景。它验证编写体验、资源闭包与 Release browser 行为，不反向定义库 API。
 - ASP.NET Core 宿主支持 `JazorMode=debug` 的模块、source map、import map 输出，以及 `JazorMode=release` 的浏览器 bundle。启用 `JazorSSR=true` 后，已声明范围内的 Vue SSR 与 hydration 使用同一显式资源闭包。
 
 ## 明确边界
 
-以下内容不是“等待自动兼容”的缺口，而是当前已经明确的产品边界：
+以下内容不是“等待自动兼容”的缺口，而是当前已经明确的产品边界。它们会保持显式失败或明确拒绝，直到新的实现与证据足以改变契约：
 
 - Jazor 不是完整 CLR，也不支持任意未映射的 .NET 类型、成员或运行时身份。
 - Microsoft/Blazor 内置 UI 组件，例如 `Router`、`RouteView`、`EditForm`、`Input*`、`AuthorizeView` 和 `DynamicComponent`，不作为 RazorVue 的组件入口；UI 层由应用自定义组件或已声明的第三方 binding 提供。
@@ -49,4 +49,4 @@ RazorVue 已覆盖自定义组件和已声明第三方组件绑定的常用编�
 | Windows SPA 发布消费者 | 本地 NuGet 包、Release bundle、`/docs` PathBase 与真实浏览器交互 | `dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs` |
 | Windows SSR 发布消费者 | 本地 NuGet 包、`JazorSSR=true` Release publish、SSR HTML、部署资源解析与 hydration | `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` |
 
-这些门槛是可复现的验收规则。某次发布的实际结果应查看对应 CI、运行命令或[CHANGELOG.md](../../CHANGELOG.md)，而不是把历史快照固化在本页。
+这些门槛是对产品声明的验收规则。某次发布的实际结果应查看对应 CI、运行命令或[CHANGELOG.md](../../CHANGELOG.md)，而不是把历史快照固化在本页。

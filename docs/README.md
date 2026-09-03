@@ -1,38 +1,44 @@
 # Jazor
 
-> **Jazor 是面向 .NET 的 C# 到 ECMAScript 工具链。它将受支持的 C# 语义转换为可验证、可交付的浏览器模块，让类型、依赖与发布产物沿同一条工程链路抵达运行环境。**
+> **Jazor 是面向 .NET 的 C# 至 ECMAScript 工具链：它以受支持的 C# 语义为起点，生成可验证、可交付的浏览器模块。**
 
-Jazor 不以语法替换语义。它以 Roslyn 的语义模型为基础，将 C# 编译为确定性的 ECMAScript 模块；在 Razor 项目中，则以官方 Razor Source Generator 生成的最终编译结果为输入，直接产出 Vue render function。C# 的类型检查、符号绑定和宿主 API 边界因此仍由编译过程承担，而非留给浏览器在运行时猜测。
+Jazor 让 .NET 团队在浏览器侧继续使用经过类型检查、符号绑定和边界约束的 C# 作者体验。浏览器最终接收的是标准 ECMAScript 模块；类型、依赖、source map 与发布产物沿同一条工程链路抵达运行环境。未被映射的运行时语义会在使用处明确失败，不由浏览器替作者猜测。
 
 ## Jazor 是什么
 
-Jazor 的核心是一条从 C# 语义到浏览器模块的工程路径：`Jazor.Compiler` 负责 lowering，`Jazor.Emit` 负责模块、source map 与发布产物的物化，CLR 与 ECMAScript 绑定负责定义可以跨越语言边界的运行时语义。Razor-to-Vue 建立在这条路径之上，是当前的框架集成方向，而不是另一套编译路线。
+Jazor 以 Roslyn 的语义模型为依据，将受支持的 C# 操作编译为确定性的 ECMAScript 模块。它不是语法替换工具，也不试图把完整 CLR 搬进浏览器。
 
-它不试图把任意 .NET 程序搬进浏览器。需要运行时语义的外部类型和成员必须有明确映射；无法忠实表达的能力会在实际使用点明确失败，不以原始 JavaScript 或静默 fallback 掩盖差异。
+`Jazor.Compiler` 负责将受支持的 `IOperation` 降低为 ECMAScript AST，`Jazor.Emit` 负责将模块、source map 与发布产物物化，CLR 与 ECMAScript 绑定则定义能够跨越语言边界的运行时语义。
+
+Razor-to-Vue 建立在这条核心路径之上。它只接收官方 Razor Source Generator 完成后的最终 `Compilation`，直接产出 Vue render-function 模块；C# 表达式、成员与调用的语义仍由同一套编译主线负责，而不是另起一条转换路线。
 
 ## 它解决什么
 
+它让类型检查、符号绑定、宿主映射与模块交付保持在同一条链路中，解决 C# 作者体验与浏览器模块交付之间的断裂。
+
 | 需要面对的问题 | Jazor 的回答 |
 | --- | --- |
-| 如何用 C# 编写真正可交付的浏览器模块 | 通过 Roslyn `IOperation` 与 ESTree lowering 生成确定性的 ECMAScript 模块，并由 `Jazor.Emit` 物化 source map、import map 与发布产物。 |
-| 如何在 Razor 应用中采用 Vue 组件生态 | 以官方 Razor SG 的最终 C# 语义为输入，经 Razor-to-Vue 直接生成 Vue render-function `.mjs`，不依赖 Razor IR、生成 SFC 或中间 wrapper 协议。 |
-| 如何让跨语言边界保持可验证 | CLR 与 ECMAScript API 由强类型映射和白名单定义；导入、模块名、临时变量与 source map 锚点保持确定性。 |
-| 如何把模块可靠地带到真实应用 | 支持 Debug 模块、Release bundle，以及已声明范围内的 ASP.NET Core SSR 与 hydration；资源按显式依赖闭包交付。 |
+| 用 C# 编写浏览器模块 | 受支持的 C# 语义经 Roslyn `IOperation` 与 ESTree lowering 转化为确定性的 ECMAScript 模块，`Jazor.Emit` 再物化 source map、import map 与发布产物。 |
+| 在 Razor 项目中使用 Vue 组件生态 | Razor-to-Vue 读取官方 Razor SG 的最终 C# 语义，直接生成 Vue render-function `.mjs`；不依赖 Razor IR、生成 SFC 或中间 wrapper 协议。 |
+| 让跨语言边界保持可验证 | CLR 与 ECMAScript API 由强类型映射和白名单定义。导入、模块名、临时变量与 source map 锚点保持确定性，错误回到作者实际使用的位置。 |
+| 将模块可靠地带入真实应用 | Debug 模块、Release bundle 以及已声明范围内的 ASP.NET Core SSR 与 hydration 使用同一显式资源闭包交付。 |
 
 ## 适用边界
 
-Jazor 的价值来自明确边界，而不是对所有运行时形态作出模糊承诺。它适合需要受控浏览器语义和可追溯交付链路的 .NET 团队；下列场景不在当前产品契约内。
+它适合需要受控浏览器语义与可追溯交付链路的 .NET 团队；未映射或尚无浏览器、发布证据的运行时能力，不属于当前产品契约。
+
+明确边界是采用 Jazor 的前提，不是项目后期才发现的限制。下列对照说明当前承诺，也说明不应期待它替代什么。
 
 | 适合采用 Jazor | 不属于当前产品契约 |
 | --- | --- |
-| 希望以 C# 类型系统编写受控浏览器模块或组件库 | 在浏览器中运行完整 CLR，或调用任意未映射 .NET API |
-| 需要将自定义 Razor 组件与 Vue 3、TDesign、Vue Router、Pinia 等绑定组合 | 将 Microsoft/Blazor 内置 UI 组件自动替换为 Vue 组件 |
-| 需要明确模块、资源、发布与诊断边界 | 通过 `IJSRuntime`、反射或弱类型 `object?` 逃逸到未经验证的运行时语义 |
-| 希望用生产级参考应用验证 RazorVue authoring 与交付链路 | 未建立浏览器和发布证据的认证状态、SSR 状态交接或复杂浏览器历史协议 |
+| 以 C# 类型系统编写受控的浏览器模块或组件库 | 在浏览器中运行完整 CLR，或调用任意未映射的 .NET API |
+| 将自定义 Razor 组件与 Vue 3、TDesign、Vue Router、Pinia 等已声明 binding 组合 | 将 Microsoft/Blazor 内置 UI 组件自动替换为 Vue 组件 |
+| 对模块、资源、发布与诊断边界有明确要求 | 通过 `IJSRuntime`、反射或弱类型 `object?` 逃逸到未经验证的运行时语义 |
+| 用生产级参考应用验证 RazorVue authoring 与交付链路 | 尚未建立浏览器与发布证据的认证状态、SSR 状态交接或复杂浏览器历史协议 |
 
-完整的产品范围、支持边界与非目标见[产品范围](./01-overview/product-scope.md)。
+完整的产品范围、支持边界与非目标见[产品范围](./01-overview/product-scope.md)。边界一旦改变，应先由实现与验证证明，再写入本页。
 
-## 从这里开始
+## 选择阅读路径
 
 | 读者与目标 | 建议入口 |
 | --- | --- |
@@ -45,7 +51,7 @@ Jazor 的价值来自明确边界，而不是对所有运行时形态作出模�
 | 参与仓库开发 | [开发与测试](./03-guides/development-and-testing.md) -> [文档规范](./03-guides/documentation-style.md) |
 | 查找样例 | [示例](./03-guides/examples.md) |
 
-## 文档地图
+## 文档职责
 
 | 目录 | 责任 |
 | --- | --- |
@@ -59,5 +65,5 @@ Jazor 的价值来自明确边界，而不是对所有运行时形态作出模�
 
 - 当前行为以源码、自动化测试和本目录的架构文档为准。
 - 实现细节优先维护在源码旁的 README 或项目文档中；本目录只保留跨模块契约、使用方式和必要的阅读入口。
-- 计划、测试结果和审计结论只在其有效范围内陈述，不在长期设计文档中重复快照数据。
-- 版本变更记录位于仓库根目录的 [CHANGELOG.md](../CHANGELOG.md)。
+- 已交付能力、下一阶段投入与历史材料各有唯一位置，避免同一事实在不同页面形成不同表述。
+- 版本变更记录位于仓库根目录的[CHANGELOG.md](../CHANGELOG.md)。

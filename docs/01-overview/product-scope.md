@@ -4,9 +4,11 @@
 
 ## 产品定位
 
-Jazor 是一套 C# 到 ECMAScript 的 .NET 工具链。它以 Roslyn `IOperation` 为语义输入、以标准 ECMAScript AST 为中间表示，将受支持的 C# 语义转换为确定性的模块，并提供模块物化、source map、浏览器打包和 ASP.NET Core 集成。
+Jazor 是一套 C# 至 ECMAScript 的 .NET 工具链。它以 Roslyn `IOperation` 为语义输入、以标准 ECMAScript AST 为中间表示，将受支持的 C# 语义编译为确定性的浏览器模块，并提供模块物化、source map、浏览器打包和 ASP.NET Core 集成。
 
-它的价值不在于让 C# 看起来像 JavaScript，而在于让作者在编写阶段保留类型检查、符号绑定和明确的宿主 API 边界，同时得到可被标准 JavaScript 工具链消费的模块。Razor-to-Vue 是建立在这一核心能力之上的应用方向：它先将官方 Razor SG 的组件语义绑定为可编译的 C# 操作，再调用 Jazor 核心生成 Vue render-function 产物。
+它的价值不在于让 C# 看起来像 JavaScript，而在于让作者在编写阶段保留类型检查、符号绑定与明确的宿主 API 边界，同时得到可被标准 JavaScript 工具链消费的模块。编译期负责判断，浏览器负责执行；两者之间没有未经声明的语义跳跃。
+
+Razor-to-Vue 是建立在这项核心能力之上的应用方向：它先将官方 Razor SG 的组件语义绑定为可编译的 C# 操作，再调用 Jazor 核心生成 Vue render-function 产物。因此，Razor-to-Vue 不是另一套编译器，而是同一条语义与交付链路的框架集成。
 
 ## 层级与产品路径
 
@@ -21,7 +23,7 @@ Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vuetify、Element Plus
 
 ## 非目标
 
-Jazor 不试图成为任意 .NET 程序的完整 CLR 运行时，也不把不受支持的外部 API 静默降级为原始 JavaScript。需要运行时语义的外部类型和成员必须存在明确的宿主映射；无法忠实表达的能力应在实际使用点明确失败。
+Jazor 不试图成为任意 .NET 程序的完整 CLR 运行时，也不把不受支持的外部 API 静默降级为原始 JavaScript。需要运行时语义的外部类型和成员必须存在明确的宿主映射；无法忠实表达的能力应在实际使用点明确失败。这个边界保证“可以使用”始终意味着有实现、有映射，也有可复现的行为证据。
 
 当前生产 Razor-to-Vue 路径只接受官方 Razor Source Generator 完成后的最终 `Compilation`。Razor IR、生成 SFC、二次解析生成 C#、中间 wrapper-JS 协议，以及已退役的 Jolt 和 CSX 路线都不是当前产品路径。未来的框架集成可建立在同一核心平台上，但不会因尚未实现的方向改变当前公开契约。
 
