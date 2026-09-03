@@ -23,7 +23,9 @@
 *.eot binary
 *.pdf binary
 
-# Upstream assets and frozen declarations are copied byte-for-byte.
-src/ECMAScript.*/dist/** -whitespace
+# Upstream assets and frozen declarations are copied byte-for-byte. Disable
+# text conversion as well as whitespace normalization so manifest hashes are
+# identical on Windows and Unix checkouts.
+src/ECMAScript.*/dist/** -text -whitespace
 src/ECMAScript.Vue.Generator/upstream/** -whitespace
 src/Jazor.Emit/tooling/vue/*.js -whitespace

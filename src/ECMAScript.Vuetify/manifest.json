@@ -23,8 +23,8 @@
       "type": "module",
       "development": "dist/components.mjs",
       "production": "dist/components.mjs",
-      "developmentHash": "8d407893e91d20c11a0be4bf016d6599b75b0029599a40ba2e9923951431a528",
-      "productionHash": "8d407893e91d20c11a0be4bf016d6599b75b0029599a40ba2e9923951431a528",
+      "developmentHash": "d7808c334069ea89287920a7a0a692d7f2e428799376bd55c3a20d7d8f09e7a4",
+      "productionHash": "d7808c334069ea89287920a7a0a692d7f2e428799376bd55c3a20d7d8f09e7a4",
       "developmentDependencies": [
         "vuetify"
       ],
@@ -63,8 +63,8 @@
       "type": "module",
       "development": "dist/labs.mjs",
       "production": "dist/labs.mjs",
-      "developmentHash": "95d64d0b5b194f4672494da990e039b819700769d0bf8b2baa82639b4a2abb5d",
-      "productionHash": "95d64d0b5b194f4672494da990e039b819700769d0bf8b2baa82639b4a2abb5d",
+      "developmentHash": "2bc866b6beab99927564b77486c87393e27bfbb75abfe3dc7dc4d8fca2181062",
+      "productionHash": "2bc866b6beab99927564b77486c87393e27bfbb75abfe3dc7dc4d8fca2181062",
       "developmentDependencies": [
         "vuetify"
       ],
