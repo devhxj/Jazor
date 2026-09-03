@@ -1,10 +1,12 @@
 # 当前状态
 
-> 本页列出当前可以被项目依赖的产品契约，以及证明这些契约的可复现入口。计划、一次性实施过程和历史构建数字，不应被包装为当前能力。
+> 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
 
-开发者只需要用一个问题审视这里的每项状态：今天能否据此设计、编写和交付。答案来自实现、测试与真实消费者证据，而不是愿景、阶段性进展或一次成功的构建。
+审视这里的每项状态，只需要一个问题：今天能否据此设计、编写和交付。答案来自实现、测试与真实消费者证据，而不是愿景、阶段性进展或一次成功的构建。
 
 ## 已交付的核心能力
+
+以下能力已经形成实现、验证与交付三者一致的产品契约。
 
 | 能力 | 当前范围 | 详细入口 |
 | --- | --- | --- |
@@ -15,6 +17,8 @@
 
 ## RazorVue 作者面
 
+RazorVue 的作者体验以官方 Razor SG、强类型组件契约和最终浏览器行为共同界定。
+
 RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用作者形态：组件组合、泛型组件、slot/fragment、`@bind`、事件、循环、生命周期、`@key`、`@ref`、可达的 `@code` / `.razor.cs` helper，以及 direct Vue render-function 产物。`ParameterView`、可写 `[Inject]` property、typed/named/nested cascading value、应用自有 route host 和限定的同源内部导航，只在已经证明的浏览器交互或首屏 SSR 子集内声明支持。
 
 框架 primitive 的事件支持限于已验证的只读原生投影：核心 Mouse、Keyboard、Focus、Change，以及 Pointer、Wheel、Drag、Clipboard、Touch、Error、Progress 事件组；`ElementReference.FocusAsync` 也只覆盖已经证明的浏览器交互子集。复杂 lifecycle、导航取消、参数和 cascade 的完整 reference parity、SSR/prerender identity 仍不在声明范围内。
@@ -23,13 +27,15 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 ## 生态与参考应用
 
+生态绑定与参考应用服务于同一目标：让已声明的能力能够在真实项目中被自然地组合和验证。
+
 - Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vu Icons、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；它们以强类型 binding 或资源库形式交付。
 - `Jazor.Admin` 是 UI 库无关的管理壳库；`samples/JazorAdmin` 是它的生产级参考应用，以强类型 TDesign 组件实现当前 Starter 功能页面以及门户、IAM、运营场景。它验证编写体验、资源闭包与 Release browser 行为，不反向定义库 API。
 - ASP.NET Core 宿主支持 `JazorMode=debug` 的模块、source map、import map 输出，以及 `JazorMode=release` 的浏览器 bundle。启用 `JazorSSR=true` 后，已声明范围内的 Vue SSR 与 hydration 使用同一显式资源闭包。
 
 ## 明确边界
 
-以下内容不是“等待自动兼容”的缺口，而是当前已经明确的产品边界。它们会保持显式失败或明确拒绝，直到新的实现与证据足以改变契约：
+以下内容不是“等待自动兼容”的缺口，而是当前已经明确的产品边界。它们将保持显式失败或明确拒绝，直到新的实现与证据足以改变契约：
 
 - Jazor 不是完整 CLR，也不支持任意未映射的 .NET 类型、成员或运行时身份。
 - Microsoft/Blazor 内置 UI 组件，例如 `Router`、`RouteView`、`EditForm`、`Input*`、`AuthorizeView` 和 `DynamicComponent`，不作为 RazorVue 的组件入口；UI 层由应用自定义组件或已声明的第三方 binding 提供。
@@ -39,6 +45,8 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 后续目标、责任归属与升级门槛见[下一阶段](./next-development.md)。
 
 ## 质量门槛与验证
+
+质量门槛让每一项产品声明都能回到可执行的验收路径。
 
 | 范围 | 门槛 | 入口 |
 | --- | --- | --- |
