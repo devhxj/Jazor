@@ -633,7 +633,7 @@ public sealed class JazorAspNetCoreReloadTests
         return app;
     }
 
-    private static Task WriteHmrManifestAsync(
+    private static async Task WriteHmrManifestAsync(
         string manifestPath,
         string relativePath,
         string contentHash,
@@ -675,7 +675,15 @@ public sealed class JazorAspNetCoreReloadTests
                 }
             }
         };
-        return File.WriteAllTextAsync(manifestPath, JsonSerializer.Serialize(manifest));
+
+        // Emit publishes manifests from a transaction directory. Mirror that contract here so
+        // FileSystemWatcher can observe either complete version, never an in-place partial write.
+        var stagingPath = Path.Combine(
+            Directory.GetParent(directory)?.FullName
+                ?? throw new InvalidOperationException("HMR manifest directory must have a parent directory."),
+            ".jazor-manifest-" + Guid.NewGuid().ToString("N") + ".tmp");
+        await File.WriteAllTextAsync(stagingPath, JsonSerializer.Serialize(manifest));
+        File.Move(stagingPath, manifestPath, overwrite: true);
     }
 
     private static async Task<JsonElement> ReceiveWebSocketJsonAsync(WebSocket socket, TimeSpan timeout)
