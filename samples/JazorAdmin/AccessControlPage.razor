@@ -24,15 +24,26 @@
                                     <p>@L("Select a role to edit its resource operations", "选择一个角色以编辑其资源操作权限")</p>
                                 </div>
                             </header>
-                            <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
+                            <TForm FormData="RoleDraft"
+                                   Data="@Draft"
+                                   Rules="@DraftRules"
+                                   OnSubmit="@CreateRole"
+                                   OnReset="@ResetRoleDraft"
+                                   LabelAlign="@TFormLabelAlignValue.Top"
+                                   data-authorization-form="create-role">
                                 <TFormItem LabelValue="@L("Role code", "角色编码")" Name="roleCode">
-                                    <span data-authorization-field="roleCode"><TInput T="string" Value="@roleCode" OnChange="@(value => roleCode = value)" /></span>
+                                    <span data-authorization-field="roleCode"><TInput T="string"
+                                        @bind-Value="Draft.Code"
+                                        @bind-Value:event="OnChange" /></span>
                                 </TFormItem>
                                 <TFormItem LabelValue="@L("Display name", "显示名称")" Name="roleDisplayName">
-                                    <span data-authorization-field="roleDisplayName"><TInput T="string" Value="@roleDisplayName" OnChange="@(value => roleDisplayName = value)" /></span>
+                                    <span data-authorization-field="roleDisplayName"><TInput T="string"
+                                        @bind-Value="Draft.DisplayName"
+                                        @bind-Value:event="OnChange" /></span>
                                 </TFormItem>
                                 <div class="ja-form__commands">
-                                    <TButton Theme="@TButtonThemeValue.Primary" data-authorization-command="create-role" OnClick="@(_ => CreateRole())">@L("Add role", "添加角色")</TButton>
+                                    <TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text" data-authorization-command="reset-role">@L("Reset", "重置")</TButton>
+                                    <TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary" data-authorization-command="create-role">@L("Add role", "添加角色")</TButton>
                                 </div>
                             </TForm>
                             @if (roles.Length == 0)

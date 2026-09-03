@@ -55,15 +55,26 @@
                                     <p>@L("Create a direct child under the active organization", "在当前组织下创建直接下级组织")</p>
                                 </div>
                             </header>
-                            <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
+                            <TForm FormData="ChildOrganizationDraft"
+                                   Data="@ChildDraft"
+                                   Rules="@ChildDraftRules"
+                                   OnSubmit="@CreateChild"
+                                   OnReset="@ResetChildDraft"
+                                   LabelAlign="@TFormLabelAlignValue.Top"
+                                   data-organization-form="create-child">
                                 <TFormItem LabelValue="@L("Code", "编码")" Name="childCode">
-                                    <span data-organization-field="childCode"><TInput T="string" Value="@childCode" OnChange="@(value => childCode = value)" /></span>
+                                    <span data-organization-field="childCode"><TInput T="string"
+                                        @bind-Value="ChildDraft.Code"
+                                        @bind-Value:event="OnChange" /></span>
                                 </TFormItem>
                                 <TFormItem LabelValue="@L("Display name", "显示名称")" Name="childDisplayName">
-                                    <span data-organization-field="childDisplayName"><TInput T="string" Value="@childDisplayName" OnChange="@(value => childDisplayName = value)" /></span>
+                                    <span data-organization-field="childDisplayName"><TInput T="string"
+                                        @bind-Value="ChildDraft.DisplayName"
+                                        @bind-Value:event="OnChange" /></span>
                                 </TFormItem>
                                 <div class="ja-form__commands">
-                                    <TButton Theme="@TButtonThemeValue.Primary" data-organization-command="create-child" OnClick="@(_ => CreateChild())">@L("Create organization", "创建组织")</TButton>
+                                    <TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text" data-organization-command="reset-child">@L("Reset", "重置")</TButton>
+                                    <TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary" data-organization-command="create-child">@L("Create organization", "创建组织")</TButton>
                                 </div>
                             </TForm>
                         </section>
@@ -100,12 +111,23 @@
                                     <p>@L("Add a known account or change the selected member's roles", "添加已有账号或修改所选成员的角色")</p>
                                 </div>
                             </header>
-                            <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
+                            <TForm FormData="MembershipDraft"
+                                   Data="@MemberDraft"
+                                   Rules="@MemberDraftRules"
+                                   OnSubmit="@CreateMember"
+                                   OnReset="@ResetMemberDraft"
+                                   LabelAlign="@TFormLabelAlignValue.Top"
+                                   data-organization-form="create-member">
                                 <TFormItem LabelValue="@L("Account email", "账号邮箱")" Name="memberEmail">
-                                    <span data-organization-field="memberEmail"><TInput T="string" Value="@memberEmail" OnChange="@(value => memberEmail = value)" Placeholder="operator@jazor.local" /></span>
+                                    <span data-organization-field="memberEmail"><TInput T="string"
+                                        @bind-Value="MemberDraft.Email"
+                                        @bind-Value:event="OnChange"
+                                        Placeholder="operator@jazor.local" /></span>
                                 </TFormItem>
                                 <TFormItem LabelValue="@L("Initial role", "初始角色")" Name="newMemberRoleId">
-                                    <TRadioGroup T="string" Value="@newMemberRoleId" OnChange="@(value => newMemberRoleId = value)">
+                                    <TRadioGroup T="string"
+                                                 @bind-Value="MemberDraft.InitialRoleId"
+                                                 @bind-Value:event="OnChange">
                                         <TRadioButton T="string" Value="@string.Empty" LabelValue="@L("No role", "不分配角色")" />
                                         @foreach (var role in roles)
                                         {
@@ -114,7 +136,8 @@
                                     </TRadioGroup>
                                 </TFormItem>
                                 <div class="ja-form__commands">
-                                    <TButton Theme="@TButtonThemeValue.Primary" data-organization-command="create-member" OnClick="@(_ => CreateMember())">@L("Add member", "添加成员")</TButton>
+                                    <TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text" data-organization-command="reset-member">@L("Reset", "重置")</TButton>
+                                    <TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary" data-organization-command="create-member">@L("Add member", "添加成员")</TButton>
                                 </div>
                             </TForm>
 

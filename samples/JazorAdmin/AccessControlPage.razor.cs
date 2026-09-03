@@ -19,6 +19,13 @@ public enum AccessControlView
 [ECMAScriptModule("components/access-control.mjs")]
 public partial class AccessControlPage : AppComponentBase, IVueContainerComponent
 {
+    private sealed record RoleDraft
+    {
+        public string Code { get; set; } = string.Empty;
+
+        public string DisplayName { get; set; } = string.Empty;
+    }
+
     [Parameter]
     public string? OrganizationId { get; set; }
 
@@ -31,8 +38,19 @@ public partial class AccessControlPage : AppComponentBase, IVueContainerComponen
     private ResourceOperationResponse[] resourceOperations = [];
     private string? selectedRoleId;
     private string[] grants = [];
-    private string roleCode = string.Empty;
-    private string roleDisplayName = string.Empty;
+    private RoleDraft Draft { get; set; } = NewRoleDraft();
+
+    private TFormRules<RoleDraft> DraftRules { get; } = new()
+    {
+        ["roleCode"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a role code." }
+        ],
+        ["roleDisplayName"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a display name." }
+        ]
+    };
 
     // 资源操作目录表列：只读展示，行键用资源/操作组合语义。
     private TPrimaryTableCol<ResourceOperationResponse>[] OperationColumns =>
@@ -110,12 +128,12 @@ public partial class AccessControlPage : AppComponentBase, IVueContainerComponen
         });
     }
 
-    private void CreateRole()
+    private void CreateRole(TSubmitContext<RoleDraft> context)
     {
-        if (OrganizationId is null || Text.Normalize(roleCode) is null || Text.Normalize(roleDisplayName) is null)
+        if (OrganizationId is null || Text.Normalize(Draft.Code) is null || Text.Normalize(Draft.DisplayName) is null)
             return;
 
-        ApiClient.CreateRole(OrganizationId, roleCode, roleDisplayName).Then(outcome =>
+        ApiClient.CreateRole(OrganizationId, Draft.Code, Draft.DisplayName).Then(outcome =>
         {
             if (!outcome.Ok)
             {
@@ -123,10 +141,15 @@ public partial class AccessControlPage : AppComponentBase, IVueContainerComponen
                 return;
             }
 
-            roleCode = string.Empty;
-            roleDisplayName = string.Empty;
+            Draft = NewRoleDraft();
             Load();
         });
+    }
+
+    private void ResetRoleDraft(TFormResetEventContext<RoleDraft> context)
+    {
+        Draft = NewRoleDraft();
+        error = null;
     }
 
     private bool HasGrant(ResourceOperationResponse operation)
@@ -160,4 +183,10 @@ public partial class AccessControlPage : AppComponentBase, IVueContainerComponen
 
     private static string GetGrantKey(ResourceOperationResponse operation)
         => operation.Resource + ":" + operation.Operation;
+
+    private static RoleDraft NewRoleDraft() => new()
+    {
+        Code = string.Empty,
+        DisplayName = string.Empty
+    };
 }

@@ -19,6 +19,20 @@ public enum OrganizationView
 [ECMAScriptModule("components/organization.mjs")]
 public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
 {
+    private sealed record ChildOrganizationDraft
+    {
+        public string Code { get; set; } = string.Empty;
+
+        public string DisplayName { get; set; } = string.Empty;
+    }
+
+    private sealed record MembershipDraft
+    {
+        public string Email { get; set; } = string.Empty;
+
+        public string InitialRoleId { get; set; } = string.Empty;
+    }
+
     [Parameter]
     public string? OrganizationId { get; set; }
 
@@ -30,12 +44,30 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
     private OrganizationDetailResponse? organization;
     private OrganizationMemberResponse[] members = [];
     private OrganizationRoleResponse[] roles = [];
-    private string childCode = string.Empty;
-    private string childDisplayName = string.Empty;
-    private string memberEmail = string.Empty;
-    private string newMemberRoleId = string.Empty;
+    private ChildOrganizationDraft ChildDraft { get; set; } = NewChildDraft();
+    private MembershipDraft MemberDraft { get; set; } = NewMemberDraft();
     private string? editingMembershipId;
     private string[] editingMemberRoleIds = [];
+
+    private TFormRules<ChildOrganizationDraft> ChildDraftRules { get; } = new()
+    {
+        ["childCode"] =
+        [
+            new TFormRule { Required = true, Message = "Enter an organization code." }
+        ],
+        ["childDisplayName"] =
+        [
+            new TFormRule { Required = true, Message = "Enter an organization name." }
+        ]
+    };
+
+    private TFormRules<MembershipDraft> MemberDraftRules { get; } = new()
+    {
+        ["memberEmail"] =
+        [
+            new TFormRule { Required = true, Message = "Enter an account email." }
+        ]
+    };
 
     // 成员表列：成员列组合名称与邮箱，操作列进入角色编辑。
     private TPrimaryTableCol<OrganizationMemberResponse>[] MemberColumns =>
@@ -137,12 +169,12 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
         roles = ApiClient.ToRoles(outcome.Data);
     }
 
-    private void CreateChild()
+    private void CreateChild(TSubmitContext<ChildOrganizationDraft> context)
     {
-        if (OrganizationId is null || Text.Normalize(childCode) is null || Text.Normalize(childDisplayName) is null)
+        if (OrganizationId is null || Text.Normalize(ChildDraft.Code) is null || Text.Normalize(ChildDraft.DisplayName) is null)
             return;
 
-        ApiClient.CreateChildOrganization(OrganizationId, childCode, childDisplayName).Then(outcome =>
+        ApiClient.CreateChildOrganization(OrganizationId, ChildDraft.Code, ChildDraft.DisplayName).Then(outcome =>
         {
             if (!outcome.Ok)
             {
@@ -150,19 +182,24 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
                 return;
             }
 
-            childCode = string.Empty;
-            childDisplayName = string.Empty;
+            ChildDraft = NewChildDraft();
             Load();
         });
     }
 
-    private void CreateMember()
+    private void ResetChildDraft(TFormResetEventContext<ChildOrganizationDraft> context)
     {
-        if (OrganizationId is null || Text.Normalize(memberEmail) is null)
+        ChildDraft = NewChildDraft();
+        error = null;
+    }
+
+    private void CreateMember(TSubmitContext<MembershipDraft> context)
+    {
+        if (OrganizationId is null || Text.Normalize(MemberDraft.Email) is null)
             return;
 
-        var roleIds = string.IsNullOrWhiteSpace(newMemberRoleId) ? new string[0] : new[] { newMemberRoleId };
-        ApiClient.CreateMember(OrganizationId, memberEmail, roleIds).Then(outcome =>
+        var roleIds = string.IsNullOrWhiteSpace(MemberDraft.InitialRoleId) ? new string[0] : new[] { MemberDraft.InitialRoleId };
+        ApiClient.CreateMember(OrganizationId, MemberDraft.Email, roleIds).Then(outcome =>
         {
             if (!outcome.Ok)
             {
@@ -170,10 +207,15 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
                 return;
             }
 
-            memberEmail = string.Empty;
-            newMemberRoleId = string.Empty;
+            MemberDraft = NewMemberDraft();
             Load();
         });
+    }
+
+    private void ResetMemberDraft(TFormResetEventContext<MembershipDraft> context)
+    {
+        MemberDraft = NewMemberDraft();
+        error = null;
     }
 
     private void SelectMember(OrganizationMemberResponse member)
@@ -212,4 +254,16 @@ public partial class OrganizationPage : AppComponentBase, IVueContainerComponent
 
     private string GetRoleNames(OrganizationRoleResponse[] values)
         => values.Length == 0 ? L("No roles", "暂无角色") : string.Join(", ", values.Select(role => role.DisplayName));
+
+    private static ChildOrganizationDraft NewChildDraft() => new()
+    {
+        Code = string.Empty,
+        DisplayName = string.Empty
+    };
+
+    private static MembershipDraft NewMemberDraft() => new()
+    {
+        Email = string.Empty,
+        InitialRoleId = string.Empty
+    };
 }

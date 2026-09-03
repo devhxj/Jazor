@@ -283,8 +283,14 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertDoesNotContain(apiClientModule, "headers: null", "omitted optional Fetch headers in JazorAdmin API client module");
     AssertDoesNotContain(apiClientModule, "body: null", "omitted optional Fetch body in JazorAdmin API client module");
     AssertContains(organizationModule, "CreateChildOrganization", "child organization command in organization management module");
+    AssertContains(organizationModule, "ChildDraftRules", "typed child organization form rules in organization management module");
+    AssertContains(organizationModule, "MemberDraftRules", "typed membership form rules in organization management module");
+    AssertContains(organizationModule, "onSubmit: CreateChild", "typed child organization submit callback in organization management module");
+    AssertContains(organizationModule, "onSubmit: CreateMember", "typed membership submit callback in organization management module");
     AssertContains(organizationModule, "scope.OnParametersSet();", "route parameter lifecycle in organization management module");
     AssertContains(accessControlModule, "ReplaceRoleGrants", "role grant command in access control management module");
+    AssertContains(accessControlModule, "DraftRules", "typed role form rules in access control management module");
+    AssertContains(accessControlModule, "onSubmit: CreateRole", "typed role submit callback in access control management module");
     AssertContains(accessControlModule, "scope.OnParametersSet();", "route parameter lifecycle in access control management module");
     AssertContains(accountModule, "GetAccounts", "account query in account management module");
     AssertContains(accountModule, "ResetAccountPassword", "account password command in account management module");
@@ -520,6 +526,11 @@ static async Task VerifyBrowserSmokeAsync(
                     code: "north-hub",
                     displayName: "North Hub"
                   };
+                  const children = [{
+                    id: "f32d974e-2fe5-4429-851c-70d9e2ec72c2",
+                    code: "north-clinic",
+                    displayName: "North Clinic"
+                  }];
                   const roles = [{
                     id: "ed671921-3218-451c-a92f-671cb5b83119",
                     code: "organization-admin",
@@ -537,6 +548,13 @@ static async Task VerifyBrowserSmokeAsync(
                     displayName: "Platform administrator",
                     enabled: true,
                     platformAdministrator: true
+                  }];
+                  const members = [{
+                    membershipId: "5e7e599d-c9a3-40d6-bd1d-5ce2d3e976d8",
+                    userId: "06b75c0b-89d3-4302-94c9-d5f356a04d7a",
+                    email: "operator@example.test",
+                    displayName: "Organization operator",
+                    roles: roles.slice()
                   }];
                   const applications = [{
                     id: "c05e9d5a-e435-47cb-92f6-ca31f46ca8a5",
@@ -699,24 +717,43 @@ static async Task VerifyBrowserSmokeAsync(
                       message: "Simulated failure"
                     }]);
                     if (url.pathname === "/api/organizations/") return json([organization]);
-                    if (url.pathname.endsWith("/members")) return json([{
-                      membershipId: "5e7e599d-c9a3-40d6-bd1d-5ce2d3e976d8",
-                      userId: "06b75c0b-89d3-4302-94c9-d5f356a04d7a",
-                      email: "operator@example.test",
-                      displayName: "Organization operator",
-                      roles
-                    }]);
+                    if (url.pathname.endsWith("/members") && method === "GET") return json(members);
+                    if (url.pathname.endsWith("/members") && method === "POST") {
+                      const member = {
+                        membershipId: `membership-${members.length + 1}`,
+                        userId: `user-${members.length + 1}`,
+                        email: body.Email,
+                        displayName: body.Email,
+                        roles: roles.filter((role) => body.RoleIds.includes(role.id))
+                      };
+                      members.push(member);
+                      return json(member, 201);
+                    }
                     if (url.pathname.endsWith("/authorization-resources")) return json(operations);
-                    if (url.pathname.endsWith("/grants")) return json(operations.slice(0, 2));
-                    if (url.pathname.endsWith("/roles")) return json(roles);
-                    if (url.pathname.startsWith("/api/organizations/")) return json({
+                    if (url.pathname.endsWith("/grants") && method === "GET") return json(operations.slice(0, 2));
+                    if (url.pathname.endsWith("/roles") && method === "GET") return json(roles);
+                    if (url.pathname.endsWith("/roles") && method === "POST") {
+                      const role = {
+                        id: `role-${roles.length + 1}`,
+                        code: body.Code,
+                        displayName: body.DisplayName
+                      };
+                      roles.push(role);
+                      return json(role, 201);
+                    }
+                    if (url.pathname.endsWith("/children") && method === "POST") {
+                      const child = {
+                        id: `child-${children.length + 1}`,
+                        code: body.Code,
+                        displayName: body.DisplayName
+                      };
+                      children.push(child);
+                      return json({ ...child, parentId: organization.id, children: [] }, 201);
+                    }
+                    if (url.pathname.startsWith("/api/organizations/") && method === "GET") return json({
                       ...organization,
                       parentId: null,
-                      children: [{
-                        id: "f32d974e-2fe5-4429-851c-70d9e2ec72c2",
-                        code: "north-clinic",
-                        displayName: "North Clinic"
-                      }]
+                      children
                     });
                     if (url.pathname === "/api/accounts/" && method === "POST") {
                       const account = {
@@ -1099,13 +1136,46 @@ static async Task VerifyBrowserSmokeAsync(
                       const organizationPathname = location.pathname;
                       const organizationTitle = document.querySelector('[data-route-breadcrumb-current="true"]')?.textContent ?? "";
                       const organizationText = document.querySelector('[data-management-area="organizations"]')?.textContent ?? "";
+                      await waitFor(() => document.querySelector('[data-organization-form="create-child"]') !== null, "typed child organization form");
+                      await setInput('[data-organization-field="childCode"] input', "north-archive");
+                      await setInput('[data-organization-field="childDisplayName"] input', "North Archive");
+                      await click('[data-organization-command="reset-child"]', "child organization draft reset command");
+                      await waitFor(
+                        () => document.querySelector('[data-organization-field="childCode"] input')?.value === "" &&
+                          document.querySelector('[data-organization-field="childDisplayName"] input')?.value === "",
+                        "typed child organization form reset");
+                      const childOrganizationFormReset = true;
+                      await setInput('[data-organization-field="childCode"] input', "north-archive");
+                      await setInput('[data-organization-field="childDisplayName"] input', "North Archive");
+                      await click('[data-organization-command="create-child"]', "typed child organization create command");
+                      await waitFor(() => document.querySelectorAll(".ja-item-list li").length === 2, "created child organization");
+                      await waitFor(
+                        () => document.querySelector('[data-organization-field="childCode"] input')?.value === "" &&
+                          document.querySelector('[data-organization-field="childDisplayName"] input')?.value === "",
+                        "created child organization draft reset");
                       const childOrganizationCount = document.querySelectorAll(".ja-item-list li").length;
+                      const createdChildOrganizationText = document.querySelector(".ja-item-list li:last-child")?.textContent ?? "";
 
                       await click('[data-nav-key="organizations.members"] a', "members navigation item");
                       await waitForTitle("成员管理");
                       await waitFor(() => document.querySelectorAll('[data-management-area="organizations"] .t-table tbody tr').length === 1, "member table");
                       const membersPathname = location.pathname;
                       const memberRowText = document.querySelector('[data-management-area="organizations"] .t-table tbody tr')?.textContent ?? "";
+                      await waitFor(() => document.querySelector('[data-organization-form="create-member"]') !== null, "typed membership form");
+                      await setInput('[data-organization-field="memberEmail"] input', "member.smoke@example.test");
+                      await click('[data-organization-command="reset-member"]', "membership draft reset command");
+                      await waitFor(
+                        () => document.querySelector('[data-organization-field="memberEmail"] input')?.value === "",
+                        "typed membership form reset");
+                      const memberFormReset = true;
+                      await setInput('[data-organization-field="memberEmail"] input', "member.smoke@example.test");
+                      await click('[data-organization-command="create-member"]', "typed membership create command");
+                      await waitFor(() => document.querySelectorAll('[data-management-area="organizations"] .t-table tbody tr').length === 2, "created organization member");
+                      await waitFor(
+                        () => document.querySelector('[data-organization-field="memberEmail"] input')?.value === "",
+                        "created membership draft reset");
+                      const memberCount = document.querySelectorAll('[data-management-area="organizations"] .t-table tbody tr').length;
+                      const createdMemberRowText = document.querySelector('[data-management-area="organizations"] .t-table tbody tr:last-child')?.textContent ?? "";
                       await click('[data-organization-command="edit-roles"]', "member role editor command");
                       const memberRoleEditorVisible = document.querySelector('[data-organization-command="save-roles"]') !== null;
 
@@ -1113,7 +1183,25 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitForTitle("角色与授权");
                       await waitFor(() => document.querySelector('[data-management-area="authorization"] .ja-option-list') !== null, "role grants");
                       const accessPathname = location.pathname;
+                      await waitFor(() => document.querySelector('[data-authorization-form="create-role"]') !== null, "typed role form");
+                      await setInput('[data-authorization-field="roleCode"] input', "smoke-role");
+                      await setInput('[data-authorization-field="roleDisplayName"] input', "Smoke role");
+                      await click('[data-authorization-command="reset-role"]', "role draft reset command");
+                      await waitFor(
+                        () => document.querySelector('[data-authorization-field="roleCode"] input')?.value === "" &&
+                          document.querySelector('[data-authorization-field="roleDisplayName"] input')?.value === "",
+                        "typed role form reset");
+                      const roleFormReset = true;
+                      await setInput('[data-authorization-field="roleCode"] input', "smoke-role");
+                      await setInput('[data-authorization-field="roleDisplayName"] input', "Smoke role");
+                      await click('[data-authorization-command="create-role"]', "typed role create command");
+                      await waitFor(() => document.querySelectorAll(".ja-role-list li").length === 2, "created organization role");
+                      await waitFor(
+                        () => document.querySelector('[data-authorization-field="roleCode"] input')?.value === "" &&
+                          document.querySelector('[data-authorization-field="roleDisplayName"] input')?.value === "",
+                        "created role draft reset");
                       const roleCount = document.querySelectorAll(".ja-role-list li").length;
+                      const createdRoleText = document.querySelector(".ja-role-list li:last-child")?.textContent ?? "";
                       const grantCount = document.querySelectorAll('[data-management-area="authorization"] .ja-option-list .ja-form__option').length;
 
                       await click('[data-nav-key="authorization.resources"] a', "resource operations navigation item");
@@ -1324,11 +1412,18 @@ static async Task VerifyBrowserSmokeAsync(
                         organizationTitle,
                         organizationText,
                         childOrganizationCount,
+                        createdChildOrganizationText,
+                        childOrganizationFormReset,
                         membersPathname,
                         memberRowText,
+                        memberCount,
+                        createdMemberRowText,
+                        memberFormReset,
                         memberRoleEditorVisible,
                         accessPathname,
                         roleCount,
+                        createdRoleText,
+                        roleFormReset,
                         grantCount,
                         resourcesPathname,
                         resourceOperationCount,
@@ -1441,14 +1536,21 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("organizationPathname").GetString() ?? string.Empty, "/organizations/structure", "JazorAdmin organization structure navigation", root.GetRawText());
         AssertContains(root.GetProperty("organizationTitle").GetString() ?? string.Empty, "组织架构", "JazorAdmin organization structure title", root.GetRawText());
         AssertContains(root.GetProperty("organizationText").GetString() ?? string.Empty, "North Clinic", "JazorAdmin child organization display", root.GetRawText());
-        AssertJsonInt(root, "childOrganizationCount", 1, "JazorAdmin child organization count", root.GetRawText());
+        AssertJsonInt(root, "childOrganizationCount", 2, "JazorAdmin typed child organization create form", root.GetRawText());
+        AssertContains(root.GetProperty("createdChildOrganizationText").GetString() ?? string.Empty, "North Archive", "JazorAdmin created child organization", root.GetRawText());
+        AssertJsonBoolean(root, "childOrganizationFormReset", true, "JazorAdmin typed child organization form reset", root.GetRawText());
 
         AssertContains(root.GetProperty("membersPathname").GetString() ?? string.Empty, "/organizations/members", "JazorAdmin members navigation", root.GetRawText());
         AssertContains(root.GetProperty("memberRowText").GetString() ?? string.Empty, "Organization operator", "JazorAdmin member row", root.GetRawText());
+        AssertJsonInt(root, "memberCount", 2, "JazorAdmin typed membership create form", root.GetRawText());
+        AssertContains(root.GetProperty("createdMemberRowText").GetString() ?? string.Empty, "member.smoke@example.test", "JazorAdmin created organization member", root.GetRawText());
+        AssertJsonBoolean(root, "memberFormReset", true, "JazorAdmin typed membership form reset", root.GetRawText());
         AssertJsonBoolean(root, "memberRoleEditorVisible", true, "JazorAdmin member role editor", root.GetRawText());
 
         AssertContains(root.GetProperty("accessPathname").GetString() ?? string.Empty, "/authorization/roles", "JazorAdmin role grant navigation", root.GetRawText());
-        AssertJsonInt(root, "roleCount", 1, "JazorAdmin role list count", root.GetRawText());
+        AssertJsonInt(root, "roleCount", 2, "JazorAdmin typed role create form", root.GetRawText());
+        AssertContains(root.GetProperty("createdRoleText").GetString() ?? string.Empty, "Smoke role", "JazorAdmin created organization role", root.GetRawText());
+        AssertJsonBoolean(root, "roleFormReset", true, "JazorAdmin typed role form reset", root.GetRawText());
         AssertJsonInt(root, "grantCount", 4, "JazorAdmin resource grant count", root.GetRawText());
         AssertContains(root.GetProperty("resourcesPathname").GetString() ?? string.Empty, "/authorization/resources", "JazorAdmin resource operations navigation", root.GetRawText());
         AssertJsonInt(root, "resourceOperationCount", 4, "JazorAdmin resource operation count", root.GetRawText());
