@@ -308,6 +308,11 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(ssoGrantModule, "scope.OnParametersSet();", "route parameter lifecycle in grant module");
     AssertContains(settingsModule, "CreateSetting", "configuration center create command");
     AssertContains(settingsModule, "UpdateSetting", "configuration center update command");
+    AssertContains(settingsModule, "DraftRules", "typed settings form rules in configuration center module");
+    AssertContains(settingsModule, "data: state.Draft", "typed settings draft data in configuration center module");
+    AssertContains(settingsModule, "onSubmit: Save", "typed settings submit callback in configuration center module");
+    AssertContains(settingsModule, "onReset: ResetDraft", "typed settings reset callback in configuration center module");
+    AssertContains(settingsModule, "typeof __patin$", "explicit textarea union branch in configuration center module");
     AssertContains(schedulesModule, "TriggerSchedule", "task scheduling manual run command");
     AssertContains(schedulesModule, "GetScheduleRuns", "task scheduling history query");
     AssertContains(schedulesModule, "data: state.Draft", "typed schedule draft data in task scheduling module");
@@ -868,6 +873,8 @@ static async Task VerifyBrowserSmokeAsync(
                       return json(settings);
                     }
                     if (url.pathname === "/api/settings/" && method === "POST") {
+                      if (body.Key === "feature.invalid")
+                        return json({ detail: "Simulated setting failure" }, 422);
                       const setting = {
                         key: body.Key,
                         group: body.Group,
@@ -1315,6 +1322,24 @@ static async Task VerifyBrowserSmokeAsync(
                       await waitFor(() => document.querySelector('[data-management-area="settings"]') !== null, "configuration center");
                       const settingsPathname = location.pathname;
                       await click('[data-settings-command="new"]', "new setting command");
+                      await waitFor(() => document.querySelector('[data-settings-form="editor"]') !== null, "typed settings form");
+                      await setInput('[data-management-area="settings"] [data-setting-field="key"] input', "feature.invalid");
+                      await setInput('[data-management-area="settings"] [data-setting-field="group"] input', "feature");
+                      await setInput('[data-management-area="settings"] [data-setting-field="label"] input', "Invalid setting");
+                      await setTextArea('[data-management-area="settings"] [data-setting-field="value"] textarea', "keep draft");
+                      const failedSettingValueBeforeSubmit = document.querySelector('[data-management-area="settings"] [data-setting-field="value"] textarea')?.value ?? "";
+                      await click('[data-settings-command="save"]', "failed setting save command");
+                      await waitFor(
+                        () => document.querySelector('[data-management-area="settings"] [role="alert"]')?.textContent?.includes("Simulated setting failure") === true,
+                        "settings failed submission");
+                      const failedSettingValueAfterSubmit = document.querySelector('[data-management-area="settings"] [data-setting-field="value"] textarea')?.value ?? "";
+                      if (failedSettingValueAfterSubmit !== failedSettingValueBeforeSubmit)
+                        throw new Error("Settings draft value was lost after a failed submission.");
+                      const settingsFailedDraftRetained = failedSettingValueAfterSubmit === failedSettingValueBeforeSubmit;
+                      await click('[data-settings-command="reset"]', "settings draft reset command");
+                      await waitFor(
+                        () => document.querySelector('[data-management-area="settings"] [data-setting-field="key"] input')?.value === "",
+                        "typed settings form reset");
                       await setInput('[data-management-area="settings"] [data-setting-field="key"] input', "feature.smoke.enabled");
                       await setInput('[data-management-area="settings"] [data-setting-field="group"] input', "feature");
                       await setInput('[data-management-area="settings"] [data-setting-field="label"] input', "Smoke feature");
@@ -1476,6 +1501,7 @@ static async Task VerifyBrowserSmokeAsync(
                         tokenRowText,
                         settingsPathname,
                         settingRowText,
+                        settingsFailedDraftRetained,
                         settingsEmptyVisible,
                         schedulesPathname,
                         scheduleFormReset,
@@ -1606,6 +1632,7 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("tokenRowText").GetString() ?? string.Empty, "revoked", "JazorAdmin OpenIddict token revocation", root.GetRawText());
         AssertContains(root.GetProperty("settingsPathname").GetString() ?? string.Empty, "/settings", "JazorAdmin configuration center navigation", root.GetRawText());
         AssertContains(root.GetProperty("settingRowText").GetString() ?? string.Empty, "Smoke feature", "JazorAdmin configuration center create", root.GetRawText());
+        AssertJsonBoolean(root, "settingsFailedDraftRetained", true, "JazorAdmin settings failed submit preserves draft", root.GetRawText());
         AssertJsonBoolean(root, "settingsEmptyVisible", true, "JazorAdmin configuration center empty state", root.GetRawText());
         AssertContains(root.GetProperty("schedulesPathname").GetString() ?? string.Empty, "/schedules", "JazorAdmin task scheduling navigation", root.GetRawText());
         AssertJsonBoolean(root, "scheduleFormReset", true, "JazorAdmin typed schedule form reset", root.GetRawText());

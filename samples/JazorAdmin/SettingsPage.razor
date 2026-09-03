@@ -37,20 +37,37 @@
                     <header class="ja-panel__header">
                         <div><h2 id="setting-editor-title">@(IsNew ? L("Create setting", "创建配置") : L("Setting details", "配置详情"))</h2><p>@L("Keys are immutable after creation", "键名创建后不可修改")</p></div>
                     </header>
-                    <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
+                    <TForm FormData="SettingDraft"
+                           Data="@Draft"
+                           Rules="@DraftRules"
+                           OnSubmit="@Save"
+                           OnReset="@ResetDraft"
+                           LabelAlign="@TFormLabelAlignValue.Top"
+                           data-settings-form="editor">
                         <TFormItem LabelValue="@L("Key", "键名")" Name="key">
-                            <span data-setting-field="key"><TInput T="string" Value="@key" OnChange="@(value => key = value)" Readonly="@(!IsNew)" Placeholder="feature.audit.enabled" /></span>
+                            <span data-setting-field="key"><TInput T="string"
+                                @bind-Value="Draft.Key"
+                                @bind-Value:event="OnChange"
+                                Readonly="@(!IsNew)"
+                                Placeholder="feature.audit.enabled" /></span>
                         </TFormItem>
                         <div class="ja-form__grid">
                             <TFormItem LabelValue="@L("Group", "分组")" Name="group">
-                                <span data-setting-field="group"><TInput T="string" Value="@group" OnChange="@(value => group = value)" Placeholder="feature" /></span>
+                                <span data-setting-field="group"><TInput T="string"
+                                    @bind-Value="Draft.Group"
+                                    @bind-Value:event="OnChange"
+                                    Placeholder="feature" /></span>
                             </TFormItem>
                             <TFormItem LabelValue="@L("Label", "标签")" Name="label">
-                                <span data-setting-field="label"><TInput T="string" Value="@label" OnChange="@(value => label = value)" /></span>
+                                <span data-setting-field="label"><TInput T="string"
+                                    @bind-Value="Draft.Label"
+                                    @bind-Value:event="OnChange" /></span>
                             </TFormItem>
                         </div>
                         <TFormItem LabelValue="@L("Type", "类型")" Name="kind">
-                            <TRadioGroup T="string" Value="@kind" OnChange="@(value => kind = value)">
+                            <TRadioGroup T="string"
+                                          @bind-Value="Draft.Kind"
+                                          @bind-Value:event="OnChange">
                                 <TRadioButton T="string" Value="@("text")" LabelValue="@L("Text", "文本")" />
                                 <TRadioButton T="string" Value="@("boolean")" LabelValue="@L("Boolean", "布尔")" />
                                 <TRadioButton T="string" Value="@("number")" LabelValue="@L("Number", "数值")" />
@@ -58,13 +75,23 @@
                             </TRadioGroup>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Description", "描述")" Name="description">
-                            <span data-setting-field="description"><TInput T="string" Value="@description" OnChange="@(value => description = value)" /></span>
+                            <span data-setting-field="description"><TInput T="string"
+                                @bind-Value="Draft.Description"
+                                @bind-Value:event="OnChange" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Value", "值")" Name="value">
-                            <span data-setting-field="value"><TTextarea Value="@value" OnChange="@(newValue => value = newValue.Value as string ?? string.Empty)" Placeholder="true" /></span>
+                            <span data-setting-field="value"><TTextarea
+                                @bind-Value="Draft.Value"
+                                @bind-Value:event="OnChange"
+                                Placeholder="true" /></span>
                         </TFormItem>
                         <div class="ja-form__commands">
-                            <TButton Theme="@TButtonThemeValue.Primary" data-settings-command="save" OnClick="@(_ => Save())">@(IsNew ? L("Create", "创建") : L("Save changes", "保存修改"))</TButton>
+                            <TButton Type="@TButtonTypeValue.Reset"
+                                     Variant="@TButtonVariantValue.Text"
+                                     data-settings-command="reset">@L("Reset", "重置")</TButton>
+                            <TButton Type="@TButtonTypeValue.Submit"
+                                     Theme="@TButtonThemeValue.Primary"
+                                     data-settings-command="save">@(IsNew ? L("Create", "创建") : L("Save changes", "保存修改"))</TButton>
                             @if (!IsNew)
                             {
                                 <TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Outline" data-settings-command="delete" OnClick="@(_ => DeleteSetting())">@(deleteArmed ? L("Confirm delete", "确认删除") : L("Delete", "删除"))</TButton>

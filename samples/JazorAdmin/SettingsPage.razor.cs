@@ -7,20 +7,50 @@ namespace JazorAdmin;
 [ECMAScriptModule("components/settings")]
 public partial class SettingsPage : AppComponentBase, IVueContainerComponent
 {
+    private sealed record SettingDraft
+    {
+        public string Key { get; set; } = string.Empty;
+
+        public string Group { get; set; } = "general";
+
+        public string Label { get; set; } = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+
+        public string Kind { get; set; } = "text";
+
+        public TTextareaValue Value { get; set; } = string.Empty;
+    }
+
     private bool loading = true;
     private string? error;
     private SettingView[] settings = [];
     private string? selectedKey;
-    private string key = string.Empty;
-    private string group = "general";
-    private string label = string.Empty;
-    private string description = string.Empty;
-    private string kind = "text";
-    private string value = string.Empty;
+    private SettingDraft Draft { get; set; } = NewDraft();
     private bool deleteArmed;
     private int loadVersion;
 
     private bool IsNew => selectedKey is null;
+
+    private TFormRules<SettingDraft> DraftRules { get; } = new()
+    {
+        ["key"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a setting key." }
+        ],
+        ["group"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a setting group." }
+        ],
+        ["label"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a setting label." }
+        ],
+        ["kind"] =
+        [
+            new TFormRule { Required = true, Message = "Select a setting type." }
+        ]
+    };
 
     // TDesign 表格列在 C# 侧组装：标题走 string 分支，组合单元格走 Cell 渲染片段，
     // 行数据经 TPrimaryTableCellParams.Row 以 C# 成员访问，避免依赖 JS 侧键名。
@@ -117,12 +147,15 @@ public partial class SettingsPage : AppComponentBase, IVueContainerComponent
     private void Select(SettingView setting)
     {
         selectedKey = setting.Key;
-        key = setting.Key;
-        group = setting.Group;
-        label = setting.Label;
-        description = setting.Description ?? string.Empty;
-        kind = setting.Kind;
-        value = setting.Value;
+        Draft = new SettingDraft
+        {
+            Key = setting.Key,
+            Group = setting.Group,
+            Label = setting.Label,
+            Description = setting.Description ?? string.Empty,
+            Kind = setting.Kind,
+            Value = setting.Value
+        };
         deleteArmed = false;
     }
 
@@ -133,26 +166,50 @@ public partial class SettingsPage : AppComponentBase, IVueContainerComponent
         // 用户明确切换到新建态时，失效旧请求，避免其回写并重新选中旧配置。
         loadVersion++;
         selectedKey = null;
-        key = string.Empty;
-        group = "general";
-        label = string.Empty;
-        description = string.Empty;
-        kind = "text";
-        value = string.Empty;
+        Draft = NewDraft();
         deleteArmed = false;
         error = null;
     }
 
-    private void Save()
+    private void Save(TSubmitContext<SettingDraft> context)
     {
+        if (Draft.Value is not string settingValue)
+        {
+            error = L("The setting value must be text.", "配置值必须是文本。");
+            return;
+        }
+
         if (selectedKey is null)
         {
-            ApiClient.CreateSetting(new SettingCreate(key, group, label, description, kind, value)).Then(ApplySaved);
+            ApiClient.CreateSetting(new SettingCreate(
+                Draft.Key,
+                Draft.Group,
+                Draft.Label,
+                Draft.Description,
+                Draft.Kind,
+                settingValue)).Then(ApplySaved);
         }
         else
         {
-            ApiClient.UpdateSetting(selectedKey, new SettingUpdate(group, label, description, kind, value)).Then(ApplySaved);
+            ApiClient.UpdateSetting(selectedKey, new SettingUpdate(
+                Draft.Group,
+                Draft.Label,
+                Draft.Description,
+                Draft.Kind,
+                settingValue)).Then(ApplySaved);
         }
+    }
+
+    private void ResetDraft(TFormResetEventContext<SettingDraft> context)
+    {
+        var selected = settings.FirstOrDefault(item => item.Key == selectedKey);
+        if (selected is not null)
+            Select(selected);
+        else
+            Draft = NewDraft();
+
+        deleteArmed = false;
+        error = null;
     }
 
     private void ApplySaved(ApiOutcome outcome)
@@ -186,4 +243,6 @@ public partial class SettingsPage : AppComponentBase, IVueContainerComponent
             Load();
         });
     }
+
+    private static SettingDraft NewDraft() => new();
 }

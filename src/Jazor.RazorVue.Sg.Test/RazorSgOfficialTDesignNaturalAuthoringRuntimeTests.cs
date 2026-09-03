@@ -300,6 +300,90 @@ public sealed class RazorSgOfficialTDesignNaturalAuthoringRuntimeTests
     }
 
     [TestMethod]
+    public async Task BuildComponent_OfficialRazorTDesignTextarea_BindsNativeUnionWithoutBridge()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/TDesignTextareaNaturalAuthoringRuntime.razor"),
+            documentText:
+            """
+            @using ECMAScript.TDesign
+
+            <TTextarea @bind-Value="Draft.Notes" @bind-Value:event="OnChange" />
+            <span data-notes="@Draft.Notes"></span>
+            """,
+            codeBehindSource:
+            """
+            using ECMAScript.TDesign;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/tdesign-textarea-natural-authoring-runtime")]
+            public partial class TDesignTextareaNaturalAuthoringRuntime : ComponentBase, IVueComponent
+            {
+                private sealed record EditorDraft
+                {
+                    public TTextareaValue Notes { get; set; } = string.Empty;
+                }
+
+                private EditorDraft Draft { get; } = new()
+                {
+                    Notes = "Initial note"
+                };
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.TDesignTextareaNaturalAuthoringRuntime");
+
+        var normalizedGeneratedCSharp = string.Concat(
+            observation.GeneratedCSharp
+                .Split('\n')
+                .Where(static line => !line.TrimStart().StartsWith("#", StringComparison.Ordinal))
+                .SelectMany(static line => line.Where(static character => !char.IsWhiteSpace(character))));
+        StringAssert.Contains(normalizedGeneratedCSharp, "OpenComponent<global::ECMAScript.TDesign.TTextarea>", StringComparison.Ordinal);
+        StringAssert.Contains(
+            observation.GeneratedCSharp,
+            "nameof(global::ECMAScript.TDesign.TTextarea.OnChange)",
+            StringComparison.Ordinal);
+        RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
+        StringAssert.Contains(observation.ModuleText, "import { Textarea } from \"tdesign-vue-next\";", StringComparison.Ordinal);
+        Assert.IsFalse(observation.ModuleText.Contains("AdminTextarea", StringComparison.Ordinal), observation.ModuleText);
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/tdesign-textarea-natural-authoring-runtime.mjs",
+            observation.ModuleText,
+            "official-tdesign-textarea-natural-authoring-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/tdesign-textarea-natural-authoring-runtime.mjs";
+            import { Textarea } from "tdesign-vue-next";
+
+            test("natural TDesign textarea binds its native union value", () => {
+                const render = component.setup({}, { slots: {} });
+                const initial = render();
+                const textarea = initial.children.find(node => node?.name === Textarea);
+                const initialState = initial.children.find(node => node?.name === "span");
+
+                assert.ok(textarea);
+                assert.equal(textarea.props.value, "Initial note");
+                assert.equal(typeof textarea.props.onChange, "function");
+                assert.equal(initialState.props["data-notes"], "Initial note");
+
+                textarea.props.onChange("Updated note");
+                const updated = render();
+                const updatedState = updated.children.find(node => node?.name === "span");
+                assert.equal(updatedState.props["data-notes"], "Updated note");
+            });
+            """,
+            new Dictionary<string, string>
+            {
+                ["node_modules/tdesign-vue-next/package.json"] = """{"type":"module","exports":"./index.mjs"}""",
+                ["node_modules/tdesign-vue-next/index.mjs"] = "export const Textarea = { name: \"textarea\" };"
+            });
+    }
+
+    [TestMethod]
     public async Task BuildComponent_OfficialRazorTDesignDialogAndTableSlots_PreserveValueAndContentContractsWithoutBridge()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
