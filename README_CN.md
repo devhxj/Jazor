@@ -34,7 +34,7 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ### Jazor 0.30.0 - 2026-09-03
 
-- JazorAdmin 将 typed TDesign authoring 扩展到组织、角色、审计、排班和系统配置流程；配置文本域支持 native union 绑定，提交失败时保留草稿。
+- JazorAdmin 将 typed TDesign authoring 扩展到组织、角色、审计、排班、系统配置和 OpenIddict Scope 流程；配置文本域支持 native union 绑定，提交失败时保留草稿。
 - Wiki 首页在首屏说明 Jazor 是什么、它解决什么问题以及适用边界；路线图收束为当前能力与下一阶段的证据要求。
 - 参考应用 Release browser smoke 覆盖上述管理流程的关键表格、表单、状态更新和失败交互。
 

@@ -34,7 +34,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ### Jazor 0.30.0 - 2026-09-03
 
-- JazorAdmin extends typed TDesign authoring to organization, role, audit, schedule, and system-settings workflows, including native textarea union binding and failed-submit draft retention.
+- JazorAdmin extends typed TDesign authoring to organization, role, audit, schedule, system-settings, and OpenIddict Scope workflows, including native textarea union binding and failed-submit draft retention.
 - The Wiki homepage now introduces what Jazor is, the problem it solves, and its supported boundary in the first viewport; its roadmap is consolidated around current capability and next-stage evidence.
 - Generated browser import maps and checkout-stable resource hashes make deployed Wiki and package artifacts more predictable.
 

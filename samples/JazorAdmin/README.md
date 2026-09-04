@@ -62,7 +62,8 @@ API 边界。
 - 账户、组织、授权、设置、调度和 SSO 页面的表格操作列仍在 `.razor.cs` 中通过 typed
   column/slot `RenderFragment` 组合；先建立独立 authoring fixture，再决定是否需要 binding API
   调整。
-- SSO 页面仍有 `TForm<TJsonObject>` 加手写 `Value`/`OnChange` 状态；应继续逐页迁移并验证错误
+- SSO 应用页面仍有 `TForm<TJsonObject>` 加手写 `Value`/`OnChange` 状态；作用域页面已经迁移为
+  typed draft、`@bind-Value`、规则、提交与重置回调。应用页面应沿同一边界继续迁移并验证错误
   保留、异步提交和重置语义，不恢复通用 sample-local bridge。
 - Microsoft `EditForm`、`InputBase<T>`、认证状态和 SSR form handoff 仍按作者指南保持
   Guidance/Reject，不以本页迁移扩大支持范围。

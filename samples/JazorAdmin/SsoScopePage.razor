@@ -31,21 +31,42 @@
 
                 <section class="ja-panel" aria-labelledby="sso-scope-editor-title">
                     <header class="ja-panel__header"><div><h2 id="sso-scope-editor-title">@(IsNew ? L("Create scope", "创建 Scope") : L("Scope settings", "Scope 设置"))</h2><p>@L("Name is immutable after creation", "名称创建后不可修改")</p></div></header>
-                    <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
+                    <TForm FormData="ScopeDraft"
+                           Data="@Draft"
+                           Rules="@DraftRules"
+                           OnSubmit="@Save"
+                           OnReset="@ResetDraft"
+                           LabelAlign="@TFormLabelAlignValue.Top"
+                           data-sso-form="scope">
                         <TFormItem LabelValue="@L("Name", "名称")" Name="name">
-                            <span data-scope-field="name"><TInput T="string" Value="@name" OnChange="@(value => name = value)" Readonly="@(!IsNew)" /></span>
+                            <span data-scope-field="name"><TInput T="string"
+                                @bind-Value="Draft.Name"
+                                @bind-Value:event="OnChange"
+                                Readonly="@(!IsNew)" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Display name", "显示名称")" Name="displayName">
-                            <span data-scope-field="displayName"><TInput T="string" Value="@displayName" OnChange="@(value => displayName = value)" /></span>
+                            <span data-scope-field="displayName"><TInput T="string"
+                                @bind-Value="Draft.DisplayName"
+                                @bind-Value:event="OnChange" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Description", "描述")" Name="description">
-                            <span data-scope-field="description"><TTextarea Value="@description" OnChange="@(value => description = value.Value as string ?? string.Empty)" /></span>
+                            <span data-scope-field="description"><TTextarea
+                                @bind-Value="Draft.Description"
+                                @bind-Value:event="OnChange" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("API resources", "API 资源")" Name="resources">
-                            <span data-scope-field="resources"><TInput T="string" Value="@resources" OnChange="@(value => resources = value)" Placeholder="orders-api reporting-api" /></span>
+                            <span data-scope-field="resources"><TInput T="string"
+                                @bind-Value="Draft.Resources"
+                                @bind-Value:event="OnChange"
+                                Placeholder="orders-api reporting-api" /></span>
                         </TFormItem>
                         <div class="ja-form__commands">
-                            <TButton Theme="@TButtonThemeValue.Primary" data-sso-command="save-scope" OnClick="@(_ => Save())">@(IsNew ? L("Create", "创建") : L("Save changes", "保存修改"))</TButton>
+                            <TButton Type="@TButtonTypeValue.Reset"
+                                     Variant="@TButtonVariantValue.Text"
+                                     data-sso-command="reset-scope">@L("Reset", "重置")</TButton>
+                            <TButton Type="@TButtonTypeValue.Submit"
+                                     Theme="@TButtonThemeValue.Primary"
+                                     data-sso-command="save-scope">@(IsNew ? L("Create", "创建") : L("Save changes", "保存修改"))</TButton>
                             @if (!IsNew)
                             {
                                 <TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Outline" data-sso-command="delete-scope" OnClick="@(_ => DeleteScope())">@(deleteArmed ? L("Confirm delete", "确认删除") : L("Delete", "删除"))</TButton>

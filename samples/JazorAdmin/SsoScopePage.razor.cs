@@ -7,17 +7,37 @@ namespace JazorAdmin;
 [ECMAScriptModule("components/sso-scope")]
 public partial class SsoScopePage : AppComponentBase, IVueContainerComponent
 {
+    private sealed record ScopeDraft
+    {
+        public string Name { get; set; } = string.Empty;
+
+        public string DisplayName { get; set; } = string.Empty;
+
+        public TTextareaValue Description { get; set; } = string.Empty;
+
+        public string Resources { get; set; } = string.Empty;
+    }
+
     private bool loading = true;
     private string? error;
     private ScopeView[] scopes = [];
     private string? selectedId;
-    private string name = string.Empty;
-    private string displayName = string.Empty;
-    private string description = string.Empty;
-    private string resources = string.Empty;
+    private ScopeDraft Draft { get; set; } = NewDraft();
     private bool deleteArmed;
 
     private bool IsNew => selectedId is null;
+
+    private TFormRules<ScopeDraft> DraftRules { get; } = new()
+    {
+        ["name"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a scope name." }
+        ],
+        ["displayName"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a scope display name." }
+        ]
+    };
 
     // TDesign 表格列：名称列承载 data-sso-scope 行锚点，供浏览器验证与回归定位。
     private TPrimaryTableCol<ScopeView>[] Columns =>
@@ -92,35 +112,60 @@ public partial class SsoScopePage : AppComponentBase, IVueContainerComponent
     private void Select(ScopeView scope)
     {
         selectedId = scope.Id;
-        name = scope.Name;
-        displayName = scope.DisplayName;
-        description = scope.Description ?? string.Empty;
-        resources = Join(scope.Resources);
+        Draft = new ScopeDraft
+        {
+            Name = scope.Name,
+            DisplayName = scope.DisplayName,
+            Description = scope.Description ?? string.Empty,
+            Resources = Join(scope.Resources)
+        };
         deleteArmed = false;
     }
 
     private void NewScope()
     {
         selectedId = null;
-        name = string.Empty;
-        displayName = string.Empty;
-        description = string.Empty;
-        resources = string.Empty;
+        Draft = NewDraft();
         deleteArmed = false;
         error = null;
     }
 
-    private void Save()
+    private void Save(TSubmitContext<ScopeDraft> context)
     {
-        var resourceValues = Split(resources);
+        if (Draft.Description is not string description)
+        {
+            error = L("The scope description must be text.", "Scope 描述必须是文本。");
+            return;
+        }
+
+        var resourceValues = Split(Draft.Resources);
         if (selectedId is null)
         {
-            ApiClient.CreateScope(new ScopeCreate(name, displayName, description, resourceValues)).Then(ApplySaved);
+            ApiClient.CreateScope(new ScopeCreate(
+                Draft.Name,
+                Draft.DisplayName,
+                description,
+                resourceValues)).Then(ApplySaved);
         }
         else
         {
-            ApiClient.UpdateScope(selectedId, new ScopeUpdate(displayName, description, resourceValues)).Then(ApplySaved);
+            ApiClient.UpdateScope(selectedId, new ScopeUpdate(
+                Draft.DisplayName,
+                description,
+                resourceValues)).Then(ApplySaved);
         }
+    }
+
+    private void ResetDraft(TFormResetEventContext<ScopeDraft> context)
+    {
+        var selected = scopes.FirstOrDefault(scope => scope.Id == selectedId);
+        if (selected is not null)
+            Select(selected);
+        else
+            Draft = NewDraft();
+
+        deleteArmed = false;
+        error = null;
     }
 
     private void ApplySaved(ApiOutcome outcome)
@@ -163,4 +208,6 @@ public partial class SsoScopePage : AppComponentBase, IVueContainerComponent
 
     private static string Display(string[] values)
         => values.Length == 0 ? "-" : string.Join(", ", values);
+
+    private static ScopeDraft NewDraft() => new();
 }

@@ -11,6 +11,7 @@
 #### 新增与改进
 
 - JazorAdmin 的组织、角色、审计、排班与系统配置页面现在使用 typed TDesign 组件完成查询、筛选、编辑、校验与状态更新；配置文本域直接绑定 native union，失败提交保留草稿，参考应用 smoke 同步覆盖这些真实操作路径。
+- OpenIddict Scope 管理页面现在使用 typed `TForm<ScopeDraft>`、字段绑定、规则、提交与重置回调；描述文本域保留 `TTextareaValue` 的显式分支，Scope 更新与失败边界继续由既有 API DTO 承担。
 - Wiki 首页新增“Jazor 是什么、它解决什么、适用边界”三项导览，并直接复用 `docs/README.md` 的章节摘要；产品叙事、正文与导航因此保持同一份事实来源。
 - 路线图收束为当前可依赖的能力、下一阶段投入与写入状态的验收门槛，历史实施过程继续由 Git 历史承载。
 

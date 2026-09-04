@@ -303,6 +303,11 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(ssoAppModule, "RotateAppSecret", "OpenIddict secret rotation in application module");
     AssertContains(ssoScopeModule, "GetScopes", "OpenIddict scope query in scope module");
     AssertContains(ssoScopeModule, "UpdateScope", "OpenIddict scope update in scope module");
+    AssertContains(ssoScopeModule, "DraftRules", "typed scope form rules in scope module");
+    AssertContains(ssoScopeModule, "data: state.Draft", "typed scope draft data in scope module");
+    AssertContains(ssoScopeModule, "onSubmit: Save", "typed scope submit callback in scope module");
+    AssertContains(ssoScopeModule, "onReset: ResetDraft", "typed scope reset callback in scope module");
+    AssertContains(ssoScopeModule, "typeof __patin$", "explicit scope textarea union branch in scope module");
     AssertContains(ssoGrantModule, "GetAuthorizations", "OpenIddict authorization query in grant module");
     AssertContains(ssoGrantModule, "GetTokens", "OpenIddict token query in grant module");
     AssertContains(ssoGrantModule, "scope.OnParametersSet();", "route parameter lifecycle in grant module");
@@ -1293,11 +1298,25 @@ static async Task VerifyBrowserSmokeAsync(
                       await click('[data-nav-key="sso.scopes"] a', "OpenIddict scope navigation item");
                       await waitForTitle("OpenID Scope");
                       await waitFor(() => document.querySelectorAll('[data-sso-view="scopes"] .t-table tbody tr').length === 1, "OpenIddict scope table");
+                      await waitFor(() => document.querySelector('[data-sso-form="scope"]') !== null, "typed OpenIddict scope form");
                       const scopesPathname = location.pathname;
+                      const initialScopeDisplayName = document.querySelector('[data-scope-field="displayName"] input')?.value ?? "";
+                      const initialScopeDescription = document.querySelector('[data-scope-field="description"] textarea')?.value ?? "";
+                      await setInput('[data-scope-field="displayName"] input', "Unsaved scope draft");
+                      await setTextArea('[data-scope-field="description"] textarea', "Draft scope description");
+                      await click('[data-sso-command="reset-scope"]', "scope draft reset command");
+                      await waitFor(
+                        () => document.querySelector('[data-scope-field="displayName"] input')?.value === initialScopeDisplayName &&
+                          document.querySelector('[data-scope-field="description"] textarea')?.value === initialScopeDescription,
+                        "typed scope form reset");
+                      const scopeFormReset = true;
+                      await setTextArea('[data-scope-field="description"] textarea', "Audited scope description");
+                      const scopeTextareaBound = document.querySelector('[data-scope-field="description"] textarea')?.value === "Audited scope description";
                       await setInput('[data-scope-field="displayName"] input', "JazorAdmin API audited");
                       await click('[data-sso-command="save-scope"]', "save OpenIddict scope command");
                       await waitFor(() => document.querySelector('[data-sso-scope="jazoradmin_api"]')?.textContent?.includes("audited") === true, "updated OpenIddict scope row");
                       const scopeRowText = document.querySelector('[data-sso-scope="jazoradmin_api"]')?.textContent ?? "";
+                      const scopeDescriptionSaved = scopes[0].description === "Audited scope description";
 
                       await click('[data-nav-key="sso.authorizations"] a', "OpenIddict authorization navigation item");
                       await waitForTitle("授权记录");
@@ -1495,6 +1514,9 @@ static async Task VerifyBrowserSmokeAsync(
                         machineSecret,
                         scopesPathname,
                         scopeRowText,
+                        scopeFormReset,
+                        scopeTextareaBound,
+                        scopeDescriptionSaved,
                         authorizationsPathname,
                         authorizationRowText,
                         tokensPathname,
@@ -1626,6 +1648,9 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("machineSecret").GetString() ?? string.Empty, "machine-secret-smoke", "JazorAdmin one-time client secret", root.GetRawText());
         AssertContains(root.GetProperty("scopesPathname").GetString() ?? string.Empty, "/sso/scopes", "JazorAdmin OpenIddict scope navigation", root.GetRawText());
         AssertContains(root.GetProperty("scopeRowText").GetString() ?? string.Empty, "audited", "JazorAdmin OpenIddict scope edit", root.GetRawText());
+        AssertJsonBoolean(root, "scopeFormReset", true, "JazorAdmin typed scope form reset", root.GetRawText());
+        AssertJsonBoolean(root, "scopeTextareaBound", true, "JazorAdmin typed scope textarea binding", root.GetRawText());
+        AssertJsonBoolean(root, "scopeDescriptionSaved", true, "JazorAdmin typed scope textarea save", root.GetRawText());
         AssertContains(root.GetProperty("authorizationsPathname").GetString() ?? string.Empty, "/sso/authorizations", "JazorAdmin OpenIddict authorization navigation", root.GetRawText());
         AssertContains(root.GetProperty("authorizationRowText").GetString() ?? string.Empty, "revoked", "JazorAdmin OpenIddict authorization revocation", root.GetRawText());
         AssertContains(root.GetProperty("tokensPathname").GetString() ?? string.Empty, "/sso/tokens", "JazorAdmin OpenIddict token navigation", root.GetRawText());
