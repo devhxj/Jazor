@@ -334,9 +334,12 @@ internal static class ReleaseVerifier
 
         var bundle = File.ReadAllText(Path.Combine(jazorRoot, "bundle.js"));
         RequireContains(bundle, "ecmascript-style:v1", "ECMAScript.Style runtime marker in release bundle");
-        // NetPack may split adjacent source literals while preserving both authored
-        // contracts; assert the page marker independently from the style runtime marker.
-        RequireContains(bundle, "H()", "H-function page marker in release bundle");
+        // NetPack minifies the imported render helper from `H` to `h`, so the authored
+        // function spelling is not a release contract. The component name is retained in
+        // the Vue descriptor and proves the Wiki page entry survived bundling.
+        // NetPack 会把 `H` 渲染辅助函数压缩为 `h`，函数拼写不是发布契约；Vue 描述符保留
+        // 组件名，用它确认 Wiki 首页入口确实进入生产 bundle。
+        RequireContains(bundle, "WikiHome", "Wiki home component marker in release bundle");
 
         var bundleMap = File.ReadAllText(Path.Combine(jazorRoot, "bundle.js.map"));
         RequireContains(bundleMap, "components/wiki-styles.mjs", "Wiki style module source in release source map");
