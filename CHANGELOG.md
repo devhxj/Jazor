@@ -2,6 +2,18 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-04
+
+### Jazor 0.31.0
+
+> JazorAdmin 的 OpenIddict 应用管理流程完成 typed TDesign authoring 收口。本版本在 `0.x` 阶段按 `MINOR` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。
+
+#### 新增与改进
+
+- OpenIddict 应用管理现在使用 typed `TForm<AppDraft>`、`TFormRules<AppDraft>`、字段 `@bind-Value` 以及 typed 提交/重置回调；应用预设、协议权限、授权类型、回调地址和 Scope 输入统一由一个强类型 draft 承载。
+- 应用回调地址文本域直接绑定 TDesign `TTextareaValue` native union，并在请求边界显式选择字符串分支；提交失败保留用户草稿，重置恢复当前应用或所选新建预设。
+- JazorAdmin Release browser smoke 新增应用表单的失败保留、重置、textarea 保存和生成模块契约验证，OpenIddict 应用与 Scope 页面形成一致的 authoring 体验。
+
 ## 2026-09-03
 
 ### Jazor 0.30.0

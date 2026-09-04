@@ -301,6 +301,12 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     AssertContains(accountModule, "scope.OnAfterRender(firstRender)", "initial Razor lifecycle invocation in account management module");
     AssertContains(ssoAppModule, "GetApps", "OpenIddict application query in application module");
     AssertContains(ssoAppModule, "RotateAppSecret", "OpenIddict secret rotation in application module");
+    AssertContains(ssoAppModule, "DraftRules", "typed application form rules in application module");
+    AssertContains(ssoAppModule, "data: state.Draft", "typed application draft data in application module");
+    AssertContains(ssoAppModule, "onSubmit: Save", "typed application submit callback in application module");
+    AssertContains(ssoAppModule, "onReset: ResetDraft", "typed application reset callback in application module");
+    AssertContains(ssoAppModule, "typeof __patin$", "explicit application textarea union branch in application module");
+    AssertContains(ssoAppModule, "data-sso-form", "typed application form marker in application module");
     AssertContains(ssoScopeModule, "GetScopes", "OpenIddict scope query in scope module");
     AssertContains(ssoScopeModule, "UpdateScope", "OpenIddict scope update in scope module");
     AssertContains(ssoScopeModule, "DraftRules", "typed scope form rules in scope module");
@@ -796,6 +802,8 @@ static async Task VerifyBrowserSmokeAsync(
                     }
                     if (url.pathname === "/api/sso/applications" && method === "GET") return json(applications);
                     if (url.pathname === "/api/sso/applications" && method === "POST") {
+                      if (body.ClientId === "audit-invalid")
+                        return json({ detail: "Simulated application failure" }, 422);
                       const application = {
                         id: `application-${applications.length + 1}`,
                         clientId: body.ClientId,
@@ -1277,12 +1285,44 @@ static async Task VerifyBrowserSmokeAsync(
 
                       await click('[data-sso-command="new-application"]', "new OpenIddict application command");
                       await click('[data-sso-profile="machine"] label', "machine application profile");
+                      await setInput('[data-app-field="clientId"] input', "audit-invalid");
+                      await setInput('[data-app-field="displayName"] input', "Invalid application");
+                      await setTextArea('[data-app-field="redirectUris"] textarea', "https://client.example/auth/callback");
+                      await setTextArea('[data-app-field="postLogoutRedirectUris"] textarea', "https://client.example/logout");
+                      await setInput('[data-app-field="scopeValues"] input', "openid machine");
+                      const failedApplicationClientIdBeforeSubmit = document.querySelector('[data-app-field="clientId"] input')?.value ?? "";
+                      const failedApplicationRedirectBeforeSubmit = document.querySelector('[data-app-field="redirectUris"] textarea')?.value ?? "";
+                      await click('[data-sso-command="save-application"]', "failed OpenIddict application save command");
+                      await waitFor(
+                        () => document.querySelector('[data-sso-view="applications"] [role="alert"]')?.textContent?.includes("Simulated application failure") === true,
+                        "OpenIddict application failed submission");
+                      const failedApplicationClientIdAfterSubmit = document.querySelector('[data-app-field="clientId"] input')?.value ?? "";
+                      const failedApplicationRedirectAfterSubmit = document.querySelector('[data-app-field="redirectUris"] textarea')?.value ?? "";
+                      if (failedApplicationClientIdAfterSubmit !== failedApplicationClientIdBeforeSubmit ||
+                          failedApplicationRedirectAfterSubmit !== failedApplicationRedirectBeforeSubmit)
+                        throw new Error("OpenIddict application draft was lost after a failed submission.");
+                      const applicationsFailedDraftRetained =
+                        failedApplicationClientIdAfterSubmit === failedApplicationClientIdBeforeSubmit &&
+                        failedApplicationRedirectAfterSubmit === failedApplicationRedirectBeforeSubmit;
+                      await click('[data-sso-command="reset-application"]', "OpenIddict application draft reset command");
+                      await waitFor(
+                        () => document.querySelector('[data-app-field="clientId"] input')?.value === "" &&
+                          document.querySelector('[data-app-field="redirectUris"] textarea')?.value === "",
+                        "typed OpenIddict application form reset");
+                      const applicationFormReset = true;
                       await setInput('[data-app-field="clientId"] input', "audit-worker");
                       await setInput('[data-app-field="displayName"] input', "Audit worker");
+                      await setTextArea('[data-app-field="redirectUris"] textarea', "https://client.example/auth/callback");
+                      await setTextArea('[data-app-field="postLogoutRedirectUris"] textarea', "https://client.example/logout");
+                      await setInput('[data-app-field="scopeValues"] input', "openid machine");
                       await click('[data-sso-command="save-application"]', "save machine application command");
                       await waitFor(() => document.querySelector('[data-sso-application="audit-worker"]') !== null, "machine application row");
                       await waitFor(() => document.querySelector('[data-issued-secret] code')?.textContent?.includes("machine-secret-smoke") === true, "machine client secret");
                       const machineSecret = document.querySelector('[data-issued-secret] code')?.textContent ?? "";
+                      const machineApplication = applications.find((value) => value.clientId === "audit-worker");
+                      const machineRedirectUrisSaved = machineApplication?.redirectUris?.join(" ") ?? "";
+                      const machinePostLogoutRedirectUrisSaved = machineApplication?.postLogoutRedirectUris?.join(" ") ?? "";
+                      const machineScopesSaved = machineApplication?.scopes?.join(" ") ?? "";
 
                       await click('[data-sso-command="new-application"]', "new API application command");
                       // The profiles group only re-renders after the reset click flushes; wait for it
@@ -1512,6 +1552,11 @@ static async Task VerifyBrowserSmokeAsync(
                         applicationRowText,
                         applicationCount,
                         machineSecret,
+                        applicationsFailedDraftRetained,
+                        applicationFormReset,
+                        machineRedirectUrisSaved,
+                        machinePostLogoutRedirectUrisSaved,
+                        machineScopesSaved,
                         scopesPathname,
                         scopeRowText,
                         scopeFormReset,
@@ -1646,6 +1691,11 @@ static async Task VerifyBrowserSmokeAsync(
         AssertContains(root.GetProperty("applicationRowText").GetString() ?? string.Empty, "JazorAdmin SPA", "JazorAdmin OpenIddict application row", root.GetRawText());
         AssertJsonInt(root, "applicationCount", 3, "JazorAdmin created Machine and API applications", root.GetRawText());
         AssertContains(root.GetProperty("machineSecret").GetString() ?? string.Empty, "machine-secret-smoke", "JazorAdmin one-time client secret", root.GetRawText());
+        AssertJsonBoolean(root, "applicationsFailedDraftRetained", true, "JazorAdmin application failed submit preserves draft", root.GetRawText());
+        AssertJsonBoolean(root, "applicationFormReset", true, "JazorAdmin typed application form reset", root.GetRawText());
+        AssertContains(root.GetProperty("machineRedirectUrisSaved").GetString() ?? string.Empty, "https://client.example/auth/callback", "JazorAdmin application textarea redirect URI save", root.GetRawText());
+        AssertContains(root.GetProperty("machinePostLogoutRedirectUrisSaved").GetString() ?? string.Empty, "https://client.example/logout", "JazorAdmin application textarea post-logout URI save", root.GetRawText());
+        AssertContains(root.GetProperty("machineScopesSaved").GetString() ?? string.Empty, "openid", "JazorAdmin application scope input save", root.GetRawText());
         AssertContains(root.GetProperty("scopesPathname").GetString() ?? string.Empty, "/sso/scopes", "JazorAdmin OpenIddict scope navigation", root.GetRawText());
         AssertContains(root.GetProperty("scopeRowText").GetString() ?? string.Empty, "audited", "JazorAdmin OpenIddict scope edit", root.GetRawText());
         AssertJsonBoolean(root, "scopeFormReset", true, "JazorAdmin typed scope form reset", root.GetRawText());

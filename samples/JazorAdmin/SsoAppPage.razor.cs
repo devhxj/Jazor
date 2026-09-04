@@ -8,36 +8,82 @@ namespace JazorAdmin;
 [ECMAScriptModule("components/sso-app")]
 public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
 {
+    private sealed record AppDraft
+    {
+        public string ClientId { get; set; } = string.Empty;
+
+        public string DisplayName { get; set; } = string.Empty;
+
+        public string ApplicationType { get; set; } = "web";
+
+        public string ClientType { get; set; } = "public";
+
+        public string ConsentType { get; set; } = "implicit";
+
+        public TTextareaValue RedirectUris { get; set; } = string.Empty;
+
+        public TTextareaValue PostLogoutRedirectUris { get; set; } = string.Empty;
+
+        public string ScopeValues { get; set; } = string.Empty;
+
+        public bool EndpointAuthorization { get; set; }
+
+        public bool EndpointToken { get; set; }
+
+        public bool EndpointEndSession { get; set; }
+
+        public bool EndpointIntrospection { get; set; }
+
+        public bool EndpointRevocation { get; set; }
+
+        public bool GrantAuthorizationCode { get; set; }
+
+        public bool GrantClientCredentials { get; set; }
+
+        public bool GrantRefreshToken { get; set; }
+
+        public bool ResponseCode { get; set; }
+
+        public bool RequirePkce { get; set; }
+    }
+
     private bool loading = true;
     private string? error;
     private AppView[] applications = [];
     private string? selectedId;
     private string profile = "interactive";
-    private string clientId = string.Empty;
-    private string displayName = string.Empty;
-    private string applicationType = "web";
-    private string clientType = "public";
-    private string consentType = "implicit";
-    private bool requirePkce = true;
-    private string redirectUris = string.Empty;
-    private string postLogoutRedirectUris = string.Empty;
-    private string scopeValues = "openid profile";
-    private bool endpointAuthorization = true;
-    private bool endpointEndSession = true;
-    private bool endpointIntrospection;
-    private bool endpointRevocation;
-    private bool endpointToken = true;
-    private bool grantAuthorizationCode = true;
-    private bool grantClientCredentials;
-    private bool grantRefreshToken = true;
-    private bool responseCode = true;
+    private AppDraft Draft { get; set; } = NewDraft();
     private string? issuedSecret;
     private bool deleteArmed;
     private int loadVersion;
 
     private bool IsNew => selectedId is null;
 
-    private bool IsConfidential => clientType == "confidential";
+    private bool IsConfidential => Draft.ClientType == "confidential";
+
+    private TFormRules<AppDraft> DraftRules { get; } = new()
+    {
+        ["clientId"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a client ID." }
+        ],
+        ["displayName"] =
+        [
+            new TFormRule { Required = true, Message = "Enter a display name." }
+        ],
+        ["applicationType"] =
+        [
+            new TFormRule { Required = true, Message = "Select an application type." }
+        ],
+        ["clientType"] =
+        [
+            new TFormRule { Required = true, Message = "Select a client type." }
+        ],
+        ["consentType"] =
+        [
+            new TFormRule { Required = true, Message = "Select a consent type." }
+        ]
+    };
 
     // TDesign 表格列：应用列承载 data-sso-application=ClientId 锚点，浏览器验证用它
     // 断言新建的 machine/API 应用行与一次性密钥展示。
@@ -122,24 +168,27 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
     {
         selectedId = application.Id;
         profile = application.Profile;
-        clientId = application.ClientId;
-        displayName = application.DisplayName;
-        applicationType = application.ApplicationType;
-        clientType = application.ClientType;
-        consentType = application.ConsentType;
-        requirePkce = application.RequirePkce;
-        redirectUris = JoinLines(application.RedirectUris);
-        postLogoutRedirectUris = JoinLines(application.PostLogoutRedirectUris);
-        scopeValues = Join(application.Scopes);
-        endpointAuthorization = Has(application.Endpoints, "authorization");
-        endpointEndSession = Has(application.Endpoints, "end_session");
-        endpointIntrospection = Has(application.Endpoints, "introspection");
-        endpointRevocation = Has(application.Endpoints, "revocation");
-        endpointToken = Has(application.Endpoints, "token");
-        grantAuthorizationCode = Has(application.GrantTypes, "authorization_code");
-        grantClientCredentials = Has(application.GrantTypes, "client_credentials");
-        grantRefreshToken = Has(application.GrantTypes, "refresh_token");
-        responseCode = Has(application.ResponseTypes, "code");
+        Draft = new AppDraft
+        {
+            ClientId = application.ClientId,
+            DisplayName = application.DisplayName,
+            ApplicationType = application.ApplicationType,
+            ClientType = application.ClientType,
+            ConsentType = application.ConsentType,
+            RequirePkce = application.RequirePkce,
+            RedirectUris = JoinLines(application.RedirectUris),
+            PostLogoutRedirectUris = JoinLines(application.PostLogoutRedirectUris),
+            ScopeValues = Join(application.Scopes),
+            EndpointAuthorization = Has(application.Endpoints, "authorization"),
+            EndpointEndSession = Has(application.Endpoints, "end_session"),
+            EndpointIntrospection = Has(application.Endpoints, "introspection"),
+            EndpointRevocation = Has(application.Endpoints, "revocation"),
+            EndpointToken = Has(application.Endpoints, "token"),
+            GrantAuthorizationCode = Has(application.GrantTypes, "authorization_code"),
+            GrantClientCredentials = Has(application.GrantTypes, "client_credentials"),
+            GrantRefreshToken = Has(application.GrantTypes, "refresh_token"),
+            ResponseCode = Has(application.ResponseTypes, "code")
+        };
         issuedSecret = null;
         deleteArmed = false;
     }
@@ -147,37 +196,37 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
     private void NewInteractive()
     {
         Reset("interactive");
-        applicationType = "web";
-        clientType = "public";
-        consentType = "implicit";
-        requirePkce = true;
-        endpointAuthorization = true;
-        endpointEndSession = true;
-        endpointToken = true;
-        grantAuthorizationCode = true;
-        grantRefreshToken = true;
-        responseCode = true;
-        scopeValues = "openid profile";
+        Draft.ApplicationType = "web";
+        Draft.ClientType = "public";
+        Draft.ConsentType = "implicit";
+        Draft.RequirePkce = true;
+        Draft.EndpointAuthorization = true;
+        Draft.EndpointEndSession = true;
+        Draft.EndpointToken = true;
+        Draft.GrantAuthorizationCode = true;
+        Draft.GrantRefreshToken = true;
+        Draft.ResponseCode = true;
+        Draft.ScopeValues = "openid profile";
     }
 
     private void NewMachine()
     {
         Reset("machine");
-        applicationType = "web";
-        clientType = "confidential";
-        consentType = "implicit";
-        endpointToken = true;
-        endpointRevocation = true;
-        grantClientCredentials = true;
+        Draft.ApplicationType = "web";
+        Draft.ClientType = "confidential";
+        Draft.ConsentType = "implicit";
+        Draft.EndpointToken = true;
+        Draft.EndpointRevocation = true;
+        Draft.GrantClientCredentials = true;
     }
 
     private void NewApi()
     {
         Reset("api");
-        applicationType = "web";
-        clientType = "confidential";
-        consentType = "implicit";
-        endpointIntrospection = true;
+        Draft.ApplicationType = "web";
+        Draft.ClientType = "confidential";
+        Draft.ConsentType = "implicit";
+        Draft.EndpointIntrospection = true;
     }
 
     // 单选预设入口：仅在新建态由 profile 单选组触发，复用既有预设方法避免双份默认值。
@@ -208,48 +257,37 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
         loadVersion++;
         selectedId = null;
         profile = value;
-        clientId = string.Empty;
-        displayName = string.Empty;
-        applicationType = "web";
-        clientType = "public";
-        consentType = "implicit";
-        requirePkce = false;
-        redirectUris = string.Empty;
-        postLogoutRedirectUris = string.Empty;
-        scopeValues = string.Empty;
-        endpointAuthorization = false;
-        endpointEndSession = false;
-        endpointIntrospection = false;
-        endpointRevocation = false;
-        endpointToken = false;
-        grantAuthorizationCode = false;
-        grantClientCredentials = false;
-        grantRefreshToken = false;
-        responseCode = false;
+        Draft = NewDraft();
         issuedSecret = null;
         deleteArmed = false;
         error = null;
     }
 
-    private void Save()
+    private void Save(TSubmitContext<AppDraft> context)
     {
         error = null;
         var endpoints = BuildEndpoints();
         var grants = BuildGrants();
-        var responses = responseCode ? new[] { "code" } : [];
-        var redirects = SplitValues(redirectUris);
-        var logoutUris = SplitValues(postLogoutRedirectUris);
-        var scopes = SplitValues(scopeValues);
+        var responses = Draft.ResponseCode ? new[] { "code" } : [];
+        if (Draft.RedirectUris is not string redirectsText || Draft.PostLogoutRedirectUris is not string logoutUrisText)
+        {
+            error = L("Redirect URI values must be text.", "回调地址必须是文本。");
+            return;
+        }
+
+        var redirects = SplitValues(redirectsText);
+        var logoutUris = SplitValues(logoutUrisText);
+        var scopes = SplitValues(Draft.ScopeValues);
 
         if (selectedId is null)
         {
             ApiClient.CreateApp(new AppCreate(
-                clientId,
-                displayName,
-                applicationType,
-                clientType,
-                consentType,
-                requirePkce,
+                Draft.ClientId,
+                Draft.DisplayName,
+                Draft.ApplicationType,
+                Draft.ClientType,
+                Draft.ConsentType,
+                Draft.RequirePkce,
                 redirects,
                 logoutUris,
                 endpoints,
@@ -260,11 +298,11 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
         else
         {
             ApiClient.UpdateApp(selectedId, new AppUpdate(
-                displayName,
-                applicationType,
-                clientType,
-                consentType,
-                requirePkce,
+                Draft.DisplayName,
+                Draft.ApplicationType,
+                Draft.ClientType,
+                Draft.ConsentType,
+                Draft.RequirePkce,
                 redirects,
                 logoutUris,
                 endpoints,
@@ -272,6 +310,33 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
                 responses,
                 scopes)).Then(ApplyMutation);
         }
+    }
+
+    private void ResetDraft(TFormResetEventContext<AppDraft> context)
+    {
+        var selected = applications.FirstOrDefault(application => application.Id == selectedId);
+        if (selected is not null)
+        {
+            Select(selected);
+        }
+        else
+        {
+            switch (profile)
+            {
+                case "machine":
+                    NewMachine();
+                    break;
+                case "api":
+                    NewApi();
+                    break;
+                default:
+                    NewInteractive();
+                    break;
+            }
+        }
+
+        deleteArmed = false;
+        error = null;
     }
 
     private void ApplyMutation(ApiOutcome outcome)
@@ -329,20 +394,20 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
     private string[] BuildEndpoints()
     {
         var values = new List<string>();
-        if (endpointAuthorization) values.Add("authorization");
-        if (endpointEndSession) values.Add("end_session");
-        if (endpointIntrospection) values.Add("introspection");
-        if (endpointRevocation) values.Add("revocation");
-        if (endpointToken) values.Add("token");
+        if (Draft.EndpointAuthorization) values.Add("authorization");
+        if (Draft.EndpointEndSession) values.Add("end_session");
+        if (Draft.EndpointIntrospection) values.Add("introspection");
+        if (Draft.EndpointRevocation) values.Add("revocation");
+        if (Draft.EndpointToken) values.Add("token");
         return values.ToArray();
     }
 
     private string[] BuildGrants()
     {
         var values = new List<string>();
-        if (grantAuthorizationCode) values.Add("authorization_code");
-        if (grantClientCredentials) values.Add("client_credentials");
-        if (grantRefreshToken) values.Add("refresh_token");
+        if (Draft.GrantAuthorizationCode) values.Add("authorization_code");
+        if (Draft.GrantClientCredentials) values.Add("client_credentials");
+        if (Draft.GrantRefreshToken) values.Add("refresh_token");
         return values.ToArray();
     }
 
@@ -357,4 +422,6 @@ public partial class SsoAppPage : AppComponentBase, IVueContainerComponent
 
     private static string JoinLines(string[] values)
         => values.Length == 0 ? string.Empty : string.Join("\n", values);
+
+    private static AppDraft NewDraft() => new();
 }

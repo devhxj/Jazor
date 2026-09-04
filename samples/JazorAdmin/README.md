@@ -50,21 +50,21 @@ dotnet test samples/JazorAdmin.Test/JazorAdmin.Test.csproj
 
 ## 当前 authoring 观察
 
-账户管理、组织管理、角色授权、审计筛选、调度编辑和系统配置已直接使用 `TForm<T>`：页面状态由
+账户管理、组织管理、角色授权、审计筛选、调度编辑、系统配置和 SSO 应用管理已直接使用 `TForm<T>`：页面状态由
 具名 draft 承载，字段使用 `@bind-Value`，规则按业务需要使用 `TFormRules<T>`，提交与重置使用
 typed `OnSubmit`/`OnReset`。配置文本域直接绑定 TDesign 的 `TTextareaValue` native union；提交时
-以显式的 string 分支进入既有 request DTO，其他分支报告错误，不以空字符串兜底。异步请求失败时保留
-draft；成功后才刷新列表或替换为新的空 draft。服务端仍只接收既有 request DTO，表单模型不会泄漏到
-API 边界。
+以显式的 string 分支进入既有 request DTO，其他分支报告错误，不以空字符串兜底。SSO 应用的回调地址
+文本域、作用域输入、权限开关、预设单选和规则校验共享同一 typed draft；异步请求失败时保留 draft，
+成功后才刷新列表或替换为新的空 draft。服务端仍只接收既有 request DTO，表单模型不会泄漏到 API 边界。
 
 下一步实现要点：
 
 - 账户、组织、授权、设置、调度和 SSO 页面的表格操作列仍在 `.razor.cs` 中通过 typed
   column/slot `RenderFragment` 组合；先建立独立 authoring fixture，再决定是否需要 binding API
   调整。
-- SSO 应用页面仍有 `TForm<TJsonObject>` 加手写 `Value`/`OnChange` 状态；作用域页面已经迁移为
-  typed draft、`@bind-Value`、规则、提交与重置回调。应用页面应沿同一边界继续迁移并验证错误
-  保留、异步提交和重置语义，不恢复通用 sample-local bridge。
+- SSO 应用与作用域页面均使用 typed draft、`@bind-Value`、规则、提交与重置回调；表格操作列仍
+  在 `.razor.cs` 中通过 typed column/slot `RenderFragment` 组合，后续只在有独立 authoring
+  证据时调整 binding API。
 - Microsoft `EditForm`、`InputBase<T>`、认证状态和 SSR form handoff 仍按作者指南保持
   Guidance/Reject，不以本页迁移扩大支持范围。
 

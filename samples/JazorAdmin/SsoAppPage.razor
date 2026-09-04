@@ -52,64 +52,91 @@
                         </TRadioGroup>
                     }
 
-                    <TForm FormData="TJsonObject" LabelAlign="@TFormLabelAlignValue.Top">
+                    <TForm FormData="AppDraft"
+                           Data="@Draft"
+                           Rules="@DraftRules"
+                           OnSubmit="@Save"
+                           OnReset="@ResetDraft"
+                           LabelAlign="@TFormLabelAlignValue.Top"
+                           data-sso-form="application">
                         <div class="ja-form__grid">
                             <TFormItem LabelValue="@L("Client ID", "客户端 ID")" Name="clientId">
-                                <span data-app-field="clientId"><TInput T="string" Value="@clientId" OnChange="@(value => clientId = value)" Readonly="@(!IsNew)" /></span>
+                                <span data-app-field="clientId"><TInput T="string"
+                                    @bind-Value="Draft.ClientId"
+                                    @bind-Value:event="OnChange"
+                                    Readonly="@(!IsNew)" /></span>
                             </TFormItem>
                             <TFormItem LabelValue="@L("Display name", "显示名称")" Name="displayName">
-                                <span data-app-field="displayName"><TInput T="string" Value="@displayName" OnChange="@(value => displayName = value)" /></span>
+                                <span data-app-field="displayName"><TInput T="string"
+                                    @bind-Value="Draft.DisplayName"
+                                    @bind-Value:event="OnChange" /></span>
                             </TFormItem>
                         </div>
                         <TFormItem LabelValue="@L("Application type", "应用类型")" Name="applicationType">
-                            <TRadioGroup T="string" Value="@applicationType" OnChange="@(value => applicationType = value)">
+                            <TRadioGroup T="string"
+                                          @bind-Value="Draft.ApplicationType"
+                                          @bind-Value:event="OnChange">
                                 <TRadioButton T="string" Value="@("web")" LabelValue="Web" />
                                 <TRadioButton T="string" Value="@("native")" LabelValue="Native" />
                             </TRadioGroup>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Client type", "客户端类型")" Name="clientType">
-                            <TRadioGroup T="string" Value="@clientType" OnChange="@(value => clientType = value)">
+                            <TRadioGroup T="string"
+                                          @bind-Value="Draft.ClientType"
+                                          @bind-Value:event="OnChange">
                                 <TRadioButton T="string" Value="@("public")" LabelValue="@L("Public", "公开")" />
                                 <TRadioButton T="string" Value="@("confidential")" LabelValue="@L("Confidential", "机密")" />
                             </TRadioGroup>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Consent", "授权同意")" Name="consentType">
-                            <TRadioGroup T="string" Value="@consentType" OnChange="@(value => consentType = value)">
+                            <TRadioGroup T="string"
+                                          @bind-Value="Draft.ConsentType"
+                                          @bind-Value:event="OnChange">
                                 <TRadioButton T="string" Value="@("implicit")" LabelValue="@L("Implicit", "隐式")" />
                                 <TRadioButton T="string" Value="@("explicit")" LabelValue="@L("Explicit", "显式")" />
                                 <TRadioButton T="string" Value="@("systematic")" LabelValue="@L("Systematic", "系统式")" />
                             </TRadioGroup>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Redirect URIs", "回调地址")" Name="redirectUris">
-                            <span data-app-field="redirectUris"><TTextarea Value="@redirectUris" OnChange="@(value => redirectUris = value.Value as string ?? string.Empty)" Placeholder="https://client.example/auth/callback" /></span>
+                            <span data-app-field="redirectUris"><TTextarea
+                                @bind-Value="Draft.RedirectUris"
+                                @bind-Value:event="OnChange"
+                                Placeholder="https://client.example/auth/callback" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Post-logout URIs", "登出回调地址")" Name="postLogoutRedirectUris">
-                            <span data-app-field="postLogoutRedirectUris"><TTextarea Value="@postLogoutRedirectUris" OnChange="@(value => postLogoutRedirectUris = value.Value as string ?? string.Empty)" Placeholder="https://client.example/logout" /></span>
+                            <span data-app-field="postLogoutRedirectUris"><TTextarea
+                                @bind-Value="Draft.PostLogoutRedirectUris"
+                                @bind-Value:event="OnChange"
+                                Placeholder="https://client.example/logout" /></span>
                         </TFormItem>
                         <TFormItem LabelValue="@L("Allowed scopes", "允许的 Scope")" Name="scopeValues">
-                            <span data-app-field="scopeValues"><TInput T="string" Value="@scopeValues" OnChange="@(value => scopeValues = value)" Placeholder="openid profile api" /></span>
+                            <span data-app-field="scopeValues"><TInput T="string"
+                                @bind-Value="Draft.ScopeValues"
+                                @bind-Value:event="OnChange"
+                                Placeholder="openid profile api" /></span>
                         </TFormItem>
 
                         <fieldset class="ja-form__options">
                             <legend>@L("Endpoint access", "端点访问")</legend>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@endpointAuthorization" OnChange="@(value => endpointAuthorization = value)" /><span>@L("Authorization", "授权端点")</span></label>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@endpointToken" OnChange="@(value => endpointToken = value)" /><span>@L("Token", "令牌端点")</span></label>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@endpointEndSession" OnChange="@(value => endpointEndSession = value)" /><span>@L("End session", "登出端点")</span></label>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@endpointIntrospection" OnChange="@(value => endpointIntrospection = value)" /><span>@L("Introspection", "内省端点")</span></label>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@endpointRevocation" OnChange="@(value => endpointRevocation = value)" /><span>@L("Revocation", "撤销端点")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.EndpointAuthorization" @bind-Value:event="OnChange" /><span>@L("Authorization", "授权端点")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.EndpointToken" @bind-Value:event="OnChange" /><span>@L("Token", "令牌端点")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.EndpointEndSession" @bind-Value:event="OnChange" /><span>@L("End session", "登出端点")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.EndpointIntrospection" @bind-Value:event="OnChange" /><span>@L("Introspection", "内省端点")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.EndpointRevocation" @bind-Value:event="OnChange" /><span>@L("Revocation", "撤销端点")</span></label>
                         </fieldset>
 
                         <fieldset class="ja-form__options">
                             <legend>@L("Grant and response types", "授权与响应类型")</legend>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@grantAuthorizationCode" OnChange="@(value => grantAuthorizationCode = value)" /><span>@L("Authorization code", "授权码")</span></label>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@grantClientCredentials" OnChange="@(value => grantClientCredentials = value)" /><span>@L("Client credentials", "客户端凭证")</span></label>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@grantRefreshToken" OnChange="@(value => grantRefreshToken = value)" /><span>@L("Refresh token", "刷新令牌")</span></label>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@responseCode" OnChange="@(value => responseCode = value)" /><span>@L("Code response", "Code 响应")</span></label>
-                            <label class="ja-form__option"><TSwitch T="bool" Value="@requirePkce" OnChange="@(value => requirePkce = value)" /><span>@L("Require PKCE", "要求 PKCE")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.GrantAuthorizationCode" @bind-Value:event="OnChange" /><span>@L("Authorization code", "授权码")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.GrantClientCredentials" @bind-Value:event="OnChange" /><span>@L("Client credentials", "客户端凭证")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.GrantRefreshToken" @bind-Value:event="OnChange" /><span>@L("Refresh token", "刷新令牌")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.ResponseCode" @bind-Value:event="OnChange" /><span>@L("Code response", "Code 响应")</span></label>
+                            <label class="ja-form__option"><TSwitch T="bool" @bind-Value="Draft.RequirePkce" @bind-Value:event="OnChange" /><span>@L("Require PKCE", "要求 PKCE")</span></label>
                         </fieldset>
 
                         <div class="ja-form__commands">
-                            <TButton Theme="@TButtonThemeValue.Primary" data-sso-command="save-application" OnClick="@(_ => Save())">@(IsNew ? L("Register", "注册") : L("Save changes", "保存修改"))</TButton>
+                            <TButton Type="@TButtonTypeValue.Reset" Variant="@TButtonVariantValue.Text" data-sso-command="reset-application">@L("Reset", "重置")</TButton>
+                            <TButton Type="@TButtonTypeValue.Submit" Theme="@TButtonThemeValue.Primary" data-sso-command="save-application">@(IsNew ? L("Register", "注册") : L("Save changes", "保存修改"))</TButton>
                             @if (!IsNew && IsConfidential)
                             {
                                 <TButton Variant="@TButtonVariantValue.Outline" data-sso-command="rotate-secret" OnClick="@(_ => RotateSecret())">@L("Rotate secret", "轮换密钥")</TButton>
