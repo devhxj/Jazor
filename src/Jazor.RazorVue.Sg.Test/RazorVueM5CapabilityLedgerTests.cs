@@ -143,6 +143,13 @@ public sealed class RazorVueM5CapabilityLedgerTests
         StringAssert.Contains(advancedRendering.Fixture, "StandardGenericComponentTag", StringComparison.Ordinal);
         StringAssert.Contains(advancedRendering.Blocker, "built-in UI components", StringComparison.Ordinal);
 
+        var streamRendering = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P2-stream-rendering");
+        Assert.AreEqual("JAZORVCA012", streamRendering.DiagnosticId);
+        Assert.AreEqual(RazorVueCapabilityDecision.Reject, streamRendering.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Reject, streamRendering.Status);
+        Assert.IsTrue(streamRendering.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+
         var cascading = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-cascading-values");
         Assert.AreEqual("JAZORVCA008", cascading.DiagnosticId);

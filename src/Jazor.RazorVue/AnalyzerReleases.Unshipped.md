@@ -17,6 +17,7 @@ JAZORVCA008 | Jazor.RazorVue.Compatibility | Error | CascadingParameter property
 JAZORVCA009 | Jazor.RazorVue.Compatibility | Error | Retained route-host descriptor; generated route catalogs no longer report it for supported `@page` authoring
 JAZORVCA010 | Jazor.RazorVue.Compatibility | Error | Retained standard-component descriptor; registered adapters no longer report it for supported component tags
 JAZORVCA011 | Jazor.RazorVue.Compatibility | Error | Persistent SSR state and server form handoff require an explicit versioned RazorVue host contract
+JAZORVCA012 | Jazor.RazorVue.Compatibility | Error | StreamRendering requires a renderer-owned streaming SSR protocol not provided by RazorVue
 
 ### Removed Rules
 

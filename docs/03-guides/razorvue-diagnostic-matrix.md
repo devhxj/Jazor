@@ -29,6 +29,7 @@
 | `JAZORVCA009` | 使用未注册 route host 的 `@page` profile | 注册应用自有 route host；标准 `@page` 在推荐 profile 中无需额外 adapter | [Routing](./razorvue-authoring.md#routing) |
 | `JAZORVCA010` | 使用 Microsoft/Blazor 内置 UI 组件 | 使用自定义 `ComponentBase + IVueComponent` 或已声明 UI binding | [Component adapters](./razorvue-authoring.md#component-adapters) |
 | `JAZORVCA011` | 使用未定义协议的 `PersistentComponentState`、`[PersistentState]` 或 form handoff | 使用版本化 typed endpoint/bootstrap payload | [SSR state handoff](./razorvue-authoring.md#ssr-state-handoff) |
+| `JAZORVCA012` | 使用 `[StreamRendering]`，但当前 profile 没有 renderer-owned streaming SSR 协议 | 使用显式 typed SSR/bootstrap contract，并自行表达加载状态 | [SSR state handoff](./razorvue-authoring.md#ssr-state-handoff) |
 
 ## 诊断验收规则
 

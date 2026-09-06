@@ -358,6 +358,27 @@ public sealed class RazorVueCompatibilityAnalyzerTests
     }
 
     [TestMethod]
+    public async Task StreamRenderingAttribute_ReportsAtAuthoredComponentAttribute()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/Streaming.razor.cs",
+                """
+                using Microsoft.AspNetCore.Components;
+
+                namespace Demo.Pages
+                {
+                    [StreamRendering(true)]
+                    public sealed class Streaming : ComponentBase;
+                }
+                """));
+
+        var diagnostic = diagnostics.Single(static item => item.Id == "JAZORVCA012");
+        StringAssert.Contains(diagnostic.GetMessage(), "StreamRendering", StringComparison.Ordinal);
+        Assert.AreEqual("Pages/Streaming.razor.cs", diagnostic.Location.GetLineSpan().Path);
+    }
+
+    [TestMethod]
     public async Task SupplyParameterFromFormProperty_ReportsExplicitSsrHandoffBoundary()
     {
         var diagnostics = await AnalyzeAsync(
@@ -1013,6 +1034,7 @@ public sealed class RazorVueCompatibilityAnalyzerTests
         Assert.AreEqual("JAZORVCA006", RazorVueCompatibilityAnalyzer.InjectPropertyMustBeWritableAutoProperty.Id);
         Assert.AreEqual("JAZORVCA007", RazorVueCompatibilityAnalyzer.BrowserAdapterServiceUnavailable.Id);
         Assert.AreEqual("JAZORVCA011", RazorVueCompatibilityAnalyzer.SsrStateHandoffUnavailable.Id);
+        Assert.AreEqual("JAZORVCA012", RazorVueCompatibilityAnalyzer.StreamRenderingUnavailable.Id);
         Assert.IsTrue(RazorVueCompatibilityAnalyzer.SsrStateHandoffUnavailable.HelpLinkUri.EndsWith(
             "#ssr-state-handoff",
             StringComparison.Ordinal));

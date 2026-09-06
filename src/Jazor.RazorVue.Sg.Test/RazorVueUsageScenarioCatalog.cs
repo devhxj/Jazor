@@ -1259,7 +1259,7 @@ internal static class RazorVueM5CapabilityLedger
             "PersistentComponentState, PersistentState, and SupplyParameterFromForm are diagnosed at authored source until a versioned SSR/hydration protocol exists. Use a typed endpoint/bootstrap payload; FormName, antiforgery, enhanced post, and built-in EditForm/Input protocols remain outside this plan."),
         new(
             "P2-advanced-rendering",
-            "CacheView, ConfigureBrowser, ImportMap, ResourcePreloader, BasePath, AntiforgeryToken, FormMappingScope, DisplayName<T>, InputHidden, Label<T>, EnvironmentView, Virtualize, QuickGrid, SectionOutlet/SectionContent and other Microsoft Blazor built-in UI components; StreamRendering, localization, and complex validation remain separate semantic questions",
+            "CacheView, ConfigureBrowser, ImportMap, ResourcePreloader, BasePath, AntiforgeryToken, FormMappingScope, DisplayName<T>, InputHidden, Label<T>, EnvironmentView, Virtualize, QuickGrid, SectionOutlet/SectionContent and other Microsoft Blazor built-in UI components",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.Reject,
             RazorVueCapabilityStatus.Reject,
@@ -1268,7 +1268,18 @@ internal static class RazorVueM5CapabilityLedger
             "RazorVueCompatibilityAnalyzerTests.StandardGenericComponentTag_ReportsUnsupportedBuiltInUi; RazorSgStandardBlazorComponentRuntimeTests.RemainingStandardBlazorComponents_AreRejectedAsBuiltInUi",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
-            "Microsoft Blazor built-in UI components are outside the RazorVue component contract. StreamRendering, localization, and complex validation are not component entries and require separate typed semantic decisions."),
+            "Microsoft Blazor built-in UI components are outside the RazorVue component contract."),
+        new(
+            "P2-stream-rendering",
+            "[StreamRendering] component attribute",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityStatus.Reject,
+            "RazorVueCompatibilityAnalyzer",
+            "JAZORVCA012",
+            "RazorVueCompatibilityAnalyzerTests.StreamRenderingAttribute_ReportsAtAuthoredComponentAttribute",
+            RazorVueCapabilityEvidence.AuthorSource,
+            "StreamRendering requires renderer-owned streaming SSR lifecycle and is outside the current RazorVue contract. Use an explicit typed SSR/bootstrap protocol and express loading state in the application component."),
         new(
             "P1-parameterized-activation",
             "Single-constructor reference-type service activation; primary constructors, overload selectors, this(...), and base(args) remain unsupported",

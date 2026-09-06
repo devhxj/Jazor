@@ -23,6 +23,7 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
     private const string CascadingParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.CascadingParameterAttribute";
     private const string SupplyParameterFromFormAttributeMetadataName = "Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute";
     private const string PersistentStateAttributeMetadataName = "Microsoft.AspNetCore.Components.PersistentStateAttribute";
+    private const string StreamRenderingAttributeMetadataName = "Microsoft.AspNetCore.Components.StreamRenderingAttribute";
     private const string DbContextMetadataName = "Microsoft.EntityFrameworkCore.DbContext";
     private const string PersistentComponentStateMetadataName = "Microsoft.AspNetCore.Components.PersistentComponentState";
     private static readonly ImmutableArray<string> ServerOnlyServiceMetadataNames =
@@ -222,6 +223,16 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
         helpLinkUri: HelpLink("component-adapters"),
         customTags: [WellKnownDiagnosticTags.CompilationEnd]);
 
+    internal static readonly DiagnosticDescriptor StreamRenderingUnavailable = new(
+        id: "JAZORVCA012",
+        title: "StreamRendering is not part of the RazorVue rendering contract",
+        messageFormat: "Razor API '{0}' is not materialized by RazorVue. StreamRendering requires a renderer-owned streaming SSR protocol; use an explicit typed SSR/bootstrap contract and do not rely on [StreamRendering] in a browser component.",
+        category: "Jazor.RazorVue.Compatibility",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        helpLinkUri: HelpLink("ssr-state-handoff"),
+        customTags: [WellKnownDiagnosticTags.CompilationEnd]);
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         [
             BrowserIneligibleDbContext,
@@ -234,7 +245,8 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
             SsrStateHandoffUnavailable,
             CascadingParameterUnsupported,
             RouteDirectiveRequiresHostAdapter,
-            BlazorComponentAdapterUnavailable
+            BlazorComponentAdapterUnavailable,
+            StreamRenderingUnavailable
         ];
 
     public override void Initialize(AnalysisContext context)
@@ -286,10 +298,12 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
             var cascadingParameterAttribute = startContext.Compilation.GetTypeByMetadataName(CascadingParameterAttributeMetadataName);
             var supplyParameterFromFormAttribute = startContext.Compilation.GetTypeByMetadataName(SupplyParameterFromFormAttributeMetadataName);
             var persistentStateAttribute = startContext.Compilation.GetTypeByMetadataName(PersistentStateAttributeMetadataName);
+            var streamRenderingAttribute = startContext.Compilation.GetTypeByMetadataName(StreamRenderingAttributeMetadataName);
             var hasComponentContract = componentBase is not null || componentContract is not null;
             var hasInjectAnalysis = injectAttribute is not null && hasComponentContract;
             var hasCascadingAnalysis = cascadingParameterAttribute is not null && hasComponentContract;
             var hasSsrStateAnalysis = (supplyParameterFromFormAttribute is not null || persistentStateAttribute is not null) && hasComponentContract;
+            var hasStreamRenderingAnalysis = streamRenderingAttribute is not null && hasComponentContract;
             var parameterView = startContext.Compilation.GetTypeByMetadataName(ParameterViewMetadataName);
             var hasParameterViewAnalysis = parameterView is not null && hasComponentContract;
             var hasRazorAuthoringAnalysis = startContext.Options.AdditionalFiles.Any(static file =>
@@ -299,7 +313,7 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
             // activation (JAZORVCA006) and ParameterView rules remain useful in a minimal
             // Blazor project that references no EF/ASP.NET host assemblies.
             // 不能因为没有可选的 server-only 类型就跳过独立的作者面规则。
-            if (!hasInjectAnalysis && !hasCascadingAnalysis && !hasParameterViewAnalysis && !hasSsrStateAnalysis && !hasRazorAuthoringAnalysis)
+            if (!hasInjectAnalysis && !hasCascadingAnalysis && !hasParameterViewAnalysis && !hasSsrStateAnalysis && !hasStreamRenderingAnalysis && !hasRazorAuthoringAnalysis)
                 return;
 
             if (hasInjectAnalysis)
@@ -364,6 +378,19 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
                         componentContract,
                         symbolContext),
                     SymbolKind.Property);
+            }
+
+            if (hasStreamRenderingAnalysis)
+            {
+                var resolvedStreamRenderingAttribute = streamRenderingAttribute!;
+                startContext.RegisterSymbolAction(
+                    symbolContext => AnalyzeStreamRenderingAttribute(
+                        (INamedTypeSymbol)symbolContext.Symbol,
+                        resolvedStreamRenderingAttribute,
+                        componentBase,
+                        componentContract,
+                        symbolContext),
+                    SymbolKind.NamedType);
             }
 
             if (hasRazorAuthoringAnalysis)
@@ -673,6 +700,30 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
             SsrStateHandoffUnavailable,
             location,
             attributeName));
+    }
+
+    private static void AnalyzeStreamRenderingAttribute(
+        INamedTypeSymbol type,
+        INamedTypeSymbol streamRenderingAttribute,
+        INamedTypeSymbol? componentBase,
+        INamedTypeSymbol? componentContract,
+        SymbolAnalysisContext context)
+    {
+        if (!IsAuthoredSource(type) || !IsComponent(type, componentBase, componentContract))
+            return;
+
+        var attribute = type.GetAttributes().FirstOrDefault(candidate =>
+            SymbolEqualityComparer.Default.Equals(candidate.AttributeClass, streamRenderingAttribute));
+        if (attribute is null)
+            return;
+
+        var location = attribute.ApplicationSyntaxReference?
+                           .GetSyntax(context.CancellationToken).GetLocation() ??
+                       GetAuthoredLocation(type);
+        context.ReportDiagnostic(Diagnostic.Create(
+            StreamRenderingUnavailable,
+            location,
+            "StreamRendering"));
     }
 
     private static void AnalyzeRazorAuthoringFiles(
