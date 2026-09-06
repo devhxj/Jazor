@@ -40,7 +40,7 @@ async function render(request) {
 
   const app = createSSRApp(module.default, state.props);
   for (const provider of state.providers) {
-    if (!provider || typeof provider.key !== "string" || provider.key.length === 0) {
+    if (!provider || typeof provider.key !== "string" || provider.key.trim().length === 0) {
       throw new Error("Jazor SSR state envelope contains an invalid provider.");
     }
     app.provide(provider.key, provider.value);
