@@ -108,6 +108,30 @@ internal static class ComponentInitializationLowerer
                 parameterPropertiesUseState: closure.UsesParameterViewState)
         };
         var body = GetConstructorFunctionBody(compilation, constructor, walker, argument, cancellationToken);
+        if (!parameters.IsDefaultOrEmpty)
+        {
+            var guardedStatements = new List<Statement>(parameters.Length + body.Body.Count);
+            foreach (var parameter in parameters)
+            {
+                var missingServiceError = new NewExpression(
+                    new Identifier("Error"),
+                    NodeList.From<Expression>(JavaScriptAstFactory.CreateStringLiteral(
+                        "RazorVue could not resolve constructor service '" +
+                        parameter.ServiceTypeDisplay +
+                        "'. Register it with the Vue app provider key '" +
+                        parameter.ServiceKey + "'.")));
+                guardedStatements.Add(new IfStatement(
+                    new NonLogicalBinaryExpression(
+                        Operator.StrictEquality,
+                        new NonUpdateUnaryExpression(Operator.TypeOf, new Identifier(parameter.Name)),
+                        JavaScriptAstFactory.CreateStringLiteral("undefined")),
+                    new NestedBlockStatement(NodeList.From<Statement>(new ThrowStatement(missingServiceError))),
+                    null));
+            }
+
+            guardedStatements.AddRange(body.Body);
+            body = new FunctionBody(NodeList.From(guardedStatements), strict: true);
+        }
         var invocationArguments = parameters
             .Select(static parameter => (Expression)new CallExpression(
                 new Identifier("inject"),

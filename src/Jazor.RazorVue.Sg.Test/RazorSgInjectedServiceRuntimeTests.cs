@@ -107,6 +107,58 @@ public sealed class RazorSgInjectedServiceRuntimeTests
     }
 
     [TestMethod]
+    public async Task BuildComponent_MissingConstructorServiceFailsActivationClearly()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/MissingConstructorServiceRuntime.razor"),
+            documentText: "<p>missing</p>",
+            codeBehindSource:
+            """
+            using Microsoft.AspNetCore.Components;
+            using ECMAScript;
+
+            namespace Demo.Pages;
+
+            [ECMAScript]
+            public sealed class BrowserClient;
+
+            [ECMAScriptModule("./components/missing-constructor-service-runtime")]
+            public partial class MissingConstructorServiceRuntime : ComponentBase, IVueComponent
+            {
+                public MissingConstructorServiceRuntime(BrowserClient client) { }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.MissingConstructorServiceRuntime");
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/missing-constructor-service-runtime.mjs",
+            observation.ModuleText,
+            "missing-constructor-service-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+            import component from "./components/missing-constructor-service-runtime.mjs";
+
+            test("missing constructor provider is an activation error", () => {
+                assert.throws(
+                    () => component.setup({}, { slots: {} }),
+                    /could not resolve constructor service.*Demo.Pages.BrowserClient/);
+            });
+            """,
+            vueRuntimeSource: """
+            export function defineComponent(options) { return options; }
+            export function inject(_key) { return undefined; }
+            export function reactive(value) { return value; }
+            export function createStaticVNode(html, count) { return { name: "__static", props: { html, count }, children: html }; }
+            export function h(name, props, children) { return { name, props, children }; }
+            export function openBlock() { return null; }
+            export function createElementBlock(name, props, children) { return { name, props, children }; }
+            export function createBlock(name, props, children) { return { name, props, children }; }
+            """);
+    }
+
+    [TestMethod]
     public async Task BuildComponent_MissingInjectedBrowserServiceFailsActivationClearly()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
