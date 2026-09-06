@@ -135,11 +135,13 @@ public sealed class RazorVueM5CapabilityLedgerTests
 
         var advancedRendering = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P2-advanced-rendering");
-        Assert.AreEqual(RazorVueCapabilityDecision.GuidedAdaptation, advancedRendering.Decision);
-        Assert.AreEqual(RazorVueCapabilityStatus.Guidance, advancedRendering.Status);
-        Assert.IsTrue(advancedRendering.Evidence == RazorVueCapabilityEvidence.None);
+        Assert.AreEqual(RazorVueCapabilityDecision.Reject, advancedRendering.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Reject, advancedRendering.Status);
+        Assert.AreEqual("JAZORVGA021", advancedRendering.DiagnosticId);
+        Assert.IsTrue(advancedRendering.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
+        Assert.IsTrue(advancedRendering.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
         StringAssert.Contains(advancedRendering.Fixture, "StandardGenericComponentTag", StringComparison.Ordinal);
-        StringAssert.Contains(advancedRendering.Blocker, "browser semantic proof", StringComparison.Ordinal);
+        StringAssert.Contains(advancedRendering.Blocker, "built-in UI components", StringComparison.Ordinal);
 
         var cascading = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-cascading-values");

@@ -96,6 +96,33 @@ public sealed class RazorSgStandardBlazorComponentRuntimeTests
             "Microsoft.AspNetCore.Components.Web.ErrorBoundary");
 
     [TestMethod]
+    public Task QuickGrid_IsRejectedAsBuiltInUi()
+        => AssertBuiltInRejectedAsync(
+            "QuickGridHost",
+            """
+            @using Microsoft.AspNetCore.Components.QuickGrid
+
+            <QuickGrid TGridItem="int" Items="@Array.Empty<int>()" />
+            """,
+            """
+            namespace Microsoft.AspNetCore.Components.QuickGrid
+            {
+                public class QuickGrid<TGridItem> : ComponentBase
+                {
+                    [Parameter]
+                    public IEnumerable<TGridItem>? Items { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScriptModule("./components/quick-grid-host")]
+                public partial class QuickGridHost : ComponentBase, IVueComponent;
+            }
+            """,
+            "Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<int>");
+
+    [TestMethod]
     public async Task RemainingStandardBlazorComponents_AreRejectedAsBuiltInUi()
     {
         var cases = new[]
@@ -148,6 +175,30 @@ public sealed class RazorSgStandardBlazorComponentRuntimeTests
                     <DataAnnotationsValidator />
                     """,
                 ExpectedType: "Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator")
+            ,(
+                Name: "VirtualizeHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Web.Virtualization
+
+                    <Virtualize Items="@Array.Empty<int>()" />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>")
+            ,(
+                Name: "SectionContentHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Sections
+
+                    <SectionContent SectionId="main">content</SectionContent>
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Sections.SectionContent")
+            ,(
+                Name: "SectionOutletHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Sections
+
+                    <SectionOutlet SectionId="main" />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Sections.SectionOutlet")
         };
 
         foreach (var testCase in cases)
@@ -186,8 +237,8 @@ public sealed class RazorSgStandardBlazorComponentRuntimeTests
             string.Join(
                 Environment.NewLine,
                 diagnostics.Select(static item => item.Id + ": " + item.GetMessage())));
-        StringAssert.Contains(diagnostic.GetMessage(), "built-in UI component", StringComparison.Ordinal);
-        StringAssert.Contains(diagnostic.GetMessage(), expectedType, StringComparison.Ordinal);
-        StringAssert.Contains(diagnostic.GetMessage(), "ComponentBase + IVueComponent", StringComparison.Ordinal);
+        StringAssert.Contains(diagnostic.GetMessage(), "built-in UI component", StringComparison.Ordinal, componentName);
+        StringAssert.Contains(diagnostic.GetMessage(), expectedType, StringComparison.Ordinal, componentName);
+        StringAssert.Contains(diagnostic.GetMessage(), "ComponentBase + IVueComponent", StringComparison.Ordinal, componentName);
     }
 }

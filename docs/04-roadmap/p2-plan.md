@@ -11,7 +11,7 @@ P2 的目标是完善 P1 之后的协议、渲染和生态能力，同时保持 
 | 工作线 | 责任层 | 当前决策 |
 | --- | --- | --- |
 | P2-A SSR 状态与表单交接 | `Jazor.AspNetCore`、`Jazor.Emit`、应用 endpoint | 先完善显式 bootstrap/错误边界；`PersistentComponentState`、enhanced form 保持 Guidance/Reject |
-| P2-B 高级渲染评估 | `Jazor.RazorVue`、对应 binding | `Virtualize`、`QuickGrid`、`SectionContent/SectionOutlet`、StreamRendering、复杂验证逐项评估，未证明前不注册入口 |
+| P2-B 高级渲染评估 | `Jazor.RazorVue`、对应 binding | Microsoft Blazor 内置 UI 组件（包括 `Virtualize`、`QuickGrid`、`SectionContent/SectionOutlet`）统一 Reject；StreamRendering、localization、复杂验证另行评估 |
 | P2-C JS 互操作边界 | `Jazor.Compiler`、`Jazor.Analyzer`、ECMAScript/WebIDL binding | `IJSRuntime` 家族继续 Reject；完善稳定诊断和 typed 替代路径，不引入字符串 fallback |
 | P2-D 性能与交付质量 | `Jazor.Compiler`、`Jazor.Emit`、测试脚本 | 以固定 benchmark 为依据，只实施不改变语义、导入稳定性和 source map 的优化 |
 
@@ -40,11 +40,13 @@ P2 的每个可交付切片都必须满足：
 
 ### P2-B：高级渲染评估
 
-对每项能力先建立最小 feasibility fixture，再决定 Support、Support with constraints 或 Reject：
+Microsoft Blazor 内置 UI 组件统一不进入 RazorVue 组件契约：
 
-- `Virtualize`：确认可视窗口、滚动测量和数据请求取消是否能由 Vue host 明确表达。
-- `QuickGrid`：确认列定义、排序/分页、模板和事件是否能保持 typed contract。
-- `SectionContent/SectionOutlet`：确认跨组件 owner、更新和卸载顺序。
+- `Virtualize`、`QuickGrid`、`SectionContent`、`SectionOutlet` 与其它内置 UI 组件由 `JAZORVGA021` Reject。
+- 使用应用自有组件或已声明的 typed Vue component contract 替代。
+
+以下非组件语义再分别建立最小 feasibility fixture：
+
 - StreamRendering、localization、复杂 validation：确认 SSR/浏览器语义和错误边界。
 
 没有真实浏览器和 Release consumer 证据时，只更新 ledger 与指导文档，不添加公共 adapter。
@@ -67,7 +69,8 @@ P2 的每个可交付切片都必须满足：
 | --- | --- |
 | Element Plus typed binding | 已完成独立切片 |
 | SSR 显式 envelope/bootstrap | P1 基础已完成；P2 已增加 provider key 唯一性校验，表单协议仍为 Guidance |
-| 高级渲染 | Guidance，等待 feasibility fixture |
+| Microsoft Blazor 内置 UI 组件 | Reject（`JAZORVGA021`），包括 `Virtualize`、`QuickGrid`、`SectionContent/SectionOutlet` |
+| StreamRendering、localization、复杂 validation | Guidance，等待独立 typed 语义与证据 |
 | IJSRuntime 等 JS 互操作 | Reject；作者面回归确认注入本身不误报，实际成员使用仍由 usage-site/compiler 边界裁决 |
 | 性能与交付优化 | 已完成 `benchmark-razorvue-g2.cs --measure-runtime --samples 3 --iterations 3` 基线；尚未宣称优化收益 |
 

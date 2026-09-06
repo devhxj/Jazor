@@ -46,7 +46,7 @@ P2 的执行顺序、Definition of Done 和当前证据见 [RazorVue P2 执行�
 | 方向 | 预期边界 | 当前状态 |
 | --- | --- | --- |
 | SSR 状态与表单交接 | 继续使用显式 `jazor-ssr-state` envelope；不模拟 `PersistentComponentState` 或 enhanced form。 | provider key 唯一性已硬化；表单协议仍 Guidance |
-| 高级渲染 | `Virtualize`、`QuickGrid`、Section、StreamRendering、localization 和复杂 validation 逐项评估。 | Guidance；没有 typed contract 与浏览器/Release 证据前不注册入口 |
+| 高级渲染 | Microsoft Blazor 内置 UI 组件统一 Reject；StreamRendering、localization 和复杂 validation 单独评估。 | `Virtualize`、`QuickGrid`、Section 已由 `JAZORVGA021` Reject；其余语义保持 Guidance |
 | JS 互操作 | `IJSRuntime` 家族保持 Reject，使用 typed ECMAScript/WebIDL binding 替代。 | 已有稳定诊断与作者面回归 |
 | 性能与交付 | 以固定 benchmark 比较 render/update、gzip、clean/incremental/HMR/Release。 | 已完成运行时基线，尚未宣称优化收益 |
 
