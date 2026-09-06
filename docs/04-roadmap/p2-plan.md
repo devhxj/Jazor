@@ -71,7 +71,8 @@ Microsoft Blazor 内置 UI 组件统一不进入 RazorVue 组件契约：
 | SSR 显式 envelope/bootstrap | P1 基础已完成；P2 已增加 provider key 唯一性校验，表单协议仍为 Guidance |
 | Microsoft Blazor 内置 UI 组件 | Reject（`JAZORVGA021`），包括 `CacheView`、`ConfigureBrowser`、`ImportMap`、`ResourcePreloader`、`AntiforgeryToken`、`FormMappingScope`、`DisplayName<T>`、`InputHidden`、`Label<T>`、`EnvironmentView`、`Virtualize`、`QuickGrid`、`SectionContent/SectionOutlet` |
 | StreamRendering | Reject（`JAZORVCA012`）；其 renderer-owned streaming SSR 语义不属于当前 contract |
-| localization、复杂 validation | Guidance，等待独立 typed 语义与证据 |
+| localization | Guidance：使用应用自有 typed resource/locale contract 或 ECMAScript Intl；request-culture middleware、IStringLocalizer 注入和 SSR locale handoff 尚未形成 RazorVue primitive |
+| 复杂 validation | Guidance：使用组件库 typed rules/callbacks 或应用自有 validation contract；EditContext/InputBase/完整服务器验证 parity 不进入范式 |
 | IJSRuntime 等 JS 互操作 | Reject；作者面回归确认注入本身不误报，实际成员使用仍由 usage-site/compiler 边界裁决 |
 | 性能与交付优化 | 已完成 `benchmark-razorvue-g2.cs --measure-runtime --samples 3 --iterations 3` 基线；尚未宣称优化收益 |
 

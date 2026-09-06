@@ -150,6 +150,18 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.AreEqual(RazorVueCapabilityStatus.Reject, streamRendering.Status);
         Assert.IsTrue(streamRendering.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
 
+        var localization = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P2-localization");
+        Assert.AreEqual(RazorVueCapabilityDecision.GuidedAdaptation, localization.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Guidance, localization.Status);
+        Assert.IsNull(localization.DiagnosticId);
+
+        var complexValidation = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P2-complex-validation");
+        Assert.AreEqual(RazorVueCapabilityDecision.GuidedAdaptation, complexValidation.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Guidance, complexValidation.Status);
+        Assert.IsNull(complexValidation.DiagnosticId);
+
         var cascading = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-cascading-values");
         Assert.AreEqual("JAZORVCA008", cascading.DiagnosticId);

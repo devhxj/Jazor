@@ -1281,6 +1281,30 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.AuthorSource,
             "StreamRendering requires renderer-owned streaming SSR lifecycle and is outside the current RazorVue contract. Use an explicit typed SSR/bootstrap protocol and express loading state in the application component."),
         new(
+            "P2-localization",
+            "Application-owned localization resources, locale selection, and localized formatting",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.GuidedAdaptation,
+            RazorVueCapabilityStatus.Guidance,
+            "Application typed localization contract + ECMAScript Intl bindings",
+            null,
+            "samples/JazorAdmin/Localization.cs; ECMAScript Intl bindings",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.ModuleArtifact,
+            "Use an application-owned typed resource/locale contract or ECMAScript Intl binding. ASP.NET request-culture middleware, IStringLocalizer injection, satellite-resource discovery, and SSR locale handoff are not a RazorVue component primitive yet."),
+        new(
+            "P2-complex-validation",
+            "Cross-field, async, server-backed, and localized validation semantics",
+            RazorVueCapabilityPriority.P2,
+            RazorVueCapabilityDecision.GuidedAdaptation,
+            RazorVueCapabilityStatus.Guidance,
+            "Typed component-library form contract",
+            null,
+            "samples/RazorVue.Authoring/verify-smoke.cs; RazorVue authoring guide form contract",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.BrowserSmoke,
+            "Use typed TDesign/Vuetify/Element Plus form rules and callbacks or an application-owned validation contract. Microsoft EditContext/InputBase/DataAnnotationsValidator and full server validation parity remain rejected or outside the contract."),
+        new(
             "P1-parameterized-activation",
             "Single-constructor reference-type service activation; primary constructors, overload selectors, this(...), and base(args) remain unsupported",
             RazorVueCapabilityPriority.P1,
