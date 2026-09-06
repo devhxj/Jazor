@@ -185,9 +185,9 @@ Razor SDK 能编译不等于每个 ASP.NET Core runtime API 都能在浏览器�
 <a id="ssr-state-handoff"></a>
 ### SSR 状态与表单交接
 
-`PersistentComponentState`、`[PersistentState]` 和 `[SupplyParameterFromForm]` 依赖服务器 renderer、序列化 payload、请求边界和 hydration 时机。当前 RazorVue 没有版本化的 state envelope、checksum、失配处理或 enhanced form/antiforgery 协议，因此不会把这些 API 静默降级成浏览器全局状态。作者源中出现注入或特性时会报告 `JAZORVCA011`，位置落在对应类型或 attribute 上；这不是要求作者改写成 builder 或 Vue API。
+`PersistentComponentState`、`[PersistentState]` 和 `[SupplyParameterFromForm]` 依赖服务器 renderer、序列化 payload、请求边界和 hydration 时机。RazorVue 的 SSR host 现在提供 `jazor-ssr-state` v1 envelope（`schema`、`version`、`props`、`providers`），并在 Deno runner 与浏览器 hydration 入口校验版本和 provider key；这只定义了 host-owned state transport，不等同于 Blazor 的 PersistentComponentState 或 enhanced form handoff。作者源中出现这些 API 仍会报告 `JAZORVCA011`，位置落在对应类型或 attribute 上；这不是要求作者改写成 builder 或 Vue API。
 
-对于需要 SSR 首屏数据的页面，使用显式、强类型 endpoint 返回 bootstrap DTO，并在组件初始化时消费该 DTO；服务端仍是授权和数据事实来源。重复提交、过期 payload、状态失配和表单防伪需要由 endpoint/host 自己处理。只有在未来版本化 payload 与 hydration 副作用矩阵完成后，才会把具体子集提升为 Compatibility Adapter 或 Support；内置 `EditForm`、`Input*`、`AuthorizeView` 等组件仍不属于本路线。
+对于需要 SSR 首屏数据的页面，使用显式、强类型 endpoint 返回 bootstrap DTO，并在 `JazorSsrRequest.Props` 或 `Providers` 中交接；服务端仍是授权和数据事实来源。重复提交、过期 payload、状态失配和表单防伪需要由 endpoint/host 自己处理。认证状态、复杂 activation 和复杂 history 仍按 [P1 执行计划](../04-roadmap/p1-plan.md) 保持 Guidance/Reject；内置 `EditForm`、`Input*`、`AuthorizeView` 等组件仍不属于本路线。
 
 <a id="direct-render"></a>
 ## Direct Render

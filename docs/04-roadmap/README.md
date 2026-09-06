@@ -9,6 +9,7 @@
 | 判断某项能力是否已经可以使用 | [当前状态](./current-status.md) |
 | 了解下一阶段的优先级、边界和完成条件 | [下一阶段](./next-development.md) |
 | 执行 RazorVue P0 | [P0 执行计划](./p0-plan.md) |
+| 执行 RazorVue P1 | [P1 执行计划](./p1-plan.md) |
 
 ## 维护准则
 

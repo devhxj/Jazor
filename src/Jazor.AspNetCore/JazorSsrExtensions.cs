@@ -106,8 +106,7 @@ public static class JazorSsrExtensions
 /// <summary>Composes the browser hydration document around an already-rendered Vue root.</summary>
 internal static class SsrDocumentWriter
 {
-    private const string PropsElementId = "__jazor_ssr_props";
-    private const string ProvidersElementId = "__jazor_ssr_providers";
+    private const string StateElementId = "__jazor_ssr_state";
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         Encoder = JavaScriptEncoder.Default
@@ -146,17 +145,17 @@ internal static class SsrDocumentWriter
         await response.WriteAsync(HtmlEncoder.Default.Encode(mountElementId), cancellationToken);
         await response.WriteAsync("\">", cancellationToken);
         await response.WriteAsync(result.Html, cancellationToken);
-        await response.WriteAsync("</div>\n<script id=\"" + PropsElementId + "\" type=\"application/json\">", cancellationToken);
-        await response.WriteAsync(result.SerializedProps, cancellationToken);
-        await response.WriteAsync("</script>\n<script id=\"" + ProvidersElementId + "\" type=\"application/json\">", cancellationToken);
-        await response.WriteAsync(result.SerializedProviders, cancellationToken);
+        await response.WriteAsync("</div>\n<script id=\"" + StateElementId + "\" type=\"application/json\">", cancellationToken);
+        await response.WriteAsync(result.SerializedState, cancellationToken);
         await response.WriteAsync("</script>\n<script type=\"module\">\n", cancellationToken);
         await response.WriteAsync("import { createSSRApp } from \"vue\";\n", cancellationToken);
         await response.WriteAsync("const mountElement = document.getElementById(" + mountElementIdJson + ");\n", cancellationToken);
         await response.WriteAsync("if (!mountElement) throw new Error(\"Jazor SSR mount element was not found.\");\n", cancellationToken);
         await response.WriteAsync("const { default: component } = await import(" + componentUrlJson + ");\n", cancellationToken);
-        await response.WriteAsync("const props = JSON.parse(document.getElementById(\"" + PropsElementId + "\").textContent);\n", cancellationToken);
-        await response.WriteAsync("const providers = JSON.parse(document.getElementById(\"" + ProvidersElementId + "\").textContent);\n", cancellationToken);
+        await response.WriteAsync("const state = JSON.parse(document.getElementById(\"" + StateElementId + "\").textContent);\n", cancellationToken);
+        await response.WriteAsync("if (state.schema !== \"" + JazorSsrStateEnvelope.CurrentSchema + "\" || state.version !== " + JazorSsrStateEnvelope.CurrentVersion + " || !Array.isArray(state.providers)) throw new Error(\"Jazor SSR state envelope version or shape is not supported.\");\n", cancellationToken);
+        await response.WriteAsync("const props = state.props;\n", cancellationToken);
+        await response.WriteAsync("const providers = state.providers;\n", cancellationToken);
         await response.WriteAsync("const app = createSSRApp(component, props);\n", cancellationToken);
         await response.WriteAsync("for (const provider of providers) app.provide(provider.key, provider.value);\n", cancellationToken);
         await response.WriteAsync("app.mount(mountElement);\n", cancellationToken);

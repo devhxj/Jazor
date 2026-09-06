@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 using System.Net;
+using System.Security.Claims;
 using Jazor.AspNetCore;
 using Jazor.Emit;
 
@@ -45,7 +46,8 @@ public sealed class JazorSsrHostingTests
         StringAssert.Contains(html, "import { createSSRApp } from \"vue\";");
         StringAssert.Contains(html, "await import(\"/docs/jazor/components/counter.mjs\")");
         StringAssert.Contains(html, "\"@vue/server-renderer\"");
-        StringAssert.Contains(html, "<script id=\"__jazor_ssr_providers\" type=\"application/json\">[{\"key\":\"app:feature\",\"value\":{\"Enabled\":true}}]</script>");
+        StringAssert.Contains(html, "<script id=\"__jazor_ssr_state\" type=\"application/json\">{\"schema\":\"jazor-ssr-state\",\"version\":1,\"props\":{\"Title\":\"SSR \\u003Ctitle\\u003E\"},\"providers\":[{\"key\":\"app:feature\",\"value\":{\"Enabled\":true}}],\"authentication\":null}</script>");
+        StringAssert.Contains(html, "if (state.schema !== \"jazor-ssr-state\" || state.version !== 1 || !Array.isArray(state.providers))");
         StringAssert.Contains(html, "for (const provider of providers) app.provide(provider.key, provider.value);");
         StringAssert.Contains(html, "\"Title\":\"SSR \\u003Ctitle\\u003E\"");
         Assert.IsFalse(html.Contains("node_modules", StringComparison.Ordinal));
@@ -135,6 +137,57 @@ public sealed class JazorSsrHostingTests
         Assert.AreEqual(
             "[{\"key\":\"jazor:service:Jazor.EmitTest.SsrBrowserProbe\",\"value\":{\"Label\":\"server-provider\"}}]",
             result.SerializedProviders);
+        StringAssert.Contains(result.SerializedState, "\"schema\":\"jazor-ssr-state\"");
+        StringAssert.Contains(result.SerializedState, "\"version\":1");
+    }
+
+    [TestMethod]
+    public async Task JazorSsrRenderer_RejectsProviderWithoutKeyBeforeStartingWorker()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = workspace.RootPath,
+            WebRootPath = Path.Combine(workspace.RootPath, "wwwroot"),
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddJazorSsr(options => options.ArtifactRootPath = artifactRoot);
+
+        await using var app = builder.Build();
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+
+        var error = await Assert.ThrowsExactlyAsync<ArgumentException>(() => renderer.RenderAsync(
+            new JazorSsrRequest(
+                "components/counter.mjs",
+                Providers: [new JazorSsrProvider("", new { Enabled = true })])));
+
+        StringAssert.Contains(error.Message, "non-empty keys");
+        Assert.IsFalse(File.Exists(Path.Combine(artifactRoot, "@jazor", "ssr-runner.mjs")));
+    }
+
+    [TestMethod]
+    public void JazorAuthenticationState_FromPrincipalProducesClosedTypedSnapshot()
+    {
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim(ClaimTypes.NameIdentifier, "user-42"),
+            new Claim("role", "admin"),
+            new Claim("role", "operator")
+        ], authenticationType: "test"));
+
+        var state = JazorAuthenticationState.FromPrincipal(principal);
+
+        Assert.AreEqual(JazorAuthenticationStatus.Authenticated, state.Status);
+        Assert.AreEqual("user-42", state.Subject);
+        CollectionAssert.AreEqual(new[] { "admin", "operator" }, state.Claims!["role"]);
+
+        var envelope = JazorSsrStateEnvelope.Create(new JazorSsrRequest(
+            "components/counter.mjs",
+            Authentication: state));
+        Assert.AreEqual(JazorSsrStateEnvelope.CurrentSchema, envelope.Schema);
+        Assert.AreEqual(JazorSsrStateEnvelope.CurrentVersion, envelope.Version);
+        Assert.AreEqual(JazorAuthenticationState.ProviderKey, envelope.Providers.Single().Key);
     }
 
     [TestMethod]

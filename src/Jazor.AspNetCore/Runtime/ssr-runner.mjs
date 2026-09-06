@@ -23,6 +23,11 @@ function normalizeModulePath(value) {
 
 async function render(request) {
   const modulePath = normalizeModulePath(request.modulePath);
+  const state = request.state;
+  if (!state || state.schema !== "jazor-ssr-state" || state.version !== 1 ||
+      !("props" in state) || !Array.isArray(state.providers)) {
+    throw new Error("Jazor SSR state envelope is missing or has an unsupported schema/version.");
+  }
   const moduleUrl = new URL(modulePath, artifactRootUrl);
   if (!moduleUrl.href.startsWith(artifactRootUrl.href)) {
     throw new Error("Jazor SSR request modulePath resolved outside the artifact root.");
@@ -33,8 +38,11 @@ async function render(request) {
     throw new Error(`Jazor SSR root module '${modulePath}' must export a default component.`);
   }
 
-  const app = createSSRApp(module.default, request.props);
-  for (const provider of request.providers ?? []) {
+  const app = createSSRApp(module.default, state.props);
+  for (const provider of state.providers) {
+    if (!provider || typeof provider.key !== "string" || provider.key.length === 0) {
+      throw new Error("Jazor SSR state envelope contains an invalid provider.");
+    }
     app.provide(provider.key, provider.value);
   }
   // renderToString swallows render-hook errors and emits "<!---->" placeholders. Capture them
