@@ -4809,7 +4809,7 @@ internal static class RenderEmitter
             "Microsoft.AspNetCore.Components.Authorization" => metadataName is
                 "AuthorizeView" or "AuthorizeRouteView" or "CascadingAuthenticationState",
             "Microsoft.AspNetCore.Components.Forms" => metadataName is
-                "DataAnnotationsValidator" or "EditForm" or "InputBase`1" or "InputCheckbox" or "InputDate`1" or "InputFile" or
+                "AntiforgeryToken" or "DataAnnotationsValidator" or "EditForm" or "FormMappingScope" or "InputBase`1" or "InputCheckbox" or "InputDate`1" or "InputFile" or
                 "InputNumber`1" or "InputRadio`1" or "InputRadioGroup`1" or "InputSelect`1" or
                 "InputText" or "InputTextArea" or "ValidationMessage`1" or "ValidationSummary",
             "Microsoft.AspNetCore.Components.Routing" => metadataName is
@@ -4820,7 +4820,7 @@ internal static class RenderEmitter
             "Microsoft.AspNetCore.Components.Web.Virtualization" => metadataName is "Virtualize`1",
             "Microsoft.AspNetCore.Components.QuickGrid" => metadataName is "QuickGrid`1",
             "Microsoft.AspNetCore.Components" => metadataName is
-                "DynamicComponent" or "LayoutView" or "RouteView",
+                "DynamicComponent" or "ImportMap" or "LayoutView" or "RouteView",
             _ => false
         };
     }

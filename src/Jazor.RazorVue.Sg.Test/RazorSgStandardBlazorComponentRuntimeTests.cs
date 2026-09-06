@@ -199,6 +199,28 @@ public sealed class RazorSgStandardBlazorComponentRuntimeTests
                     <SectionOutlet SectionId="main" />
                     """,
                 ExpectedType: "Microsoft.AspNetCore.Components.Sections.SectionOutlet")
+            ,(
+                Name: "ImportMapHost",
+                Markup: """
+                    <ImportMap />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.ImportMap")
+            ,(
+                Name: "AntiforgeryTokenHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Forms
+
+                    <AntiforgeryToken />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Forms.AntiforgeryToken")
+            ,(
+                Name: "FormMappingScopeHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Forms
+
+                    <FormMappingScope Name="scope"><span>content</span></FormMappingScope>
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Forms.FormMappingScope")
         };
 
         foreach (var testCase in cases)

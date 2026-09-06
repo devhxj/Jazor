@@ -1174,7 +1174,7 @@ internal static class RazorVueM5CapabilityLedger
         },
         new(
             "P1-standard-blazor-component-adapters",
-            "Microsoft built-in UI components: DynamicComponent, EditForm, ErrorBoundary, Router, RouteView, LayoutView, NavLink, NavigationLock, FocusOnNavigate, PageTitle, HeadContent, HeadOutlet, AuthorizeView/AuthorizeRouteView, CascadingAuthenticationState, DataAnnotationsValidator, Input*, Virtualize, QuickGrid, and SectionContent/SectionOutlet",
+            "Microsoft built-in UI components: DynamicComponent, ImportMap, EditForm, AntiforgeryToken, FormMappingScope, ErrorBoundary, Router, RouteView, LayoutView, NavLink, NavigationLock, FocusOnNavigate, PageTitle, HeadContent, HeadOutlet, AuthorizeView/AuthorizeRouteView, CascadingAuthenticationState, DataAnnotationsValidator, Input*, Virtualize, QuickGrid, and SectionContent/SectionOutlet",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.Reject,
             RazorVueCapabilityStatus.Reject,

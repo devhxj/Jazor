@@ -481,6 +481,7 @@ public sealed class RazorVueCompatibilityAnalyzerTests
                 "Pages/Standard.razor",
                 """
                 @using Microsoft.AspNetCore.Components.Authorization
+                @using Microsoft.AspNetCore.Components
                 @using Microsoft.AspNetCore.Components.Forms
                 @using Microsoft.AspNetCore.Components.Routing
 
@@ -490,6 +491,9 @@ public sealed class RazorVueCompatibilityAnalyzerTests
                 <NavigationLock />
                 <FocusOnNavigate />
                 <PageTitle>Orders</PageTitle>
+                <ImportMap />
+                <AntiforgeryToken />
+                <FormMappingScope Name="scope"><span>content</span></FormMappingScope>
                 """)]);
 
         var messages = diagnostics
@@ -497,7 +501,7 @@ public sealed class RazorVueCompatibilityAnalyzerTests
             .Select(static item => item.GetMessage())
             .ToArray();
 
-        Assert.HasCount(6, messages);
+        Assert.HasCount(9, messages);
         foreach (var componentName in new[]
         {
             "AuthorizeRouteView",
@@ -505,7 +509,10 @@ public sealed class RazorVueCompatibilityAnalyzerTests
             "DataAnnotationsValidator",
             "NavigationLock",
             "FocusOnNavigate",
-            "PageTitle"
+            "PageTitle",
+            "ImportMap",
+            "AntiforgeryToken",
+            "FormMappingScope"
         })
         {
             Assert.IsTrue(
