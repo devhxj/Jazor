@@ -1044,7 +1044,7 @@ public sealed class RazorVueCompatibilityAnalyzerTests
             StringComparison.Ordinal));
         Assert.AreEqual("JAZORVCA009", RazorVueCompatibilityAnalyzer.RouteDirectiveRequiresHostAdapter.Id);
         Assert.AreEqual("JAZORVCA010", RazorVueCompatibilityAnalyzer.BlazorComponentAdapterUnavailable.Id);
-        Assert.HasCount(11, new RazorVueCompatibilityAnalyzer().SupportedDiagnostics);
+        Assert.HasCount(12, new RazorVueCompatibilityAnalyzer().SupportedDiagnostics);
     }
 
     [TestMethod]
