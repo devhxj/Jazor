@@ -501,6 +501,7 @@ public sealed class RazorVueCompatibilityAnalyzerTests
                 <InputHidden />
                 <Label For="@(() => Name)">Name</Label>
                 <EnvironmentView Include="Development"><span>content</span></EnvironmentView>
+                <BasePath />
                 """)]);
 
         var messages = diagnostics
@@ -508,7 +509,7 @@ public sealed class RazorVueCompatibilityAnalyzerTests
             .Select(static item => item.GetMessage())
             .ToArray();
 
-        Assert.HasCount(16, messages);
+        Assert.HasCount(17, messages);
         foreach (var componentName in new[]
         {
             "AuthorizeRouteView",
@@ -527,6 +528,7 @@ public sealed class RazorVueCompatibilityAnalyzerTests
             ,"InputHidden"
             ,"Label"
             ,"EnvironmentView"
+            ,"BasePath"
         })
         {
             Assert.IsTrue(

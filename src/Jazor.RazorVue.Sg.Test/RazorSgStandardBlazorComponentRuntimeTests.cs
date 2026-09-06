@@ -271,6 +271,14 @@ public sealed class RazorSgStandardBlazorComponentRuntimeTests
                     <EnvironmentView Include="Development"><span>content</span></EnvironmentView>
                     """,
                 ExpectedType: "Microsoft.AspNetCore.Components.Web.EnvironmentView")
+            ,(
+                Name: "BasePathHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Endpoints
+
+                    <BasePath />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Endpoints.BasePath")
         };
 
         foreach (var testCase in cases)

@@ -76,6 +76,7 @@ public sealed class RazorVueCompatibilityAnalyzer : DiagnosticAnalyzer
         ("ConfigureBrowser", "Microsoft.AspNetCore.Components.ConfigureBrowser"),
         ("ImportMap", "Microsoft.AspNetCore.Components.ImportMap"),
         ("ResourcePreloader", "Microsoft.AspNetCore.Components.ResourcePreloader"),
+        ("BasePath", "Microsoft.AspNetCore.Components.Endpoints.BasePath"),
         ("DataAnnotationsValidator", "Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator"),
         ("EditForm", "Microsoft.AspNetCore.Components.Forms.EditForm"),
         ("ErrorBoundary", "Microsoft.AspNetCore.Components.Web.ErrorBoundary"),

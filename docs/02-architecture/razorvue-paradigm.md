@@ -75,7 +75,7 @@ Blazor 名称出现在作者代码中，只表示采用了熟悉的 Razor/C# 组
 - 完整 CLR、任意外部 .NET API、反射和依赖 CLR identity 的对象模型；
 - `IJSRuntime` 字符串互操作、动态 JavaScript import 和未经 typed binding 描述的 JS 对象；
 - DbContext、HttpContext、Identity manager、circuit、protected storage 等 server-only 服务；
-- Microsoft Blazor 内置 UI 组件作为隐式 Vue 组件入口，例如 `Router`、`RouteView`、`EditForm`、`Input*`、`AuthorizeView`、`DynamicComponent`、`CacheView`、`ConfigureBrowser`、`ImportMap`、`ResourcePreloader`、`AntiforgeryToken`、`FormMappingScope`、`DisplayName<T>`、`InputHidden`、`Label<T>`、`EnvironmentView`、`Virtualize`、`QuickGrid`、`SectionContent` 和 `SectionOutlet`；
+- Microsoft Blazor 内置 UI 组件作为隐式 Vue 组件入口，例如 `Router`、`RouteView`、`EditForm`、`Input*`、`AuthorizeView`、`DynamicComponent`、`CacheView`、`ConfigureBrowser`、`ImportMap`、`ResourcePreloader`、`BasePath`、`AntiforgeryToken`、`FormMappingScope`、`DisplayName<T>`、`InputHidden`、`Label<T>`、`EnvironmentView`、`Virtualize`、`QuickGrid`、`SectionContent` 和 `SectionOutlet`；
 - 未定义版本化协议的认证状态、`PersistentComponentState`、`[PersistentState]`、enhanced form handoff；
 - 完整 SSR/prerender route identity 和未经证明的 hydration side-effect parity；history 只支持已验证的 `popstate`/`hashchange` handler、取消恢复、竞态和 dispose 子集。
 
