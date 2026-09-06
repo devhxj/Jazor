@@ -82,7 +82,7 @@ Blazor JS interop 不属于 browser service adapter。`IJSRuntime` 的 identifie
 <a id="component-adapters"></a>
 ### 标准组件适配器
 
-Microsoft.AspNetCore.Components 提供的 `DynamicComponent`、`ImportMap`、`ErrorBoundary`、`EditForm`、`AntiforgeryToken`、`FormMappingScope`、`Input*`、`Virtualize`、`QuickGrid`、`SectionContent` 和 `SectionOutlet` 等内置 UI 组件不属于 RazorVue 组件入口；只有满足 `ComponentBase` + `IVueComponent`（或派生接口）并声明导入描述的自定义/第三方组件才会进入 lowering。工作树中仍可能存在历史/实验 adapter 和对应测试，它们不构成产品支持证据；页面应改用自定义组件或 TDesign/Vuetify/Element Plus 的 typed contract，避免依赖运行时替代。
+Microsoft.AspNetCore.Components 提供的 `DynamicComponent`、`CacheView`、`ConfigureBrowser`、`ImportMap`、`ResourcePreloader`、`BasePath`、`ErrorBoundary`、`EditForm`、`AntiforgeryToken`、`FormMappingScope`、`DisplayName<T>`、`InputHidden`、`Label<T>`、`EnvironmentView`、`Input*`、`Virtualize`、`QuickGrid`、`SectionContent` 和 `SectionOutlet` 等内置 UI 组件不属于 RazorVue 组件入口；只有满足 `ComponentBase` + `IVueComponent`（或派生接口）并声明导入描述的自定义/第三方组件才会进入 lowering。工作树中仍可能存在历史/实验 adapter 和对应测试，它们不构成产品支持证据；页面应改用自定义组件或 TDesign/Vuetify/Element Plus 的 typed contract，避免依赖运行时替代。
 
 Element Plus 组件按普通 Razor 组件使用：`ElButtonType` 等 enum 保持受限字符串域，`ElInput.ModelValue` 使用 `VueStringNumberValue`，`@bind-ModelValue` 连接 `onUpdate:modelValue`，`ChildContent`/命名 `RenderFragment` 映射 default 或命名 slot，`class`、`style` 与 `@attributes` 走基类的 typed/splat contract。示例：
 
