@@ -153,7 +153,7 @@ internal static class SsrDocumentWriter
         await response.WriteAsync("if (!mountElement) throw new Error(\"Jazor SSR mount element was not found.\");\n", cancellationToken);
         await response.WriteAsync("const { default: component } = await import(" + componentUrlJson + ");\n", cancellationToken);
         await response.WriteAsync("const state = JSON.parse(document.getElementById(\"" + StateElementId + "\").textContent);\n", cancellationToken);
-        await response.WriteAsync("if (state.schema !== \"" + JazorSsrStateEnvelope.CurrentSchema + "\" || state.version !== " + JazorSsrStateEnvelope.CurrentVersion + " || !Array.isArray(state.providers)) throw new Error(\"Jazor SSR state envelope version or shape is not supported.\");\n", cancellationToken);
+        await response.WriteAsync("if (state.schema !== \"" + JazorSsrStateEnvelope.CurrentSchema + "\" || state.version !== " + JazorSsrStateEnvelope.CurrentVersion + " || !Array.isArray(state.providers) || state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.length === 0)) throw new Error(\"Jazor SSR state envelope version or provider shape is not supported.\");\n", cancellationToken);
         await response.WriteAsync("const props = state.props;\n", cancellationToken);
         await response.WriteAsync("const providers = state.providers;\n", cancellationToken);
         await response.WriteAsync("const app = createSSRApp(component, props);\n", cancellationToken);

@@ -47,7 +47,7 @@ public sealed class JazorSsrHostingTests
         StringAssert.Contains(html, "await import(\"/docs/jazor/components/counter.mjs\")");
         StringAssert.Contains(html, "\"@vue/server-renderer\"");
         StringAssert.Contains(html, "<script id=\"__jazor_ssr_state\" type=\"application/json\">{\"schema\":\"jazor-ssr-state\",\"version\":1,\"props\":{\"Title\":\"SSR \\u003Ctitle\\u003E\"},\"providers\":[{\"key\":\"app:feature\",\"value\":{\"Enabled\":true}}],\"authentication\":null}</script>");
-        StringAssert.Contains(html, "if (state.schema !== \"jazor-ssr-state\" || state.version !== 1 || !Array.isArray(state.providers))");
+        StringAssert.Contains(html, "state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.length === 0)");
         StringAssert.Contains(html, "for (const provider of providers) app.provide(provider.key, provider.value);");
         StringAssert.Contains(html, "\"Title\":\"SSR \\u003Ctitle\\u003E\"");
         Assert.IsFalse(html.Contains("node_modules", StringComparison.Ordinal));
