@@ -2,6 +2,7 @@ import { GetUriWithFragmentCore, GetUriWithQueryParameterCore, GetUriWithQueryPa
 import { createLocationChangedEventArgs } from "Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js";
 import { CreateLocationChangingContext, IsNavigationPrevented } from "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js";
 import { createNotFoundEventArgs } from "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js";
+import { _c80ae10aa1d0d795 } from "System/ExceptionModule.js";
 import { _0333a0fd5f67d8a0, _3ae4900da2b07b27, _946b7129a48c8114 } from "System/StringModule.js";
 let LocationHandlers = new WeakMap;
 let NotFoundHandlers = new WeakMap;
@@ -154,6 +155,25 @@ function RegisterLocationChangingHandler(instance, handler) {
 }
 function RemoveNotFound(instance, value) {
   RemoveHandler(NotFoundHandlers, instance, value);
+}
+export function HandleHistoryNavigation(instance, targetLocation, historyEntryState, completion) {
+  _c80ae10aa1d0d795(completion, "completion");
+  let handlers = GetHandlers(LocationChangingHandlers, instance).slice();
+  if (handlers.length === 0) {
+    CompleteHistoryNavigation(completion, "allowed");
+    return;
+  }
+  let cancellation = BeginLocationChangingCancellation(instance);
+  let context = CreateLocationChangingContext(targetLocation, typeof historyEntryState === "string" ? historyEntryState : null, false, cancellation.signal);
+  DispatchLocationChanging(handlers, context, () => {
+    EndLocationChangingCancellation(instance, cancellation);
+    let result = cancellation.signal.aborted ? "stale" : IsNavigationPrevented(context) ? "prevented" : "allowed";
+    CompleteHistoryNavigation(completion, result);
+    return;
+  });
+}
+function CompleteHistoryNavigation(completion, result) {
+  Reflect.apply(completion, null, [result]);
 }
 function AddHandler(registry, instance, value) {
   if (instance == null || value == null)

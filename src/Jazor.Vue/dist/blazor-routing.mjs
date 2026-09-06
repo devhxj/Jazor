@@ -1,6 +1,6 @@
 import { onUnmounted, provide, reactive } from "vue";
 import { routes } from "@jazor/vue-runtime/routes.mjs";
-import { CreateNavigationManager } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
+import { CreateNavigationManager, HandleHistoryNavigation } from "Microsoft/AspNetCore/Components/NavigationManagerModule.js";
 
 const navigationServiceKey = "jazor:service:Microsoft.AspNetCore.Components.NavigationManager";
 function readLocation() {
@@ -162,23 +162,75 @@ function createRouteData(match, search) {
 export function createNavigationHost(onChange) {
     const state = reactive({ version: 0 });
     let navigation;
+    const readHistoryState = () => {
+        const value = globalThis.history?.state;
+        return typeof value === "string" ? value : null;
+    };
+    let acceptedLocation = { ...readLocation(), historyState: readHistoryState() };
     const refresh = () => {
         state.version++;
+        // Internal NavigateTo commits the accepted browser position before the
+        // refresh callback runs; keep restoration anchored to that position.
+        acceptedLocation = { ...readLocation(), historyState: readHistoryState() };
         if (typeof onChange === "function") onChange(navigation);
     };
     navigation = CreateNavigationManager(refresh);
     provide(navigationServiceKey, navigation);
 
-    const onPopState = () => navigation.notifyLocationChanged(false);
-    globalThis.addEventListener?.("popstate", onPopState);
-    globalThis.addEventListener?.("hashchange", onPopState);
+    let historyDispatch = 0;
+    let lastHistoryEvent = null;
+    const routeFromHref = href => {
+        try {
+            const parsed = new URL(href, acceptedLocation.href || globalThis.location?.href || "/");
+            return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+        } catch {
+            return href;
+        }
+    };
+    const restoreAcceptedLocation = () => {
+        const history = globalThis.history;
+        if (!history?.replaceState) return;
+        history.replaceState(
+            acceptedLocation.historyState,
+            "",
+            routeFromHref(acceptedLocation.href));
+    };
+    const onHistoryChange = () => {
+        const target = readLocation();
+        const historyState = readHistoryState();
+        // Browsers may emit both hashchange and popstate for one transition.
+        // Coalesce the duplicate URL/state notification before dispatching handlers.
+        const eventKey = `${target.href}\u0000${historyState ?? ""}`;
+        if (eventKey === lastHistoryEvent) return;
+        lastHistoryEvent = eventKey;
+        const dispatch = ++historyDispatch;
+        const complete = result => {
+            if (dispatch !== historyDispatch || result === "stale") return;
+            if (result === "prevented") {
+                restoreAcceptedLocation();
+                acceptedLocation = readLocation();
+                return;
+            } else {
+                acceptedLocation = { ...target, historyState: readHistoryState() };
+            }
+            navigation.notifyLocationChanged(false);
+        };
+        HandleHistoryNavigation(
+            navigation,
+            target.href,
+            historyState,
+            complete);
+    };
+    globalThis.addEventListener?.("popstate", onHistoryChange);
+    globalThis.addEventListener?.("hashchange", onHistoryChange);
 
     let disposed = false;
     const dispose = () => {
         if (disposed) return;
         disposed = true;
-        globalThis.removeEventListener?.("popstate", onPopState);
-        globalThis.removeEventListener?.("hashchange", onPopState);
+        historyDispatch++;
+        globalThis.removeEventListener?.("popstate", onHistoryChange);
+        globalThis.removeEventListener?.("hashchange", onHistoryChange);
     };
     onUnmounted?.(dispose);
 

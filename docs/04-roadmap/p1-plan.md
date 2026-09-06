@@ -47,11 +47,11 @@ P1 不追求完整 Blazor parity，也不引入 `IJSRuntime` 字符串互操作�
 
 ## P1-B：强类型认证状态
 
-已交付协议基础：`JazorAuthenticationState` 是 host-owned closed snapshot，`FromPrincipal` 将匿名/已认证身份和只读 claims 映射为确定性 DTO；SSR envelope 使用协议保留键交接该快照。该切片仍不宣称刷新、过期、登出和 403 的 browser 状态机完成。
+当前已交付协议：`JazorAuthenticationState` 是 host-owned closed snapshot；`JazorAuthenticationEnvelope` 固定 `jazor-auth-state` v1 endpoint 结果；显式 browser provider 覆盖登录、刷新、过期、403 和登出，异常可观察且旧请求不会覆盖新状态。
 
 先定义应用可持有的 closed contract，例如 `Anonymous`、`Authenticated`、`Expired` 和 `Forbidden`，由 endpoint 返回版本化 envelope；组件只依赖 typed browser provider。服务端 endpoint 仍是授权事实来源，组件不得读取 `HttpContext`、Identity manager 或 token storage。
 
-必须覆盖匿名、登录、刷新、过期、登出、403、SSR 首屏和 hydration；未完成前继续报告 `JAZORVCA007`/`JAZORVCA011` 对应 guidance，不注册隐式 `AuthenticationStateProvider`。
+必须覆盖匿名、登录、刷新、过期、登出、403、SSR 首屏和 hydration；当前 provider 仍不注册隐式 `AuthenticationStateProvider`，也不提供 `AuthorizeView`。
 
 ## P1-C：构造函数注入与复杂 activation
 
@@ -65,7 +65,7 @@ P1 不追求完整 Blazor parity，也不引入 `IJSRuntime` 字符串互操作�
 
 ## P1-D：后退/前进与复杂 URI 状态
 
-`NavigateTo` 的同源内部取消子集与浏览器 `popstate`/`hashchange` 必须分开建模。实现前先固定 URL 恢复、并发导航 supersede、handler dispose、query/hash 编码和用户确认行为的 reference oracle；没有这些证据时，复杂 history 形状保持 Guidance/Reject。
+`NavigateTo` 的同源内部取消子集与浏览器 `popstate`/`hashchange` 分开建模；history 事件执行 handlers，被取消时通过 `replaceState` 恢复已接受位置，后续事件 supersede 旧 dispatch，dispose 后不再通知。
 
 ## 诊断与证据
 

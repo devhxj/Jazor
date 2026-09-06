@@ -15,6 +15,8 @@ public sealed record JazorAuthenticationState(
     [property: JsonPropertyName("claims")] IReadOnlyDictionary<string, string[]>? Claims = null)
 {
     public const string ProviderKey = "jazor:auth-state";
+    public const string EnvelopeSchema = "jazor-auth-state";
+    public const int EnvelopeVersion = 1;
 
     public static JazorAuthenticationState FromPrincipal(ClaimsPrincipal principal)
     {
@@ -33,6 +35,19 @@ public sealed record JazorAuthenticationState(
             JazorAuthenticationStatus.Authenticated,
             principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? identity.Name,
             claims);
+    }
+}
+
+/// <summary>Versioned application endpoint result consumed by the browser authentication provider.</summary>
+public sealed record JazorAuthenticationEnvelope(
+    [property: JsonPropertyName("schema")] string Schema,
+    [property: JsonPropertyName("version")] int Version,
+    [property: JsonPropertyName("state")] JazorAuthenticationState State)
+{
+    public static JazorAuthenticationEnvelope Create(JazorAuthenticationState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        return new(JazorAuthenticationState.EnvelopeSchema, JazorAuthenticationState.EnvelopeVersion, state);
     }
 }
 

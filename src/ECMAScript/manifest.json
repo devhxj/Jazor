@@ -53,8 +53,8 @@
       "type": "module",
       "development": "dist/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
       "production": "dist/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
-      "developmentHash": "7ecb55c91972f3a0fed4463fd850d8ffd78d418374c6a78e76a919475287825f",
-      "productionHash": "7ecb55c91972f3a0fed4463fd850d8ffd78d418374c6a78e76a919475287825f",
+      "developmentHash": "44957a3925650db6a0eca17184b182ddd236e5558f2c20fefcf3b8e683254830",
+      "productionHash": "44957a3925650db6a0eca17184b182ddd236e5558f2c20fefcf3b8e683254830",
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
@@ -62,6 +62,7 @@
         "Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
         "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
         "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
+        "System/ExceptionModule.js",
         "System/StringModule.js"
       ],
       "productionModuleDependencies": [
@@ -69,6 +70,7 @@
         "Microsoft/AspNetCore/Components/Routing/LocationChangedEventArgsModule.js",
         "Microsoft/AspNetCore/Components/Routing/LocationChangingContextModule.js",
         "Microsoft/AspNetCore/Components/Routing/NotFoundEventArgsModule.js",
+        "System/ExceptionModule.js",
         "System/StringModule.js"
       ],
       "files": []

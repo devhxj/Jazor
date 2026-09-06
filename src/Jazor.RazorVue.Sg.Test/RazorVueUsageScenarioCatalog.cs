@@ -1221,16 +1221,19 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
             "Use typed TDesign/Vuetify/Element Plus form components or an application-owned ComponentBase + IVueComponent contract; EditContext/InputBase semantics are not lowered."),
         new(
-            "P2-authentication",
-            "AuthenticationStateProvider, AuthorizeView, and authorization-aware route composition",
-            RazorVueCapabilityPriority.P2,
+            "P1-authentication-browser-contract",
+            "Typed browser authentication snapshot/provider with versioned SSR endpoint envelope; AuthenticationStateProvider and AuthorizeView remain outside the contract",
+            RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.GuidedAdaptation,
-            RazorVueCapabilityStatus.Guidance,
-            "RazorVueCompatibilityAnalyzer + server endpoint contract",
-            "JAZORVCA007",
-            "RazorVueCompatibilityAnalyzerTests.InjectedAuthenticationStateProvider_ReportsMissingExplicitBrowserProvider; RazorVueCompatibilityAnalyzerTests.RazorAuthenticationStateProviderDirective_ReportsAtAuthoredTypeSpan",
-            RazorVueCapabilityEvidence.AuthorSource,
-            "AuthenticationStateProvider injection is diagnosed at the authored property or @inject type span until a host supplies a versioned browser provider and claims/SSR handoff. AuthorizeView and AuthorizeRouteView remain rejected built-in UI; endpoint authorization remains the security boundary."),
+            RazorVueCapabilityStatus.Support,
+            "Jazor.AspNetCore typed state + @jazor/vue-runtime/authentication.mjs",
+            null,
+            "Jazor.EmitTest.JazorSsrHostingTests.JazorSsrRenderer_AddsTypedAuthenticationAsReservedProvider; Jazor.EmitTest.JazorSsrHostingTests.JazorAuthenticationEnvelope_CreateProducesVersionedEndpointContract; RazorVueAuthenticationRuntimeTests; scripts/csharp/verify-windows-ssr-release.cs",
+            RazorVueCapabilityEvidence.AuthorSource |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.SsrHydration,
+            "The closed Anonymous/Authenticated/Expired/Forbidden snapshot and explicit endpoint provider are supported. Endpoint authorization remains the security boundary; AuthenticationStateProvider, AuthorizeView, token storage, and implicit authorization composition remain outside the contract."),
         new(
             "P2-js-runtime",
             "IJSRuntime/IJSObjectReference/IJSInProcessRuntime/JSInvokable Blazor JS interop facades",
@@ -1269,15 +1272,17 @@ internal static class RazorVueM5CapabilityLedger
             "P1-parameterized-activation",
             "Single-constructor reference-type service activation; primary constructors, overload selectors, this(...), and base(args) remain unsupported",
             RazorVueCapabilityPriority.P1,
-            RazorVueCapabilityDecision.Reject,
+            RazorVueCapabilityDecision.CompatibilityAdapter,
             RazorVueCapabilityStatus.Support,
             "MemberClosureBuilder + component activation adapter",
             "JAZORVGA024",
-            "RazorSgInjectedServiceRuntimeTests.BuildComponent_ActivatesSingleReferenceTypeConstructorFromProvider; ComponentInitializationLowererContractTests.Build_LowersReferenceServiceConstructorThroughTypedVueInject; MemberClosureBuilderContractTests.TryBuild_RejectsUnsupportedSourceConstructorActivationProtocols",
+            "RazorSgInjectedServiceRuntimeTests.BuildComponent_ActivatesSingleReferenceTypeConstructorFromProvider; ComponentInitializationLowererContractTests.Build_LowersReferenceServiceConstructorThroughTypedVueInject; SdkIntegrationTests.Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser; MemberClosureBuilderContractTests.TryBuild_RejectsUnsupportedSourceConstructorActivationProtocols",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
             RazorVueCapabilityEvidence.ModuleArtifact |
-            RazorVueCapabilityEvidence.DenoRuntime,
+            RazorVueCapabilityEvidence.DenoRuntime |
+            RazorVueCapabilityEvidence.BrowserSmoke |
+            RazorVueCapabilityEvidence.PackageConsumer,
             "The supported slice uses one Roslyn-bound constructor and existing jazor:service:<type> providers; unsupported activation shapes remain diagnosed at member closure."),
         new(
             "crosscut-hmr",

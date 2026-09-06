@@ -7,14 +7,30 @@
       "type": "module",
       "development": "dist/blazor-routing.mjs",
       "production": "dist/blazor-routing.mjs",
-      "developmentHash": "7e6f21325b596695e9e685919819a0e5c4929efdb4a22b50bd50d5018cfdc871",
-      "productionHash": "7e6f21325b596695e9e685919819a0e5c4929efdb4a22b50bd50d5018cfdc871",
+      "developmentHash": "7331685fe253775ec1837c45258a52cbf182c8add2fa595e59a070568bfab82c",
+      "productionHash": "7331685fe253775ec1837c45258a52cbf182c8add2fa595e59a070568bfab82c",
       "developmentDependencies": [
         "Microsoft/AspNetCore/Components/NavigationManagerModule.js",
         "vue"
       ],
       "productionDependencies": [
         "Microsoft/AspNetCore/Components/NavigationManagerModule.js",
+        "vue"
+      ],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": []
+    },
+    "@jazor/vue-runtime/authentication.mjs": {
+      "type": "module",
+      "development": "dist/authentication.mjs",
+      "production": "dist/authentication.mjs",
+      "developmentHash": "e593ce4c25ecb894c78d43607ec138787474ac3d825dfdddce235fdd5e38cf6e",
+      "productionHash": "e593ce4c25ecb894c78d43607ec138787474ac3d825dfdddce235fdd5e38cf6e",
+      "developmentDependencies": [
+        "vue"
+      ],
+      "productionDependencies": [
         "vue"
       ],
       "developmentModuleDependencies": [],

@@ -223,6 +223,16 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
+    public void JazorAuthenticationEnvelope_CreateProducesVersionedEndpointContract()
+    {
+        var state = new JazorAuthenticationState(JazorAuthenticationStatus.Forbidden, "user-42");
+        var envelope = JazorAuthenticationEnvelope.Create(state);
+        Assert.AreEqual(JazorAuthenticationState.EnvelopeSchema, envelope.Schema);
+        Assert.AreEqual(JazorAuthenticationState.EnvelopeVersion, envelope.Version);
+        Assert.AreSame(state, envelope.State);
+    }
+
+    [TestMethod]
     public async Task JazorSsrRenderer_RenderHookErrorFailsExplicitlyInsteadOfEmptyHtml()
     {
         using var workspace = new SsrHostWorkspace();

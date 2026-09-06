@@ -113,12 +113,15 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.IsTrue(jsInterop.Evidence.HasFlag(RazorVueCapabilityEvidence.OfficialRazorSourceGenerator));
 
         var authentication = RazorVueM5CapabilityLedger.All.Single(static entry =>
-            entry.Id == "P2-authentication");
-        Assert.AreEqual("JAZORVCA007", authentication.DiagnosticId);
+            entry.Id == "P1-authentication-browser-contract");
+        Assert.IsNull(authentication.DiagnosticId);
         Assert.AreEqual(RazorVueCapabilityDecision.GuidedAdaptation, authentication.Decision);
-        Assert.AreEqual(RazorVueCapabilityStatus.Guidance, authentication.Status);
+        Assert.AreEqual(RazorVueCapabilityStatus.Support, authentication.Status);
         Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
-        StringAssert.Contains(authentication.Blocker, "versioned browser provider", StringComparison.Ordinal);
+        Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.ModuleArtifact));
+        Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.DenoRuntime));
+        Assert.IsTrue(authentication.Evidence.HasFlag(RazorVueCapabilityEvidence.SsrHydration));
+        StringAssert.Contains(authentication.Blocker, "AuthenticationStateProvider", StringComparison.Ordinal);
 
         var ssrState = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P2-ssr-state-and-forms");

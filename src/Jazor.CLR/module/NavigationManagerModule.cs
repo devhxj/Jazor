@@ -210,6 +210,43 @@ public static class NavigationManagerModule
 	private static void RemoveNotFound(object instance, object value)
 		=> RemoveHandler(NotFoundHandlers, instance, value);
 
+	// Browser history has already changed when popstate/hashchange arrives. This is host-only
+	// plumbing, deliberately not a fabricated NavigationManager member or author-facing CLR API.
+	internal static void HandleHistoryNavigation(
+		object instance,
+		string targetLocation,
+		object? historyEntryState,
+		object completion)
+	{
+		ArgumentNullException.ThrowIfNull(completion);
+		var handlers = GetHandlers(LocationChangingHandlers, instance).Slice();
+		if (handlers.Length == 0)
+		{
+			CompleteHistoryNavigation(completion, "allowed");
+			return;
+		}
+
+		var cancellation = BeginLocationChangingCancellation(instance);
+		var context = LocationChangingContextModule.CreateLocationChangingContext(
+			targetLocation,
+			historyEntryState as string,
+			false,
+			cancellation.Signal);
+		DispatchLocationChanging(handlers, context, () =>
+		{
+			EndLocationChangingCancellation(instance, cancellation);
+			var result = cancellation.Signal.Aborted
+				? "stale"
+				: LocationChangingContextModule.IsNavigationPrevented(context)
+					? "prevented"
+					: "allowed";
+			CompleteHistoryNavigation(completion, result);
+		});
+	}
+
+	private static void CompleteHistoryNavigation(object completion, string result)
+		=> ECMAScript.Reflect.Apply(completion, null, [result]);
+
 	private static void AddHandler(WeakMap<object, Array<object>> registry, object instance, object value)
 	{
 		if (instance is null || value is null)

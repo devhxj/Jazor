@@ -43,12 +43,13 @@ public sealed class VueRawMarkupTests
         Assert.AreEqual("jazor-vue-runtime", root.GetProperty("libraryId").GetString());
 
         var imports = root.GetProperty("imports");
-        Assert.HasCount(3, imports.EnumerateObject());
+        Assert.HasCount(4, imports.EnumerateObject());
         foreach (var name in new[]
                  {
                      "@jazor/vue-runtime/raw-markup.mjs",
                      "@jazor/vue-runtime/cascading.mjs",
-                     "@jazor/vue-runtime/blazor-routing.mjs"
+                     "@jazor/vue-runtime/blazor-routing.mjs",
+                     "@jazor/vue-runtime/authentication.mjs"
                  })
         {
             var entry = imports.GetProperty(name);

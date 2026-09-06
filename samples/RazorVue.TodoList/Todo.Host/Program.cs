@@ -43,7 +43,11 @@ internal static class Program
                     new JazorSsrProvider(
                         "jazor:service:Todo.Library.TodoBrowserService",
                         new { Label = "ssr-provider" })
-                ]));
+                ],
+                new JazorAuthenticationState(
+                    JazorAuthenticationStatus.Authenticated,
+                    "ssr-user",
+                    new Dictionary<string, string[]> { ["role"] = ["reader"] })));
         }
         else
         {

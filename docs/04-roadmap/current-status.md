@@ -40,7 +40,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 - Jazor 不是完整 CLR，也不支持任意未映射的 .NET 类型、成员或运行时身份。
 - Microsoft/Blazor 内置 UI 组件，例如 `Router`、`RouteView`、`EditForm`、`Input*`、`AuthorizeView` 和 `DynamicComponent`，不作为 RazorVue 的组件入口；UI 层由应用自定义组件或已声明的第三方 binding 提供。
 - `IJSRuntime` 字符串互操作、仅服务器端服务、未经版本化协议的认证状态、`PersistentComponentState`、`[PersistentState]` 与 enhanced form handoff 不会被静默模拟。
-- `popstate` / `hashchange` cancellation、完整 browser history 语义、SSR/prerender route identity 和完整 hydration 副作用 parity 仍不声明支持。
+- 完整 browser history 语义、SSR/prerender route identity 和完整 hydration 副作用 parity 仍不声明支持；当前 history 子集只覆盖已验证的 `popstate`/`hashchange` handler、取消恢复、竞态和释放协议。
 
 后续目标、责任归属与升级门槛见[下一阶段](./next-development.md)。
 
@@ -68,7 +68,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 | P0：失败诊断与生成稳定性 | RazorVue SG 测试 `4948/4948` 通过；诊断路径排序具有 Ordinal tie-breaker；生成失败不留下 partial artifact。 |
 | P0：质量门禁 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs -- --no-restore --no-build`：行覆盖率 `14054/14431 = 97.39%`，分支覆盖率 `6056/6442 = 94.01%`。 |
 | P0：Debug/HMR/SPA/SSR 交付 | 2026-09-06 实跑通过：`verify-smoke.cs --configuration Release`（101.53s，含 PathBase 浏览器旅程）、`verify-development-hmr.cs`、`verify-windows-spa-release.cs -- --path-base /docs`、`verify-windows-ssr-release.cs -- --path-base /todo`；[范式证据矩阵](../02-architecture/razorvue-paradigm.md#p0p1-验收证据入口) 固定复现命令。 |
-| P1：响应式与生命周期 | 参数队列、异步 lifecycle、slot、`@key`、卸载竞态和 SSR 首屏等待由 `RazorSgOfficial*RuntimeTests`、`RazorSgComponentMemberClosureTests` 及消费端脚本覆盖；完整 CLR reference parity 仍是边界。P1-A 已补齐版本化 SSR state envelope（schema/version/props/providers）及错误校验；P1-B 已提供显式 typed `JazorAuthenticationState` 快照和保留 provider key；P1-C 已支持单一显式构造函数的普通引用类型服务参数（既有 provider key + Vue inject），其余复杂 activation 仍按 Guidance/Reject 处理。完整 browser auth 状态机与复杂 history 仍未声明支持。 |
+| P1：响应式与生命周期 | 参数队列、异步 lifecycle、slot、`@key`、卸载竞态和 SSR 首屏等待由 `RazorSgOfficial*RuntimeTests`、`RazorSgComponentMemberClosureTests` 及消费端脚本覆盖；完整 CLR reference parity 仍是边界。P1-A 已补齐版本化 SSR state envelope（schema/version/props/providers）及错误校验；P1-B 已提供 `JazorAuthenticationState`、`JazorAuthenticationEnvelope` 和显式 browser provider，覆盖匿名、登录、刷新、过期、403、登出、错误保持及请求竞态；P1-C 已支持单一显式构造函数的普通引用类型服务参数（既有 provider key + Vue inject），其余复杂 activation 仍按 Guidance/Reject 处理。P1-D 已支持 history 事件的 handler 协议、取消恢复、竞态和 dispose；不宣称服务器 circuit 或完整 Blazor UI parity。 |
 | P1：范式级调试 | `dotnet run --file scripts/csharp/inspect-razorvue-chain.cs -- --source ... --generated ... --artifact ... --map ... --json` 输出 source → generated → module → map 链路并在映射断裂时失败。 |
 | P1：中型应用基线 | `scripts/csharp/benchmark-razorvue-g2.cs` 已建立 plain-text、counter、keyed-list-100、static-vnode 的 render/update 吞吐和 gzip 基线；后续优化必须使用同一参数重测。 |
 | P2：Element Plus typed binding 切片 | `elementplus --check` 通过（111 components、2 directives）；官方 Razor SG + Deno 回归覆盖 `ElButton`/`ElInput` 的 enum prop、click、双向绑定、slot、splat 和 import；Release package consumer 断言 Element Plus ESM/CSS 资源闭包，真实浏览器 smoke 可读取发布资源。现有协议足够，本轮没有新增 wrapper-JS 或弱类型协议。 |

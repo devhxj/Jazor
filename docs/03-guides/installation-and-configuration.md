@@ -150,6 +150,11 @@ app.UseJazorSsr(
 该快照只表达匿名、已认证、过期或禁止访问状态及只读 claims；授权事实仍由服务端 endpoint 决定。
 它不启用 `AuthenticationStateProvider`、`AuthorizeView` 或服务器 circuit，也不替代表单防伪和 token 存储。
 
+浏览器交互使用 `@jazor/vue-runtime/authentication.mjs` 的显式 typed provider。登录、刷新和登出回调由应用
+endpoint 提供，并返回 `JazorAuthenticationEnvelope.Create(state)` 生成的 `jazor-auth-state` v1 载荷；provider
+不保存 token，也不自行推断授权结果。endpoint 异常通过 `provider.error` 暴露且不会覆盖当前状态，并发请求按
+最新请求生效。该 provider 是 Jazor 的 browser contract，不是 `AuthenticationStateProvider` 或 `AuthorizeView`。
+
 ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit
 物化的 SSR runner 和本地 Vue 服务器模块，DenoHost 执行这些模块，Netpack 负责浏览器 bundle。
 `WorkerCount` 同时限制单应用实例的 Deno worker 数和 SSR 并发数，必须大于零，默认值为

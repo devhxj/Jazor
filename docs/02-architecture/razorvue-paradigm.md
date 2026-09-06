@@ -77,7 +77,7 @@ Blazor 名称出现在作者代码中，只表示采用了熟悉的 Razor/C# 组
 - DbContext、HttpContext、Identity manager、circuit、protected storage 等 server-only 服务；
 - Microsoft Blazor 内置 UI 组件作为隐式 Vue 组件入口，例如 `Router`、`RouteView`、`EditForm`、`Input*`、`AuthorizeView` 和 `DynamicComponent`；
 - 未定义版本化协议的认证状态、`PersistentComponentState`、`[PersistentState]`、enhanced form handoff；
-- `popstate`/`hashchange` cancellation、完整 SSR/prerender route identity 和未经证明的 hydration side-effect parity。
+- 完整 SSR/prerender route identity 和未经证明的 hydration side-effect parity；history 只支持已验证的 `popstate`/`hashchange` handler、取消恢复、竞态和 dispose 子集。
 
 遇到这些形状时，作者应使用 typed endpoint、已声明的 Vue component contract、显式 route host 或强类型 ECMAScript binding。范式不通过弱化类型或增加隐式 fallback 来扩大边界。
 

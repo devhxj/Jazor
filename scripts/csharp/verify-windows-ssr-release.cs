@@ -888,6 +888,8 @@ internal static class SsrReleaseVerifier
         RequireContains(html, "data-todo-template=\"todo-template-v1\"", "server-rendered TodoApp board");
         RequireContains(html, "data-todo-parameter=\"SSR ParameterView title\"", "server-applied ParameterView value");
         RequireContains(html, "data-todo-service=\"ssr-provider\"", "server-applied browser service provider");
+        RequireContains(html, "jazor:auth-state", "serialized authentication provider key");
+        RequireContains(html, "ssr-user", "serialized authentication subject");
         RequireContains(html, "data-todo-parameter-status=\"ready\"", "completed async ParameterView lifecycle");
         RequireContains(html, "data-todo-initialized=\"ready\"", "completed OnInitializedAsync lifecycle");
         RequireContains(html, "id=\"todo-cascade-card\"", "server-rendered cascading child");

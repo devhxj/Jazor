@@ -8,8 +8,9 @@
 
 #### 改进
 
+- P1 认证与浏览器 history 协议现在提供显式 typed browser provider：`JazorAuthenticationEnvelope` 固定 `jazor-auth-state` v1 endpoint 结果，登录、刷新、过期、403、登出、失败保持和请求竞态均有回归证据；`popstate`/`hashchange` 在取消时恢复已接受 URL，并处理 supersede 与 dispose。该能力不实现 `AuthenticationStateProvider`、`AuthorizeView`、server circuit 或完整 Blazor history parity。
 - SSR 首屏与浏览器 hydration 现在共享带 `schema`/`version` 的 `jazor-ssr-state` 状态 envelope，props 和 typed providers 由同一份载荷交接；未知版本、缺失字段和无效 provider 会显式失败，不会静默回退到旧状态或空 HTML。
-- 新增 RazorVue P1 执行计划，明确认证状态、复杂 activation 和浏览器 history 在取得完整协议与消费者证据前继续保持 Guidance/Reject。
+- 新增 RazorVue P1 执行计划，明确认证状态、有限构造函数 activation 和浏览器 history 的协议边界、消费者证据与剩余 Guidance/Reject 形状。
 - 增加 typed `JazorAuthenticationState` 快照；SSR host 可把当前 principal 以协议保留键 `jazor:auth-state` 交给同一份 hydration state envelope。
 - RazorVue 现在支持单一显式组件构造函数接收普通引用类型 browser service；参数按既有 `jazor:service:<type>` provider key 通过 Vue `inject()` 解析，并已用 direct 与 base-derived 官方 Razor SG/Deno consumer 验证。primary constructor、构造函数重载、`this(...)`、`base(args)`、值类型和 `ref/out/in/params` 仍明确拒绝。
 

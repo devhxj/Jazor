@@ -5651,8 +5651,10 @@ public sealed class SdkIntegrationTests
             [ECMAScriptModule("./components/framework-primitives")]
             public partial class FrameworkPrimitives : ComponentBase, IVueComponent
             {
-                [Inject]
-                public BrowserProbe Probe { get; set; } = null!;
+                public FrameworkPrimitives(BrowserProbe probe)
+                    => Probe = probe;
+
+                private BrowserProbe Probe { get; }
 
                 private string serviceLifecycle = "unset";
                 private string OuterTheme { get; set; } = "outer";
