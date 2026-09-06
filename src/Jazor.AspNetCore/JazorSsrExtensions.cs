@@ -151,6 +151,7 @@ internal static class SsrDocumentWriter
         await response.WriteAsync("import { createSSRApp } from \"vue\";\n", cancellationToken);
         await response.WriteAsync("const mountElement = document.getElementById(" + mountElementIdJson + ");\n", cancellationToken);
         await response.WriteAsync("if (!mountElement) throw new Error(\"Jazor SSR mount element was not found.\");\n", cancellationToken);
+        await response.WriteAsync("if (mountElement.dataset.jazorSsrHydrated === \"1\") throw new Error(\"Jazor SSR hydration was already executed for this mount element.\");\n", cancellationToken);
         await response.WriteAsync("const { default: component } = await import(" + componentUrlJson + ");\n", cancellationToken);
         await response.WriteAsync("const stateElement = document.getElementById(\"" + StateElementId + "\");\n", cancellationToken);
         await response.WriteAsync("if (!stateElement) throw new Error(\"Jazor SSR state envelope element was not found.\");\n", cancellationToken);
@@ -161,6 +162,7 @@ internal static class SsrDocumentWriter
         await response.WriteAsync("const app = createSSRApp(component, props);\n", cancellationToken);
         await response.WriteAsync("for (const provider of providers) app.provide(provider.key, provider.value);\n", cancellationToken);
         await response.WriteAsync("app.mount(mountElement);\n", cancellationToken);
+        await response.WriteAsync("mountElement.dataset.jazorSsrHydrated = \"1\";\n", cancellationToken);
         await response.WriteAsync("</script>\n</body></html>", cancellationToken);
     }
 

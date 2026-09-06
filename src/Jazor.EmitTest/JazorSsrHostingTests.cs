@@ -49,7 +49,9 @@ public sealed class JazorSsrHostingTests
         StringAssert.Contains(html, "<script id=\"__jazor_ssr_state\" type=\"application/json\">{\"schema\":\"jazor-ssr-state\",\"version\":1,\"props\":{\"Title\":\"SSR \\u003Ctitle\\u003E\"},\"providers\":[{\"key\":\"app:feature\",\"value\":{\"Enabled\":true}}],\"authentication\":null}</script>");
         StringAssert.Contains(html, "state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.trim().length === 0)");
         StringAssert.Contains(html, "if (!stateElement) throw new Error(\"Jazor SSR state envelope element was not found.\");");
+        StringAssert.Contains(html, "if (mountElement.dataset.jazorSsrHydrated === \"1\") throw new Error(\"Jazor SSR hydration was already executed for this mount element.\");");
         StringAssert.Contains(html, "for (const provider of providers) app.provide(provider.key, provider.value);");
+        StringAssert.Contains(html, "mountElement.dataset.jazorSsrHydrated = \"1\";");
         StringAssert.Contains(html, "\"Title\":\"SSR \\u003Ctitle\\u003E\"");
         Assert.IsFalse(html.Contains("node_modules", StringComparison.Ordinal));
         Assert.IsTrue(File.Exists(Path.Combine(artifactRoot, "@jazor", "ssr-runner.mjs")));
