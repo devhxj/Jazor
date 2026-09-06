@@ -36,6 +36,7 @@ internal static class VuetifyCatalogGenerator
             "vuetify",
             Version);
         var schema = ReadContractSchema(Path.Combine(upstreamRoot, "contracts.json"));
+        var descriptions = ReadWebTypeDescriptions(Path.Combine(upstreamRoot, "web-types.json"));
         var components = ReadComponents(repositoryRoot, projectRoot);
         var contractsByKey = ValidateInputs(repositoryRoot, projectRoot, upstreamRoot, schema, components);
         var outputs = new List<GeneratedFile>();
@@ -45,7 +46,7 @@ internal static class VuetifyCatalogGenerator
             var contract = contractsByKey[GetContractKey(component.SourceFile, component.TypeName)];
             outputs.Add(new GeneratedFile(
                 component.SourcePath,
-                RenderComponentSource(component, contract)));
+                RenderComponentSource(component, contract, descriptions)));
         }
 
         outputs.Add(new GeneratedFile(
@@ -243,6 +244,24 @@ internal static class VuetifyCatalogGenerator
             .ToHashSet(StringComparer.Ordinal);
     }
 
+    private static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> ReadWebTypeDescriptions(string path)
+    {
+        using var document = JsonDocument.Parse(SystemFile.ReadAllText(path));
+        var result = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal);
+        foreach (var tag in document.RootElement.GetProperty("contributions").GetProperty("html").GetProperty("tags").EnumerateArray())
+        {
+            var name = tag.GetProperty("name").GetString();
+            if (string.IsNullOrWhiteSpace(name)) continue;
+            var members = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (tag.TryGetProperty("attributes", out var attributes))
+                foreach (var attribute in attributes.EnumerateArray())
+                    if (attribute.TryGetProperty("name", out var member) && attribute.TryGetProperty("description", out var description) && description.ValueKind == JsonValueKind.String)
+                        members[member.GetString()!] = description.GetString()!;
+            result[name!] = members;
+        }
+        return result;
+    }
+
     private static HashSet<string> ReadBundleComponentExports(string path)
     {
         if (!SystemFile.Exists(path))
@@ -264,7 +283,7 @@ internal static class VuetifyCatalogGenerator
             .ToHashSet(StringComparer.Ordinal);
     }
 
-    private static string RenderComponentSource(Component component, VuetifyContract contract)
+    private static string RenderComponentSource(Component component, VuetifyContract contract, IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> descriptions)
     {
         var source = SystemFile.ReadAllText(component.SourcePath);
         var root = CSharpSyntaxTree.ParseText(source, path: component.SourcePath).GetRoot();
@@ -283,7 +302,6 @@ internal static class VuetifyCatalogGenerator
 
         var edits = new List<TextEdit>();
         var lineEnding = source.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
-
         var componentAttribute = declaration.AttributeLists
             .SelectMany(static list => list.Attributes)
             .SingleOrDefault(IsComponentBinding);
@@ -319,6 +337,12 @@ internal static class VuetifyCatalogGenerator
                 throw new InvalidOperationException($"Vuetify contract '{component.TypeName}.{memberName}' has an empty runtime name.");
 
             var configuredName = GetConfiguredName(property);
+            if (descriptions.TryGetValue(component.Export, out var memberDescriptions) && memberDescriptions.TryGetValue(expectedName, out var description) &&
+                !property.GetLeadingTrivia().ToFullString().Contains("<summary>", StringComparison.Ordinal))
+            {
+                var docIndentation = GetLineIndentation(source, property.SpanStart);
+                edits.Add(new TextEdit(property.SpanStart, 0, $"{docIndentation}/// <summary>\n{docIndentation}/// {EscapeXml(description)}\n{docIndentation}/// </summary>\n"));
+            }
             if (string.Equals(expectedName, property.Identifier.ValueText, StringComparison.Ordinal))
             {
                 if (configuredName is not null && !string.Equals(configuredName, expectedName, StringComparison.Ordinal))
@@ -699,6 +723,11 @@ internal static class VuetifyCatalogGenerator
     private static string EscapeCSharpString(string value)
         => value.Replace("\\", "\\\\", StringComparison.Ordinal)
             .Replace("\"", "\\\"", StringComparison.Ordinal);
+
+    private static string EscapeXml(string value)
+        => value.Replace("&", "&amp;", StringComparison.Ordinal)
+            .Replace("<", "&lt;", StringComparison.Ordinal)
+            .Replace(">", "&gt;", StringComparison.Ordinal);
 
     private static string FindRepositoryRoot(string startDirectory)
     {

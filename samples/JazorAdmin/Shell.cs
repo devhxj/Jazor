@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.AspNetCore.Hosting;
 using HostFile = System.IO.File;
 
 // Provides the host-rendered document shell for the generated RazorVue application.
@@ -33,7 +32,7 @@ internal static class Shell
             return Task.CompletedTask;
 
         var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var root = Path.Combine(environment.WebRootPath, "jazor");
+        var root = GetArtifactRoot(environment);
         var importMap = ReadJson(Path.Combine(root, "importmap.json"), "{\"imports\":{}}");
         var headLinks = GetHeadLinks(environment);
         return context.Response.WriteAsync(string.Format(Document, importMap, headLinks), cancellationToken);
@@ -45,7 +44,13 @@ internal static class Shell
            GetStyleLinks(environment);
 
     public static string GetStyleLinks(IWebHostEnvironment environment)
-        => ReadStyles(Path.Combine(environment.WebRootPath, "jazor", "manifest.json"));
+        => ReadStyles(Path.Combine(GetArtifactRoot(environment), "manifest.json"));
+
+    // Generated modules live in the content-root jazor/ directory. WebRootPath only owns
+    // authored browser assets (brand images, favicon, etc.) and may contain a stale graph
+    // from the pre-0.12 layout, which must never be used for the current import map.
+    private static string GetArtifactRoot(IWebHostEnvironment environment)
+        => Path.Combine(environment.ContentRootPath, "jazor");
 
     private static string ReadJson(string path, string fallback)
         => HostFile.Exists(path) ? HostFile.ReadAllText(path) : fallback;

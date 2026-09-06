@@ -22,6 +22,13 @@ authoring contract。消费方编写的 RazorVue 组件仍按纯 Jazor 规则生
 
 Razor Source Generator 集成、render-function lowering 与产物物化分别属于 `Jazor.Vue`、`Jazor.RazorVue` 与 `Jazor.Emit`。本包只定义 host binding 和组件契约。
 
+## 如何阅读 API 注释
+
+生成组件会保留 Element Plus `web-types.json` 中的组件、prop、slot 和 event 原文说明；在 IDE 中悬停
+`ElButton.Type`、`ElDialog.Footer` 或 `ElInput.OnChange` 即可查看官方语义。C# 名称按 PascalCase 映射，
+`[ECMAScriptName]` 中保留 Vue 运行时名称；`ModelValue`/`ModelValueChanged` 对应 Vue 的
+`modelValue`/`update:modelValue`，命名 slot 使用 `RenderFragment` 参数。
+
 ## 相关文档
 
 - [平台与绑定](../../docs/02-architecture/platform-and-bindings.md)

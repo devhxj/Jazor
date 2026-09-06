@@ -36,6 +36,12 @@
 - scoped-slot 中的 ref/computed-ref 值使用 `IVueRef<T>`、`VueComputedRef<T>` 或 `VueWritableComputedRef<T>` 表达，应通过 `.Value` 读写。
 - 当前支持范围以 `V*.cs`、`VuetifyCore.cs` 与绑定回归测试为准；README 不维护容易过期的组件数量或覆盖率快照。
 
+## 如何阅读 API 注释
+
+组件参数的 XML 注释优先保留 Vuetify 锁定版本 web-types 的官方原文；已有手写 binding 注释继续作为
+补充。IDE 悬停 `VBtn.Color`、`VTextField.ModelValue` 或 `VAlert.ChildContent` 可查看语义，
+`[ECMAScriptName]` 展示对应的 Vue prop、event 或 slot 名称。
+
 ## 验证
 
 ```bash

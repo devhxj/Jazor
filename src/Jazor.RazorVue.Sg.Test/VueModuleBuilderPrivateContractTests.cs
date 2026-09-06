@@ -18,6 +18,131 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class VueModuleBuilderPrivateContractTests
 {
     [TestMethod]
+    public void RuntimeSetupHelpers_EmitWatchAndFailureGuards()
+    {
+        var emptyWatch = Invoke<IEnumerable<Statement>>(
+                "CreateWatchStatements",
+                "OnParametersSet",
+                ImmutableArray<string>.Empty,
+                false,
+                false)
+            .ToArray();
+        Assert.IsEmpty(emptyWatch);
+
+        var guardedWatch = Invoke<IEnumerable<Statement>>(
+                "CreateWatchStatements",
+                "OnParametersSet",
+                ImmutableArray.Create("Count"),
+                true,
+                true)
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+        var guardedWatchText = string.Join(Environment.NewLine, guardedWatch);
+        StringAssert.Contains(guardedWatchText, "watch", StringComparison.Ordinal);
+        StringAssert.Contains(guardedWatchText, "Count", StringComparison.Ordinal);
+        StringAssert.Contains(guardedWatchText, "attrs", StringComparison.Ordinal);
+        StringAssert.Contains(guardedWatchText, "disposed", StringComparison.Ordinal);
+        StringAssert.Contains(guardedWatchText, "OnParametersSet", StringComparison.Ordinal);
+
+        var shallowWatch = Invoke<IEnumerable<Statement>>(
+                "CreateWatchStatements",
+                "OnParametersSet",
+                ImmutableArray.Create("Count"),
+                false,
+                false)
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+        Assert.HasCount(1, shallowWatch);
+        Assert.DoesNotContain("disposed", shallowWatch[0], StringComparison.Ordinal);
+
+        var unmatchedOnlyWatch = Invoke<IEnumerable<Statement>>(
+                "CreateWatchStatements",
+                "OnParametersSet",
+                ImmutableArray<string>.Empty,
+                true,
+                true)
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+        Assert.HasCount(1, unmatchedOnlyWatch);
+        StringAssert.Contains(unmatchedOnlyWatch[0], "deep: true", StringComparison.Ordinal);
+
+        var parameterFailure = Invoke<List<Statement>>(
+                "BuildParameterFailureStatements",
+                true)
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+        var parameterFailureText = string.Join(Environment.NewLine, parameterFailure);
+        StringAssert.Contains(parameterFailureText, "disposed", StringComparison.Ordinal);
+        StringAssert.Contains(parameterFailureText, "hasParameterFailure = true", StringComparison.Ordinal);
+        StringAssert.Contains(parameterFailureText, "parameterFailure = error", StringComparison.Ordinal);
+        StringAssert.Contains(parameterFailureText, "stateHasChanged()", StringComparison.Ordinal);
+        var nonGuardedFailure = Invoke<List<Statement>>(
+                "BuildParameterFailureStatements",
+                false)
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+        Assert.IsFalse(string.Join(Environment.NewLine, nonGuardedFailure).Contains("disposed", StringComparison.Ordinal));
+
+        Assert.AreEqual(
+            "vue/runtime.mjs",
+            Invoke<string>("ResolveModuleDependency", "vue/runtime", "pages/host.mjs"));
+        Assert.AreEqual(
+            "pages/child.mjs",
+            Invoke<string>("ResolveModuleDependency", "./child.mjs", "pages/host.mjs"));
+
+        var noAsyncFeatures = CreateVueModuleFeatures(CreateLifecycleRuntimeMembers(null));
+        var noAsyncResult = Invoke<Expression>("BuildParameterAsyncResult", noAsyncFeatures)
+            .ToKnRECMAScript();
+        Assert.AreEqual("undefined", noAsyncResult);
+
+        var asyncFeatures = CreateVueModuleFeatures(CreateLifecycleRuntimeMembers("OnParametersSetAsync"));
+        var asyncResult = Invoke<Expression>("BuildParameterAsyncResult", asyncFeatures)
+            .ToKnRECMAScript();
+        StringAssert.Contains(asyncResult, "Promise.resolve", StringComparison.Ordinal);
+        StringAssert.Contains(asyncResult, "OnParametersSetAsync()", StringComparison.Ordinal);
+
+        var initializedFeatures = CreateVueModuleFeatures(CreateLifecycleRuntimeMembers(null, "OnInitialized"));
+        var initializedStatements = Invoke<IEnumerable<Statement>>(
+                "BuildComponentBaseParameterStatements",
+                initializedFeatures)
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+        StringAssert.Contains(
+            string.Join(Environment.NewLine, initializedStatements),
+            "OnInitialized()",
+            StringComparison.Ordinal);
+        var asyncInitializationStatements = Invoke<IEnumerable<Statement>>(
+                "BuildComponentBaseParameterStatements",
+                CreateVueModuleFeatures(CreateLifecycleRuntimeMembers(null, null, "OnInitializedAsync")))
+            .Select(static statement => statement.ToKnRECMAScript())
+            .ToArray();
+        StringAssert.Contains(
+            string.Join(Environment.NewLine, asyncInitializationStatements),
+            "OnInitializedAsync()",
+            StringComparison.Ordinal);
+
+        var metadataCompilation = CreateCompilation();
+        Assert.IsTrue(
+            Invoke<string>("GetStableSourceOrder", metadataCompilation.GetSpecialType(SpecialType.System_String))
+                .StartsWith("~|", StringComparison.Ordinal));
+        var sourceCompilation = CreateCompilation();
+        Assert.IsFalse(
+            Invoke<string>(
+                    "GetStableSourceOrder",
+                    GetMethod(GetNamedType(sourceCompilation, "PrivateContracts.Shapes"), "Ordinary"))
+                .StartsWith("~|", StringComparison.Ordinal));
+
+        var callback = Invoke<ArrowFunctionExpression>("CreateLifecycleFailureCallback", false)
+            .ToKnRECMAScript();
+        var rethrowingCallback = Invoke<ArrowFunctionExpression>("CreateLifecycleFailureCallback", true)
+            .ToKnRECMAScript();
+        StringAssert.Contains(callback, "recordLifecycleFailure(error)", StringComparison.Ordinal);
+        Assert.DoesNotContain("throw error", callback, StringComparison.Ordinal);
+        StringAssert.Contains(rethrowingCallback, "recordLifecycleFailure(error)", StringComparison.Ordinal);
+        StringAssert.Contains(rethrowingCallback, "throw error", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void NamingHelpers_KeepSourceCandidatesAndReservedMethodRulesStable()
     {
         var compilation = CreateCompilation();
@@ -1625,6 +1750,61 @@ public sealed class VueModuleBuilderPrivateContractTests
 
     private static object CreatePrivateRecord(string typeName, params object?[] arguments)
         => GetPrivateRecordConstructor(typeName, arguments.Length).Invoke(arguments)!;
+
+    private static object CreateLifecycleRuntimeMembers(
+        string? onParametersSetAsync,
+        string? onInitialized = null,
+        string? onInitializedAsync = null)
+    {
+        var type = typeof(VueModuleBuilder).GetNestedType(
+            "ComponentLifecycleRuntimeMembers",
+            BindingFlags.NonPublic)!;
+        var constructor = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 10);
+        var parameters = constructor.GetParameters();
+        return constructor.Invoke(
+        [
+            onInitialized,
+            onInitializedAsync,
+            null,
+            onParametersSetAsync,
+            null,
+            null,
+            null,
+            null,
+            CreateEmptyImmutableArray(parameters[8].ParameterType),
+            CreateEmptyImmutableArray(parameters[9].ParameterType)
+        ])!;
+    }
+
+    private static object CreateVueModuleFeatures(object lifecycleMembers)
+    {
+        var type = typeof(VueModuleBuilder).GetNestedType("VueModuleFeatures", BindingFlags.NonPublic)!;
+        var constructor = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 15);
+        var parameters = constructor.GetParameters();
+        return constructor.Invoke(
+        [
+            lifecycleMembers,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            CreateEmptyImmutableArray(parameters[8].ParameterType),
+            CreateEmptyImmutableArray(parameters[9].ParameterType),
+            false,
+            false,
+            CreateEmptyImmutableArray(parameters[12].ParameterType),
+            CreateEmptyImmutableArray(parameters[13].ParameterType),
+            "PrivateContracts.Component"
+        ])!;
+    }
+
+    private static object CreateEmptyImmutableArray(Type immutableArrayType)
+        => immutableArrayType.GetField("Empty", BindingFlags.Public | BindingFlags.Static)!.GetValue(null)!;
 
     private static object CreateImmutableArray(Type elementType, params object[] values)
     {

@@ -153,6 +153,53 @@ public sealed class ESGeneratorSourceMapCatalogTest
     }
 
     [TestMethod]
+    public void RunGenerator_FileUriSourcePath_EmbedsSourceContent()
+    {
+        const string attributeSource = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+            """;
+        const string moduleSource = """
+            [ECMAScript.ECMAScriptModule("modules/uri")]
+            public static class UriModule
+            {
+                public static int Read() => 73;
+            }
+            """;
+
+        var sourcePath = Path.Combine(Path.GetTempPath(), "jazor-esgenerator-uri", "UriModule.cs");
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "SourceMapCatalog.FileUri.Generated",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(attributeSource, TestMetadataReferences.PreviewParseOptions, path: "ECMAScriptModuleAttribute.cs"),
+                CSharpSyntaxTree.ParseText(moduleSource, TestMetadataReferences.PreviewParseOptions, path: new Uri(Path.GetFullPath(sourcePath)).AbsoluteUri)
+            ],
+            references: TestMetadataReferences.Net11,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var (_, runResult) = RunGeneratorWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.HasCount(0, diagnostics, string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
+
+        var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
+        StringAssert.Contains(moduleCatalog, "modules/uri.mjs");
+        StringAssert.Contains(moduleCatalog, "sourcesContent");
+        StringAssert.Contains(moduleCatalog, "public static int Read() => 73;");
+    }
+
+    [TestMethod]
     public void RunGenerator_StaticModule_WhenSourceMapGenerationFails_ReportsWarningAndKeepsTheModuleCatalog()
     {
         var compilation = CreateCompilation(

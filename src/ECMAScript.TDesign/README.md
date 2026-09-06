@@ -87,5 +87,9 @@ Razor Source Generator 集成、render-function lowering 和产物物化分别�
 
 ## 相关文档
 
+组件源码中的 XML 注释来自锁定版本的 TDesign `web-types.json`，包含组件、prop、事件和 slot 的中英文
+原文。IDE 悬停 `TButton.Theme`、`TForm.OnSubmit` 或 `TTable.LoadingContent` 可直接查看上游说明；
+C# 属性名仍按 PascalCase/`XxxValue`/`XxxContent` 规则映射到 Vue 原名。
+
 - [ECMAScript.Vue.Generator](../ECMAScript.Vue.Generator/README.md)
 - [平台与绑定](../../docs/02-architecture/platform-and-bindings.md)

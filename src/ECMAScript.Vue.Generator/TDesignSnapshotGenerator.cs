@@ -274,6 +274,7 @@ internal static class TDesignSnapshotGenerator
             writer.WriteString("tag", component.Tag);
             writer.WriteString("sourceExport", component.SourceExport);
             writer.WriteString("export", component.RuntimeExport);
+            writer.WriteString("description", component.Element.TryGetProperty("description", out var componentDescription) ? componentDescription.GetString() : null);
             WriteComponentMembers(writer, "props", component.Element, "props", includeType: true);
             WriteComponentMembers(writer, "slots", component.Element, "slots", includeType: false);
             if (component.Element.TryGetProperty("js", out var javascript) && javascript.TryGetProperty("events", out var events))
@@ -337,6 +338,7 @@ internal static class TDesignSnapshotGenerator
         {
             writer.WriteStartObject();
             writer.WriteString("name", member.GetProperty("name").GetString());
+            writer.WriteString("description", member.TryGetProperty("description", out var description) ? description.GetString() : null);
             if (includeType)
                 writer.WriteString("type", member.TryGetProperty("type", out var type) ? type.GetString() : null);
             writer.WriteEndObject();

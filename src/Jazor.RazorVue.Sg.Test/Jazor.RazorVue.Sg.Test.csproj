@@ -20,6 +20,7 @@
     <ProjectReference Include="..\ECMAScript.VuIcons\ECMAScript.VuIcons.csproj" />
     <ProjectReference Include="..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
     <ProjectReference Include="..\ECMAScript.TDesign\ECMAScript.TDesign.csproj" />
+    <ProjectReference Include="..\ECMAScript.ElementPlus\ECMAScript.ElementPlus.csproj" />
     <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
     <ProjectReference Include="..\Jazor.CLR\Jazor.CLR.csproj" />
     <ProjectReference Include="..\ECMAScript.Style\ECMAScript.Style.csproj" />

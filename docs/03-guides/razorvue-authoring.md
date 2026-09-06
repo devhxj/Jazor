@@ -84,6 +84,17 @@ Blazor JS interop 不属于 browser service adapter。`IJSRuntime` 的 identifie
 
 Microsoft.AspNetCore.Components 提供的 `DynamicComponent`、`ErrorBoundary`、`EditForm`、`Input*` 等内置 UI 组件不属于 RazorVue 组件入口；只有满足 `ComponentBase` + `IVueComponent`（或派生接口）并声明导入描述的自定义/第三方组件才会进入 lowering。工作树中仍可能存在历史/实验 adapter 和对应测试，它们不构成产品支持证据；页面应改用自定义组件或 TDesign/Vuetify/Element Plus 的 typed contract，避免依赖运行时替代。
 
+Element Plus 组件按普通 Razor 组件使用：`ElButtonType` 等 enum 保持受限字符串域，`ElInput.ModelValue` 使用 `VueStringNumberValue`，`@bind-ModelValue` 连接 `onUpdate:modelValue`，`ChildContent`/命名 `RenderFragment` 映射 default 或命名 slot，`class`、`style` 与 `@attributes` 走基类的 typed/splat contract。示例：
+
+```razor
+@using ECMAScript.ElementPlus
+
+<ElButton Type="ElButtonType.Primary" OnClick="Save">Save</ElButton>
+<ElInput @bind-ModelValue="Name" Placeholder="Name" />
+```
+
+该切片不提供 `object` catch-all 或手写 JS bridge；新增 Element Plus 组件必须先补 C# 参数/事件/slot 类型，再通过官方 Razor SG、模块运行时、package consumer 和浏览器资源验收。
+
 <a id="component-logic"></a>
 ## Component C# Logic
 

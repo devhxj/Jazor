@@ -450,6 +450,18 @@ internal static class ElementPlusGenerator
         ]
     };
 
+    // Element Plus exposes the button's native click listener through the
+    // component even though web-types only lists props and slots. Keep this
+    // small supplement explicit so generated Razor contracts match the
+    // installable runtime without inventing a generic catch-all event surface.
+    private static readonly Dictionary<string, RawEventMetadata[]> SupplementalEventsByTag = new(StringComparer.Ordinal)
+    {
+        ["el-button"] =
+        [
+            new RawEventMetadata("click", "triggers when the button is clicked.")
+        ]
+    };
+
     public static void Run(string[] args)
     {
         _check = args is ["--check"];
@@ -617,6 +629,7 @@ internal static class ElementPlusGenerator
 
             foreach (var prop in component.Props.Where(static prop => !prop.IsSkipped))
             {
+                AppendXmlSummary(builder, prop.Description);
                 builder.AppendLine("    [Parameter]");
                 if (prop.Required)
                     builder.AppendLine("    [EditorRequired]");
@@ -628,6 +641,7 @@ internal static class ElementPlusGenerator
 
             foreach (var slot in component.Slots.Where(static slot => !slot.IsDefault))
             {
+                AppendXmlSummary(builder, slot.Description);
                 builder.AppendLine("    [Parameter]");
                 if (RequiresExplicitSlotName(slot))
                     builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(slot.RuntimeName)}\")]");
@@ -637,6 +651,7 @@ internal static class ElementPlusGenerator
 
             foreach (var emit in component.Emits)
             {
+                AppendXmlSummary(builder, emit.Description);
                 builder.AppendLine("    [Parameter]");
                 if (RequiresExplicitListenerName(emit))
                     builder.AppendLine($"    [ECMAScriptName(\"{EscapeCSharpString(emit.ListenerRuntimeName)}\")]");
@@ -649,6 +664,18 @@ internal static class ElementPlusGenerator
         }
 
         return builder.ToString();
+    }
+
+    private static void AppendXmlSummary(StringBuilder builder, string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            return;
+        builder.AppendLine("    /// <summary>");
+        foreach (var line in description!.Replace("\r", string.Empty, StringComparison.Ordinal).Split('\n'))
+            builder.AppendLine(line.Trim().Length == 0
+                ? "    ///"
+                : $"    /// {EscapeXml(line.Trim())}");
+        builder.AppendLine("    /// </summary>");
     }
 
     private static string RenderDirectiveExports(ElementPlusDirectiveMetadata[] directives)
@@ -1201,10 +1228,11 @@ internal static class ElementPlusGenerator
             type,
             required,
             IsSkipped: false,
+            Description: null,
             acceptsBinding);
 
     private static ElementPlusSlotMetadata CreateSupplementalDefaultSlot()
-        => new("default", ChildContentPropertyName, IsDefault: true);
+        => new("default", ChildContentPropertyName, IsDefault: true, Description: null);
 
     private static ElementPlusSlotMetadata[] MergeSupplementalSlots(params IEnumerable<ElementPlusSlotMetadata>[] groups)
     {
@@ -2170,18 +2198,21 @@ internal static class ElementPlusGenerator
         GeneratedType Type,
         bool Required,
         bool IsSkipped,
+        string? Description,
         bool AcceptsBinding);
 
     private sealed record ElementPlusSlotMetadata(
         string RuntimeName,
         string PropertyName,
-        bool IsDefault);
+        bool IsDefault,
+        string? Description);
 
     private sealed record ElementPlusEmitMetadata(
         string RuntimeName,
         string PropertyName,
         string? PayloadTypeSourceText,
-        string? PayloadTypeRuntimeName)
+        string? PayloadTypeRuntimeName,
+        string? Description)
     {
         public string ListenerRuntimeName => GetListenerRuntimeName(RuntimeName);
 
@@ -2251,6 +2282,7 @@ internal static class ElementPlusGenerator
                     type,
                     rawProp.Required,
                     isSkipped,
+                    rawProp.Description,
                     acceptsBinding);
                 props.Add(prop);
 
@@ -2262,7 +2294,7 @@ internal static class ElementPlusGenerator
             var emits = new List<ElementPlusEmitMetadata>(rawEvents.Count);
             var emittedModelUpdateRuntimeNames = new HashSet<string>(StringComparer.Ordinal);
 
-            ElementPlusEmitMetadata CreateModelUpdateEmit(ElementPlusPropMetadata bindableProp)
+            ElementPlusEmitMetadata CreateModelUpdateEmit(ElementPlusPropMetadata bindableProp, string? description = null)
             {
                 var propertyName = bindableProp.PropertyName + "Changed";
                 var uniquePropertyName = GetUniqueEmitPropertyName(propertyName, emitOccupiedNames);
@@ -2272,14 +2304,15 @@ internal static class ElementPlusGenerator
                     GetUpdateEventRuntimeName(bindableProp.RuntimeName, updateModelEventName),
                     uniquePropertyName,
                     bindableProp.Type.SourceText,
-                    ResolveRuntimeTypeName(bindableProp.Type.SourceText));
+                    ResolveRuntimeTypeName(bindableProp.Type.SourceText),
+                    description ?? bindableProp.Description);
             }
 
             foreach (var rawEvent in rawEvents)
             {
                 if (bindablePropsByUpdateEvent.TryGetValue(rawEvent.RuntimeName, out var bindableProp))
                 {
-                    emits.Add(CreateModelUpdateEmit(bindableProp));
+                    emits.Add(CreateModelUpdateEmit(bindableProp, rawEvent.Description));
                     emittedModelUpdateRuntimeNames.Add(rawEvent.RuntimeName);
                     continue;
                 }
@@ -2293,7 +2326,8 @@ internal static class ElementPlusGenerator
                     rawEvent.RuntimeName,
                     emitPropertyName,
                     PayloadTypeSourceText: null,
-                    PayloadTypeRuntimeName: null));
+                    PayloadTypeRuntimeName: null,
+                    Description: rawEvent.Description));
             }
 
             foreach (var bindableProp in props.Where(static prop => prop.AcceptsBinding))
@@ -2424,6 +2458,16 @@ internal static class ElementPlusGenerator
                 }
             }
 
+            if (SupplementalEventsByTag.TryGetValue(tagName, out var supplementalEvents))
+            {
+                foreach (var emit in supplementalEvents)
+                {
+                    var runtimeName = emit.RuntimeName;
+                    if (seen.Add(runtimeName))
+                        merged.Add(emit with { RawName = runtimeName });
+                }
+            }
+
             return merged;
         }
 
@@ -2464,13 +2508,13 @@ internal static class ElementPlusGenerator
                 var isDefault = string.Equals(slot.RawName, "default", StringComparison.Ordinal);
                 if (isDefault)
                 {
-                    resolved.Add(new ElementPlusSlotMetadata(slot.RawName, ChildContentPropertyName, true));
+                    resolved.Add(new ElementPlusSlotMetadata(slot.RawName, ChildContentPropertyName, true, slot.Description));
                     continue;
                 }
 
                 var propertyName = GetUniqueSlotPropertyName(ToPascalCase(slot.RawName), occupiedNames);
                 occupiedNames.Add(propertyName);
-                resolved.Add(new ElementPlusSlotMetadata(slot.RawName, propertyName, false));
+                resolved.Add(new ElementPlusSlotMetadata(slot.RawName, propertyName, false, slot.Description));
             }
 
             return resolved.ToArray();

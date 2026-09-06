@@ -163,16 +163,19 @@ public sealed class RazorSgOfficialLifecycleNameCollisionRuntimeTests
 
                 await Promise.resolve();
                 await Promise.resolve();
+                await new Promise(resolve => setTimeout(resolve, 0));
                 const afterParameters = render();
                 assert.equal(afterParameters.children, "init|initAsync|params|paramsAsync|should|");
 
                 __runMounted();
                 await Promise.resolve();
+                await new Promise(resolve => setTimeout(resolve, 0));
                 const afterMounted = render();
                 assert.equal(afterMounted.children, "init|initAsync|params|paramsAsync|should|after:first|afterAsync:first|should|");
 
                 __runUpdated();
                 await Promise.resolve();
+                await new Promise(resolve => setTimeout(resolve, 0));
                 const afterUpdated = render();
                 assert.equal(afterUpdated.children, "init|initAsync|params|paramsAsync|should|after:first|afterAsync:first|should|after:update|afterAsync:update|should|");
             });

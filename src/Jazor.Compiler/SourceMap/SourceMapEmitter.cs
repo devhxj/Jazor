@@ -194,7 +194,13 @@ internal static class SourceMapEmitter
                 CaptureOrder: captureOrder));
         }
 
-        sourceEntries.Sort(static (left, right) => StringComparer.OrdinalIgnoreCase.Compare(left.NormalizedPath, right.NormalizedPath));
+        sourceEntries.Sort(static (left, right) =>
+        {
+            var comparison = StringComparer.OrdinalIgnoreCase.Compare(left.NormalizedPath, right.NormalizedPath);
+            return comparison != 0
+                ? comparison
+                : StringComparer.Ordinal.Compare(left.NormalizedPath, right.NormalizedPath);
+        });
         sourceIndexByPath.Clear();
 
         var sources = new List<GeneratedSourceMapSource>(sourceEntries.Count);

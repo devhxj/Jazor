@@ -643,7 +643,8 @@ internal static class VueModuleBuilder
             usesMergeProps,
             usesInject: features.UsesInject,
             usesCascading: !cascadingBindings.IsDefaultOrEmpty,
-            usesServerPrefetch: features.UsesParameterViewState));
+            usesServerPrefetch: features.UsesParameterViewState ||
+                                features.OnInitializedAsync is not null));
 
         if (directRender.UsesRawMarkupRuntime || ordinaryRenderFeatures.UsesRawMarkupRuntime)
         {
@@ -1274,16 +1275,75 @@ internal static class VueModuleBuilder
         if (!features.UsesParameterViewState && features.OnInitialized is { } onInitialized)
             statements.Add(CreateExpressionStatement(CreateScopeCall(onInitialized)));
 
-        if (!features.UsesParameterViewState && features.OnInitializedAsync is { } onInitializedAsync)
+        var deferParameterLifecycle = !features.UsesParameterViewState &&
+                                      features.OnInitializedAsync is not null;
+        if (deferParameterLifecycle)
         {
-            statements.Add(CreateObservedAsyncLifecycleStatement(
-                onInitializedAsync,
-                CreateStateHasChangedCallback(features.UsesUnmounted)));
+            // The first parameter phase belongs after async initialization. Keep one shared
+            // promise so browser updates and SSR can observe the same ordering boundary.
+            // 首次参数生命周期必须等待异步初始化；浏览器与 SSR 共用同一条 Promise 链。
+            statements.Add(CreateVariableDeclaration(
+                VariableDeclarationKind.Let,
+                "initialLifecycleTask",
+                CreateCallMember(new Identifier("Promise"), "resolve")));
+            var initialInvocation = new AssignmentExpression(
+                Operator.Assignment,
+                new Identifier("initialLifecycleTask"),
+                CreateCallMember(
+                    CreateCallMember(
+                        new Identifier("Promise"),
+                        "resolve",
+                        CreateScopeCall(features.OnInitializedAsync!)),
+                    "then",
+                    CreateStateHasChangedCallback(features.UsesUnmounted),
+                    CreateLifecycleFailureCallback(rethrow: true)));
+            var initialError = new Identifier("error");
+            statements.Add(new TryStatement(
+                CreateBlock(CreateExpressionStatement(initialInvocation)),
+                new CatchClause(
+                    initialError,
+                    CreateBlock(
+                        CreateExpressionStatement(CreateCall("recordLifecycleFailure", initialError)),
+                        CreateExpressionStatement(new AssignmentExpression(
+                            Operator.Assignment,
+                            new Identifier("initialLifecycleTask"),
+                            CreateCallMember(
+                                new Identifier("Promise"),
+                                "reject",
+                                initialError))))),
+                null));
+            // setup reports lifecycle failures through the next render; this observer also marks
+            // the rejection handled without changing the task returned to SSR.
+            // setup 通过下一次 render 报告异常；单独挂 observer 避免浏览器出现未处理 rejection，
+            // 同时保留返回给 SSR 的 rejected task。
+            statements.Add(CreateExpressionStatement(CreateCallMember(
+                new Identifier("initialLifecycleTask"),
+                "catch",
+                CreateArrowFunction([], []))));
         }
 
         if (!features.UsesParameterViewState && features.OnParametersSet is { } onParametersSet)
         {
-            statements.Add(CreateExpressionStatement(CreateScopeCall(onParametersSet)));
+            var invoke = CreateExpressionStatement(CreateScopeCall(onParametersSet));
+            if (deferParameterLifecycle)
+            {
+                statements.Add(CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    new Identifier("initialLifecycleTask"),
+                    CreateCallMember(
+                        new Identifier("initialLifecycleTask"),
+                        "then",
+                        CreateArrowFunction([], [invoke]),
+                        CreateLifecycleFailureCallback(rethrow: true)))));
+                statements.Add(CreateExpressionStatement(CreateCallMember(
+                    new Identifier("initialLifecycleTask"),
+                    "catch",
+                    CreateArrowFunction([], []))));
+            }
+            else
+            {
+                statements.Add(invoke);
+            }
             statements.AddRange(CreateWatchStatements(
                 onParametersSet,
                 propNames,
@@ -1292,11 +1352,37 @@ internal static class VueModuleBuilder
         }
 
         if (!features.UsesParameterViewState && features.OnParametersSetAsync is { } onParametersSetAsync)
+        {
             statements.AddRange(BuildOnParametersSetAsyncStatements(
                 onParametersSetAsync,
                 propNames,
                 features.UsesUnmatchedAttributes,
-                features.UsesUnmounted));
+                features.UsesUnmounted,
+                deferInitialInvocation: deferParameterLifecycle));
+            if (deferParameterLifecycle)
+            {
+                statements.Add(CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    new Identifier("initialLifecycleTask"),
+                    CreateCallMember(
+                        new Identifier("initialLifecycleTask"),
+                        "then",
+                        CreateArrowFunction([], [new ReturnStatement(CreateCall("runOnParametersSetAsync"))])))));
+                statements.Add(CreateExpressionStatement(CreateCallMember(
+                    new Identifier("initialLifecycleTask"),
+                    "catch",
+                    CreateArrowFunction([], []))));
+                statements.Add(CreateExpressionStatement(CreateCall(
+                    "onServerPrefetch",
+                    CreateArrowFunction([], [new ReturnStatement(new Identifier("initialLifecycleTask"))]))));
+            }
+        }
+        else if (deferParameterLifecycle)
+        {
+            statements.Add(CreateExpressionStatement(CreateCall(
+                "onServerPrefetch",
+                CreateArrowFunction([], [new ReturnStatement(new Identifier("initialLifecycleTask"))]))));
+        }
 
         if (features.UsesParameterViewState)
         {
@@ -2018,12 +2104,18 @@ internal static class VueModuleBuilder
             CreateArrowFunction(["error"], body));
     }
 
-    private static ArrowFunctionExpression CreateLifecycleFailureCallback()
-        => CreateArrowFunction(
-            ["error"],
-            [CreateExpressionStatement(CreateCall(
+    private static ArrowFunctionExpression CreateLifecycleFailureCallback(bool rethrow = false)
+    {
+        var body = new List<Statement>
+        {
+            CreateExpressionStatement(CreateCall(
                 "recordLifecycleFailure",
-                new Identifier("error")))]);
+                new Identifier("error")))
+        };
+        if (rethrow)
+            body.Add(new ThrowStatement(new Identifier("error")));
+        return CreateArrowFunction(["error"], body);
+    }
 
     private static Statement CreateObservedAsyncLifecycleStatement(
         string scopeMethod,
@@ -2103,7 +2195,8 @@ internal static class VueModuleBuilder
         string scopeMethod,
         ImmutableArray<string> propNames,
         bool usesUnmatchedAttributes,
-        bool usesUnmounted)
+        bool usesUnmounted,
+        bool deferInitialInvocation = false)
     {
         // Serialize parameter callbacks and version each run. Vue may publish newer props while
         // an earlier Task is pending; only the newest completion may request a rerender.
@@ -2181,7 +2274,10 @@ internal static class VueModuleBuilder
                 CreateArrowFunction([], [])),
             "then",
             thenCallback);
-        runBody.Add(CreateExpressionStatement(new AssignmentExpression(
+        // Return the serialized tail so initial SSR prefetch and callers that need ordering can
+        // await the authored callback rather than only enqueueing it.
+        // 返回串行尾 Promise，保证 SSR 与需要顺序的调用方真正等待作者回调完成。
+        runBody.Add(new ReturnStatement(new AssignmentExpression(
             Operator.Assignment,
             new Identifier("parametersSetAsyncTail"),
             chainedTail)));
@@ -2190,7 +2286,8 @@ internal static class VueModuleBuilder
             VariableDeclarationKind.Const,
             "runOnParametersSetAsync",
             CreateArrowFunction([], runBody));
-        yield return CreateExpressionStatement(CreateCall("runOnParametersSetAsync"));
+        if (!deferInitialInvocation)
+            yield return CreateExpressionStatement(CreateCall("runOnParametersSetAsync"));
         if (!propNames.IsDefaultOrEmpty)
         {
             var callbackBody = new List<Statement>();
@@ -2376,10 +2473,17 @@ internal static class VueModuleBuilder
     }
 
     private static NonSpecialExpressionStatement CreateDeferredAfterRenderRelease(string pendingName)
-        => CreateExpressionStatement(new AssignmentExpression(
-            Operator.Assignment,
-            new Identifier(pendingName),
-            BooleanLiteral(false)));
+        // A timer runs after Vue's queued render flush. This keeps a state mutation made by the
+        // callback from immediately re-entering the same after-render hook.
+        => CreateExpressionStatement(CreateCall(
+            "setTimeout",
+            CreateArrowFunction(
+                [],
+                [CreateExpressionStatement(new AssignmentExpression(
+                    Operator.Assignment,
+                    new Identifier(pendingName),
+                    BooleanLiteral(false)))]),
+            NumericLiteral(0)));
 
     private static Statement CreateAfterRenderLifecycleRegistration(
         string vueLifecycleMethod,
@@ -2415,9 +2519,14 @@ internal static class VueModuleBuilder
 
         foreach (var disposeAsyncMemberName in disposeAsyncMemberNames)
         {
-            body.Add(CreateExpressionStatement(new NonUpdateUnaryExpression(
-                Operator.Void,
-                CreateScopeCall(disposeAsyncMemberName))));
+            // Return the async disposal task to Vue so its async error handling observes the
+            // rejection. A void call would create an unhandled Promise after unmount.
+            // 异步释放必须返回 Promise，不能用 void 丢弃 rejection。
+            body.Add(new ReturnStatement(
+                CreateCallMember(
+                    new Identifier("Promise"),
+                    "resolve",
+                    CreateScopeCall(disposeAsyncMemberName))));
         }
 
         return CreateExpressionStatement(CreateCall(

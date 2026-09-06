@@ -175,6 +175,28 @@ public sealed class RazorTailOutputPrivateContractTests
         var ordered = Invoke<ImmutableArray<RazorVueDiagnosticInfo>>("OrderDiagnostics", diagnostics);
         Assert.AreEqual(RazorVueDiagnosticCategory.ComponentBinding, ordered[0].Category);
         Assert.AreEqual(RazorVueDiagnosticCategory.VueModule, ordered[1].Category);
+
+        var lowerTree = CSharpSyntaxTree.ParseText(
+            "class Lower { }",
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "pages/failure.cs");
+        var upperTree = CSharpSyntaxTree.ParseText(
+            "class Upper { }",
+            new CSharpParseOptions(LanguageVersion.Preview),
+            path: "Pages/failure.cs");
+        var caseTieDiagnostics = ImmutableArray.CreateBuilder<RazorVueDiagnosticInfo>();
+        caseTieDiagnostics.Add(RazorVueDiagnosticFactory.Create(
+            RazorVueDiagnosticCategory.VueModule,
+            "lower path",
+            lowerTree.GetRoot().GetLocation()));
+        caseTieDiagnostics.Add(RazorVueDiagnosticFactory.Create(
+            RazorVueDiagnosticCategory.ComponentBinding,
+            "upper path",
+            upperTree.GetRoot().GetLocation()));
+
+        var caseTieOrdered = Invoke<ImmutableArray<RazorVueDiagnosticInfo>>("OrderDiagnostics", caseTieDiagnostics);
+        Assert.AreEqual("Pages/failure.cs", caseTieOrdered[0].PrimaryLocation.GetLineSpan().Path);
+        Assert.AreEqual("pages/failure.cs", caseTieOrdered[1].PrimaryLocation.GetLineSpan().Path);
     }
 
     private static string InvokeEscape(string value)

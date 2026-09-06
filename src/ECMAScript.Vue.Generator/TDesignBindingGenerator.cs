@@ -110,7 +110,11 @@ internal static class TDesignBindingGenerator
             component.Props,
             component.PropTypes,
             component.Slots,
-            component.Events);
+            component.Events,
+            component.PropDescriptions,
+            component.SlotDescriptions,
+            component.EventDescriptions,
+            component.Description);
     }
 
     static string ResolveComponentModule(string tag)
@@ -234,6 +238,7 @@ internal static class TDesignBindingGenerator
             writer.WriteStartObject();
             writer.WriteString("tag", contract.Tag);
             writer.WriteString("authoringType", contract.AuthoringType);
+            writer.WriteString("description", contract.Description);
             writer.WriteString("propsDeclaration", contract.PropsDeclaration);
             writer.WriteStartArray("props");
             foreach (var property in contract.Properties)
@@ -244,6 +249,7 @@ internal static class TDesignBindingGenerator
                 writer.WriteString("declaredBy", property.DeclaredBy);
                 writer.WriteString("source", property.SourcePath);
                 writer.WriteBoolean("optional", property.Optional);
+                writer.WriteString("description", property.Description);
                 writer.WriteEndObject();
             }
 
@@ -258,6 +264,7 @@ internal static class TDesignBindingGenerator
                 writer.WriteString("declaredBy", @event.DeclaredBy);
                 writer.WriteString("source", @event.SourcePath);
                 writer.WriteBoolean("optional", @event.Optional);
+                writer.WriteString("description", @event.Description);
                 writer.WriteEndObject();
             }
 
@@ -271,6 +278,7 @@ internal static class TDesignBindingGenerator
                 writer.WriteString("type", slot.Type);
                 writer.WriteString("declaredBy", slot.DeclaredBy);
                 writer.WriteString("source", slot.SourcePath);
+                writer.WriteString("description", slot.Description);
                 writer.WriteEndObject();
             }
 
@@ -312,7 +320,11 @@ internal static class TDesignBindingGenerator
         string[] Props,
         IReadOnlyDictionary<string, string> PropTypes,
         string[] Slots,
-        string[] Events)
+        string[] Events,
+        IReadOnlyDictionary<string, string?> PropDescriptions,
+        IReadOnlyDictionary<string, string?> SlotDescriptions,
+        IReadOnlyDictionary<string, string?> EventDescriptions,
+        string? Description)
     {
         public static ComponentMetadata Read(JsonElement component)
             => new(
@@ -330,7 +342,11 @@ internal static class TDesignBindingGenerator
                             .FirstOrDefault(static type => !string.IsNullOrWhiteSpace(type)) ?? "unknown",
                         StringComparer.Ordinal),
                 component.GetProperty("slots").EnumerateArray().Select(static item => item.GetProperty("name").GetString()!).ToArray(),
-                component.GetProperty("events").EnumerateArray().Select(static item => item.GetProperty("name").GetString()!).ToArray());
+                component.GetProperty("events").EnumerateArray().Select(static item => item.GetProperty("name").GetString()!).ToArray(),
+                component.GetProperty("props").EnumerateArray().GroupBy(static item => item.GetProperty("name").GetString()!, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.Select(x => x.TryGetProperty("description", out var d) ? d.GetString() : null).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)), StringComparer.Ordinal),
+                component.GetProperty("slots").EnumerateArray().GroupBy(static item => item.GetProperty("name").GetString()!, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.Select(x => x.TryGetProperty("description", out var d) ? d.GetString() : null).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)), StringComparer.Ordinal),
+                component.GetProperty("events").EnumerateArray().GroupBy(static item => item.GetProperty("name").GetString()!, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.Select(x => x.TryGetProperty("description", out var d) ? d.GetString() : null).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)), StringComparer.Ordinal),
+                component.TryGetProperty("description", out var description) ? description.GetString() : null);
     }
 
     sealed record ComponentBinding(
@@ -344,7 +360,11 @@ internal static class TDesignBindingGenerator
         string[] Props,
         IReadOnlyDictionary<string, string> PropTypes,
         string[] Slots,
-        string[] Events);
+        string[] Events,
+        IReadOnlyDictionary<string, string?> PropDescriptions,
+        IReadOnlyDictionary<string, string?> SlotDescriptions,
+        IReadOnlyDictionary<string, string?> EventDescriptions,
+        string? Description);
 
     sealed record TsDeclaration(
         string Module,
@@ -362,11 +382,12 @@ internal static class TDesignBindingGenerator
         TsEvent[] Events,
         TsSlot[] Slots,
         string[] MissingProperties,
-        string[] MissingSlots);
+        string[] MissingSlots,
+        string? Description);
 
-    sealed record TsProperty(string Name, string Type, string DeclaredBy, string SourcePath, bool Optional);
-    sealed record TsEvent(string Name, string Property, string Type, string DeclaredBy, string SourcePath, bool Optional);
-    sealed record TsSlot(string Name, string? Property, string Type, string DeclaredBy, string SourcePath);
+    sealed record TsProperty(string Name, string Type, string DeclaredBy, string SourcePath, bool Optional, string? Description = null);
+    sealed record TsEvent(string Name, string Property, string Type, string DeclaredBy, string SourcePath, bool Optional, string? Description = null);
+    sealed record TsSlot(string Name, string? Property, string Type, string DeclaredBy, string SourcePath, string? Description = null);
 
     static class ComponentContracts
     {
@@ -388,7 +409,8 @@ internal static class TDesignBindingGenerator
                         [],
                         [],
                         component.Props,
-                        component.Slots);
+                        component.Slots,
+                        component.Description);
 
                 var declarationName = component.PropsDeclaration[(component.PropsDeclaration.IndexOf(':') + 1)..];
                 // A component Props declaration is its public generic surface. Keep its
@@ -402,9 +424,9 @@ internal static class TDesignBindingGenerator
                 {
                     var sourceName = ToCamelCase(propertyName);
                     if (byName.TryGetValue(sourceName, out var property))
-                        selected.Add(property);
+                        selected.Add(property with { Description = component.PropDescriptions.GetValueOrDefault(propertyName) });
                     else if (component.PropTypes.TryGetValue(propertyName, out var type))
-                        selected.Add(new TsProperty(sourceName, type, "web-types", "helper/web-types.json", Optional: true));
+                        selected.Add(new TsProperty(sourceName, type, "web-types", "helper/web-types.json", Optional: true, component.PropDescriptions.GetValueOrDefault(propertyName)));
                     else
                         missing.Add(propertyName);
                 }
@@ -421,7 +443,9 @@ internal static class TDesignBindingGenerator
                         property.Type,
                         property.DeclaredBy,
                         property.SourcePath,
-                        property.Optional))
+                        property.Optional,
+                        component.EventDescriptions.GetValueOrDefault(ToKebabCase(property.Name[2..])))
+                    )
                     .ToArray();
 
                 var slots = new List<TsSlot>();
@@ -430,14 +454,14 @@ internal static class TDesignBindingGenerator
                 {
                     if (string.Equals(slotName, "default", StringComparison.Ordinal))
                     {
-                        slots.Add(new TsSlot(slotName, null, "TNode", "slot", component.PropsSource));
+                        slots.Add(new TsSlot(slotName, null, "TNode", "slot", component.PropsSource, component.SlotDescriptions.GetValueOrDefault(slotName)));
                         continue;
                     }
 
                     var source = selected.FirstOrDefault(property =>
                         string.Equals(NormalizeName(property.Name), NormalizeName(slotName), StringComparison.Ordinal));
                     if (source is not null)
-                        slots.Add(new TsSlot(slotName, source.Name, source.Type, source.DeclaredBy, source.SourcePath));
+                        slots.Add(new TsSlot(slotName, source.Name, source.Type, source.DeclaredBy, source.SourcePath, component.SlotDescriptions.GetValueOrDefault(slotName)));
                     else
                         missingSlots.Add(slotName);
                 }
@@ -450,7 +474,8 @@ internal static class TDesignBindingGenerator
                     events.ToArray(),
                     slots.ToArray(),
                     missing.ToArray(),
-                    missingSlots.ToArray());
+                    missingSlots.ToArray(),
+                    component.Description);
             }).ToArray();
         }
 

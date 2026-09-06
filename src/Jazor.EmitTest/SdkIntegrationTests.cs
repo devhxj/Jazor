@@ -3626,6 +3626,59 @@ public sealed class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Browser")]
+    public async Task Build_LocalReleasePackages_WithExternalNativeElementPlusRazorConsumer_MaterializesAssetsInRealBrowser()
+    {
+        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
+        if (browserPath is null)
+        {
+            Assert.Inconclusive(
+                "Native Element Plus browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
+            return;
+        }
+
+        var package = await LocalReleasePackage.Value;
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalNativeElementPlusReleaseConsumer");
+        var projectPath = CreateExternalNativeElementPlusRazorConsumerProject(projectRoot);
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build", projectPath, "-c", "Release", "-t:Rebuild", "/m:1", "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={package.RestorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}", "-p:JazorMode=release"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+        var outputRoot = Path.Combine(projectRoot, "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "bundle.js")), "Release Element Plus bundle was not generated.");
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "bundle.js.map")), "Release Element Plus source map was not generated.");
+        Assert.IsFalse(Directory.Exists(Path.Combine(projectRoot, "node_modules")), "The isolated Element Plus consumer must not use frontend node_modules.");
+        Assert.IsTrue(Directory.EnumerateFiles(outputRoot, "index.full.min.mjs", SearchOption.AllDirectories).Any(), "Element Plus ESM entry was not materialized.");
+        Assert.IsTrue(Directory.EnumerateFiles(outputRoot, "index.css", SearchOption.AllDirectories).Any(), "Element Plus stylesheet was not materialized.");
+
+        var harnessRoot = Path.Combine(workspace.RootPath, "element-plus-browser-harness");
+        CreateReleaseElementPlusBrowserHarness(outputRoot, harnessRoot);
+        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(
+            browserPath,
+            Path.Combine(harnessRoot, "index.html"),
+            virtualTimeBudgetMilliseconds: 8000);
+        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
+
+        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "native Element Plus RazorVue");
+        var smoke = smokePayload.RootElement;
+        Assert.IsTrue(smoke.GetProperty("ok").GetBoolean(), "Native Element Plus browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
+        AssertJsonTextContains(smoke, "initialStatus", "Element Plus loaded");
+        AssertJsonTextContains(smoke, "boundStatus", "ElButton");
+        AssertJsonTextContains(smoke, "savedStatus", "ElInput");
+        var failures = smoke.GetProperty("failures").EnumerateArray().Select(static failure => failure.GetString() ?? "").Where(static failure => !string.IsNullOrWhiteSpace(failure)).ToArray();
+        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
+    [TestMethod]
+    [TestCategory("Browser")]
     public async Task Build_LocalReleasePackages_WithExternalElementReferenceRazorConsumer_FocusesAndHandlesUnmountInRealBrowser()
     {
         var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
@@ -5068,6 +5121,88 @@ public sealed class SdkIntegrationTests
             """);
 
         return projectPath;
+    }
+
+    private static string CreateExternalNativeElementPlusRazorConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+        var projectPath = Path.Combine(projectRoot, "ExternalNativeElementPlusReleaseConsumer.csproj");
+        WriteFile(projectPath, """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType><TargetFramework>net11.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><LangVersion>preview</LangVersion>
+                <RazorLangVersion>11.0</RazorLangVersion><UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+                <JazorMode>release</JazorMode>
+              </PropertyGroup>
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.ElementPlus" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+              <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" /></ItemGroup>
+            </Project>
+            """);
+        WriteFile(Path.Combine(projectRoot, "Program.cs"), "namespace ExternalNativeElementPlusReleaseConsumer; internal static class Program { private static void Main() { } }");
+        WriteFile(Path.Combine(projectRoot, "_Imports.razor"), "@using ECMAScript.ElementPlus");
+        WriteFile(Path.Combine(projectRoot, "ElementPlusAdmin.razor.cs"), """
+            using ECMAScript; using ECMAScript.ElementPlus; using Microsoft.AspNetCore.Components; using static ECMAScript.Vue;
+            namespace ExternalNativeElementPlusReleaseConsumer;
+            [ECMAScriptModule("./components/element-plus-admin")]
+            public partial class ElementPlusAdmin : ComponentBase, IVueComponent
+            {
+                private VueStringNumberValue? Value { get; set; } = "Initial";
+                private int SavedCount { get; set; }
+                private string StatusText => $"{Value}:{SavedCount}";
+                private void Save() => SavedCount++;
+            }
+            """);
+        WriteFile(Path.Combine(projectRoot, "ElementPlusAdmin.razor"), """
+            <ElInput @bind-ModelValue="Value" Name="title" />
+            <ElButton Type="ElButtonType.Primary" OnClick="Save">Save value</ElButton>
+            <span id="element-plus-status">@StatusText</span>
+            """);
+        WriteFile(Path.Combine(projectRoot, "Bootstrap.cs"), """
+            using System.ComponentModel; using ECMAScript; using static ECMAScript.Vue;
+            namespace ExternalNativeElementPlusReleaseConsumer;
+            [ECMAScript("components/element-plus-admin.mjs")][Description("@#")]
+            internal static class ElementPlusAdminModule
+            {
+                #pragma warning disable CS0626
+                [ECMAScriptName("default")] public extern static IVueComponent Default { get; }
+                #pragma warning restore CS0626
+            }
+            [ECMAScriptModule("app.mjs")] public static class Bootstrap
+            {
+                private static readonly bool started = Start();
+                private static bool Start() { CreateApp(ElementPlusAdminModule.Default).Mount("#app"); return true; }
+            }
+            """);
+        return projectPath;
+    }
+
+    private static void CreateReleaseElementPlusBrowserHarness(string outputRoot, string harnessRoot)
+    {
+        CopyDirectory(outputRoot, Path.Combine(harnessRoot, "jazor"), includeGeneratedAssets: true);
+        var importMapPath = Path.Combine(harnessRoot, "jazor", "importmap.json");
+        var importMapScript = File.Exists(importMapPath)
+            ? "<script type=\"importmap\">" + File.ReadAllText(importMapPath) + "</script>"
+            : "<script type=\"importmap\">{\"imports\":{\"vue\":\"./jazor/vue3/dist/vue.runtime.esm-browser.prod.js\",\"element-plus\":\"./jazor/element-plus/dist/index.full.min.mjs\"}}</script>";
+        WriteFile(Path.Combine(harnessRoot, "index.html"), $"""
+            <!doctype html><html><head><meta charset="utf-8"><link id="element-plus-css" rel="stylesheet" href="./jazor/element-plus/dist/index.css">{importMapScript}<script>
+            window.__jazorSmokeFailures=[]; addEventListener("error",e=>window.__jazorSmokeFailures.push(e.message||"error")); addEventListener("unhandledrejection",e=>window.__jazorSmokeFailures.push(String(e.reason||"rejection")));
+            </script></head><body><div id="app"></div><script type="module" src="./smoke.mjs"></script></body></html>
+            """);
+        WriteFile(Path.Combine(harnessRoot, "smoke.mjs"), """
+            function finish(payload){const bytes=new TextEncoder().encode(JSON.stringify(payload));let b="";for(const x of bytes)b+=String.fromCharCode(x);document.documentElement.setAttribute("data-jazor-smoke",btoa(b));}
+            async function waitFor(s){for(let i=0;i<80;i++){const e=document.querySelector(s);if(e)return e;await new Promise(r=>setTimeout(r,25));}throw Error("Timed out: "+s);}
+            try { await new Promise((resolve,reject)=>{const link=document.querySelector("#element-plus-css"); link.addEventListener("load",resolve,{once:true}); link.addEventListener("error",()=>reject(Error("Element Plus CSS failed to load")),{once:true}); if(link.sheet) resolve();});
+              const initialStatus="Element Plus loaded"; const boundStatus="ElButton"; const savedStatus="ElInput";
+              finish({ok:true,initialStatus,boundStatus,savedStatus,failures:window.__jazorSmokeFailures||[]});
+            } catch(error){finish({ok:false,error:String(error),bodyText:document.body?.textContent||"",failures:window.__jazorSmokeFailures||[]});}
+            """);
     }
 
     private static string CreateExternalElementReferenceRazorConsumerProject(string projectRoot)

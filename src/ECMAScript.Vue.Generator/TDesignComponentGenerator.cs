@@ -80,12 +80,14 @@ internal static class TDesignComponentGenerator
             .Select(element => new Contract(
                 element.GetProperty("tag").GetString()!,
                 element.GetProperty("authoringType").GetString()!,
+                element.TryGetProperty("description", out var componentDescription) ? componentDescription.GetString() : null,
                 element.GetProperty("props").EnumerateArray()
                     .Select(property => new Property(
                         property.GetProperty("name").GetString()!,
                         property.GetProperty("type").GetString()!,
                         property.GetProperty("source").GetString()!,
-                        property.GetProperty("optional").GetBoolean()))
+                        property.GetProperty("optional").GetBoolean(),
+                        property.TryGetProperty("description", out var description) ? description.GetString() : null))
                     .ToArray(),
                 element.GetProperty("events").EnumerateArray()
                     .Select(@event => new ComponentEvent(
@@ -93,14 +95,16 @@ internal static class TDesignComponentGenerator
                         @event.GetProperty("prop").GetString()!,
                         @event.GetProperty("type").GetString()!,
                         @event.GetProperty("source").GetString()!,
-                        @event.GetProperty("optional").GetBoolean()))
+                        @event.GetProperty("optional").GetBoolean(),
+                        @event.TryGetProperty("description", out var description) ? description.GetString() : null))
                     .ToArray(),
                 element.GetProperty("slots").EnumerateArray()
                     .Select(slot => new ComponentSlot(
                         slot.GetProperty("name").GetString()!,
                         slot.TryGetProperty("prop", out var property) ? property.GetString() : null,
                         slot.GetProperty("type").GetString()!,
-                        slot.GetProperty("source").GetString()!))
+                        slot.GetProperty("source").GetString()!,
+                        slot.TryGetProperty("description", out var description) ? description.GetString() : null))
                     .ToArray()))
             .ToArray();
     }
@@ -140,7 +144,8 @@ internal static class TDesignComponentGenerator
                         if (definitions.Length != 1)
                             throw new InvalidOperationException(
                                 $"Runtime export '{group.Key}' maps prop '{propertyGroup.Key}' to incompatible contracts.");
-                        return new Property(propertyGroup.Key, definitions[0].Type, propertyGroup.First().SourcePath, definitions[0].Optional);
+                        var firstProperty = propertyGroup.First();
+                        return new Property(propertyGroup.Key, definitions[0].Type, firstProperty.SourcePath, definitions[0].Optional, firstProperty.Description);
                     })
                     .OrderBy(static property => property.Name, StringComparer.Ordinal)
                     .ToArray();
@@ -158,7 +163,8 @@ internal static class TDesignComponentGenerator
                             throw new InvalidOperationException(
                                 $"Runtime export '{group.Key}' maps event '{eventGroup.Key}' to incompatible contracts.");
                         var definition = definitions[0];
-                        return new ComponentEvent(definition.Name, eventGroup.Key, definition.Type, eventGroup.First().SourcePath, definition.Optional);
+                        var firstEvent = eventGroup.First();
+                        return new ComponentEvent(definition.Name, eventGroup.Key, definition.Type, firstEvent.SourcePath, definition.Optional, firstEvent.Description);
                     })
                     .OrderBy(static @event => @event.Property, StringComparer.Ordinal)
                     .ToArray();
@@ -175,12 +181,13 @@ internal static class TDesignComponentGenerator
                             throw new InvalidOperationException(
                                 $"Runtime export '{group.Key}' maps slot '{slotGroup.Key}' to incompatible contracts.");
                         var definition = definitions[0];
-                        return new ComponentSlot(slotGroup.Key, definition.Property, definition.Type, slotGroup.First().SourcePath);
+                        var firstSlot = slotGroup.First();
+                        return new ComponentSlot(slotGroup.Key, definition.Property, definition.Type, firstSlot.SourcePath, firstSlot.Description);
                     })
                     .OrderBy(static slot => slot.Name, StringComparer.Ordinal)
                     .ToArray();
                 return new Component(
-                    new Contract(first.Contract.Tag, first.Contract.AuthoringType, properties, events, slots),
+                    new Contract(first.Contract.Tag, first.Contract.AuthoringType, first.Contract.Description, properties, events, slots),
                     first.Binding);
             })
             .OrderBy(static component => component.Contract.AuthoringType, StringComparer.Ordinal)
@@ -205,6 +212,7 @@ internal static class TDesignComponentGenerator
         foreach (var component in components)
         {
             builder.AppendLine();
+            AppendXmlSummary(builder, component.Component.Contract.Description);
             builder.AppendLine($"[ECMAScript(\"tdesign-vue-next\", Transform.Component, \"{component.Component.Binding.RuntimeExport}\")]");
             var genericSuffix = component.TypeParameters.Length == 0
                 ? string.Empty
@@ -217,6 +225,7 @@ internal static class TDesignComponentGenerator
                 var propertyName = property.CSharpName;
                 var typeName = property.Type.Name + (property.Source.Optional || property.Type.IsNullable ? "?" : string.Empty);
 
+                AppendXmlSummary(builder, property.Source.Description, "    ");
                 builder.AppendLine("    [Parameter]");
                 if (!string.Equals(property.Source.Name, propertyName, StringComparison.Ordinal))
                     builder.AppendLine($"    [ECMAScriptName(\"{property.Source.Name}\")]");
@@ -229,6 +238,7 @@ internal static class TDesignComponentGenerator
 
             foreach (var slot in component.Slots)
             {
+                AppendXmlSummary(builder, slot.Source.Description, "    ");
                 builder.AppendLine("    [Parameter]");
                 if (!string.Equals(slot.Source.Name, slot.CSharpName, StringComparison.Ordinal))
                     builder.AppendLine($"    [ECMAScriptName(\"{slot.Source.Name}\")]");
@@ -239,6 +249,7 @@ internal static class TDesignComponentGenerator
 
             foreach (var @event in component.Events)
             {
+                AppendXmlSummary(builder, @event.Source.Description, "    ");
                 builder.AppendLine("    [Parameter]");
                 if (!string.Equals(@event.ListenerRuntimeName, @event.CSharpName, StringComparison.Ordinal))
                     builder.AppendLine($"    [ECMAScriptName(\"{@event.ListenerRuntimeName}\")]");
@@ -298,6 +309,24 @@ internal static class TDesignComponentGenerator
 
         return builder.ToString();
     }
+
+    private static void AppendXmlSummary(StringBuilder builder, string? text, string indent = "")
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return;
+        builder.AppendLine($"{indent}/// <summary>");
+        foreach (var line in text!.Replace("\r", string.Empty, StringComparison.Ordinal).Split('\n'))
+            builder.AppendLine(line.Trim().Length == 0
+                ? $"{indent}///"
+                : $"{indent}/// {EscapeXml(line.Trim())}");
+        builder.AppendLine($"{indent}/// </summary>");
+    }
+
+    private static string EscapeXml(string value)
+        => value.Replace("&", "&amp;", StringComparison.Ordinal)
+            .Replace("<", "&lt;", StringComparison.Ordinal)
+            .Replace(">", "&gt;", StringComparison.Ordinal)
+            .Replace("\"", "&quot;", StringComparison.Ordinal);
 
     static IReadOnlyList<string> CollectDefinitions(IReadOnlyList<GeneratedComponent> components)
     {
@@ -368,6 +397,7 @@ internal static class TDesignComponentGenerator
     sealed record Contract(
         string Tag,
         string AuthoringType,
+        string? Description,
         Property[] Properties,
         ComponentEvent[] Events,
         ComponentSlot[] Slots);
@@ -378,9 +408,9 @@ internal static class TDesignComponentGenerator
         string? PropsSource,
         HashSet<string> Slots);
     sealed record Component(Contract Contract, Binding Binding);
-    sealed record Property(string Name, string Type, string SourcePath, bool Optional);
-    sealed record ComponentEvent(string Name, string Property, string Type, string SourcePath, bool Optional);
-    sealed record ComponentSlot(string Name, string? Property, string Type, string SourcePath);
+    sealed record Property(string Name, string Type, string SourcePath, bool Optional, string? Description = null);
+    sealed record ComponentEvent(string Name, string Property, string Type, string SourcePath, bool Optional, string? Description = null);
+    sealed record ComponentSlot(string Name, string? Property, string Type, string SourcePath, string? Description = null);
     sealed record GenerationAttempt(Component Component, GeneratedComponent? Generated, string? Failure);
 
     sealed record MappedProperty(Property Source, MappedType Type, string CSharpName);

@@ -1256,7 +1256,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
 
             import component from "./components/lifecycle-runtime.mjs";
 
-            test("official Razor lifecycle hooks observe props and dispose after unmount", () => {
+            test("official Razor lifecycle hooks observe props and dispose after unmount", async () => {
                 const props = { Title: "one" };
                 const render = component.setup(props, { slots: {} });
 
@@ -1264,6 +1264,7 @@ public sealed class RazorSgOfficialRuntimeAuthoringTests
                 assert.equal(render().children, "init|params:one|");
 
                 __runMounted();
+                await new Promise(resolve => setTimeout(resolve, 0));
                 assert.equal(render().children, "init|params:one|after:first|");
 
                 props.Title = "two";

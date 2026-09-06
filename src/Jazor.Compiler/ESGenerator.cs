@@ -236,7 +236,12 @@ public sealed class ESGenerator : IIncrementalGenerator
             return;
 
         generatedModules.Sort(static (left, right) =>
-            StringComparer.OrdinalIgnoreCase.Compare(left.RelativePath, right.RelativePath));
+        {
+            var comparison = StringComparer.OrdinalIgnoreCase.Compare(left.RelativePath, right.RelativePath);
+            return comparison != 0
+                ? comparison
+                : StringComparer.Ordinal.Compare(left.RelativePath, right.RelativePath);
+        });
 
         context.AddSource("Jazor.Generated.ModuleCatalog.g.cs", BuildModuleCatalogSource(assemblyName, generatedModules));
     }
@@ -516,7 +521,12 @@ public sealed class ESGenerator : IIncrementalGenerator
     }
 
     private static string NormalizePathKey(string path)
-        => path.Replace('\\', '/').Trim();
+    {
+        if (Uri.TryCreate(path, UriKind.Absolute, out var sourceUri) && sourceUri.IsFile)
+            path = sourceUri.LocalPath;
+
+        return path.Replace('\\', '/').Trim();
+    }
 
     private static string EnsureDirectorySeparator(string path)
         => path.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal)

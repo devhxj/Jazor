@@ -62,6 +62,18 @@ public sealed class ApiTests
                 document,
                 "src=\"/jazor/app.mjs\"",
                 path);
+            StringAssert.Contains(
+                document,
+                "\"@jazor/vue-runtime/routes.mjs\"",
+                path);
+            StringAssert.Contains(
+                document,
+                "/jazor/@jazor/vue-runtime/routes.mjs",
+                path);
+            StringAssert.Contains(
+                document,
+                "href=\"/jazor/vendor/vue-data-ui/",
+                path);
             StringAssert.Contains(document, "href=\"/brand/jazor-mark.svg\"", path);
             StringAssert.Contains(document, "href=\"/favicon.ico\"", path);
         }

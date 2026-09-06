@@ -72,6 +72,105 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
     }
 
     [TestMethod]
+    public async Task BuildComponent_SsrPrefetchAwaitsInitializationAndParameterLifecycle()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/AsyncInitializationOrder.razor"),
+            documentText: "<p>@Log</p>",
+            codeBehindSource:
+            """
+            using System.Threading.Tasks;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/async-initialization-order")]
+            public partial class AsyncInitializationOrder : ComponentBase, IVueComponent
+            {
+                private string Log { get; set; } = "";
+
+                protected override async Task OnInitializedAsync()
+                {
+                    Log += "init-start|";
+                    await Task.Delay(10);
+                    Log += "init-done|";
+                }
+
+                protected override void OnParametersSet()
+                    => Log += "parameters|";
+
+                protected override async Task OnParametersSetAsync()
+                {
+                    await Task.Delay(10);
+                    Log += "parameters-async|";
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.AsyncInitializationOrder");
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/async-initialization-order.mjs",
+            observation.ModuleText,
+            "official-async-initialization-order.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+            import { __runServerPrefetch } from "vue";
+
+            import component from "./components/async-initialization-order.mjs";
+
+            test("SSR prefetch awaits the complete initial lifecycle chain", async () => {
+                const render = component.setup({}, { slots: {} });
+                assert.equal(render().children, "init-start|");
+
+                await __runServerPrefetch();
+
+                assert.equal(render().children, "init-start|init-done|parameters|parameters-async|");
+            });
+            """);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_SynchronousInitializationThrowIsCapturedForNextRender()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/SynchronousInitializationThrow.razor"),
+            documentText: "<p>failure</p>",
+            codeBehindSource:
+            """
+            using System.Threading.Tasks;
+
+            namespace Demo.Pages;
+
+            [ECMAScriptModule("./components/synchronous-initialization-throw")]
+            public partial class SynchronousInitializationThrow : ComponentBase, IVueComponent
+            {
+                protected override Task OnInitializedAsync()
+                    => throw null!;
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.SynchronousInitializationThrow");
+
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/synchronous-initialization-throw.mjs",
+            observation.ModuleText,
+            "official-synchronous-initialization-throw.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+
+            import component from "./components/synchronous-initialization-throw.mjs";
+
+            test("a synchronous lifecycle throw is captured instead of escaping setup", async () => {
+                const render = component.setup({}, { slots: {} });
+                await new Promise(resolve => setTimeout(resolve, 0));
+                assert.throws(() => render(), error => error === null);
+            });
+            """);
+    }
+
+    [TestMethod]
     public async Task BuildComponent_CanceledParameterLifecycleAfterUnmountDoesNotInvalidate()
     {
         var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
@@ -314,8 +413,13 @@ public sealed class RazorSgOfficialComplexLifecycleRuntimeTests
                 assert.deepEqual(render().children, [1]);
 
                 await __runUpdated();
+                await new Promise(resolve => setTimeout(resolve, 0));
                 await __runUpdated();
-                assert.deepEqual(render().children, [3]);
+                await new Promise(resolve => setTimeout(resolve, 0));
+                await new Promise(resolve => setTimeout(resolve, 0));
+                // Each Vue flush admits one callback. The callback's own state mutation is
+                // consumed by the same flush and does not recursively schedule another hook.
+                assert.deepEqual(render().children, [2]);
             });
             """);
     }

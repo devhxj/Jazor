@@ -58,3 +58,19 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 | Windows SSR 发布消费者 | 本地 NuGet 包、`JazorSSR=true` Release publish、SSR HTML、部署资源解析与 hydration | `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` |
 
 这些门槛是对产品声明的验收规则。某次发布的实际结果应查看对应 CI、运行命令或[CHANGELOG.md](../../CHANGELOG.md)，而不是把历史快照固化在本页。
+
+## P0/P1 已闭环切片
+
+截至 2026-09-06，以下范式工作已经有实现、回归和可重复入口：
+
+| 切片 | 当前证据 |
+| --- | --- |
+| P0：失败诊断与生成稳定性 | RazorVue SG 测试 `4948/4948` 通过；诊断路径排序具有 Ordinal tie-breaker；生成失败不留下 partial artifact。 |
+| P0：质量门禁 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs -- --no-restore --no-build`：行覆盖率 `14054/14431 = 97.39%`，分支覆盖率 `6056/6442 = 94.01%`。 |
+| P0：Debug/HMR/SPA/SSR 交付 | 2026-09-06 实跑通过：`verify-smoke.cs --configuration Release`（101.53s，含 PathBase 浏览器旅程）、`verify-development-hmr.cs`、`verify-windows-spa-release.cs -- --path-base /docs`、`verify-windows-ssr-release.cs -- --path-base /todo`；[范式证据矩阵](../02-architecture/razorvue-paradigm.md#p0p1-验收证据入口) 固定复现命令。 |
+| P1：响应式与生命周期 | 参数队列、异步 lifecycle、slot、`@key`、卸载竞态和 SSR 首屏等待由 `RazorSgOfficial*RuntimeTests`、`RazorSgComponentMemberClosureTests` 及消费端脚本覆盖；完整 CLR reference parity 仍是边界。 |
+| P1：范式级调试 | `dotnet run --file scripts/csharp/inspect-razorvue-chain.cs -- --source ... --generated ... --artifact ... --map ... --json` 输出 source → generated → module → map 链路并在映射断裂时失败。 |
+| P1：中型应用基线 | `scripts/csharp/benchmark-razorvue-g2.cs` 已建立 plain-text、counter、keyed-list-100、static-vnode 的 render/update 吞吐和 gzip 基线；后续优化必须使用同一参数重测。 |
+| P2：Element Plus typed binding 切片 | `elementplus --check` 通过（111 components、2 directives）；官方 Razor SG + Deno 回归覆盖 `ElButton`/`ElInput` 的 enum prop、click、双向绑定、slot、splat 和 import；Release package consumer 断言 Element Plus ESM/CSS 资源闭包，真实浏览器 smoke 可读取发布资源。现有协议足够，本轮没有新增 wrapper-JS 或弱类型协议。 |
+
+这些记录是当前实现的验收快照，不等同于扩大支持边界。新增能力仍须同时更新实现、测试、作者指南和适用 consumer 证据。

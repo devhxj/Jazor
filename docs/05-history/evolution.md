@@ -29,3 +29,31 @@ CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.j
 ## 历史资料的处理
 
 旧计划、完成清单、测试报告、审计整改、Jolt 细分设计和过期状态快照不再留在活动文档中。Git 历史保存原始材料；当前文档只保留上述对理解架构边界有必要的结论。
+
+## 2026-09-05 RazorVue 审查与修复
+
+本轮审查保持官方 Razor SG -> final Compilation -> Compiler hooks -> Vue render-function `.mjs` 的生产边界。审查发现和验收范围如下，当前行为以作者指南与回归测试为准。
+
+| 优先级 | 审查发现 | 修复与验收范围 |
+| --- | --- | --- |
+| P1 | 同步 `OnAfterRender` 的 pending 标志立即复位，状态修改产生的 Vue update 可再次进入同一回调。 | pending 保持到对应 Vue flush 完成；真实 Vue renderer 验证不会自循环，后续外部更新仍能进入回调。 |
+| P1 | 普通 `OnInitializedAsync` 尚未完成即进入参数生命周期，且缺少普通异步初始化的 SSR 等待。 | 初始参数阶段等待初始化，SSR 等待初始生命周期任务；覆盖初始化失败、参数顺序与首屏 HTML。 |
+| P2 | `SetParametersAsync` 仅在入队时检查 disposed，已排队任务可在卸载后启动。 | 出队执行前检查实例生命周期；已启动任务允许完成，卸载后不启动新的作者任务。 |
+| P2 | `DisposeAsync` 的 Promise 被 `void` 丢弃，异步失败脱离 Vue 错误处理。 | 卸载 hook 返回可观察的任务，验证异步释放失败到达 Vue error handler。 |
+| P2 | 序号参数省略规则接受属性 getter、复杂字段 receiver 和可抛错运算。 | 只接受可证明能够省略的序号表达式，其余以 direct-render 诊断拒绝；覆盖 getter、receiver、转换、除零与无副作用序号。 |
+
+测试应区分表达式运行时验证与 Vue 调度验证：轻量 stub 继续用于 VNode 形状和表达式结果，生命周期、依赖跟踪、卸载与 SSR 使用真实 Vue runtime。不能用手动调用 hook 的通过结果代替真实调度证明。
+
+后续优化候选包括限制组件发现的程序集扫描范围、按职责拆分大型 lowering 文件，以及补齐原生 SG hook 的 SDK/平台验证。性能优化应先使用现有 benchmark 建立基线；这些候选不与本轮正确性修复混合实施。
+
+## 2026-09-05 Jazor.Compiler 审查与修复
+
+本轮审查以 `Roslyn IOperation -> Acornima ESTree -> JavaScript/source map/ModuleCatalog` 为边界，先记录问题，再实施可验证的最小修复。
+
+| 优先级 | 审查发现 | 处理结果 |
+| --- | --- | --- |
+| P1 | `file://` URI 形式的编译输入会在 source map 中转换为本地路径，但 `ESGenerator` 的源码内容索引把 URI 当作普通字符串，导致 `includeSourcesContent` 静默缺失。 | 源码内容索引统一把 file URI 转换为本地路径后再匹配；新增 URI compilation 回归测试。 |
+| P2 | 模块目录和 source map `sources` 使用仅忽略大小写的比较器。当前输入去重会规避大多数相等项，但比较器没有表达完整的稳定全序，后续边界扩展可能重新引入输入顺序依赖。 | 增加 `Ordinal` 二级比较，保持现有大小写不敏感排序语义并明确确定性契约。 |
+| P2 | 单个模块 lowering 失败时，其他成功模块仍进入 `ModuleCatalog`；source map 失败则保留 JavaScript 并告警。 | 保持现有渐进式交付行为，并由现有场景测试锁定；这属于需要消费者明确接受的交付策略，不在本轮改成全量失败。 |
+
+后续候选包括扩大白名单结构匹配的边界测试、统一诊断的源位置锚点、建立 optimizer 基准后再评估纯表达式覆盖，以及继续拆分大型 lowering 文件。它们需要独立的行为契约，不能仅以“看起来更完整”作为修改依据。

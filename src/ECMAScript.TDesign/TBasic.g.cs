@@ -23842,319 +23842,590 @@ public enum TdTreePropsValueMode
     All,
 }
 
+/// <summary>
+/// Affix
+///
+/// 固钉
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Affix")]
 public sealed class TAffix : TContentComponentBase
 {
+    /// <summary>
+    /// 指定滚动的容器。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("container")]
     public TScrollContainer? Container { get; set; }
 
+    /// <summary>
+    /// 内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// When the distance from the bottom of the container reaches the specified distance, the trigger is fixed
+    ///
+    /// 距离容器底部达到指定距离后触发固定
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offsetBottom")]
     public Number? OffsetBottom { get; set; }
 
+    /// <summary>
+    /// When the distance from the top of the container reaches the specified distance, the trigger is fixed
+    ///
+    /// 距离容器顶部达到指定距离后触发固定
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offsetTop")]
     public Number? OffsetTop { get; set; }
 
+    /// <summary>
+    /// 固钉定位层级，样式默认为 500
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// 内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 固定状态发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFixedChange")]
     public EventCallback<bool> OnFixedChange { get; set; }
 }
 
+/// <summary>
+/// Alert
+///
+/// 警告提示
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Alert")]
 public sealed class TAlert : TContentComponentBase
 {
+    /// <summary>
+    /// Deprecated, use closeBtn instead.
+    ///
+    /// 即将废弃，请使用 closeBtn 属性。关闭按钮。值为 true 则显示默认关闭按钮；值为 false 则不显示按钮；值类型为 string 则直接显示；值类型为 Function 则可以自定关闭按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("close")]
     public TAlertCloseValue? CloseValue { get; set; }
 
+    /// <summary>
+    /// Close button. Value &quot;true&quot; show the close button. Value &quot;False&quot; hide close button. Value type string display as is. Use TNode to custom the close trigger.
+    ///
+    /// 关闭按钮。值为 true 则显示默认关闭按钮；值为 false 则不显示按钮；值类型为 string 则直接显示；值类型为 Function 则可以自定关闭按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TAlertCloseBtnValue? CloseBtnValue { get; set; }
 
+    /// <summary>
+    /// 内容显示最大行数，超出的内容会折叠收起，用户点击后再展开。值为 0 表示不折叠
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxLine")]
     public Number? MaxLine { get; set; }
 
+    /// <summary>
+    /// 内容（子元素）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("message")]
     public string? MessageValue { get; set; }
 
+    /// <summary>
+    /// 组件风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TAlertThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// Deprecated, use closeBtn instead.
+    ///
+    /// 即将废弃，请使用 closeBtn 属性。关闭按钮。值为 true 则显示默认关闭按钮；值为 false 则不显示按钮；值类型为 string 则直接显示；值类型为 Function 则可以自定关闭按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("close")]
     public RenderFragment? CloseContent { get; set; }
 
+    /// <summary>
+    /// Close button. Value &quot;true&quot; show the close button. Value &quot;False&quot; hide close button. Value type string display as is. Use TNode to custom the close trigger.
+    ///
+    /// 关闭按钮。值为 true 则显示默认关闭按钮；值为 false 则不显示按钮；值类型为 string 则直接显示；值类型为 Function 则可以自定关闭按钮类型和参数：string | boolean | TNode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public RenderFragment? CloseBtnContent { get; set; }
 
+    /// <summary>
+    /// 图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// 内容（子元素）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("message")]
     public RenderFragment? MessageContent { get; set; }
 
+    /// <summary>
+    /// 跟在告警内容后面的操作区
+    /// </summary>
     [Parameter]
     [ECMAScriptName("operation")]
     public RenderFragment? OperationContent { get; set; }
 
+    /// <summary>
+    /// 标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 
+    /// <summary>
+    /// 关闭按钮点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback<TAlertCloseEventContext> OnClose { get; set; }
 
+    /// <summary>
+    /// 告警提示框关闭动画结束后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClosed")]
     public EventCallback<TAlertClosedEventContext> OnClosed { get; set; }
 }
 
+/// <summary>
+/// Anchor
+///
+/// 锚点
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Anchor")]
 public sealed class TAnchor : TContentComponentBase
 {
+    /// <summary>
+    /// 透传 Affix 组件属性，即让 Anchor 组件支持所有 Affix 组件特性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("affixProps")]
     public TdAffixProps? AffixProps { get; set; }
 
+    /// <summary>
+    /// 锚点区域边界
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bounds")]
     public Number? Bounds { get; set; }
 
+    /// <summary>
+    /// 指定滚动的容器。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("container")]
     public TScrollContainer? Container { get; set; }
 
+    /// <summary>
+    /// Custom Highlighted Anchor Points
+    ///
+    /// 自定义高亮的锚点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("getCurrentAnchor")]
     public TAnchorGetCurrentAnchorValue? GetCurrentAnchor { get; set; }
 
+    /// <summary>
+    /// 组件尺寸，small(120px)，medium(200px)，large(320px)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TAnchorSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 锚点滚动偏移量
+    /// </summary>
     [Parameter]
     [ECMAScriptName("targetOffset")]
     public Number? TargetOffset { get; set; }
 
+    /// <summary>
+    /// 用于自定义选中项左侧游标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cursor")]
     public RenderFragment? CursorContent { get; set; }
 
+    /// <summary>
+    /// 锚点改变时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
 
+    /// <summary>
+    /// 锚点被点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TAnchorClickEventLink> OnClick { get; set; }
 }
 
+/// <summary>
+/// AnchorItem
+///
+/// 锚点项
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "AnchorItem")]
 public sealed class TAnchorItem : TContentComponentBase
 {
+    /// <summary>
+    /// custom scroll effect, when set to true, clicking on an anchor link will not use JavaScript animation to smoothly scroll to the anchor target element.
+    ///
+    /// 自定义滚动效果，为true时点击锚点链接后不会使用js动画平滑滚动到锚点目标元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("customScroll")]
     public bool? CustomScroll { get; set; }
 
+    /// <summary>
+    /// 锚点链接, 如果是 hash 模式需要加上当前 path
+    /// </summary>
     [Parameter]
     [ECMAScriptName("href")]
     [EditorRequired]
     public string Href { get; set; } = default!;
 
+    /// <summary>
+    /// 锚点文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("target")]
     public TAnchorItemTargetValue? Target { get; set; }
 
+    /// <summary>
+    /// 锚点文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// 锚点文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }
 
+/// <summary>
+/// AnchorTarget
+///
+/// 锚点目标
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "AnchorTarget")]
 public sealed class TAnchorTarget : TContentComponentBase
 {
+    /// <summary>
+    /// 目标内容 id
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     [EditorRequired]
     public string Id { get; set; } = default!;
 
+    /// <summary>
+    /// 渲染的标签
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 }
 
+/// <summary>
+/// Aside
+///
+/// 布局-侧边栏
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Aside")]
 public sealed class TAside : TContentComponentBase
 {
+    /// <summary>
+    /// 侧边栏宽度。样式表（class）中定义的默认宽度为：232px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public string? Width { get; set; }
 }
 
+/// <summary>
+/// AutoComplete
+///
+/// 自动填充
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "AutoComplete")]
 public class TAutoComplete<T> : TContentComponentBase
 {
+    /// <summary>
+    /// 自动获取焦点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否允许清空
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 是否禁用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 当下拉联想词列表为空时显示的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public string? EmptyValue { get; set; }
 
+    /// <summary>
+    /// 自定义过滤规则，用于对现有数据进行搜索过滤，判断是否过滤某一项数据。参数 `filterWords` 表示搜索词，`option`表示单个选项内容，返回值为 `true` 保留该选项，返回值为 `false` 则隐藏该选项。使用该方法时无需设置 `filterable`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filter")]
     public TAutoCompleteFilterValue<T>? Filter { get; set; }
 
+    /// <summary>
+    /// 是否根据输入内容过滤联想词。默认过滤规则不区分大小写，全文本任意位置匹配。如果默认搜索规则不符合业务需求，可以更为使用 `filter` 自定义过滤规则。部分场景下输入关键词和下拉联想词完全不同，此时可以设置为 `false`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
+    /// <summary>
+    /// 是否高亮联想词中和输入值的相同部分
+    /// </summary>
     [Parameter]
     [ECMAScriptName("highlightKeyword")]
     public bool? HighlightKeyword { get; set; }
 
+    /// <summary>
+    /// 透传 Input 组件全部特性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// 下拉联想词列表。示例一：`['联想词一', '联想词二']`。示例二：`{ label: () =&gt; &lt;div&gt;联想词元素&lt;/div&gt;, text: '用于搜索的纯联想词' }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public T[]? Options { get; set; }
 
+    /// <summary>
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public string? PanelBottomContentValue { get; set; }
 
+    /// <summary>
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public string? PanelTopContentValue { get; set; }
 
+    /// <summary>
+    /// 输入框为空时的占位提示。组件本身默认值为 `undefined`，但全局配置存在默认值，不同语言全局默认值不同
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 是否只读
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TAutoCompleteStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 透传 Textarea 组件全部特性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("textareaProps")]
     public TdTextareaProps? TextareaProps { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 触发显示联想词下拉框的元素，默认为 Input 组件，可以使用 `trigger` 自定义为 Textarea 组件或其他组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerElement")]
     public string? TriggerElementValue { get; set; }
 
+    /// <summary>
+    /// 输入框的值，即当前指定的联想词
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public string? Value { get; set; }
 
+    /// <summary>
+    /// 当下拉联想词列表为空时显示的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public RenderFragment? PanelBottomContent { get; set; }
 
+    /// <summary>
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public RenderFragment? PanelTopContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 触发显示联想词下拉框的元素，默认为 Input 组件，可以使用 `trigger` 自定义为 Textarea 组件或其他组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerElement")]
     public RenderFragment? TriggerElementContent { get; set; }
 
+    /// <summary>
+    /// 失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TAutoCompleteBlurEventContext<T>> OnBlur { get; set; }
 
+    /// <summary>
+    /// 输入框值发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
 
+    /// <summary>
+    /// 清空按钮点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TAutoCompleteClearEventContext<T>> OnClear { get; set; }
 
+    /// <summary>
+    /// trigger on compositionend
+    ///
+    /// 中文输入结束时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCompositionend")]
     public EventCallback<TAutoCompleteCompositionendEventContext<T>> OnCompositionend { get; set; }
 
+    /// <summary>
+    /// trigger on compositionstart
+    ///
+    /// 中文输入开始时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCompositionstart")]
     public EventCallback<TAutoCompleteCompositionstartEventContext<T>> OnCompositionstart { get; set; }
 
+    /// <summary>
+    /// 回车键按下时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEnter")]
     public EventCallback<TAutoCompleteEnterEventContext<T>> OnEnter { get; set; }
 
+    /// <summary>
+    /// 获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TAutoCompleteFocusEventContext<T>> OnFocus { get; set; }
 
+    /// <summary>
+    /// 选中联想词时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelect")]
     public EventCallback<string> OnSelect { get; set; }
@@ -24165,410 +24436,846 @@ internal sealed class TAutoComplete : TAutoComplete<TAutoCompleteOption>
 {
 }
 
+/// <summary>
+/// Avatar
+///
+/// 头像
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Avatar")]
 public sealed class TAvatar : TContentComponentBase
 {
+    /// <summary>
+    /// show it when url is not valid
+    ///
+    /// 头像替换文本，仅当图片加载失败时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("alt")]
     public string? Alt { get; set; }
 
+    /// <summary>
+    /// content slot or props.content
+    ///
+    /// 子元素内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// hide image when loading image failed
+    ///
+    /// 加载失败时隐藏图片
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideOnLoadFailed")]
     public bool? HideOnLoadFailed { get; set; }
 
+    /// <summary>
+    /// images url
+    ///
+    /// 图片地址
+    /// </summary>
     [Parameter]
     [ECMAScriptName("image")]
     public string? Image { get; set; }
 
+    /// <summary>
+    /// 透传至 Image 组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("imageProps")]
     public TdImageProps? ImageProps { get; set; }
 
+    /// <summary>
+    /// shape
+    ///
+    /// 形状。优先级高于 AvatarGroup.shape 。Avatar 单独存在时，默认值为 circle。如果父组件 AvatarGroup 存在，默认值便由 AvatarGroup.shape 决定
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public TShapeEnum? Shape { get; set; }
 
+    /// <summary>
+    /// size
+    ///
+    /// 尺寸，示例值：small/medium/large/24px/38px 等。优先级高于 AvatarGroup.size 。Avatar 单独存在时，默认值为 medium。如果父组件 AvatarGroup 存在，默认值便由 AvatarGroup.size 决定
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// content slot or props.content
+    ///
+    /// 子元素内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// use icon to fill
+    ///
+    /// 图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// trigger on image load failed
+    ///
+    /// 图片加载失败时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onError")]
     public EventCallback<TAvatarErrorEventContext> OnError { get; set; }
 }
 
+/// <summary>
+/// AvatarGroup
+///
+/// 头像组
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "AvatarGroup")]
 public sealed class TAvatarGroup : TContentComponentBase
 {
+    /// <summary>
+    /// multiple images cascading
+    ///
+    /// 图片之间的层叠关系，可选值：左侧图片在上和右侧图片在上
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cascading")]
     public TCascadingValue? Cascading { get; set; }
 
+    /// <summary>
+    /// 头像数量超出时，会出现一个头像折叠元素。该元素内容可自定义。默认为 `+N`。示例：`+5`，`...`, `更多`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseAvatar")]
     public string? CollapseAvatarValue { get; set; }
 
+    /// <summary>
+    /// 能够同时显示的最多头像数量
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// 头像右上角提示信息
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// shape
+    ///
+    /// 形状。优先级低于 Avatar.shape
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public TShapeEnum? Shape { get; set; }
 
+    /// <summary>
+    /// size
+    ///
+    /// 尺寸，示例值：small/medium/large/24px/38px 等。优先级低于 Avatar.size
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// 头像数量超出时，会出现一个头像折叠元素。该元素内容可自定义。默认为 `+N`。示例：`+5`，`...`, `更多`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseAvatar")]
     public RenderFragment? CollapseAvatarContent { get; set; }
 }
 
+/// <summary>
+/// BackTop
+///
+/// 回到顶部
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "BackTop")]
 public sealed class TBackTop : TContentComponentBase
 {
+    /// <summary>
+    /// 监听滚动的容器。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("container")]
     public TAttachNode? Container { get; set; }
 
+    /// <summary>
+    /// Backtop's children elements
+    ///
+    /// 回到顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 回到顶部的耗时单位：毫秒
+    /// </summary>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
+    /// <summary>
+    /// 回到顶部相对右下角的位置偏移，示例：[10, 20] 或 ['10em', '8rem']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public TBackTopOffsetValueItem[]? Offset { get; set; }
 
+    /// <summary>
+    /// shape of BackTop element
+    ///
+    /// 回到顶部的形状
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public TBackTopShapeEnum? Shape { get; set; }
 
+    /// <summary>
+    /// size of BackTop
+    ///
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TBackTopSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 指定回到该对象。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("target")]
     public TAttachNode? Target { get; set; }
 
+    /// <summary>
+    /// theme of BackTop
+    ///
+    /// 组件主题风格，浅色、主色、深色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TBackTopThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 滚动高度达到此参数值才出现
+    /// </summary>
     [Parameter]
     [ECMAScriptName("visibleHeight")]
     public TBackTopVisibleHeightValue? VisibleHeight { get; set; }
 
+    /// <summary>
+    /// Backtop's children elements
+    ///
+    /// 回到顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 点击回到顶部时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TBackTopClickEventContext> OnClick { get; set; }
 }
 
+/// <summary>
+/// Badge
+///
+/// 徽标数
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Badge")]
 public sealed class TBadge : TContentComponentBase
 {
+    /// <summary>
+    /// 颜色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// 徽标内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 徽标右上角内容。可以是数字，也可以是文字。如：'new'/3/99+
+    /// </summary>
     [Parameter]
     [ECMAScriptName("count")]
     public TBadgeCountValue? CountValue { get; set; }
 
+    /// <summary>
+    /// 是否为红点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dot")]
     public bool? Dot { get; set; }
 
+    /// <summary>
+    /// 封顶的数字值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxCount")]
     public Number? MaxCount { get; set; }
 
+    /// <summary>
+    /// 设置状态点的位置偏移，示例：[-10, 20] 或 ['10em', '8rem']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public TBadgeOffsetValueItem[]? Offset { get; set; }
 
+    /// <summary>
+    /// 形状
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public TBadgeShapeValue? Shape { get; set; }
 
+    /// <summary>
+    /// 当数值为 0 时，是否展示徽标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showZero")]
     public bool? ShowZero { get; set; }
 
+    /// <summary>
+    /// 尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TBadgeSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 徽标内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 徽标右上角内容。可以是数字，也可以是文字。如：'new'/3/99+
+    /// </summary>
     [Parameter]
     [ECMAScriptName("count")]
     public RenderFragment? CountContent { get; set; }
 }
 
+/// <summary>
+/// BaseTable
+///
+/// 基础表格
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "BaseTable")]
 public sealed class TBaseTable : TContentComponentBase
 {
+    /// <summary>
+    /// keys of highlight rows, used to mock area selection behavior, just like macOS or windows area selection
+    ///
+    /// 高亮行，支持鼠标键盘操作(Shift)连续高亮行，可用于处理行选中等批量操作，模拟操作系统区域选择行为
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeRowKeys")]
     public TBaseTableActiveRowKeysValueItem[]? ActiveRowKeys { get; set; }
 
+    /// <summary>
+    /// make nodes can be highlight on clicked
+    ///
+    /// 默认不会高亮点击行，`activeRowType=single` 表示鼠标点击仅允许同时高亮一行，Shift 键盘操作加鼠标操作依然可以高亮多行，因为这属于明显的区域选择行为。`activeRowType= multiple ` 表示允许鼠标点击同时高亮多行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeRowType")]
     public TBaseTableActiveRowTypeValue? ActiveRowType { get; set; }
 
+    /// <summary>
+    /// allow to resize column width
+    ///
+    /// 是否允许调整列宽。请更为使用 `resizable`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowResizeColumnWidth")]
     public bool? AllowResizeColumnWidth { get; set; }
 
+    /// <summary>
+    /// elements with popup would be attached to `attach`
+    ///
+    /// 超出省略等所有浮层元素统一绑定到 `attach`，可根据实际情况调整挂载元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
+    /// <summary>
+    /// show table bordered
+    ///
+    /// 是否显示表格边框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
+    /// <summary>
+    /// 表格底部内容，可以用于自定义列设置等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bottomContent")]
     public string? BottomContentValue { get; set; }
 
+    /// <summary>
+    /// 单元格数据为空时呈现的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellEmptyContent")]
     public string? CellEmptyContentValue { get; set; }
 
+    /// <summary>
+    /// table column configs
+    ///
+    /// 列配置，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("columns")]
     public TBaseTableCol<TTableRowData>[]? Columns { get; set; }
 
+    /// <summary>
+    /// table data
+    ///
+    /// 数据源，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public TTableRowData[]? Data { get; set; }
 
+    /// <summary>
+    /// 是否禁用本地数据分页。当 `data` 数据长度超过分页大小时，会自动进行本地数据分页。如果 `disableDataPage` 设置为 true，则无论何时，都不会进行本地数据分页
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableDataPage")]
     public bool? DisableDataPage { get; set; }
 
+    /// <summary>
+    /// can not set row to be inactive with Space keydown
+    ///
+    /// 默认重复按下 Space 键可取消当前行高亮，是否禁用取消
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableSpaceInactiveRow")]
     public bool? DisableSpaceInactiveRow { get; set; }
 
+    /// <summary>
+    /// empty text or empty element
+    ///
+    /// 空表格呈现样式，支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public string? EmptyValue { get; set; }
 
+    /// <summary>
+    /// 首行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstFullRow")]
     public string? FirstFullRowValue { get; set; }
 
+    /// <summary>
+    /// 固定行（冻结行），示例：[M, N]，表示冻结表头 M 行和表尾 N 行。M 和 N 值为 0 时，表示不冻结行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fixedRows")]
     public Number[]? FixedRows { get; set; }
 
+    /// <summary>
+    /// table foot data
+    ///
+    /// 表尾数据源，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footData")]
     public TTableRowData[]? FootData { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 请更为使用 `footerAffixedBottom`。表尾吸底基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerAffixProps")]
     public TdAffixProps? FooterAffixProps { get; set; }
 
+    /// <summary>
+    /// affix foot to viewport bottom
+    ///
+    /// 表尾吸底。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，则表示相对于整个窗口吸底。如果表格滚动的父元素不是整个窗口，请通过 `footerAffixedBottom.container` 调整固钉的吸顶范围。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerAffixedBottom")]
     public TBaseTableFooterAffixedBottomValue? FooterAffixedBottom { get; set; }
 
+    /// <summary>
+    /// footer summary content
+    ///
+    /// 表尾总结行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerSummary")]
     public string? FooterSummaryValue { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 请更为使用 `headerAffixedTop`。表头吸顶基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerAffixProps")]
     public TdAffixProps? HeaderAffixProps { get; set; }
 
+    /// <summary>
+    /// affix header to viewport top
+    ///
+    /// 表头吸顶。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，表示相对于整个窗口吸顶。如果表格滚动的父元素不是整个窗口，请通过 `headerAffixedTop.container` 调整吸顶的位置。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerAffixedTop")]
     public TBaseTableHeaderAffixedTopValue? HeaderAffixedTop { get; set; }
 
+    /// <summary>
+    /// table height
+    ///
+    /// 表格高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定表格高度，建议使用 `maxHeight`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public TBaseTableHeightValue? Height { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 滚动条吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("horizontalScrollAffixedBottom")]
     public TBaseTableHorizontalScrollAffixedBottomValue? HorizontalScrollAffixedBottom { get; set; }
 
+    /// <summary>
+    /// show hover style
+    ///
+    /// 是否显示鼠标悬浮状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hover")]
     public bool? Hover { get; set; }
 
+    /// <summary>
+    /// make table row to be hover by keydown ArrowUp/ArrowDown
+    ///
+    /// 键盘操作行显示悬浮效果，一般用于键盘操作行选中、行展开、行高亮等功能
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keyboardRowHover")]
     public bool? KeyboardRowHover { get; set; }
 
+    /// <summary>
+    /// 尾行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lastFullRow")]
     public string? LastFullRowValue { get; set; }
 
+    /// <summary>
+    /// load table content when it entering the visible area, all elements in table are not rendered before it become visible
+    ///
+    /// 是否启用整个表格元素的懒加载，当页面滚动到可视区域后再渲染表格。注意和表格内部行滚动懒加载的区别，内部行滚动无论表格是否在可视区域都会默认渲染第一屏的行元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
+    /// <summary>
+    /// loading state table
+    ///
+    /// 加载中状态。值为 `true` 会显示默认加载中样式，可以通过 Function 和 插槽 自定义加载状态呈现内容和样式。值为 `false` 则会取消加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? LoadingValue { get; set; }
 
+    /// <summary>
+    /// 透传加载组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
+    /// <summary>
+    /// table locale config
+    ///
+    /// 语言配置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("locale")]
     public TTableConfig? Locale { get; set; }
 
+    /// <summary>
+    /// table max height
+    ///
+    /// 表格最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public TBaseTableMaxHeightValue? MaxHeight { get; set; }
 
+    /// <summary>
+    /// you can use all props of pagination component with paginationProps
+    ///
+    /// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pagination")]
     public TdPaginationProps? Pagination { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 分页吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("paginationAffixedBottom")]
     public TBaseTablePaginationAffixedBottomValue? PaginationAffixedBottom { get; set; }
 
+    /// <summary>
+    /// allow to resize column width, set `tableLayout=fixed` would be better
+    ///
+    /// 是否允许调整列宽，设置 `tableLayout=fixed` 效果更友好，此时不允许通过 CSS 设置 `table`元素宽度，也不允许设置 `tableContentWidth`。一般不建议在列宽调整场景使用 `tableLayout: auto`。如果想要配置宽度可调整的最小值和最大值，请使用 `column.resize`，示例：`columns: [{ resize: { minWidth: 120, maxWidth: 300 } }]`。&lt;br/&gt; 默认规则：因列宽超出存在横向滚动条时，列宽调整仅影响当前列宽和总列宽；表格列较少没有横向滚动条时，列宽调整表现为自身宽度和相邻宽度变化
+    /// </summary>
     [Parameter]
     [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
+    /// <summary>
+    /// `tr` attributes
+    ///
+    /// HTML 标签 `tr` 的属性。类型为 Function 时，参数说明：`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body` 表示属性作用于 `tbody` 中的元素；`params.type=foot` 表示属性作用于 `tfoot` 中的元素。&lt;br /&gt;示例一：{ draggable: true }，&lt;br /&gt;示例二：[{ draggable: true }, { title: '超出省略显示' }]。&lt;br /&gt; 示例三：() =&gt; [{ draggable: true }]
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowAttributes")]
     public TTableRowAttributes<TTableRowData>? RowAttributes { get; set; }
 
+    /// <summary>
+    /// table `th` classname
+    ///
+    /// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowClassName")]
     public TBaseTableRowClassNameValue? RowClassName { get; set; }
 
+    /// <summary>
+    /// unique key for each row data
+    ///
+    /// 唯一标识一行数据的字段名，来源于 `data` 中的字段。如果是字段嵌套多层，可以设置形如 `item.a.id` 的方法
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowKey")]
     [EditorRequired]
     public string RowKey { get; set; } = default!;
 
+    /// <summary>
+    /// rowspan and colspan
+    ///
+    /// 用于自定义合并单元格，泛型 T 指表格数据类型。示例：`({ row, col, rowIndex, colIndex }) =&gt; { rowspan: 2, colspan: 3 }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowspanAndColspan")]
     public TTableRowspanAndColspanFunc<TTableRowData>? RowspanAndColspan { get; set; }
 
+    /// <summary>
+    /// rowspan and colspan for footer
+    ///
+    /// 用于自定义表尾的合并单元格，泛型 T 指表格数据类型。示例：`({ row, col, rowIndex, colIndex }) =&gt; { rowspan: 2, colspan: 3 }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowspanAndColspanInFooter")]
     public TTableRowspanAndColspanFunc<TTableRowData>? RowspanAndColspanInFooter { get; set; }
 
+    /// <summary>
+    /// lazy load and virtual scroll
+    ///
+    /// 懒加载和虚拟滚动。为保证组件收益最大化，当数据量小于阈值 `scroll.threshold` 时，无论虚拟滚动的配置是否存在，组件内部都不会开启虚拟滚动，`scroll.threshold` 默认为 `100`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
+    /// <summary>
+    /// show table header
+    ///
+    /// 是否显示表头
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showHeader")]
     public bool? ShowHeader { get; set; }
 
+    /// <summary>
+    /// table size, support `GlobalConfigProvider`, default value is `medium`
+    ///
+    /// 表格尺寸，支持全局配置 `GlobalConfigProvider`，默认全局配置值为 `medium`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// show stripe style
+    ///
+    /// 是否显示斑马纹
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
+    /// <summary>
+    /// 表格内容的总宽度，注意不是表格可见宽度。主要应用于 `table-layout: auto` 模式下的固定列显示。`tableContentWidth` 内容宽度的值必须大于表格可见宽度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tableContentWidth")]
     public string? TableContentWidth { get; set; }
 
+    /// <summary>
+    /// table-layout css properties, [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout). set value to be `fixed` on `resizable=true` please
+    ///
+    /// 表格布局方式，`&lt;table&gt;` 元素原生属性。[MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)。注意，在列宽调整下场景只能使用 `fixed` 模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tableLayout")]
     public TBaseTableTableLayoutValue? TableLayout { get; set; }
 
+    /// <summary>
+    /// 表格顶部内容，可以用于自定义列设置、顶部查询条件等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("topContent")]
     public string? TopContentValue { get; set; }
 
+    /// <summary>
+    /// vertical align
+    ///
+    /// 行内容上下方向对齐
+    /// </summary>
     [Parameter]
     [ECMAScriptName("verticalAlign")]
     public TBaseTableVerticalAlignValue? VerticalAlign { get; set; }
 
+    /// <summary>
+    /// 表格底部内容，可以用于自定义列设置等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bottomContent")]
     public RenderFragment? BottomContent { get; set; }
 
+    /// <summary>
+    /// 单元格数据为空时呈现的内容类型和参数：string | TNode&lt;BaseTableCellParams&lt;T&gt;&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellEmptyContent")]
     public RenderFragment<TBaseTableCellParams<TTableRowData>>? CellEmptyContent { get; set; }
 
+    /// <summary>
+    /// empty text or empty element
+    ///
+    /// 空表格呈现样式，支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>
+    /// 首行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstFullRow")]
     public RenderFragment? FirstFullRowContent { get; set; }
 
+    /// <summary>
+    /// footer summary content
+    ///
+    /// 表尾总结行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerSummary")]
     public RenderFragment? FooterSummaryContent { get; set; }
 
+    /// <summary>
+    /// 尾行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lastFullRow")]
     public RenderFragment? LastFullRowContent { get; set; }
 
+    /// <summary>
+    /// loading state table
+    ///
+    /// 加载中状态。值为 `true` 会显示默认加载中样式，可以通过 Function 和 插槽 自定义加载状态呈现内容和样式。值为 `false` 则会取消加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingContent { get; set; }
 
+    /// <summary>
+    /// 表格顶部内容，可以用于自定义列设置、顶部查询条件等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("topContent")]
     public RenderFragment? TopContent { get; set; }
 
+    /// <summary>
+    /// trigger on row active change
+    ///
+    /// 高亮行发生变化时触发，泛型 T 指表格数据类型。参数 `activeRowList` 表示所有高亮行数据， `currentRowData` 表示当前操作行数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onActiveChange")]
     public EventCallback<TBaseTableActiveChangeEventActiveRowKeysItem[]> OnActiveChange { get; set; }
 
+    /// <summary>
+    /// keyboard operation event actions. used to mock selection behavior, just like macOS or windows
+    ///
+    /// 键盘操作事件。开启行高亮功能后，会自动开启键盘操作功能，如：通过键盘(Shift)或鼠标操作连续选中高亮行时触发，一般用于处理行选中等批量操作，模拟操作系统区域选择行为
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onActiveRowAction")]
     public EventCallback<TActiveRowActionContext<TTableRowData>> OnActiveRowAction { get; set; }
 
+    /// <summary>
+    /// trigger on cell clicked
+    ///
+    /// 单元格点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellClick")]
     public EventCallback<TBaseTableCellEventContext<TTableRowData>> OnCellClick { get; set; }
 
+    /// <summary>
+    /// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onColumnResizeChange")]
     public EventCallback<TBaseTableColumnResizeChangeEventContext> OnColumnResizeChange { get; set; }
@@ -24577,46 +25284,101 @@ public sealed class TBaseTable : TContentComponentBase
     [ECMAScriptName("onLeafColumnsChange")]
     public EventCallback<TBaseTableCol<TTableRowData>[]> OnLeafColumnsChange { get; set; }
 
+    /// <summary>
+    /// trigger on pagination changing
+    ///
+    /// 分页发生变化时触发。参数 newDataSource 表示分页后的数据。本地数据进行分页时，newDataSource 和源数据 data 会不一样。泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPageChange")]
     public EventCallback<TPageInfo> OnPageChange { get; set; }
 
+    /// <summary>
+    /// trigger on row click
+    ///
+    /// 行点击时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowClick")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowClick { get; set; }
 
+    /// <summary>
+    /// trigger on double click
+    ///
+    /// 行双击时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowDblclick")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowDblclick { get; set; }
 
+    /// <summary>
+    /// trigger on row mousedown
+    ///
+    /// 鼠标在表格行按下时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMousedown")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMousedown { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseenter
+    ///
+    /// 鼠标在表格行进入时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseenter")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMouseenter { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseenter
+    ///
+    /// 鼠标在表格行离开时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseleave")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMouseleave { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseover
+    ///
+    /// 鼠标悬浮到行时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseover")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMouseover { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseup
+    ///
+    /// 鼠标在表格行按下又弹起时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseup")]
     public EventCallback<TRowEventContext<TTableRowData>> OnRowMouseup { get; set; }
 
+    /// <summary>
+    /// trigger on table content scroll
+    ///
+    /// 表格内容滚动时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback<TBaseTableScrollEventParams> OnScroll { get; set; }
 
+    /// <summary>
+    /// trigger on scroll horizontal
+    ///
+    /// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScrollX")]
     public EventCallback<TBaseTableScrollXEventParams> OnScrollX { get; set; }
 
+    /// <summary>
+    /// trigger on scroll vertical
+    ///
+    /// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScrollY")]
     public EventCallback<TBaseTableScrollYEventParams> OnScrollY { get; set; }
@@ -24626,625 +25388,1171 @@ public sealed class TBaseTable : TContentComponentBase
     public EventCallback<bool> OnShowElementChange { get; set; }
 }
 
+/// <summary>
+/// Breadcrumb
+///
+/// 面包屑
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Breadcrumb")]
 public sealed class TBreadcrumb : TContentComponentBase
 {
+    /// <summary>
+    /// 自定义折叠时省略号的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ellipsis")]
     public string? EllipsisValue { get; set; }
 
+    /// <summary>
+    /// 超过面包屑最大显示数量时，省略号后显示几项。`maxItems &gt; 0`时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("itemsAfterCollapse")]
     public Number? ItemsAfterCollapse { get; set; }
 
+    /// <summary>
+    /// 超过面包屑最大显示数量时，省略号前显示几项。`maxItems &gt; 0`时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("itemsBeforeCollapse")]
     public Number? ItemsBeforeCollapse { get; set; }
 
+    /// <summary>
+    /// 单项最大宽度，超出后会以省略号形式呈现
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxItemWidth")]
     public string? MaxItemWidth { get; set; }
 
+    /// <summary>
+    /// 显示的面包屑的最大数量，超出该值后中间的面包屑内容将会显示为省略号。值`&lt;= 0`代表不限制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxItems")]
     public Number? MaxItems { get; set; }
 
+    /// <summary>
+    /// 面包屑项，功能同 BreadcrumbItem
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public TdBreadcrumbItemProps[]? Options { get; set; }
 
+    /// <summary>
+    /// 自定义分隔符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public string? SeparatorValue { get; set; }
 
+    /// <summary>
+    /// 组件风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TBreadcrumbThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 自定义折叠时省略号的内容类型和参数：string | TNode&lt;{ items: Array&lt;TdBreadcrumbItemProps&gt;, separator: TdBreadcrumbProps['separator'] }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ellipsis")]
     public RenderFragment<TBreadcrumbEllipsisSlotContext>? EllipsisContent { get; set; }
 
+    /// <summary>
+    /// 自定义分隔符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public RenderFragment? SeparatorContent { get; set; }
 }
 
+/// <summary>
+/// BreadcrumbItem
+///
+/// 面包屑项
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "BreadcrumbItem")]
 public sealed class TBreadcrumbItem : TContentComponentBase
 {
+    /// <summary>
+    /// 子元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 是否禁用当前项点击
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 跳转链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("href")]
     public string? Href { get; set; }
 
+    /// <summary>
+    /// 最大宽度，超出后会以省略号形式呈现。优先级高于 Breadcrumb 中的 maxItemWidth
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public string? MaxWidth { get; set; }
 
+    /// <summary>
+    /// 路由跳转是否采用覆盖的方式（覆盖后将没有浏览器历史记录）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("replace")]
     public bool? Replace { get; set; }
 
+    /// <summary>
+    /// 路由对象。如果项目存在 Router，则默认使用 Router
+    /// </summary>
     [Parameter]
     [ECMAScriptName("router")]
     public TJsonValue? Router { get; set; }
 
+    /// <summary>
+    /// 链接或路由跳转方式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("target")]
     public TBreadcrumbItemTargetValue? Target { get; set; }
 
+    /// <summary>
+    /// 路由跳转目标，当且仅当 Router 存在时，该 API 有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("to")]
     public TBreadcrumbItemToValue? To { get; set; }
 
+    /// <summary>
+    /// 子元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// prefix icon in breadcrumb item
+    ///
+    /// 面板屑项内的前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// trigger on click
+    ///
+    /// 点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<MouseEvent> OnClick { get; set; }
 }
 
+/// <summary>
+/// Button
+///
+/// 按钮
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Button")]
 public sealed class TButton : TContentComponentBase
 {
+    /// <summary>
+    /// make button to be a block-level element
+    ///
+    /// 是否为块级元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("block")]
     public bool? Block { get; set; }
 
+    /// <summary>
+    /// button's children elements
+    ///
+    /// 按钮内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// disable the button, make it can not be clicked
+    ///
+    /// 禁用状态。优先级：Button.disabled &gt; Form.disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// native `form` attribute，which supports triggering events for a form with a specified id through the use of the form attribute
+    ///
+    /// 原生的form属性，支持用于通过 form 属性触发对应 id 的 form 的表单事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("form")]
     public string? Form { get; set; }
 
+    /// <summary>
+    /// make background-color to be transparent
+    ///
+    /// 是否为幽灵按钮（镂空按钮）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ghost")]
     public bool? Ghost { get; set; }
 
+    /// <summary>
+    /// 跳转地址。href 存在时，按钮标签默认使用 `&lt;a&gt;` 渲染；如果指定了 `tag` 则使用指定的标签渲染
+    /// </summary>
     [Parameter]
     [ECMAScriptName("href")]
     public string? Href { get; set; }
 
+    /// <summary>
+    /// set button to be loading state
+    ///
+    /// 是否显示为加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// 透传 Loading 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
+    /// <summary>
+    /// button shape
+    ///
+    /// 按钮形状，有 4 种：长方形、正方形、圆角长方形、圆形
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public TButtonShapeValue? Shape { get; set; }
 
+    /// <summary>
+    /// a button has four size
+    ///
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// HTML Tag Element
+    ///
+    /// 渲染按钮的 HTML 标签，默认使用标签 `&lt;button&gt;` 渲染，可以自定义为 `&lt;a&gt;` `&lt;div&gt;` 等。透传全部 HTML 属性，如：`href/target/data-*` 等。⚠️ 禁用按钮 `&lt;button disabled&gt;`无法显示 Popup 浮层信息，可通过修改 `tag=div` 解决这个问题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public TButtonTagValue? Tag { get; set; }
 
+    /// <summary>
+    /// button theme
+    ///
+    /// 组件风格，依次为默认色、品牌色、危险色、警告色、成功色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TButtonThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// type of button element in html
+    ///
+    /// 按钮类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public TButtonTypeValue? Type { get; set; }
 
+    /// <summary>
+    /// variant of button
+    ///
+    /// 按钮形式，基础、线框、虚线、文字
+    /// </summary>
     [Parameter]
     [ECMAScriptName("variant")]
     public TButtonVariantValue? Variant { get; set; }
 
+    /// <summary>
+    /// button's children elements
+    ///
+    /// 按钮内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// use it to set left icon in button
+    ///
+    /// 按钮内部图标，可完全自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// 右侧内容，可用于定义右侧图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// trigger on click
+    ///
+    /// 点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<MouseEvent> OnClick { get; set; }
 }
 
+/// <summary>
+/// Calendar
+///
+/// 日历
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Calendar")]
 public sealed class TCalendar : TContentComponentBase
 {
+    /// <summary>
+    /// 单元格插槽
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cell")]
     public string? CellValue { get; set; }
 
+    /// <summary>
+    /// 单元格插槽，在原来的内容之后追加
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellAppend")]
     public string? CellAppendValue { get; set; }
 
+    /// <summary>
+    /// 右上角控制器配置。支持全局配置。值为 false 则表示不显示控制器，值为 true 则显示控制器默认配置，值类型为 CalendarController 则显示为自定义控制器配置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("controllerConfig")]
     public TCalendarControllerConfigValue? ControllerConfig { get; set; }
 
+    /// <summary>
+    /// 小于 10 的日期，是否使用 '0' 填充。支持全局配置。默认表现为 `01` `02`，值为 false 表现为 `1` `2` `9`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fillWithZero")]
     public bool? FillWithZero { get; set; }
 
+    /// <summary>
+    /// 第一天从星期几开始，仅在日历展示维度为月份时（mode = month）有效。默认为 1
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
+    /// <summary>
+    /// 用于格式化日期，决定事件参数 formattedFilterDate 的输出值。[详细文档](https://day.js.org/docs/en/display/format)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// 头部插槽（左上角处，默认不显示任何内容）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("head")]
     public string? HeadValue { get; set; }
 
+    /// <summary>
+    /// 默认是否显示周末
+    /// </summary>
     [Parameter]
     [ECMAScriptName("isShowWeekendDefault")]
     public bool? IsShowWeekendDefault { get; set; }
 
+    /// <summary>
+    /// 日历展示维度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TCalendarModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// 控制当前面板展示月份，优先级高于 `controllerConfig.month`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("month")]
     public TCalendarMonthValue? Month { get; set; }
 
+    /// <summary>
+    /// 是否高亮多个日期单元格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// 是否禁用单元格右键默认系统菜单
+    /// </summary>
     [Parameter]
     [ECMAScriptName("preventCellContextmenu")]
     public bool? PreventCellContextmenu { get; set; }
 
+    /// <summary>
+    /// 用于设置日历的年月份显示范围，[范围开始，范围结束]
+    /// </summary>
     [Parameter]
     [ECMAScriptName("range")]
     public TCalendarValue[]? Range { get; set; }
 
+    /// <summary>
+    /// 日历风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TCalendarThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 当前高亮的日期
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TCalendarValueValue? Value { get; set; }
 
+    /// <summary>
+    /// 用于自定义日历星期呈现方式。CalendarWeek.day 表示当前是星期几。示例一：['周一', '周二', '周三', '周四', '周五', '星期六', '星期天']。示例二：`({ day }) =&gt; '周' + day`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("week")]
     public string[]? WeekValue { get; set; }
 
+    /// <summary>
+    /// 控制当前面板展示年份，优先级高于 `controllerConfig.year`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("year")]
     public TCalendarYearValue? Year { get; set; }
 
+    /// <summary>
+    /// 单元格插槽类型和参数：string | TNode&lt;CalendarCell&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cell")]
     public RenderFragment<TCalendarCell>? CellContent { get; set; }
 
+    /// <summary>
+    /// 单元格插槽，在原来的内容之后追加类型和参数：string | TNode&lt;CalendarCell&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellAppend")]
     public RenderFragment<TCalendarCell>? CellAppendContent { get; set; }
 
+    /// <summary>
+    /// 头部插槽（左上角处，默认不显示任何内容）类型和参数：string | TNode&lt;ControllerOptions&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("head")]
     public RenderFragment<TControllerOptions>? HeadContent { get; set; }
 
+    /// <summary>
+    /// 用于自定义日历星期呈现方式。CalendarWeek.day 表示当前是星期几。示例一：['周一', '周二', '周三', '周四', '周五', '星期六', '星期天']。示例二：`({ day }) =&gt; '周' + day`类型和参数：Array&lt;string&gt; | TNode&lt;CalendarWeek&gt;【interface CalendarWeek { day: WeekDay }】【type WeekDay = 1 | 2 | 3 | 4 | 5 | 6 | 7】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("week")]
     public RenderFragment<TCalendarWeek>? WeekContent { get; set; }
 
+    /// <summary>
+    /// 日历单元格点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellClick")]
     public EventCallback<TCalendarCellClickEventOptions> OnCellClick { get; set; }
 
+    /// <summary>
+    /// 日历单元格双击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellDoubleClick")]
     public EventCallback<TCalendarCellDoubleClickEventOptions> OnCellDoubleClick { get; set; }
 
+    /// <summary>
+    /// 日历单元格右击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellRightClick")]
     public EventCallback<TCalendarCellRightClickEventOptions> OnCellRightClick { get; set; }
 
+    /// <summary>
+    /// 右上角控件组选中值有变化的时候触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onControllerChange")]
     public EventCallback<TControllerOptions> OnControllerChange { get; set; }
 
+    /// <summary>
+    /// 月份切换时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMonthChange")]
     public EventCallback<TCalendarMonthChangeEventOptions> OnMonthChange { get; set; }
 }
 
+/// <summary>
+/// Card
+///
+/// 卡片
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Card")]
 public sealed class TCard : TContentComponentBase
 {
+    /// <summary>
+    /// 卡片操作区
+    /// </summary>
     [Parameter]
     [ECMAScriptName("actions")]
     public string? ActionsValue { get; set; }
 
+    /// <summary>
+    /// 卡片中的用户头像，仅在海报风格的卡片中有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("avatar")]
     public string? AvatarValue { get; set; }
 
+    /// <summary>
+    /// 是否有边框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
+    /// <summary>
+    /// 卡片内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 卡片封面图。值类型为字符串，会自动使用 `img` 标签输出封面图；也可以完全自定义封面图
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cover")]
     public string? CoverValue { get; set; }
 
+    /// <summary>
+    /// card description
+    ///
+    /// 卡片描述文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public string? DescriptionValue { get; set; }
 
+    /// <summary>
+    /// 卡片底部内容，可完全自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public string? FooterValue { get; set; }
 
+    /// <summary>
+    /// 卡片顶部内容，优先级高于其他所有元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public string? HeaderValue { get; set; }
 
+    /// <summary>
+    /// 头部是否带分割线，仅在有header时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerBordered")]
     public bool? HeaderBordered { get; set; }
 
+    /// <summary>
+    /// hover时是否有阴影
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hoverShadow")]
     public bool? HoverShadow { get; set; }
 
+    /// <summary>
+    /// 加载状态，值为 true 会根据不同的布局显示不同的加载状态，值为 false 则表示非加载状态。也可以使用 Skeleton 组件完全自定义加载态呈现内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? LoadingValue { get; set; }
 
+    /// <summary>
+    /// Loading Component Props
+    ///
+    /// 透传加载组件(Loading)全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
+    /// <summary>
+    /// 是否显示卡片阴影，默认不显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shadow")]
     public bool? Shadow { get; set; }
 
+    /// <summary>
+    /// 尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TCardSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 卡片状态内容，仅在操作区域不在顶部时有效（即 `theme=poster2` ）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public string? Status { get; set; }
 
+    /// <summary>
+    /// card subtitle
+    ///
+    /// 卡片副标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("subtitle")]
     public string? SubtitleValue { get; set; }
 
+    /// <summary>
+    /// 卡片风格：普通风格、海报风格1（操作区域在顶部）、海报风格2（操作区域在底部）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TCardThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// card title
+    ///
+    /// 卡片标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// 卡片操作区
+    /// </summary>
     [Parameter]
     [ECMAScriptName("actions")]
     public RenderFragment? ActionsContent { get; set; }
 
+    /// <summary>
+    /// 卡片中的用户头像，仅在海报风格的卡片中有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("avatar")]
     public RenderFragment? AvatarContent { get; set; }
 
+    /// <summary>
+    /// 卡片内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 卡片封面图。值类型为字符串，会自动使用 `img` 标签输出封面图；也可以完全自定义封面图
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cover")]
     public RenderFragment? CoverContent { get; set; }
 
+    /// <summary>
+    /// card description
+    ///
+    /// 卡片描述文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public RenderFragment? DescriptionContent { get; set; }
 
+    /// <summary>
+    /// 卡片底部内容，可完全自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? FooterContent { get; set; }
 
+    /// <summary>
+    /// 卡片顶部内容，优先级高于其他所有元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? HeaderContent { get; set; }
 
+    /// <summary>
+    /// 加载状态，值为 true 会根据不同的布局显示不同的加载状态，值为 false 则表示非加载状态。也可以使用 Skeleton 组件完全自定义加载态呈现内容类型和参数：boolean | TNode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingContent { get; set; }
 
+    /// <summary>
+    /// card subtitle
+    ///
+    /// 卡片副标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("subtitle")]
     public RenderFragment? SubtitleContent { get; set; }
 
+    /// <summary>
+    /// card title
+    ///
+    /// 卡片标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }
 
+/// <summary>
+/// Cascader
+///
+/// 级联选择
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Cascader")]
 public class TCascader<CascaderOption> : TContentComponentBase
 {
+    /// <summary>
+    /// 自动聚焦
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 参考 checkbox 组件 API
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkProps")]
     public TdCheckboxProps? CheckProps { get; set; }
 
+    /// <summary>
+    /// 父子节点选中状态不再关联，可各自选中或取消
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
+    /// <summary>
+    /// 是否支持清空选项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 无匹配选项时的内容，默认全局配置为 '暂无数据'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public string? EmptyValue { get; set; }
 
+    /// <summary>
+    /// 自定义过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filter")]
     public TCascaderFilterValue<CascaderOption>? Filter { get; set; }
 
+    /// <summary>
+    /// 是否可搜索
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
+    /// <summary>
+    /// 透传 Input 输入框组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// 用来定义 value / label / children / disabled 在 `options` 中对应的字段别名
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keys")]
     public TTreeKeysType? Keys { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 延迟加载 children 为 true 的子节点，即使 expandAll 被设置为 true，也同样延迟加载
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// 加载子树数据的方法（仅当节点 children 为 true 时生效）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("load")]
     public TCascaderLoadValue<CascaderOption>? Load { get; set; }
 
+    /// <summary>
+    /// 是否为加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// 远程加载时显示的文字，支持自定义。如加上超链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingText")]
     public string? LoadingTextValue { get; set; }
 
+    /// <summary>
+    /// 用于控制多选数量，值为 0 则不限制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// 最小折叠数量，用于多选情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
+    /// <summary>
+    /// 是否允许多选
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// 可选项数据源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public CascaderOption[]? Options { get; set; }
 
+    /// <summary>
+    /// bottom content of the cascader panel
+    ///
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public string? PanelBottomContentValue { get; set; }
 
+    /// <summary>
+    /// top content of the cascader panel
+    ///
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public string? PanelTopContentValue { get; set; }
 
+    /// <summary>
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 是否显示下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
+    /// <summary>
+    /// 只读状态，值为真会隐藏输入框，且无法打开下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 多选且可搜索时，是否在选中一个选项后保留当前的搜索关键词
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
+    /// <summary>
+    /// 透传 SelectInput 筛选器输入框组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
+    /// <summary>
+    /// 选中值使用完整路径，输入框在单选时也显示完整路径
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showAllLevels")]
     public bool? ShowAllLevels { get; set; }
 
+    /// <summary>
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TCascaderStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public string? SuffixValue { get; set; }
 
+    /// <summary>
+    /// 透传 TagInput 标签输入框组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagInputProps")]
     public TdTagInputProps? TagInputProps { get; set; }
 
+    /// <summary>
+    /// 透传 Tag 标签组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
+    /// <summary>
+    /// tips at the bottom of cascader
+    ///
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 展开下一层级的方式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public TCascaderTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// 选中项的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TCascaderValue<CascaderOption>? Value { get; set; }
 
+    /// <summary>
+    /// `MouseEvent&lt;SVGElement&gt;`
+    ///
+    /// 自定义选中项呈现的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public string? ValueDisplayValue { get; set; }
 
+    /// <summary>
+    /// 选中值模式。all 表示父节点和子节点全部会出现在选中值里面；parentFirst 表示当子节点全部选中时，仅父节点在选中值里面；onlyLeaf 表示无论什么情况，选中值仅呈现叶子节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueMode")]
     public TCascaderValueModeValue? ValueMode { get; set; }
 
+    /// <summary>
+    /// 用于控制选中值的类型。single 表示输入输出值为 叶子结点值， full 表示输入输出值为全路径
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueType")]
     public TCascaderValueTypeValue? ValueType { get; set; }
 
+    /// <summary>
+    /// 多选情况下，用于设置折叠项内容，默认为 `+N`。如果需要悬浮就显示其他内容，可以使用 collapsedItems 自定义。`value` 表示当前存在的所有标签，`collapsedSelectedItems` 表示折叠的标签，`count` 表示折叠的数量，`onClose` 表示移除标签的事件回调类型和参数：TNode&lt;{ value: CascaderOption[]; collapsedSelectedItems: CascaderOption[]; count: number; onClose: (context: { index: number, e?: MouseEvent }) =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapsedItems")]
     public RenderFragment<TCascaderCollapsedItemsSlotContext<CascaderOption>>? CollapsedItemsContent { get; set; }
 
+    /// <summary>
+    /// 无匹配选项时的内容，默认全局配置为 '暂无数据'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 远程加载时显示的文字，支持自定义。如加上超链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingText")]
     public RenderFragment? LoadingTextContent { get; set; }
 
+    /// <summary>
+    /// customize one option
+    ///
+    /// 自定义单个级联选项类型和参数：TNode&lt;{ item: CascaderOption; index: number }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("option")]
     public RenderFragment<TCascaderOptionSlotContext<CascaderOption>>? OptionContent { get; set; }
 
+    /// <summary>
+    /// bottom content of the cascader panel
+    ///
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public RenderFragment? PanelBottomContent { get; set; }
 
+    /// <summary>
+    /// top content of the cascader panel
+    ///
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public RenderFragment? PanelTopContent { get; set; }
 
+    /// <summary>
+    /// 组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// 组件后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// tips at the bottom of cascader
+    ///
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// `MouseEvent&lt;SVGElement&gt;`
+    ///
+    /// 自定义选中项呈现的内容类型和参数：string | TNode&lt;{ value: CascaderValue&lt;CascaderOption&gt;; onClose: (index: number) =&gt; void; displayValue?: CascaderValue&lt;CascaderOption&gt;; selectedOptions: CascaderOption[] }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public RenderFragment<TCascaderValueDisplaySlotContext<CascaderOption>>? ValueDisplayContent { get; set; }
 
+    /// <summary>
+    /// 当输入框失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TCascaderBlurEventContext<CascaderOption>> OnBlur { get; set; }
 
+    /// <summary>
+    /// 选中值发生变化时触发。TreeNodeModel 从树组件中导出。`context.node` 表示触发事件的节点，`context.source` 表示触发事件的来源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TCascaderValue<CascaderOption>> OnChange { get; set; }
 
+    /// <summary>
+    /// 获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TCascaderFocusEventContext<CascaderOption>> OnFocus { get; set; }
 
+    /// <summary>
+    /// 下拉框显示或隐藏时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
+    /// <summary>
+    /// 多选模式下，选中数据被移除时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemove")]
     public EventCallback<TRemoveContext<CascaderOption>> OnRemove { get; set; }
@@ -25255,69 +26563,140 @@ internal sealed class TCascader : TCascader<TTreeOptionData<TCascaderCascaderOpt
 {
 }
 
+/// <summary>
+/// CheckTag
+///
+/// 可选标签
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "CheckTag")]
 public sealed class TCheckTag : TContentComponentBase
 {
+    /// <summary>
+    /// 标签选中的状态，默认风格（theme=default）才有选中态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
+    /// <summary>
+    /// used to set checked tag props
+    ///
+    /// 透传标签选中态属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkedProps")]
     public TdTagProps? CheckedProps { get; set; }
 
+    /// <summary>
+    /// 组件子元素；传入数组时：[选中内容，非选中内容]
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public TCheckTagContentValue? ContentValue { get; set; }
 
+    /// <summary>
+    /// 标签禁用态，失效标签不能触发事件。默认风格（theme=default）才有禁用态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 标签尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// used to set unchecked tag props
+    ///
+    /// 透传标签未选态属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("uncheckedProps")]
     public TdTagProps? UncheckedProps { get; set; }
 
+    /// <summary>
+    /// tag unique key
+    ///
+    /// 标签唯一标识，一般用于标签组场景，单个可选择标签无需设置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TCheckTagValueValue? Value { get; set; }
 
+    /// <summary>
+    /// 组件子元素；传入数组时：[选中内容，非选中内容]类型和参数：string | number | string[] | TNode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 状态切换时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<bool> OnChange { get; set; }
 
+    /// <summary>
+    /// 点击标签时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TCheckTagClickEventContext> OnClick { get; set; }
 }
 
+/// <summary>
+/// CheckTagGroup
+///
+/// 可选标签组
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "CheckTagGroup")]
 public sealed class TCheckTagGroup : TContentComponentBase
 {
+    /// <summary>
+    /// used to set checked tag props
+    ///
+    /// 透传标签选中态属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkedProps")]
     public TdTagProps? CheckedProps { get; set; }
 
+    /// <summary>
+    /// allow to select multiple tags
+    ///
+    /// 是否支持选中多个标签
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// tag list
+    ///
+    /// 标签选项列表
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public TCheckTagGroupOption[]? Options { get; set; }
 
+    /// <summary>
+    /// used to set unchecked tag props
+    ///
+    /// 透传标签未选态属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("uncheckedProps")]
     public TdTagProps? UncheckedProps { get; set; }
 
+    /// <summary>
+    /// selected tag value list
+    ///
+    /// 选中标签值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TCheckTagGroupValueItem[]? Value { get; set; }
@@ -25327,89 +26706,167 @@ public sealed class TCheckTagGroup : TContentComponentBase
     public EventCallback<TCheckTagGroupValueItem[]> OnChange { get; set; }
 }
 
+/// <summary>
+/// Checkbox
+///
+/// 多选框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Checkbox")]
 public sealed class TCheckbox : TContentComponentBase
 {
+    /// <summary>
+    /// 用于标识是否为「全选选项」。单独使用无效，需在 CheckboxGroup 中使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkAll")]
     public bool? CheckAll { get; set; }
 
+    /// <summary>
+    /// 是否选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件。如果父组件存在 CheckboxGroup，默认值由 CheckboxGroup.disabled 控制。优先级：Checkbox.disabled &gt; CheckboxGroup.disabled &gt; Form.disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 是否为半选
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indeterminate")]
     public bool? Indeterminate { get; set; }
 
+    /// <summary>
+    /// 主文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// load checkbox content when it entering the visible area
+    ///
+    /// 是否启用懒加载。数据量大时建议开启；加载复杂内容或大量图片时建议开启
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
+    /// <summary>
+    /// HTML 元素原生属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// html attribute
+    ///
+    /// HTML 原生属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// value of checkbox
+    ///
+    /// 多选框的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TCheckboxValueValue? Value { get; set; }
 
+    /// <summary>
+    /// 主文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 值变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<bool> OnChange { get; set; }
 }
 
+/// <summary>
+/// CheckboxGroup
+///
+/// 多选框组
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "CheckboxGroup")]
 public class TCheckboxGroup<T> : TContentComponentBase
 {
+    /// <summary>
+    /// 是否禁用组件。优先级：Form.disabled &lt; CheckboxGroup.disabled &lt; Checkbox.disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// load checkbox content when it entering the visible area
+    ///
+    /// 是否启用懒加载。子组件 Checkbox 数据量大时建议开启；加载复杂内容或大量图片时建议开启
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
+    /// <summary>
+    /// 支持最多选中的数量
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// 统一设置内部复选框 HTML 属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// 以配置形式设置子元素。示例1：`['北京', '上海']` ，示例2: `[{ label: '全选', checkAll: true }, { label: '上海', value: 'shanghai' }]`。checkAll 值为 true 表示当前选项为「全选选项」
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public TCheckboxOption[]? Options { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public T? Value { get; set; }
 
+    /// <summary>
+    /// 值变化时触发。`context.current` 表示当前变化的数据项，如果是全选则为空；`context.type` 表示引起选中数据变化的是选中或是取消选中，`context.option` 表示当前变化的数据项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
@@ -25420,273 +26877,503 @@ internal sealed class TCheckboxGroup : TCheckboxGroup<TCheckboxGroupValueItem[]>
 {
 }
 
+/// <summary>
+/// Col
+///
+/// 栅格-纵向
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Col")]
 public sealed class TCol : TContentComponentBase
 {
+    /// <summary>
+    /// flex 布局填充。CSS 属性 flex 值。示例：2 / 3 / '100px' / 'auto' / '1 1 200px'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("flex")]
     public TColFlexValue? Flex { get; set; }
 
+    /// <summary>
+    /// ≥1200px 响应式栅格，可为栅格数或一个包含其他属性的对象（小尺寸电脑）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lg")]
     public TColLgValue? Lg { get; set; }
 
+    /// <summary>
+    /// ≥992px 响应式栅格，可为栅格数或一个包含其他属性的对象（超小尺寸电脑）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("md")]
     public TColMdValue? Md { get; set; }
 
+    /// <summary>
+    /// 栅格左侧的间隔格数，间隔内不可以有栅格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
+    /// <summary>
+    /// 栅格顺序，flex 布局模式下有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("order")]
     public Number? Order { get; set; }
 
+    /// <summary>
+    /// 栅格向左移动格数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pull")]
     public Number? Pull { get; set; }
 
+    /// <summary>
+    /// 栅格向右移动格数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("push")]
     public Number? Push { get; set; }
 
+    /// <summary>
+    /// ≥768px 响应式栅格，可为栅格数或一个包含其他属性的对象（平板）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sm")]
     public TColSmValue? Sm { get; set; }
 
+    /// <summary>
+    /// 栅格占位格数，为 0 时相当于 display: none
+    /// </summary>
     [Parameter]
     [ECMAScriptName("span")]
     public Number? Span { get; set; }
 
+    /// <summary>
+    /// 自定义元素标签
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
+    /// <summary>
+    /// ≥1400px 响应式栅格，可为栅格数或一个包含其他属性的对象（中尺寸电脑）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("xl")]
     public TColXlValue? Xl { get; set; }
 
+    /// <summary>
+    /// &lt;768px 响应式栅格，可为栅格数或一个包含其他属性的对象（手机）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("xs")]
     public TColXsValue? Xs { get; set; }
 
+    /// <summary>
+    /// ≥1880px 响应式栅格，可为栅格数或一个包含其他属性的对象（大尺寸电脑）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("xxl")]
     public TColXxlValue? Xxl { get; set; }
 }
 
+/// <summary>
+/// Collapse
+///
+/// 折叠
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Collapse")]
 public sealed class TCollapse : TContentComponentBase
 {
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 默认是否展开全部
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultExpandAll")]
     public bool? DefaultExpandAll { get; set; }
 
+    /// <summary>
+    /// 是否禁用面板展开/收起操作
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 展开图标。值为 undefined 或 false 则不显示展开图标；值为 true 显示默认图标；值类型为函数，则表示完全自定义展开图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public bool? ExpandIconValue { get; set; }
 
+    /// <summary>
+    /// 展开图标的位置，左侧或右侧
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIconPlacement")]
     public TCollapseExpandIconPlacementValue? ExpandIconPlacement { get; set; }
 
+    /// <summary>
+    /// 每个面板互斥展开，每次只展开一个面板
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandMutex")]
     public bool? ExpandMutex { get; set; }
 
+    /// <summary>
+    /// 是否允许点击整行标题展开面板
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandOnRowClick")]
     public bool? ExpandOnRowClick { get; set; }
 
+    /// <summary>
+    /// 展开的面板集合
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TCollapseValueItem[]? Value { get; set; }
 
+    /// <summary>
+    /// 展开图标。值为 undefined 或 false 则不显示展开图标；值为 true 显示默认图标；值类型为函数，则表示完全自定义展开图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public RenderFragment? ExpandIconContent { get; set; }
 
+    /// <summary>
+    /// 切换面板时触发，返回变化的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TCollapseValueItem[]> OnChange { get; set; }
 }
 
+/// <summary>
+/// CollapsePanel
+///
+/// 折叠面板
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "CollapsePanel")]
 public sealed class TCollapsePanel : TContentComponentBase
 {
+    /// <summary>
+    /// 折叠面板内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 当前面板处理折叠状态时，是否销毁面板内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("destroyOnCollapse")]
     public bool? DestroyOnCollapse { get; set; }
 
+    /// <summary>
+    /// 禁止当前面板展开，优先级大于 Collapse 的同名属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 当前折叠面板展开图标，优先级大于 Collapse 的同名属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public bool? ExpandIconValue { get; set; }
 
+    /// <summary>
+    /// 面板头内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public string? HeaderValue { get; set; }
 
+    /// <summary>
+    /// 面板头的右侧区域，一般用于呈现面板操作
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerRightContent")]
     public string? HeaderRightContentValue { get; set; }
 
+    /// <summary>
+    /// 当前面板唯一标识，如果值为空则取当前面下标兜底作为唯一标识
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TCollapsePanelValueValue? Value { get; set; }
 
+    /// <summary>
+    /// 折叠面板内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 当前折叠面板展开图标，优先级大于 Collapse 的同名属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public RenderFragment? ExpandIconContent { get; set; }
 
+    /// <summary>
+    /// 面板头内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? HeaderContent { get; set; }
 
+    /// <summary>
+    /// 面板头的右侧区域，一般用于呈现面板操作
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerRightContent")]
     public RenderFragment? HeaderRightContent { get; set; }
 }
 
+/// <summary>
+/// ColorPicker
+///
+/// 颜色选择器
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "ColorPicker")]
 public sealed class TColorPicker : TContentComponentBase
 {
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否可清空
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 颜色模式选择。同时支持单色和渐变两种模式，可仅使用单色或者渐变其中一种模式，也可以同时使用。`monochrome` 表示单色，`linear-gradient` 表示渐变色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("colorModes")]
     public TColorPickerColorModesValueItem[]? ColorModes { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 是否开启透明通道
+    /// </summary>
     [Parameter]
     [ECMAScriptName("enableAlpha")]
     public bool? EnableAlpha { get; set; }
 
+    /// <summary>
+    /// 是否允许开启通过点击渐变轴增加渐变梯度，默认开启，关闭时只会存在起始和结束两个颜色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("enableMultipleGradient")]
     public bool? EnableMultipleGradient { get; set; }
 
+    /// <summary>
+    /// When `enableAlpha` is true, `HEX8/RGBA/HSLA/HSVA` are valid
+    ///
+    /// 格式化色值。`enableAlpha` 为真时，`HEX8/RGBA/HSLA/HSVA` 有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public TColorPickerFormatValue? Format { get; set; }
 
+    /// <summary>
+    /// 透传 Input 输入框组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性，如 `placement` `overlayStyle` `overlayClassName` `trigger`等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// used color recently
+    ///
+    /// 最近使用的颜色。值为 [] 表示以组件内部的“最近使用颜色”为准，值长度大于 0 则以该值为准显示“最近使用颜色”。值为 false 或 null 则完全不显示“最近使用颜色”
+    /// </summary>
     [Parameter]
     [ECMAScriptName("recentColors")]
     public TColorPickerRecentColorsValue? RecentColors { get; set; }
 
+    /// <summary>
+    /// 透传 SelectInputProps 筛选器输入框组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
+    /// <summary>
+    /// 是否展示颜色选择条右侧的颜色预览区域
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showPrimaryColorPreview")]
     public bool? ShowPrimaryColorPreview { get; set; }
 
+    /// <summary>
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// swatch colors
+    ///
+    /// 系统预设的颜色样例，值为 `null` 或 `[]` 则不显示系统色，值为 `undefined` 会显示组件内置的系统默认色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("swatchColors")]
     public string[]? SwatchColors { get; set; }
 
+    /// <summary>
+    /// color value
+    ///
+    /// 色值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public string? Value { get; set; }
 
+    /// <summary>
+    /// 选中的色值发生变化时触发，第一个参数 `value` 表示新色值，`context.color` 表示当前调色板控制器的色值，`context.trigger` 表示触发颜色变化的来源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
 
+    /// <summary>
+    /// 清空按钮点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TColorPickerClearEventContext> OnClear { get; set; }
 
+    /// <summary>
+    /// 调色板控制器的值变化时触发，`context.color` 指调色板控制器的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPaletteBarChange")]
     public EventCallback<TColorPickerPaletteBarChangeEventContext> OnPaletteBarChange { get; set; }
 
+    /// <summary>
+    /// 最近使用颜色发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRecentColorsChange")]
     public EventCallback<string[]> OnRecentColorsChange { get; set; }
 }
 
+/// <summary>
+/// ColorPickerPanel
+///
+/// 颜色选择器面板
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "ColorPickerPanel")]
 public sealed class TColorPickerPanel : TContentComponentBase
 {
+    /// <summary>
+    /// 颜色模式选择。同时支持单色和渐变两种模式，可仅使用单色或者渐变其中一种模式，也可以同时使用。`monochrome` 表示单色，`linear-gradient` 表示渐变色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("colorModes")]
     public TColorPickerPanelColorModesValueItem[]? ColorModes { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 是否开启透明通道
+    /// </summary>
     [Parameter]
     [ECMAScriptName("enableAlpha")]
     public bool? EnableAlpha { get; set; }
 
+    /// <summary>
+    /// 是否允许开启通过点击渐变轴增加渐变梯度，默认开启，关闭时只会存在起始和结束两个颜色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("enableMultipleGradient")]
     public bool? EnableMultipleGradient { get; set; }
 
+    /// <summary>
+    /// When `enableAlpha` is true, `HEX8/RGBA/HSLA/HSVA` are valid
+    ///
+    /// 格式化色值。`enableAlpha` 为真时，`HEX8/RGBA/HSLA/HSVA` 有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public TColorPickerPanelFormatValue? Format { get; set; }
 
+    /// <summary>
+    /// used color recently
+    ///
+    /// 最近使用的颜色。值为 [] 表示以组件内部的“最近使用颜色”为准，值长度大于 0 则以该值为准显示“最近使用颜色”。值为 false 或 null 则完全不显示“最近使用颜色”
+    /// </summary>
     [Parameter]
     [ECMAScriptName("recentColors")]
     public TColorPickerPanelRecentColorsValue? RecentColors { get; set; }
 
+    /// <summary>
+    /// 是否展示颜色选择条右侧的颜色预览区域
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showPrimaryColorPreview")]
     public bool? ShowPrimaryColorPreview { get; set; }
 
+    /// <summary>
+    /// swatch colors
+    ///
+    /// 系统预设的颜色样例，值为 `null` 或 `[]` 则不显示系统色，值为 `undefined` 会显示组件内置的系统默认色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("swatchColors")]
     public string[]? SwatchColors { get; set; }
 
+    /// <summary>
+    /// color value
+    ///
+    /// 色值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public string? Value { get; set; }
 
+    /// <summary>
+    /// 选中的色值发生变化时触发，第一个参数 `value` 表示新色值，`context.color` 表示当前调色板控制器的色值，`context.trigger` 表示触发颜色变化的来源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
@@ -25695,210 +27382,390 @@ public sealed class TColorPickerPanel : TContentComponentBase
     [ECMAScriptName("onClear")]
     public EventCallback<TColorPickerPanelClearEventContext> OnClear { get; set; }
 
+    /// <summary>
+    /// 调色板控制器的值变化时触发，`context.color` 指调色板控制器的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPaletteBarChange")]
     public EventCallback<TColorPickerPanelPaletteBarChangeEventContext> OnPaletteBarChange { get; set; }
 
+    /// <summary>
+    /// 最近使用颜色发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRecentColorsChange")]
     public EventCallback<string[]> OnRecentColorsChange { get; set; }
 }
 
+/// <summary>
+/// Comment
+///
+/// 评论
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Comment")]
 public sealed class TComment : TContentComponentBase
 {
+    /// <summary>
+    /// 操作
+    /// </summary>
     [Parameter]
     [ECMAScriptName("actions")]
     public RenderFragment[]? Actions { get; set; }
 
+    /// <summary>
+    /// 作者
+    /// </summary>
     [Parameter]
     [ECMAScriptName("author")]
     public string? AuthorValue { get; set; }
 
+    /// <summary>
+    /// 头像
+    /// </summary>
     [Parameter]
     [ECMAScriptName("avatar")]
     public TCommentAvatarValue? AvatarValue { get; set; }
 
+    /// <summary>
+    /// 内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 时间
+    /// </summary>
     [Parameter]
     [ECMAScriptName("datetime")]
     public string? DatetimeValue { get; set; }
 
+    /// <summary>
+    /// 引用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("quote")]
     public string? QuoteValue { get; set; }
 
+    /// <summary>
+    /// 回复
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reply")]
     public string? ReplyValue { get; set; }
 
+    /// <summary>
+    /// 作者
+    /// </summary>
     [Parameter]
     [ECMAScriptName("author")]
     public RenderFragment? AuthorContent { get; set; }
 
+    /// <summary>
+    /// 头像类型和参数：string | AvatarProps | TNode【import { AvatarProps } from '@Avatar'】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("avatar")]
     public RenderFragment? AvatarContent { get; set; }
 
+    /// <summary>
+    /// 内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 时间
+    /// </summary>
     [Parameter]
     [ECMAScriptName("datetime")]
     public RenderFragment? DatetimeContent { get; set; }
 
+    /// <summary>
+    /// 引用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("quote")]
     public RenderFragment? QuoteContent { get; set; }
 
+    /// <summary>
+    /// 回复
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reply")]
     public RenderFragment? ReplyContent { get; set; }
 }
 
+/// <summary>
+/// ConfigProvider
+///
+/// 全局特性配置
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "ConfigProvider")]
 public sealed class TConfigProvider : TContentComponentBase
 {
+    /// <summary>
+    /// global config
+    ///
+    /// 全局配置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("globalConfig")]
     public TGlobalConfigProvider? GlobalConfig { get; set; }
 }
 
+/// <summary>
+/// Content
+///
+/// 布局-内容
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Content")]
 public sealed class TContent : TContentComponentBase
 {
+    /// <summary>
+    /// 内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 }
 
+/// <summary>
+/// DatePicker
+///
+/// 日期选择器
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "DatePicker")]
 public sealed class TDatePicker : TContentComponentBase
 {
+    /// <summary>
+    /// 是否允许输入日期
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否显示清除按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// Time selector default value
+    ///
+    /// 时间选择器默认值，当 value/defaultValue 未设置值时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public string? DefaultTime { get; set; }
 
+    /// <summary>
+    /// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。`{ from: 'A', to: 'B' }` 表示在 A 到 B 之间的日期会被禁用。`{ before: 'A', after: 'B' }` 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableDate")]
     public TDisableDate? DisableDate { get; set; }
 
+    /// <summary>
+    /// disable time config function
+    ///
+    /// 禁用时间项的配置函数，仅在日期时间选择器中可用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableTime")]
     public TDatePickerDisableTimeValue? DisableTime { get; set; }
 
+    /// <summary>
+    /// make DatePicker to be disabled
+    ///
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 是否显示时间选择
+    /// </summary>
     [Parameter]
     [ECMAScriptName("enableTimePicker")]
     public bool? EnableTimePicker { get; set; }
 
+    /// <summary>
+    /// 第一天从星期几开始
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
+    /// <summary>
+    /// 仅用于格式化日期显示的格式，不影响日期值。注意和 `valueType` 的区别，`valueType`会直接决定日期值 `value` 的格式。全局配置默认为：'YYYY-MM-DD'，[详细文档](https://day.js.org/docs/en/display/format)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// 透传给输入框（Input）组件的参数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 选择器模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TDatePickerModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// support multiple date，but not support being use together with range-picker、enableTimePicker and allowInput
+    ///
+    /// 支持多选日期，但不支持在range-picker中，或与enableTimePicker、allowInput 一起使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// whether a confirmation button needs to be clicked to complete the action in the date-time picker scenario, default is true
+    ///
+    /// 决定在日期时间选择器的场景下是否需要点击确认按钮才完成选择动作，默认为`true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("needConfirm")]
     public bool? NeedConfirm { get; set; }
 
+    /// <summary>
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 预设快捷日期选择，示例：`{ '元旦': '2021-01-01', '昨天':  dayjs().subtract(1, 'day').format('YYYY-MM-DD'), '特定日期': () =&gt; ['2021-02-01'] }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presets")]
     public TPresetDate? PresetsValue { get; set; }
 
+    /// <summary>
+    /// 预设面板展示区域（包含确定按钮）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presetsPlacement")]
     public TDatePickerPresetsPlacementValue? PresetsPlacement { get; set; }
 
+    /// <summary>
+    /// Whether it is read only, the priority is greater than allowInput
+    ///
+    /// 是否只读，优先级大于 allowInput
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 透传 SelectInput 筛选器输入框组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
+    /// <summary>
+    /// 输入框尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TDatePickerStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 透传 TimePicker 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("timePickerProps")]
     public TdTimePickerProps? TimePickerProps { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TDatePickerValueValue? Value { get; set; }
 
+    /// <summary>
+    /// `MouseEvent&lt;SVGElement&gt;`
+    ///
+    /// 自定义选中项呈现的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public string? ValueDisplayValue { get; set; }
 
+    /// <summary>
+    /// 用于格式化日期的值，仅支持部分格式，时间戳、日期等。⚠️ `YYYYMMDD` 这种格式不支持，请勿使用，如果希望支持可以给 `dayjs` 提个 PR。注意和 `format` 的区别，`format` 仅用于处理日期在页面中呈现的格式。`ValueTypeEnum` 即将废弃，请更为使用 `DatePickerValueType`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueType")]
     public TDatePickerValueType? ValueType { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 用于自定义组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
@@ -25907,34 +27774,62 @@ public sealed class TDatePicker : TContentComponentBase
     [ECMAScriptName("presets")]
     public RenderFragment? PresetsContent { get; set; }
 
+    /// <summary>
+    /// 用于自定义组件后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// `MouseEvent&lt;SVGElement&gt;`
+    ///
+    /// 自定义选中项呈现的内容类型和参数：string | TNode&lt;{ value: DateValue; displayValue?: DateValue }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public RenderFragment<TDatePickerValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
+    /// <summary>
+    /// 当输入框失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TDatePickerBlurEventContext> OnBlur { get; set; }
 
+    /// <summary>
+    /// 选中值发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TDatePickerChangeEventValue> OnChange { get; set; }
 
+    /// <summary>
+    /// Triggered when the clear button is clicked
+    ///
+    /// 清空按钮点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TDatePickerClearEventContext> OnClear { get; set; }
 
+    /// <summary>
+    /// 如果存在“确定”按钮，则点击“确定”按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback<TDatePickerConfirmEventContext> OnConfirm { get; set; }
 
+    /// <summary>
+    /// 输入框获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TDatePickerFocusEventContext> OnFocus { get; set; }
@@ -25943,10 +27838,16 @@ public sealed class TDatePicker : TContentComponentBase
     [ECMAScriptName("onMonthChange")]
     public EventCallback<TDatePickerMonthChangeEventContext> OnMonthChange { get; set; }
 
+    /// <summary>
+    /// 面板选中值后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPick")]
     public EventCallback<TDateValue> OnPick { get; set; }
 
+    /// <summary>
+    /// 点击预设按钮后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPresetClick")]
     public EventCallback<TDatePickerPresetClickEventContext> OnPresetClick { get; set; }
@@ -25956,53 +27857,100 @@ public sealed class TDatePicker : TContentComponentBase
     public EventCallback<TDatePickerYearChangeEventContext> OnYearChange { get; set; }
 }
 
+/// <summary>
+/// DatePickerPanel
+///
+/// 日期选择器面板
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "DatePickerPanel")]
 public sealed class TDatePickerPanel : TContentComponentBase
 {
+    /// <summary>
+    /// Time selector default value
+    ///
+    /// 时间选择器默认值，当 value/defaultValue 未设置值时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public string? DefaultTime { get; set; }
 
+    /// <summary>
+    /// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。`{ from: 'A', to: 'B' }` 表示在 A 到 B 之间的日期会被禁用。`{ before: 'A', after: 'B' }` 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableDate")]
     public TDisableDate? DisableDate { get; set; }
 
+    /// <summary>
+    /// disable time config function
+    ///
+    /// 禁用时间项的配置函数，仅在日期时间选择器中可用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableTime")]
     public TDatePickerPanelDisableTimeValue? DisableTime { get; set; }
 
+    /// <summary>
+    /// 是否显示时间选择
+    /// </summary>
     [Parameter]
     [ECMAScriptName("enableTimePicker")]
     public bool? EnableTimePicker { get; set; }
 
+    /// <summary>
+    /// 第一天从星期几开始
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
+    /// <summary>
+    /// 仅用于格式化日期显示的格式，不影响日期值。注意和 `valueType` 的区别，`valueType`会直接决定日期值 `value` 的格式。全局配置默认为：'YYYY-MM-DD'，[详细文档](https://day.js.org/docs/en/display/format)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// 选择器模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TDatePickerPanelModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// whether a confirmation button needs to be clicked to complete the action in the date-time picker scenario, default is true
+    ///
+    /// 决定在日期时间选择器的场景下是否需要点击确认按钮才完成选择动作，默认为`true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("needConfirm")]
     public bool? NeedConfirm { get; set; }
 
+    /// <summary>
+    /// 预设快捷日期选择，示例：`{ '元旦': '2021-01-01', '昨天':  dayjs().subtract(1, 'day').format('YYYY-MM-DD'), '特定日期': () =&gt; ['2021-02-01'] }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presets")]
     public TPresetDate? PresetsValue { get; set; }
 
+    /// <summary>
+    /// 预设面板展示区域（包含确定按钮）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presetsPlacement")]
     public TDatePickerPanelPresetsPlacementValue? PresetsPlacement { get; set; }
 
+    /// <summary>
+    /// 透传 TimePicker 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("timePickerProps")]
     public TdTimePickerProps? TimePickerProps { get; set; }
 
+    /// <summary>
+    /// 选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TDatePickerPanelValueValue? Value { get; set; }
@@ -26011,158 +27959,287 @@ public sealed class TDatePickerPanel : TContentComponentBase
     [ECMAScriptName("presets")]
     public RenderFragment? PresetsContent { get; set; }
 
+    /// <summary>
+    /// 点击日期单元格时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellClick")]
     public EventCallback<TDatePickerPanelCellClickEventContext> OnCellClick { get; set; }
 
+    /// <summary>
+    /// 选中值发生变化时触发。参数 `context.trigger` 表示触发当前事件的来源，不同的模式触发来源也会不同
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TDateValue> OnChange { get; set; }
 
+    /// <summary>
+    /// 如果存在“确定”按钮，则点击“确定”按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback<TDatePickerPanelConfirmEventContext> OnConfirm { get; set; }
 
+    /// <summary>
+    /// 月份切换发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMonthChange")]
     public EventCallback<TDatePickerPanelMonthChangeEventContext> OnMonthChange { get; set; }
 
+    /// <summary>
+    /// 点击面板时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPanelClick")]
     public EventCallback<TDatePickerPanelPanelClickEventContext> OnPanelClick { get; set; }
 
+    /// <summary>
+    /// 点击预设按钮后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPresetClick")]
     public EventCallback<TDatePickerPanelPresetClickEventContext> OnPresetClick { get; set; }
 
+    /// <summary>
+    /// 时间切换发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onTimeChange")]
     public EventCallback<TDatePickerPanelTimeChangeEventContext> OnTimeChange { get; set; }
 
+    /// <summary>
+    /// 年份切换发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onYearChange")]
     public EventCallback<TDatePickerPanelYearChangeEventContext> OnYearChange { get; set; }
 }
 
+/// <summary>
+/// DateRangePicker
+///
+/// 日期范围选择器
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "DateRangePicker")]
 public sealed class TDateRangePicker : TContentComponentBase
 {
+    /// <summary>
+    /// 是否允许输入日期
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// The default date selection interaction is determined based on the order of dates clicked and will be restricted. For example, if a user first clicks on the start date input box and chooses a date, for instance, 2020-05-15, the interaction will automatically shift focus to the end date input box, waiting for the user to select the end time. At this point, the user can only select a date later than 2020-05-15 (previous dates will be grayed out and disabled, restricting the user's selection). When this value is set to `true`, this restriction is lifted
+    ///
+    /// 默认的日期选择交互是根据点击前后日期的顺序来决定并且会加以限制。比如：用户先点击开始时间输入框，选择了一个日期例如2020-05-15，紧接着交互会自动将焦点跳到结束日期输入框，等待用户选择结束时间。此时用户只能选择大于2020-05-15的日期（之前的日期会被灰态禁止点击，限制用户的点击）。当该值传递`true`时，则取消该限制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelRangeSelectLimit")]
     public bool? CancelRangeSelectLimit { get; set; }
 
+    /// <summary>
+    /// 是否显示清除按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// Time selector default value
+    ///
+    /// 时间选择器默认值，当 value/defaultValue 未设置值时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public string[]? DefaultTime { get; set; }
 
+    /// <summary>
+    /// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。{ from: 'A', to: 'B' } 表示在 A 到 B 之间的日期会被禁用。{ before: 'A', after: 'B' } 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableDate")]
     public TDisableRangeDate? DisableDate { get; set; }
 
+    /// <summary>
+    /// disable time config function
+    ///
+    /// 禁用时间项的配置函数，仅在日期区间选择器中开启时间展示时可用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableTime")]
     public TDateRangePickerDisableTimeValue? DisableTime { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TDateRangePickerDisabledValue? Disabled { get; set; }
 
+    /// <summary>
+    /// 是否显示时间选择
+    /// </summary>
     [Parameter]
     [ECMAScriptName("enableTimePicker")]
     public bool? EnableTimePicker { get; set; }
 
+    /// <summary>
+    /// 第一天从星期几开始
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
+    /// <summary>
+    /// 用于格式化日期，[详细文档](https://day.js.org/docs/en/display/format)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 选择器模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TDateRangePickerModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// whether a confirmation button needs to be clicked to complete the action in the date-time range picker scenario, default is true
+    ///
+    /// 决定在日期时间区间选择器的场景下是否需要点击确认按钮才完成选择动作，默认为 `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("needConfirm")]
     public bool? NeedConfirm { get; set; }
 
+    /// <summary>
+    /// 在开始日期选中之前，面板是否显示预选状态，即是否高亮预选日期
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelPreselection")]
     public bool? PanelPreselection { get; set; }
 
+    /// <summary>
+    /// 占位符，值为数组表示可分别为开始日期和结束日期设置占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public TDateRangePickerPlaceholderValue? Placeholder { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 预设快捷日期选择，示例：{ '特定日期范围': ['2021-01-01', '2022-01-01'], '本月': [dayjs().startOf('month'), dayjs().endOf('month')] }
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presets")]
     public TPresetRange? PresetsValue { get; set; }
 
+    /// <summary>
+    /// 预设面板展示区域（包含确定按钮）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presetsPlacement")]
     public TDateRangePickerPresetsPlacementValue? PresetsPlacement { get; set; }
 
+    /// <summary>
+    /// 透传给范围输入框 RangeInput 组件的参数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rangeInputProps")]
     public TdRangeInputProps? RangeInputProps { get; set; }
 
+    /// <summary>
+    /// Whether it is read only, the priority is greater than allowInput
+    ///
+    /// 是否只读，优先级大于 `allowInput`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 日期分隔符，支持全局配置，默认为 '-'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public string? Separator { get; set; }
 
+    /// <summary>
+    /// 输入框尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TDateRangePickerStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 透传 TimePicker 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("timePickerProps")]
     public TdTimePickerProps? TimePickerProps { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TDateValue[]? Value { get; set; }
 
+    /// <summary>
+    /// 用于格式化日期的值，仅支持部分格式，时间戳、日期等。⚠️ `YYYYMMDD` 这种格式不支持，请勿使用，如果希望支持可以给 `dayjs` 提个 PR。注意和 `format` 的区别，`format` 仅用于处理日期在页面中呈现的格式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueType")]
     public TDateRangePickerValueTypeValue? ValueType { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
@@ -26171,30 +28248,51 @@ public sealed class TDateRangePicker : TContentComponentBase
     [ECMAScriptName("presets")]
     public RenderFragment? PresetsContent { get; set; }
 
+    /// <summary>
+    /// 组件后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 当输入框失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TDateRangePickerBlurEventContext> OnBlur { get; set; }
 
+    /// <summary>
+    /// 选中值发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TDateValue[]> OnChange { get; set; }
 
+    /// <summary>
+    /// 如果存在“确定”按钮，则点击“确定”按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback<TDateRangePickerConfirmEventContext> OnConfirm { get; set; }
 
+    /// <summary>
+    /// 输入框获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TDateRangePickerFocusEventContext> OnFocus { get; set; }
 
+    /// <summary>
+    /// 输入框数据发生变化时触发，参数 input 表示输入内容，value 表示组件当前有效值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInput")]
     public EventCallback<TDateRangePickerInputEventContext> OnInput { get; set; }
@@ -26203,10 +28301,16 @@ public sealed class TDateRangePicker : TContentComponentBase
     [ECMAScriptName("onMonthChange")]
     public EventCallback<TDateRangePickerMonthChangeEventContext> OnMonthChange { get; set; }
 
+    /// <summary>
+    /// 选中日期时触发，可能是开始日期，也可能是结束日期，第二个参数可以区分是开始日期或是结束日期
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPick")]
     public EventCallback<TDateValue> OnPick { get; set; }
 
+    /// <summary>
+    /// 点击预设按钮后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPresetClick")]
     public EventCallback<TDateRangePickerPresetClickEventContext> OnPresetClick { get; set; }
@@ -26216,49 +28320,89 @@ public sealed class TDateRangePicker : TContentComponentBase
     public EventCallback<TDateRangePickerYearChangeEventContext> OnYearChange { get; set; }
 }
 
+/// <summary>
+/// DateRangePickerPanel
+///
+/// 日期范围选择器面板
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "DateRangePickerPanel")]
 public sealed class TDateRangePickerPanel : TContentComponentBase
 {
+    /// <summary>
+    /// Time selector default value
+    ///
+    /// 时间选择器默认值，当 value/defaultValue 未设置值时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public string[]? DefaultTime { get; set; }
 
+    /// <summary>
+    /// 禁用日期，示例：['A', 'B'] 表示日期 A 和日期 B 会被禁用。{ from: 'A', to: 'B' } 表示在 A 到 B 之间的日期会被禁用。{ before: 'A', after: 'B' } 表示在 A 之前和在 B 之后的日期都会被禁用。其中 A = '2021-01-01'，B = '2021-02-01'。值类型为 Function 则表示返回值为 true 的日期会被禁用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableDate")]
     public TDisableRangeDate? DisableDate { get; set; }
 
+    /// <summary>
+    /// 是否显示时间选择
+    /// </summary>
     [Parameter]
     [ECMAScriptName("enableTimePicker")]
     public bool? EnableTimePicker { get; set; }
 
+    /// <summary>
+    /// 第一天从星期几开始
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstDayOfWeek")]
     public Number? FirstDayOfWeek { get; set; }
 
+    /// <summary>
+    /// 用于格式化日期，[详细文档](https://day.js.org/docs/en/display/format)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// 选择器模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TDateRangePickerPanelModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// 在开始日期选中之前，面板是否显示预选状态，即是否高亮预选日期
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelPreselection")]
     public bool? PanelPreselection { get; set; }
 
+    /// <summary>
+    /// 预设快捷日期选择，示例：{ '特定日期范围': ['2021-01-01', '2022-01-01'], '本月': [dayjs().startOf('month'), dayjs().endOf('month')] }
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presets")]
     public TPresetRange? PresetsValue { get; set; }
 
+    /// <summary>
+    /// 预设面板展示区域（包含确定按钮）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presetsPlacement")]
     public TDateRangePickerPanelPresetsPlacementValue? PresetsPlacement { get; set; }
 
+    /// <summary>
+    /// 透传 TimePicker 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("timePickerProps")]
     public TdTimePickerProps? TimePickerProps { get; set; }
 
+    /// <summary>
+    /// 选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TDateValue[]? Value { get; set; }
@@ -26267,694 +28411,1321 @@ public sealed class TDateRangePickerPanel : TContentComponentBase
     [ECMAScriptName("presets")]
     public RenderFragment? PresetsContent { get; set; }
 
+    /// <summary>
+    /// 点击日期单元格时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellClick")]
     public EventCallback<TDateRangePickerPanelCellClickEventContext> OnCellClick { get; set; }
 
+    /// <summary>
+    /// 选中值发生变化时触发。参数 `context.trigger` 表示触发当前事件的来源，不同的模式触发来源也会不同
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TDateValue[]> OnChange { get; set; }
 
+    /// <summary>
+    /// 如果存在“确定”按钮，则点击“确定”按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback<TDateRangePickerPanelConfirmEventContext> OnConfirm { get; set; }
 
+    /// <summary>
+    /// 月份切换发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMonthChange")]
     public EventCallback<TDateRangePickerPanelMonthChangeEventContext> OnMonthChange { get; set; }
 
+    /// <summary>
+    /// 点击面板时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPanelClick")]
     public EventCallback<TDateRangePickerPanelPanelClickEventContext> OnPanelClick { get; set; }
 
+    /// <summary>
+    /// 点击预设按钮后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPresetClick")]
     public EventCallback<TDateRangePickerPanelPresetClickEventContext> OnPresetClick { get; set; }
 
+    /// <summary>
+    /// 时间切换发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onTimeChange")]
     public EventCallback<TDateRangePickerPanelTimeChangeEventContext> OnTimeChange { get; set; }
 
+    /// <summary>
+    /// 年份切换发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onYearChange")]
     public EventCallback<TDateRangePickerPanelYearChangeEventContext> OnYearChange { get; set; }
 }
 
+/// <summary>
+/// Descriptions
+///
+/// 描述列表
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Descriptions")]
 public sealed class TDescriptions : TContentComponentBase
 {
+    /// <summary>
+    /// set description list with grey border
+    ///
+    /// 是否带边框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
+    /// <summary>
+    /// set label with &quot;:&quot; on the right
+    ///
+    /// 字段名右侧是否携带冒号“：”
+    /// </summary>
     [Parameter]
     [ECMAScriptName("colon")]
     public bool? Colon { get; set; }
 
+    /// <summary>
+    /// count of DescriptionsItem in one row
+    ///
+    /// 一行 `DescriptionsItem` 的数量
+    /// </summary>
     [Parameter]
     [ECMAScriptName("column")]
     public Number? Column { get; set; }
 
+    /// <summary>
+    /// style of description content
+    ///
+    /// 自定义描述项内容的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("contentStyle")]
     public TStyles? ContentStyle { get; set; }
 
+    /// <summary>
+    /// layout direction of description item
+    ///
+    /// 描述项的排列方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("itemLayout")]
     public TDescriptionsItemLayoutValue? ItemLayout { get; set; }
 
+    /// <summary>
+    /// list of descriptions items
+    ///
+    /// 描述项的列表
+    /// </summary>
     [Parameter]
     [ECMAScriptName("items")]
     public TdDescriptionsItemProps[]? Items { get; set; }
 
+    /// <summary>
+    /// style of description item, which takes effect when `tableLayout` is `auto`
+    ///
+    /// 自定义描述项标签的样式，需要配合 `tableLayout` 为 `auto` 才可以生效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelStyle")]
     public TStyles? LabelStyle { get; set; }
 
+    /// <summary>
+    /// layout direction
+    ///
+    /// 排列方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public TDescriptionsLayoutValue? Layout { get; set; }
 
+    /// <summary>
+    /// a descriptions has three size
+    ///
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// Sets the algorithm used to layout `table` cells, rows, and columns, exactly the same as the native table-layout css property. `fixed`: uses fixed layout algorithm; `auto`: uses automatic layout algorithm. For more details, see [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)
+    ///
+    /// 用于设置底层 `table` 单元格、行和列的布局算法，与原生 table-layout css 属性完全一致。`fixed`：采用固定布局算法；`auto`：采用自动布局算法。详情可参考 [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tableLayout")]
     public TDescriptionsTableLayoutValue? TableLayout { get; set; }
 
+    /// <summary>
+    /// title of descriptions
+    ///
+    /// 描述列表的标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// title of descriptions
+    ///
+    /// 描述列表的标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }
 
+/// <summary>
+/// DescriptionsItem
+///
+/// 描述项
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "DescriptionsItem")]
 public sealed class TDescriptionsItem : TContentComponentBase
 {
+    /// <summary>
+    /// content of description item
+    ///
+    /// 描述项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// label of description item
+    ///
+    /// 描述项标签
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// width count
+    ///
+    /// 占用的宽度数量
+    /// </summary>
     [Parameter]
     [ECMAScriptName("span")]
     public Number? Span { get; set; }
 
+    /// <summary>
+    /// content of description item
+    ///
+    /// 描述项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// label of description item
+    ///
+    /// 描述项标签
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 }
 
+/// <summary>
+/// Dialog
+///
+/// 对话框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Dialog")]
 public sealed class TDialog : TContentComponentBase
 {
+    /// <summary>
+    /// 对话框挂载的节点。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
+    /// <summary>
+    /// 对话框内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("body")]
     public string? BodyValue { get; set; }
 
+    /// <summary>
+    /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public TDialogCancelBtnValue? CancelBtnValue { get; set; }
 
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TDialogCloseBtnValue? CloseBtnValue { get; set; }
 
+    /// <summary>
+    /// trigger dialog close event on `ESC` keydown
+    ///
+    /// 按下 ESC 时是否触发对话框关闭事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; set; }
 
+    /// <summary>
+    /// 点击蒙层时是否触发关闭事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnOverlayClick")]
     public bool? CloseOnOverlayClick { get; set; }
 
+    /// <summary>
+    /// 确认按钮。值为 null 则不显示确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public TDialogConfirmBtnValue? ConfirmBtnValue { get; set; }
 
+    /// <summary>
+    /// confirm button loading status
+    ///
+    /// 确认按钮加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmLoading")]
     public bool? ConfirmLoading { get; set; }
 
+    /// <summary>
+    /// confirm on enter
+    ///
+    /// 是否在按下回车键时，触发确认事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmOnEnter")]
     public bool? ConfirmOnEnter { get; set; }
 
+    /// <summary>
+    /// 是否在关闭弹框的时候销毁子元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
+    /// <summary>
+    /// 弹框元素类名，示例：'t-class-dialog-first t-class-dialog-second'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dialogClassName")]
     public string? DialogClassName { get; set; }
 
+    /// <summary>
+    /// Styles that apply to the dialog box itself
+    ///
+    /// 作用于对话框本身的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dialogStyle")]
     public TStyles? DialogStyle { get; set; }
 
+    /// <summary>
+    /// 对话框是否可以拖拽（仅在非模态对话框时有效）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
+    /// <summary>
+    /// 底部操作栏，默认会有“确认”和“取消”两个按钮。值为 true 显示默认操作按钮，值为 false 不显示任何内容，值类型为 Function 表示自定义底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public bool? FooterValue { get; set; }
 
+    /// <summary>
+    /// 头部内容。值为 true 显示空白头部，值为 false 不显示任何内容，值类型为 string 则直接显示值，值类型为 Function 表示自定义头部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public TDialogHeaderValue? HeaderValue { get; set; }
 
+    /// <summary>
+    /// Enable Dialog lazy loading, the contents of the dialog box are not rendered when enable
+    ///
+    /// 是否启用对话框懒加载，启用时对话框内的内容不渲染
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// 对话框类型，有 4 种：模态对话框、非模态对话框、普通对话框、全屏对话框。弹出「模态对话框」时，只能操作对话框里面的内容，不能操作其他内容。弹出「非模态对话框」时，则可以操作页面内所有内容。「普通对话框」是指没有脱离文档流的对话框，可以在这个基础上开发更多的插件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TDialogModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// 对话框位置，内置两种：垂直水平居中显示 和 靠近顶部（top:20%）显示。默认情况，为避免贴顶或贴底，顶部和底部距离最小为 `48px`，可通过调整 `top` 覆盖默认大小
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public TDialogPlacementValue? Placement { get; set; }
 
+    /// <summary>
+    /// 防止滚动穿透
+    /// </summary>
     [Parameter]
     [ECMAScriptName("preventScrollThrough")]
     public bool? PreventScrollThrough { get; set; }
 
+    /// <summary>
+    /// 仅在挂载元素中显示抽屉，默认在浏览器可视区域显示。父元素需要有定位属性，如：position: relative
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showInAttachedElement")]
     public bool? ShowInAttachedElement { get; set; }
 
+    /// <summary>
+    /// 是否显示遮罩层
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
+    /// <summary>
+    /// 对话框风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TDialogThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 用于弹框具体窗口顶部的距离，优先级大于 placement
+    /// </summary>
     [Parameter]
     [ECMAScriptName("top")]
     public TDialogTopValue? Top { get; set; }
 
+    /// <summary>
+    /// 控制对话框是否显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
+    /// <summary>
+    /// 对话框宽度，示例：320, '500px', '80%'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public TDialogWidthValue? Width { get; set; }
 
+    /// <summary>
+    /// 对话框层级，Web 侧样式默认为 2500，移动端和小程序样式默认为 1500
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// 对话框内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("body")]
     public RenderFragment? BodyContent { get; set; }
 
+    /// <summary>
+    /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件类型和参数：string | ButtonProps | TNode | null【import { ButtonProps } from '@Button'】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public RenderFragment? CancelBtnContent { get; set; }
 
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public RenderFragment? CloseBtnContent { get; set; }
 
+    /// <summary>
+    /// 确认按钮。值为 null 则不显示确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件类型和参数：string | ButtonProps | TNode | null
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public RenderFragment? ConfirmBtnContent { get; set; }
 
+    /// <summary>
+    /// 底部操作栏，默认会有“确认”和“取消”两个按钮。值为 true 显示默认操作按钮，值为 false 不显示任何内容，值类型为 Function 表示自定义底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? FooterContent { get; set; }
 
+    /// <summary>
+    /// 头部内容。值为 true 显示空白头部，值为 false 不显示任何内容，值类型为 string 则直接显示值，值类型为 Function 表示自定义头部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? HeaderContent { get; set; }
 
+    /// <summary>
+    /// 对话框执行消失动画效果前触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBeforeClose")]
     public EventCallback OnBeforeClose { get; set; }
 
+    /// <summary>
+    /// 对话框执行弹出动画效果前触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBeforeOpen")]
     public EventCallback OnBeforeOpen { get; set; }
 
+    /// <summary>
+    /// 如果“取消”按钮存在，则点击“取消”按钮时触发，同时触发关闭事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCancel")]
     public EventCallback<TDialogCancelEventContext> OnCancel { get; set; }
 
+    /// <summary>
+    /// 关闭事件，点击取消按钮、点击关闭按钮、点击蒙层、按下 ESC 等场景下触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback<TDialogCloseContext> OnClose { get; set; }
 
+    /// <summary>
+    /// 点击右上角关闭按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TDialogCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
+    /// <summary>
+    /// 对话框消失动画效果结束后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClosed")]
     public EventCallback OnClosed { get; set; }
 
+    /// <summary>
+    /// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback<TDialogConfirmEventContext> OnConfirm { get; set; }
 
+    /// <summary>
+    /// 按下 ESC 时触发事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEscKeydown")]
     public EventCallback<TDialogEscKeydownEventContext> OnEscKeydown { get; set; }
 
+    /// <summary>
+    /// 对话框弹出动画效果结束后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOpened")]
     public EventCallback OnOpened { get; set; }
 
+    /// <summary>
+    /// 如果蒙层存在，点击蒙层时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOverlayClick")]
     public EventCallback<TDialogOverlayClickEventContext> OnOverlayClick { get; set; }
 }
 
+/// <summary>
+/// DialogCard
+///
+/// 对话框卡片
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "DialogCard")]
 public sealed class TDialogCard : TContentComponentBase
 {
+    /// <summary>
+    /// 对话框内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("body")]
     public string? BodyValue { get; set; }
 
+    /// <summary>
+    /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public TDialogCardCancelBtnValue? CancelBtnValue { get; set; }
 
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TDialogCardCloseBtnValue? CloseBtnValue { get; set; }
 
+    /// <summary>
+    /// 确认按钮。值为 null 则不显示确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public TDialogCardConfirmBtnValue? ConfirmBtnValue { get; set; }
 
+    /// <summary>
+    /// confirm button loading status
+    ///
+    /// 确认按钮加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmLoading")]
     public bool? ConfirmLoading { get; set; }
 
+    /// <summary>
+    /// 底部操作栏，默认会有“确认”和“取消”两个按钮。值为 true 显示默认操作按钮，值为 false 不显示任何内容，值类型为 Function 表示自定义底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public bool? FooterValue { get; set; }
 
+    /// <summary>
+    /// 头部内容。值为 true 显示空白头部，值为 false 不显示任何内容，值类型为 string 则直接显示值，值类型为 Function 表示自定义头部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public TDialogCardHeaderValue? HeaderValue { get; set; }
 
+    /// <summary>
+    /// 对话框风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TDialogCardThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 对话框内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("body")]
     public RenderFragment? BodyContent { get; set; }
 
+    /// <summary>
+    /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件类型和参数：string | ButtonProps | TNode | null【import { ButtonProps } from '@Button'】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public RenderFragment? CancelBtnContent { get; set; }
 
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例类型和参数：string | ButtonProps | TNode | null【import { ButtonProps } from '@Button'】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public RenderFragment? CloseBtnContent { get; set; }
 
+    /// <summary>
+    /// 确认按钮。值为 null 则不显示确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件类型和参数：string | ButtonProps | TNode | null
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public RenderFragment? ConfirmBtnContent { get; set; }
 
+    /// <summary>
+    /// 底部操作栏，默认会有“确认”和“取消”两个按钮。值为 true 显示默认操作按钮，值为 false 不显示任何内容，值类型为 Function 表示自定义底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? FooterContent { get; set; }
 
+    /// <summary>
+    /// 头部内容。值为 true 显示空白头部，值为 false 不显示任何内容，值类型为 string 则直接显示值，值类型为 Function 表示自定义头部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? HeaderContent { get; set; }
 
+    /// <summary>
+    /// 如果“取消”按钮存在，则点击“取消”按钮时触发，同时触发关闭事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCancel")]
     public EventCallback<TDialogCardCancelEventContext> OnCancel { get; set; }
 
+    /// <summary>
+    /// 点击右上角关闭按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TDialogCardCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
+    /// <summary>
+    /// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback<TDialogCardConfirmEventContext> OnConfirm { get; set; }
 }
 
+/// <summary>
+/// Divider
+///
+/// 分割线
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Divider")]
 public sealed class TDivider : TContentComponentBase
 {
+    /// <summary>
+    /// 文本位置（仅在水平分割线有效）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("align")]
     public TDividerAlignValue? Align { get; set; }
 
+    /// <summary>
+    /// 子元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 是否虚线（仅在水平分割线有效）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dashed")]
     public bool? Dashed { get; set; }
 
+    /// <summary>
+    /// 分隔线类型有两种：水平和垂直
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public TDividerLayoutValue? Layout { get; set; }
 
+    /// <summary>
+    /// 请更为使用 `layout`。分隔线类型有两种：水平和垂直
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TDividerThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 子元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 }
 
+/// <summary>
+/// Drawer
+///
+/// 模态抽屉
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Drawer")]
 public sealed class TDrawer : TContentComponentBase
 {
+    /// <summary>
+    /// 抽屉挂载的节点，默认挂在组件本身的位置。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
+    /// <summary>
+    /// 抽屉内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("body")]
     public string? BodyValue { get; set; }
 
+    /// <summary>
+    /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public TFooterButton? CancelBtnValue { get; set; }
 
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TDrawerCloseBtnValue? CloseBtnValue { get; set; }
 
+    /// <summary>
+    /// trigger drawer close event on `ESC` keydown
+    ///
+    /// 按下 ESC 时是否触发抽屉关闭事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; set; }
 
+    /// <summary>
+    /// 点击蒙层时是否触发抽屉关闭事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnOverlayClick")]
     public bool? CloseOnOverlayClick { get; set; }
 
+    /// <summary>
+    /// 确认按钮，可自定义。值为 null 则不显示确认按钮。类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public TFooterButton? ConfirmBtnValue { get; set; }
 
+    /// <summary>
+    /// 抽屉关闭时是否销毁节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
+    /// <summary>
+    /// 抽屉元素类名。
+    /// </summary>
     [Parameter]
     [ECMAScriptName("drawerClassName")]
     public string? DrawerClassName { get; set; }
 
+    /// <summary>
+    /// 底部操作栏，默认会有“确认”和“取消”两个按钮。值为 true 显示默认操作按钮，值为 false 或 null 不显示任何内容，值类型为 TNode 表示自定义底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public bool? FooterValue { get; set; }
 
+    /// <summary>
+    /// 头部内容。值为 true 显示空白头部，值为 false 不显示头部，值类型为 string 则直接显示值，值类型为 TNode 表示自定义头部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public TDrawerHeaderValue? HeaderValue { get; set; }
 
+    /// <summary>
+    /// Enable Drawer lazy loading, the contents of the Drawer are not rendered when enable
+    ///
+    /// 是否启用抽屉懒加载，启用时抽屉的内容不渲染
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// 展开方式，有两种：直接展示在内容上方 和 推开内容区域
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TDrawerModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// 抽屉方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public TDrawerPlacementValue? Placement { get; set; }
 
+    /// <summary>
+    /// 防止滚动穿透
+    /// </summary>
     [Parameter]
     [ECMAScriptName("preventScrollThrough")]
     public bool? PreventScrollThrough { get; set; }
 
+    /// <summary>
+    /// 仅在挂载元素中显示抽屉，默认在浏览器可视区域显示。父元素需要有定位属性，如：position: relative
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showInAttachedElement")]
     public bool? ShowInAttachedElement { get; set; }
 
+    /// <summary>
+    /// 是否显示遮罩层
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
+    /// <summary>
+    /// 尺寸，支持 'small', 'medium', 'large'，'35px', '30%',  '3em' 等。纵向抽屉调整的是抽屉宽度，横向抽屉调整的是抽屉高度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// allow resizing drawer width/height, set `max` or `min` to limit size
+    ///
+    /// 抽屉大小可拖拽调整，横向抽屉调整宽度，纵向抽屉调整高度。`sizeDraggable.max` 和 `sizeDraggable.min` 用于控制拖拽尺寸大小限制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sizeDraggable")]
     public TDrawerSizeDraggableValue? SizeDraggable { get; set; }
 
+    /// <summary>
+    /// 组件是否可见
+    /// </summary>
     [Parameter]
     [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
+    /// <summary>
+    /// 抽屉层级，样式默认为 1500
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// 抽屉内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("body")]
     public RenderFragment? BodyContent { get; set; }
 
+    /// <summary>
+    /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件类型和参数：FooterButton
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public RenderFragment? CancelBtnContent { get; set; }
 
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public RenderFragment? CloseBtnContent { get; set; }
 
+    /// <summary>
+    /// 确认按钮，可自定义。值为 null 则不显示确认按钮。类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件类型和参数：FooterButton【type FooterButton = string | ButtonProps | TNode | null 】【import { ButtonProps } from '@Button'】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public RenderFragment? ConfirmBtnContent { get; set; }
 
+    /// <summary>
+    /// 底部操作栏，默认会有“确认”和“取消”两个按钮。值为 true 显示默认操作按钮，值为 false 或 null 不显示任何内容，值类型为 TNode 表示自定义底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? FooterContent { get; set; }
 
+    /// <summary>
+    /// 头部内容。值为 true 显示空白头部，值为 false 不显示头部，值类型为 string 则直接显示值，值类型为 TNode 表示自定义头部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? HeaderContent { get; set; }
 
+    /// <summary>
+    /// 抽屉执行关闭动画效果前触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBeforeClose")]
     public EventCallback OnBeforeClose { get; set; }
 
+    /// <summary>
+    /// 抽屉执行打开动画效果前触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBeforeOpen")]
     public EventCallback OnBeforeOpen { get; set; }
 
+    /// <summary>
+    /// 如果“取消”按钮存在，点击“取消”按钮时触发，同时触发关闭事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCancel")]
     public EventCallback<TDrawerCancelEventContext> OnCancel { get; set; }
 
+    /// <summary>
+    /// 关闭事件，取消按钮点击时、关闭按钮点击时、ESC 按下时、点击蒙层时均会触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback<TDrawerCloseContext> OnClose { get; set; }
 
+    /// <summary>
+    /// 如果关闭按钮存在，点击关闭按钮时触发该事件，同时触发关闭事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TDrawerCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
+    /// <summary>
+    /// 如果“确认”按钮存在，则点击“确认”按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback<TDrawerConfirmEventContext> OnConfirm { get; set; }
 
+    /// <summary>
+    /// 按下 ESC 键时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEscKeydown")]
     public EventCallback<TDrawerEscKeydownEventContext> OnEscKeydown { get; set; }
 
+    /// <summary>
+    /// 如果蒙层存在，点击蒙层时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOverlayClick")]
     public EventCallback<TDrawerOverlayClickEventContext> OnOverlayClick { get; set; }
 
+    /// <summary>
+    /// trigger on size drag end
+    ///
+    /// 抽屉大小拖拽结束时触发，事件参数 `size` 在横向抽屉中表示宽度，在纵向抽屉中表示高度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSizeDragEnd")]
     public EventCallback<TDrawerSizeDragEndEventContext> OnSizeDragEnd { get; set; }
 }
 
+/// <summary>
+/// Dropdown
+///
+/// 下拉菜单
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Dropdown")]
 public sealed class TDropdown : TContentComponentBase
 {
+    /// <summary>
+    /// 多层级操作时，子层级展开方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public TDropdownDirectionValue? Direction { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 点击选项后是否自动隐藏弹窗
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideAfterItemClick")]
     public bool? HideAfterItemClick { get; set; }
 
+    /// <summary>
+    /// 选项最大宽度，内容超出时，显示为省略号。值为字符串时，值就是最大宽度；值为数字时，单位：px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxColumnWidth")]
     public TDropdownMaxColumnWidthValue? MaxColumnWidth { get; set; }
 
+    /// <summary>
+    /// 弹窗最大高度，单位：px 。统一控制每一列的高度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public Number? MaxHeight { get; set; }
 
+    /// <summary>
+    /// 选项最小宽度。值为字符串时，值就是最小宽度；值为数字时，单位：px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minColumnWidth")]
     public TDropdownMinColumnWidthValue? MinColumnWidth { get; set; }
 
+    /// <summary>
+    /// 下拉操作项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public TDropdownOption[]? Options { get; set; }
 
+    /// <summary>
+    /// bottom content of the dropdown panel
+    ///
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public string? PanelBottomContentValue { get; set; }
 
+    /// <summary>
+    /// top content of the dropdown panel
+    ///
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public string? PanelTopContentValue { get; set; }
 
+    /// <summary>
+    /// 弹窗定位方式，可选值同 Popup 组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public TDropdownPlacementValue? Placement { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性，方便更加自由地控制。比如使用 popupProps.overlayStyle 设置浮层样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 触发下拉显示的方式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public TDropdownTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// bottom content of the dropdown panel
+    ///
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public RenderFragment? PanelBottomContent { get; set; }
 
+    /// <summary>
+    /// top content of the dropdown panel
+    ///
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public RenderFragment? PanelTopContent { get; set; }
 
+    /// <summary>
+    /// 下拉操作项点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TDropdownOption> OnClick { get; set; }
 }
 
+/// <summary>
+/// DropdownItem
+///
+/// 下拉菜单选项
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "DropdownItem")]
 public sealed class TDropdownItem : TContentComponentBase
 {
+    /// <summary>
+    /// 是否高亮当前操作项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("active")]
     public bool? Active { get; set; }
 
+    /// <summary>
+    /// 下拉操作项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 是否禁用操作项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 是否显示操作项之间的分隔线（分隔线默认在下方）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("divider")]
     public bool? Divider { get; set; }
 
+    /// <summary>
+    /// 下拉菜单选项主题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TDropdownItemTheme? Theme { get; set; }
 
+    /// <summary>
+    /// 下拉操作项唯一标识
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TDropdownItemValueValue? Value { get; set; }
 
+    /// <summary>
+    /// 下拉操作项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
 
+    /// <summary>
+    /// 点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TDropdownOption> OnClick { get; set; }
 }
 
+/// <summary>
+/// Empty
+///
+/// 空状态
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Empty")]
 public sealed class TEmpty : TContentComponentBase
 {
+    /// <summary>
+    /// empty component description
+    ///
+    /// 描述文字
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public string? DescriptionValue { get; set; }
 
+    /// <summary>
+    /// image url, or Image component props, or custom any node you need
+    ///
+    /// 组件图片，可以完全自定义内容。值类型为字符串时，表示图片地址；值类型为对象时，则表示透传全部属性到图片组件，示例：`&lt;Empty image={{ src: '', shape: 'round' }} /&gt;`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("image")]
     public TEmptyImageValue? ImageValue { get; set; }
 
+    /// <summary>
+    /// pass `Cascading Style Sheets` to image element
+    ///
+    /// 透传图片样式表
+    /// </summary>
     [Parameter]
     [ECMAScriptName("imageStyle")]
     public TStyles? ImageStyle { get; set; }
 
+    /// <summary>
+    /// size of Empty,  default value is `medium`
+    ///
+    /// 空状态的尺寸，默认为 `medium`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// empty component title
+    ///
+    /// 错误标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// Empty component type
+    ///
+    /// 组件类型，如：空数据/成功/失败/网络错误/建设中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public TEmptyTypeValue? Type { get; set; }
 
+    /// <summary>
+    /// action block
+    ///
+    /// 操作按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("action")]
     public RenderFragment? ActionContent { get; set; }
 
+    /// <summary>
+    /// empty component description
+    ///
+    /// 描述文字
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public RenderFragment? DescriptionContent { get; set; }
 
+    /// <summary>
+    /// image url, or Image component props, or custom any node you need
+    ///
+    /// 组件图片，可以完全自定义内容。值类型为字符串时，表示图片地址；值类型为对象时，则表示透传全部属性到图片组件，示例：`&lt;Empty image={{ src: '', shape: 'round' }} /&gt;`类型和参数：string | ImageProps | TNode 【import { ImageProps } from '@Image'】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("image")]
     public RenderFragment? ImageContent { get; set; }
 
+    /// <summary>
+    /// empty component title
+    ///
+    /// 错误标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }
 
+/// <summary>
+/// EnhancedTable
+///
+/// 增强表格
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "EnhancedTable")]
 public class TEnhancedTable<T> : TContentComponentBase
 {
+    /// <summary>
+    /// stop to drag sort
+    ///
+    /// 树形结构中，拖拽排序前控制，返回值为 `true` 则继续排序；返回值为 `false` 则中止排序还原数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeDragSort")]
     public TEnhancedTableBeforeDragSortValue<T>? BeforeDragSort { get; set; }
 
+    /// <summary>
+    /// expanded tree node row keys, row key value is from data[rowKey]
+    ///
+    /// 展开的树形节点。非必须。在需要自由控制展开的树形节点时使用。其他场景无需设置，表格组件有内置展开逻辑
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandedTreeNodes")]
     public TEnhancedTableExpandedTreeNodesValueItem<T>[]? ExpandedTreeNodes { get; set; }
 
+    /// <summary>
+    /// tree data configs
+    ///
+    /// 树形结构相关配置。具体属性文档查看 `TableTreeConfig` 相关描述
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tree")]
     public TTableTreeConfig? Tree { get; set; }
@@ -26963,6 +29734,9 @@ public class TEnhancedTable<T> : TContentComponentBase
     [ECMAScriptName("treeExpandAndFoldIcon")]
     public RenderFragment<TEnhancedTableTreeExpandAndFoldIconSlotContext<T>>? TreeExpandAndFoldIconContent { get; set; }
 
+    /// <summary>
+    /// 异常拖拽排序时触发，如：树形结构中，非同层级之间的交换。`context.code` 指交换异常错误码，固定值；`context.reason` 指交换异常的原因
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onAbnormalDragSort")]
     public EventCallback<TTableAbnormalDragSortContext<T>> OnAbnormalDragSort { get; set; }
@@ -27015,6 +29789,11 @@ public class TEnhancedTable<T> : TContentComponentBase
     [ECMAScriptName("onExpandChange")]
     public EventCallback<TEnhancedTableExpandChangeEventExpandedRowKeysItem<T>[]> OnExpandChange { get; set; }
 
+    /// <summary>
+    /// trigger on tree node expanded or folded
+    ///
+    /// 树形结构，展开的树节点发生变化时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpandedTreeNodesChange")]
     public EventCallback<TEnhancedTableExpandedTreeNodesChangeEventExpandedTreeNodesItem<T>[]> OnExpandedTreeNodesChange { get; set; }
@@ -27083,6 +29862,11 @@ public class TEnhancedTable<T> : TContentComponentBase
     [ECMAScriptName("onSortChange")]
     public EventCallback<TTableSort> OnSortChange { get; set; }
 
+    /// <summary>
+    /// trigger on tree node expanded or folded, use `expandedTreeNodesChange` please
+    ///
+    /// 树形结构，用户操作引起节点展开或收起时触发。请更为使用 `onExpandedTreeNodesChange`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onTreeExpandChange")]
     public EventCallback<TTableTreeExpandChangeContext<T>> OnTreeExpandChange { get; set; }
@@ -27097,105 +29881,191 @@ internal sealed class TEnhancedTable : TEnhancedTable<TTableRowData>
 {
 }
 
+/// <summary>
+/// Footer
+///
+/// 布局-底部内容
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Footer")]
 public sealed class TFooter : TContentComponentBase
 {
+    /// <summary>
+    /// 底栏高度。样式表（class）中定义的默认高度为：24px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public string? Height { get; set; }
 }
 
+/// <summary>
+/// Form
+///
+/// 表单
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Form")]
 public class TForm<FormData> : TContentComponentBase
 {
+    /// <summary>
+    /// 是否在表单标签字段右侧显示冒号
+    /// </summary>
     [Parameter]
     [ECMAScriptName("colon")]
     public bool? Colon { get; set; }
 
+    /// <summary>
+    /// 表单数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public FormData? Data { get; set; }
 
+    /// <summary>
+    /// 是否禁用整个表单
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 表单错误信息配置，示例：`{ idcard: '请输入正确的身份证号码', max: '字符长度不能超过 ${max}' }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("errorMessage")]
     public TFormErrorMessage? ErrorMessage { get; set; }
 
+    /// <summary>
+    /// 允许表单统一控制禁用状态的自定义组件名称列表。默认会有组件库的全部输入类组件：TInput、TInputNumber、TCascader、TSelect、TOption、TSwitch、TCheckbox、TCheckboxGroup、TRadio、TRadioGroup、TTreeSelect、TDatePicker、TTimePicker、TUpload、TTransfer、TSlider。对于自定义组件，组件内部需要包含可以控制表单禁用状态的变量 `formDisabled`。示例：`['CustomUpload', 'CustomInput']`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("formControlledComponents")]
     public string[]? FormControlledComponents { get; set; }
 
+    /// <summary>
+    /// native id attribute of the form，which supports being used in conjunction with non-form buttons through the form attribute to trigger form events
+    ///
+    /// 表单原生的id属性，支持用于配合非表单内的按钮通过form属性来触发表单事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// 表单字段标签对齐方式：左对齐、右对齐、顶部对齐
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelAlign")]
     public TFormLabelAlignValue? LabelAlign { get; set; }
 
+    /// <summary>
+    /// 可以整体设置label标签宽度，默认为100px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public TFormLabelWidthValue<FormData>? LabelWidth { get; set; }
 
+    /// <summary>
+    /// 表单布局，有两种方式：纵向布局 和 行内布局
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public TFormLayoutValue? Layout { get; set; }
 
+    /// <summary>
+    /// 是否阻止表单提交默认事件（表单提交默认事件会刷新页面），设置为 `true` 可以避免刷新
+    /// </summary>
     [Parameter]
     [ECMAScriptName("preventSubmitDefault")]
     public bool? PreventSubmitDefault { get; set; }
 
+    /// <summary>
+    /// 是否整个表单只读
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 是否显示必填符号（*），默认显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("requiredMark")]
     public bool? RequiredMark { get; set; }
 
+    /// <summary>
+    /// Display position of required symbols
+    ///
+    /// 表单必填符号（*）显示位置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("requiredMarkPosition")]
     public TFormRequiredMarkPositionValue? RequiredMarkPosition { get; set; }
 
+    /// <summary>
+    /// 重置表单的方式，值为 empty 表示重置表单为空，值为 initial 表示重置表单数据为初始值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("resetType")]
     public TFormResetTypeValue? ResetType { get; set; }
 
+    /// <summary>
+    /// 表单字段校验规则
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rules")]
     public TFormRules<FormData>? Rules { get; set; }
 
+    /// <summary>
+    /// 表单校验不通过时，是否自动滚动到第一个校验不通过的字段，平滑滚动或是瞬间直达。值为空则表示不滚动
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollToFirstError")]
     public TFormScrollToFirstErrorValue? ScrollToFirstError { get; set; }
 
+    /// <summary>
+    /// 校验不通过时，是否显示错误提示信息，统一控制全部表单项。如果希望控制单个表单项，请给 FormItem 设置该属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showErrorMessage")]
     public bool? ShowErrorMessage { get; set; }
 
+    /// <summary>
+    /// 校验状态图标，值为 `true` 显示默认图标，默认图标有 成功、失败、警告 等，不同的状态图标不同。`statusIcon` 值为 `false`，不显示图标。`statusIcon` 值类型为渲染函数，则可以自定义右侧状态图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("statusIcon")]
     public bool? StatusIconValue { get; set; }
 
+    /// <summary>
+    /// 【讨论中】当校验结果只有告警信息时，是否触发 `submit` 提交事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("submitWithWarningMessage")]
     public bool? SubmitWithWarningMessage { get; set; }
 
+    /// <summary>
+    /// 校验状态图标，值为 `true` 显示默认图标，默认图标有 成功、失败、警告 等，不同的状态图标不同。`statusIcon` 值为 `false`，不显示图标。`statusIcon` 值类型为渲染函数，则可以自定义右侧状态图标类型和参数：boolean | TNode&lt;TdFormItemProps&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("statusIcon")]
     public RenderFragment<TdFormItemProps>? StatusIconContent { get; set; }
 
+    /// <summary>
+    /// 表单重置时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onReset")]
     public EventCallback<TFormResetEventContext<FormData>> OnReset { get; set; }
 
+    /// <summary>
+    /// 表单提交时触发。其中 `context.validateResult` 表示校验结果，`context.firstError` 表示校验不通过的第一个规则提醒。`context.validateResult` 值为 `true` 表示校验通过；如果校验不通过，`context.validateResult` 值为校验结果列表。&lt;br /&gt;【注意】⚠️ 默认情况，输入框按下 Enter 键会自动触发提交事件，如果希望禁用这个默认行为，可以给输入框添加  enter 事件，并在事件中设置 `e.preventDefault()`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSubmit")]
     public EventCallback<TSubmitContext<FormData>> OnSubmit { get; set; }
 
+    /// <summary>
+    /// 校验结束后触发，result 值为 true 表示校验通过；如果校验不通过，result 值为校验结果列表
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onValidate")]
     public EventCallback<TValidateResultContext<FormData>> OnValidate { get; set; }
@@ -27206,165 +30076,294 @@ internal sealed class TForm : TForm<TJsonObject>
 {
 }
 
+/// <summary>
+/// FormItem
+///
+/// 表单元素
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "FormItem")]
 public sealed class TFormItem : TContentComponentBase
 {
+    /// <summary>
+    /// label 原生属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("for")]
     public string? For { get; set; }
 
+    /// <summary>
+    /// 表单项说明内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("help")]
     public string? HelpValue { get; set; }
 
+    /// <summary>
+    /// 字段标签名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 表单字段标签对齐方式：左对齐、右对齐、顶部对齐。默认使用 Form 的对齐方式，优先级高于 Form.labelAlign
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelAlign")]
     public TFormItemLabelAlignValue? LabelAlign { get; set; }
 
+    /// <summary>
+    /// 可以整体设置标签宽度，优先级高于 Form.labelWidth
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public TFormItemLabelWidthValue? LabelWidth { get; set; }
 
+    /// <summary>
+    /// 表单字段名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// 是否显示必填符号（*），优先级高于 Form.requiredMark
+    /// </summary>
     [Parameter]
     [ECMAScriptName("requiredMark")]
     public bool? RequiredMark { get; set; }
 
+    /// <summary>
+    /// 表单字段校验规则
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rules")]
     public TFormRule[]? Rules { get; set; }
 
+    /// <summary>
+    /// 校验不通过时，是否显示错误提示信息，优先级高于 `Form.showErrorMessage`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showErrorMessage")]
     public bool? ShowErrorMessage { get; set; }
 
+    /// <summary>
+    /// 校验状态，可在需要完全自主控制校验状态时使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TFormItemStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 校验状态图标，值为 `true` 显示默认图标，默认图标有 成功、失败、警告 等，不同的状态图标不同。`statusIcon` 值为 `false`，不显示图标。`statusIcon` 值类型为渲染函数，则可以自定义右侧状态图标。优先级高级 Form 的 statusIcon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("statusIcon")]
     public bool? StatusIconValue { get; set; }
 
+    /// <summary>
+    /// 是否显示校验成功的边框，默认不显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("successBorder")]
     public bool? SuccessBorder { get; set; }
 
+    /// <summary>
+    /// 自定义提示内容，样式跟随 `status` 变动，可在需要完全自主控制校验规则时使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 表单项说明内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("help")]
     public RenderFragment? HelpContent { get; set; }
 
+    /// <summary>
+    /// 字段标签名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 校验状态图标，值为 `true` 显示默认图标，默认图标有 成功、失败、警告 等，不同的状态图标不同。`statusIcon` 值为 `false`，不显示图标。`statusIcon` 值类型为渲染函数，则可以自定义右侧状态图标。优先级高级 Form 的 statusIcon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("statusIcon")]
     public RenderFragment? StatusIconContent { get; set; }
 
+    /// <summary>
+    /// 自定义提示内容，样式跟随 `status` 变动，可在需要完全自主控制校验规则时使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 }
 
+/// <summary>
+/// Guide
+///
+/// 引导
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Guide")]
 public sealed class TGuide : TContentComponentBase
 {
+    /// <summary>
+    /// 当前步骤，即整个引导的进度。-1 则不展示，用于需要中断展示的场景
+    /// </summary>
     [Parameter]
     [ECMAScriptName("current")]
     public Number? Current { get; set; }
 
+    /// <summary>
+    /// 透传 完成按钮 的全部属性，示例：`{ content: '完成', theme: 'primary' }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("finishButtonProps")]
     public TdButtonProps? FinishButtonProps { get; set; }
 
+    /// <summary>
+    /// 是否隐藏计数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideCounter")]
     public bool? HideCounter { get; set; }
 
+    /// <summary>
+    /// 是否隐藏上一步按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hidePrev")]
     public bool? HidePrev { get; set; }
 
+    /// <summary>
+    /// 是否隐藏跳过按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideSkip")]
     public bool? HideSkip { get; set; }
 
+    /// <summary>
+    /// 高亮框的内边距
+    /// </summary>
     [Parameter]
     [ECMAScriptName("highlightPadding")]
     public Number? HighlightPadding { get; set; }
 
+    /// <summary>
+    /// 引导框的类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TGuideModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// 透传 下一步按钮 的全部属性，示例：{ content: '下一步', theme: 'primary' }
+    /// </summary>
     [Parameter]
     [ECMAScriptName("nextButtonProps")]
     public TdButtonProps? NextButtonProps { get; set; }
 
+    /// <summary>
+    /// 透传 上一步按钮 的全部属性，示例：{ content: '上一步', theme: 'default' }
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prevButtonProps")]
     public TdButtonProps? PrevButtonProps { get; set; }
 
+    /// <summary>
+    /// 是否出现遮罩层
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
+    /// <summary>
+    /// 透传 跳过按钮 的全部属性，{ content: '跳过', theme: 'default' }
+    /// </summary>
     [Parameter]
     [ECMAScriptName("skipButtonProps")]
     public TdButtonProps? SkipButtonProps { get; set; }
 
+    /// <summary>
+    /// 用于定义每个步骤的内容，包括高亮的节点、相对位置和具体的文案内容等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("steps")]
     public TGuideStep[]? Steps { get; set; }
 
+    /// <summary>
+    /// 提示框的层级
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// 用于自定义渲染计数部分类型和参数：TNode&lt;{ current: number; total: number }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("counter")]
     public RenderFragment<TGuideCounterSlotContext>? CounterContent { get; set; }
 
+    /// <summary>
+    /// 当前步骤发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
 
+    /// <summary>
+    /// 点击完成按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFinish")]
     public EventCallback<TGuideFinishEventContext> OnFinish { get; set; }
 
+    /// <summary>
+    /// 点击下一步时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNextStepClick")]
     public EventCallback<TGuideNextStepClickEventContext> OnNextStepClick { get; set; }
 
+    /// <summary>
+    /// 点击上一步时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPrevStepClick")]
     public EventCallback<TGuidePrevStepClickEventContext> OnPrevStepClick { get; set; }
 
+    /// <summary>
+    /// 点击跳过按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSkip")]
     public EventCallback<TGuideSkipEventContext> OnSkip { get; set; }
 }
 
+/// <summary>
+/// HeadMenu
+///
+/// 顶部导航菜单
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "HeadMenu")]
 public sealed class THeadMenu : TContentComponentBase
 {
+    /// <summary>
+    /// 二级菜单展开方式，平铺展开和浮层展开
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandType")]
     public THeadMenuExpandTypeValue? ExpandType { get; set; }
 
+    /// <summary>
+    /// 展开的子菜单集合
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expanded")]
     public TMenuValue[]? Expanded { get; set; }
@@ -27373,431 +30372,850 @@ public sealed class THeadMenu : TContentComponentBase
     [ECMAScriptName("theme")]
     public THeadMenuThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 激活菜单项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
 
+    /// <summary>
+    /// 站点 LOGO
+    /// </summary>
     [Parameter]
     [ECMAScriptName("logo")]
     public RenderFragment? LogoContent { get; set; }
 
+    /// <summary>
+    /// 导航操作区域
+    /// </summary>
     [Parameter]
     [ECMAScriptName("operations")]
     public RenderFragment? OperationsContent { get; set; }
 
+    /// <summary>
+    /// 激活菜单项发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TMenuValue> OnChange { get; set; }
 
+    /// <summary>
+    /// 展开的菜单项发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpand")]
     public EventCallback<TMenuValue[]> OnExpand { get; set; }
 }
 
+/// <summary>
+/// Header
+///
+/// 布局-头部
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Header")]
 public sealed class THeader : TContentComponentBase
 {
+    /// <summary>
+    /// 顶栏高度。样式表（class）中定义的默认高度为：64px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public string? Height { get; set; }
 }
 
+/// <summary>
+/// IconSVG
+///
+/// 图标（IconSVG）
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Icon")]
 public sealed class TIcon : TContentComponentBase
 {
+    /// <summary>
+    /// 是否加载组件库内置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadDefaultIcons")]
     public bool? LoadDefaultIcons { get; set; }
 
+    /// <summary>
+    /// 图标名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     [EditorRequired]
     public string Name { get; set; } = default!;
 
+    /// <summary>
+    /// 图标尺寸，支持 'small', 'medium', 'large'，'35px', '3em' 等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// 图标 DOM 元素，可选值：i/span/div/...
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
+    /// <summary>
+    /// 图标地址，地址内容参考[组件内部默认加载图标](https://tdesign.gtimg.com/icon/web/index.js)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("url")]
     public TIconUrlValue? Url { get; set; }
 
+    /// <summary>
+    /// 点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TIconClickEventContext> OnClick { get; set; }
 }
 
+/// <summary>
+/// Image
+///
+/// 图片
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Image")]
 public sealed class TImage : TContentComponentBase
 {
+    /// <summary>
+    /// 图片描述
+    /// </summary>
     [Parameter]
     [ECMAScriptName("alt")]
     public string? Alt { get; set; }
 
+    /// <summary>
+    /// 自定义图片加载失败状态下的显示内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("error")]
     public string? ErrorValue { get; set; }
 
+    /// <summary>
+    /// display `fallback` image on `src` loading failed. you can also use `error` to define more complex error content
+    ///
+    /// 图片加载失败时，显示当前链接设置的图片地址。如果要使用组件图标或完全自定义加载失败时显示的内容，请更为使用 `error`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fallback")]
     public string? Fallback { get; set; }
 
+    /// <summary>
+    /// 图片填充模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fit")]
     public TImageFitValue? Fit { get; set; }
 
+    /// <summary>
+    /// 是否展示为图集样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("gallery")]
     public bool? Gallery { get; set; }
 
+    /// <summary>
+    /// 是否开启图片懒加载
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// 自定义加载中状态的图片内容，如：“加载中”
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public string? LoadingValue { get; set; }
 
+    /// <summary>
+    /// overlay on the top of image
+    ///
+    /// 图片上方的浮层内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayContent")]
     public string? OverlayContentValue { get; set; }
 
+    /// <summary>
+    /// 浮层 `overlayContent` 出现的时机
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayTrigger")]
     public TImageOverlayTriggerValue? OverlayTrigger { get; set; }
 
+    /// <summary>
+    /// 占位元素，展示层级低于 `loading` `error` 和图片本身，值类型为字符串时表示占位图片地址
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? PlaceholderValue { get; set; }
 
+    /// <summary>
+    /// 等同于原生的 object-position 属性，可选值为 top right bottom left 或 string，可以自定义任何单位，px 或者 百分比
+    /// </summary>
     [Parameter]
     [ECMAScriptName("position")]
     public string? Position { get; set; }
 
+    /// <summary>
+    /// attribute of `&lt;img&gt;`, [MDN Definition](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
+    ///
+    /// `&lt;img&gt;` 标签的原生属性，[MDN 定义](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("referrerpolicy")]
     public TImageReferrerpolicyValue? Referrerpolicy { get; set; }
 
+    /// <summary>
+    /// 图片圆角类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public TImageShapeValue? Shape { get; set; }
 
+    /// <summary>
+    /// src attribute of `&lt;img&gt;`. image File can also be loaded
+    ///
+    /// 用于显示图片的链接或原始图片文件对象
+    /// </summary>
     [Parameter]
     [ECMAScriptName("src")]
     public TImageSrcValue? Src { get; set; }
 
+    /// <summary>
+    /// for `.avif` and `.webp` image url, load `srcset` before `src`
+    ///
+    /// 图片链接集合，用于支持特殊格式的图片，如 `.avif` 和 `.webp`。会优先加载 `srcset` 中的图片格式，浏览器不支持的情况下，加载 `src` 设置的图片地址
+    /// </summary>
     [Parameter]
     [ECMAScriptName("srcset")]
     public TImageSrcset? Srcset { get; set; }
 
+    /// <summary>
+    /// 自定义图片加载失败状态下的显示内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("error")]
     public RenderFragment? ErrorContent { get; set; }
 
+    /// <summary>
+    /// 自定义加载中状态的图片内容，如：“加载中”
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingContent { get; set; }
 
+    /// <summary>
+    /// overlay on the top of image
+    ///
+    /// 图片上方的浮层内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayContent")]
     public RenderFragment? OverlayContent { get; set; }
 
+    /// <summary>
+    /// 占位元素，展示层级低于 `loading` `error` 和图片本身，值类型为字符串时表示占位图片地址
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public RenderFragment? PlaceholderContent { get; set; }
 
+    /// <summary>
+    /// trigger on image load failed
+    ///
+    /// 图片加载失败时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onError")]
     public EventCallback<TImageErrorEventContext> OnError { get; set; }
 
+    /// <summary>
+    /// trigger on image loaded
+    ///
+    /// 图片加载完成时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onLoad")]
     public EventCallback<TImageLoadEventContext> OnLoad { get; set; }
 }
 
+/// <summary>
+/// ImageViewer
+///
+/// 图片预览
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "ImageViewer")]
 public sealed class TImageViewer : TContentComponentBase
 {
+    /// <summary>
+    /// 指定挂载节点。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
+    /// <summary>
+    /// 是否展示关闭按钮，值为 `true` 显示默认关闭按钮；值为 `false` 则不显示关闭按钮；也可以完全自定义关闭按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public bool? CloseBtnValue { get; set; }
 
+    /// <summary>
+    /// trigger image viewer close event on `ESC` keydown
+    ///
+    /// 按下 ESC 时是否触发图片预览器关闭事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnEscKeydown")]
     public bool? CloseOnEscKeydown { get; set; }
 
+    /// <summary>
+    /// 是否在点击遮罩层时，触发预览关闭
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnOverlay")]
     public bool? CloseOnOverlay { get; set; }
 
+    /// <summary>
+    /// 是否允许拖拽调整位置。`mode=modal` 时，默认不允许拖拽；`mode=modeless` 时，默认允许拖拽
+    /// </summary>
     [Parameter]
     [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
+    /// <summary>
+    /// attribute of `&lt;img&gt;`, [MDN Definition](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
+    ///
+    /// 图片预览中的 `&lt;img&gt;` 标签的原生属性，[MDN 定义](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("imageReferrerpolicy")]
     public TImageViewerImageReferrerpolicyValue? ImageReferrerpolicy { get; set; }
 
+    /// <summary>
+    /// 图片缩放相关配置。`imageScale.max` 缩放的最大比例；`imageScale.min` 缩放的最小比例；`imageScale.step` 缩放的步长速度; `imageScale.defaultScale` 默认的缩放比例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("imageScale")]
     public TImageScale? ImageScale { get; set; }
 
+    /// <summary>
+    /// 图片数组。`mainImage` 表示主图，必传；`thumbnail` 表示缩略图，如果不存在，则使用主图显示；`download` 是否允许下载图片，默认允许下载。示例: `['img_url_1', 'img_url_2']`，`[{ thumbnail: 'small_image_url', mainImage: 'big_image_url', download: false }]`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("images")]
     public TImageViewerImagesValueItem[]? Images { get; set; }
 
+    /// <summary>
+    /// 当前预览图片所在的下标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("index")]
     public Number? Index { get; set; }
 
+    /// <summary>
+    /// 模态预览（modal）和非模态预览（modeless)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TImageViewerModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// 切换预览图片的左图标，可自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("navigationArrow")]
     public bool? NavigationArrowValue { get; set; }
 
+    /// <summary>
+    /// 是否显示遮罩层。`mode=modal` 时，默认显示；`mode=modeless` 时，默认不显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
+    /// <summary>
+    /// preview title
+    ///
+    /// 预览标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// 限制预览器缩放的最小宽度和最小高度，仅 `mode=modeless` 时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("viewerScale")]
     public TImageViewerScale? ViewerScale { get; set; }
 
+    /// <summary>
+    /// hide or show image viewer
+    ///
+    /// 隐藏/显示预览
+    /// </summary>
     [Parameter]
     [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
+    /// <summary>
+    /// 层级，默认为 2000
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// 是否展示关闭按钮，值为 `true` 显示默认关闭按钮；值为 `false` 则不显示关闭按钮；也可以完全自定义关闭按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public RenderFragment? CloseBtnContent { get; set; }
 
+    /// <summary>
+    /// 切换预览图片的左图标，可自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("navigationArrow")]
     public RenderFragment? NavigationArrowContent { get; set; }
 
+    /// <summary>
+    /// preview title
+    ///
+    /// 预览标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 
+    /// <summary>
+    /// trigger element
+    ///
+    /// 触发图片预览的元素，可能是一个预览按钮，可能是一张缩略图，完全自定义类型和参数：TNode | TNode&lt;{ open: () =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public RenderFragment? TriggerContent { get; set; }
 
+    /// <summary>
+    /// 关闭时触发，事件参数包含触发关闭的来源：关闭按钮、遮罩层、ESC 键
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback<TImageViewerCloseEventContext> OnClose { get; set; }
 
+    /// <summary>
+    /// 自定义预览图片下载操作，url为图片链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDownload")]
     public EventCallback<TImageViewerDownloadEventUrl> OnDownload { get; set; }
 
+    /// <summary>
+    /// 预览图片切换时触发，`context.prev` 切换到上一张图片，`context.next` 切换到下一张图片
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onIndexChange")]
     public EventCallback<Number> OnIndexChange { get; set; }
 }
 
+/// <summary>
+/// Input
+///
+/// 输入框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Input")]
 public class TInput<T> : TContentComponentBase
 {
+    /// <summary>
+    /// text align type
+    ///
+    /// 文本内容位置，居左/居中/居右
+    /// </summary>
     [Parameter]
     [ECMAScriptName("align")]
     public TInputAlignValue? Align { get; set; }
 
+    /// <summary>
+    /// allow to continue input on value length is over `maxlength` or `maxcharacter`
+    ///
+    /// 超出 `maxlength` 或 `maxcharacter` 之后是否允许继续输入
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowInputOverMax")]
     public bool? AllowInputOverMax { get; set; }
 
+    /// <summary>
+    /// input width is fit to input content
+    ///
+    /// 宽度随内容自适应
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
+    /// <summary>
+    /// attribute of input element, [see here](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
+    ///
+    /// 是否开启自动填充功能，HTML5 原生属性，[点击查看详情](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
+    /// <summary>
+    /// autofocus on first rendered
+    ///
+    /// 自动聚焦
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// input without border
+    ///
+    /// 是否开启无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// show clear icon, clicked to clear input value
+    ///
+    /// 是否可清空
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// make input to be disabled
+    ///
+    /// 是否禁用输入框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// input value formatter, `type=number` does not work. if you need to format number, `InputNumber` Component might be better
+    ///
+    /// 指定输入框展示值的格式。注意 `type=number` 时请勿使用，此功能建议更为使用 `InputNumber` 组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public TInputFormatType? Format { get; set; }
 
+    /// <summary>
+    /// add className to the element with `t-input` class
+    ///
+    /// t-input 同级类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputClass")]
     public TClassName? InputClass { get; set; }
 
+    /// <summary>
+    /// text on the left of input
+    ///
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 用户最多可以输入的字符个数，一个中文汉字表示两个字符长度。`maxcharacter` 和 `maxlength` 二选一使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxcharacter")]
     public Number? Maxcharacter { get; set; }
 
+    /// <summary>
+    /// 用户最多可以输入的文本长度，一个中文等于一个计数长度。默认为空，不限制输入长度。`maxcharacter` 和 `maxlength` 二选一使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxlength")]
     public TInputMaxlengthValue<T>? Maxlength { get; set; }
 
+    /// <summary>
+    /// 名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// show clear icon on empty input value
+    ///
+    /// 输入框内容为空时，悬浮状态是否显示清空按钮，默认不显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showClearIconOnEmpty")]
     public bool? ShowClearIconOnEmpty { get; set; }
 
+    /// <summary>
+    /// show limit number text on the right
+    ///
+    /// 是否在输入框右侧显示字数统计
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showLimitNumber")]
     public bool? ShowLimitNumber { get; set; }
 
+    /// <summary>
+    /// make input to be different size
+    ///
+    /// 输入框尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// attribute of input element, [see here](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/spellcheck)
+    ///
+    /// 是否开启拼写检查，HTML5 原生属性，[点击查看详情](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/spellcheck)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("spellCheck")]
     public bool? SpellCheck { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TInputStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// suffix content before suffixIcon
+    ///
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public string? SuffixValue { get; set; }
 
+    /// <summary>
+    /// tips on the bottom of input, different `status` can make tips to be different color
+    ///
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// type attribute of input element. if you are using `type=number`, `InputNumber` Component might be better
+    ///
+    /// 输入框类型。`type=number` 仅支持最基础的数字输入功能，更多功能建议使用 `InputNumber` 组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public TInputTypeValue? Type { get; set; }
 
+    /// <summary>
+    /// input value
+    ///
+    /// 输入框的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public T? Value { get; set; }
 
+    /// <summary>
+    /// text on the left of input
+    ///
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
 
+    /// <summary>
+    /// suffix content before suffixIcon
+    ///
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// suffix icon of input
+    ///
+    /// 组件后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// tips on the bottom of input, different `status` can make tips to be different color
+    ///
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<T> OnBlur { get; set; }
 
+    /// <summary>
+    /// trigger on input value changed
+    ///
+    /// 输入框值发生变化时触发。参数 `trigger=initial` 表示传入的数据不符合预期，组件自动处理后触发 change 告知父组件。如：初始值长度超过 `maxlength` 限制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
 
+    /// <summary>
+    /// 清空按钮点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TInputClearEventContext<T>> OnClear { get; set; }
 
+    /// <summary>
+    /// 点击组件时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TInputClickEventContext<T>> OnClick { get; set; }
 
+    /// <summary>
+    /// trigger on compositionend
+    ///
+    /// 中文输入结束时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCompositionend")]
     public EventCallback<string> OnCompositionend { get; set; }
 
+    /// <summary>
+    /// trigger on compositionstart
+    ///
+    /// 中文输入开始时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCompositionstart")]
     public EventCallback<string> OnCompositionstart { get; set; }
 
+    /// <summary>
+    /// 回车键按下时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEnter")]
     public EventCallback<T> OnEnter { get; set; }
 
+    /// <summary>
+    /// 获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<T> OnFocus { get; set; }
 
+    /// <summary>
+    /// 键盘按下时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeydown")]
     public EventCallback<T> OnKeydown { get; set; }
 
+    /// <summary>
+    /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeypress")]
     public EventCallback<T> OnKeypress { get; set; }
 
+    /// <summary>
+    /// 释放键盘时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeyup")]
     public EventCallback<T> OnKeyup { get; set; }
 
+    /// <summary>
+    /// trigger on mouseenter
+    ///
+    /// 进入输入框时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseenter")]
     public EventCallback<TInputMouseenterEventContext<T>> OnMouseenter { get; set; }
 
+    /// <summary>
+    /// trigger on mouseleave
+    ///
+    /// 离开输入框时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseleave")]
     public EventCallback<TInputMouseleaveEventContext<T>> OnMouseleave { get; set; }
 
+    /// <summary>
+    /// 粘贴事件，`pasteValue` 表示粘贴板的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPaste")]
     public EventCallback<TInputPasteEventContext<T>> OnPaste { get; set; }
 
+    /// <summary>
+    /// trigger on text length being over max length or max character
+    ///
+    /// 字数超出限制时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onValidate")]
     public EventCallback<TInputValidateEventContext<T>> OnValidate { get; set; }
 
+    /// <summary>
+    /// trigger on mouse wheel
+    ///
+    /// 输入框中滚动鼠标时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onWheel")]
     public EventCallback<TInputWheelEventContext<T>> OnWheel { get; set; }
@@ -27808,157 +31226,290 @@ internal sealed class TInput : TInput<TInputValue>
 {
 }
 
+/// <summary>
+/// InputAdornment
+///
+/// 输入装饰器
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "InputAdornment")]
 public sealed class TInputAdornment : TContentComponentBase
 {
+    /// <summary>
+    /// The suffix decoration
+    ///
+    /// 后缀装饰
+    /// </summary>
     [Parameter]
     [ECMAScriptName("append")]
     public string? AppendValue { get; set; }
 
+    /// <summary>
+    /// The prefix decoration
+    ///
+    /// 前缀装饰
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prepend")]
     public string? PrependValue { get; set; }
 
+    /// <summary>
+    /// The suffix decoration
+    ///
+    /// 后缀装饰
+    /// </summary>
     [Parameter]
     [ECMAScriptName("append")]
     public RenderFragment? AppendContent { get; set; }
 
+    /// <summary>
+    /// The prefix decoration
+    ///
+    /// 前缀装饰
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prepend")]
     public RenderFragment? PrependContent { get; set; }
 }
 
+/// <summary>
+/// InputGroup
+///
+/// 输入框组
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "InputGroup")]
 public sealed class TInputGroup : TContentComponentBase
 {
+    /// <summary>
+    /// need separate between multiple inputs
+    ///
+    /// 多个输入框之间是否需要间隔
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separate")]
     public bool? Separate { get; set; }
 }
 
+/// <summary>
+/// InputNumber
+///
+/// 数字输入框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "InputNumber")]
 public class TInputNumber<T> : TContentComponentBase
 {
+    /// <summary>
+    /// 文本内容位置，居左/居中/居右
+    /// </summary>
     [Parameter]
     [ECMAScriptName("align")]
     public TInputNumberAlignValue? Align { get; set; }
 
+    /// <summary>
+    /// 是否允许输入超过 `max` `min` 范围外的数字。为保障用户体验，仅在失去焦点时进行数字范围矫正。默认允许超出，数字超出范围时，输入框变红提醒
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowInputOverLimit")]
     public bool? AllowInputOverLimit { get; set; }
 
+    /// <summary>
+    /// 宽度随内容自适应
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
+    /// <summary>
+    /// [小数位数](https://en.wiktionary.org/wiki/decimal_place)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("decimalPlaces")]
     public TInputNumberDecimalPlaces? DecimalPlaces { get; set; }
 
+    /// <summary>
+    /// 禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 格式化输入框展示值。第二个事件参数 `context.fixedNumber` 表示处理过小数位数 `decimalPlaces` 的数字
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public TInputNumberFormatValue<T>? Format { get; set; }
 
+    /// <summary>
+    /// 透传 Input 输入框组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 是否作为大数使用。JS 支持的最大数字位数是 16 位，超过 16 位的数字需作为字符串大数处理。此时，数据类型必须保持为字符串，否则会丢失数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("largeNumber")]
     public bool? LargeNumber { get; set; }
 
+    /// <summary>
+    /// 最大值。如果是大数，请传入字符串
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public TInputNumberValue? Max { get; set; }
 
+    /// <summary>
+    /// 最小值。如果是大数，请传入字符串
+    /// </summary>
     [Parameter]
     [ECMAScriptName("min")]
     public TInputNumberValue? Min { get; set; }
 
+    /// <summary>
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TInputNumberSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 文本框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TInputNumberStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 数值改变步数，可以是小数。如果是大数，请保证数据类型为字符串
+    /// </summary>
     [Parameter]
     [ECMAScriptName("step")]
     public TInputNumberValue? Step { get; set; }
 
+    /// <summary>
+    /// 后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public string? SuffixValue { get; set; }
 
+    /// <summary>
+    /// 按钮布局
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TInputNumberThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 数字输入框的值。当值为 '' 时，输入框显示为空
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public T? Value { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TInputNumberValue> OnBlur { get; set; }
 
+    /// <summary>
+    /// 值变化时触发，`type` 表示触发本次变化的来源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
 
+    /// <summary>
+    /// 回车键按下时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEnter")]
     public EventCallback<TInputNumberValue> OnEnter { get; set; }
 
+    /// <summary>
+    /// 获取焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TInputNumberValue> OnFocus { get; set; }
 
+    /// <summary>
+    /// 键盘按下时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeydown")]
     public EventCallback<TInputNumberValue> OnKeydown { get; set; }
 
+    /// <summary>
+    /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeypress")]
     public EventCallback<TInputNumberValue> OnKeypress { get; set; }
 
+    /// <summary>
+    /// 释放键盘时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeyup")]
     public EventCallback<TInputNumberValue> OnKeyup { get; set; }
 
+    /// <summary>
+    /// 最大值或最小值校验结束后触发，`exceed-maximum` 表示超出最大值，`below-minimum` 表示小于最小值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onValidate")]
     public EventCallback<TInputNumberValidateEventContext<T>> OnValidate { get; set; }
@@ -27969,457 +31520,843 @@ internal sealed class TInputNumber : TInputNumber<TInputNumberValue>
 {
 }
 
+/// <summary>
+/// Layout
+///
+/// 布局
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Layout")]
 public sealed class TLayout : TContentComponentBase
 {
+    /// <summary>
+    /// 【开发中】布局方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public TLayoutDirectionValue? Direction { get; set; }
 }
 
+/// <summary>
+/// Link
+///
+/// 链接
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Link")]
 public sealed class TLink : TContentComponentBase
 {
+    /// <summary>
+    /// 链接内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// make link to be disabled
+    ///
+    /// 禁用链接。优先级：Link.disabled &gt; Form.disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// Causes the browser to treat the linked URL as a download
+    ///
+    /// 使得浏览器将链接的 URL 视为可下载资源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("download")]
     public TLinkDownloadValue? Download { get; set; }
 
+    /// <summary>
+    /// hover link style
+    ///
+    /// 链接悬浮态样式，有 文本颜色变化、添加下划线等 2 种方法
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hover")]
     public TLinkHoverValue? Hover { get; set; }
 
+    /// <summary>
+    /// 跳转链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("href")]
     public string? Href { get; set; }
 
+    /// <summary>
+    /// 尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// target is an attribute of `&lt;a&gt;`
+    ///
+    /// 跳转方式，如：当前页面打开、新页面打开等，同 HTML 属性 target 含义相同
+    /// </summary>
     [Parameter]
     [ECMAScriptName("target")]
     public string? Target { get; set; }
 
+    /// <summary>
+    /// 组件风格，依次为默认色、品牌色、危险色、警告色、成功色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TLinkThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 是否显示链接下划线
+    /// </summary>
     [Parameter]
     [ECMAScriptName("underline")]
     public bool? Underline { get; set; }
 
+    /// <summary>
+    /// 链接内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
 
+    /// <summary>
+    /// 后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// click event, it won't trigger when it's disabled
+    ///
+    /// 点击事件，禁用状态不会触发点击事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<MouseEvent> OnClick { get; set; }
 }
 
+/// <summary>
+/// List
+///
+/// 列表
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "List")]
 public sealed class TList : TContentComponentBase
 {
+    /// <summary>
+    /// 自定义加载中。值为空不显示加载中，值为 'loading' 显示加载中状态，值为 'load-more' 显示加载更多状态。值类型为函数，则表示自定义加载状态呈现内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("asyncLoading")]
     public string? AsyncLoadingValue { get; set; }
 
+    /// <summary>
+    /// 底部
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public string? FooterValue { get; set; }
 
+    /// <summary>
+    /// 头部
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public string? HeaderValue { get; set; }
 
+    /// <summary>
+    /// 排列方式（待设计稿输出）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public TListLayoutValue? Layout { get; set; }
 
+    /// <summary>
+    /// lazy load and virtual scroll
+    ///
+    /// 懒加载和虚拟滚动。为保证组件收益最大化，当数据量小于阈值 `scroll.threshold` 时，无论虚拟滚动的配置是否存在，组件内部都不会开启虚拟滚动，`scroll.threshold` 默认为 `100`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
+    /// <summary>
+    /// 尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TListSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 是否展示分割线
+    /// </summary>
     [Parameter]
     [ECMAScriptName("split")]
     public bool? Split { get; set; }
 
+    /// <summary>
+    /// 是否展示斑马纹
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
+    /// <summary>
+    /// 自定义加载中。值为空不显示加载中，值为 'loading' 显示加载中状态，值为 'load-more' 显示加载更多状态。值类型为函数，则表示自定义加载状态呈现内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("asyncLoading")]
     public RenderFragment? AsyncLoadingContent { get; set; }
 
+    /// <summary>
+    /// 底部
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? FooterContent { get; set; }
 
+    /// <summary>
+    /// 头部
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? HeaderContent { get; set; }
 
+    /// <summary>
+    /// 点击加载更多时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onLoadMore")]
     public EventCallback<TListLoadMoreEventOptions> OnLoadMore { get; set; }
 
+    /// <summary>
+    /// 列表滚动时触发，scrollTop 表示顶部滚动距离，scrollBottom 表示底部滚动距离
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback<TListScrollEventOptions> OnScroll { get; set; }
 }
 
+/// <summary>
+/// ListItem
+///
+/// 列表项
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "ListItem")]
 public sealed class TListItem : TContentComponentBase
 {
+    /// <summary>
+    /// 操作栏
+    /// </summary>
     [Parameter]
     [ECMAScriptName("action")]
     public string? ActionValue { get; set; }
 
+    /// <summary>
+    /// 内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 操作栏
+    /// </summary>
     [Parameter]
     [ECMAScriptName("action")]
     public RenderFragment? ActionContent { get; set; }
 
+    /// <summary>
+    /// 内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 }
 
+/// <summary>
+/// ListItemMeta
+///
+/// 带图片的列表项
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "ListItemMeta")]
 public sealed class TListItemMeta : TContentComponentBase
 {
+    /// <summary>
+    /// 列表项图片
+    /// </summary>
     [Parameter]
     [ECMAScriptName("avatar")]
     public string? AvatarValue { get; set; }
 
+    /// <summary>
+    /// 列表项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public string? DescriptionValue { get; set; }
 
+    /// <summary>
+    /// 列表项图片
+    /// </summary>
     [Parameter]
     [ECMAScriptName("image")]
     public string? ImageValue { get; set; }
 
+    /// <summary>
+    /// 列表项标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// 列表项图片
+    /// </summary>
     [Parameter]
     [ECMAScriptName("avatar")]
     public RenderFragment? AvatarContent { get; set; }
 
+    /// <summary>
+    /// 列表项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public RenderFragment? DescriptionContent { get; set; }
 
+    /// <summary>
+    /// 列表项图片
+    /// </summary>
     [Parameter]
     [ECMAScriptName("image")]
     public RenderFragment? ImageContent { get; set; }
 
+    /// <summary>
+    /// 列表项标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }
 
+/// <summary>
+/// Loading
+///
+/// 加载中
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Loading")]
 public sealed class TLoading : TContentComponentBase
 {
+    /// <summary>
+    /// 挂载元素，默认挂载到组件本身所在的位置。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
+    /// <summary>
+    /// 子元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 延迟显示加载效果的时间，用于防止请求速度过快引起的加载闪烁，单位：毫秒
+    /// </summary>
     [Parameter]
     [ECMAScriptName("delay")]
     public Number? Delay { get; set; }
 
+    /// <summary>
+    /// 是否显示为全屏加载
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fullscreen")]
     public bool? Fullscreen { get; set; }
 
+    /// <summary>
+    /// 加载指示符，值为 true 显示默认指示符，值为 false 则不显示，也可以自定义指示符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indicator")]
     public bool? IndicatorValue { get; set; }
 
+    /// <summary>
+    /// 是否继承父元素颜色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inheritColor")]
     public bool? InheritColor { get; set; }
 
+    /// <summary>
+    /// 是否处于加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// 防止滚动穿透，全屏加载模式有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("preventScrollThrough")]
     public bool? PreventScrollThrough { get; set; }
 
+    /// <summary>
+    /// 是否需要遮罩层，遮罩层对包裹元素才有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showOverlay")]
     public bool? ShowOverlay { get; set; }
 
+    /// <summary>
+    /// 尺寸，示例：small/medium/large/12px/56px/0.3em
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// 加载提示文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("text")]
     public string? TextValue { get; set; }
 
+    /// <summary>
+    /// 消息通知层级，样式默认为 3500
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// 子元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 加载指示符，值为 true 显示默认指示符，值为 false 则不显示，也可以自定义指示符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indicator")]
     public RenderFragment? IndicatorContent { get; set; }
 
+    /// <summary>
+    /// 加载提示文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("text")]
     public RenderFragment? TextContent { get; set; }
 }
 
+/// <summary>
+/// Menu
+///
+/// 侧边导航菜单
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Menu")]
 public sealed class TMenu : TContentComponentBase
 {
+    /// <summary>
+    /// 是否收起菜单
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapsed")]
     public bool? Collapsed { get; set; }
 
+    /// <summary>
+    /// 同级别互斥展开
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandMutex")]
     public bool? ExpandMutex { get; set; }
 
+    /// <summary>
+    /// 二级菜单展开方式，平铺展开和浮层展开
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandType")]
     public TMenuExpandTypeValue? ExpandType { get; set; }
 
+    /// <summary>
+    /// 子菜单展开的导航集合
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expanded")]
     public TMenuValue[]? Expanded { get; set; }
 
+    /// <summary>
+    /// Menu can be light mode or dark mode
+    ///
+    /// 菜单风格，有亮色模式和暗色模式两种。当 `theme = global` 时，模式随整个组件库；当 `theme = system` 时，模式跟随系统。⚠️ `global/system` 正在开发中，暂勿使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TMenuThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 激活菜单项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
 
+    /// <summary>
+    /// 菜单宽度。值类型为数组时，分别表示菜单展开和折叠的宽度。[ 展开时的宽度, 折叠时的宽度 ]，示例：['200px', '80px']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public TMenuWidthValue? Width { get; set; }
 
+    /// <summary>
+    /// 站点 LOGO
+    /// </summary>
     [Parameter]
     [ECMAScriptName("logo")]
     public RenderFragment? LogoContent { get; set; }
 
+    /// <summary>
+    /// 导航操作区域
+    /// </summary>
     [Parameter]
     [ECMAScriptName("operations")]
     public RenderFragment? OperationsContent { get; set; }
 
+    /// <summary>
+    /// 激活菜单项发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TMenuValue> OnChange { get; set; }
 
+    /// <summary>
+    /// 展开的菜单项发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpand")]
     public EventCallback<TMenuValue[]> OnExpand { get; set; }
 }
 
+/// <summary>
+/// MenuGroup
+///
+/// 导航菜单组
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "MenuGroup")]
 public sealed class TMenuGroup : TContentComponentBase
 {
+    /// <summary>
+    /// 菜单组标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// 菜单组标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }
 
+/// <summary>
+/// MenuItem
+///
+/// 导航菜单选项
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "MenuItem")]
 public sealed class TMenuItem : TContentComponentBase
 {
+    /// <summary>
+    /// 菜单项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 是否禁用菜单项展开/收起/跳转等功能
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 跳转链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("href")]
     public string? Href { get; set; }
 
+    /// <summary>
+    /// 路由跳转是否采用覆盖的方式（覆盖后将没有浏览器历史记录）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("replace")]
     public bool? Replace { get; set; }
 
+    /// <summary>
+    /// 路由对象。如果项目存在 Router，则默认使用 Router
+    /// </summary>
     [Parameter]
     [ECMAScriptName("router")]
     public VueDictionary<TJsonValue>? Router { get; set; }
 
+    /// <summary>
+    /// This API is valid if and only if the Router exists. Enable menu item content to be rendered as an `&lt;a /&gt;` consistent with router-link behavior
+    ///
+    /// 当且仅当 Router 存在时，该 API 有效。开启菜单项内容渲染为与router-link行为一致的`&lt;a /&gt;`标签
+    /// </summary>
     [Parameter]
     [ECMAScriptName("routerLink")]
     public bool? RouterLink { get; set; }
 
+    /// <summary>
+    /// 链接或路由跳转方式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("target")]
     public TMenuItemTargetValue? Target { get; set; }
 
+    /// <summary>
+    /// 路由跳转目标，当且仅当 Router 存在时，该 API 有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("to")]
     public TMenuItemToValue? To { get; set; }
 
+    /// <summary>
+    /// Transparent all feature props of the Tooltip
+    ///
+    /// 透传 Tooltip 组件的特性，作用于一级菜单收起下聚焦时出现的节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tooltipProps")]
     public TdTooltipProps? TooltipProps { get; set; }
 
+    /// <summary>
+    /// 菜单项唯一标识
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
 
+    /// <summary>
+    /// 菜单项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// trigger on click
+    ///
+    /// 点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TMenuItemClickEventContext> OnClick { get; set; }
 }
 
+/// <summary>
+/// Message
+///
+/// 全局提醒
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Message")]
 public sealed class TMessage : TContentComponentBase
 {
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。也可以完全自定义按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TMessageCloseBtnValue? CloseBtnValue { get; set; }
 
+    /// <summary>
+    /// 用于自定义消息弹出内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 消息内置计时器，计时到达时会触发 duration-end 事件。单位：毫秒。值为 0 则表示没有计时器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
+    /// <summary>
+    /// 用于自定义消息前面的图标，优先级大于 theme 设定的图标。值为 false 则不显示图标，值为 true 显示 theme 设定图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public bool? IconValue { get; set; }
 
+    /// <summary>
+    /// 消息组件风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TMessageThemeList? Theme { get; set; }
 
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。也可以完全自定义按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public RenderFragment? CloseBtnContent { get; set; }
 
+    /// <summary>
+    /// 用于自定义消息弹出内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 用于自定义消息前面的图标，优先级大于 theme 设定的图标。值为 false 则不显示图标，值为 true 显示 theme 设定图标类型和参数：boolean | TNode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// close message event
+    ///
+    /// 关闭消息时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback<TMessageCloseEventContext> OnClose { get; set; }
 
+    /// <summary>
+    /// 当关闭按钮存在时，用户点击关闭按钮触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TMessageCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
+    /// <summary>
+    /// 计时结束后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDurationEnd")]
     public EventCallback OnDurationEnd { get; set; }
 }
 
+/// <summary>
+/// Notification
+///
+/// 消息通知
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Notification")]
 public sealed class TNotification : TContentComponentBase
 {
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public TNotificationCloseBtnValue? CloseBtnValue { get; set; }
 
+    /// <summary>
+    /// 自定义内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 消息显示时长，单位：毫秒。值为 0 表示永久显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
+    /// <summary>
+    /// 用于自定义底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public string? FooterValue { get; set; }
 
+    /// <summary>
+    /// 用于自定义消息通知前面的图标，优先级大于 theme 设定的图标。值为 false 则不显示图标，值为 true 显示 theme 设定图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public bool? IconValue { get; set; }
 
+    /// <summary>
+    /// 消息类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TNotificationThemeList? Theme { get; set; }
 
+    /// <summary>
+    /// 标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// 关闭按钮，可以自定义。值为 true 显示默认关闭按钮，值为 false 不显示关闭按钮。值类型为 string 则直接显示值，如：“关闭”。值类型为 TNode，则表示呈现自定义按钮示例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeBtn")]
     public RenderFragment? CloseBtnContent { get; set; }
 
+    /// <summary>
+    /// 自定义内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 用于自定义底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? FooterContent { get; set; }
 
+    /// <summary>
+    /// 用于自定义消息通知前面的图标，优先级大于 theme 设定的图标。值为 false 则不显示图标，值为 true 显示 theme 设定图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// 标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
@@ -28428,807 +32365,1624 @@ public sealed class TNotification : TContentComponentBase
     [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
+    /// <summary>
+    /// 点击关闭按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCloseBtnClick")]
     public EventCallback<TNotificationCloseBtnClickEventContext> OnCloseBtnClick { get; set; }
 
+    /// <summary>
+    /// 计时结束时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDurationEnd")]
     public EventCallback OnDurationEnd { get; set; }
 }
 
+/// <summary>
+/// Option
+///
+/// 选择器选项
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Option")]
 public sealed class TOption : TContentComponentBase
 {
+    /// <summary>
+    /// check all option, which can be both top of the panel and bottom of the panel
+    ///
+    /// 当前选项是否为全选，全选可以在顶部，也可以在底部。点击当前选项会选中禁用态除外的全部选项，即使是分组选择器也会选中全部选项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkAll")]
     public bool? CheckAll { get; set; }
 
+    /// <summary>
+    /// 用于定义复杂的选项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 是否禁用该选项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 选项名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// 选项标题，在选项过长时hover选项展示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// 选项值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TOptionValueValue? Value { get; set; }
 
+    /// <summary>
+    /// 用于定义复杂的选项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 }
 
+/// <summary>
+/// OptionGroup
+///
+/// 选择器选项组
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "OptionGroup")]
 public sealed class TOptionGroup : TContentComponentBase
 {
+    /// <summary>
+    /// 是否显示分隔线
+    /// </summary>
     [Parameter]
     [ECMAScriptName("divider")]
     public bool? Divider { get; set; }
 
+    /// <summary>
+    /// 分组别名
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 }
 
+/// <summary>
+/// Pagination
+///
+/// 分页
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Pagination")]
 public sealed class TPagination : TContentComponentBase
 {
+    /// <summary>
+    /// 当前页
+    /// </summary>
     [Parameter]
     [ECMAScriptName("current")]
     public Number? Current { get; set; }
 
+    /// <summary>
+    /// 是否禁用分页组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 折叠时最多显示页码按钮数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("foldedMaxPageBtn")]
     public Number? FoldedMaxPageBtn { get; set; }
 
+    /// <summary>
+    /// 最多显示页码按钮数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxPageBtn")]
     public Number? MaxPageBtn { get; set; }
 
+    /// <summary>
+    /// 页码数量超出时，前后省略模式, `mid`表示中间省略, `both-ends` 表示两端省略
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pageEllipsisMode")]
     public TPaginationPageEllipsisModeValue? PageEllipsisMode { get; set; }
 
+    /// <summary>
+    /// each page count
+    ///
+    /// 每一页的数据量
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pageSize")]
     public Number? PageSize { get; set; }
 
+    /// <summary>
+    /// 分页大小控制器，值为 [] 则不显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pageSizeOptions")]
     public TPaginationPageSizeOptionsValueItem[]? PageSizeOptions { get; set; }
 
+    /// <summary>
+    /// 透传全部属性到 Select 组件，也可使用 `selectProps.popupProps` 透传全部 Popup 组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectProps")]
     public TdSelectProps<TSelectOption>? SelectProps { get; set; }
 
+    /// <summary>
+    /// 是否显示跳转首页尾页页码控制器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showFirstAndLastPageBtn")]
     public bool? ShowFirstAndLastPageBtn { get; set; }
 
+    /// <summary>
+    /// 是否显示跳转页码控制器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showJumper")]
     public bool? ShowJumper { get; set; }
 
+    /// <summary>
+    /// 是否显示页码控制器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showPageNumber")]
     public bool? ShowPageNumber { get; set; }
 
+    /// <summary>
+    /// 是否显示分页数量控制器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showPageSize")]
     public bool? ShowPageSize { get; set; }
 
+    /// <summary>
+    /// 是否显示跳转前后页页码控制器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showPreviousAndNextBtn")]
     public bool? ShowPreviousAndNextBtn { get; set; }
 
+    /// <summary>
+    /// 分页组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TPaginationSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 分页组件风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TPaginationThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 数据总条数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("total")]
     public Number? Total { get; set; }
 
+    /// <summary>
+    /// 用于自定义总条数呈现内容。默认显示总条数，值为 false 则不显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("totalContent")]
     public bool? TotalContentValue { get; set; }
 
+    /// <summary>
+    /// 用于自定义总条数呈现内容。默认显示总条数，值为 false 则不显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("totalContent")]
     public RenderFragment? TotalContent { get; set; }
 
+    /// <summary>
+    /// 当前页或分页大小发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TPageInfo> OnChange { get; set; }
 
+    /// <summary>
+    /// 当前页发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCurrentChange")]
     public EventCallback<Number> OnCurrentChange { get; set; }
 
+    /// <summary>
+    /// 分页大小发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPageSizeChange")]
     public EventCallback<Number> OnPageSizeChange { get; set; }
 }
 
+/// <summary>
+/// PaginationMini
+///
+/// 迷你分页
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "PaginationMini")]
 public sealed class TPaginationMini : TContentComponentBase
 {
+    /// <summary>
+    /// 按钮禁用配置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TPaginationMiniDisabledValue? Disabled { get; set; }
 
+    /// <summary>
+    /// horizontal or vertical
+    ///
+    /// 按钮方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public TPaginationMiniLayoutValue? Layout { get; set; }
 
+    /// <summary>
+    /// 是否展示当前按钮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showCurrent")]
     public bool? ShowCurrent { get; set; }
 
+    /// <summary>
+    /// Button size
+    ///
+    /// 按钮尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// 提示文案配置，值为 `true` 显示默认文案；值为 `false` 不显示提示文案；值类型为对象则单独配置文案内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public TPaginationMiniTipsValue? Tips { get; set; }
 
+    /// <summary>
+    /// 按钮形式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("variant")]
     public TPaginationMiniVariantValue? Variant { get; set; }
 
+    /// <summary>
+    /// 按钮点击事件回调
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TPaginationMiniChangeEventContext> OnChange { get; set; }
 }
 
+/// <summary>
+/// Paragraph
+///
+/// 段落
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Paragraph")]
 public sealed class TParagraph : TContentComponentBase
 {
+    /// <summary>
+    /// content of paragraph
+    ///
+    /// 段落内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// add ellipsis style
+    ///
+    /// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ellipsis")]
     public TParagraphEllipsisValue? Ellipsis { get; set; }
 
+    /// <summary>
+    /// content of paragraph
+    ///
+    /// 段落内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 }
 
+/// <summary>
+/// Popconfirm
+///
+/// 气泡确认框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Popconfirm")]
 public sealed class TPopconfirm : TContentComponentBase
 {
+    /// <summary>
+    /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public TPopconfirmCancelBtnValue? CancelBtnValue { get; set; }
 
+    /// <summary>
+    /// 确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public TPopconfirmConfirmBtnValue? ConfirmBtnValue { get; set; }
 
+    /// <summary>
+    /// 是否在关闭浮层时销毁浮层
+    /// </summary>
     [Parameter]
     [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
+    /// <summary>
+    /// 浮层出现位置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public TPopconfirmPlacementValue? Placement { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 是否显示浮层箭头
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// 文字提示风格。如果期望不显示文本前方的主题图标，请更为设置 `icon` 为 `null`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TPopconfirmThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 触发元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerElement")]
     public string? TriggerElementValue { get; set; }
 
+    /// <summary>
+    /// 取消按钮，可自定义。值为 null 则不显示取消按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制取消事件类型和参数：string | ButtonProps | TNode【import { ButtonProps } from '@Button'】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelBtn")]
     public RenderFragment? CancelBtnContent { get; set; }
 
+    /// <summary>
+    /// 确认按钮。值类型为字符串，则表示自定义按钮文本，值类型为 Object 则表示透传 Button 组件属性。使用 TNode 自定义按钮时，需自行控制确认事件类型和参数：string | ButtonProps | TNode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmBtn")]
     public RenderFragment? ConfirmBtnContent { get; set; }
 
+    /// <summary>
+    /// 确认框图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// 触发元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerElement")]
     public RenderFragment? TriggerElementContent { get; set; }
 
+    /// <summary>
+    /// 点击取消按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCancel")]
     public EventCallback<TPopconfirmCancelEventOptions> OnCancel { get; set; }
 
+    /// <summary>
+    /// 点击确认按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback<TPopconfirmConfirmEventOptions> OnConfirm { get; set; }
 
+    /// <summary>
+    /// 确认框显示或隐藏时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
+/// <summary>
+/// Popup
+///
+/// 气泡框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Popup")]
 public sealed class TPopup : TContentComponentBase
 {
+    /// <summary>
+    /// 指定挂载节点。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
+    /// <summary>
+    /// 浮层里面的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// delay to show or hide popover
+    ///
+    /// 延时显示或隐藏浮层，[延迟显示的时间，延迟隐藏的时间]，单位：毫秒。如果只有一个时间，则表示显示和隐藏的延迟时间相同。示例 `'300'` 或者 `[200, 200]`。默认为：[250, 150]
+    /// </summary>
     [Parameter]
     [ECMAScriptName("delay")]
     public TPopupDelayValue? Delay { get; set; }
 
+    /// <summary>
+    /// 是否在关闭浮层时销毁浮层
+    /// </summary>
     [Parameter]
     [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 浮层是否隐藏空内容，默认不隐藏
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideEmptyPopup")]
     public bool? HideEmptyPopup { get; set; }
 
+    /// <summary>
+    /// 浮层类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayClassName")]
     public TClassName? OverlayClassName { get; set; }
 
+    /// <summary>
+    /// 浮层内容部分类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayInnerClassName")]
     public TClassName? OverlayInnerClassName { get; set; }
 
+    /// <summary>
+    /// 浮层内容部分样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayInnerStyle")]
     public TPopupOverlayInnerStyleValue? OverlayInnerStyle { get; set; }
 
+    /// <summary>
+    /// 浮层样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayStyle")]
     public TPopupOverlayStyleValue? OverlayStyle { get; set; }
 
+    /// <summary>
+    /// 浮层出现位置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public TPopupPlacement? Placement { get; set; }
 
+    /// <summary>
+    /// popper initial options，details refer to https://popper.js.org/docs
+    ///
+    /// popper 初始化配置，详情参考 https://popper.js.org/docs/
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public TJsonObject? PopperOptions { get; set; }
 
+    /// <summary>
+    /// 是否显示浮层箭头
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// 触发浮层出现的方式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public TPopupTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// 触发元素。值类型为字符串表示元素选择器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerElement")]
     public string? TriggerElementValue { get; set; }
 
+    /// <summary>
+    /// 是否显示浮层
+    /// </summary>
     [Parameter]
     [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
+    /// <summary>
+    /// 组件层级，Web 侧样式默认为 5500，移动端和小程序样式默认为 1500
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// 浮层里面的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 触发元素。值类型为字符串表示元素选择器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerElement")]
     public RenderFragment? TriggerElementContent { get; set; }
 
+    /// <summary>
+    /// trigger on popup content click
+    ///
+    /// 内容面板点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOverlayClick")]
     public EventCallback<TPopupOverlayClickEventContext> OnOverlayClick { get; set; }
 
+    /// <summary>
+    /// 下拉选项滚动事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback<TPopupScrollEventContext> OnScroll { get; set; }
 
+    /// <summary>
+    /// 下拉滚动触底事件，常用于滚动到底执行具体业务逻辑
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScrollToBottom")]
     public EventCallback<TPopupScrollToBottomEventContext> OnScrollToBottom { get; set; }
 
+    /// <summary>
+    /// 当浮层隐藏或显示时触发，`trigger=document` 表示点击非浮层元素触发；`trigger=context-menu` 表示右击触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
+/// <summary>
+/// PrimaryTable
+///
+/// 主表格
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "PrimaryTable")]
 public class TPrimaryTable<T> : TContentComponentBase
 {
+    /// <summary>
+    /// keys of highlight rows, used to mock area selection behavior, just like macOS or windows area selection
+    ///
+    /// 高亮行，支持鼠标键盘操作(Shift)连续高亮行，可用于处理行选中等批量操作，模拟操作系统区域选择行为
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeRowKeys")]
     public TPrimaryTableActiveRowKeysValueItem<T>[]? ActiveRowKeys { get; set; }
 
+    /// <summary>
+    /// make nodes can be highlight on clicked
+    ///
+    /// 默认不会高亮点击行，`activeRowType=single` 表示鼠标点击仅允许同时高亮一行，Shift 键盘操作加鼠标操作依然可以高亮多行，因为这属于明显的区域选择行为。`activeRowType= multiple ` 表示允许鼠标点击同时高亮多行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeRowType")]
     public TPrimaryTableActiveRowTypeValue? ActiveRowType { get; set; }
 
+    /// <summary>
+    /// allow to resize column width
+    ///
+    /// 是否允许调整列宽。请更为使用 `resizable`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowResizeColumnWidth")]
     public bool? AllowResizeColumnWidth { get; set; }
 
+    /// <summary>
+    /// async loading state
+    ///
+    /// 异步加载状态。值为 `loading` 显示默认文字 “正在加载中，请稍后”，值为 `load-more` 显示“点击加载更多”，值为其他，表示完全自定义异步加载区域内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("asyncLoading")]
     public TPrimaryTableAsyncLoadingValue? AsyncLoadingValue { get; set; }
 
+    /// <summary>
+    /// elements with popup would be attached to `attach`
+    ///
+    /// 超出省略等所有浮层元素统一绑定到 `attach`，可根据实际情况调整挂载元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
+    /// <summary>
+    /// show table bordered
+    ///
+    /// 是否显示表格边框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
+    /// <summary>
+    /// 表格底部内容，可以用于自定义列设置等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bottomContent")]
     public string? BottomContentValue { get; set; }
 
+    /// <summary>
+    /// 单元格数据为空时呈现的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellEmptyContent")]
     public string? CellEmptyContentValue { get; set; }
 
+    /// <summary>
+    /// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+    /// </summary>
     [Parameter]
     [ECMAScriptName("columnController")]
     public TTableColumnController? ColumnController { get; set; }
 
+    /// <summary>
+    /// 是否显示列配置弹框控制器，只要该属性值不为 `undefined`，弹框的显示/隐藏完全由该属性控制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("columnControllerVisible")]
     public bool? ColumnControllerVisible { get; set; }
 
+    /// <summary>
+    /// table column configs
+    ///
+    /// 列配置，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("columns")]
     public TPrimaryTableCol<T>[]? Columns { get; set; }
 
+    /// <summary>
+    /// table data
+    ///
+    /// 数据源，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public T[]? Data { get; set; }
 
+    /// <summary>
+    /// 是否禁用本地数据分页。当 `data` 数据长度超过分页大小时，会自动进行本地数据分页。如果 `disableDataPage` 设置为 true，则无论何时，都不会进行本地数据分页
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableDataPage")]
     public bool? DisableDataPage { get; set; }
 
+    /// <summary>
+    /// can not set row to be inactive with Space keydown
+    ///
+    /// 默认重复按下 Space 键可取消当前行高亮，是否禁用取消
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableSpaceInactiveRow")]
     public bool? DisableSpaceInactiveRow { get; set; }
 
+    /// <summary>
+    /// 列配置功能中，当前显示的列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("displayColumns")]
     public TCheckboxGroupValueItem[]? DisplayColumns { get; set; }
 
+    /// <summary>
+    /// dag sort
+    ///
+    /// 拖拽排序方式，值为 `row` 表示行拖拽排序，这种方式无法进行文本复制，慎用。值为`row-handler` 表示通过拖拽手柄进行行拖拽排序。值为 `col` 表示列顺序拖拽。值为 `row-handler-col` 表示同时支持行拖拽和列拖拽。⚠️`drag-col` 已废弃，请勿使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dragSort")]
     public TPrimaryTableDragSortValue? DragSort { get; set; }
 
+    /// <summary>
+    /// drag sort params
+    ///
+    /// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dragSortOptions")]
     public TSortableOptions? DragSortOptions { get; set; }
 
+    /// <summary>
+    /// 单元格是否允许编辑。返回值为 `true` 则表示可编辑；返回值为 `false` 则表示不可编辑，只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("editableCellState")]
     public TEditableCellType<T>? EditableCellState { get; set; }
 
+    /// <summary>
+    /// editable row keys, row key value is from data[rowKey]
+    ///
+    /// 处于编辑状态的行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("editableRowKeys")]
     public TPrimaryTableEditableRowKeysValueItem<T>[]? EditableRowKeys { get; set; }
 
+    /// <summary>
+    /// empty text or empty element
+    ///
+    /// 空表格呈现样式，支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public string? EmptyValue { get; set; }
 
+    /// <summary>
+    /// to show expand icon. expand icon is set in first column
+    ///
+    /// 用于控制是否显示「展开图标列」，值为 `false` 则不会显示。可以精确到某一行是否显示，还可以自定义展开图标内容。`expandedRow` 存在时，该参数有效。支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public bool? ExpandIconValue { get; set; }
 
+    /// <summary>
+    /// expand row on click
+    ///
+    /// 是否允许点击行展开
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandOnRowClick")]
     public bool? ExpandOnRowClick { get; set; }
 
+    /// <summary>
+    /// expanded row keys, row key value is from data[rowKey]
+    ///
+    /// 展开行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandedRowKeys")]
     public TPrimaryTableExpandedRowKeysValueItem<T>[]? ExpandedRowKeys { get; set; }
 
+    /// <summary>
+    /// filter value
+    ///
+    /// 自定义过滤状态行及清空筛选等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterRow")]
     public string? FilterRowValue { get; set; }
 
+    /// <summary>
+    /// filter value
+    ///
+    /// 过滤数据的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterValue")]
     public TJsonObject? FilterValue { get; set; }
 
+    /// <summary>
+    /// 首行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstFullRow")]
     public string? FirstFullRowValue { get; set; }
 
+    /// <summary>
+    /// 固定行（冻结行），示例：[M, N]，表示冻结表头 M 行和表尾 N 行。M 和 N 值为 0 时，表示不冻结行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fixedRows")]
     public Number[]? FixedRows { get; set; }
 
+    /// <summary>
+    /// table foot data
+    ///
+    /// 表尾数据源，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footData")]
     public T[]? FootData { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 请更为使用 `footerAffixedBottom`。表尾吸底基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerAffixProps")]
     public TdAffixProps? FooterAffixProps { get; set; }
 
+    /// <summary>
+    /// affix foot to viewport bottom
+    ///
+    /// 表尾吸底。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，则表示相对于整个窗口吸底。如果表格滚动的父元素不是整个窗口，请通过 `footerAffixedBottom.container` 调整固钉的吸顶范围。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerAffixedBottom")]
     public TPrimaryTableFooterAffixedBottomValue<T>? FooterAffixedBottom { get; set; }
 
+    /// <summary>
+    /// footer summary content
+    ///
+    /// 表尾总结行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerSummary")]
     public string? FooterSummaryValue { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 请更为使用 `headerAffixedTop`。表头吸顶基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerAffixProps")]
     public TdAffixProps? HeaderAffixProps { get; set; }
 
+    /// <summary>
+    /// affix header to viewport top
+    ///
+    /// 表头吸顶。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，表示相对于整个窗口吸顶。如果表格滚动的父元素不是整个窗口，请通过 `headerAffixedTop.container` 调整吸顶的位置。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerAffixedTop")]
     public TPrimaryTableHeaderAffixedTopValue<T>? HeaderAffixedTop { get; set; }
 
+    /// <summary>
+    /// table height
+    ///
+    /// 表格高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定表格高度，建议使用 `maxHeight`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public TPrimaryTableHeightValue<T>? Height { get; set; }
 
+    /// <summary>
+    /// hide sort tips
+    ///
+    /// 隐藏排序文本提示，支持全局配置 `GlobalConfigProvider`，默认全局配置值为 `false`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideSortTips")]
     public bool? HideSortTips { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 滚动条吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("horizontalScrollAffixedBottom")]
     public TPrimaryTableHorizontalScrollAffixedBottomValue<T>? HorizontalScrollAffixedBottom { get; set; }
 
+    /// <summary>
+    /// show hover style
+    ///
+    /// 是否显示鼠标悬浮状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hover")]
     public bool? Hover { get; set; }
 
+    /// <summary>
+    /// indeterminate selected row keys, row key is from data[rowKey]
+    ///
+    /// 半选状态行。选中行请更为使用 `selectedRowKeys` 控制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indeterminateSelectedRowKeys")]
     public TPrimaryTableIndeterminateSelectedRowKeysValueItem<T>[]? IndeterminateSelectedRowKeys { get; set; }
 
+    /// <summary>
+    /// make table row to be hover by keydown ArrowUp/ArrowDown
+    ///
+    /// 键盘操作行显示悬浮效果，一般用于键盘操作行选中、行展开、行高亮等功能
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keyboardRowHover")]
     public bool? KeyboardRowHover { get; set; }
 
+    /// <summary>
+    /// 尾行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lastFullRow")]
     public string? LastFullRowValue { get; set; }
 
+    /// <summary>
+    /// load table content when it entering the visible area, all elements in table are not rendered before it become visible
+    ///
+    /// 是否启用整个表格元素的懒加载，当页面滚动到可视区域后再渲染表格。注意和表格内部行滚动懒加载的区别，内部行滚动无论表格是否在可视区域都会默认渲染第一屏的行元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
+    /// <summary>
+    /// loading state table
+    ///
+    /// 加载中状态。值为 `true` 会显示默认加载中样式，可以通过 Function 和 插槽 自定义加载状态呈现内容和样式。值为 `false` 则会取消加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? LoadingValue { get; set; }
 
+    /// <summary>
+    /// 透传加载组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
+    /// <summary>
+    /// table locale config
+    ///
+    /// 语言配置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("locale")]
     public TTableConfig? Locale { get; set; }
 
+    /// <summary>
+    /// table max height
+    ///
+    /// 表格最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public TPrimaryTableMaxHeightValue<T>? MaxHeight { get; set; }
 
+    /// <summary>
+    /// support multiple column fields sort
+    ///
+    /// 是否支持多列排序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multipleSort")]
     public bool? MultipleSort { get; set; }
 
+    /// <summary>
+    /// you can use all props of pagination component with paginationProps
+    ///
+    /// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pagination")]
     public TdPaginationProps? Pagination { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 分页吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("paginationAffixedBottom")]
     public TPrimaryTablePaginationAffixedBottomValue<T>? PaginationAffixedBottom { get; set; }
 
+    /// <summary>
+    /// 行选中功能，是否在分页时保留上一页选中结果不清空，本地数据分页场景下，会全选所有页数据。值为 `false` 则表示全部选中操作停留在当前页，不跨分页；本地数据分页场景下，全选仅选中当前页
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveSelectedRowOnPaginate")]
     public bool? ReserveSelectedRowOnPaginate { get; set; }
 
+    /// <summary>
+    /// allow to resize column width, set `tableLayout=fixed` would be better
+    ///
+    /// 是否允许调整列宽，设置 `tableLayout=fixed` 效果更友好，此时不允许通过 CSS 设置 `table`元素宽度，也不允许设置 `tableContentWidth`。一般不建议在列宽调整场景使用 `tableLayout: auto`。如果想要配置宽度可调整的最小值和最大值，请使用 `column.resize`，示例：`columns: [{ resize: { minWidth: 120, maxWidth: 300 } }]`。&lt;br/&gt; 默认规则：因列宽超出存在横向滚动条时，列宽调整仅影响当前列宽和总列宽；表格列较少没有横向滚动条时，列宽调整表现为自身宽度和相邻宽度变化
+    /// </summary>
     [Parameter]
     [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
+    /// <summary>
+    /// `tr` attributes
+    ///
+    /// HTML 标签 `tr` 的属性。类型为 Function 时，参数说明：`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body` 表示属性作用于 `tbody` 中的元素；`params.type=foot` 表示属性作用于 `tfoot` 中的元素。&lt;br /&gt;示例一：{ draggable: true }，&lt;br /&gt;示例二：[{ draggable: true }, { title: '超出省略显示' }]。&lt;br /&gt; 示例三：() =&gt; [{ draggable: true }]
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowAttributes")]
     public TTableRowAttributes<T>? RowAttributes { get; set; }
 
+    /// <summary>
+    /// table `th` classname
+    ///
+    /// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowClassName")]
     public TPrimaryTableRowClassNameValue<T>? RowClassName { get; set; }
 
+    /// <summary>
+    /// unique key for each row data
+    ///
+    /// 唯一标识一行数据的字段名，来源于 `data` 中的字段。如果是字段嵌套多层，可以设置形如 `item.a.id` 的方法
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowKey")]
     [EditorRequired]
     public string RowKey { get; set; } = default!;
 
+    /// <summary>
+    /// allow to uncheck selection in table with single row selection
+    ///
+    /// 行选中单选场景，是否允许取消选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowSelectionAllowUncheck")]
     public bool? RowSelectionAllowUncheck { get; set; }
 
+    /// <summary>
+    /// single row selection, or multiple row selection
+    ///
+    /// 行选中类型，单选或多选。效果和 `columns` 中配置的 `{ colKey: 'row-select', type: 'single' }` 一样
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowSelectionType")]
     public TPrimaryTableRowSelectionTypeValue? RowSelectionType { get; set; }
 
+    /// <summary>
+    /// rowspan and colspan
+    ///
+    /// 用于自定义合并单元格，泛型 T 指表格数据类型。示例：`({ row, col, rowIndex, colIndex }) =&gt; { rowspan: 2, colspan: 3 }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowspanAndColspan")]
     public TTableRowspanAndColspanFunc<T>? RowspanAndColspan { get; set; }
 
+    /// <summary>
+    /// rowspan and colspan for footer
+    ///
+    /// 用于自定义表尾的合并单元格，泛型 T 指表格数据类型。示例：`({ row, col, rowIndex, colIndex }) =&gt; { rowspan: 2, colspan: 3 }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowspanAndColspanInFooter")]
     public TTableRowspanAndColspanFunc<T>? RowspanAndColspanInFooter { get; set; }
 
+    /// <summary>
+    /// lazy load and virtual scroll
+    ///
+    /// 懒加载和虚拟滚动。为保证组件收益最大化，当数据量小于阈值 `scroll.threshold` 时，无论虚拟滚动的配置是否存在，组件内部都不会开启虚拟滚动，`scroll.threshold` 默认为 `100`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
+    /// <summary>
+    /// select row data on row click
+    ///
+    /// 是否在点击整行时选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectOnRowClick")]
     public bool? SelectOnRowClick { get; set; }
 
+    /// <summary>
+    /// selected row keys, row key is from data[rowKey]
+    ///
+    /// 选中行。半选状态行请更为使用 `indeterminateSelectedRowKeys` 控制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectedRowKeys")]
     public TPrimaryTableSelectedRowKeysValueItem<T>[]? SelectedRowKeys { get; set; }
 
+    /// <summary>
+    /// show table header
+    ///
+    /// 是否显示表头
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showHeader")]
     public bool? ShowHeader { get; set; }
 
+    /// <summary>
+    /// column shows sort bg color
+    ///
+    /// 当前排序列是否显示背景色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showSortColumnBgColor")]
     public bool? ShowSortColumnBgColor { get; set; }
 
+    /// <summary>
+    /// table size, support `GlobalConfigProvider`, default value is `medium`
+    ///
+    /// 表格尺寸，支持全局配置 `GlobalConfigProvider`，默认全局配置值为 `medium`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// sort configs
+    ///
+    /// 排序控制。sortBy 排序字段；descending 是否进行降序排列。值为数组时，表示正进行多字段排序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sort")]
     public TTableSort? Sort { get; set; }
 
+    /// <summary>
+    /// sort on row draggable
+    ///
+    /// 允许表格行拖拽时排序。请更为使用 `dragSort=\&quot;row\&quot;`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortOnRowDraggable")]
     public bool? SortOnRowDraggable { get; set; }
 
+    /// <summary>
+    /// show stripe style
+    ///
+    /// 是否显示斑马纹
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
+    /// <summary>
+    /// 表格内容的总宽度，注意不是表格可见宽度。主要应用于 `table-layout: auto` 模式下的固定列显示。`tableContentWidth` 内容宽度的值必须大于表格可见宽度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tableContentWidth")]
     public string? TableContentWidth { get; set; }
 
+    /// <summary>
+    /// table-layout css properties, [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout). set value to be `fixed` on `resizable=true` please
+    ///
+    /// 表格布局方式，`&lt;table&gt;` 元素原生属性。[MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)。注意，在列宽调整下场景只能使用 `fixed` 模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tableLayout")]
     public TPrimaryTableTableLayoutValue? TableLayout { get; set; }
 
+    /// <summary>
+    /// 表格顶部内容，可以用于自定义列设置、顶部查询条件等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("topContent")]
     public string? TopContentValue { get; set; }
 
+    /// <summary>
+    /// vertical align
+    ///
+    /// 行内容上下方向对齐
+    /// </summary>
     [Parameter]
     [ECMAScriptName("verticalAlign")]
     public TPrimaryTableVerticalAlignValue? VerticalAlign { get; set; }
 
+    /// <summary>
+    /// async loading state
+    ///
+    /// 异步加载状态。值为 `loading` 显示默认文字 “正在加载中，请稍后”，值为 `load-more` 显示“点击加载更多”，值为其他，表示完全自定义异步加载区域内容类型和参数：'loading' | 'load-more' | TNode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("asyncLoading")]
     public RenderFragment? AsyncLoadingContent { get; set; }
 
+    /// <summary>
+    /// 表格底部内容，可以用于自定义列设置等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bottomContent")]
     public RenderFragment? BottomContent { get; set; }
 
+    /// <summary>
+    /// 单元格数据为空时呈现的内容类型和参数：string | TNode&lt;BaseTableCellParams&lt;T&gt;&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellEmptyContent")]
     public RenderFragment<TBaseTableCellParams<T>>? CellEmptyContent { get; set; }
 
+    /// <summary>
+    /// empty text or empty element
+    ///
+    /// 空表格呈现样式，支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>
+    /// to show expand icon. expand icon is set in first column
+    ///
+    /// 用于控制是否显示「展开图标列」，值为 `false` 则不会显示。可以精确到某一行是否显示，还可以自定义展开图标内容。`expandedRow` 存在时，该参数有效。支持全局配置 `GlobalConfigProvider`类型和参数：boolean | TNode&lt;ExpandArrowRenderParams&lt;T&gt;&gt;【interface ExpandArrowRenderParams&lt;T&gt; { row: T; index: number }】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public RenderFragment<TExpandArrowRenderParams<T>>? ExpandIconContent { get; set; }
 
+    /// <summary>
+    /// table expanded row, to show more detail information
+    ///
+    /// 展开行内容，泛型 T 指表格数据类型类型和参数：TNode&lt;TableExpandedRowParams&lt;T&gt;&gt;【interface TableExpandedRowParams&lt;T&gt; { row: T; index: number; columns: PrimaryTableCol&lt;T&gt;[] | BaseTableCol&lt;T&gt;[] }】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandedRow")]
     public RenderFragment<TTableExpandedRowParams<T>>? ExpandedRowContent { get; set; }
 
+    /// <summary>
+    /// filter icon
+    ///
+    /// 自定义过滤图标，支持全局配置 `GlobalConfigProvider`类型和参数：TNode&lt;{ col: PrimaryTableCol&lt;T&gt;; colIndex: number }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterIcon")]
     public RenderFragment<TPrimaryTableFilterIconSlotContext<T>>? FilterIconContent { get; set; }
 
+    /// <summary>
+    /// filter value
+    ///
+    /// 自定义过滤状态行及清空筛选等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterRow")]
     public RenderFragment? FilterRowContent { get; set; }
 
+    /// <summary>
+    /// 首行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstFullRow")]
     public RenderFragment? FirstFullRowContent { get; set; }
 
+    /// <summary>
+    /// footer summary content
+    ///
+    /// 表尾总结行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerSummary")]
     public RenderFragment? FooterSummaryContent { get; set; }
 
+    /// <summary>
+    /// 尾行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lastFullRow")]
     public RenderFragment? LastFullRowContent { get; set; }
 
+    /// <summary>
+    /// loading state table
+    ///
+    /// 加载中状态。值为 `true` 会显示默认加载中样式，可以通过 Function 和 插槽 自定义加载状态呈现内容和样式。值为 `false` 则会取消加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingContent { get; set; }
 
+    /// <summary>
+    /// sort icon
+    ///
+    /// 自定义排序图标，支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortIcon")]
     public RenderFragment? SortIconContent { get; set; }
 
+    /// <summary>
+    /// 表格顶部内容，可以用于自定义列设置、顶部查询条件等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("topContent")]
     public RenderFragment? TopContent { get; set; }
 
+    /// <summary>
+    /// trigger on row active change
+    ///
+    /// 高亮行发生变化时触发，泛型 T 指表格数据类型。参数 `activeRowList` 表示所有高亮行数据， `currentRowData` 表示当前操作行数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onActiveChange")]
     public EventCallback<TPrimaryTableActiveChangeEventActiveRowKeysItem<T>[]> OnActiveChange { get; set; }
 
+    /// <summary>
+    /// keyboard operation event actions. used to mock selection behavior, just like macOS or windows
+    ///
+    /// 键盘操作事件。开启行高亮功能后，会自动开启键盘操作功能，如：通过键盘(Shift)或鼠标操作连续选中高亮行时触发，一般用于处理行选中等批量操作，模拟操作系统区域选择行为
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onActiveRowAction")]
     public EventCallback<TActiveRowActionContext<T>> OnActiveRowAction { get; set; }
 
+    /// <summary>
+    /// trigger on async loading text clicked
+    ///
+    /// 异步加载区域被点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onAsyncLoadingClick")]
     public EventCallback<TPrimaryTableAsyncLoadingClickEventContext<T>> OnAsyncLoadingClick { get; set; }
 
+    /// <summary>
+    /// trigger on cell clicked
+    ///
+    /// 单元格点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellClick")]
     public EventCallback<TPrimaryTableCellEventContext<T>> OnCellClick { get; set; }
 
+    /// <summary>
+    /// 分页、排序、过滤等内容变化时触发，泛型 T 指表格数据类型，`currentData` 表示变化后的数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTableChangeData> OnChange { get; set; }
 
+    /// <summary>
+    /// 确认操作之前列配置发生变化时触发。`context.columns` 表示已选中的列；`context.currentColumn` 表示本次变化操作的列，值不存在表示全选操作；`context.type` 表示当前操作属于选中列或是取消列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onColumnChange")]
     public EventCallback<TPrimaryTableColumnChange<T>> OnColumnChange { get; set; }
 
+    /// <summary>
+    /// 列配置弹窗显示或隐藏变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onColumnControllerVisibleChange")]
     public EventCallback<bool> OnColumnControllerVisibleChange { get; set; }
 
+    /// <summary>
+    /// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onColumnResizeChange")]
     public EventCallback<TPrimaryTableColumnResizeChangeEventContext<T>> OnColumnResizeChange { get; set; }
 
+    /// <summary>
+    /// trigger on data changing
+    ///
+    /// 本地数据排序导致 `data` 变化时触发，第一个参数指变化后的数据，第二个参数 `context.trigger` 表示触发本次变化的来源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDataChange")]
     public EventCallback<T[]> OnDataChange { get; set; }
 
+    /// <summary>
+    /// 确认列配置时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDisplayColumnsChange")]
     public EventCallback<TCheckboxGroupValueItem[]> OnDisplayColumnsChange { get; set; }
 
+    /// <summary>
+    /// trigger on drag sort
+    ///
+    /// 拖拽排序时触发，`data` 表示排序前的数据，`newData` 表示拖拽排序结束后的新数据，`sort=row` 表示行拖拽事件触发，`sort=col` 表示列拖拽事件触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragSort")]
     public EventCallback<TDragSortContext<T>> OnDragSort { get; set; }
 
+    /// <summary>
+    /// trigger on expand row keys changing
+    ///
+    /// 展开行发生变化时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpandChange")]
     public EventCallback<TPrimaryTableExpandChangeEventExpandedRowKeysItem<T>[]> OnExpandChange { get; set; }
 
+    /// <summary>
+    /// trigger on filter value changing
+    ///
+    /// 过滤参数发生变化时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFilterChange")]
     public EventCallback<TJsonObject> OnFilterChange { get; set; }
 
+    /// <summary>
+    /// trigger on pagination changing
+    ///
+    /// 分页发生变化时触发。参数 newDataSource 表示分页后的数据。本地数据进行分页时，newDataSource 和源数据 data 会不一样。泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPageChange")]
     public EventCallback<TPageInfo> OnPageChange { get; set; }
 
+    /// <summary>
+    /// trigger on row click
+    ///
+    /// 行点击时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowClick")]
     public EventCallback<TRowEventContext<T>> OnRowClick { get; set; }
 
+    /// <summary>
+    /// trigger on double click
+    ///
+    /// 行双击时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowDblclick")]
     public EventCallback<TRowEventContext<T>> OnRowDblclick { get; set; }
 
+    /// <summary>
+    /// trigger on row data is editing
+    ///
+    /// 行编辑时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowEdit")]
     public EventCallback<TPrimaryTableRowEditContext<T>> OnRowEdit { get; set; }
 
+    /// <summary>
+    /// trigger on row mousedown
+    ///
+    /// 鼠标在表格行按下时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMousedown")]
     public EventCallback<TRowEventContext<T>> OnRowMousedown { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseenter
+    ///
+    /// 鼠标在表格行进入时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseenter")]
     public EventCallback<TRowEventContext<T>> OnRowMouseenter { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseenter
+    ///
+    /// 鼠标在表格行离开时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseleave")]
     public EventCallback<TRowEventContext<T>> OnRowMouseleave { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseover
+    ///
+    /// 鼠标悬浮到行时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseover")]
     public EventCallback<TRowEventContext<T>> OnRowMouseover { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseup
+    ///
+    /// 鼠标在表格行按下又弹起时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseup")]
     public EventCallback<TRowEventContext<T>> OnRowMouseup { get; set; }
 
+    /// <summary>
+    /// trigger after row data validated
+    ///
+    /// 行编辑校验完成后触发，即组件实例方法 `validateRowData` 执行结束后触发。`result` 表示校验结果，`trigger=self` 表示编辑组件内部触发的校验，`trigger='parent'` 表示表格父组件触发的校验
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowValidate")]
     public EventCallback<TPrimaryTableRowValidateContext<T>> OnRowValidate { get; set; }
 
+    /// <summary>
+    /// trigger on table content scroll
+    ///
+    /// 表格内容滚动时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback<TPrimaryTableScrollEventParams<T>> OnScroll { get; set; }
 
+    /// <summary>
+    /// trigger on scroll horizontal
+    ///
+    /// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScrollX")]
     public EventCallback<TPrimaryTableScrollXEventParams<T>> OnScrollX { get; set; }
 
+    /// <summary>
+    /// trigger on scroll vertical
+    ///
+    /// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScrollY")]
     public EventCallback<TPrimaryTableScrollYEventParams<T>> OnScrollY { get; set; }
 
+    /// <summary>
+    /// trigger on select changing
+    ///
+    /// 选中行发生变化时触发，泛型 T 指表格数据类型。两个参数，第一个参数为选中行 keys，第二个参数为更多参数，具体如下：`type = uncheck` 表示当前行操作为「取消行选中」；`type = check` 表示当前行操作为「行选中」； `currentRowKey` 表示当前操作行的 rowKey 值； `currentRowData` 表示当前操作行的行数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelectChange")]
     public EventCallback<TPrimaryTableSelectChangeEventSelectedRowKeysItem<T>[]> OnSelectChange { get; set; }
 
+    /// <summary>
+    /// trigger on sort changing
+    ///
+    /// 排序发生变化时触发。其中 sortBy 表示当前排序的字段，sortType 表示排序的方式，currentDataSource 表示 sorter 排序后的结果，col 表示列配置。sort 值类型为数组时表示多字段排序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSortChange")]
     public EventCallback<TTableSort> OnSortChange { get; set; }
 
+    /// <summary>
+    /// trigger after row data validated
+    ///
+    /// 可编辑行表格，全部数据校验完成后触发。即组件实例方法 `validateTableData` 执行结束后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onValidate")]
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
@@ -29239,137 +33993,271 @@ internal sealed class TPrimaryTable : TPrimaryTable<TTableRowData>
 {
 }
 
+/// <summary>
+/// Progress
+///
+/// 进度条
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Progress")]
 public sealed class TProgress : TContentComponentBase
 {
+    /// <summary>
+    /// 进度条颜色。示例：'#ED7B2F' 或 'orange' 或 `['#f00', '#0ff', '#f0f']` 或 `{ '0%': '#f00', '100%': '#0ff' }` 或  `{ from: '#000', to: '#000' }` 等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public TProgressColorValue? Color { get; set; }
 
+    /// <summary>
+    /// 进度百分比，可自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public TProgressLabelValue? LabelValue { get; set; }
 
+    /// <summary>
+    /// 进度条百分比
+    /// </summary>
     [Parameter]
     [ECMAScriptName("percentage")]
     public Number? Percentage { get; set; }
 
+    /// <summary>
+    /// 进度条尺寸，示例：small/medium/large/240。small 值为 72； medium 值为 112；large 值为 160
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TProgressSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 进度条状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TProgressStatus? Status { get; set; }
 
+    /// <summary>
+    /// 进度条线宽。宽度数值不能超过 size 的一半，否则不能输出环形进度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("strokeWidth")]
     public TProgressStrokeWidthValue? StrokeWidth { get; set; }
 
+    /// <summary>
+    /// 进度条风格。值为 line，标签（label）显示在进度条右侧；值为 plump，标签（label）显示在进度条里面；值为 circle，标签（label）显示在进度条正中间
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TProgressTheme? Theme { get; set; }
 
+    /// <summary>
+    /// 进度条未完成部分颜色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trackColor")]
     public string? TrackColor { get; set; }
 
+    /// <summary>
+    /// 进度百分比，可自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 }
 
+/// <summary>
+/// QRCode
+///
+/// 二维码
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "QRCode")]
 public sealed class TQRCode : TContentComponentBase
 {
+    /// <summary>
+    /// QR code background color
+    ///
+    /// 二维码背景颜色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bgColor")]
     public string? BgColor { get; set; }
 
+    /// <summary>
+    /// Is there a border
+    ///
+    /// 是否有边框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// QR code color
+    ///
+    /// 二维码颜色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// The address of the picture in the QR code
+    ///
+    /// 二维码中图片的地址
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public string? Icon { get; set; }
 
+    /// <summary>
+    /// The size of the picture in the QR code
+    ///
+    /// 二维码中图片的大小
+    /// </summary>
     [Parameter]
     [ECMAScriptName("iconSize")]
     public TQRCodeIconSizeValue? IconSize { get; set; }
 
+    /// <summary>
+    /// QR code error correction level
+    ///
+    /// 二维码纠错等级
+    /// </summary>
     [Parameter]
     [ECMAScriptName("level")]
     public TQRCodeLevelValue? Level { get; set; }
 
+    /// <summary>
+    /// QR code size
+    ///
+    /// 二维码大小
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public Number? Size { get; set; }
 
+    /// <summary>
+    /// QR code status
+    ///
+    /// 二维码状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TQRStatus? Status { get; set; }
 
+    /// <summary>
+    /// render type
+    ///
+    /// 渲染类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public TQRCodeTypeValue? Type { get; set; }
 
+    /// <summary>
+    /// scanned text
+    ///
+    /// 扫描后的文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public string? Value { get; set; }
 
+    /// <summary>
+    /// Custom state renderer
+    ///
+    /// 自定义状态渲染器类型和参数：(info:StatusRenderInfo) =&gt; TNode【type StatusRenderInfo = {status:QRStatus;onRefresh?: () =&gt; void;}】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("statusRender")]
     public RenderFragment<TStatusRenderInfo>? StatusRenderContent { get; set; }
 
+    /// <summary>
+    /// Click the &quot;Click to refresh&quot; callback
+    ///
+    /// 点击&quot;点击刷新&quot;的回调
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRefresh")]
     public EventCallback OnRefresh { get; set; }
 }
 
+/// <summary>
+/// Radio
+///
+/// 单选框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Radio")]
 public class TRadio<T> : TContentComponentBase
 {
+    /// <summary>
+    /// 是否允许取消选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowUncheck")]
     public bool? AllowUncheck { get; set; }
 
+    /// <summary>
+    /// 是否选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
+    /// <summary>
+    /// 是否为禁用态。如果存在父组件 RadioGroup，默认值由 RadioGroup.disabled 控制。优先级：Radio.disabled &gt; RadioGroup.disabled &gt; Form.disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 主文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// HTML 元素原生属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 单选按钮的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public T? Value { get; set; }
 
+    /// <summary>
+    /// 主文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 选中状态变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<bool> OnChange { get; set; }
 
+    /// <summary>
+    /// trigger on click
+    ///
+    /// 点击时触发，一般用于外层阻止冒泡场景
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TRadioClickEventContext<T>> OnClick { get; set; }
@@ -29380,45 +34268,82 @@ internal sealed class TRadio : TRadio<TRadioValue>
 {
 }
 
+/// <summary>
+/// Radio
+///
+/// 单选框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "RadioButton")]
 public class TRadioButton<T> : TContentComponentBase
 {
+    /// <summary>
+    /// 是否允许取消选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowUncheck")]
     public bool? AllowUncheck { get; set; }
 
+    /// <summary>
+    /// 是否选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
+    /// <summary>
+    /// 是否为禁用态。如果存在父组件 RadioGroup，默认值由 RadioGroup.disabled 控制。优先级：Radio.disabled &gt; RadioGroup.disabled &gt; Form.disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 主文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// HTML 元素原生属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 单选按钮的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public T? Value { get; set; }
 
+    /// <summary>
+    /// 主文案
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 选中状态变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<bool> OnChange { get; set; }
 
+    /// <summary>
+    /// trigger on click
+    ///
+    /// 点击时触发，一般用于外层阻止冒泡场景
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TRadioButtonClickEventContext<T>> OnClick { get; set; }
@@ -29429,45 +34354,82 @@ internal sealed class TRadioButton : TRadioButton<TRadioValue>
 {
 }
 
+/// <summary>
+/// RadioGroup
+///
+/// 单选框组
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "RadioGroup")]
 public class TRadioGroup<T> : TContentComponentBase
 {
+    /// <summary>
+    /// 是否允许取消选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowUncheck")]
     public bool? AllowUncheck { get; set; }
 
+    /// <summary>
+    /// 是否禁用全部子单选框。优先级：Radio.disabled &gt; RadioGroup.disabled &gt; Form.disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// HTML 元素原生属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// 单选组件按钮形式。RadioOption 数据类型为 string 或 number 时，表示 label 和 value 值相同
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public TRadioOption[]? Options { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 组件尺寸【讨论中】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// Determine the style of radio when using options API
+    ///
+    /// 用于在使用 options 方式渲染时决定组件的风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TRadioGroupThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 选中的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public T? Value { get; set; }
 
+    /// <summary>
+    /// 单选组件按钮形式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("variant")]
     public TRadioGroupVariantValue? Variant { get; set; }
 
+    /// <summary>
+    /// 选中值发生变化时触发, `context.name` 指 RadioGroup 的 name 属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
@@ -29478,509 +34440,914 @@ internal sealed class TRadioGroup : TRadioGroup<TRadioValue>
 {
 }
 
+/// <summary>
+/// RangeInput
+///
+/// 范围输入框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "RangeInput")]
 public sealed class TRangeInput : TContentComponentBase
 {
+    /// <summary>
+    /// 输入框高亮状态序号
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeIndex")]
     public Number? ActiveIndex { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否可清空
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 是否禁用范围输入框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TRangeInputDisabledValue? Disabled { get; set; }
 
+    /// <summary>
+    /// 指定输入框展示值的格式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public TRangeInputFormatValue? Format { get; set; }
 
+    /// <summary>
+    /// 透传 Input 输入框组件全部属性，数组第一项表示第一个输入框属性，第二项表示第二个输入框属性。示例：`[{ label: 'A', name: 'A-name' }, { label: 'B',  name: 'B-name' }]`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TRangeInputInputPropsValue? InputProps { get; set; }
 
+    /// <summary>
+    /// 左侧内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 占位符，示例：'请输入' 或者 ['开始日期', '结束日期']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public TRangeInputPlaceholderValue? Placeholder { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 范围分隔符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public string? SeparatorValue { get; set; }
 
+    /// <summary>
+    /// 输入框内容为空时，悬浮状态是否显示清空按钮，默认不显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showClearIconOnEmpty")]
     public bool? ShowClearIconOnEmpty { get; set; }
 
+    /// <summary>
+    /// 输入框尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TRangeInputSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TRangeInputStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public string? SuffixValue { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 范围输入框的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TInputValue[]? Value { get; set; }
 
+    /// <summary>
+    /// 左侧内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
 
+    /// <summary>
+    /// 范围分隔符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public RenderFragment? SeparatorContent { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// 组件后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 范围输入框失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TInputValue[]> OnBlur { get; set; }
 
+    /// <summary>
+    /// 范围输入框值发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TInputValue[]> OnChange { get; set; }
 
+    /// <summary>
+    /// 清空按钮点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TRangeInputClearEventContext> OnClear { get; set; }
 
+    /// <summary>
+    /// 范围输入框点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TRangeInputClickEventContext?> OnClick { get; set; }
 
+    /// <summary>
+    /// 回车键按下时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEnter")]
     public EventCallback<TInputValue[]> OnEnter { get; set; }
 
+    /// <summary>
+    /// 范围输入框获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TInputValue[]> OnFocus { get; set; }
 
+    /// <summary>
+    /// trigger on mouseenter
+    ///
+    /// 进入输入框时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseenter")]
     public EventCallback<TRangeInputMouseenterEventContext> OnMouseenter { get; set; }
 
+    /// <summary>
+    /// 离开输入框时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseleave")]
     public EventCallback<TRangeInputMouseleaveEventContext> OnMouseleave { get; set; }
 }
 
+/// <summary>
+/// RangeInputPopup
+///
+/// 范围输入框触发器
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "RangeInputPopup")]
 public sealed class TRangeInputPopup : TContentComponentBase
 {
+    /// <summary>
+    /// 宽度随内容自适应
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
+    /// <summary>
+    /// 是否禁用范围输入框，值为数组表示可分别控制某一个输入框是否禁用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TRangeInputPopupDisabledValue? Disabled { get; set; }
 
+    /// <summary>
+    /// 输入框的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputValue")]
     public TInputValue[]? InputValue { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 下拉框内容，可完全自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panel")]
     public string? PanelValue { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 是否显示下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
+    /// <summary>
+    /// 透传 RangeInput 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rangeInputProps")]
     public TdRangeInputProps? RangeInputProps { get; set; }
 
+    /// <summary>
+    /// 只读状态，值为真会隐藏输入框，且无法打开下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TRangeInputPopupStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 下拉框内容，可完全自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panel")]
     public RenderFragment? PanelContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInputChange")]
     public EventCallback<TInputValue[]> OnInputChange { get; set; }
 
+    /// <summary>
+    /// 下拉框显示或隐藏时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 }
 
+/// <summary>
+/// Rate
+///
+/// 评分
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Rate")]
 public sealed class TRate : TContentComponentBase
 {
+    /// <summary>
+    /// 是否允许半选
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowHalf")]
     public bool? AllowHalf { get; set; }
 
+    /// <summary>
+    /// 是否允许清除评分，如果允许，重新点击当前评分清除
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 评分图标的颜色，样式中默认为 #ED7B2F。一个值表示设置选中高亮的五角星颜色，示例：[选中颜色]。数组则表示分别设置 选中高亮的五角星颜色 和 未选中暗灰的五角星颜色，[选中颜色，未选中颜色]。示例：['#ED7B2F', '#E3E6EB']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public TRateColorValue? Color { get; set; }
 
+    /// <summary>
+    /// 评分的数量
+    /// </summary>
     [Parameter]
     [ECMAScriptName("count")]
     public Number? Count { get; set; }
 
+    /// <summary>
+    /// 是否禁用评分
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 评分图标的间距
+    /// </summary>
     [Parameter]
     [ECMAScriptName("gap")]
     public Number? Gap { get; set; }
 
+    /// <summary>
+    /// 是否显示对应的辅助文字
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showText")]
     public bool? ShowText { get; set; }
 
+    /// <summary>
+    /// 评分图标的大小
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// 评分等级对应的辅助文字。组件内置默认值为：['极差', '失望', '一般', '满意', '惊喜']。自定义值示例：['1分', '2分', '3分', '4分', '5分']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("texts")]
     public string[]? Texts { get; set; }
 
+    /// <summary>
+    /// 选择评分的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public Number? Value { get; set; }
 
+    /// <summary>
+    /// 自定义评分图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// 评分数改变时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
 }
 
+/// <summary>
+/// Row
+///
+/// 栅格-横向
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Row")]
 public sealed class TRow : TContentComponentBase
 {
+    /// <summary>
+    /// 纵向对齐方式，CSS 属性 `align-items` 值。其中 `top` 和 `start` 等效；`middle` 和 `center` 等效；`bottom` 和 `end` 等效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("align")]
     public TRowAlignValue? Align { get; set; }
 
+    /// <summary>
+    /// 栅格间隔，示例：`{ xs: 8, sm: 16, md: 24, lg: 32, xl: 32, xxl: 40 }`。当数据类型为 Number 和 Object 时，用于指定横向间隔。当数据类型为数组时，第一个参数为横向间隔，第二个参数为纵向间隔， [水平间隔, 垂直间隔]
+    /// </summary>
     [Parameter]
     [ECMAScriptName("gutter")]
     public TRowGutterValue? Gutter { get; set; }
 
+    /// <summary>
+    /// flex 布局下的水平排列方式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("justify")]
     public TRowJustifyValue? Justify { get; set; }
 
+    /// <summary>
+    /// 自定义元素标签
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 }
 
+/// <summary>
+/// Select
+///
+/// 选择器
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Select")]
 public class TSelect<T> : TContentComponentBase
 {
+    /// <summary>
+    /// 宽度随内容自适应
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
+    /// <summary>
+    /// 自动聚焦
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否可以清空选项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 是否允许用户创建新条目，需配合 filterable 使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("creatable")]
     public bool? Creatable { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 当下拉列表为空时显示的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public string? EmptyValue { get; set; }
 
+    /// <summary>
+    /// 自定义搜索规则，用于对现有数据进行搜索，判断是否过滤某一项数据。参数 `filterWords` 表示搜索词，`option`表示单个选项内容，返回值为 `true` 保留该选项，返回值为 `false` 则隐藏该选项。使用该方法时无需设置 `filterable`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filter")]
     public TSelectFilterValue<T>? Filter { get; set; }
 
+    /// <summary>
+    /// 是否可搜索，默认搜索规则不区分大小写，全文本任意位置匹配。如果默认搜索规则不符合业务需求，可以更为使用 `filter` 自定义过滤规则
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
+    /// <summary>
+    /// 透传 Input 输入框组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// input value
+    ///
+    /// 输入框的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputValue")]
     public string? InputValue { get; set; }
 
+    /// <summary>
+    /// alias option field
+    ///
+    /// 用来定义 value / label / disabled 在 `options` 中对应的字段别名
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keys")]
     public TKeysType? Keys { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 是否为加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// 远程加载时显示的文字，支持自定义。如加上超链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingText")]
     public string? LoadingTextValue { get; set; }
 
+    /// <summary>
+    /// 用于控制多选数量，值为 0 则不限制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// 最小折叠数量，用于多选情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
+    /// <summary>
+    /// 是否允许多选
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// 数据化配置选项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public T[]? Options { get; set; }
 
+    /// <summary>
+    /// layout of options in popup
+    ///
+    /// 下拉选项布局方式，有纵向排列和横向排列两种，默认纵向排列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("optionsLayout")]
     public TSelectOptionsLayoutValue? OptionsLayout { get; set; }
 
+    /// <summary>
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public string? PanelBottomContentValue { get; set; }
 
+    /// <summary>
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public string? PanelTopContentValue { get; set; }
 
+    /// <summary>
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 是否显示下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
+    /// <summary>
+    /// 只读状态，值为真会隐藏输入框，且无法打开下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 多选且可搜索时，是否在选中一个选项后保留当前的搜索关键词
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
+    /// <summary>
+    /// lazy load and virtual scroll
+    ///
+    /// 懒加载和虚拟滚动。为保证组件收益最大化，当数据量小于阈值 `scroll.threshold` 时，无论虚拟滚动的配置是否存在，组件内部都不会开启虚拟滚动，`scroll.threshold` 默认为 `100`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
+    /// <summary>
+    /// 透传 SelectInput 筛选器输入框组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
+    /// <summary>
+    /// 是否显示右侧箭头，默认显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TSelectStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public string? SuffixValue { get; set; }
 
+    /// <summary>
+    /// 透传 TagInput 标签输入框组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagInputProps")]
     public TdTagInputProps? TagInputProps { get; set; }
 
+    /// <summary>
+    /// 透传 Tag 标签组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TSelectValue<TSelectOption>? Value { get; set; }
 
+    /// <summary>
+    /// `MouseEvent&lt;SVGElement&gt;`
+    ///
+    /// 自定义选中项呈现的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public TSelectValueDisplayValue<T>? ValueDisplayValue { get; set; }
 
+    /// <summary>
+    /// 用于控制选中值的类型。假设数据选项为：`[{ label: '姓名', value: 'name' }]`，value 表示值仅返回数据选项中的 value， object 表示值返回全部数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueType")]
     public TSelectValueTypeValue? ValueType { get; set; }
 
+    /// <summary>
+    /// 多选情况下，用于设置折叠项内容，默认为 `+N`。如果需要悬浮就显示其他内容，可以使用 collapsedItems 自定义。`value` 表示当前存在的所有标签，`collapsedSelectedItems` 表示折叠的标签，泛型 `T` 继承 `SelectOption`，表示选项数据；`count` 表示折叠的数量, `onClose` 表示移除标签类型和参数：TNode&lt;{ value: T[]; collapsedSelectedItems: T[]; count: number; onClose: (context: { index: number, e?: MouseEvent }) =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapsedItems")]
     public RenderFragment<TSelectCollapsedItemsSlotContext<T>>? CollapsedItemsContent { get; set; }
 
+    /// <summary>
+    /// 当下拉列表为空时显示的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 远程加载时显示的文字，支持自定义。如加上超链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingText")]
     public RenderFragment? LoadingTextContent { get; set; }
 
+    /// <summary>
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public RenderFragment? PanelBottomContent { get; set; }
 
+    /// <summary>
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public RenderFragment? PanelTopContent { get; set; }
 
+    /// <summary>
+    /// 组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// 组件后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// `MouseEvent&lt;SVGElement&gt;`
+    ///
+    /// 自定义选中项呈现的内容类型和参数：string | TNode&lt;{ value: SelectValue; onClose: (index: number) =&gt; void; displayValue?: SelectValue; label?: string }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public RenderFragment<TSelectValueDisplaySlotContext<T>>? ValueDisplayContent { get; set; }
 
+    /// <summary>
+    /// 输入框失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TSelectBlurEventContext<T>> OnBlur { get; set; }
 
+    /// <summary>
+    /// 选中值变化时触发。`context.trigger` 表示触发变化的来源；`context.selectedOptions` 表示选中值的完整对象，数组长度一定和 `value` 相同；`context.option` 表示当前操作的选项，不一定存在
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TSelectValue<TSelectOption>> OnChange { get; set; }
 
+    /// <summary>
+    /// 点击清除按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TSelectClearEventContext<T>> OnClear { get; set; }
 
+    /// <summary>
+    /// 当选择新创建的条目时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCreate")]
     public EventCallback<TSelectCreateEventValue<T>> OnCreate { get; set; }
 
+    /// <summary>
+    /// 回车键按下时触发。`inputValue` 表示输入框的值，`value` 表示选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEnter")]
     public EventCallback<TSelectEnterEventContext<T>> OnEnter { get; set; }
 
+    /// <summary>
+    /// 输入框获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TSelectFocusEventContext<T>> OnFocus { get; set; }
 
+    /// <summary>
+    /// 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发、失去焦点等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInputChange")]
     public EventCallback<string> OnInputChange { get; set; }
 
+    /// <summary>
+    /// 下拉框显示或隐藏时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
+    /// <summary>
+    /// 多选模式下，选中数据被移除时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemove")]
     public EventCallback<TSelectRemoveContext<T>> OnRemove { get; set; }
 
+    /// <summary>
+    /// 输入值变化时，触发搜索事件。主要用于远程搜索新数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSearch")]
     public EventCallback<string> OnSearch { get; set; }
@@ -29991,765 +35358,1436 @@ internal sealed class TSelect : TSelect<TSelectOption>
 {
 }
 
+/// <summary>
+/// SelectInput
+///
+/// 筛选器输入框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "SelectInput")]
 public sealed class TSelectInput : TContentComponentBase
 {
+    /// <summary>
+    /// 是否允许输入
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
+    /// <summary>
+    /// 宽度随内容自适应
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
+    /// <summary>
+    /// 自动聚焦
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否可清空
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 是否禁用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 透传 Input 输入框组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// input value
+    ///
+    /// 输入框的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputValue")]
     public string? InputValue { get; set; }
 
+    /// <summary>
+    /// 定义字段别名，示例：`{ label: 'text', value: 'id', children: 'list' }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keys")]
     public TSelectInputKeys? Keys { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 是否处于加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// 最小折叠数量，用于标签数量过多的情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
+    /// <summary>
+    /// 是否为多选模式，默认为单选
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// 下拉框内容，可完全自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panel")]
     public string? PanelValue { get; set; }
 
+    /// <summary>
+    /// placeholder description
+    ///
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 是否显示下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
+    /// <summary>
+    /// 只读状态，值为真会隐藏输入框，且无法打开下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 多选且可搜索时，是否在选中一个选项后保留当前的搜索关键词
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
+    /// <summary>
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TSelectInputStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public string? SuffixValue { get; set; }
 
+    /// <summary>
+    /// 多选场景下，自定义选中标签的内部内容。注意和 `valueDisplay` 区分，`valueDisplay`  是用来定义全部标签内容，而非某一个标签
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? TagValue { get; set; }
 
+    /// <summary>
+    /// 透传 TagInput 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagInputProps")]
     public TdTagInputProps? TagInputProps { get; set; }
 
+    /// <summary>
+    /// 透传 Tag 标签组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 全部标签值。值为数组表示多个标签，值为非数组表示单个数值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TSelectInputValue? Value { get; set; }
 
+    /// <summary>
+    /// 自定义值呈现的全部内容，参数为所有标签的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public string? ValueDisplayValue { get; set; }
 
+    /// <summary>
+    /// 标签过多的情况下，折叠项内容，默认为 `+N`。如果需要悬浮就显示其他内容，可以使用 `collapsedItems` 自定义。`value` 表示所有标签值，`collapsedSelectedItems` 表示折叠标签值，`count` 表示折叠的数量，`onClose` 表示移除标签的事件回调类型和参数：TNode&lt;{ value: SelectInputValue; collapsedSelectedItems: SelectInputValue; count: number; onClose: (context: { index: number, e?: MouseEvent }) =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapsedItems")]
     public RenderFragment<TSelectInputCollapsedItemsSlotContext>? CollapsedItemsContent { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 下拉框内容，可完全自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panel")]
     public RenderFragment? PanelContent { get; set; }
 
+    /// <summary>
+    /// 组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// 组件后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// 多选场景下，自定义选中标签的内部内容。注意和 `valueDisplay` 区分，`valueDisplay`  是用来定义全部标签内容，而非某一个标签类型和参数：string | TNode&lt;{ value: string | number }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public RenderFragment<TSelectInputTagSlotContext>? TagContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 自定义值呈现的全部内容，参数为所有标签的值类型和参数：string | TNode&lt;{ value: TagInputValue; onClose: (index: number, item?: any) =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public RenderFragment<TSelectInputValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
+    /// <summary>
+    /// trigger on blur
+    ///
+    /// 失去焦点时触发，`context.inputValue` 表示输入框的值；`context.tagInputValue` 表示标签输入框的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TSelectInputValue> OnBlur { get; set; }
 
+    /// <summary>
+    /// 清空按钮点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TSelectInputClearEventContext> OnClear { get; set; }
 
+    /// <summary>
+    /// 按键按下 Enter 时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEnter")]
     public EventCallback<TSelectInputValue> OnEnter { get; set; }
 
+    /// <summary>
+    /// trigger on focus
+    ///
+    /// 聚焦时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TSelectInputValue> OnFocus { get; set; }
 
+    /// <summary>
+    /// 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInputChange")]
     public EventCallback<string> OnInputChange { get; set; }
 
+    /// <summary>
+    /// trigger on mouseenter
+    ///
+    /// 进入输入框时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseenter")]
     public EventCallback<TSelectInputMouseenterEventContext> OnMouseenter { get; set; }
 
+    /// <summary>
+    /// trigger on mouseleave
+    ///
+    /// 离开输入框时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseleave")]
     public EventCallback<TSelectInputMouseleaveEventContext> OnMouseleave { get; set; }
 
+    /// <summary>
+    /// 粘贴事件，`pasteValue` 表示粘贴板的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPaste")]
     public EventCallback<TSelectInputPasteEventContext> OnPaste { get; set; }
 
+    /// <summary>
+    /// 下拉框显示或隐藏时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
+    /// <summary>
+    /// 值变化时触发，参数 `context.trigger` 表示数据变化的触发来源；`context.index` 指当前变化项的下标；`context.item` 指当前变化项；`context.e` 表示事件参数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onTagChange")]
     public EventCallback<TTagInputValueItem[]> OnTagChange { get; set; }
 }
 
+/// <summary>
+/// Skeleton
+///
+/// 骨架屏
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Skeleton")]
 public sealed class TSkeleton : TContentComponentBase
 {
+    /// <summary>
+    /// 动画效果，有「渐变加载动画」和「闪烁加载动画」两种。值为 'none' 则表示没有动画
+    /// </summary>
     [Parameter]
     [ECMAScriptName("animation")]
     public TSkeletonAnimationValue? Animation { get; set; }
 
+    /// <summary>
+    /// 加载完成的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 延迟显示加载效果的时间，用于防止请求速度过快引起的加载闪烁，单位：毫秒
+    /// </summary>
     [Parameter]
     [ECMAScriptName("delay")]
     public Number? Delay { get; set; }
 
+    /// <summary>
+    /// 是否为加载状态，如果是则显示骨架图，如果不是则显示加载完成的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// 高级设置，用于自定义行列数量、宽度高度、间距等。【示例一】，`[1, 1, 2]` 表示输出三行骨架图，第一行一列，第二行一列，第三行两列。【示例二】，`[1, 1, { width: '100px' }]` 表示自定义第三行的宽度为 `100px`。【示例三】，`[1, 2, [{ width, height }, { width, height, marginLeft }]]` 表示第三行有两列，且自定义宽度、高度、尺寸（圆形或方形使用）、间距、内容等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowCol")]
     public TSkeletonRowColItem[]? RowCol { get; set; }
 
+    /// <summary>
+    /// 快捷定义骨架图风格，有基础、头像组合等，具体参看代码示例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TSkeletonThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 加载完成的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 }
 
+/// <summary>
+/// Slider
+///
+/// 滑块
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Slider")]
 public sealed class TSlider : TContentComponentBase
 {
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 用于控制数字输入框组件，值为 false 表示不显示数字输入框；值为 true 表示呈现默认数字输入框；值类型为 Object 表示透传属性到数字输入框组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputNumberProps")]
     public TSliderInputNumberPropsValue? InputNumberProps { get; set; }
 
+    /// <summary>
+    /// 滑块当前值文本。&lt;br /&gt;值为 true 显示默认文案；值为 false 不显示滑块当前值文本；&lt;br /&gt;值为 `${value}%` 则表示组件会根据占位符渲染文案；&lt;br /&gt;值类型为函数时，参数 `value` 标识滑块值，参数 `position=start` 表示范围滑块的起始值，参数 `position=end` 表示范围滑块的终点值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public TSliderLabelValue? LabelValue { get; set; }
 
+    /// <summary>
+    /// 滑块布局方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public TSliderLayoutValue? Layout { get; set; }
 
+    /// <summary>
+    /// 刻度标记，示例：[0, 10, 40, 200] 或者 `{ 10: (val) =&gt; val + '%', 50: (h) =&gt; &lt;button&gt;50&lt;/button&gt; }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("marks")]
     public TSliderMarksValue? Marks { get; set; }
 
+    /// <summary>
+    /// 滑块范围最大值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// 滑块范围最小值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
+    /// <summary>
+    /// 双游标滑块
+    /// </summary>
     [Parameter]
     [ECMAScriptName("range")]
     public bool? Range { get; set; }
 
+    /// <summary>
+    /// 控制步长刻度值显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showStep")]
     public bool? ShowStep { get; set; }
 
+    /// <summary>
+    /// 步长
+    /// </summary>
     [Parameter]
     [ECMAScriptName("step")]
     public Number? Step { get; set; }
 
+    /// <summary>
+    /// 透传提示组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tooltipProps")]
     public TdTooltipProps? TooltipProps { get; set; }
 
+    /// <summary>
+    /// 滑块值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TSliderValue? Value { get; set; }
 
+    /// <summary>
+    /// 滑块当前值文本。&lt;br /&gt;值为 true 显示默认文案；值为 false 不显示滑块当前值文本；&lt;br /&gt;值为 `${value}%` 则表示组件会根据占位符渲染文案；&lt;br /&gt;值类型为函数时，参数 `value` 标识滑块值，参数 `position=start` 表示范围滑块的起始值，参数 `position=end` 表示范围滑块的终点值类型和参数：string | boolean | TNode&lt;{ value: SliderValue; position?: 'start' | 'end' }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment<TSliderLabelSlotContext>? LabelContent { get; set; }
 
+    /// <summary>
+    /// 滑块值变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TSliderValue> OnChange { get; set; }
 
+    /// <summary>
+    /// triggered when the mouse button is released after dragging or clicking on the slider bar. It is suitable for scenarios where you do not want the callback to be triggered frequently during the process of dragging the slider
+    ///
+    /// 松开拖动`mouseup` 或点击滑块条时触发，适合不希望在拖动滑块过程频繁触发回调的场景实用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChangeEnd")]
     public EventCallback<TSliderValue> OnChangeEnd { get; set; }
 }
 
+/// <summary>
+/// Space
+///
+/// 间距
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Space")]
 public sealed class TSpace : TContentComponentBase
 {
+    /// <summary>
+    /// alignment
+    ///
+    /// 对齐方式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("align")]
     public TSpaceAlignValue? Align { get; set; }
 
+    /// <summary>
+    /// Whether to wrap, valid only in horizontal
+    ///
+    /// 是否自动换行，仅在 horizontal 时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("breakLine")]
     public bool? BreakLine { get; set; }
 
+    /// <summary>
+    /// Spacing direction
+    ///
+    /// 间距方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public TSpaceDirectionValue? Direction { get; set; }
 
+    /// <summary>
+    /// separator
+    ///
+    /// 分隔符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public string? SeparatorValue { get; set; }
 
+    /// <summary>
+    /// Spacing
+    ///
+    /// 间距大小
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSpaceSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// separator
+    ///
+    /// 分隔符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public RenderFragment? SeparatorContent { get; set; }
 }
 
+/// <summary>
+/// Statistic
+///
+/// 统计数值
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Statistic")]
 public sealed class TStatistic : TContentComponentBase
 {
+    /// <summary>
+    /// Animation effect control, `duration` refers to the transition time of the animation `unit: millisecond`, `valueFrom` refers to the initial value of the animation. `{ duration, valueFrom }`
+    ///
+    /// 动画效果控制，`duration` 指动画的过渡时间`单位：毫秒`，`valueFrom` 指动画的起始数值。`{ duration, valueFrom }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("animation")]
     public Tanimation? Animation { get; set; }
 
+    /// <summary>
+    /// Whether to start animation
+    ///
+    /// 是否开始动画
+    /// </summary>
     [Parameter]
     [ECMAScriptName("animationStart")]
     public bool? AnimationStart { get; set; }
 
+    /// <summary>
+    /// Color style, followed by TDesign style black, blue, red, orange, green.Can also be any RGB equivalent supported by [CSS color](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value)
+    ///
+    /// 颜色风格，依次为 TDesign 风格的黑色、蓝色、红色、橙色、绿色。也可以为任何 [CSS color](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value) 支持的 RGB 等值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// Decimal places
+    ///
+    /// 小数保留位数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("decimalPlaces")]
     public Number? DecimalPlaces { get; set; }
 
+    /// <summary>
+    /// Additional display content
+    ///
+    /// 额外的显示内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("extra")]
     public string? ExtraValue { get; set; }
 
+    /// <summary>
+    /// Format numeric display value
+    ///
+    /// 格式化数值显示值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public TStatisticFormatValue? Format { get; set; }
 
+    /// <summary>
+    /// Loading
+    ///
+    /// 是否加载中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// Prefix content, display priority is higher than trend
+    ///
+    /// 前缀内容，展示优先级高于 trend
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public string? PrefixValue { get; set; }
 
+    /// <summary>
+    /// Thousands separator is displayed by default, and can be customized to other content, and the default separator is displayed when `separator = ''` is set to an empty string/null/undefined
+    ///
+    /// 默认展示千位分隔符，可以自定义为其他内容，`separator = ''` 设置为空字符串/null/undefined 时展示默认分隔符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public string? Separator { get; set; }
 
+    /// <summary>
+    /// Suffix content, display priority is higher than trend
+    ///
+    /// 后缀内容，展示优先级高于 trend
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public string? SuffixValue { get; set; }
 
+    /// <summary>
+    /// The title of Statistic
+    ///
+    /// 数值显示的标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// trend
+    ///
+    /// 趋势
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trend")]
     public TStatisticTrendValue? Trend { get; set; }
 
+    /// <summary>
+    /// Position of trending placements
+    ///
+    /// 趋势展示位置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trendPlacement")]
     public TStatisticTrendPlacementValue? TrendPlacement { get; set; }
 
+    /// <summary>
+    /// Unit content
+    ///
+    /// 单位内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("unit")]
     public string? UnitValue { get; set; }
 
+    /// <summary>
+    /// The value of Statistic
+    ///
+    /// 数值显示的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public Number? Value { get; set; }
 
+    /// <summary>
+    /// Additional display content
+    ///
+    /// 额外的显示内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("extra")]
     public RenderFragment? ExtraContent { get; set; }
 
+    /// <summary>
+    /// Prefix content, display priority is higher than trend
+    ///
+    /// 前缀内容，展示优先级高于 trend
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? PrefixContent { get; set; }
 
+    /// <summary>
+    /// Suffix content, display priority is higher than trend
+    ///
+    /// 后缀内容，展示优先级高于 trend
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// The title of Statistic
+    ///
+    /// 数值显示的标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 
+    /// <summary>
+    /// Unit content
+    ///
+    /// 单位内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("unit")]
     public RenderFragment? UnitContent { get; set; }
 }
 
+/// <summary>
+/// StepItem
+///
+/// 步骤
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "StepItem")]
 public sealed class TStepItem : TContentComponentBase
 {
+    /// <summary>
+    /// 步骤描述
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 显示在步骤描述下方的额外内容，比如：操作项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("extra")]
     public string? ExtraValue { get; set; }
 
+    /// <summary>
+    /// 图标，默认显示内置图标，也可以自定义图标，值为 false 则不显示图标。优先级大于 `status` 定义的图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public bool? IconValue { get; set; }
 
+    /// <summary>
+    /// 当前步骤的状态：默认状态（未开始）、进行中状态、完成状态、错误状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TStepStatus? Status { get; set; }
 
+    /// <summary>
+    /// 标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// 当前步骤标识
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TStepItemValueValue? Value { get; set; }
 
+    /// <summary>
+    /// 步骤描述
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 显示在步骤描述下方的额外内容，比如：操作项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("extra")]
     public RenderFragment? ExtraContent { get; set; }
 
+    /// <summary>
+    /// 图标，默认显示内置图标，也可以自定义图标，值为 false 则不显示图标。优先级大于 `status` 定义的图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// 标题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }
 
+/// <summary>
+/// Steps
+///
+/// 步骤条
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Steps")]
 public sealed class TSteps : TContentComponentBase
 {
+    /// <summary>
+    /// 当前步骤，即整个步骤条进度。默认根据步骤下标判断步骤的完成状态，当前步骤为进行中，当前步骤之前的步骤为已完成，当前步骤之后的步骤为未开始。如果每个步骤没有设置 value，current 值为步骤长度则表示所有步骤已完成。如果每个步骤设置了自定义 value，则 current = 'FINISH' 表示所有状态完成
+    /// </summary>
     [Parameter]
     [ECMAScriptName("current")]
     public TStepsCurrentValue? Current { get; set; }
 
+    /// <summary>
+    /// 步骤条方向，有两种：横向和纵向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public TStepsLayoutValue? Layout { get; set; }
 
+    /// <summary>
+    /// 步骤条数据列表（作用和 StepItem 效果一样）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public TdStepItemProps[]? Options { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 步骤条分割符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public TStepsSeparatorValue? Separator { get; set; }
 
+    /// <summary>
+    /// 步骤条顺序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sequence")]
     public TStepsSequenceValue? Sequence { get; set; }
 
+    /// <summary>
+    /// 步骤条风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TStepsThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 当前步骤发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TStepsChangeEventCurrent> OnChange { get; set; }
 }
 
+/// <summary>
+/// StickyItem
+///
+/// 侧边固钉项
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "StickyItem")]
 public sealed class TStickyItem : TContentComponentBase
 {
+    /// <summary>
+    /// 名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 浮层内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popup")]
     public string? PopupValue { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 触发浮层显示的方式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public TStickyItemTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// 图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// 名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 浮层内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popup")]
     public RenderFragment? PopupContent { get; set; }
 }
 
+/// <summary>
+/// StickyTool
+///
+/// 侧边固钉
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "StickyTool")]
 public sealed class TStickyTool : TContentComponentBase
 {
+    /// <summary>
+    /// 列表
+    /// </summary>
     [Parameter]
     [ECMAScriptName("list")]
     public TdStickyItemProps[]? List { get; set; }
 
+    /// <summary>
+    /// 相对于 placement 的偏移量，示例：[-10, 20] 或 ['10em', '8rem']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public TStickyToolOffsetValueItem[]? Offset { get; set; }
 
+    /// <summary>
+    /// 固定位置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public TStickyToolPlacementValue? Placement { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性，优先级低于 StickyItem.popupProps
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// stickytool shape
+    ///
+    /// 侧边栏菜单形状，有 2 种：方形、圆形
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public TStickyToolShapeValue? Shape { get; set; }
 
+    /// <summary>
+    /// stickytool type
+    ///
+    /// 侧边栏菜单类型，有 2 种：常规型和紧凑型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public TStickyToolTypeValue? Type { get; set; }
 
+    /// <summary>
+    /// 宽度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public TStickyToolWidthValue? Width { get; set; }
 
+    /// <summary>
+    /// 点击某一项时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TStickyToolClickEventContext> OnClick { get; set; }
 
+    /// <summary>
+    /// 悬浮到某一项时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onHover")]
     public EventCallback<TStickyToolHoverEventContext> OnHover { get; set; }
 }
 
+/// <summary>
+/// Submenu
+///
+/// 二级导航
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Submenu")]
 public sealed class TSubmenu : TContentComponentBase
 {
+    /// <summary>
+    /// 菜单项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 是否禁用菜单项展开/收起/跳转等功能
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// Transparent all feature props of the Popup
+    ///
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 二级菜单内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? TitleValue { get; set; }
 
+    /// <summary>
+    /// 菜单项唯一标识
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TMenuValue? Value { get; set; }
 
+    /// <summary>
+    /// 菜单项内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 菜单项图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// 二级菜单内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleContent { get; set; }
 }
 
+/// <summary>
+/// Swiper
+///
+/// 轮播
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Swiper")]
 public sealed class TSwiper : TContentComponentBase
 {
+    /// <summary>
+    /// 轮播切换动画效果类型：滑动、淡入淡出等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("animation")]
     public TSwiperAnimationValue? Animation { get; set; }
 
+    /// <summary>
+    /// 是否自动播放
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoplay")]
     public bool? Autoplay { get; set; }
 
+    /// <summary>
+    /// 卡片模式下非当前展示轮播图的缩放比例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cardScale")]
     public Number? CardScale { get; set; }
 
+    /// <summary>
+    /// 当前轮播在哪一项（下标）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("current")]
     public Number? Current { get; set; }
 
+    /// <summary>
+    /// 轮播滑动方向，包括横向滑动和纵向滑动两个方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public TSwiperDirectionValue? Direction { get; set; }
 
+    /// <summary>
+    /// 滑动动画时长
+    /// </summary>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
+    /// <summary>
+    /// 当使用垂直方向滚动时的高度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
+    /// <summary>
+    /// 轮播间隔时间
+    /// </summary>
     [Parameter]
     [ECMAScriptName("interval")]
     public Number? Interval { get; set; }
 
+    /// <summary>
+    /// 是否循环播放
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loop")]
     public bool? Loop { get; set; }
 
+    /// <summary>
+    /// 导航器全部配置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("navigation")]
     public TSwiperNavigation? NavigationValue { get; set; }
 
+    /// <summary>
+    /// 是否悬浮时停止轮播
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stopOnHover")]
     public bool? StopOnHover { get; set; }
 
+    /// <summary>
+    /// 深色模式和浅色模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TSwiperThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 触发切换的方式：悬浮、点击等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public TSwiperTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// 样式类型：默认样式、卡片样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public TSwiperTypeValue? Type { get; set; }
 
+    /// <summary>
+    /// 导航器全部配置类型和参数：SwiperNavigation | TNode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("navigation")]
     public RenderFragment? NavigationContent { get; set; }
 
+    /// <summary>
+    /// 轮播切换时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
 }
 
+/// <summary>
+/// Swiper
+///
+/// 轮播
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "SwiperItem")]
 public sealed class TSwiperItem : TContentComponentBase
 {
+    /// <summary>
+    /// 轮播切换动画效果类型：滑动、淡入淡出等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("animation")]
     public TSwiperItemAnimationValue? Animation { get; set; }
 
+    /// <summary>
+    /// 是否自动播放
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoplay")]
     public bool? Autoplay { get; set; }
 
+    /// <summary>
+    /// 卡片模式下非当前展示轮播图的缩放比例
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cardScale")]
     public Number? CardScale { get; set; }
 
+    /// <summary>
+    /// 当前轮播在哪一项（下标）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("current")]
     public Number? Current { get; set; }
 
+    /// <summary>
+    /// 轮播滑动方向，包括横向滑动和纵向滑动两个方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public TSwiperItemDirectionValue? Direction { get; set; }
 
+    /// <summary>
+    /// 滑动动画时长
+    /// </summary>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
+    /// <summary>
+    /// 当使用垂直方向滚动时的高度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
+    /// <summary>
+    /// 轮播间隔时间
+    /// </summary>
     [Parameter]
     [ECMAScriptName("interval")]
     public Number? Interval { get; set; }
 
+    /// <summary>
+    /// 是否循环播放
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loop")]
     public bool? Loop { get; set; }
 
+    /// <summary>
+    /// 导航器全部配置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("navigation")]
     public TSwiperNavigation? NavigationValue { get; set; }
 
+    /// <summary>
+    /// 是否悬浮时停止轮播
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stopOnHover")]
     public bool? StopOnHover { get; set; }
 
+    /// <summary>
+    /// 深色模式和浅色模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TSwiperItemThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 触发切换的方式：悬浮、点击等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public TSwiperItemTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// 样式类型：默认样式、卡片样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public TSwiperItemTypeValue? Type { get; set; }
 
+    /// <summary>
+    /// 导航器全部配置类型和参数：SwiperNavigation | TNode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("navigation")]
     public RenderFragment? NavigationContent { get; set; }
 
+    /// <summary>
+    /// 轮播切换时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<Number> OnChange { get; set; }
 }
 
+/// <summary>
+/// Switch
+///
+/// 开关
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Switch")]
 public class TSwitch<T> : TContentComponentBase
 {
+    /// <summary>
+    /// Switch 切换状态前的回调方法，常用于需要发起异步请求的场景，回调返回值支持布尔和 Promise 类型，返回`false`或 Promise reject不继续执行change，否则则继续执行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeChange")]
     public TSwitchBeforeChangeValue<T>? BeforeChange { get; set; }
 
+    /// <summary>
+    /// 用于自定义开关的值，[打开时的值，关闭时的值]。默认为 [true, false]。示例：[1, 0]、['open', 'close']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("customValue")]
     public TSwitchValue[]? CustomValue { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件。优先级：Switch.disabled &gt; Form.disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 开关内容，[开启时内容，关闭时内容]。示例：['开', '关'] 或 (value) =&gt; value ? '开' : '关'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public TSwitchLabelValueItem<T>[]? LabelValue { get; set; }
 
+    /// <summary>
+    /// 是否处于加载中状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// 开关尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSwitchSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 开关值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public T? Value { get; set; }
 
+    /// <summary>
+    /// 开关内容，[开启时内容，关闭时内容]。示例：['开', '关'] 或 (value) =&gt; value ? '开' : '关'类型和参数：Array&lt;string | TNode&gt; | TNode&lt;{ value: SwitchValue }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment<TSwitchLabelSlotContext<T>>? LabelContent { get; set; }
 
+    /// <summary>
+    /// 数据发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<T> OnChange { get; set; }
@@ -30760,506 +36798,1068 @@ internal sealed class TSwitch : TSwitch<TSwitchValue>
 {
 }
 
+/// <summary>
+/// TabPanel
+///
+/// 选项卡面板
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "TabPanel")]
 public sealed class TTabPanel : TContentComponentBase
 {
+    /// <summary>
+    /// 选项卡内容隐藏时是否销毁
+    /// </summary>
     [Parameter]
     [ECMAScriptName("destroyOnHide")]
     public bool? DestroyOnHide { get; set; }
 
+    /// <summary>
+    /// 是否禁用当前选项卡
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 选项卡组件开启允许拖动排序时，当前选项卡是否允许拖动
+    /// </summary>
     [Parameter]
     [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
+    /// <summary>
+    /// 选项卡名称，可自定义选项卡导航内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// Enable tab lazy loading
+    ///
+    /// 是否启用选项卡懒加载
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// 用于自定义选项卡面板内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panel")]
     public string? PanelValue { get; set; }
 
+    /// <summary>
+    /// 当前选项卡是否允许移除
+    /// </summary>
     [Parameter]
     [ECMAScriptName("removable")]
     public bool? Removable { get; set; }
 
+    /// <summary>
+    /// 选项卡的值，唯一标识
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TTabValue? Value { get; set; }
 
+    /// <summary>
+    /// 选项卡名称，可自定义选项卡导航内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 用于自定义选项卡面板内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panel")]
     public RenderFragment? PanelContent { get; set; }
 
+    /// <summary>
+    /// 点击删除按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemove")]
     public EventCallback<TTabPanelRemoveEventOptions> OnRemove { get; set; }
 }
 
+/// <summary>
+/// PrimaryTable
+///
+/// 主表格
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Table")]
 public class TTable<T> : TContentComponentBase
 {
+    /// <summary>
+    /// keys of highlight rows, used to mock area selection behavior, just like macOS or windows area selection
+    ///
+    /// 高亮行，支持鼠标键盘操作(Shift)连续高亮行，可用于处理行选中等批量操作，模拟操作系统区域选择行为
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeRowKeys")]
     public TTableActiveRowKeysValueItem<T>[]? ActiveRowKeys { get; set; }
 
+    /// <summary>
+    /// make nodes can be highlight on clicked
+    ///
+    /// 默认不会高亮点击行，`activeRowType=single` 表示鼠标点击仅允许同时高亮一行，Shift 键盘操作加鼠标操作依然可以高亮多行，因为这属于明显的区域选择行为。`activeRowType= multiple ` 表示允许鼠标点击同时高亮多行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeRowType")]
     public TTableActiveRowTypeValue? ActiveRowType { get; set; }
 
+    /// <summary>
+    /// allow to resize column width
+    ///
+    /// 是否允许调整列宽。请更为使用 `resizable`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowResizeColumnWidth")]
     public bool? AllowResizeColumnWidth { get; set; }
 
+    /// <summary>
+    /// async loading state
+    ///
+    /// 异步加载状态。值为 `loading` 显示默认文字 “正在加载中，请稍后”，值为 `load-more` 显示“点击加载更多”，值为其他，表示完全自定义异步加载区域内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("asyncLoading")]
     public TTableAsyncLoadingValue? AsyncLoadingValue { get; set; }
 
+    /// <summary>
+    /// elements with popup would be attached to `attach`
+    ///
+    /// 超出省略等所有浮层元素统一绑定到 `attach`，可根据实际情况调整挂载元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
+    /// <summary>
+    /// show table bordered
+    ///
+    /// 是否显示表格边框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bordered")]
     public bool? Bordered { get; set; }
 
+    /// <summary>
+    /// 表格底部内容，可以用于自定义列设置等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bottomContent")]
     public string? BottomContentValue { get; set; }
 
+    /// <summary>
+    /// 单元格数据为空时呈现的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellEmptyContent")]
     public string? CellEmptyContentValue { get; set; }
 
+    /// <summary>
+    /// 自定义显示列控制器，值为空不会显示。具体属性请看下方 `TableColumnController` 文档
+    /// </summary>
     [Parameter]
     [ECMAScriptName("columnController")]
     public TTableColumnController? ColumnController { get; set; }
 
+    /// <summary>
+    /// 是否显示列配置弹框控制器，只要该属性值不为 `undefined`，弹框的显示/隐藏完全由该属性控制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("columnControllerVisible")]
     public bool? ColumnControllerVisible { get; set; }
 
+    /// <summary>
+    /// table column configs
+    ///
+    /// 列配置，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("columns")]
     public TPrimaryTableCol<T>[]? Columns { get; set; }
 
+    /// <summary>
+    /// table data
+    ///
+    /// 数据源，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public T[]? Data { get; set; }
 
+    /// <summary>
+    /// 是否禁用本地数据分页。当 `data` 数据长度超过分页大小时，会自动进行本地数据分页。如果 `disableDataPage` 设置为 true，则无论何时，都不会进行本地数据分页
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableDataPage")]
     public bool? DisableDataPage { get; set; }
 
+    /// <summary>
+    /// can not set row to be inactive with Space keydown
+    ///
+    /// 默认重复按下 Space 键可取消当前行高亮，是否禁用取消
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableSpaceInactiveRow")]
     public bool? DisableSpaceInactiveRow { get; set; }
 
+    /// <summary>
+    /// 列配置功能中，当前显示的列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("displayColumns")]
     public TCheckboxGroupValueItem[]? DisplayColumns { get; set; }
 
+    /// <summary>
+    /// dag sort
+    ///
+    /// 拖拽排序方式，值为 `row` 表示行拖拽排序，这种方式无法进行文本复制，慎用。值为`row-handler` 表示通过拖拽手柄进行行拖拽排序。值为 `col` 表示列顺序拖拽。值为 `row-handler-col` 表示同时支持行拖拽和列拖拽。⚠️`drag-col` 已废弃，请勿使用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dragSort")]
     public TTableDragSortValue? DragSort { get; set; }
 
+    /// <summary>
+    /// drag sort params
+    ///
+    /// 拖拽排序扩展参数，具体参数见 [Sortable](https://github.com/SortableJS/Sortable)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dragSortOptions")]
     public TSortableOptions? DragSortOptions { get; set; }
 
+    /// <summary>
+    /// 单元格是否允许编辑。返回值为 `true` 则表示可编辑；返回值为 `false` 则表示不可编辑，只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("editableCellState")]
     public TEditableCellType<T>? EditableCellState { get; set; }
 
+    /// <summary>
+    /// editable row keys, row key value is from data[rowKey]
+    ///
+    /// 处于编辑状态的行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("editableRowKeys")]
     public TTableEditableRowKeysValueItem<T>[]? EditableRowKeys { get; set; }
 
+    /// <summary>
+    /// empty text or empty element
+    ///
+    /// 空表格呈现样式，支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public string? EmptyValue { get; set; }
 
+    /// <summary>
+    /// to show expand icon. expand icon is set in first column
+    ///
+    /// 用于控制是否显示「展开图标列」，值为 `false` 则不会显示。可以精确到某一行是否显示，还可以自定义展开图标内容。`expandedRow` 存在时，该参数有效。支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public bool? ExpandIconValue { get; set; }
 
+    /// <summary>
+    /// expand row on click
+    ///
+    /// 是否允许点击行展开
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandOnRowClick")]
     public bool? ExpandOnRowClick { get; set; }
 
+    /// <summary>
+    /// expanded row keys, row key value is from data[rowKey]
+    ///
+    /// 展开行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandedRowKeys")]
     public TTableExpandedRowKeysValueItem<T>[]? ExpandedRowKeys { get; set; }
 
+    /// <summary>
+    /// filter value
+    ///
+    /// 自定义过滤状态行及清空筛选等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterRow")]
     public string? FilterRowValue { get; set; }
 
+    /// <summary>
+    /// filter value
+    ///
+    /// 过滤数据的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterValue")]
     public TJsonObject? FilterValue { get; set; }
 
+    /// <summary>
+    /// 首行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstFullRow")]
     public string? FirstFullRowValue { get; set; }
 
+    /// <summary>
+    /// 固定行（冻结行），示例：[M, N]，表示冻结表头 M 行和表尾 N 行。M 和 N 值为 0 时，表示不冻结行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fixedRows")]
     public Number[]? FixedRows { get; set; }
 
+    /// <summary>
+    /// table foot data
+    ///
+    /// 表尾数据源，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footData")]
     public T[]? FootData { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 请更为使用 `footerAffixedBottom`。表尾吸底基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerAffixProps")]
     public TdAffixProps? FooterAffixProps { get; set; }
 
+    /// <summary>
+    /// affix foot to viewport bottom
+    ///
+    /// 表尾吸底。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，则表示相对于整个窗口吸底。如果表格滚动的父元素不是整个窗口，请通过 `footerAffixedBottom.container` 调整固钉的吸顶范围。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerAffixedBottom")]
     public TTableFooterAffixedBottomValue<T>? FooterAffixedBottom { get; set; }
 
+    /// <summary>
+    /// footer summary content
+    ///
+    /// 表尾总结行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerSummary")]
     public string? FooterSummaryValue { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 请更为使用 `headerAffixedTop`。表头吸顶基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerAffixProps")]
     public TdAffixProps? HeaderAffixProps { get; set; }
 
+    /// <summary>
+    /// affix header to viewport top
+    ///
+    /// 表头吸顶。使用该功能，需要非常注意表格是相对于哪一个父元素进行滚动。值为 `true`，表示相对于整个窗口吸顶。如果表格滚动的父元素不是整个窗口，请通过 `headerAffixedTop.container` 调整吸顶的位置。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerAffixedTop")]
     public TTableHeaderAffixedTopValue<T>? HeaderAffixedTop { get; set; }
 
+    /// <summary>
+    /// table height
+    ///
+    /// 表格高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定表格高度，建议使用 `maxHeight`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public TTableHeightValue<T>? Height { get; set; }
 
+    /// <summary>
+    /// hide sort tips
+    ///
+    /// 隐藏排序文本提示，支持全局配置 `GlobalConfigProvider`，默认全局配置值为 `false`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideSortTips")]
     public bool? HideSortTips { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 滚动条吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("horizontalScrollAffixedBottom")]
     public TTableHorizontalScrollAffixedBottomValue<T>? HorizontalScrollAffixedBottom { get; set; }
 
+    /// <summary>
+    /// show hover style
+    ///
+    /// 是否显示鼠标悬浮状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hover")]
     public bool? Hover { get; set; }
 
+    /// <summary>
+    /// indeterminate selected row keys, row key is from data[rowKey]
+    ///
+    /// 半选状态行。选中行请更为使用 `selectedRowKeys` 控制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indeterminateSelectedRowKeys")]
     public TTableIndeterminateSelectedRowKeysValueItem<T>[]? IndeterminateSelectedRowKeys { get; set; }
 
+    /// <summary>
+    /// make table row to be hover by keydown ArrowUp/ArrowDown
+    ///
+    /// 键盘操作行显示悬浮效果，一般用于键盘操作行选中、行展开、行高亮等功能
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keyboardRowHover")]
     public bool? KeyboardRowHover { get; set; }
 
+    /// <summary>
+    /// 尾行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lastFullRow")]
     public string? LastFullRowValue { get; set; }
 
+    /// <summary>
+    /// load table content when it entering the visible area, all elements in table are not rendered before it become visible
+    ///
+    /// 是否启用整个表格元素的懒加载，当页面滚动到可视区域后再渲染表格。注意和表格内部行滚动懒加载的区别，内部行滚动无论表格是否在可视区域都会默认渲染第一屏的行元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazyLoad")]
     public bool? LazyLoad { get; set; }
 
+    /// <summary>
+    /// loading state table
+    ///
+    /// 加载中状态。值为 `true` 会显示默认加载中样式，可以通过 Function 和 插槽 自定义加载状态呈现内容和样式。值为 `false` 则会取消加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? LoadingValue { get; set; }
 
+    /// <summary>
+    /// 透传加载组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingProps")]
     public TdLoadingProps? LoadingProps { get; set; }
 
+    /// <summary>
+    /// table locale config
+    ///
+    /// 语言配置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("locale")]
     public TTableConfig? Locale { get; set; }
 
+    /// <summary>
+    /// table max height
+    ///
+    /// 表格最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public TTableMaxHeightValue<T>? MaxHeight { get; set; }
 
+    /// <summary>
+    /// support multiple column fields sort
+    ///
+    /// 是否支持多列排序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multipleSort")]
     public bool? MultipleSort { get; set; }
 
+    /// <summary>
+    /// you can use all props of pagination component with paginationProps
+    ///
+    /// 分页配置，值为空则不显示。具体 API 参考分页组件。当 `data` 数据长度超过分页大小时，会自动对本地数据 `data` 进行排序，如果不希望对于 `data` 进行排序，可以设置 `disableDataPage = true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pagination")]
     public TdPaginationProps? Pagination { get; set; }
 
+    /// <summary>
+    /// affix props
+    ///
+    /// 分页吸底。基于 Affix 组件开发，透传全部 Affix 组件属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("paginationAffixedBottom")]
     public TTablePaginationAffixedBottomValue<T>? PaginationAffixedBottom { get; set; }
 
+    /// <summary>
+    /// 行选中功能，是否在分页时保留上一页选中结果不清空，本地数据分页场景下，会全选所有页数据。值为 `false` 则表示全部选中操作停留在当前页，不跨分页；本地数据分页场景下，全选仅选中当前页
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveSelectedRowOnPaginate")]
     public bool? ReserveSelectedRowOnPaginate { get; set; }
 
+    /// <summary>
+    /// allow to resize column width, set `tableLayout=fixed` would be better
+    ///
+    /// 是否允许调整列宽，设置 `tableLayout=fixed` 效果更友好，此时不允许通过 CSS 设置 `table`元素宽度，也不允许设置 `tableContentWidth`。一般不建议在列宽调整场景使用 `tableLayout: auto`。如果想要配置宽度可调整的最小值和最大值，请使用 `column.resize`，示例：`columns: [{ resize: { minWidth: 120, maxWidth: 300 } }]`。&lt;br/&gt; 默认规则：因列宽超出存在横向滚动条时，列宽调整仅影响当前列宽和总列宽；表格列较少没有横向滚动条时，列宽调整表现为自身宽度和相邻宽度变化
+    /// </summary>
     [Parameter]
     [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
+    /// <summary>
+    /// `tr` attributes
+    ///
+    /// HTML 标签 `tr` 的属性。类型为 Function 时，参数说明：`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body` 表示属性作用于 `tbody` 中的元素；`params.type=foot` 表示属性作用于 `tfoot` 中的元素。&lt;br /&gt;示例一：{ draggable: true }，&lt;br /&gt;示例二：[{ draggable: true }, { title: '超出省略显示' }]。&lt;br /&gt; 示例三：() =&gt; [{ draggable: true }]
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowAttributes")]
     public TTableRowAttributes<T>? RowAttributes { get; set; }
 
+    /// <summary>
+    /// table `th` classname
+    ///
+    /// 行类名，泛型 T 指表格数据类型。`params.row` 表示行数据；`params.rowIndex` 表示行下标；`params.type=body`  表示类名作用于 `tbody` 中的元素；`params.type= tfoot` 表示类名作用于 `tfoot` 中的元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowClassName")]
     public TTableRowClassNameValue<T>? RowClassName { get; set; }
 
+    /// <summary>
+    /// unique key for each row data
+    ///
+    /// 唯一标识一行数据的字段名，来源于 `data` 中的字段。如果是字段嵌套多层，可以设置形如 `item.a.id` 的方法
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowKey")]
     [EditorRequired]
     public string RowKey { get; set; } = default!;
 
+    /// <summary>
+    /// allow to uncheck selection in table with single row selection
+    ///
+    /// 行选中单选场景，是否允许取消选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowSelectionAllowUncheck")]
     public bool? RowSelectionAllowUncheck { get; set; }
 
+    /// <summary>
+    /// single row selection, or multiple row selection
+    ///
+    /// 行选中类型，单选或多选。效果和 `columns` 中配置的 `{ colKey: 'row-select', type: 'single' }` 一样
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowSelectionType")]
     public TTableRowSelectionTypeValue? RowSelectionType { get; set; }
 
+    /// <summary>
+    /// rowspan and colspan
+    ///
+    /// 用于自定义合并单元格，泛型 T 指表格数据类型。示例：`({ row, col, rowIndex, colIndex }) =&gt; { rowspan: 2, colspan: 3 }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowspanAndColspan")]
     public TTableRowspanAndColspanFunc<T>? RowspanAndColspan { get; set; }
 
+    /// <summary>
+    /// rowspan and colspan for footer
+    ///
+    /// 用于自定义表尾的合并单元格，泛型 T 指表格数据类型。示例：`({ row, col, rowIndex, colIndex }) =&gt; { rowspan: 2, colspan: 3 }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowspanAndColspanInFooter")]
     public TTableRowspanAndColspanFunc<T>? RowspanAndColspanInFooter { get; set; }
 
+    /// <summary>
+    /// lazy load and virtual scroll
+    ///
+    /// 懒加载和虚拟滚动。为保证组件收益最大化，当数据量小于阈值 `scroll.threshold` 时，无论虚拟滚动的配置是否存在，组件内部都不会开启虚拟滚动，`scroll.threshold` 默认为 `100`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
+    /// <summary>
+    /// select row data on row click
+    ///
+    /// 是否在点击整行时选中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectOnRowClick")]
     public bool? SelectOnRowClick { get; set; }
 
+    /// <summary>
+    /// selected row keys, row key is from data[rowKey]
+    ///
+    /// 选中行。半选状态行请更为使用 `indeterminateSelectedRowKeys` 控制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectedRowKeys")]
     public TTableSelectedRowKeysValueItem<T>[]? SelectedRowKeys { get; set; }
 
+    /// <summary>
+    /// show table header
+    ///
+    /// 是否显示表头
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showHeader")]
     public bool? ShowHeader { get; set; }
 
+    /// <summary>
+    /// column shows sort bg color
+    ///
+    /// 当前排序列是否显示背景色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showSortColumnBgColor")]
     public bool? ShowSortColumnBgColor { get; set; }
 
+    /// <summary>
+    /// table size, support `GlobalConfigProvider`, default value is `medium`
+    ///
+    /// 表格尺寸，支持全局配置 `GlobalConfigProvider`，默认全局配置值为 `medium`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// sort configs
+    ///
+    /// 排序控制。sortBy 排序字段；descending 是否进行降序排列。值为数组时，表示正进行多字段排序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sort")]
     public TTableSort? Sort { get; set; }
 
+    /// <summary>
+    /// sort on row draggable
+    ///
+    /// 允许表格行拖拽时排序。请更为使用 `dragSort=\&quot;row\&quot;`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortOnRowDraggable")]
     public bool? SortOnRowDraggable { get; set; }
 
+    /// <summary>
+    /// show stripe style
+    ///
+    /// 是否显示斑马纹
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
+    /// <summary>
+    /// 表格内容的总宽度，注意不是表格可见宽度。主要应用于 `table-layout: auto` 模式下的固定列显示。`tableContentWidth` 内容宽度的值必须大于表格可见宽度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tableContentWidth")]
     public string? TableContentWidth { get; set; }
 
+    /// <summary>
+    /// table-layout css properties, [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout). set value to be `fixed` on `resizable=true` please
+    ///
+    /// 表格布局方式，`&lt;table&gt;` 元素原生属性。[MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)。注意，在列宽调整下场景只能使用 `fixed` 模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tableLayout")]
     public TTableTableLayoutValue? TableLayout { get; set; }
 
+    /// <summary>
+    /// 表格顶部内容，可以用于自定义列设置、顶部查询条件等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("topContent")]
     public string? TopContentValue { get; set; }
 
+    /// <summary>
+    /// vertical align
+    ///
+    /// 行内容上下方向对齐
+    /// </summary>
     [Parameter]
     [ECMAScriptName("verticalAlign")]
     public TTableVerticalAlignValue? VerticalAlign { get; set; }
 
+    /// <summary>
+    /// async loading state
+    ///
+    /// 异步加载状态。值为 `loading` 显示默认文字 “正在加载中，请稍后”，值为 `load-more` 显示“点击加载更多”，值为其他，表示完全自定义异步加载区域内容类型和参数：'loading' | 'load-more' | TNode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("asyncLoading")]
     public RenderFragment? AsyncLoadingContent { get; set; }
 
+    /// <summary>
+    /// 表格底部内容，可以用于自定义列设置等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bottomContent")]
     public RenderFragment? BottomContent { get; set; }
 
+    /// <summary>
+    /// 单元格数据为空时呈现的内容类型和参数：string | TNode&lt;BaseTableCellParams&lt;T&gt;&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellEmptyContent")]
     public RenderFragment<TBaseTableCellParams<T>>? CellEmptyContent { get; set; }
 
+    /// <summary>
+    /// empty text or empty element
+    ///
+    /// 空表格呈现样式，支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>
+    /// to show expand icon. expand icon is set in first column
+    ///
+    /// 用于控制是否显示「展开图标列」，值为 `false` 则不会显示。可以精确到某一行是否显示，还可以自定义展开图标内容。`expandedRow` 存在时，该参数有效。支持全局配置 `GlobalConfigProvider`类型和参数：boolean | TNode&lt;ExpandArrowRenderParams&lt;T&gt;&gt;【interface ExpandArrowRenderParams&lt;T&gt; { row: T; index: number }】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIcon")]
     public RenderFragment<TExpandArrowRenderParams<T>>? ExpandIconContent { get; set; }
 
+    /// <summary>
+    /// table expanded row, to show more detail information
+    ///
+    /// 展开行内容，泛型 T 指表格数据类型类型和参数：TNode&lt;TableExpandedRowParams&lt;T&gt;&gt;【interface TableExpandedRowParams&lt;T&gt; { row: T; index: number; columns: PrimaryTableCol&lt;T&gt;[] | BaseTableCol&lt;T&gt;[] }】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandedRow")]
     public RenderFragment<TTableExpandedRowParams<T>>? ExpandedRowContent { get; set; }
 
+    /// <summary>
+    /// filter icon
+    ///
+    /// 自定义过滤图标，支持全局配置 `GlobalConfigProvider`类型和参数：TNode&lt;{ col: PrimaryTableCol&lt;T&gt;; colIndex: number }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterIcon")]
     public RenderFragment<TTableFilterIconSlotContext<T>>? FilterIconContent { get; set; }
 
+    /// <summary>
+    /// filter value
+    ///
+    /// 自定义过滤状态行及清空筛选等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterRow")]
     public RenderFragment? FilterRowContent { get; set; }
 
+    /// <summary>
+    /// 首行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("firstFullRow")]
     public RenderFragment? FirstFullRowContent { get; set; }
 
+    /// <summary>
+    /// footer summary content
+    ///
+    /// 表尾总结行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerSummary")]
     public RenderFragment? FooterSummaryContent { get; set; }
 
+    /// <summary>
+    /// 尾行内容，横跨所有列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lastFullRow")]
     public RenderFragment? LastFullRowContent { get; set; }
 
+    /// <summary>
+    /// loading state table
+    ///
+    /// 加载中状态。值为 `true` 会显示默认加载中样式，可以通过 Function 和 插槽 自定义加载状态呈现内容和样式。值为 `false` 则会取消加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingContent { get; set; }
 
+    /// <summary>
+    /// sort icon
+    ///
+    /// 自定义排序图标，支持全局配置 `GlobalConfigProvider`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortIcon")]
     public RenderFragment? SortIconContent { get; set; }
 
+    /// <summary>
+    /// 表格顶部内容，可以用于自定义列设置、顶部查询条件等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("topContent")]
     public RenderFragment? TopContent { get; set; }
 
+    /// <summary>
+    /// trigger on row active change
+    ///
+    /// 高亮行发生变化时触发，泛型 T 指表格数据类型。参数 `activeRowList` 表示所有高亮行数据， `currentRowData` 表示当前操作行数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onActiveChange")]
     public EventCallback<TTableActiveChangeEventActiveRowKeysItem<T>[]> OnActiveChange { get; set; }
 
+    /// <summary>
+    /// keyboard operation event actions. used to mock selection behavior, just like macOS or windows
+    ///
+    /// 键盘操作事件。开启行高亮功能后，会自动开启键盘操作功能，如：通过键盘(Shift)或鼠标操作连续选中高亮行时触发，一般用于处理行选中等批量操作，模拟操作系统区域选择行为
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onActiveRowAction")]
     public EventCallback<TActiveRowActionContext<T>> OnActiveRowAction { get; set; }
 
+    /// <summary>
+    /// trigger on async loading text clicked
+    ///
+    /// 异步加载区域被点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onAsyncLoadingClick")]
     public EventCallback<TTableAsyncLoadingClickEventContext<T>> OnAsyncLoadingClick { get; set; }
 
+    /// <summary>
+    /// trigger on cell clicked
+    ///
+    /// 单元格点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellClick")]
     public EventCallback<TPrimaryTableCellEventContext<T>> OnCellClick { get; set; }
 
+    /// <summary>
+    /// 分页、排序、过滤等内容变化时触发，泛型 T 指表格数据类型，`currentData` 表示变化后的数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTableChangeData> OnChange { get; set; }
 
+    /// <summary>
+    /// 确认操作之前列配置发生变化时触发。`context.columns` 表示已选中的列；`context.currentColumn` 表示本次变化操作的列，值不存在表示全选操作；`context.type` 表示当前操作属于选中列或是取消列
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onColumnChange")]
     public EventCallback<TPrimaryTableColumnChange<T>> OnColumnChange { get; set; }
 
+    /// <summary>
+    /// 列配置弹窗显示或隐藏变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onColumnControllerVisibleChange")]
     public EventCallback<bool> OnColumnControllerVisibleChange { get; set; }
 
+    /// <summary>
+    /// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onColumnResizeChange")]
     public EventCallback<TTableColumnResizeChangeEventContext<T>> OnColumnResizeChange { get; set; }
 
+    /// <summary>
+    /// trigger on data changing
+    ///
+    /// 本地数据排序导致 `data` 变化时触发，第一个参数指变化后的数据，第二个参数 `context.trigger` 表示触发本次变化的来源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDataChange")]
     public EventCallback<T[]> OnDataChange { get; set; }
 
+    /// <summary>
+    /// 确认列配置时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDisplayColumnsChange")]
     public EventCallback<TCheckboxGroupValueItem[]> OnDisplayColumnsChange { get; set; }
 
+    /// <summary>
+    /// trigger on drag sort
+    ///
+    /// 拖拽排序时触发，`data` 表示排序前的数据，`newData` 表示拖拽排序结束后的新数据，`sort=row` 表示行拖拽事件触发，`sort=col` 表示列拖拽事件触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragSort")]
     public EventCallback<TDragSortContext<T>> OnDragSort { get; set; }
 
+    /// <summary>
+    /// trigger on expand row keys changing
+    ///
+    /// 展开行发生变化时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpandChange")]
     public EventCallback<TTableExpandChangeEventExpandedRowKeysItem<T>[]> OnExpandChange { get; set; }
 
+    /// <summary>
+    /// trigger on filter value changing
+    ///
+    /// 过滤参数发生变化时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFilterChange")]
     public EventCallback<TJsonObject> OnFilterChange { get; set; }
 
+    /// <summary>
+    /// trigger on pagination changing
+    ///
+    /// 分页发生变化时触发。参数 newDataSource 表示分页后的数据。本地数据进行分页时，newDataSource 和源数据 data 会不一样。泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPageChange")]
     public EventCallback<TPageInfo> OnPageChange { get; set; }
 
+    /// <summary>
+    /// trigger on row click
+    ///
+    /// 行点击时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowClick")]
     public EventCallback<TRowEventContext<T>> OnRowClick { get; set; }
 
+    /// <summary>
+    /// trigger on double click
+    ///
+    /// 行双击时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowDblclick")]
     public EventCallback<TRowEventContext<T>> OnRowDblclick { get; set; }
 
+    /// <summary>
+    /// trigger on row data is editing
+    ///
+    /// 行编辑时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowEdit")]
     public EventCallback<TPrimaryTableRowEditContext<T>> OnRowEdit { get; set; }
 
+    /// <summary>
+    /// trigger on row mousedown
+    ///
+    /// 鼠标在表格行按下时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMousedown")]
     public EventCallback<TRowEventContext<T>> OnRowMousedown { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseenter
+    ///
+    /// 鼠标在表格行进入时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseenter")]
     public EventCallback<TRowEventContext<T>> OnRowMouseenter { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseenter
+    ///
+    /// 鼠标在表格行离开时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseleave")]
     public EventCallback<TRowEventContext<T>> OnRowMouseleave { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseover
+    ///
+    /// 鼠标悬浮到行时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseover")]
     public EventCallback<TRowEventContext<T>> OnRowMouseover { get; set; }
 
+    /// <summary>
+    /// trigger on row mouseup
+    ///
+    /// 鼠标在表格行按下又弹起时触发，泛型 T 指表格数据类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowMouseup")]
     public EventCallback<TRowEventContext<T>> OnRowMouseup { get; set; }
 
+    /// <summary>
+    /// trigger after row data validated
+    ///
+    /// 行编辑校验完成后触发，即组件实例方法 `validateRowData` 执行结束后触发。`result` 表示校验结果，`trigger=self` 表示编辑组件内部触发的校验，`trigger='parent'` 表示表格父组件触发的校验
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowValidate")]
     public EventCallback<TPrimaryTableRowValidateContext<T>> OnRowValidate { get; set; }
 
+    /// <summary>
+    /// trigger on table content scroll
+    ///
+    /// 表格内容滚动时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback<TTableScrollEventParams<T>> OnScroll { get; set; }
 
+    /// <summary>
+    /// trigger on scroll horizontal
+    ///
+    /// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScrollX")]
     public EventCallback<TTableScrollXEventParams<T>> OnScrollX { get; set; }
 
+    /// <summary>
+    /// trigger on scroll vertical
+    ///
+    /// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScrollY")]
     public EventCallback<TTableScrollYEventParams<T>> OnScrollY { get; set; }
 
+    /// <summary>
+    /// trigger on select changing
+    ///
+    /// 选中行发生变化时触发，泛型 T 指表格数据类型。两个参数，第一个参数为选中行 keys，第二个参数为更多参数，具体如下：`type = uncheck` 表示当前行操作为「取消行选中」；`type = check` 表示当前行操作为「行选中」； `currentRowKey` 表示当前操作行的 rowKey 值； `currentRowData` 表示当前操作行的行数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelectChange")]
     public EventCallback<TTableSelectChangeEventSelectedRowKeysItem<T>[]> OnSelectChange { get; set; }
 
+    /// <summary>
+    /// trigger on sort changing
+    ///
+    /// 排序发生变化时触发。其中 sortBy 表示当前排序的字段，sortType 表示排序的方式，currentDataSource 表示 sorter 排序后的结果，col 表示列配置。sort 值类型为数组时表示多字段排序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSortChange")]
     public EventCallback<TTableSort> OnSortChange { get; set; }
 
+    /// <summary>
+    /// trigger after row data validated
+    ///
+    /// 可编辑行表格，全部数据校验完成后触发。即组件实例方法 `validateTableData` 执行结束后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onValidate")]
     public EventCallback<TPrimaryTableValidateContext> OnValidate { get; set; }
@@ -31270,977 +37870,1825 @@ internal sealed class TTable : TTable<TTableRowData>
 {
 }
 
+/// <summary>
+/// Tabs
+///
+/// 选项卡
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Tabs")]
 public sealed class TTabs : TContentComponentBase
 {
+    /// <summary>
+    /// 选项卡右侧的操作区域
+    /// </summary>
     [Parameter]
     [ECMAScriptName("action")]
     public string? ActionValue { get; set; }
 
+    /// <summary>
+    /// 选项卡是否可增加
+    /// </summary>
     [Parameter]
     [ECMAScriptName("addable")]
     public bool? Addable { get; set; }
 
+    /// <summary>
+    /// 是否禁用选项卡
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 是否开启拖拽调整顺序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dragSort")]
     public bool? DragSort { get; set; }
 
+    /// <summary>
+    /// 选项卡列表
+    /// </summary>
     [Parameter]
     [ECMAScriptName("list")]
     public TdTabPanelProps[]? List { get; set; }
 
+    /// <summary>
+    /// 选项卡位置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public TTabsPlacementValue? Placement { get; set; }
 
+    /// <summary>
+    /// The final position where the tab item stops scrolling after being selected
+    ///
+    /// Tab较多的时候，选中滑块滚动最终停留的位置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollPosition")]
     public TTabsScrollPositionValue? ScrollPosition { get; set; }
 
+    /// <summary>
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TTabsSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 选项卡风格，包含 默认风格 和 卡片风格两种
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TTabsThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 激活的选项卡值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TTabValue? Value { get; set; }
 
+    /// <summary>
+    /// 选项卡右侧的操作区域
+    /// </summary>
     [Parameter]
     [ECMAScriptName("action")]
     public RenderFragment? ActionContent { get; set; }
 
+    /// <summary>
+    /// 添加选项卡时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onAdd")]
     public EventCallback<TTabsAddEventContext> OnAdd { get; set; }
 
+    /// <summary>
+    /// 激活的选项卡发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTabValue> OnChange { get; set; }
 
+    /// <summary>
+    /// trigger on drag sort
+    ///
+    /// 拖拽排序时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragSort")]
     public EventCallback<TTabsDragSortContext> OnDragSort { get; set; }
 
+    /// <summary>
+    /// 删除选项卡时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemove")]
     public EventCallback<TTabsRemoveEventOptions> OnRemove { get; set; }
 }
 
+/// <summary>
+/// Tag
+///
+/// 标签
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Tag")]
 public sealed class TTag : TContentComponentBase
 {
+    /// <summary>
+    /// 标签是否可关闭
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
+    /// <summary>
+    /// self-defined tag color
+    ///
+    /// 自定义标签颜色
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// 组件子元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 标签禁用态，失效标签不能触发事件。默认风格（theme=default）才有禁用态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 标签最大宽度，宽度超出后会出现省略号。示例：'50px' / 80
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxWidth")]
     public TTagMaxWidthValue? MaxWidth { get; set; }
 
+    /// <summary>
+    /// 标签类型，有三种：方形、圆角方形、标记型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public TTagShapeValue? Shape { get; set; }
 
+    /// <summary>
+    /// 标签尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// 组件风格，用于描述组件不同的应用场景
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TTagThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// title of tag
+    ///
+    /// 标签标题，在标签hover时展示，默认为标签内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public TTagTitleValue? Title { get; set; }
 
+    /// <summary>
+    /// 标签风格变体
+    /// </summary>
     [Parameter]
     [ECMAScriptName("variant")]
     public TTagVariantValue? Variant { get; set; }
 
+    /// <summary>
+    /// 组件子元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 标签中的图标，可自定义图标呈现
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconContent { get; set; }
 
+    /// <summary>
+    /// 点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TTagClickEventContext> OnClick { get; set; }
 
+    /// <summary>
+    /// 如果关闭按钮存在，点击关闭按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback<TTagCloseEventContext> OnClose { get; set; }
 }
 
+/// <summary>
+/// TagInput
+///
+/// 标签输入框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "TagInput")]
 public sealed class TTagInput : TContentComponentBase
 {
+    /// <summary>
+    /// 宽度随内容自适应
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否可清空
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 是否禁用标签输入框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 拖拽调整标签顺序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dragSort")]
     public bool? DragSort { get; set; }
 
+    /// <summary>
+    /// 标签超出时的呈现方式，有两种：横向滚动显示 和 换行显示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("excessTagsDisplayType")]
     public TTagInputExcessTagsDisplayTypeValue? ExcessTagsDisplayType { get; set; }
 
+    /// <summary>
+    /// 透传 Input 输入框组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// input value
+    ///
+    /// 输入框的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputValue")]
     public string? InputValue { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// max tag number
+    ///
+    /// 最大允许输入的标签数量
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// 最小折叠数量，用于标签数量过多的情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
+    /// <summary>
+    /// placeholder description
+    ///
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 只读状态，值为真会隐藏标签移除按钮和输入框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 组件尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TSizeEnum? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TTagInputStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public string? SuffixValue { get; set; }
 
+    /// <summary>
+    /// 自定义标签的内部内容，每一个标签的当前值。注意和 `valueDisplay` 区分，`valueDisplay`  是用来定义全部标签内容，而非某一个标签
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? TagValue { get; set; }
 
+    /// <summary>
+    /// 透传 Tag 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// value
+    ///
+    /// 值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TTagInputValueItem[]? Value { get; set; }
 
+    /// <summary>
+    /// 自定义值呈现的全部内容，参数为所有标签的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public string? ValueDisplayValue { get; set; }
 
+    /// <summary>
+    /// 标签过多的情况下，折叠项内容，默认为 `+N`。如果需要悬浮就显示其他内容，可以使用 collapsedItems 自定义。`value` 表示当前存在的所有标签，`collapsedSelectedItems` 表示折叠的标签，`count` 表示折叠的数量，`onClose` 表示移除标签的事件回调类型和参数：TNode&lt;{ value: TagInputValue; collapsedSelectedItems: TagInputValue; count: number; onClose: (context: { index: number,  e?: MouseEvent }) =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapsedItems")]
     public RenderFragment<TTagInputCollapsedItemsSlotContext>? CollapsedItemsContent { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// 组件后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// 自定义标签的内部内容，每一个标签的当前值。注意和 `valueDisplay` 区分，`valueDisplay`  是用来定义全部标签内容，而非某一个标签类型和参数：string | TNode&lt;{ value: string | number }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public RenderFragment<TTagInputTagSlotContext>? TagContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 自定义值呈现的全部内容，参数为所有标签的值类型和参数：string | TNode&lt;{ value: TagInputValue; onClose: (index: number, item?: any) =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public RenderFragment<TTagInputValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
+    /// <summary>
+    /// trigger on blur
+    ///
+    /// 失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TTagInputValueItem[]> OnBlur { get; set; }
 
+    /// <summary>
+    /// 值变化时触发，参数 `context.trigger` 表示数据变化的触发来源；`context.index` 指当前变化项的下标；`context.item` 指当前变化项；`context.e` 表示事件参数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTagInputValueItem[]> OnChange { get; set; }
 
+    /// <summary>
+    /// 清空按钮点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TTagInputClearEventContext> OnClear { get; set; }
 
+    /// <summary>
+    /// 点击组件时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TTagInputClickEventContext> OnClick { get; set; }
 
+    /// <summary>
+    /// trigger on drag sort
+    ///
+    /// 【开发中】拖拽排序时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragSort")]
     public EventCallback<TTagInputDragSortContext> OnDragSort { get; set; }
 
+    /// <summary>
+    /// 按键按下 Enter 时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEnter")]
     public EventCallback<TTagInputValueItem[]> OnEnter { get; set; }
 
+    /// <summary>
+    /// trigger on focus
+    ///
+    /// 聚焦时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TTagInputValueItem[]> OnFocus { get; set; }
 
+    /// <summary>
+    /// 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发、回车键触发等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInputChange")]
     public EventCallback<string> OnInputChange { get; set; }
 
+    /// <summary>
+    /// trigger on mouseenter
+    ///
+    /// 进入输入框时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseenter")]
     public EventCallback<TTagInputMouseenterEventContext> OnMouseenter { get; set; }
 
+    /// <summary>
+    /// trigger on mouseleave
+    ///
+    /// 离开输入框时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseleave")]
     public EventCallback<TTagInputMouseleaveEventContext> OnMouseleave { get; set; }
 
+    /// <summary>
+    /// 粘贴事件，`pasteValue` 表示粘贴板的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPaste")]
     public EventCallback<TTagInputPasteEventContext> OnPaste { get; set; }
 
+    /// <summary>
+    /// 移除单个标签时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemove")]
     public EventCallback<TTagInputRemoveContext> OnRemove { get; set; }
 }
 
+/// <summary>
+/// Text
+///
+/// 文本
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Text")]
 public sealed class TText : TContentComponentBase
 {
+    /// <summary>
+    /// add code style
+    ///
+    /// 是否添加代码样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("code")]
     public bool? Code { get; set; }
 
+    /// <summary>
+    /// content of text
+    ///
+    /// 文本内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// add copyable style
+    ///
+    /// 是否可复制，可通过配置参数自定义复制操作的具体功能和样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("copyable")]
     public TTextCopyableValue? Copyable { get; set; }
 
+    /// <summary>
+    /// add delete line style
+    ///
+    /// 是否添加删除线样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("delete")]
     public bool? Delete { get; set; }
 
+    /// <summary>
+    /// add disabled style
+    ///
+    /// 是否添加不可用样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// add ellipsis style
+    ///
+    /// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ellipsis")]
     public TTextEllipsisValue? Ellipsis { get; set; }
 
+    /// <summary>
+    /// add italic style
+    ///
+    /// 文本是否为斜体
+    /// </summary>
     [Parameter]
     [ECMAScriptName("italic")]
     public bool? Italic { get; set; }
 
+    /// <summary>
+    /// add keyboard style
+    ///
+    /// 是否添加键盘样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keyboard")]
     public bool? Keyboard { get; set; }
 
+    /// <summary>
+    /// add mark style
+    ///
+    /// 是否添加标记样式，默认为黄色，可通过配置颜色修改标记样式，如#0052D9
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mark")]
     public TTextMarkValue? Mark { get; set; }
 
+    /// <summary>
+    /// add bold style
+    ///
+    /// 文本是否加粗
+    /// </summary>
     [Parameter]
     [ECMAScriptName("strong")]
     public bool? Strong { get; set; }
 
+    /// <summary>
+    /// theme of text
+    ///
+    /// 主题
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TTextThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// add underline style
+    ///
+    /// 是否添加下划线样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("underline")]
     public bool? Underline { get; set; }
 
+    /// <summary>
+    /// content of text
+    ///
+    /// 文本内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 }
 
+/// <summary>
+/// Textarea
+///
+/// 文本输入框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Textarea")]
 public sealed class TTextarea : TContentComponentBase
 {
+    /// <summary>
+    /// 超出maxlength或maxcharacter之后是否还允许输入
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowInputOverMax")]
     public bool? AllowInputOverMax { get; set; }
 
+    /// <summary>
+    /// 自动聚焦，拉起键盘
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// 高度自动撑开。 autosize = true 表示组件高度自动撑开，同时，依旧允许手动拖高度。如果设置了 autosize.maxRows 或者 autosize.minRows 则不允许手动调整高度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autosize")]
     public TTextareaAutosizeValue? Autosize { get; set; }
 
+    /// <summary>
+    /// 是否禁用文本框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 用户最多可以输入的字符个数，一个中文汉字表示两个字符长度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxcharacter")]
     public Number? Maxcharacter { get; set; }
 
+    /// <summary>
+    /// 用户最多可以输入的字符个数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxlength")]
     public TTextareaMaxlengthValue? Maxlength { get; set; }
 
+    /// <summary>
+    /// 名称，HTML 元素原生属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 只读状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 文本框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TTextareaStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 文本框值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TTextareaValue? Value { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TTextareaValue> OnBlur { get; set; }
 
+    /// <summary>
+    /// 输入内容变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTextareaValue> OnChange { get; set; }
 
+    /// <summary>
+    /// 获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TTextareaValue> OnFocus { get; set; }
 
+    /// <summary>
+    /// 键盘按下时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeydown")]
     public EventCallback<TTextareaValue> OnKeydown { get; set; }
 
+    /// <summary>
+    /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeypress")]
     public EventCallback<TTextareaValue> OnKeypress { get; set; }
 
+    /// <summary>
+    /// 释放键盘时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeyup")]
     public EventCallback<TTextareaValue> OnKeyup { get; set; }
 
+    /// <summary>
+    /// 字数超出限制时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onValidate")]
     public EventCallback<TTextareaValidateEventContext> OnValidate { get; set; }
 }
 
+/// <summary>
+/// TimePicker
+///
+/// 时间选择器
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "TimePicker")]
 public sealed class TTimePicker : TContentComponentBase
 {
+    /// <summary>
+    /// 是否允许直接输入时间
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否允许清除选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// disable time config function
+    ///
+    /// 禁用时间项的配置函数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableTime")]
     public TTimePickerDisableTimeValue? DisableTime { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 用于格式化时间，[详细文档](https://day.js.org/docs/en/display/format)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// 是否隐藏禁用状态的时间项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideDisabledTime")]
     public bool? HideDisabledTime { get; set; }
 
+    /// <summary>
+    /// 透传给输入框（Input）组件的参数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 预设快捷时间选择，示例：`{ '前一小时': '11:00:00' }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presets")]
     public TPresetTime? Presets { get; set; }
 
+    /// <summary>
+    /// Whether it is read only, the priority is greater than `allowInput`
+    ///
+    /// 只读状态，优先级大于 `allowInput`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 透传 SelectInput 筛选器输入框组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
+    /// <summary>
+    /// 尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TTimePickerSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TTimePickerStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 时间间隔步数，数组排列 [小时, 分钟, 秒]，示例：[2, 1, 1] 或者 ['2', '1', '1']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("steps")]
     public TTimePickerStepsValueItem[]? Steps { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public string? Value { get; set; }
 
+    /// <summary>
+    /// `MouseEvent&lt;SVGElement&gt;`
+    ///
+    /// 自定义选中项呈现的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public string? ValueDisplayValue { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// `MouseEvent&lt;SVGElement&gt;`
+    ///
+    /// 自定义选中项呈现的内容类型和参数：string | TNode&lt;{ value: TimePickerValue }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public RenderFragment<TTimePickerValueDisplaySlotContext>? ValueDisplayContent { get; set; }
 
+    /// <summary>
+    /// 当输入框失去焦点时触发，value 表示组件当前有效值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TTimePickerBlurEventContext> OnBlur { get; set; }
 
+    /// <summary>
+    /// 选中值发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<string> OnChange { get; set; }
 
+    /// <summary>
+    /// Triggered when the clear button is clicked
+    ///
+    /// 点击清空按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TTimePickerClearEventContext> OnClear { get; set; }
 
+    /// <summary>
+    /// 面板关闭时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback<TTimePickerCloseEventContext> OnClose { get; set; }
 
+    /// <summary>
+    /// 点击确认按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback<TTimePickerConfirmEventContext> OnConfirm { get; set; }
 
+    /// <summary>
+    /// 输入框获得焦点时触发，value 表示组件当前有效值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TTimePickerFocusEventContext> OnFocus { get; set; }
 
+    /// <summary>
+    /// 当输入框内容发生变化时触发，参数 value 表示组件当前有效值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInput")]
     public EventCallback<TTimePickerInputEventContext> OnInput { get; set; }
 
+    /// <summary>
+    /// 面板打开时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOpen")]
     public EventCallback<TTimePickerOpenEventContext> OnOpen { get; set; }
 
+    /// <summary>
+    /// 面板选中值后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPick")]
     public EventCallback<string> OnPick { get; set; }
 }
 
+/// <summary>
+/// TimeRangePicker
+///
+/// 时间范围选择器
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "TimeRangePicker")]
 public sealed class TTimeRangePicker : TContentComponentBase
 {
+    /// <summary>
+    /// 是否允许直接输入时间
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowInput")]
     public bool? AllowInput { get; set; }
 
+    /// <summary>
+    /// 是否自动调换左右区间的顺序，默认为 true；若需要支持跨天的场景，可以设置为 false
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoSwap")]
     public bool? AutoSwap { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否允许清除选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 禁用时间项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableTime")]
     public TTimeRangePickerDisableTimeValue? DisableTime { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件，值为数组表示可分别控制开始日期和结束日期是否禁用
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TTimeRangePickerDisabledValue? Disabled { get; set; }
 
+    /// <summary>
+    /// 用于格式化时间，[详细文档](https://day.js.org/docs/en/display/format)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// 是否隐藏禁用状态的时间项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideDisabledTime")]
     public bool? HideDisabledTime { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 占位符，值为数组表示可分别为开始日期和结束日期设置占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public TTimeRangePickerPlaceholderValue? Placeholder { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// 预设快捷时间范围选择，示例：{ '下午': ['13:00:00', '18:00:00'] }
+    /// </summary>
     [Parameter]
     [ECMAScriptName("presets")]
     public TPresetTimeRange? Presets { get; set; }
 
+    /// <summary>
+    /// 透传给范围输入框 RangeInput 组件的参数
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rangeInputProps")]
     public TdRangeInputProps? RangeInputProps { get; set; }
 
+    /// <summary>
+    /// Whether it is read only, the priority is greater than `allowInput`
+    ///
+    /// 只读状态，优先级大于 `allowInput`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TTimeRangePickerSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TTimeRangePickerStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 时间间隔步数，数组排列 [小时, 分钟, 秒]，示例：[2, 1, 1] 或者 ['2', '1', '1']
+    /// </summary>
     [Parameter]
     [ECMAScriptName("steps")]
     public TTimeRangePickerStepsValueItem[]? Steps { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 选中值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public string[]? Value { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 当输入框失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TTimeRangePickerBlurEventContext> OnBlur { get; set; }
 
+    /// <summary>
+    /// 选中值发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<string[]> OnChange { get; set; }
 
+    /// <summary>
+    /// 范围输入框获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TTimeRangePickerFocusEventContext?> OnFocus { get; set; }
 
+    /// <summary>
+    /// 当输入框内容发生变化时触发，参数 input 表示输入内容，value 表示组件当前有效值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInput")]
     public EventCallback<TTimeRangePickerInputEventContext> OnInput { get; set; }
 
+    /// <summary>
+    /// 面板选中值后触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPick")]
     public EventCallback<string[]> OnPick { get; set; }
 }
 
+/// <summary>
+/// Timeline
+///
+/// 时间轴
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Timeline")]
 public sealed class TTimeline : TContentComponentBase
 {
+    /// <summary>
+    /// label info placement
+    ///
+    /// 标签信息放在时间轴的位置，`mode='alternate'` 时生效。纵向时间轴信息位置：左侧、右侧或两侧，默认信息在时间轴右侧。横向时间轴信息位置：上方、下方、两侧
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelAlign")]
     public TTimelineLabelAlignValue? LabelAlign { get; set; }
 
+    /// <summary>
+    /// time line layout
+    ///
+    /// 时间轴方向：水平方向、垂直方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public TTimelineLayoutValue? Layout { get; set; }
 
+    /// <summary>
+    /// The position relationship between the label and the content text, 'alternate' is displayed on both sides of the axis, and 'same' is displayed on the same side
+    ///
+    /// 标签与内容文本的位置关系，`alternate` 为展示在轴两侧，`same` 为展示在同一侧
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public TTimelineModeValue? Mode { get; set; }
 
+    /// <summary>
+    /// 时间轴是否表现为倒序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reverse")]
     public bool? Reverse { get; set; }
 
+    /// <summary>
+    /// 时间轴风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TTimelineThemeValue? Theme { get; set; }
 }
 
+/// <summary>
+/// TimelineItem
+///
+/// 时间轴
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "TimelineItem")]
 public sealed class TTimelineItem : TContentComponentBase
 {
+    /// <summary>
+    /// 描述内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 时间轴颜色，内置 `primary/warning/error/default` 四种色值，可传入 16 进制颜色码或 RGB 颜色值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dotColor")]
     public string? DotColor { get; set; }
 
+    /// <summary>
+    /// 标签文本内容，可完全自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 标签信息相对于时间轴的位置，在 `mode='alternate'` 时生效，优先级高于 `Timeline.labelAlign`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelAlign")]
     public TTimelineItemLabelAlignValue? LabelAlign { get; set; }
 
+    /// <summary>
+    /// Whether it is in the loading state
+    ///
+    /// 是否处在加载状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// 描述内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 用于自定义时间轴节点元素
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dot")]
     public RenderFragment? DotContent { get; set; }
 
+    /// <summary>
+    /// 标签文本内容，可完全自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// trigger on click
+    ///
+    /// 点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TTimelineItemClickEventContext> OnClick { get; set; }
 }
 
+/// <summary>
+/// Title
+///
+/// 标题
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Title")]
 public sealed class TTitle : TContentComponentBase
 {
+    /// <summary>
+    /// content of title
+    ///
+    /// 段落内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// add ellipsis style
+    ///
+    /// 是否省略展示，可通过配置参数自定义省略操作的具体功能和样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ellipsis")]
     public TTitleEllipsisValue? Ellipsis { get; set; }
 
+    /// <summary>
+    /// level of title
+    ///
+    /// 标题等级
+    /// </summary>
     [Parameter]
     [ECMAScriptName("level")]
     public TTitleLevelValue? Level { get; set; }
 
+    /// <summary>
+    /// content of title
+    ///
+    /// 段落内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 }
 
+/// <summary>
+/// Tooltip
+///
+/// 文字提示
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Tooltip")]
 public sealed class TTooltip : TContentComponentBase
 {
+    /// <summary>
+    /// 指定挂载节点。数据类型为 String 时，会被当作选择器处理，进行节点查询。示例：'body' 或 () =&gt; document.body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("attach")]
     public TAttachNode? Attach { get; set; }
 
+    /// <summary>
+    /// 浮层里面的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// delay to show or hide popover
+    ///
+    /// 延时显示或隐藏浮层，[延迟显示的时间，延迟隐藏的时间]，单位：毫秒。直接透传到 Popup 组件。如果只有一个时间，则表示显示和隐藏的延迟时间相同。示例 `'300'` 或者 `[200, 200]`。默认为：[250, 150]
+    /// </summary>
     [Parameter]
     [ECMAScriptName("delay")]
     public Number? Delay { get; set; }
 
+    /// <summary>
+    /// 是否在关闭浮层时销毁浮层
+    /// </summary>
     [Parameter]
     [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 用于设置提示默认显示多长时间之后消失，初始第一次有效，单位：毫秒
+    /// </summary>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
+    /// <summary>
+    /// 浮层是否隐藏空内容，默认不隐藏
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideEmptyPopup")]
     public bool? HideEmptyPopup { get; set; }
 
+    /// <summary>
+    /// 浮层类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayClassName")]
     public TClassName? OverlayClassName { get; set; }
 
+    /// <summary>
+    /// 浮层内容部分类名，示例：'name1 name2 name3' 或 `['name1', 'name2']` 或 `[{ 'name1': true }]`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayInnerClassName")]
     public TClassName? OverlayInnerClassName { get; set; }
 
+    /// <summary>
+    /// 浮层内容部分样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayInnerStyle")]
     public TTooltipOverlayInnerStyleValue? OverlayInnerStyle { get; set; }
 
+    /// <summary>
+    /// 浮层样式，第一个参数 `triggerElement` 表示触发元素 DOM 节点，第二个参数 `popupElement` 表示浮层元素 DOM 节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overlayStyle")]
     public TTooltipOverlayStyleValue? OverlayStyle { get; set; }
 
+    /// <summary>
+    /// 浮层出现位置
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public TTooltipPlacementValue? Placement { get; set; }
 
+    /// <summary>
+    /// popper initial options，details refer to https://popper.js.org/docs
+    ///
+    /// popper 初始化配置，详情参考 https://popper.js.org/docs/
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public TJsonObject? PopperOptions { get; set; }
 
+    /// <summary>
+    /// 是否显示浮层箭头
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// 文字提示风格
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TTooltipThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// 触发浮层出现的方式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public TTooltipTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// 触发元素。值类型为字符串表示元素选择器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerElement")]
     public string? TriggerElementValue { get; set; }
 
+    /// <summary>
+    /// 是否显示浮层
+    /// </summary>
     [Parameter]
     [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
+    /// <summary>
+    /// 组件层级，Web 侧样式默认为 5500，移动端和小程序样式默认为 1500
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// 浮层里面的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// 触发元素。值类型为字符串表示元素选择器
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerElement")]
     public RenderFragment? TriggerElementContent { get; set; }
 
+    /// <summary>
+    /// trigger on popup content click
+    ///
+    /// 内容面板点击时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOverlayClick")]
     public EventCallback<TTooltipOverlayClickEventContext> OnOverlayClick { get; set; }
 
+    /// <summary>
+    /// 下拉选项滚动事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback<TTooltipScrollEventContext> OnScroll { get; set; }
 
+    /// <summary>
+    /// 下拉滚动触底事件，常用于滚动到底执行具体业务逻辑
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScrollToBottom")]
     public EventCallback<TTooltipScrollToBottomEventContext> OnScrollToBottom { get; set; }
 
+    /// <summary>
+    /// 当浮层隐藏或显示时触发，`trigger=document` 表示点击非浮层元素触发；`trigger=context-menu` 表示右击触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback<bool> OnVisibleChange { get; set; }
 }
 
+/// <summary>
+/// Transfer
+///
+/// 穿梭框
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Transfer")]
 public class TTransfer<T> : TContentComponentBase
 {
+    /// <summary>
+    /// 用于控制复选框属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkboxProps")]
     public TdCheckboxProps? CheckboxProps { get; set; }
 
+    /// <summary>
+    /// 数据列表选中项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checked")]
     public TTransferValue[]? Checked { get; set; }
 
+    /// <summary>
+    /// 全量数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public T[]? Data { get; set; }
 
+    /// <summary>
+    /// 穿梭框可操作方向
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public TTransferDirectionValue? Direction { get; set; }
 
+    /// <summary>
+    /// 禁用全部操作：搜索、选中、移动、分页等。[源列表, 目标列表]，示例：[true, false] 或者 true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public TTransferDisabledValue<T>? Disabled { get; set; }
 
+    /// <summary>
+    /// 列表为空时呈现的内容。值类型为数组，则表示分别控制源列表和目标列表数据为空的呈现内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public TTransferEmptyValue<T>? EmptyValue { get; set; }
 
+    /// <summary>
+    /// 穿梭框底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public TTransferFooterValueItem<T>[]? FooterValue { get; set; }
 
+    /// <summary>
+    /// alias field name in data
+    ///
+    /// 用来定义 value / label / disabled 在 `data` 中对应的字段别名，示例：`{ label: 'text', value: 'id' }`，表示选项文本取 `text` 字段，选项值取 `id` 字段
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keys")]
     public TKeysType? Keys { get; set; }
 
+    /// <summary>
+    /// 方向操作按钮。默认显示组件内置操作图标。自定义操作图标示例：['向左', '向右'] 或者 `[() =&gt; &lt;i class='left' /&gt;, () =&gt; &lt;i class='left' /&gt;]` 或者 `(h, direction) =&gt; direction === 'left' ? '《' : '》'`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("operation")]
     public TTransferOperationValueItem<T>[]? OperationValue { get; set; }
 
+    /// <summary>
+    /// 分页配置，值为空则不显示。具体 API 参考分页组件。值类型为数组，表示可分别控制源列表和目标列表分页组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pagination")]
     public TTransferPaginationValue<T>? Pagination { get; set; }
 
+    /// <summary>
+    /// 搜索框配置，值为 false 表示不显示搜索框；值为 true 表示显示默认搜索框；值类型为对象，用于透传 Props 到 Input 组件；值类型为数组，则分别表示控制两侧搜索框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("search")]
     public TTransferSearchValue<T>? Search { get; set; }
 
+    /// <summary>
+    /// 是否显示全选，值类型为数组则表示分别控制源列表和目标列表
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showCheckAll")]
     public TTransferShowCheckAllValue<T>? ShowCheckAll { get; set; }
 
+    /// <summary>
+    /// allowed to sort the target list by dragging
+    ///
+    /// 是否允许通过拖拽对目标列表进行排序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("targetDraggable")]
     public bool? TargetDraggable { get; set; }
 
+    /// <summary>
+    /// 目标数据列表排列顺序
+    /// </summary>
     [Parameter]
     [ECMAScriptName("targetSort")]
     public TTransferTargetSortValue? TargetSort { get; set; }
 
+    /// <summary>
+    /// 穿梭框标题，示例：['源列表', '目标列表'] 或者 `[() =&gt; 'A', () =&gt; 'B']` 或者 `({ type }) =&gt; type === 'source' ? '源' : '目标'`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public TTitleType[]? TitleValue { get; set; }
 
+    /// <summary>
+    /// 传入 Tree 组件定义树形结构
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tree")]
     public TTransferTreeValue<T>? TreeValue { get; set; }
 
+    /// <summary>
+    /// 目标数据列表数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TTransferValue[]? Value { get; set; }
 
+    /// <summary>
+    /// 列表为空时呈现的内容。值类型为数组，则表示分别控制源列表和目标列表数据为空的呈现内容类型和参数：EmptyType | Array&lt;EmptyType&gt; | TNode【type EmptyType = string | TNode】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>
+    /// 穿梭框底部内容类型和参数：Array&lt;string | TNode&gt; | TNode&lt;{ type: TransferListType }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment<TTransferFooterSlotContext<T>>? FooterContent { get; set; }
 
+    /// <summary>
+    /// 方向操作按钮。默认显示组件内置操作图标。自定义操作图标示例：['向左', '向右'] 或者 `[() =&gt; &lt;i class='left' /&gt;, () =&gt; &lt;i class='left' /&gt;]` 或者 `(h, direction) =&gt; direction === 'left' ? '《' : '》'`类型和参数：Array&lt;string | TNode&gt; | TNode&lt;{ direction: 'left' | 'right' }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("operation")]
     public RenderFragment<TTransferOperationSlotContext<T>>? OperationContent { get; set; }
 
+    /// <summary>
+    /// 穿梭框标题，示例：['源列表', '目标列表'] 或者 `[() =&gt; 'A', () =&gt; 'B']` 或者 `({ type }) =&gt; type === 'source' ? '源' : '目标'`类型和参数：Array&lt;TitleType&gt; | TNode&lt;{ type: TransferListType }&gt;【type TitleType = string | TNode】【type TransferListType = 'source' | 'target'】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment<TTransferTitleSlotContext<T>>? TitleContent { get; set; }
 
+    /// <summary>
+    /// 自定义渲染节点类型和参数：TNode&lt;TransferItem&lt;T&gt;&gt;【interface TransferItem&lt;T extends DataOption = DataOption&gt; { data: T; index: number; type: TransferListType}】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("transferItem")]
     public RenderFragment<TTransferItem<T>>? TransferItemContent { get; set; }
 
+    /// <summary>
+    /// 传入 Tree 组件定义树形结构类型和参数：(tree: TreeProps) =&gt; TNode【import { TreeProps } from '@Tree'】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tree")]
     public RenderFragment? TreeContent { get; set; }
 
+    /// <summary>
+    /// 数据列表发生变化时触发，`type` 值为 `source`，表示源列表移动到目标列表，值为 `target` 表示目标列表移动到源列表，movedValue 则表示被移动的选项
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTransferValue[]> OnChange { get; set; }
 
+    /// <summary>
+    /// 源数据列表或目标数据列表的选中项发生变化时触发，`context.type` 可以区分触发来源是目标列表，还是源列表
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCheckedChange")]
     public EventCallback<TCheckedOptions> OnCheckedChange { get; set; }
 
+    /// <summary>
+    /// 分页发生变化时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPageChange")]
     public EventCallback<TPageInfo> OnPageChange { get; set; }
 
+    /// <summary>
+    /// 列表滚动时触发，bottomDistance 表示元素滚动到底部的距离
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback<TTransferScrollEventOptions<T>> OnScroll { get; set; }
 
+    /// <summary>
+    /// 搜索时触发，options.query 表示用户输入的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSearch")]
     public EventCallback<TSearchContext> OnSearch { get; set; }
@@ -32251,201 +39699,367 @@ internal sealed class TTransfer : TTransfer<TDataOption>
 {
 }
 
+/// <summary>
+/// Tree
+///
+/// 树
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Tree")]
 public class TTree<T> : TContentComponentBase
 {
+    /// <summary>
+    /// make nodes can be highlight
+    ///
+    /// 节点是否可高亮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activable")]
     public bool? Activable { get; set; }
 
+    /// <summary>
+    /// 是否允许多个节点同时高亮
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeMultiple")]
     public bool? ActiveMultiple { get; set; }
 
+    /// <summary>
+    /// 高亮的节点值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("actived")]
     public TTreeNodeValue[]? Actived { get; set; }
 
+    /// <summary>
+    /// Determine whether the node can execute the drop operation
+    ///
+    /// 判断节点是否可以执行 drop 操作，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowDrop")]
     public TTreeAllowDropValue<T>? AllowDrop { get; set; }
 
+    /// <summary>
+    /// 是否允许在过滤时节点折叠节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowFoldNodeOnFilter")]
     public bool? AllowFoldNodeOnFilter { get; set; }
 
+    /// <summary>
+    /// 透传属性到 checkbox 组件。参考 checkbox 组件 API
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkProps")]
     public TdCheckboxProps? CheckProps { get; set; }
 
+    /// <summary>
+    /// 父子节点选中状态不再关联，可各自选中或取消
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
+    /// <summary>
+    /// 隐藏节点复选框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkable")]
     public bool? Checkable { get; set; }
 
+    /// <summary>
+    /// 树数据，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public T[]? Data { get; set; }
 
+    /// <summary>
+    /// 禁用复选框，可支持禁用不同的行
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableCheck")]
     public TTreeDisableCheckValue<T>? DisableCheck { get; set; }
 
+    /// <summary>
+    /// 是否禁用树操作
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 节点是否可拖拽
+    /// </summary>
     [Parameter]
     [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
+    /// <summary>
+    /// 数据为空时展示的文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public string? EmptyValue { get; set; }
 
+    /// <summary>
+    /// 是否展开全部节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandAll")]
     public bool? ExpandAll { get; set; }
 
+    /// <summary>
+    /// 默认展开的级别，第一层为 0
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandLevel")]
     public Number? ExpandLevel { get; set; }
 
+    /// <summary>
+    /// 同级别展开互斥，手风琴效果
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandMutex")]
     public bool? ExpandMutex { get; set; }
 
+    /// <summary>
+    /// 是否支持点击节点也能展开收起
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; set; }
 
+    /// <summary>
+    /// 展开子节点时是否自动展开父节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandParent")]
     public bool? ExpandParent { get; set; }
 
+    /// <summary>
+    /// 展开的节点值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expanded")]
     public TTreeNodeValue[]? Expanded { get; set; }
 
+    /// <summary>
+    /// 节点过滤方法，只呈现返回值为 true 的节点，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filter")]
     public TTreeFilterValue<T>? Filter { get; set; }
 
+    /// <summary>
+    /// The height of tree. Scrollbar will appear after the content is overflow. Examples: 100, '30%', '300'. The value should be a number and will automatically be converted to a pixel value. If the tree height is not fixed, it is recommended to use `maxHeight`
+    ///
+    /// 树的高度，超出后会出现滚动条。示例：100,  '30%',  '300'。值为数字类型，会自动加上单位 px。如果不是绝对固定树的高度，建议使用 `maxHeight`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public TTreeHeightValue<T>? Height { get; set; }
 
+    /// <summary>
+    /// 节点是否有悬浮状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hover")]
     public bool? Hover { get; set; }
 
+    /// <summary>
+    /// 节点图标，可自定义
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public bool? IconValue { get; set; }
 
+    /// <summary>
+    /// alias field name in data
+    ///
+    /// 用来定义 `value / label / disabled / children` 在 `data` 数据中对应的字段别名，示例：`{ value: 'key', label 'name', children: 'list' }`。其中，disabled 待开发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keys")]
     public TTreeKeysType? Keys { get; set; }
 
+    /// <summary>
+    /// 自定义节点内容，值为 `false` 不显示，值为 `true` 显示默认 label，值为字符串直接输出该字符串。泛型 `T` 表示树节点 TS 类型。&lt;br/&gt;如果期望只有点击复选框才选中，而点击节点不选中，可以使用 `label` 自定义节点，然后加上点击事件 `e.preventDefault()`，通过调整自定义节点的宽度和高度决定禁止点击选中的范围
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public TTreeLabelValue<T>? LabelValue { get; set; }
 
+    /// <summary>
+    /// 延迟加载 children 为 true 的节点的子节点数据，即使 expandAll 被设置为 true，也同样延迟加载
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// 连接线。值为 false 不显示连接线；值为 true 显示默认连接线；值类型为 Function 表示自定义连接线
+    /// </summary>
     [Parameter]
     [ECMAScriptName("line")]
     public bool? LineValue { get; set; }
 
+    /// <summary>
+    /// 加载子数据的方法，在展开节点时调用（仅当节点 children 为 true 时生效），泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("load")]
     public TTreeLoadValue<T>? Load { get; set; }
 
+    /// <summary>
+    /// The max height of tree. Scrollbar will appear after the content is overflow. Examples: 100, '30%', '300'.
+    ///
+    /// 树的最大高度，超出后会出现滚动条。示例：100, '30%', '300'。值为数字类型，会自动加上单位 px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public TTreeMaxHeightValue<T>? MaxHeight { get; set; }
 
+    /// <summary>
+    /// lazy load and virtual scroll
+    ///
+    /// 懒加载和虚拟滚动。为保证组件收益最大化，当数据量小于阈值 `scroll.threshold` 时，无论虚拟滚动的配置是否存在，组件内部都不会开启虚拟滚动，`scroll.threshold` 默认为 `100`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scroll")]
     public TScroll? Scroll { get; set; }
 
+    /// <summary>
+    /// 节点展开折叠时是否使用过渡动画
+    /// </summary>
     [Parameter]
     [ECMAScriptName("transition")]
     public bool? Transition { get; set; }
 
+    /// <summary>
+    /// 选中值，组件为可选状态时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TTreeNodeValue[]? Value { get; set; }
 
+    /// <summary>
+    /// 选中值模式。all 表示父节点和子节点全部会出现在选中值里面；parentFirst 表示当子节点全部选中时，仅父节点在选中值里面；onlyLeaf 表示无论什么情况，选中值仅呈现叶子节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueMode")]
     public TTreeValueModeValue? ValueMode { get; set; }
 
+    /// <summary>
+    /// 数据为空时展示的文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>
+    /// 节点图标，可自定义类型和参数：boolean | TNode&lt;TreeNodeModel&lt;T&gt;&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment<TTreeNodeModel<T>>? IconContent { get; set; }
 
+    /// <summary>
+    /// 自定义节点内容，值为 `false` 不显示，值为 `true` 显示默认 label，值为字符串直接输出该字符串。泛型 `T` 表示树节点 TS 类型。&lt;br/&gt;如果期望只有点击复选框才选中，而点击节点不选中，可以使用 `label` 自定义节点，然后加上点击事件 `e.preventDefault()`，通过调整自定义节点的宽度和高度决定禁止点击选中的范围类型和参数：string | boolean | TNode&lt;TreeNodeModel&lt;T&gt;&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment<TTreeNodeModel<T>>? LabelContent { get; set; }
 
+    /// <summary>
+    /// 连接线。值为 false 不显示连接线；值为 true 显示默认连接线；值类型为 Function 表示自定义连接线
+    /// </summary>
     [Parameter]
     [ECMAScriptName("line")]
     public RenderFragment? LineContent { get; set; }
 
+    /// <summary>
+    /// 自定义节点操作项，泛型 `T` 表示树节点 TS 类型类型和参数：TNode&lt;TreeNodeModel&lt;T&gt;&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("operations")]
     public RenderFragment<TTreeNodeModel<T>>? OperationsContent { get; set; }
 
+    /// <summary>
+    /// 节点激活时触发，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onActive")]
     public EventCallback<TTreeNodeValue[]> OnActive { get; set; }
 
+    /// <summary>
+    /// 节点选中状态变化时触发，context.node 表示当前变化的选项，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTreeNodeValue[]> OnChange { get; set; }
 
+    /// <summary>
+    /// 节点点击时触发，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback<TTreeClickEventContext<T>> OnClick { get; set; }
 
+    /// <summary>
+    /// 节点结束拖拽时触发，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragEnd")]
     public EventCallback<TTreeDragEndEventContext<T>> OnDragEnd { get; set; }
 
+    /// <summary>
+    /// 节点拖拽时离开目标元素时触发，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragLeave")]
     public EventCallback<TTreeDragLeaveEventContext<T>> OnDragLeave { get; set; }
 
+    /// <summary>
+    /// 节点拖拽到目标元素时触发，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragOver")]
     public EventCallback<TTreeDragOverEventContext<T>> OnDragOver { get; set; }
 
+    /// <summary>
+    /// 节点开始拖拽时触发，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragStart")]
     public EventCallback<TTreeDragStartEventContext<T>> OnDragStart { get; set; }
 
+    /// <summary>
+    /// 节点在目标元素上释放时触发，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDrop")]
     public EventCallback<TTreeDropEventContext<T>> OnDrop { get; set; }
 
+    /// <summary>
+    /// 节点展开或收起时触发，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpand")]
     public EventCallback<TTreeNodeValue[]> OnExpand { get; set; }
 
+    /// <summary>
+    /// 异步加载后触发，泛型 `T` 表示树节点 TS 类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onLoad")]
     public EventCallback<TTreeLoadEventContext<T>> OnLoad { get; set; }
 
+    /// <summary>
+    /// trigger on content scroll
+    ///
+    /// 滚动事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback<TTreeScrollEventParams<T>> OnScroll { get; set; }
@@ -32456,217 +40070,387 @@ internal sealed class TTree : TTree<TTreeOptionData<TTreeTDefaultTDefault>>
 {
 }
 
+/// <summary>
+/// TreeSelect
+///
+/// 树选择
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "TreeSelect")]
 public class TTreeSelect<DataOption, TreeValueType> : TContentComponentBase
 {
+    /// <summary>
+    /// 宽度随内容自适应
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoWidth")]
     public bool? AutoWidth { get; set; }
 
+    /// <summary>
+    /// 自动聚焦
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// 无边框模式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderless")]
     public bool? Borderless { get; set; }
 
+    /// <summary>
+    /// 是否允许清空
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// 树选择的数据列表。结构：`[{ label: TNode, value: string | number, text: string, ... }]`，其中 `label` 表示选项呈现的内容，可自定义；`value` 表示选项的唯一值；表示当 `label` 用于选项复杂内容呈现时，`text` 用于搜索功能。&lt;br /&gt;其中 `label` 和 `value` 可以使用 `keys` 属性定义别名
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public DataOption[]? Data { get; set; }
 
+    /// <summary>
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// 当下拉列表为空时显示的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public string? EmptyValue { get; set; }
 
+    /// <summary>
+    /// 过滤方法，用于对现有数据进行搜索过滤，判断是否过滤某一项数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filter")]
     public TTreeSelectFilterValue<DataOption, TreeValueType>? Filter { get; set; }
 
+    /// <summary>
+    /// 是否可搜索
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
+    /// <summary>
+    /// 透传给 输入框 Input 组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputProps")]
     public TdInputProps<TInputValue>? InputProps { get; set; }
 
+    /// <summary>
+    /// input value
+    ///
+    /// 输入框的值
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputValue")]
     public string? InputValue { get; set; }
 
+    /// <summary>
+    /// alias filed name in data
+    ///
+    /// 用来定义 `value / label / disabled / children` 在 `data` 数据中对应的字段别名，示例：`{ value: 'key', label: 'name', children: 'list' }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("keys")]
     public TTreeKeysType? Keys { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? LabelValue { get; set; }
 
+    /// <summary>
+    /// 是否正在加载数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// 远程加载时显示的文字，支持自定义。如加上超链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingText")]
     public string? LoadingTextValue { get; set; }
 
+    /// <summary>
+    /// 用于控制多选数量，值为 0 则不限制
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// 最小折叠数量，用于多选情况下折叠选中项，超出该数值的选中项折叠。值为 0 则表示不折叠
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minCollapsedNum")]
     public Number? MinCollapsedNum { get; set; }
 
+    /// <summary>
+    /// 是否允许多选
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public string? PanelBottomContentValue { get; set; }
 
+    /// <summary>
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public string? PanelTopContentValue { get; set; }
 
+    /// <summary>
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// 透传 Popup 组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupProps")]
     public TdPopupProps? PopupProps { get; set; }
 
+    /// <summary>
+    /// show popup
+    ///
+    /// 是否显示下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popupVisible")]
     public bool? PopupVisible { get; set; }
 
+    /// <summary>
+    /// 只读状态，值为真会隐藏输入框，且无法打开下拉框
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// 多选且可搜索时，是否在选中一个选项后保留当前的搜索关键词
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
+    /// <summary>
+    /// 【开发中】透传 SelectInput 筛选器输入框组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectInputProps")]
     public TdSelectInputProps? SelectInputProps { get; set; }
 
+    /// <summary>
+    /// 尺寸
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public TTreeSelectSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// 输入框状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TTreeSelectStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public string? SuffixValue { get; set; }
 
+    /// <summary>
+    /// 透传 Tag 标签组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagProps")]
     public TdTagProps? TagProps { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// 透传 Tree 组件的全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("treeProps")]
     public TTreeProps<TTreeOptionData<TTypeTreeOptionDataTDefault>>? TreeProps { get; set; }
 
+    /// <summary>
+    /// 选中值，泛型 `TreeValueType` 继承自 `TreeSelectValue`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public TTreeSelectValue? Value { get; set; }
 
+    /// <summary>
+    /// 用于控制选中值的类型。假设数据选项为：`[{ label: '姓名', value: 'name' }]`，value 表示值仅返回数据选项中的 value， object 表示值返回全部数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueType")]
     public TTreeSelectValueTypeValue? ValueType { get; set; }
 
+    /// <summary>
+    /// 多选情况下，用于设置折叠项内容，默认为 `+N`。如果需要悬浮就显示其他内容，可以使用 collapsedItems 自定义。`value` 表示当前存在的所有标签，`collapsedSelectedItems` 表示折叠的标签，`count` 表示折叠的数量，`onClose` 表示移除标签的事件回调类型和参数：TNode&lt;{ value: DataOption[]; collapsedSelectedItems: DataOption[]; count: number; onClose: (context: { index: number, e?: MouseEvent }) =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapsedItems")]
     public RenderFragment<TTreeSelectCollapsedItemsSlotContext<DataOption, TreeValueType>>? CollapsedItemsContent { get; set; }
 
+    /// <summary>
+    /// 当下拉列表为空时显示的内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? EmptyContent { get; set; }
 
+    /// <summary>
+    /// 左侧文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelContent { get; set; }
 
+    /// <summary>
+    /// 远程加载时显示的文字，支持自定义。如加上超链接
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingText")]
     public RenderFragment? LoadingTextContent { get; set; }
 
+    /// <summary>
+    /// 面板内的底部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelBottomContent")]
     public RenderFragment? PanelBottomContent { get; set; }
 
+    /// <summary>
+    /// 面板内的顶部内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("panelTopContent")]
     public RenderFragment? PanelTopContent { get; set; }
 
+    /// <summary>
+    /// 组件前置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public RenderFragment? PrefixIconContent { get; set; }
 
+    /// <summary>
+    /// 后置图标前的后置内容
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? SuffixContent { get; set; }
 
+    /// <summary>
+    /// 组件后置图标
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public RenderFragment? SuffixIconContent { get; set; }
 
+    /// <summary>
+    /// 输入框下方提示文本，会根据不同的 `status` 呈现不同的样式
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// 自定义选中项呈现方式类型和参数：string | TNode&lt;{ value: TreeOptionData | TreeOptionData[]; onClose: (index: number) =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueDisplay")]
     public RenderFragment<TTreeSelectValueDisplaySlotContext<DataOption, TreeValueType>>? ValueDisplayContent { get; set; }
 
+    /// <summary>
+    /// 输入框失去焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback<TTreeSelectBlurEventContext<DataOption, TreeValueType>> OnBlur { get; set; }
 
+    /// <summary>
+    /// 节点选中状态变化时触发，`context.node` 表示当前变化的选项，`context. trigger` 表示触发变化的来源。泛型 `TreeValueType` 继承自 `TreeSelectValue`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<TTreeSelectValue> OnChange { get; set; }
 
+    /// <summary>
+    /// 点击清除按钮时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback<TTreeSelectClearEventContext<DataOption, TreeValueType>> OnClear { get; set; }
 
+    /// <summary>
+    /// 输入框获得焦点时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback<TTreeSelectFocusEventContext<DataOption, TreeValueType>> OnFocus { get; set; }
 
+    /// <summary>
+    /// 输入框值发生变化时触发，`context.trigger` 表示触发输入框值变化的来源：文本输入触发、清除按钮触发、失去焦点等
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInputChange")]
     public EventCallback<string> OnInputChange { get; set; }
 
+    /// <summary>
+    /// 下拉框显示或隐藏时触发。单选场景，选中某个选项时触发关闭，此时需要添加参数 `node`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPopupVisibleChange")]
     public EventCallback<bool> OnPopupVisibleChange { get; set; }
 
+    /// <summary>
+    /// 多选模式下，选中数据被移除时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemove")]
     public EventCallback<TRemoveOptions<DataOption>> OnRemove { get; set; }
 
+    /// <summary>
+    /// 输入值变化时，触发搜索事件。主要用于远程搜索新数据。设置 `filterable=true` 开启此功能。优先级高于本地数据搜索 `filter`，即一旦存在这个远程搜索事件 `filter` 失效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSearch")]
     public EventCallback<string> OnSearch { get; set; }
@@ -32677,262 +40461,583 @@ internal sealed class TTreeSelect : TTreeSelect<TTreeOptionData<TTreeSelectDataO
 {
 }
 
+/// <summary>
+/// Typography
+///
+/// 排版
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Typography")]
 public sealed class TTypography : TContentComponentBase
 {
 }
 
+/// <summary>
+/// Upload
+///
+/// 上传
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Upload")]
 public class TUpload<T> : TContentComponentBase
 {
+    /// <summary>
+    /// ellipsis text of medium file name
+    ///
+    /// 文件名过长时，需要省略中间的文本，保留首尾文本。示例：[10, 7]，表示首尾分别保留的文本长度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("abridgeName")]
     public Number[]? AbridgeName { get; set; }
 
+    /// <summary>
+    /// File types that can be accepted. [W3C](https://www.w3schools.com/tags/att_input_accept.asp)，[MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/Input/file)
+    ///
+    /// 接受上传的文件类型，[查看 W3C示例](https://www.w3schools.com/tags/att_input_accept.asp)，[查看 MDN 示例](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/Input/file)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("accept")]
     public string? Accept { get; set; }
 
+    /// <summary>
+    /// Uploading URL
+    ///
+    /// 上传接口。设接口响应数据为字段 `response`，那么 `response.error` 存在时会判断此次上传失败，并显示错误文本信息；`response.url` 会作为文件上传成功后的地址，并使用该地址显示图片或文件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("action")]
     public string? Action { get; set; }
 
+    /// <summary>
+    /// allow to upload duplicate name files
+    ///
+    /// 是否允许重复上传相同文件名的文件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowUploadDuplicateFile")]
     public bool? AllowUploadDuplicateFile { get; set; }
 
+    /// <summary>
+    /// post upload request automatically after files being selected
+    ///
+    /// 是否在选择文件后自动发起请求上传文件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoUpload")]
     public bool? AutoUpload { get; set; }
 
+    /// <summary>
+    /// before all files upload, return false can stop uploading file
+    ///
+    /// 如果是自动上传模式 `autoUpload=true`，表示全部文件上传之前的钩子函数，函数参数为上传的文件，函数返回值决定是否继续上传，若返回值为 `false` 则终止上传。&lt;br/&gt;如果是非自动上传模式 `autoUpload=false`，则函数返回值为 `false` 时表示本次选中的文件不会加入到文件列表中，即不触发 `onChange` 事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeAllFilesUpload")]
     public TUploadBeforeAllFilesUploadValue<T>? BeforeAllFilesUpload { get; set; }
 
+    /// <summary>
+    /// stop one of files to upload
+    ///
+    /// 如果是自动上传模式 `autoUpload=true`，表示单个文件上传之前的钩子函数，若函数返回值为 `false` 则表示不上传当前文件。&lt;br/&gt;如果是非自动上传模式 `autoUpload=false`，函数返回值为 `false` 时表示从上传文件中剔除当前文件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeUpload")]
     public TUploadBeforeUploadValue<T>? BeforeUpload { get; set; }
 
+    /// <summary>
+    /// cancel upload button props, which showed on `autoUpload=false` and multiple files/images upload
+    ///
+    /// 批量文件/图片上传，`autoUpload=false` 场景下，透传“取消上传”按钮属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelUploadButton")]
     public TdButtonProps? CancelUploadButtonValue { get; set; }
 
+    /// <summary>
+    /// extra request data of uploading. `formatRequest` can redefine all request data
+    ///
+    /// 上传请求所需的额外字段，默认字段有 `file`，表示文件信息。可以添加额外的文件名字段，如：`{file_name: &quot;custom-file-name.txt&quot;}`。`autoUpload=true` 时有效。也可以使用 `formatRequest` 完全自定义上传请求的字段
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public TUploadDataValue<T>? Data { get; set; }
 
+    /// <summary>
+    /// make upload to be disabled
+    ///
+    /// 是否禁用组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// if drag uploading allowed, works on `theme=file` or `theme=image`
+    ///
+    /// 是否启用拖拽上传，不同的组件风格默认值不同。`theme=file` 或 `theme=image` 时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
+    /// <summary>
+    /// 已上传文件列表，同 `value`。TS 类型：`UploadFile`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("files")]
     public T[]? Files { get; set; }
 
+    /// <summary>
+    /// to redefine  `UploadFile` data structure
+    ///
+    /// 转换文件 `UploadFile` 的数据结构，可新增或修改 `UploadFile` 的属性，注意不能删除 `UploadFile` 属性。`action` 存在时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public TUploadFormatValue<T>? Format { get; set; }
 
+    /// <summary>
+    /// redefine request data
+    ///
+    /// 用于新增或修改文件上传请求 参数。`action` 存在时有效。一个请求上传一个文件时，默认请求字段有 `file`。&lt;br/&gt;一个请求上传多个文件时，默认字段有 `file[0]/file[1]/file[2]/.../length`，其中 `length` 表示本次上传的文件数量。&lt;br/&gt;⚠️非常注意，此处的 `file[0]/file[1]` 仅仅是一个字段名，并非表示 `file` 是一个数组，接口获取字段时注意区分。&lt;br/&gt;可以使用 `name` 定义 `file` 字段的别名。&lt;br/&gt;也可以使用 `formatRequest` 自定义任意字段，如添加一个字段 `fileList` ，存储文件数组
+    /// </summary>
     [Parameter]
     [ECMAScriptName("formatRequest")]
     public TUploadFormatRequestValue<T>? FormatRequest { get; set; }
 
+    /// <summary>
+    /// redefine response data structure
+    ///
+    /// 用于格式化文件上传后的接口响应数据，`response` 便是接口响应的原始数据。`action` 存在时有效。&lt;br/&gt; 示例返回值：`{ error, url, status, files }` &lt;br/&gt; 此函数的返回值 `error` 会作为错误文本提醒，表示上传失败的原因，如果存在会判定为本次上传失败。&lt;br/&gt; 此函数的返回值 `url` 会作为单个文件上传成功后的链接。&lt;br/&gt; `files` 表示一个请求同时上传多个文件后的文件列表
+    /// </summary>
     [Parameter]
     [ECMAScriptName("formatResponse")]
     public TUploadFormatResponseValue<T>? FormatResponse { get; set; }
 
+    /// <summary>
+    /// HTTP Request Header
+    ///
+    /// 设置上传的请求头部，`action` 存在时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headers")]
     public TUploadHeadersValue<T>? Headers { get; set; }
 
+    /// <summary>
+    /// 用于在上传图片场景下，透传属性配置至 Image 组件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("imageProps")]
     public TJsonObject? ImageProps { get; set; }
 
+    /// <summary>
+    /// ImageViewer Component Props
+    ///
+    /// 透传图片预览组件全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("imageViewerProps")]
     public TdImageViewerProps? ImageViewerProps { get; set; }
 
+    /// <summary>
+    /// add attributes to HTML element `input`
+    ///
+    /// 用于添加属性到 HTML 元素 `input`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputAttributes")]
     public TJsonObject? InputAttributes { get; set; }
 
+    /// <summary>
+    /// make all files to be a whole package, files can only be replaced or deleted together, can not add more files
+    ///
+    /// 多个文件是否作为一个独立文件包，整体替换，整体删除。不允许追加文件，只允许替换文件。`theme=file-flow` 时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("isBatchUpload")]
     public bool? IsBatchUpload { get; set; }
 
+    /// <summary>
+    /// upload language config, priority of `locale` is higher than global language config
+    ///
+    /// 上传组件文本语言配置，支持自定义配置组件中的全部文本。优先级高于全局配置中语言
+    /// </summary>
     [Parameter]
     [ECMAScriptName("locale")]
     public TUploadConfig? Locale { get; set; }
 
+    /// <summary>
+    /// max count of files limit
+    ///
+    /// 用于控制文件上传数量，值为 0 则不限制。注意，单文件上传场景，请勿设置 `max` 属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// HTTP request method
+    ///
+    /// HTTP 请求类型
+    /// </summary>
     [Parameter]
     [ECMAScriptName("method")]
     public TUploadMethodValue? Method { get; set; }
 
+    /// <summary>
+    /// mock progress duration time. more large files more duration time
+    ///
+    /// 模拟进度间隔时间，单位：毫秒，默认：300。由于原始的上传请求，小文件上传进度只有 0 和 100，故而新增模拟进度，每间隔 `mockProgressDuration` 毫秒刷新一次模拟进度。小文件设置小一点，大文件设置大一点。注意：当 `useMockProgress` 为真时，当前设置有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mockProgressDuration")]
     public Number? MockProgressDuration { get; set; }
 
+    /// <summary>
+    /// multiple files uploading
+    ///
+    /// 支持多文件上传
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// field name of files in upload request data
+    ///
+    /// 文件上传时的名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// placeholder
+    ///
+    /// 占位符
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// custom upload request method
+    ///
+    /// 自定义上传方法。返回值 `status` 表示上传成功或失败；`error` 或 `response.error` 表示上传失败的原因；&lt;br/&gt;`response` 表示请求上传成功后的返回数据，`response.url` 表示上传成功后的图片/文件地址，`response.files` 表示一个请求上传多个文件/图片后的返回值。&lt;br/&gt;示例一：`{ status: 'fail', error: '上传失败', response }`。&lt;br/&gt;示例二：`{ status: 'success', response: { url: 'https://tdesign.gtimg.com/site/avatar.jpg' } }`。&lt;br/&gt; 示例三：`{ status: 'success', files: [{ url: 'https://xxx.png', name: 'xxx.png' }]}`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("requestMethod")]
     public TUploadRequestMethodValue<T>? RequestMethod { get; set; }
 
+    /// <summary>
+    /// show image's name
+    ///
+    /// 是否显示图片的文件名称
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showImageFileName")]
     public bool? ShowImageFileName { get; set; }
 
+    /// <summary>
+    /// show thumbnail before file name, only works on `theme=file-flow`
+    ///
+    /// 是否在文件列表中显示缩略图，`theme=file-flow` 时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showThumbnail")]
     public bool? ShowThumbnail { get; set; }
 
+    /// <summary>
+    /// show upload progress nodes
+    ///
+    /// 是否显示上传进度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showUploadProgress")]
     public bool? ShowUploadProgress { get; set; }
 
+    /// <summary>
+    /// files size limit
+    ///
+    /// 图片文件大小限制，默认单位 KB。可选单位有：`'B' | 'KB' | 'MB' | 'GB'`。示例一：`1000`。示例二：`{ size: 2, unit: 'MB', message: '图片大小不超过 {sizeLimit} MB' }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sizeLimit")]
     public TUploadSizeLimitValue<T>? SizeLimit { get; set; }
 
+    /// <summary>
+    /// tips status
+    ///
+    /// 文件上传提示文本状态
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public TUploadStatusValue? Status { get; set; }
 
+    /// <summary>
+    /// different upload UI styles
+    ///
+    /// 组件风格。custom 表示完全自定义风格；file 表示默认文件上传风格；file-input 表示输入框形式的文件上传；file-flow 表示文件批量上传；image 表示默认图片上传风格；image-flow 表示图片批量上传
+    /// </summary>
     [Parameter]
     [ECMAScriptName("theme")]
     public TUploadThemeValue? Theme { get; set; }
 
+    /// <summary>
+    /// tips text below upload component, define it's color with `status`
+    ///
+    /// 组件下方文本提示，可以使用 `status` 定义文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public string? TipsValue { get; set; }
 
+    /// <summary>
+    /// trigger button props, it can be used to change color/size/href/... of the trigger button
+    ///
+    /// 透传选择按钮全部属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerButtonProps")]
     public TdButtonProps? TriggerButtonProps { get; set; }
 
+    /// <summary>
+    /// uploading all files in one request
+    ///
+    /// 是否在同一个请求中上传全部文件，默认一个请求上传一个文件。多文件上传时有效
+    /// </summary>
     [Parameter]
     [ECMAScriptName("uploadAllFilesInOneRequest")]
     public bool? UploadAllFilesInOneRequest { get; set; }
 
+    /// <summary>
+    /// upload button props, which showed on `autoUpload=false` and multiple files/images upload
+    ///
+    /// 批量文件/图片上传，`autoUpload=false` 场景下，透传“点击上传”按钮属性
+    /// </summary>
     [Parameter]
     [ECMAScriptName("uploadButton")]
     public TdButtonProps? UploadButtonValue { get; set; }
 
+    /// <summary>
+    /// allow to upload files in clipboard after pasting
+    ///
+    /// 是否允许粘贴上传剪贴板中的文件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("uploadPastedFiles")]
     public bool? UploadPastedFiles { get; set; }
 
+    /// <summary>
+    /// use mock progress, instead of real progress
+    ///
+    /// 是否在请求时间超过 300ms 后显示模拟进度。上传进度有模拟进度和真实进度两种。一般大小的文件上传，真实的上传进度只有 0 和 100，不利于交互呈现，因此组件内置模拟上传进度。真实上传进度一般用于大文件上传
+    /// </summary>
     [Parameter]
     [ECMAScriptName("useMockProgress")]
     public bool? UseMockProgress { get; set; }
 
+    /// <summary>
+    /// file list
+    ///
+    /// 已上传文件列表，同 `files`。TS 类型：`UploadFile`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public T[]? Value { get; set; }
 
+    /// <summary>
+    /// uploading request with cookie
+    ///
+    /// 上传请求时是否携带 cookie
+    /// </summary>
     [Parameter]
     [ECMAScriptName("withCredentials")]
     public bool? WithCredentials { get; set; }
 
+    /// <summary>
+    /// cancel upload button props, which showed on `autoUpload=false` and multiple files/images upload
+    ///
+    /// 批量文件/图片上传，`autoUpload=false` 场景下，透传“取消上传”按钮属性类型和参数：null | ButtonProps | TNode&lt;{ disabled: boolean; cancelUploadText: string; cancelUpload: (ctx: { e: MouseEvent }) =&gt; void }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelUploadButton")]
     public RenderFragment<TUploadCancelUploadButtonSlotContext<T>>? CancelUploadButtonContent { get; set; }
 
+    /// <summary>
+    /// define drag content nodes, it works on `theme=custom`
+    ///
+    /// 用于自定义拖拽区域，`theme=custom` 且 `draggable=true` 时有效类型和参数：TNode | TNode&lt;TriggerContext&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dragContent")]
     public RenderFragment? DragContent { get; set; }
 
+    /// <summary>
+    /// used to render file list UI
+    ///
+    /// 用于完全自定义文件列表界面内容(UI)，单文件和多文件均有效类型和参数：TNode&lt;{ files: UploadFile[]; dragEvents?: UploadDisplayDragEvents }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fileListDisplay")]
     public RenderFragment<TUploadFileListDisplaySlotContext<T>>? FileListDisplayContent { get; set; }
 
+    /// <summary>
+    /// tips text below upload component, define it's color with `status`
+    ///
+    /// 组件下方文本提示，可以使用 `status` 定义文本
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tips")]
     public RenderFragment? TipsContent { get; set; }
 
+    /// <summary>
+    /// trigger elements UI
+    ///
+    /// 触发上传的元素，`files` 指本次显示的全部文件; `triggerUpload` 用于触发上传文件的选择，在图片上传风格中有效类型和参数：TNode&lt;TriggerContext&gt;【interface TriggerContext { dragActive?: boolean;  files: UploadFile[]; triggerUpload?: (e: MouseEvent) =&gt; void }】
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public RenderFragment<TTriggerContext>? TriggerContent { get; set; }
 
+    /// <summary>
+    /// upload button props, which showed on `autoUpload=false` and multiple files/images upload
+    ///
+    /// 批量文件/图片上传，`autoUpload=false` 场景下，透传“点击上传”按钮属性类型和参数：null | ButtonProps | TNode&lt;{ disabled: boolean; uploading: boolean; uploadFiles: () =&gt; void; uploadText: string }&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("uploadButton")]
     public RenderFragment<TUploadUploadButtonSlotContext<T>>? UploadButtonContent { get; set; }
 
+    /// <summary>
+    /// trigger on cancel button click
+    ///
+    /// 点击「取消上传」时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCancelUpload")]
     public EventCallback OnCancelUpload { get; set; }
 
+    /// <summary>
+    /// trigger on uploaded files change
+    ///
+    /// 已上传文件列表发生变化时触发，`trigger` 表示触发本次的来源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback<T[]> OnChange { get; set; }
 
+    /// <summary>
+    /// trigger on file dragged into drag elements
+    ///
+    /// 进入拖拽区域时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragenter")]
     public EventCallback<TUploadDragenterEventContext<T>> OnDragenter { get; set; }
 
+    /// <summary>
+    /// trigger on file dragged leave drag elements
+    ///
+    /// 离开拖拽区域时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragleave")]
     public EventCallback<TUploadDragleaveEventContext<T>> OnDragleave { get; set; }
 
+    /// <summary>
+    /// trigger on file dropped
+    ///
+    /// 拖拽结束时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDrop")]
     public EventCallback<TUploadDropEventContext<T>> OnDrop { get; set; }
 
+    /// <summary>
+    /// `response.error` used for error tips, `formatResponse` can format `response`
+    ///
+    /// 上传失败后触发。`response` 指接口响应结果，`response.error` 会作为错误文本提醒。如果希望判定为上传失败，但接口响应数据不包含 `error` 字段，可以使用 `formatResponse` 格式化 `response` 数据结构。如果是多文件多请求上传场景，请到事件 `onOneFileFail` 中查看 `response`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFail")]
     public EventCallback<TUploadFailContext> OnFail { get; set; }
 
+    /// <summary>
+    /// trigger on one file upload failed
+    ///
+    /// 多文件/图片场景下，单个文件上传失败后触发，如果一个请求上传一个文件，则会触发多次。单文件/图片不会触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOneFileFail")]
     public EventCallback<TUploadFailContext> OnOneFileFail { get; set; }
 
+    /// <summary>
+    /// trigger on file uploaded successfully
+    ///
+    /// 单个文件上传成功后触发，在多文件场景下会触发多次。`context.file` 表示当前上传成功的单个文件，`context.response` 表示上传请求的返回数据
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOneFileSuccess")]
     public EventCallback<TUploadOneFileSuccessEventContext<T>> OnOneFileSuccess { get; set; }
 
+    /// <summary>
+    /// trigger on preview elements click
+    ///
+    /// 点击图片预览时触发，文件没有预览
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPreview")]
     public EventCallback<TUploadPreviewEventOptions<T>> OnPreview { get; set; }
 
+    /// <summary>
+    /// uploading request progress event
+    ///
+    /// 上传进度变化时触发，真实进度和模拟进度都会触发。&lt;br/&gt;⚠️ 原始上传请求，小文件的上传进度只有 0 和 100，故而不会触发 `progress` 事件；只有大文件才有真实的中间进度。如果你希望很小的文件也显示上传进度，保证 `useMockProgress=true` 的情况下，设置 `mockProgressDuration` 为更小的值。&lt;br/&gt;参数 `options.type=real` 表示真实上传进度，`options.type=mock` 表示模拟上传进度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onProgress")]
     public EventCallback<TProgressContext> OnProgress { get; set; }
 
+    /// <summary>
+    /// trigger on file removed
+    ///
+    /// 移除文件时触发
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemove")]
     public EventCallback<TUploadRemoveContext> OnRemove { get; set; }
 
+    /// <summary>
+    /// trigger after file choose and before upload
+    ///
+    /// 选择文件或图片之后，上传之前，触发该事件
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelectChange")]
     public EventCallback<JazorFile[]> OnSelectChange { get; set; }
 
+    /// <summary>
+    /// trigger on all files uploaded successfully
+    ///
+    /// 上传成功后触发。&lt;br/&gt;`context.currentFiles` 表示当次请求上传的文件（无论成功或失败），`context.fileList` 表示上传成功后的文件，`context.response` 表示上传请求的返回数据。&lt;br/&gt;`context.results` 表示单次选择全部文件上传成功后的响应结果，可以在这个字段存在时提醒用户上传成功或失败。&lt;br /&gt;
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSuccess")]
     public EventCallback<TSuccessContext> OnSuccess { get; set; }
 
+    /// <summary>
+    /// trigger on length over limit, or trigger on file size over limit
+    ///
+    /// 文件上传校验结束事件，文件数量超出、文件大小超出限制、文件同名、`beforeAllFilesUpload` 返回值为假、`beforeUpload` 返回值为假等场景会触发。&lt;br/&gt;注意：如果设置允许上传同名文件，即 `allowUploadDuplicateFile=true`，则不会因为文件重名触发该事件。&lt;br/&gt;结合 `status` 和 `tips` 可以在组件中呈现不同类型的错误（或告警）提示
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onValidate")]
     public EventCallback<TUploadValidateEventContext<T>> OnValidate { get; set; }
 
+    /// <summary>
+    /// trigger on waiting upload files changed
+    ///
+    /// 待上传文件列表发生变化时触发。`context.files` 表示事件参数为待上传文件，`context.trigger` 引起此次变化的触发来源
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onWaitingUploadFilesChange")]
     public EventCallback<TUploadWaitingUploadFilesChangeEventContext<T>> OnWaitingUploadFilesChange { get; set; }
@@ -32943,69 +41048,122 @@ internal sealed class TUpload : TUpload<TUploadFile>
 {
 }
 
+/// <summary>
+/// Watermark
+///
+/// 水印
+/// </summary>
 [ECMAScript("tdesign-vue-next", Transform.Component, "Watermark")]
 public sealed class TWatermark : TContentComponentBase
 {
+    /// <summary>
+    /// 水印整体透明度，取值范围 [0-1]
+    /// </summary>
     [Parameter]
     [ECMAScriptName("alpha")]
     public Number? Alpha { get; set; }
 
+    /// <summary>
+    /// 水印所覆盖的内容节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? ContentValue { get; set; }
 
+    /// <summary>
+    /// 水印高度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
+    /// <summary>
+    /// 水印是否重复出现
+    /// </summary>
     [Parameter]
     [ECMAScriptName("isRepeat")]
     public bool? IsRepeat { get; set; }
 
+    /// <summary>
+    /// 行间距，只作用在多行（`content` 配置为数组）情况下
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lineSpace")]
     public Number? LineSpace { get; set; }
 
+    /// <summary>
+    /// 水印是否可移动
+    /// </summary>
     [Parameter]
     [ECMAScriptName("movable")]
     public bool? Movable { get; set; }
 
+    /// <summary>
+    /// 水印发生运动位移的间隙，单位：毫秒
+    /// </summary>
     [Parameter]
     [ECMAScriptName("moveInterval")]
     public Number? MoveInterval { get; set; }
 
+    /// <summary>
+    /// 水印在画布上绘制的水平和垂直偏移量，正常情况下水印绘制在中间位置，即 `offset = [gapX / 2, gapY / 2]`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number[]? Offset { get; set; }
 
+    /// <summary>
+    /// 水印是否可被删除
+    /// </summary>
     [Parameter]
     [ECMAScriptName("removable")]
     public bool? Removable { get; set; }
 
+    /// <summary>
+    /// 水印旋转的角度，单位 °
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rotate")]
     public Number? Rotate { get; set; }
 
+    /// <summary>
+    /// 水印内容，需要显示多行情况下可配置为数组
+    /// </summary>
     [Parameter]
     [ECMAScriptName("watermarkContent")]
     public TWatermarkWatermarkContentValue? WatermarkContent { get; set; }
 
+    /// <summary>
+    /// 水印宽度
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public Number? Width { get; set; }
 
+    /// <summary>
+    /// 水印之间的水平间距
+    /// </summary>
     [Parameter]
     [ECMAScriptName("x")]
     public Number? X { get; set; }
 
+    /// <summary>
+    /// 水印之间的垂直间距
+    /// </summary>
     [Parameter]
     [ECMAScriptName("y")]
     public Number? Y { get; set; }
 
+    /// <summary>
+    /// 水印元素的 `z-index`，默认值写在 CSS 中
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// 水印所覆盖的内容节点
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }

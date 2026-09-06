@@ -229,6 +229,31 @@ public sealed class RazorVueDiagnosticDescriptorTests
     }
 
     [TestMethod]
+    public void DiagnosticFactory_SymbolFallbackUsesOrdinalTieBreakerForCaseInsensitivePaths()
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var lower = CSharpSyntaxTree.ParseText(
+            "namespace Demo; public partial class Component { }",
+            parseOptions,
+            path: "pages/component.cs");
+        var upper = CSharpSyntaxTree.ParseText(
+            "namespace Demo; public partial class Component { }",
+            parseOptions,
+            path: "Pages/Component.cs");
+        var compilation = CSharpCompilation.Create(
+            "RazorVueDiagnosticCaseTie_" + Guid.NewGuid().ToString("N"),
+            [lower, upper],
+            TestMetadataReferences.Net11,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var component = compilation.GetTypeByMetadataName("Demo.Component");
+        Assert.IsNotNull(component);
+
+        var location = RazorVueDiagnosticFactory.GetSymbolLocation(component);
+
+        Assert.AreEqual("Pages/Component.cs", location.GetLineSpan().Path);
+    }
+
+    [TestMethod]
     public void DiagnosticFactory_PreservesAuthorLocationPriorityAcrossFallbacks()
     {
         var tree = CSharpSyntaxTree.ParseText(

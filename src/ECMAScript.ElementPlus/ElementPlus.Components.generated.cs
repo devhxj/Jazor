@@ -16,34 +16,58 @@ namespace ECMAScript.ElementPlus;
 [ECMAScript("element-plus", Transform.Component, "ElAffix")]
 public sealed class ElAffix : ElContentComponentBase
 {
+    /// <summary>
+    /// offset distance
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
+    /// <summary>
+    /// position of affix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("position")]
     public ElTopBottomPlacement? Position { get; set; }
 
+    /// <summary>
+    /// target container (CSS selector)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("target")]
     public string? Target { get; set; }
 
+    /// <summary>
+    /// `z-index` of affix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// whether affix element is teleported, if `true` it will be teleported to where `append-to` sets
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// which element the affix element appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// triggers when fixed state changed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when scrolling
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback OnScroll { get; set; }
@@ -56,46 +80,79 @@ public sealed class ElAffix : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElAlert")]
 public sealed class ElAlert : ElContentComponentBase
 {
+    /// <summary>
+    /// alert title.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// alert type.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// descriptive text.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public string? Description { get; set; }
 
+    /// <summary>
+    /// whether alert can be dismissed.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
+    /// <summary>
+    /// whether content is placed in the center.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("center")]
     public bool? Center { get; set; }
 
+    /// <summary>
+    /// customized close button text.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeText")]
     public string? CloseText { get; set; }
 
+    /// <summary>
+    /// whether a type icon is displayed.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showIcon")]
     public bool? ShowIcon { get; set; }
 
+    /// <summary>
+    /// theme style.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
+    /// <summary>
+    /// content of the alert title.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
+    /// <summary>
+    /// content of the alert icon.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? Icon { get; set; }
 
+    /// <summary>
+    /// trigger when alert is closed.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
@@ -108,10 +165,16 @@ public sealed class ElAlert : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElAnchor")]
 public sealed class ElAnchor : ElContentComponentBase
 {
+    /// <summary>
+    /// Callback when the step changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// Triggered when the user clicks on the link
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
@@ -124,6 +187,9 @@ public sealed class ElAnchor : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElAnchorLink")]
 public sealed class ElAnchorLink : ElContentComponentBase
 {
+    /// <summary>
+    /// Slots for child links.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sub-link")]
     public RenderFragment? SubLink { get; set; }
@@ -136,6 +202,9 @@ public sealed class ElAnchorLink : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElAside")]
 public sealed class ElAside : ElContentComponentBase
 {
+    /// <summary>
+    /// width of the side section
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public string? Width { get; set; }
@@ -168,150 +237,261 @@ public sealed class ElAutoResizer : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElAutocomplete")]
 public sealed class ElAutocomplete : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
+    /// <summary>
+    /// the placeholder of Autocomplete
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// whether to show clear button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// whether Autocomplete is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// key name of the input suggestion object for display
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueKey")]
     public string? ValueKey { get; set; }
 
+    /// <summary>
+    /// debounce delay when typing, in milliseconds
+    /// </summary>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
+    /// <summary>
+    /// placement of the popup menu
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
+    /// <summary>
+    /// a method to fetch input suggestions. When suggestions are ready, invoke `callback(data:[])` to return them to Autocomplete
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fetchSuggestions")]
     public ElAutocompleteFetchSuggestionsValue? FetchSuggestions { get; set; }
 
+    /// <summary>
+    /// whether show suggestions when input focus
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerOnFocus")]
     public bool? TriggerOnFocus { get; set; }
 
+    /// <summary>
+    /// whether to emit a `select` event on enter when there is no autocomplete match
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectWhenUnmatched")]
     public bool? SelectWhenUnmatched { get; set; }
 
+    /// <summary>
+    /// same as `name` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// native `aria-label` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// whether to hide the loading icon in remote search
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideLoading")]
     public bool? HideLoading { get; set; }
 
+    /// <summary>
+    /// custom class name for autocomplete's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for autocomplete's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// [popper.js](https://popper.js.org/docs/v2/) parameters
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// whether the dropdown has an arrow
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// whether select dropdown is teleported to the body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// which select dropdown appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// whether to highlight first item in remote search suggestions by default
+    /// </summary>
     [Parameter]
     [ECMAScriptName("highlightFirstItem")]
     public bool? HighlightFirstItem { get; set; }
 
+    /// <summary>
+    /// whether the width of the dropdown is the same as the input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fitInputWidth")]
     public bool? FitInputWidth { get; set; }
 
+    /// <summary>
+    /// whether to append the dropdown to body. If the positioning of the dropdown is wrong, you can try to set this prop to false
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperAppendToBody")]
     public bool? PopperAppendToBody { get; set; }
 
+    /// <summary>
+    /// whether keyboard navigation loops from end to start
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loopNavigation")]
     public bool? LoopNavigation { get; set; }
 
+    /// <summary>
+    /// content at the top of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// content at the bottom of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// content as Input prefix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// content as Input suffix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
+    /// <summary>
+    /// content to prepend before Input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
+    /// <summary>
+    /// content to append after Input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
+    /// <summary>
+    /// override loading content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? Loading { get; set; }
 
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when the Input value change
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInput")]
     public EventCallback OnInput { get; set; }
 
+    /// <summary>
+    /// triggers when the Input is cleared by clicking the clear button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// triggers when a suggestion is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelect")]
     public EventCallback OnSelect { get; set; }
 
+    /// <summary>
+    /// triggers when the icon inside Input value change
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
@@ -324,34 +504,58 @@ public sealed class ElAutocomplete : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElAvatar")]
 public sealed class ElAvatar : ElContentComponentBase
 {
+    /// <summary>
+    /// representation type to icon, more info on icon component.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// avatar size.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
+    /// <summary>
+    /// avatar shape.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public ElAvatarShape? Shape { get; set; }
 
+    /// <summary>
+    /// the source of the image for an image avatar.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("src")]
     public string? Src { get; set; }
 
+    /// <summary>
+    /// native attribute `srcset` of image avatar.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("srcSet")]
     public string? SrcSet { get; set; }
 
+    /// <summary>
+    /// native attribute `alt` of image avatar.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("alt")]
     public string? Alt { get; set; }
 
+    /// <summary>
+    /// set how the image fit its container for an image avatar.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fit")]
     public string? Fit { get; set; }
 
+    /// <summary>
+    /// trigger when image load error.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onError")]
     public EventCallback OnError { get; set; }
@@ -364,46 +568,79 @@ public sealed class ElAvatar : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElAvatarGroup")]
 public sealed class ElAvatarGroup : ElComponentBase
 {
+    /// <summary>
+    /// control the size of avatars in this avatar-group
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
+    /// <summary>
+    /// control the shape of avatars in this avatar-group
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shape")]
     public ElAvatarShape? Shape { get; set; }
 
+    /// <summary>
+    /// whether to collapse avatars
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseAvatars")]
     public bool? CollapseAvatars { get; set; }
 
+    /// <summary>
+    /// whether show all collapsed avatars when mouse hover text of the collapse-avatar. To use this, `collapse-avatars` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseAvatarsTooltip")]
     public bool? CollapseAvatarsTooltip { get; set; }
 
+    /// <summary>
+    /// the max avatars number to be shown. To use this, `collapse-avatars` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxCollapseAvatars")]
     public Number? MaxCollapseAvatars { get; set; }
 
+    /// <summary>
+    /// tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
+    /// <summary>
+    /// placement of tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
+    /// <summary>
+    /// custom class name for tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// custom class name for the collapse-avatar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseClass")]
     public string? CollapseClass { get; set; }
 
+    /// <summary>
+    /// custom style for the collapse-avatar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseStyle")]
     public VueStyleValue? CollapseStyle { get; set; }
@@ -416,22 +653,37 @@ public sealed class ElAvatarGroup : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElBacktop")]
 public sealed class ElBacktop : ElContentComponentBase
 {
+    /// <summary>
+    /// the target to trigger scroll.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("target")]
     public string? Target { get; set; }
 
+    /// <summary>
+    /// the button will not show until the scroll height reaches this value.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("visibilityHeight")]
     public Number? VisibilityHeight { get; set; }
 
+    /// <summary>
+    /// right distance.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("right")]
     public Number? Right { get; set; }
 
+    /// <summary>
+    /// bottom distance.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bottom")]
     public Number? Bottom { get; set; }
 
+    /// <summary>
+    /// triggers when click.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
@@ -444,46 +696,79 @@ public sealed class ElBacktop : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElBadge")]
 public sealed class ElBadge : ElContentComponentBase
 {
+    /// <summary>
+    /// display value.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public VueStringNumberValue? Value { get; set; }
 
+    /// <summary>
+    /// maximum value, shows `{max}+` when exceeded. Only works if value is a number.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// if a little dot is displayed.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("isDot")]
     public bool? IsDot { get; set; }
 
+    /// <summary>
+    /// hidden badge.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hidden")]
     public bool? Hidden { get; set; }
 
+    /// <summary>
+    /// badge type.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// Whether to show badge when value is zero.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showZero")]
     public bool? ShowZero { get; set; }
 
+    /// <summary>
+    /// background color of the dot
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// offset of badge
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public VueNumberPair? Offset { get; set; }
 
+    /// <summary>
+    /// custom style of badge
+    /// </summary>
     [Parameter]
     [ECMAScriptName("badgeStyle")]
     public VueStyleValue? BadgeStyle { get; set; }
 
+    /// <summary>
+    /// custom class of badge
+    /// </summary>
     [Parameter]
     [ECMAScriptName("badgeClass")]
     public string? BadgeClass { get; set; }
 
+    /// <summary>
+    /// customize badge content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? Content { get; set; }
@@ -496,10 +781,16 @@ public sealed class ElBadge : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElBreadcrumb")]
 public sealed class ElBreadcrumb : ElContentComponentBase
 {
+    /// <summary>
+    /// separator character
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public string? Separator { get; set; }
 
+    /// <summary>
+    /// icon component of icon separator
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separatorIcon")]
     public VueStringComponentValue? SeparatorIcon { get; set; }
@@ -512,10 +803,16 @@ public sealed class ElBreadcrumb : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElBreadcrumbItem")]
 public sealed class ElBreadcrumbItem : ElContentComponentBase
 {
+    /// <summary>
+    /// target route of the link, same as `to` of `vue-router`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("to")]
     public RouteLocationRaw? To { get; set; }
 
+    /// <summary>
+    /// if `true`, the navigation will not leave a history record
+    /// </summary>
     [Parameter]
     [ECMAScriptName("replace")]
     public bool? Replace { get; set; }
@@ -528,89 +825,159 @@ public sealed class ElBreadcrumbItem : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElButton")]
 public sealed class ElButton : ElContentComponentBase
 {
+    /// <summary>
+    /// button size
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// button type, when setting `color`, the latter prevails
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public ElButtonType? Type { get; set; }
 
+    /// <summary>
+    /// determine whether it's a plain button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("plain")]
     public bool? Plain { get; set; }
 
+    /// <summary>
+    /// determine whether it's a text button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("text")]
     public bool? Text { get; set; }
 
+    /// <summary>
+    /// determine whether the text button background color is always on
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bg")]
     public bool? Bg { get; set; }
 
+    /// <summary>
+    /// determine whether it's a link button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("link")]
     public bool? Link { get; set; }
 
+    /// <summary>
+    /// determine whether it's a round button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("round")]
     public bool? Round { get; set; }
 
+    /// <summary>
+    /// determine whether it's a circle button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("circle")]
     public bool? Circle { get; set; }
 
+    /// <summary>
+    /// determine whether it's a dashed button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dashed")]
     public bool? Dashed { get; set; }
 
+    /// <summary>
+    /// determine whether it's loading
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// customize loading icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingIcon")]
     public VueStringComponentValue? LoadingIcon { get; set; }
 
+    /// <summary>
+    /// disable the button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// same as native button's `autofocus`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// same as native button's `type`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("nativeType")]
     public ElButtonNativeType? NativeType { get; set; }
 
+    /// <summary>
+    /// automatically insert a space between two chinese characters(this will only take effect when the text length is 2 and all characters are in Chinese.)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoInsertSpace")]
     public bool? AutoInsertSpace { get; set; }
 
+    /// <summary>
+    /// custom button color, automatically calculate `hover` and `active` color. Works with `link`/`text` buttons since
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// dark mode, which automatically converts `color` to dark mode colors
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dark")]
     public bool? Dark { get; set; }
 
+    /// <summary>
+    /// custom element tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public VueStringComponentValue? Tag { get; set; }
 
+    /// <summary>
+    /// customize loading component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
+    /// <summary>
+    /// customize icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
+
+    /// <summary>
+    /// triggers when the button is clicked.
+    /// </summary>
+    [Parameter]
+    [ECMAScriptName("onClick")]
+    public EventCallback OnClick { get; set; }
 
 }
 
@@ -620,14 +987,23 @@ public sealed class ElButton : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElButtonGroup")]
 public sealed class ElButtonGroup : ElContentComponentBase
 {
+    /// <summary>
+    /// control the size of buttons in this button-group
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// control the type of buttons in this button-group
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public ElButtonType? Type { get; set; }
 
+    /// <summary>
+    /// display direction
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
@@ -640,30 +1016,51 @@ public sealed class ElButtonGroup : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCalendar")]
 public sealed class ElCalendar : ElComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public Date? ModelValue { get; set; }
 
+    /// <summary>
+    /// time range, including start time and end time. Start time must be start day of week, end time must be end day of week, the time span cannot exceed two months.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("range")]
     public VueDatePair? Range { get; set; }
 
+    /// <summary>
+    /// type of the controller for Calendar header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("controllerType")]
     public ElCalendarControllerType? ControllerType { get; set; }
 
+    /// <summary>
+    /// format label when `controller-type` is 'select'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("formatter")]
     public ElCalendarFormatterCallback? Formatter { get; set; }
 
+    /// <summary>
+    /// `type` indicates which month the date belongs, optional values are prev-month, current-month, next-month; `isSelected` indicates whether the date is selected; `day` is the formatted date in the format `YYYY-MM-DD`; `date` is date the cell represents
+    /// </summary>
     [Parameter]
     [ECMAScriptName("date-cell")]
     public RenderFragment? DateCell { get; set; }
 
+    /// <summary>
+    /// content of the Calendar header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Date?> ModelValueChanged { get; set; }
@@ -676,38 +1073,65 @@ public sealed class ElCalendar : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCard")]
 public sealed class ElCard : ElContentComponentBase
 {
+    /// <summary>
+    /// title of the card. Also accepts a DOM passed by `slot#header`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public string? Header { get; set; }
 
+    /// <summary>
+    /// footer of the card. Also accepts a DOM passed by `slot#footer`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public string? Footer { get; set; }
 
+    /// <summary>
+    /// CSS style of card body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bodyStyle")]
     public VueStyleValue? BodyStyle { get; set; }
 
+    /// <summary>
+    /// custom class name of card header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerClass")]
     public string? HeaderClass { get; set; }
 
+    /// <summary>
+    /// custom class name of card body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bodyClass")]
     public string? BodyClass { get; set; }
 
+    /// <summary>
+    /// custom class name of card footer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerClass")]
     public string? FooterClass { get; set; }
 
+    /// <summary>
+    /// when to show card shadows
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shadow")]
     public ElCardShadow? Shadow { get; set; }
 
+    /// <summary>
+    /// content of the Card header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? HeaderSlot { get; set; }
 
+    /// <summary>
+    /// content of the Card footer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? FooterSlot { get; set; }
@@ -720,58 +1144,100 @@ public sealed class ElCard : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCarousel")]
 public sealed class ElCarousel : ElContentComponentBase
 {
+    /// <summary>
+    /// height of the carousel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public string? Height { get; set; }
 
+    /// <summary>
+    /// index of the initially active slide (starting from 0)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("initialIndex")]
     public Number? InitialIndex { get; set; }
 
+    /// <summary>
+    /// how indicators are triggered
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public ElHoverClickTrigger? Trigger { get; set; }
 
+    /// <summary>
+    /// whether automatically loop the slides
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoplay")]
     public bool? Autoplay { get; set; }
 
+    /// <summary>
+    /// interval of the auto loop, in milliseconds
+    /// </summary>
     [Parameter]
     [ECMAScriptName("interval")]
     public Number? Interval { get; set; }
 
+    /// <summary>
+    /// position of the indicators
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indicatorPosition")]
     public string? IndicatorPosition { get; set; }
 
+    /// <summary>
+    /// when arrows are shown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("arrow")]
     public string? Arrow { get; set; }
 
+    /// <summary>
+    /// type of the Carousel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public ElCarouselType? Type { get; set; }
 
+    /// <summary>
+    /// when type is card, scaled size of secondary cards
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cardScale")]
     public Number? CardScale { get; set; }
 
+    /// <summary>
+    /// display the items in loop
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loop")]
     public bool? Loop { get; set; }
 
+    /// <summary>
+    /// display direction
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
+    /// <summary>
+    /// pause autoplay when hover
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pauseOnHover")]
     public bool? PauseOnHover { get; set; }
 
+    /// <summary>
+    /// infuse dynamism and smoothness into the carousel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("motionBlur")]
     public bool? MotionBlur { get; set; }
 
+    /// <summary>
+    /// triggers when the active slide switches, it has two parameters, the one is the index of the new active slide, and other is index of the old active slide
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
@@ -784,10 +1250,16 @@ public sealed class ElCarousel : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCarouselItem")]
 public sealed class ElCarouselItem : ElContentComponentBase
 {
+    /// <summary>
+    /// name of the item, can be used in `setActiveItem`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// text content for the corresponding indicator
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public VueStringNumberValue? Label { get; set; }
@@ -800,202 +1272,352 @@ public sealed class ElCarouselItem : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCascader")]
 public sealed class ElCascader : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// data of the options, the key of `value` and `label` can be customize by `CascaderProps`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
+    /// <summary>
+    /// configuration options, see the following `CascaderProps` table.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElCascaderProps? Props { get; set; }
 
+    /// <summary>
+    /// size of input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// placeholder of input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// whether Cascader is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether selected value can be cleared
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// custom clear icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
+    /// <summary>
+    /// whether to display all levels of the selected value in the input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showAllLevels")]
     public bool? ShowAllLevels { get; set; }
 
+    /// <summary>
+    /// whether to collapse tags in multiple selection mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
+    /// <summary>
+    /// whether show all selected tags when mouse hover text of collapse-tags. To use this, `collapse-tags` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
+    /// <summary>
+    /// max height of collapse-tags tooltip.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxCollapseTagsTooltipHeight")]
     public VueStringNumberValue? MaxCollapseTagsTooltipHeight { get; set; }
 
+    /// <summary>
+    /// option label separator
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public string? Separator { get; set; }
 
+    /// <summary>
+    /// whether the options can be searched
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
+    /// <summary>
+    /// customize search logic, the first parameter is `node`, the second is `keyword`, and need return a boolean value indicating whether it hits.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterMethod")]
     public ElCascaderFilterMethod? FilterMethod { get; set; }
 
+    /// <summary>
+    /// debounce delay when typing filter keyword, in milliseconds
+    /// </summary>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
+    /// <summary>
+    /// hook function before filtering with the value to be filtered as its parameter. If `false` is returned or a `Promise` is returned and then is rejected, filtering will be aborted
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeFilter")]
     public ElCascaderBeforeFilterCallback? BeforeFilter { get; set; }
 
+    /// <summary>
+    /// custom class name for Cascader's dropdown and tags' tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for Cascader's dropdown and tags' tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// whether cascader popup is teleported
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public string? Effect { get; set; }
 
+    /// <summary>
+    /// tag type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagType")]
     public string? TagType { get; set; }
 
+    /// <summary>
+    /// tag effect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagEffect")]
     public string? TagEffect { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// The max tags number to be shown. To use this, `collapse-tags` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// when dropdown is inactive and `persistent` is `false`, dropdown will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// list of possible positions for Tooltip [popper.js](https://popper.js.org/docs/v2/modifiers/flip/#fallbackplacements)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
+    /// <summary>
+    /// position of dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
+    /// <summary>
+    /// whether to append the popper menu to body. If the positioning of the popper is wrong, you can try to set this prop to false
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperAppendToBody")]
     public bool? PopperAppendToBody { get; set; }
 
+    /// <summary>
+    /// strategy for displaying checked nodes in multiple selection mode. Use `parent` when you want things tidy. Use `child` when every single item matters
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showCheckedStrategy")]
     public string? ShowCheckedStrategy { get; set; }
 
+    /// <summary>
+    /// whether to enable virtual scrolling for large data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("virtualScroll")]
     public bool? VirtualScroll { get; set; }
 
+    /// <summary>
+    /// whether the width of the suggestion panel is the same as the input, if the value is `number`, then the width is fixed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fitInputWidth")]
     public VueBooleanNumberValue? FitInputWidth { get; set; }
 
+    /// <summary>
+    /// node height for virtual scrolling (px)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
 
+    /// <summary>
+    /// menu height for virtual scrolling (px)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
+    /// <summary>
+    /// content when there is no matched options.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
+    /// <summary>
+    /// content as Input prefix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// custom content for suggestion item when searching
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suggestion-item")]
     public RenderFragment? SuggestionItem { get; set; }
 
+    /// <summary>
+    /// custom tags style
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
+    /// <summary>
+    /// content at the top of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// content at the bottom of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// triggers when the binding value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when expand option changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpandChange")]
     public EventCallback OnExpandChange { get; set; }
 
+    /// <summary>
+    /// triggers when Cascader blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Cascader focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when the clear icon is clicked in a clearable Select
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// triggers when the dropdown appears/disappears
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
+    /// <summary>
+    /// triggers when remove tag in multiple selection mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
@@ -1008,46 +1630,79 @@ public sealed class ElCascader : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCascaderPanel")]
 public sealed class ElCascaderPanel : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// data of the options, the key of `value` and `label` can be customize by `CascaderProps`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
+    /// <summary>
+    /// configuration options, see the following `CascaderProps` table.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElCascaderProps? Props { get; set; }
 
+    /// <summary>
+    /// whether to enable virtual scrolling for large data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("virtualScroll")]
     public bool? VirtualScroll { get; set; }
 
+    /// <summary>
+    /// node height for virtual scrolling (px)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
 
+    /// <summary>
+    /// menu height for virtual scrolling (px)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
+    /// <summary>
+    /// the content of the panel when there is no data.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
+    /// <summary>
+    /// triggers when the binding value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when the binding value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
+    /// <summary>
+    /// triggers when expand option changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpandChange")]
     public EventCallback OnExpandChange { get; set; }
 
+    /// <summary>
+    /// close panel event, provided to Cascader to put away the panel judgment.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
@@ -1060,18 +1715,30 @@ public sealed class ElCascaderPanel : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCheckTag")]
 public sealed class ElCheckTag : ElContentComponentBase
 {
+    /// <summary>
+    /// is checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
+    /// <summary>
+    /// whether the check-tag is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// type of CheckTag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// triggers when Check Tag is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
@@ -1084,86 +1751,149 @@ public sealed class ElCheckTag : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCheckbox")]
 public sealed class ElCheckbox : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// value of the Checkbox when used inside a `checkbox-group`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
 
+    /// <summary>
+    /// label of the Checkbox when used inside a `checkbox-group`. If there's no value, `label` will act as `value`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public VueBooleanStringNumberObjectValue? Label { get; set; }
 
+    /// <summary>
+    /// value of the Checkbox if it's checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trueValue")]
     public VueStringNumberValue? TrueValue { get; set; }
 
+    /// <summary>
+    /// value of the Checkbox if it's not checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("falseValue")]
     public VueStringNumberValue? FalseValue { get; set; }
 
+    /// <summary>
+    /// whether the Checkbox is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether to add a border around Checkbox
+    /// </summary>
     [Parameter]
     [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
+    /// <summary>
+    /// size of the Checkbox
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// native 'name' attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// if the Checkbox is checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
+    /// <summary>
+    /// Set indeterminate state, only responsible for style control
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indeterminate")]
     public bool? Indeterminate { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// input tabindex
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// input id
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// same as [aria-controls](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-controls), takes effect when `indeterminate` is `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaControls")]
     public string? AriaControls { get; set; }
 
+    /// <summary>
+    /// native `aria-label` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// value of the Checkbox if it's checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trueLabel")]
     public VueStringNumberValue? TrueLabel { get; set; }
 
+    /// <summary>
+    /// value of the Checkbox if it's not checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("falseLabel")]
     public VueStringNumberValue? FalseLabel { get; set; }
 
+    /// <summary>
+    /// same as [aria-controls](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-controls), takes effect when `indeterminate` is `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("controls")]
     public string? Controls { get; set; }
 
+    /// <summary>
+    /// triggers when the binding value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -1176,38 +1906,65 @@ public sealed class ElCheckbox : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCheckboxButton")]
 public sealed class ElCheckboxButton : ElContentComponentBase
 {
+    /// <summary>
+    /// value of the checkbox when used inside a `checkbox-group`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
 
+    /// <summary>
+    /// label of the checkbox when used inside a `checkbox-group`. If there's no value, `label` will act as `value`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public VueBooleanStringNumberObjectValue? Label { get; set; }
 
+    /// <summary>
+    /// value of the checkbox if it's checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trueValue")]
     public VueStringNumberValue? TrueValue { get; set; }
 
+    /// <summary>
+    /// value of the checkbox if it's not checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("falseValue")]
     public VueStringNumberValue? FalseValue { get; set; }
 
+    /// <summary>
+    /// whether the checkbox is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// native 'name' attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// if the checkbox is checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checked")]
     public bool? Checked { get; set; }
 
+    /// <summary>
+    /// value of the checkbox if it's checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trueLabel")]
     public VueStringNumberValue? TrueLabel { get; set; }
 
+    /// <summary>
+    /// value of the checkbox if it's not checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("falseLabel")]
     public VueStringNumberValue? FalseLabel { get; set; }
@@ -1220,66 +1977,114 @@ public sealed class ElCheckboxButton : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCheckboxGroup")]
 public sealed class ElCheckboxGroup : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue[]? ModelValue { get; set; }
 
+    /// <summary>
+    /// size of checkbox
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// whether the nesting checkboxes are disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// minimum number of checkbox checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
+    /// <summary>
+    /// maximum number of checkbox checked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// native `aria-label` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// font color when button is active
+    /// </summary>
     [Parameter]
     [ECMAScriptName("textColor")]
     public string? TextColor { get; set; }
 
+    /// <summary>
+    /// border and background color when button is active
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fill")]
     public string? Fill { get; set; }
 
+    /// <summary>
+    /// element tag of the checkbox group
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// native `aria-label` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// data of the options, the key of `value` and `label` and `disabled` can be customize by `props`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
+    /// <summary>
+    /// configuration options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElCheckboxOptionPropsAlias? Props { get; set; }
 
+    /// <summary>
+    /// component type to render options (e.g. `'button'`)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// triggers when the binding value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue[]?> ModelValueChanged { get; set; }
@@ -1292,42 +2097,72 @@ public sealed class ElCheckboxGroup : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCol")]
 public sealed class ElCol : ElContentComponentBase
 {
+    /// <summary>
+    /// number of column the grid spans
+    /// </summary>
     [Parameter]
     [ECMAScriptName("span")]
     public Number? Span { get; set; }
 
+    /// <summary>
+    /// number of spacing on the left side of the grid
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
+    /// <summary>
+    /// number of columns that grid moves to the right
+    /// </summary>
     [Parameter]
     [ECMAScriptName("push")]
     public Number? Push { get; set; }
 
+    /// <summary>
+    /// number of columns that grid moves to the left
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pull")]
     public Number? Pull { get; set; }
 
+    /// <summary>
+    /// `&lt;768px` Responsive columns or column props object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("xs")]
     public ElColSizeValue? Xs { get; set; }
 
+    /// <summary>
+    /// `≥768px` Responsive columns or column props object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sm")]
     public ElColSizeValue? Sm { get; set; }
 
+    /// <summary>
+    /// `≥992px` Responsive columns or column props object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("md")]
     public ElColSizeValue? Md { get; set; }
 
+    /// <summary>
+    /// `≥1200px` Responsive columns or column props object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lg")]
     public ElColSizeValue? Lg { get; set; }
 
+    /// <summary>
+    /// `≥1920px` Responsive columns or column props object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("xl")]
     public ElColSizeValue? Xl { get; set; }
 
+    /// <summary>
+    /// custom element tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? Tag { get; set; }
@@ -1340,26 +2175,44 @@ public sealed class ElCol : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCollapse")]
 public sealed class ElCollapse : ElContentComponentBase
 {
+    /// <summary>
+    /// currently active panel, the type is `string` in accordion mode, otherwise it is `array`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberArrayableValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether to activate accordion mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("accordion")]
     public bool? Accordion { get; set; }
 
+    /// <summary>
+    /// set expand icon position
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandIconPosition")]
     public ElCollapseIconPosition? ExpandIconPosition { get; set; }
 
+    /// <summary>
+    /// before-collapse hook before the collapse state changes. If `false` is returned or a `Promise` is returned and then is rejected, will stop collapsing
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeCollapse")]
     public ElCollapseBeforeCollapseCallback? BeforeCollapse { get; set; }
 
+    /// <summary>
+    /// triggers when active panels change, the parameter type is `string` in accordion mode, otherwise it is `array`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// currently active panel, the type is `string` in accordion mode, otherwise it is `array`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberArrayableValue?> ModelValueChanged { get; set; }
@@ -1372,18 +2225,30 @@ public sealed class ElCollapse : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCollapseItem")]
 public sealed class ElCollapseItem : ElComponentBase
 {
+    /// <summary>
+    /// unique identification of the panel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public VueStringNumberValue? Name { get; set; }
 
+    /// <summary>
+    /// title of the panel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// icon of the collapse item
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// disable the collapse item
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
@@ -1404,102 +2269,177 @@ public sealed class ElCollapseTransition : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElColorPicker")]
 public sealed class ElColorPicker : ElComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether to disable the ColorPicker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether to show clear button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// size of ColorPicker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// whether to display the alpha slider
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showAlpha")]
     public bool? ShowAlpha { get; set; }
 
+    /// <summary>
+    /// color format of v-model
+    /// </summary>
     [Parameter]
     [ECMAScriptName("colorFormat")]
     public string? ColorFormat { get; set; }
 
+    /// <summary>
+    /// custom class name for ColorPicker's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for ColorPicker's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// predefined color options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("predefine")]
     public string[]? Predefine { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// ColorPicker tabindex
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// ColorPicker aria-label
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// ColorPicker id
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// whether color-picker popper is teleported to the body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// ColorPicker aria-label
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// when color-picker inactive and persistent is false, the color panel will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// which element the color-picker panel appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// triggers when input value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when the current active color changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onActiveChange")]
     public EventCallback OnActiveChange { get; set; }
 
+    /// <summary>
+    /// triggers when Component focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when Component blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when the clear button is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
@@ -1512,46 +2452,79 @@ public sealed class ElColorPicker : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElColorPickerPanel")]
 public sealed class ElColorPickerPanel : ElComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether the color picker panel is bordered
+    /// </summary>
     [Parameter]
     [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
+    /// <summary>
+    /// whether to disable the color picker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether to display the alpha slider
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showAlpha")]
     public bool? ShowAlpha { get; set; }
 
+    /// <summary>
+    /// color format of v-model
+    /// </summary>
     [Parameter]
     [ECMAScriptName("colorFormat")]
     public string? ColorFormat { get; set; }
 
+    /// <summary>
+    /// predefined color options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("predefine")]
     public string[]? Predefine { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// class names will be passed to hue-slider
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hueSliderClass")]
     public VueClassValue? HueSliderClass { get; set; }
 
+    /// <summary>
+    /// styles will be passed to hue-slider
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hueSliderStyle")]
     public VueStyleValue? HueSliderStyle { get; set; }
 
+    /// <summary>
+    /// content to append after the Input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
@@ -1564,50 +2537,86 @@ public sealed class ElColorPickerPanel : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElConfigProvider")]
 public sealed class ElConfigProvider : ElContentComponentBase
 {
+    /// <summary>
+    /// Locale Object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("locale")]
     public ElLanguage? Locale { get; set; }
 
+    /// <summary>
+    /// global component size
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// global Initial zIndex
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// global component className prefix (cooperated with [$namespace](https://github.com/element-plus/element-plus/blob/dev/packages/theme-chalk/src/mixins/config.scss#L1))
+    /// </summary>
     [Parameter]
     [ECMAScriptName("namespace")]
     public string? Namespace { get; set; }
 
+    /// <summary>
+    /// button related configuration, [see the following table](#button-attribute)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("button")]
     public ElButtonConfig? Button { get; set; }
 
+    /// <summary>
+    /// link related configuration, [see the following table](#link-attribute)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("link")]
     public ElLinkConfig? Link { get; set; }
 
+    /// <summary>
+    /// dialog related configuration, [see the following table](#dialog-attribute)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dialog")]
     public ElDialogConfig? Dialog { get; set; }
 
+    /// <summary>
+    /// message related configuration, [see the following table](#message-attribute)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("message")]
     public ElMessageConfig? Message { get; set; }
 
+    /// <summary>
+    /// features at experimental stage to be added, all features are default to be set to false
+    /// </summary>
     [Parameter]
     [ECMAScriptName("experimentalFeatures")]
     public VueProps? ExperimentalFeatures { get; set; }
 
+    /// <summary>
+    /// global empty values of components
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
+    /// <summary>
+    /// global clear return value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// table related configuration, [see the following table](#table-attribute)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("table")]
     public ElTableConfig? Table { get; set; }
@@ -1632,6 +2641,9 @@ public sealed class ElConfigProvider : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElContainer")]
 public sealed class ElContainer : ElContentComponentBase
 {
+    /// <summary>
+    /// layout direction for child elements
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
@@ -1644,22 +2656,37 @@ public sealed class ElContainer : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElCountdown")]
 public sealed class ElCountdown : ElComponentBase
 {
+    /// <summary>
+    /// countdown value prefix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// countdown value suffix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
+    /// <summary>
+    /// countdown title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? Title { get; set; }
 
+    /// <summary>
+    /// Time difference change event
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// countdown end event
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFinish")]
     public EventCallback OnFinish { get; set; }
@@ -1672,150 +2699,261 @@ public sealed class ElCountdown : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElDatePicker")]
 public sealed class ElDatePicker : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value, if it is an `range` picker, the length of the array should be 2
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether DatePicker is read only
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// whether DatePicker is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// size of Input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// whether the input is editable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
+    /// <summary>
+    /// whether to show clear button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// placeholder in non-range mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// placeholder for the start date in range mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("startPlaceholder")]
     public string? StartPlaceholder { get; set; }
 
+    /// <summary>
+    /// placeholder for the end date in range mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("endPlaceholder")]
     public string? EndPlaceholder { get; set; }
 
+    /// <summary>
+    /// type of the picker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// format of the displayed value in the input box
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// custom class name for DatePicker's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for DatePicker's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// Customized popper option see more at [popper.js](https://popper.js.org/docs/v2/)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// range separator
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rangeSeparator")]
     public string? RangeSeparator { get; set; }
 
+    /// <summary>
+    /// optional, default date of the calendar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
 
+    /// <summary>
+    /// optional, the time value to use when selecting date range
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
 
+    /// <summary>
+    /// optional, format of binding value. If not specified, the binding value will be a Date object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueFormat")]
     public string? ValueFormat { get; set; }
 
+    /// <summary>
+    /// same as `id` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public VueStringSingleOrRangeValue? Id { get; set; }
 
+    /// <summary>
+    /// same as `name` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public VueStringSingleOrRangeValue? Name { get; set; }
 
+    /// <summary>
+    /// unlink two date-panels in range-picker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("unlinkPanels")]
     public bool? UnlinkPanels { get; set; }
 
+    /// <summary>
+    /// show only one panel in range-picker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("singlePanel")]
     public bool? SinglePanel { get; set; }
 
+    /// <summary>
+    /// custom prefix icon component. By default, if the value of `type` is `TimeLikeType`, the value is `Clock`, else is `Calendar`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
 
+    /// <summary>
+    /// custom clear icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// a function determining if a date is disabled with that date as its parameter. Should return a Boolean
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabledDate")]
     public ElDateLikeDisabledDate? DisabledDate { get; set; }
 
+    /// <summary>
+    /// an object array to set shortcut options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shortcuts")]
     public VueValue[]? Shortcuts { get; set; }
 
+    /// <summary>
+    /// set custom className
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellClassName")]
     public ElDateLikeCellClassName? CellClassName { get; set; }
 
+    /// <summary>
+    /// whether date-picker dropdown is teleported to the body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// list of possible positions for Tooltip [popper.js](https://popper.js.org/docs/v2/modifiers/flip/#fallbackplacements)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
+    /// <summary>
+    /// position of dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
+    /// <summary>
+    /// whether to show footer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showFooter")]
     public bool? ShowFooter { get; set; }
 
+    /// <summary>
+    /// whether to show the confirm button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showConfirm")]
     public bool? ShowConfirm { get; set; }
 
+    /// <summary>
+    /// show the week number besides the week
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showWeekNumber")]
     public bool? ShowWeekNumber { get; set; }
 
+    /// <summary>
+    /// this prop decides if the date picker panel pops up when the input is focused. (The default value will be set to false in version 3.0)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("automaticDropdown")]
     public bool? AutomaticDropdown { get; set; }
@@ -1828,54 +2966,93 @@ public sealed class ElDatePicker : ElContentComponentBase
     [ECMAScriptName("timeFormat")]
     public string? TimeFormat { get; set; }
 
+    /// <summary>
+    /// custom range separator content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("range-separator")]
     public RenderFragment? RangeSeparatorSlot { get; set; }
 
+    /// <summary>
+    /// prev month icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prev-month")]
     public RenderFragment? PrevMonth { get; set; }
 
+    /// <summary>
+    /// next month icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("next-month")]
     public RenderFragment? NextMonth { get; set; }
 
+    /// <summary>
+    /// prev year icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prev-year")]
     public RenderFragment? PrevYear { get; set; }
 
+    /// <summary>
+    /// next year icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("next-year")]
     public RenderFragment? NextYear { get; set; }
 
+    /// <summary>
+    /// triggers when user confirms the value or click outside
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when a clear button is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// triggers when the calendar selected date is changed. Only for `range`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCalendarChange")]
     public EventCallback OnCalendarChange { get; set; }
 
+    /// <summary>
+    /// triggers when the navigation button click.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPanelChange")]
     public EventCallback OnPanelChange { get; set; }
 
+    /// <summary>
+    /// triggers when the DatePicker's dropdown appears/disappears
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
+    /// <summary>
+    /// binding value, if it is an `range` picker, the length of the array should be 2
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
@@ -1888,110 +3065,191 @@ public sealed class ElDatePicker : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElDatePickerPanel")]
 public sealed class ElDatePickerPanel : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value, if it is an `range` picker, the length of the array should be 2
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether the date picker is bordered
+    /// </summary>
     [Parameter]
     [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
+    /// <summary>
+    /// whether DatePicker is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether to show clear button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// whether the input is editable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
+    /// <summary>
+    /// type of the picker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// optional, default date of the calendar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
 
+    /// <summary>
+    /// optional, the time value to use when selecting date range
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultTime")]
     public VueDateSingleOrRangeValue? DefaultTime { get; set; }
 
+    /// <summary>
+    /// optional, format of binding value. If not specified, the binding value will be a Date object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueFormat")]
     public string? ValueFormat { get; set; }
 
+    /// <summary>
+    /// optional, format of the date displayed in input's inner panel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dateFormat")]
     public string? DateFormat { get; set; }
 
+    /// <summary>
+    /// optional, format of the time displayed in input's inner panel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("timeFormat")]
     public string? TimeFormat { get; set; }
 
+    /// <summary>
+    /// unlink two date-panels in range-picker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("unlinkPanels")]
     public bool? UnlinkPanels { get; set; }
 
+    /// <summary>
+    /// show only one panel in range-picker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("singlePanel")]
     public bool? SinglePanel { get; set; }
 
+    /// <summary>
+    /// a function determining if a date is disabled with that date as its parameter. Should return a Boolean
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabledDate")]
     public ElDateLikeDisabledDate? DisabledDate { get; set; }
 
+    /// <summary>
+    /// an object array to set shortcut options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("shortcuts")]
     public VueValue[]? Shortcuts { get; set; }
 
+    /// <summary>
+    /// set custom className
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellClassName")]
     public ElDateLikeCellClassName? CellClassName { get; set; }
 
+    /// <summary>
+    /// whether to show footer where the date picker is one ^[enum]`'dates' | 'months' | 'years' | 'datetime' | 'datetimerange'`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showFooter")]
     public bool? ShowFooter { get; set; }
 
+    /// <summary>
+    /// whether to show the confirm button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showConfirm")]
     public bool? ShowConfirm { get; set; }
 
+    /// <summary>
+    /// show the week number besides the week
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showWeekNumber")]
     public bool? ShowWeekNumber { get; set; }
 
+    /// <summary>
+    /// prev month icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prev-month")]
     public RenderFragment? PrevMonth { get; set; }
 
+    /// <summary>
+    /// next month icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("next-month")]
     public RenderFragment? NextMonth { get; set; }
 
+    /// <summary>
+    /// prev year icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prev-year")]
     public RenderFragment? PrevYear { get; set; }
 
+    /// <summary>
+    /// next year icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("next-year")]
     public RenderFragment? NextYear { get; set; }
 
+    /// <summary>
+    /// triggers when the calendar selected date is changed. Only for `range`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCalendarChange")]
     public EventCallback OnCalendarChange { get; set; }
 
+    /// <summary>
+    /// triggers when the navigation button click.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPanelChange")]
     public EventCallback OnPanelChange { get; set; }
 
+    /// <summary>
+    /// triggers when a clear button is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// binding value, if it is an `range` picker, the length of the array should be 2
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
@@ -2004,38 +3262,65 @@ public sealed class ElDatePickerPanel : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElDescriptions")]
 public sealed class ElDescriptions : ElContentComponentBase
 {
+    /// <summary>
+    /// with or without border
+    /// </summary>
     [Parameter]
     [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
+    /// <summary>
+    /// numbers of `Descriptions Item` in one line
+    /// </summary>
     [Parameter]
     [ECMAScriptName("column")]
     public Number? Column { get; set; }
 
+    /// <summary>
+    /// direction of list
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
+    /// <summary>
+    /// size of list
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// title text, display on the top left
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// extra text, display on the top right
+    /// </summary>
     [Parameter]
     [ECMAScriptName("extra")]
     public string? Extra { get; set; }
 
+    /// <summary>
+    /// label width of every column
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
 
+    /// <summary>
+    /// custom title, display on the top left
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
+    /// <summary>
+    /// custom extra area, display on the top right
+    /// </summary>
     [Parameter]
     [ECMAScriptName("extra")]
     public RenderFragment? ExtraSlot { get; set; }
@@ -2048,46 +3333,79 @@ public sealed class ElDescriptions : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElDescriptionsItem")]
 public sealed class ElDescriptionsItem : ElContentComponentBase
 {
+    /// <summary>
+    /// label text
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// colspan of column
+    /// </summary>
     [Parameter]
     [ECMAScriptName("span")]
     public Number? Span { get; set; }
 
+    /// <summary>
+    /// the number of rows a cell should span
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowspan")]
     public Number? Rowspan { get; set; }
 
+    /// <summary>
+    /// column width, the width of the same column in different rows is set by the max value (If no `border`, width contains label and content)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
+    /// <summary>
+    /// column minimum width, columns with `width` has a fixed width, while columns with `min-width` has a width that is distributed in proportion (If no`border`, width contains label and content)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
+    /// <summary>
+    /// column label width, if not set, it will be the same as the width of the column. Higher priority than the `label-width` of `Descriptions`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
 
+    /// <summary>
+    /// column content alignment (If no `border`, effective for both label and content)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("align")]
     public string? Align { get; set; }
 
+    /// <summary>
+    /// column label alignment, if omitted, the value of the above `align` attribute will be applied (If no `border`, please use `align` attribute)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelAlign")]
     public string? LabelAlign { get; set; }
 
+    /// <summary>
+    /// column content custom class name
+    /// </summary>
     [Parameter]
     [ECMAScriptName("className")]
     public string? ClassName { get; set; }
 
+    /// <summary>
+    /// column label custom class name
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelClassName")]
     public string? LabelClassName { get; set; }
 
+    /// <summary>
+    /// custom label
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelSlot { get; set; }
@@ -2100,162 +3418,282 @@ public sealed class ElDescriptionsItem : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElDialog")]
 public sealed class ElDialog : ElContentComponentBase
 {
+    /// <summary>
+    /// visibility of Dialog
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; set; }
 
+    /// <summary>
+    /// title of Dialog. Can also be passed with a named slot (see the following table)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// width of Dialog, default is 50%
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
+    /// <summary>
+    /// whether the Dialog takes up full screen
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fullscreen")]
     public bool? Fullscreen { get; set; }
 
+    /// <summary>
+    /// value for `margin-top` of Dialog CSS, default is 15vh
+    /// </summary>
     [Parameter]
     [ECMAScriptName("top")]
     public string? Top { get; set; }
 
+    /// <summary>
+    /// whether a mask is displayed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modal")]
     public bool? Modal { get; set; }
 
+    /// <summary>
+    /// whether the mask is penetrable. The modal attribute must be `false`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modalPenetrable")]
     public bool? ModalPenetrable { get; set; }
 
+    /// <summary>
+    /// custom class names for mask
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modalClass")]
     public string? ModalClass { get; set; }
 
+    /// <summary>
+    /// custom class names for header wrapper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerClass")]
     public string? HeaderClass { get; set; }
 
+    /// <summary>
+    /// custom class names for body wrapper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bodyClass")]
     public string? BodyClass { get; set; }
 
+    /// <summary>
+    /// custom class names for footer wrapper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerClass")]
     public string? FooterClass { get; set; }
 
+    /// <summary>
+    /// whether to append Dialog itself to body. A nested Dialog should have this attribute set to `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendToBody")]
     public bool? AppendToBody { get; set; }
 
+    /// <summary>
+    /// which element the Dialog appends to. Will override `append-to-body`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// whether scroll of body is disabled while Dialog is displayed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lockScroll")]
     public bool? LockScroll { get; set; }
 
+    /// <summary>
+    /// the Time(milliseconds) before open
+    /// </summary>
     [Parameter]
     [ECMAScriptName("openDelay")]
     public Number? OpenDelay { get; set; }
 
+    /// <summary>
+    /// the Time(milliseconds) before close
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeDelay")]
     public Number? CloseDelay { get; set; }
 
+    /// <summary>
+    /// whether the Dialog can be closed by clicking the mask
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnClickModal")]
     public bool? CloseOnClickModal { get; set; }
 
+    /// <summary>
+    /// whether the Dialog can be closed by pressing ESC
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnPressEscape")]
     public bool? CloseOnPressEscape { get; set; }
 
+    /// <summary>
+    /// whether to show a close button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showClose")]
     public bool? ShowClose { get; set; }
 
+    /// <summary>
+    /// callback before Dialog closes, and it will prevent Dialog from closing, use done to close the dialog
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeClose")]
     public ElDialogBeforeCloseCallback? BeforeClose { get; set; }
 
+    /// <summary>
+    /// enable dragging feature for Dialog
+    /// </summary>
     [Parameter]
     [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
+    /// <summary>
+    /// draggable Dialog can overflow the viewport
+    /// </summary>
     [Parameter]
     [ECMAScriptName("overflow")]
     public bool? Overflow { get; set; }
 
+    /// <summary>
+    /// whether to align the header and footer in center
+    /// </summary>
     [Parameter]
     [ECMAScriptName("center")]
     public bool? Center { get; set; }
 
+    /// <summary>
+    /// whether to align the dialog both horizontally and vertically
+    /// </summary>
     [Parameter]
     [ECMAScriptName("alignCenter")]
     public bool? AlignCenter { get; set; }
 
+    /// <summary>
+    /// destroy elements in Dialog when closed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
+    /// <summary>
+    /// custom close icon, default is Close
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeIcon")]
     public VueStringComponentValue? CloseIcon { get; set; }
 
+    /// <summary>
+    /// same as z-index in native CSS, z-order of dialog
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// header's `aria-level` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerAriaLevel")]
     public string? HeaderAriaLevel { get; set; }
 
+    /// <summary>
+    /// custom transition configuration for dialog animation. Can be a string (transition name) or an object with Vue transition props
+    /// </summary>
     [Parameter]
     [ECMAScriptName("transition")]
     public VueTransitionValue? Transition { get; set; }
 
+    /// <summary>
+    /// custom class names for Dialog
+    /// </summary>
     [Parameter]
     [ECMAScriptName("customClass")]
     public string? CustomClass { get; set; }
 
+    /// <summary>
+    /// content of the Dialog header; Replacing this removes the title, but does not remove the close button.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// content of the Dialog footer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// works the same as the header slot. Use that instead.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
+    /// <summary>
+    /// triggers when the Dialog opens
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOpen")]
     public EventCallback OnOpen { get; set; }
 
+    /// <summary>
+    /// triggers when the Dialog opening animation ends
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOpened")]
     public EventCallback OnOpened { get; set; }
 
+    /// <summary>
+    /// triggers when the Dialog closes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
+    /// <summary>
+    /// triggers when the Dialog closing animation ends
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClosed")]
     public EventCallback OnClosed { get; set; }
 
+    /// <summary>
+    /// triggers after Dialog opens and content focused
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOpenAutoFocus")]
     public EventCallback OnOpenAutoFocus { get; set; }
 
+    /// <summary>
+    /// triggers after Dialog closed and content focused
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCloseAutoFocus")]
     public EventCallback OnCloseAutoFocus { get; set; }
 
+    /// <summary>
+    /// visibility of Dialog
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool?> ModelValueChanged { get; set; }
@@ -2268,14 +3706,23 @@ public sealed class ElDialog : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElDivider")]
 public sealed class ElDivider : ElContentComponentBase
 {
+    /// <summary>
+    /// Set divider's direction
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
+    /// <summary>
+    /// Set the style of divider
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderStyle")]
     public string? BorderStyle { get; set; }
 
+    /// <summary>
+    /// The position of the customized content on the divider line
+    /// </summary>
     [Parameter]
     [ECMAScriptName("contentPosition")]
     public ElContentPosition? ContentPosition { get; set; }
@@ -2288,154 +3735,268 @@ public sealed class ElDivider : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElDrawer")]
 public sealed class ElDrawer : ElContentComponentBase
 {
+    /// <summary>
+    /// Should Drawer be displayed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public bool? ModelValue { get; set; }
 
+    /// <summary>
+    /// Controls should Drawer be inserted to DocumentBody Element, nested Drawer must assign this param to **true**
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendToBody")]
     public bool? AppendToBody { get; set; }
 
+    /// <summary>
+    /// which element the Drawer appends to. Will override `append-to-body`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// whether scroll of body is disabled while Drawer is displayed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lockScroll")]
     public bool? LockScroll { get; set; }
 
+    /// <summary>
+    /// If set, closing procedure will be halted
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeClose")]
     public ElDialogBeforeCloseCallback? BeforeClose { get; set; }
 
+    /// <summary>
+    /// whether the Drawer can be closed by clicking the mask
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnClickModal")]
     public bool? CloseOnClickModal { get; set; }
 
+    /// <summary>
+    /// Indicates whether Drawer can be closed by pressing ESC
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnPressEscape")]
     public bool? CloseOnPressEscape { get; set; }
 
+    /// <summary>
+    /// Time(milliseconds) before open
+    /// </summary>
     [Parameter]
     [ECMAScriptName("openDelay")]
     public Number? OpenDelay { get; set; }
 
+    /// <summary>
+    /// Time(milliseconds) before close
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeDelay")]
     public Number? CloseDelay { get; set; }
 
+    /// <summary>
+    /// Indicates whether children should be destroyed after Drawer closed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("destroyOnClose")]
     public bool? DestroyOnClose { get; set; }
 
+    /// <summary>
+    /// Should show shadowing layer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modal")]
     public bool? Modal { get; set; }
 
+    /// <summary>
+    /// whether the mask is penetrable. The modal attribute must be `false`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modalPenetrable")]
     public bool? ModalPenetrable { get; set; }
 
+    /// <summary>
+    /// Drawer's opening direction
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public string? Direction { get; set; }
 
+    /// <summary>
+    /// enable resizable feature for Drawer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
+    /// <summary>
+    /// Should show close button at the top right of Drawer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showClose")]
     public bool? ShowClose { get; set; }
 
+    /// <summary>
+    /// Drawer's size, if Drawer is horizontal mode, it effects the width property, otherwise it effects the height property, when size is `number` type, it describes the size by unit of pixels; when size is `string` type, it should be used with `x%` notation, other wise it will be interpreted to pixel unit
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
+    /// <summary>
+    /// Drawer's title, can also be set by named slot, detailed descriptions can be found in the slot form
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// Flag that controls the header section's existence, default to true, when withHeader set to false, both `title attribute` and `title slot` won't work
+    /// </summary>
     [Parameter]
     [ECMAScriptName("withHeader")]
     public bool? WithHeader { get; set; }
 
+    /// <summary>
+    /// Extra class names for shadowing layer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modalClass")]
     public string? ModalClass { get; set; }
 
+    /// <summary>
+    /// custom class names for header wrapper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerClass")]
     public string? HeaderClass { get; set; }
 
+    /// <summary>
+    /// custom class names for body wrapper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("bodyClass")]
     public string? BodyClass { get; set; }
 
+    /// <summary>
+    /// custom class names for footer wrapper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerClass")]
     public string? FooterClass { get; set; }
 
+    /// <summary>
+    /// set z-index
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// header's `aria-level` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerAriaLevel")]
     public string? HeaderAriaLevel { get; set; }
 
+    /// <summary>
+    /// Extra class names for Drawer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("customClass")]
     public string? CustomClass { get; set; }
 
+    /// <summary>
+    /// Drawer header section; Replacing this removes the title, but does not remove the close button.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// Drawer footer Section
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// Works the same as the header slot. Use that instead.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
+    /// <summary>
+    /// Triggered before Drawer opening animation begins
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOpen")]
     public EventCallback OnOpen { get; set; }
 
+    /// <summary>
+    /// Triggered after Drawer opening animation ended
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOpened")]
     public EventCallback OnOpened { get; set; }
 
+    /// <summary>
+    /// Triggered before Drawer closing animation begins
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
+    /// <summary>
+    /// Triggered after Drawer closing animation ended
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClosed")]
     public EventCallback OnClosed { get; set; }
 
+    /// <summary>
+    /// triggers after Drawer opens and content focused
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOpenAutoFocus")]
     public EventCallback OnOpenAutoFocus { get; set; }
 
+    /// <summary>
+    /// triggers after Drawer closed and content focused
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCloseAutoFocus")]
     public EventCallback OnCloseAutoFocus { get; set; }
 
+    /// <summary>
+    /// Triggered when resizing starts (when `resizable` is enabled)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onResizeStart")]
     public EventCallback OnResizeStart { get; set; }
 
+    /// <summary>
+    /// Triggered while resizing (when `resizable` is enabled)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onResize")]
     public EventCallback OnResize { get; set; }
 
+    /// <summary>
+    /// Triggered when resizing ends (when `resizable` is enabled)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onResizeEnd")]
     public EventCallback OnResizeEnd { get; set; }
 
+    /// <summary>
+    /// Should Drawer be displayed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<bool?> ModelValueChanged { get; set; }
@@ -2448,114 +4009,198 @@ public sealed class ElDrawer : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElDropdown")]
 public sealed class ElDropdown : ElContentComponentBase
 {
+    /// <summary>
+    /// menu button type, refer to `Button` Component, only works when `split-button` is true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public ElButtonType? Type { get; set; }
 
+    /// <summary>
+    /// menu size, also works on the split button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// props for the button component, refer to [Button Attributes](./button.html#button-attributes)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("buttonProps")]
     public ElButtonProps? ButtonProps { get; set; }
 
+    /// <summary>
+    /// the max height of menu
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
+    /// <summary>
+    /// whether a button group is displayed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("splitButton")]
     public bool? SplitButton { get; set; }
 
+    /// <summary>
+    /// whether to disable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// placement of pop menu
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
+    /// <summary>
+    /// Tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
+    /// <summary>
+    /// how to trigger
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public ElDropdownTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// specify which keys on the keyboard can trigger when pressed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerKeys")]
     public string[]? TriggerKeys { get; set; }
 
+    /// <summary>
+    /// indicates whether virtual triggering is enabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("virtualTriggering")]
     public bool? VirtualTriggering { get; set; }
 
+    /// <summary>
+    /// indicates the reference element to which the dropdown is attached
+    /// </summary>
     [Parameter]
     [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
 
+    /// <summary>
+    /// whether to hide menu after clicking menu-item
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideOnClick")]
     public bool? HideOnClick { get; set; }
 
+    /// <summary>
+    /// whether the tooltip content has an arrow
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// delay time before show a dropdown (only works when trigger is `hover`)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
 
+    /// <summary>
+    /// delay time before hide a dropdown (only works when trigger is `hover`)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
 
+    /// <summary>
+    /// the ARIA role attribute for the dropdown menu. Depending on the use case, you may want to change this to 'navigation'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("role")]
     public string? Role { get; set; }
 
+    /// <summary>
+    /// [tabindex](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex) of Dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// custom class name for Dropdown's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for Dropdown's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// [popper.js](https://popper.js.org/docs/v2/) parameters
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// whether the dropdown popup is teleported to the body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// which element the dropdown CONTENT appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// when dropdown inactive and `persistent` is `false` , dropdown menu will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// content of the Dropdown Menu, usually a `&lt;el-dropdown-menu&gt;` element
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dropdown")]
     public RenderFragment? Dropdown { get; set; }
 
+    /// <summary>
+    /// if `split-button` is `true`, triggers when left button is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
+    /// <summary>
+    /// triggers when a dropdown item is clicked, the parameters is the command dispatched from the dropdown item
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCommand")]
     public EventCallback OnCommand { get; set; }
 
+    /// <summary>
+    /// triggers when the dropdown appears/disappears, the param is true when it appears, and false otherwise
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
@@ -2568,22 +4213,37 @@ public sealed class ElDropdown : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElDropdownItem")]
 public sealed class ElDropdownItem : ElContentComponentBase
 {
+    /// <summary>
+    /// a command to be dispatched to Dropdown's `command` callback
+    /// </summary>
     [Parameter]
     [ECMAScriptName("command")]
     public VueStringNumberObjectValue? Command { get; set; }
 
+    /// <summary>
+    /// whether the item is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether a divider is displayed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("divided")]
     public bool? Divided { get; set; }
 
+    /// <summary>
+    /// custom icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// custom icon, it will override the icon prop
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
@@ -2604,22 +4264,37 @@ public sealed class ElDropdownMenu : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElEmpty")]
 public sealed class ElEmpty : ElContentComponentBase
 {
+    /// <summary>
+    /// image URL of empty
+    /// </summary>
     [Parameter]
     [ECMAScriptName("image")]
     public string? Image { get; set; }
 
+    /// <summary>
+    /// image size (width) of empty
+    /// </summary>
     [Parameter]
     [ECMAScriptName("imageSize")]
     public Number? ImageSize { get; set; }
 
+    /// <summary>
+    /// description of empty
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public string? Description { get; set; }
 
+    /// <summary>
+    /// content as image
+    /// </summary>
     [Parameter]
     [ECMAScriptName("image")]
     public RenderFragment? ImageSlot { get; set; }
 
+    /// <summary>
+    /// content as description
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public RenderFragment? DescriptionSlot { get; set; }
@@ -2632,6 +4307,9 @@ public sealed class ElEmpty : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElFooter")]
 public sealed class ElFooter : ElContentComponentBase
 {
+    /// <summary>
+    /// height of the footer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public string? Height { get; set; }
@@ -2644,70 +4322,121 @@ public sealed class ElFooter : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElForm")]
 public sealed class ElForm : ElContentComponentBase
 {
+    /// <summary>
+    /// Data of form component.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("model")]
     public VueDictionary? Model { get; set; }
 
+    /// <summary>
+    /// Validation rules of form.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rules")]
     public ElFormRules? Rules { get; set; }
 
+    /// <summary>
+    /// Whether the form is inline.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inline")]
     public bool? Inline { get; set; }
 
+    /// <summary>
+    /// Position of label. If set to `'left'` or `'right'`, `label-width` prop is also required.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelPosition")]
     public string? LabelPosition { get; set; }
 
+    /// <summary>
+    /// Width of label, e.g. `'50px'`. All its direct child form items will inherit this value. `auto` is supported.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
 
+    /// <summary>
+    /// Suffix of the label.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelSuffix")]
     public string? LabelSuffix { get; set; }
 
+    /// <summary>
+    /// Whether to hide required fields should have a red asterisk (star) beside their labels.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideRequiredAsterisk")]
     public bool? HideRequiredAsterisk { get; set; }
 
+    /// <summary>
+    /// Position of asterisk.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("requireAsteriskPosition")]
     public string? RequireAsteriskPosition { get; set; }
 
+    /// <summary>
+    /// Whether to show the error message.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showMessage")]
     public bool? ShowMessage { get; set; }
 
+    /// <summary>
+    /// Whether to display the error message inline with the form item.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inlineMessage")]
     public bool? InlineMessage { get; set; }
 
+    /// <summary>
+    /// Whether to display an icon indicating the validation result.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("statusIcon")]
     public bool? StatusIcon { get; set; }
 
+    /// <summary>
+    /// Whether to trigger validation when the `rules` prop is changed.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateOnRuleChange")]
     public bool? ValidateOnRuleChange { get; set; }
 
+    /// <summary>
+    /// Control the size of components in this form.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// Whether to disable all components in this form. Before , if set to `true`, it will override the `disabled` prop of the inner component. After , the configuration of the internal components takes precedence.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// When validation fails, scroll to the first error form entry.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollToError")]
     public bool? ScrollToError { get; set; }
 
+    /// <summary>
+    /// When validation fails, it scrolls to the first error item based on the scrollIntoView option. [scrollIntoView](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollIntoViewOptions")]
     public ScrollIntoViewArg? ScrollIntoViewOptions { get; set; }
 
+    /// <summary>
+    /// triggers after a form item is validated
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onValidate")]
     public EventCallback OnValidate { get; set; }
@@ -2720,58 +4449,100 @@ public sealed class ElForm : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElFormItem")]
 public sealed class ElFormItem : ElContentComponentBase
 {
+    /// <summary>
+    /// A key of `model`. It could be a path of the property (e.g `a.b.0` or `['a', 'b', '0']`). In the use of `validate` and `resetFields` method, the attribute is required.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prop")]
     public VueStringOrStringsValue? Prop { get; set; }
 
+    /// <summary>
+    /// Label text.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// Position of item label. If set to `'left'` or `'right'`, `label-width` prop is also required. Default extend `label-position` of `form`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelPosition")]
     public string? LabelPosition { get; set; }
 
+    /// <summary>
+    /// Width of label, e.g. `'50px'`. `'auto'` is supported.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelWidth")]
     public VueStringNumberValue? LabelWidth { get; set; }
 
+    /// <summary>
+    /// Whether the field is required or not, will be determined by validation rules if omitted.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("required")]
     public bool? Required { get; set; }
 
+    /// <summary>
+    /// Validation rules of form, see the [following table](#formitemrule), more advanced usage at [async-validator](https://github.com/yiminghe/async-validator).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rules")]
     public ElFormItemRules? Rules { get; set; }
 
+    /// <summary>
+    /// Field error message, set its value and the field will validate error and show this message immediately.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("error")]
     public string? Error { get; set; }
 
+    /// <summary>
+    /// Whether to show the error message.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showMessage")]
     public bool? ShowMessage { get; set; }
 
+    /// <summary>
+    /// Inline style validate message.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inlineMessage")]
     public bool? InlineMessage { get; set; }
 
+    /// <summary>
+    /// Control the size of components in this form-item.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// Same as for in native label.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("for")]
     public string? For { get; set; }
 
+    /// <summary>
+    /// Validation state of formItem.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateStatus")]
     public ElFormItemValidateStatus? ValidateStatus { get; set; }
 
+    /// <summary>
+    /// Custom content to display on label.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelSlot { get; set; }
 
+    /// <summary>
+    /// Custom content to display validation message.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("error")]
     public RenderFragment? ErrorSlot { get; set; }
@@ -2784,6 +4555,9 @@ public sealed class ElFormItem : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElHeader")]
 public sealed class ElHeader : ElContentComponentBase
 {
+    /// <summary>
+    /// height of the header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public string? Height { get; set; }
@@ -2796,10 +4570,16 @@ public sealed class ElHeader : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElIcon")]
 public sealed class ElIcon : ElContentComponentBase
 {
+    /// <summary>
+    /// SVG tag's fill attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// SVG icon size, size x size
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
@@ -2812,110 +4592,191 @@ public sealed class ElIcon : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElImage")]
 public sealed class ElImage : ElComponentBase
 {
+    /// <summary>
+    /// image source, same as native.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("src")]
     public string? Src { get; set; }
 
+    /// <summary>
+    /// indicate how the image should be resized to fit its container, same as [object-fit](https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fit")]
     public ElImageFitType? Fit { get; set; }
 
+    /// <summary>
+    /// when enabling preview, use this flag to control whether clicking on backdrop can exit preview mode.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideOnClickModal")]
     public bool? HideOnClickModal { get; set; }
 
+    /// <summary>
+    /// Indicates how the browser should load the image, same as [native](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#attr-loading).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public ElImageLoadingType? Loading { get; set; }
 
+    /// <summary>
+    /// whether to use lazy load.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// the container to add scroll listener when using lazy load. By default, the container to add scroll listener when using lazy load.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollContainer")]
     public VueStringHtmlElementValue? ScrollContainer { get; set; }
 
+    /// <summary>
+    /// native attribute `alt`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("alt")]
     public string? Alt { get; set; }
 
+    /// <summary>
+    /// native attribute [referrerPolicy](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/referrerPolicy).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("referrerpolicy")]
     public string? Referrerpolicy { get; set; }
 
+    /// <summary>
+    /// native attribute [crossorigin](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/crossorigin).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("crossorigin")]
     public ElCrossorigin? Crossorigin { get; set; }
 
+    /// <summary>
+    /// allow big image preview.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("previewSrcList")]
     public string[]? PreviewSrcList { get; set; }
 
+    /// <summary>
+    /// set image preview z-index.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// initial preview image index, less than the length of `url-list`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("initialIndex")]
     public Number? InitialIndex { get; set; }
 
+    /// <summary>
+    /// whether the image-viewer can be closed by pressing ESC.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnPressEscape")]
     public bool? CloseOnPressEscape { get; set; }
 
+    /// <summary>
+    /// whether to append image-viewer to body. A nested parent element attribute transform should have this attribute set to `true`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("previewTeleported")]
     public bool? PreviewTeleported { get; set; }
 
+    /// <summary>
+    /// whether the viewer preview is infinite.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("infinite")]
     public bool? Infinite { get; set; }
 
+    /// <summary>
+    /// the zoom rate of the image viewer zoom event.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zoomRate")]
     public Number? ZoomRate { get; set; }
 
+    /// <summary>
+    /// the preview image scale.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scale")]
     public Number? Scale { get; set; }
 
+    /// <summary>
+    /// the min scale of the image viewer zoom event.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minScale")]
     public Number? MinScale { get; set; }
 
+    /// <summary>
+    /// the max scale of the image viewer zoom event.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxScale")]
     public Number? MaxScale { get; set; }
 
+    /// <summary>
+    /// whether to display the preview image progress content.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showProgress")]
     public bool? ShowProgress { get; set; }
 
+    /// <summary>
+    /// custom placeholder content when image hasn't loaded yet.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public RenderFragment? Placeholder { get; set; }
 
+    /// <summary>
+    /// custom image load failed content.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("error")]
     public RenderFragment? Error { get; set; }
 
+    /// <summary>
+    /// same as native load.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onLoad")]
     public EventCallback OnLoad { get; set; }
 
+    /// <summary>
+    /// same as native error.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onError")]
     public EventCallback OnError { get; set; }
 
+    /// <summary>
+    /// trigger when switching images.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSwitch")]
     public EventCallback OnSwitch { get; set; }
 
+    /// <summary>
+    /// trigger when clicking on close button or when `hide-on-click-modal` enabled clicking on backdrop.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
+    /// <summary>
+    /// trigger when the viewer displays
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onShow")]
     public EventCallback OnShow { get; set; }
@@ -2928,82 +4789,142 @@ public sealed class ElImage : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElImageViewer")]
 public sealed class ElImageViewer : ElComponentBase
 {
+    /// <summary>
+    /// preview link list.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("urlList")]
     public string[]? UrlList { get; set; }
 
+    /// <summary>
+    /// preview backdrop z-index.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public VueStringNumberValue? ZIndex { get; set; }
 
+    /// <summary>
+    /// the initial preview image index, less than or equal to the length of `url-list`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("initialIndex")]
     public Number? InitialIndex { get; set; }
 
+    /// <summary>
+    /// whether preview is infinite.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("infinite")]
     public bool? Infinite { get; set; }
 
+    /// <summary>
+    /// whether user can emit close event when clicking backdrop.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideOnClickModal")]
     public bool? HideOnClickModal { get; set; }
 
+    /// <summary>
+    /// whether to append image itself to body. A nested parent element attribute transform should have this attribute set to `true`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// the zoom rate of the image viewer zoom event.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zoomRate")]
     public Number? ZoomRate { get; set; }
 
+    /// <summary>
+    /// the preview image scale.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scale")]
     public Number? Scale { get; set; }
 
+    /// <summary>
+    /// the min scale of the image viewer zoom event.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minScale")]
     public Number? MinScale { get; set; }
 
+    /// <summary>
+    /// the max scale of the image viewer zoom event.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxScale")]
     public Number? MaxScale { get; set; }
 
+    /// <summary>
+    /// whether the image-viewer can be closed by pressing ESC.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnPressEscape")]
     public bool? CloseOnPressEscape { get; set; }
 
+    /// <summary>
+    /// whether to display the preview image progress content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showProgress")]
     public bool? ShowProgress { get; set; }
 
+    /// <summary>
+    /// custom content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("viewer")]
     public RenderFragment? Viewer { get; set; }
 
+    /// <summary>
+    /// custom progress content (Priority is higher than `show-progress` prop)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("progress")]
     public RenderFragment? Progress { get; set; }
 
+    /// <summary>
+    /// custom toolbar content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("toolbar")]
     public RenderFragment? Toolbar { get; set; }
 
+    /// <summary>
+    /// custom image load failed content.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("viewer-error")]
     public RenderFragment? ViewerError { get; set; }
 
+    /// <summary>
+    /// trigger when clicking on close button or when `hide-on-click-modal` enabled clicking on backdrop.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
 
+    /// <summary>
+    /// same as native error.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onError")]
     public EventCallback OnError { get; set; }
 
+    /// <summary>
+    /// trigger when switching images.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSwitch")]
     public EventCallback OnSwitch { get; set; }
 
+    /// <summary>
+    /// trigger when rotating images.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRotate")]
     public EventCallback OnRotate { get; set; }
@@ -3016,210 +4937,366 @@ public sealed class ElImageViewer : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElInput")]
 public sealed class ElInput : ElComponentBase
 {
+    /// <summary>
+    /// type of input, see more in [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_%3Cinput%3E_types)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// v-model modifiers, reference [Vue modifiers](https://vuejs.org/guide/essentials/forms.html#modifiers)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelModifiers")]
     public VueModelModifierBag? ModelModifiers { get; set; }
 
+    /// <summary>
+    /// same as `maxlength` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxlength")]
     public VueStringNumberValue? Maxlength { get; set; }
 
+    /// <summary>
+    /// same as `minlength` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minlength")]
     public VueStringNumberValue? Minlength { get; set; }
 
+    /// <summary>
+    /// whether show word count, only works when `type` is 'text' or 'textarea'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showWordLimit")]
     public bool? ShowWordLimit { get; set; }
 
+    /// <summary>
+    /// word count position, valid when `show-word-limit` is true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("wordLimitPosition")]
     public string? WordLimitPosition { get; set; }
 
+    /// <summary>
+    /// placeholder of Input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// whether to show clear button, only works when `type` is not 'textarea'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// custom clear icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
+    /// <summary>
+    /// specifies the format of the value presented input.(only works when `type` is 'text')
+    /// </summary>
     [Parameter]
     [ECMAScriptName("formatter")]
     public ElInputFormatter? Formatter { get; set; }
 
+    /// <summary>
+    /// specifies the value extracted from formatter input.(only works when `type` is 'text')
+    /// </summary>
     [Parameter]
     [ECMAScriptName("parser")]
     public ElInputParser? Parser { get; set; }
 
+    /// <summary>
+    /// whether to show toggleable password input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showPassword")]
     public bool? ShowPassword { get; set; }
 
+    /// <summary>
+    /// whether Input is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// size of Input, works when `type` is not 'textarea'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// prefix icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
 
+    /// <summary>
+    /// suffix icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
 
+    /// <summary>
+    /// number of rows of textarea, only works when `type` is 'textarea'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rows")]
     public Number? Rows { get; set; }
 
+    /// <summary>
+    /// whether textarea has an adaptive height, only works when `type` is 'textarea'. Can accept an object, e.g. `{ minRows: 2, maxRows: 6 }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autosize")]
     public ElInputAutoSize? Autosize { get; set; }
 
+    /// <summary>
+    /// same as `autocomplete` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
+    /// <summary>
+    /// same as `name` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// same as `readonly` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// same as `max` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
+    /// <summary>
+    /// same as `min` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("min")]
     public VueStringNumberValue? Min { get; set; }
 
+    /// <summary>
+    /// same as `step` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("step")]
     public VueStringNumberValue? Step { get; set; }
 
+    /// <summary>
+    /// control the resizability
+    /// </summary>
     [Parameter]
     [ECMAScriptName("resize")]
     public string? Resize { get; set; }
 
+    /// <summary>
+    /// same as `autofocus` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// same as `form` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("form")]
     public string? Form { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// input tabindex
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// the style of the input element or textarea element
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputStyle")]
     public VueStyleValue? InputStyle { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// same as `inputmode` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputmode")]
     public string? Inputmode { get; set; }
 
+    /// <summary>
+    /// custom function to count graphemes; when set, native `maxlength`/`minlength` constraints are bypassed. Component uses `Intl.Segmenter` (Chrome 87+, Firefox 125+, Safari 14.1+) for proper grapheme clustering; older browsers fall back to `Array.from()` for code-point iteration
+    /// </summary>
     [Parameter]
     [ECMAScriptName("countGraphemes")]
     public ElInputCountGraphemes? CountGraphemes { get; set; }
 
+    /// <summary>
+    /// content as Input prefix, only works when `type` is not 'textarea'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// content as Input suffix, only works when `type` is not 'textarea'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
+    /// <summary>
+    /// content to prepend before Input, only works when `type` is not 'textarea'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prepend")]
     public RenderFragment? Prepend { get; set; }
 
+    /// <summary>
+    /// content to append after Input, only works when `type` is not 'textarea'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
+    /// <summary>
+    /// content as Input password icon, only works when `show-password` is true. The scope variable is `{ visible: boolean }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("password-icon")]
     public RenderFragment? PasswordIcon { get; set; }
 
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when the input box loses focus or the user presses Enter, only if the modelValue has changed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when the Input value change
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInput")]
     public EventCallback OnInput { get; set; }
 
+    /// <summary>
+    /// triggers when the Input is cleared by clicking the clear button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// triggers when a key is pressed down
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onKeydown")]
     public EventCallback OnKeydown { get; set; }
 
+    /// <summary>
+    /// triggers when the mouse leaves the Input element
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseleave")]
     public EventCallback OnMouseleave { get; set; }
 
+    /// <summary>
+    /// triggers when the mouse enters the Input element
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onMouseenter")]
     public EventCallback OnMouseenter { get; set; }
 
+    /// <summary>
+    /// triggers when the composition starts
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCompositionstart")]
     public EventCallback OnCompositionstart { get; set; }
 
+    /// <summary>
+    /// triggers when the composition is updated
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCompositionupdate")]
     public EventCallback OnCompositionupdate { get; set; }
 
+    /// <summary>
+    /// triggers when the composition ends
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCompositionend")]
     public EventCallback OnCompositionend { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
@@ -3232,130 +5309,226 @@ public sealed class ElInput : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElInputNumber")]
 public sealed class ElInputNumber : ElComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; set; }
 
+    /// <summary>
+    /// the minimum allowed value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
+    /// <summary>
+    /// the maximum allowed value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// incremental step
+    /// </summary>
     [Parameter]
     [ECMAScriptName("step")]
     public Number? Step { get; set; }
 
+    /// <summary>
+    /// whether input value can only be multiple of step
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stepStrictly")]
     public bool? StepStrictly { get; set; }
 
+    /// <summary>
+    /// precision of input value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("precision")]
     public Number? Precision { get; set; }
 
+    /// <summary>
+    /// size of the component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// same as `readonly` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// whether the component is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether to enable the control buttons
+    /// </summary>
     [Parameter]
     [ECMAScriptName("controls")]
     public bool? Controls { get; set; }
 
+    /// <summary>
+    /// position of the control buttons
+    /// </summary>
     [Parameter]
     [ECMAScriptName("controlsPosition")]
     public string? ControlsPosition { get; set; }
 
+    /// <summary>
+    /// same as `name` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// same as `placeholder` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// same as `id` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// value should be set when input box is cleared
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// same as `inputmode` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputmode")]
     public string? Inputmode { get; set; }
 
+    /// <summary>
+    /// alignment for the inner input text
+    /// </summary>
     [Parameter]
     [ECMAScriptName("align")]
     public string? Align { get; set; }
 
+    /// <summary>
+    /// disables input of scientific notation (e.g. 'e')
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabledScientific")]
     public bool? DisabledScientific { get; set; }
 
+    /// <summary>
+    /// same as `tabindex` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// specifies the format of the value presented in the input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("formatter")]
     public ElInputFormatter? Formatter { get; set; }
 
+    /// <summary>
+    /// specifies the value extracted from the formatted input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("parser")]
     public ElInputParser? Parser { get; set; }
 
+    /// <summary>
+    /// custom input box button decrease icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("decrease-icon")]
     public RenderFragment? DecreaseIcon { get; set; }
 
+    /// <summary>
+    /// custom input box button increase icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("increase-icon")]
     public RenderFragment? IncreaseIcon { get; set; }
 
+    /// <summary>
+    /// content as Input prefix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// content as Input suffix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
+    /// <summary>
+    /// triggers when the value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number?> ModelValueChanged { get; set; }
@@ -3368,78 +5541,135 @@ public sealed class ElInputNumber : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElInputOtp")]
 public sealed class ElInputOtp : ElComponentBase
 {
+    /// <summary>
+    /// The value of the OTP fields. Since numbers must not have leading zeros, `modelValue` is allowed to be a number only during initialization.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// The OTP fields length
+    /// </summary>
     [Parameter]
     [ECMAScriptName("length")]
     public Number? Length { get; set; }
 
+    /// <summary>
+    /// Custom validator function
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validator")]
     public ElInputOtpValidator? Validator { get; set; }
 
+    /// <summary>
+    /// Native `inputmode` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputmode")]
     public string? Inputmode { get; set; }
 
+    /// <summary>
+    /// The type of the OTP fields
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// The size of the OTP fields
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// Whether to enable password mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mask")]
     public bool? Mask { get; set; }
 
+    /// <summary>
+    /// Whether the OTP fields are disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// The separator between OTP fields
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public ElInputOtpSeparatorValue? Separator { get; set; }
 
+    /// <summary>
+    /// Whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// Same as `readonly` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// Native `id` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// Native `aria-label` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// The separator between OTP fields
+    /// </summary>
     [Parameter]
     [ECMAScriptName("separator")]
     public RenderFragment? SeparatorSlot { get; set; }
 
+    /// <summary>
+    /// Triggers when value updates
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
 
+    /// <summary>
+    /// Triggers when the value changes after input blur
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// Fires when all fields have been filled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFinish")]
     public EventCallback OnFinish { get; set; }
 
+    /// <summary>
+    /// Triggers when input is focused
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// Triggers when input is blurred
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
@@ -3452,154 +5682,268 @@ public sealed class ElInputOtp : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElInputTag")]
 public sealed class ElInputTag : ElComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public string[]? ModelValue { get; set; }
 
+    /// <summary>
+    /// max number tags that can be enter
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// tag type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagType")]
     public string? TagType { get; set; }
 
+    /// <summary>
+    /// tag effect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagEffect")]
     public string? TagEffect { get; set; }
 
+    /// <summary>
+    /// tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public string? Effect { get; set; }
 
+    /// <summary>
+    /// the key to trigger input tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public string? Trigger { get; set; }
 
+    /// <summary>
+    /// whether tags can be dragged
+    /// </summary>
     [Parameter]
     [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
+    /// <summary>
+    /// add a tag when a delimiter is matched
+    /// </summary>
     [Parameter]
     [ECMAScriptName("delimiter")]
     public VueStringRegExpValue? Delimiter { get; set; }
 
+    /// <summary>
+    /// input box size
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// whether to collapse tags to a text when multiple selecting
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
+    /// <summary>
+    /// whether show all selected tags when mouse hover text of collapse-tags. To use this, collapse-tags must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
+    /// <summary>
+    /// whether to save the input value when the input loses focus
+    /// </summary>
     [Parameter]
     [ECMAScriptName("saveOnBlur")]
     public bool? SaveOnBlur { get; set; }
 
+    /// <summary>
+    /// whether to show clear button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// custom clear icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
+    /// <summary>
+    /// whether to disable input-tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// same as `readonly` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// same as `autofocus` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autofocus")]
     public bool? Autofocus { get; set; }
 
+    /// <summary>
+    /// same as `id` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// same as `tabindex` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// the max tags number to be shown. To use this, collapse-tags must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
+    /// <summary>
+    /// same as `maxlength` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxlength")]
     public VueStringNumberValue? Maxlength { get; set; }
 
+    /// <summary>
+    /// same as `minlength` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minlength")]
     public VueStringNumberValue? Minlength { get; set; }
 
+    /// <summary>
+    /// placeholder of input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// same as `autocomplete` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
+    /// <summary>
+    /// native `aria-label` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// content as tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
+    /// <summary>
+    /// content as InputTag prefix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// content as InputTag suffix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
+    /// <summary>
+    /// triggers when the modelValue change
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when the input value change
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInput")]
     public EventCallback OnInput { get; set; }
 
+    /// <summary>
+    /// triggers when a tag is added
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onAddTag")]
     public EventCallback OnAddTag { get; set; }
 
+    /// <summary>
+    /// triggers when a tag is removed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
+    /// <summary>
+    /// triggers when a tag is dragged
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onDragTag")]
     public EventCallback OnDragTag { get; set; }
 
+    /// <summary>
+    /// triggers when InputTag focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when InputTag blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when the clear icon is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string[]?> ModelValueChanged { get; set; }
@@ -3612,30 +5956,51 @@ public sealed class ElInputTag : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElLink")]
 public sealed class ElLink : ElContentComponentBase
 {
+    /// <summary>
+    /// type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// when underlines should appear
+    /// </summary>
     [Parameter]
     [ECMAScriptName("underline")]
     public VueBooleanStringValue? Underline { get; set; }
 
+    /// <summary>
+    /// whether the component is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// same as native hyperlink's `href`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("href")]
     public string? Href { get; set; }
 
+    /// <summary>
+    /// same as native hyperlink's `target`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("target")]
     public string? Target { get; set; }
 
+    /// <summary>
+    /// icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// customize icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
@@ -3656,94 +6021,163 @@ public sealed class ElMain : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElMention")]
 public sealed class ElMention : ElComponentBase
 {
+    /// <summary>
+    /// mention options list
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public ElMentionOption[]? Options { get; set; }
 
+    /// <summary>
+    /// configuration options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElMentionOptionPropsAlias? Props { get; set; }
 
+    /// <summary>
+    /// prefix character to trigger mentions. The string length must be exactly 1
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public VueStringOrStringsValue? Prefix { get; set; }
 
+    /// <summary>
+    /// character to split mentions. The string length must be exactly 1
+    /// </summary>
     [Parameter]
     [ECMAScriptName("split")]
     public string? Split { get; set; }
 
+    /// <summary>
+    /// customize filter option logic
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterOption")]
     public ElMentionFilterOptionValue? FilterOption { get; set; }
 
+    /// <summary>
+    /// set popup placement
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
+    /// <summary>
+    /// whether the dropdown panel has an arrow
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// offset of the dropdown panel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
+    /// <summary>
+    /// when backspace is pressed to delete, whether the mention content is deleted as a whole
+    /// </summary>
     [Parameter]
     [ECMAScriptName("whole")]
     public bool? Whole { get; set; }
 
+    /// <summary>
+    /// when backspace is pressed to delete, check if the mention is a whole
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkIsWhole")]
     public ElMentionCheckIsWhole? CheckIsWhole { get; set; }
 
+    /// <summary>
+    /// whether the dropdown panel of mentions is in a loading state
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// input value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
+    /// <summary>
+    /// custom class name for dropdown panel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for dropdown panel
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// [popper.js](https://popper.js.org/docs/v2/) parameters
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// content as option label
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? Label { get; set; }
 
+    /// <summary>
+    /// content as option loading
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
+    /// <summary>
+    /// content at the top of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// content at the bottom of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// trigger when prefix hit
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSearch")]
     public EventCallback OnSearch { get; set; }
 
+    /// <summary>
+    /// trigger when user select the option
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelect")]
     public EventCallback OnSelect { get; set; }
 
+    /// <summary>
+    /// trigger when a whole mention is removed and `whole` is `true` or `check-is-whole` is `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onWholeRemove")]
     public EventCallback OnWholeRemove { get; set; }
 
+    /// <summary>
+    /// input value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
@@ -3756,98 +6190,170 @@ public sealed class ElMention : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElMenu")]
 public sealed class ElMenu : ElContentComponentBase
 {
+    /// <summary>
+    /// menu display mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public string? Mode { get; set; }
 
+    /// <summary>
+    /// whether the menu is collapsed (available only in vertical mode)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapse")]
     public bool? Collapse { get; set; }
 
+    /// <summary>
+    /// whether the menu is ellipsis (available only in horizontal mode)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ellipsis")]
     public bool? Ellipsis { get; set; }
 
+    /// <summary>
+    /// custom ellipsis icon (available only in horizontal mode and ellipsis is true)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ellipsisIcon")]
     public VueStringComponentValue? EllipsisIcon { get; set; }
 
+    /// <summary>
+    /// offset of the popper (effective for all submenus)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOffset")]
     public Number? PopperOffset { get; set; }
 
+    /// <summary>
+    /// index of active menu on page load
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultActive")]
     public string? DefaultActive { get; set; }
 
+    /// <summary>
+    /// array that contains indexes of currently active sub-menus
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultOpeneds")]
     public string[]? DefaultOpeneds { get; set; }
 
+    /// <summary>
+    /// whether only one sub-menu can be active
+    /// </summary>
     [Parameter]
     [ECMAScriptName("uniqueOpened")]
     public bool? UniqueOpened { get; set; }
 
+    /// <summary>
+    /// how sub-menus are triggered, only works when `mode` is 'horizontal'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("menuTrigger")]
     public ElHoverClickTrigger? MenuTrigger { get; set; }
 
+    /// <summary>
+    /// whether `vue-router` mode is activated. If true, index will be used as 'path' to activate the route action. Use with `default-active` to set the active item on load.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("router")]
     public bool? Router { get; set; }
 
+    /// <summary>
+    /// whether to enable the collapse transition
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTransition")]
     public bool? CollapseTransition { get; set; }
 
+    /// <summary>
+    /// Tooltip theme, built-in theme: `dark` / `light` when menu is collapsed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperEffect")]
     public string? PopperEffect { get; set; }
 
+    /// <summary>
+    /// optional, whether menu is collapsed when clicking outside
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closeOnClickOutside")]
     public bool? CloseOnClickOutside { get; set; }
 
+    /// <summary>
+    /// custom class name for all popup menus and titles' tooltips
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for all popup menus and titles' tooltips
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// control timeout for all menus before showing
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
 
+    /// <summary>
+    /// control timeout for all menus before hiding
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
 
+    /// <summary>
+    /// background color of Menu (hex format) (use `--el-menu-bg-color` in a style class instead)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("backgroundColor")]
     public string? BackgroundColor { get; set; }
 
+    /// <summary>
+    /// text color of Menu (hex format) ( use `--el-menu-text-color` in a style class instead)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("textColor")]
     public string? TextColor { get; set; }
 
+    /// <summary>
+    /// text color of currently active menu item (hex format) ( use `--el-menu-active-color` in a style class instead)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeTextColor")]
     public string? ActiveTextColor { get; set; }
 
+    /// <summary>
+    /// when menu inactive and `persistent` is `false` , dropdown menu will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// callback function when menu is activated
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelect")]
     public EventCallback OnSelect { get; set; }
 
+    /// <summary>
+    /// callback function when sub-menu expands
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onOpen")]
     public EventCallback OnOpen { get; set; }
 
+    /// <summary>
+    /// callback function when sub-menu collapses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
@@ -3860,22 +6366,37 @@ public sealed class ElMenu : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElMenuItem")]
 public sealed class ElMenuItem : ElContentComponentBase
 {
+    /// <summary>
+    /// unique identification
+    /// </summary>
     [Parameter]
     [ECMAScriptName("index")]
     public string? Index { get; set; }
 
+    /// <summary>
+    /// Vue Router Route Location Parameters
+    /// </summary>
     [Parameter]
     [ECMAScriptName("route")]
     public RouteLocationRaw? Route { get; set; }
 
+    /// <summary>
+    /// whether disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// customize title content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? Title { get; set; }
 
+    /// <summary>
+    /// callback function when menu-item is clicked, the param is menu-item instance
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
@@ -3888,10 +6409,16 @@ public sealed class ElMenuItem : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElMenuItemGroup")]
 public sealed class ElMenuItemGroup : ElContentComponentBase
 {
+    /// <summary>
+    /// group title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// customize group title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
@@ -3904,14 +6431,23 @@ public sealed class ElMenuItemGroup : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElOption")]
 public sealed class ElOption : ElContentComponentBase
 {
+    /// <summary>
+    /// value of option
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberObjectValue? Value { get; set; }
 
+    /// <summary>
+    /// label of option, same as `value` if omitted
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public VueStringNumberValue? Label { get; set; }
 
+    /// <summary>
+    /// whether option is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
@@ -3924,10 +6460,16 @@ public sealed class ElOption : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElOptionGroup")]
 public sealed class ElOptionGroup : ElContentComponentBase
 {
+    /// <summary>
+    /// name of the group
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// whether to disable all options in this group
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
@@ -3940,38 +6482,65 @@ public sealed class ElOptionGroup : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElPageHeader")]
 public sealed class ElPageHeader : ElContentComponentBase
 {
+    /// <summary>
+    /// icon component of page header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// main title of page header, default is Back that built-in a11y
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// content of page header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? Content { get; set; }
 
+    /// <summary>
+    /// content as icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
 
+    /// <summary>
+    /// content as title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
+    /// <summary>
+    /// content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// extra
+    /// </summary>
     [Parameter]
     [ECMAScriptName("extra")]
     public RenderFragment? Extra { get; set; }
 
+    /// <summary>
+    /// content as breadcrumb
+    /// </summary>
     [Parameter]
     [ECMAScriptName("breadcrumb")]
     public RenderFragment? Breadcrumb { get; set; }
 
+    /// <summary>
+    /// triggers when right side is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBack")]
     public EventCallback OnBack { get; set; }
@@ -3984,110 +6553,191 @@ public sealed class ElPageHeader : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElPagination")]
 public sealed class ElPagination : ElContentComponentBase
 {
+    /// <summary>
+    /// pagination size
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// whether the buttons have a background color
+    /// </summary>
     [Parameter]
     [ECMAScriptName("background")]
     public bool? Background { get; set; }
 
+    /// <summary>
+    /// item count of each page
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pageSize")]
     public Number? PageSize { get; set; }
 
+    /// <summary>
+    /// default initial value of page size, not setting is the same as setting 10
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultPageSize")]
     public Number? DefaultPageSize { get; set; }
 
+    /// <summary>
+    /// total item count
+    /// </summary>
     [Parameter]
     [ECMAScriptName("total")]
     public Number? Total { get; set; }
 
+    /// <summary>
+    /// total page count. Set either `total` or `page-count` and pages will be displayed; if you need `page-sizes`, `total` is required
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pageCount")]
     public Number? PageCount { get; set; }
 
+    /// <summary>
+    /// number of pagers. Pagination collapses when the total page count exceeds this value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pagerCount")]
     public Number? PagerCount { get; set; }
 
+    /// <summary>
+    /// current page number
+    /// </summary>
     [Parameter]
     [ECMAScriptName("currentPage")]
     public Number? CurrentPage { get; set; }
 
+    /// <summary>
+    /// default initial value of current-page, not setting is the same as setting 1
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultCurrentPage")]
     public Number? DefaultCurrentPage { get; set; }
 
+    /// <summary>
+    /// layout of Pagination, elements separated with a comma
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public string? Layout { get; set; }
 
+    /// <summary>
+    /// options of item count per page
+    /// </summary>
     [Parameter]
     [ECMAScriptName("pageSizes")]
     public Number[]? PageSizes { get; set; }
 
+    /// <summary>
+    /// which element the size dropdown appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendSizeTo")]
     public string? AppendSizeTo { get; set; }
 
+    /// <summary>
+    /// custom class name for the page size Select's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for the page size Select's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// text for the prev button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prevText")]
     public string? PrevText { get; set; }
 
+    /// <summary>
+    /// icon for the prev button, has a lower priority than `prev-text`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prevIcon")]
     public VueStringComponentValue? PrevIcon { get; set; }
 
+    /// <summary>
+    /// text for the next button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("nextText")]
     public string? NextText { get; set; }
 
+    /// <summary>
+    /// icon for the next button, has a lower priority than `next-text`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("nextIcon")]
     public VueStringComponentValue? NextIcon { get; set; }
 
+    /// <summary>
+    /// whether Pagination is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether Pagination select dropdown is teleported to the body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// whether to hide when there's only one page
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideOnSinglePage")]
     public bool? HideOnSinglePage { get; set; }
 
+    /// <summary>
+    /// whether to use small pagination
+    /// </summary>
     [Parameter]
     [ECMAScriptName("small")]
     public bool? Small { get; set; }
 
+    /// <summary>
+    /// triggers when `page-size` changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSizeChange")]
     public EventCallback OnSizeChange { get; set; }
 
+    /// <summary>
+    /// triggers when `current-page` changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
+    /// <summary>
+    /// triggers when `current-page` or `page-size` changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when the prev button is clicked and current page changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPrevClick")]
     public EventCallback OnPrevClick { get; set; }
 
+    /// <summary>
+    /// triggers when the next button is clicked and current page changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNextClick")]
     public EventCallback OnNextClick { get; set; }
@@ -4100,70 +6750,121 @@ public sealed class ElPagination : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElPopconfirm")]
 public sealed class ElPopconfirm : ElComponentBase
 {
+    /// <summary>
+    /// Title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// Tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public string? Effect { get; set; }
 
+    /// <summary>
+    /// Confirm button text
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmButtonText")]
     public string? ConfirmButtonText { get; set; }
 
+    /// <summary>
+    /// Cancel button text
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelButtonText")]
     public string? CancelButtonText { get; set; }
 
+    /// <summary>
+    /// Confirm button type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("confirmButtonType")]
     public string? ConfirmButtonType { get; set; }
 
+    /// <summary>
+    /// Cancel button type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cancelButtonType")]
     public string? CancelButtonType { get; set; }
 
+    /// <summary>
+    /// Icon Component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// Icon color
+    /// </summary>
     [Parameter]
     [ECMAScriptName("iconColor")]
     public string? IconColor { get; set; }
 
+    /// <summary>
+    /// is hide Icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideIcon")]
     public bool? HideIcon { get; set; }
 
+    /// <summary>
+    /// delay of disappear, in millisecond
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideAfter")]
     public Number? HideAfter { get; set; }
 
+    /// <summary>
+    /// whether popconfirm is teleported to the body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// when popconfirm inactive and `persistent` is `false` , popconfirm will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// popconfirm width, min width 150px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
+    /// <summary>
+    /// HTML element that triggers Popconfirm
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reference")]
     public RenderFragment? Reference { get; set; }
 
+    /// <summary>
+    /// content of the Popconfirm footer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("actions")]
     public RenderFragment? Actions { get; set; }
 
+    /// <summary>
+    /// triggers when click confirm button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onConfirm")]
     public EventCallback OnConfirm { get; set; }
 
+    /// <summary>
+    /// triggers when click cancel button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCancel")]
     public EventCallback OnCancel { get; set; }
@@ -4176,126 +6877,219 @@ public sealed class ElPopconfirm : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElPopover")]
 public sealed class ElPopover : ElContentComponentBase
 {
+    /// <summary>
+    /// how the popover is triggered, not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public ElTooltipTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// When you click the mouse to focus on the trigger element, you can define a set of keyboard codes to control the display of popover through the keyboard, not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerKeys")]
     public string[]? TriggerKeys { get; set; }
 
+    /// <summary>
+    /// popover title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// Tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
+    /// <summary>
+    /// popover content, can be replaced with a default `slot`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? Content { get; set; }
 
+    /// <summary>
+    /// popover width
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
+    /// <summary>
+    /// popover placement
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
+    /// <summary>
+    /// whether Popover is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether popover is visible
+    /// </summary>
     [Parameter]
     [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
+    /// <summary>
+    /// popover offset, `Popover` is built with `Tooltip`, offset of `Popover` is `undefined`, but offset of `Tooltip` is 12
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
+    /// <summary>
+    /// popover transition animation, the default is el-fade-in-linear
+    /// </summary>
     [Parameter]
     [ECMAScriptName("transition")]
     public string? Transition { get; set; }
 
+    /// <summary>
+    /// whether a tooltip arrow is displayed or not. For more info, please refer to [ElPopper](https://github.com/element-plus/element-plus/tree/dev/packages/components/popper)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// parameters for [popper.js](https://popper.js.org/docs/v2/)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// custom class name for popover
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for popover
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// delay of appearance, in millisecond, not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showAfter")]
     public Number? ShowAfter { get; set; }
 
+    /// <summary>
+    /// delay of disappear, in millisecond, not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideAfter")]
     public Number? HideAfter { get; set; }
 
+    /// <summary>
+    /// timeout in milliseconds to hide tooltip, not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoClose")]
     public Number? AutoClose { get; set; }
 
+    /// <summary>
+    /// [tabindex](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex) of Popover
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// whether popover dropdown is teleported to the body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// which element the popover CONTENT appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// when popover inactive and `persistent` is `false` , popover will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// Indicates whether virtual triggering is enabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("virtualTriggering")]
     public bool? VirtualTriggering { get; set; }
 
+    /// <summary>
+    /// Indicates the reference element to which the popover is attached
+    /// </summary>
     [Parameter]
     [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
 
+    /// <summary>
+    /// HTML element that triggers popover, only a single root element is accepted
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reference")]
     public RenderFragment? Reference { get; set; }
 
+    /// <summary>
+    /// triggers when popover shows
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onShow")]
     public EventCallback OnShow { get; set; }
 
+    /// <summary>
+    /// triggers when the entering transition before
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBeforeEnter")]
     public EventCallback OnBeforeEnter { get; set; }
 
+    /// <summary>
+    /// triggers when the entering transition ends
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onAfterEnter")]
     public EventCallback OnAfterEnter { get; set; }
 
+    /// <summary>
+    /// triggers when popover hides
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onHide")]
     public EventCallback OnHide { get; set; }
 
+    /// <summary>
+    /// triggers when the leaving transition before
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBeforeLeave")]
     public EventCallback OnBeforeLeave { get; set; }
 
+    /// <summary>
+    /// triggers when the leaving transition ends
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onAfterLeave")]
     public EventCallback OnAfterLeave { get; set; }
@@ -4320,58 +7114,100 @@ public sealed class ElPopper : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElProgress")]
 public sealed class ElProgress : ElContentComponentBase
 {
+    /// <summary>
+    /// percentage
+    /// </summary>
     [Parameter]
     [ECMAScriptName("percentage")]
     public Number? Percentage { get; set; }
 
+    /// <summary>
+    /// the type of progress bar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public ElProgressType? Type { get; set; }
 
+    /// <summary>
+    /// the width of progress bar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("strokeWidth")]
     public Number? StrokeWidth { get; set; }
 
+    /// <summary>
+    /// whether to place the percentage inside progress bar, only works when `type` is 'line'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("textInside")]
     public bool? TextInside { get; set; }
 
+    /// <summary>
+    /// the current status of progress bar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public ElProgressStatus? Status { get; set; }
 
+    /// <summary>
+    /// set indeterminate progress
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indeterminate")]
     public bool? Indeterminate { get; set; }
 
+    /// <summary>
+    /// control the animation duration of indeterminate progress or striped flow progress
+    /// </summary>
     [Parameter]
     [ECMAScriptName("duration")]
     public Number? Duration { get; set; }
 
+    /// <summary>
+    /// background color of progress bar. Overrides `status` prop
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public ElProgressColorValue? Color { get; set; }
 
+    /// <summary>
+    /// the canvas width of circle progress bar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public Number? Width { get; set; }
 
+    /// <summary>
+    /// whether to show percentage
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showText")]
     public bool? ShowText { get; set; }
 
+    /// <summary>
+    /// circle/dashboard type shape at the end path
+    /// </summary>
     [Parameter]
     [ECMAScriptName("strokeLinecap")]
     public string? StrokeLinecap { get; set; }
 
+    /// <summary>
+    /// custom text format
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public ElProgressFormatCallback? Format { get; set; }
 
+    /// <summary>
+    /// stripe over the progress bar's color
+    /// </summary>
     [Parameter]
     [ECMAScriptName("striped")]
     public bool? Striped { get; set; }
 
+    /// <summary>
+    /// get the stripes to flow
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stripedFlow")]
     public bool? StripedFlow { get; set; }
@@ -4384,38 +7220,65 @@ public sealed class ElProgress : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElRadio")]
 public sealed class ElRadio : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// the value of Radio
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberValue? Value { get; set; }
 
+    /// <summary>
+    /// the label of Radio. If there's no `value`, `label` will act as `value`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public VueBooleanStringNumberValue? Label { get; set; }
 
+    /// <summary>
+    /// whether Radio is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether to add a border around Radio
+    /// </summary>
     [Parameter]
     [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
+    /// <summary>
+    /// size of the Radio
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// native `name` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// triggers when the bound value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -4428,18 +7291,30 @@ public sealed class ElRadio : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElRadioButton")]
 public sealed class ElRadioButton : ElContentComponentBase
 {
+    /// <summary>
+    /// the value of Radio
+    /// </summary>
     [Parameter]
     [ECMAScriptName("value")]
     public VueBooleanStringNumberValue? Value { get; set; }
 
+    /// <summary>
+    /// the label of Radio. If there's no `value`, `label` will act as `value`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public VueBooleanStringNumberValue? Label { get; set; }
 
+    /// <summary>
+    /// whether Radio is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// native 'name' attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
@@ -4452,62 +7327,107 @@ public sealed class ElRadioButton : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElRadioGroup")]
 public sealed class ElRadioGroup : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// the size of radio buttons or bordered radios
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// whether the nesting radios are disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// font color when button is active
+    /// </summary>
     [Parameter]
     [ECMAScriptName("textColor")]
     public string? TextColor { get; set; }
 
+    /// <summary>
+    /// border and background color when button is active
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fill")]
     public string? Fill { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in RadioGroup
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// native `name` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// native `id` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in RadioGroup
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// data of the options, the key of `value` and `label` and `disabled` can be customize by `props`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
+    /// <summary>
+    /// configuration options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElRadioOptionPropsAlias? Props { get; set; }
 
+    /// <summary>
+    /// component type to render options (e.g. `'button'`)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// triggers when the bound value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -4520,98 +7440,170 @@ public sealed class ElRadioGroup : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElRate")]
 public sealed class ElRate : ElComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public Number? ModelValue { get; set; }
 
+    /// <summary>
+    /// max rating score
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// size of Rate
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// whether Rate is read-only
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether picking half start is allowed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowHalf")]
     public bool? AllowHalf { get; set; }
 
+    /// <summary>
+    /// threshold value between low and medium level. The value itself will be included in low level
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lowThreshold")]
     public Number? LowThreshold { get; set; }
 
+    /// <summary>
+    /// threshold value between medium and high level. The value itself will be included in high level
+    /// </summary>
     [Parameter]
     [ECMAScriptName("highThreshold")]
     public Number? HighThreshold { get; set; }
 
+    /// <summary>
+    /// colors for icons. If array, it should have 3 elements, each of which corresponds with a score level, else if object, the key should be threshold value between two levels, and the value should be corresponding color
+    /// </summary>
     [Parameter]
     [ECMAScriptName("colors")]
     public ElRateColorsValue? Colors { get; set; }
 
+    /// <summary>
+    /// color of unselected icons
+    /// </summary>
     [Parameter]
     [ECMAScriptName("voidColor")]
     public string? VoidColor { get; set; }
 
+    /// <summary>
+    /// color of unselected read-only icons
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabledVoidColor")]
     public string? DisabledVoidColor { get; set; }
 
+    /// <summary>
+    /// icon components. If array, it should have 3 elements, each of which corresponds with a score level, else if object, the key should be threshold value between two levels, and the value should be corresponding icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icons")]
     public ElRateIconsValue? Icons { get; set; }
 
+    /// <summary>
+    /// component of unselected icons
+    /// </summary>
     [Parameter]
     [ECMAScriptName("voidIcon")]
     public VueStringComponentValue? VoidIcon { get; set; }
 
+    /// <summary>
+    /// component of unselected read-only icons
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabledVoidIcon")]
     public VueStringComponentValue? DisabledVoidIcon { get; set; }
 
+    /// <summary>
+    /// whether to display texts
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showText")]
     public bool? ShowText { get; set; }
 
+    /// <summary>
+    /// whether to display current score. show-score and show-text cannot be true at the same time
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showScore")]
     public bool? ShowScore { get; set; }
 
+    /// <summary>
+    /// color of texts
+    /// </summary>
     [Parameter]
     [ECMAScriptName("textColor")]
     public string? TextColor { get; set; }
 
+    /// <summary>
+    /// text array
+    /// </summary>
     [Parameter]
     [ECMAScriptName("texts")]
     public string[]? Texts { get; set; }
 
+    /// <summary>
+    /// score template
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scoreTemplate")]
     public string? ScoreTemplate { get; set; }
 
+    /// <summary>
+    /// whether value can be reset to `0`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// native `id` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in Rate
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in Rate
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// Triggers when rate value is changed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<Number?> ModelValueChanged { get; set; }
@@ -4624,30 +7616,51 @@ public sealed class ElRate : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElResult")]
 public sealed class ElResult : ElComponentBase
 {
+    /// <summary>
+    /// title of result
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// sub title of result
+    /// </summary>
     [Parameter]
     [ECMAScriptName("subTitle")]
     public string? SubTitle { get; set; }
 
+    /// <summary>
+    /// icon type of result
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public string? Icon { get; set; }
 
+    /// <summary>
+    /// content as result icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
 
+    /// <summary>
+    /// content as result title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
+    /// <summary>
+    /// content as result sub title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sub-title")]
     public RenderFragment? SubTitleSlot { get; set; }
 
+    /// <summary>
+    /// content as result extra area
+    /// </summary>
     [Parameter]
     [ECMAScriptName("extra")]
     public RenderFragment? Extra { get; set; }
@@ -4660,18 +7673,30 @@ public sealed class ElResult : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElRow")]
 public sealed class ElRow : ElContentComponentBase
 {
+    /// <summary>
+    /// grid spacing
+    /// </summary>
     [Parameter]
     [ECMAScriptName("gutter")]
     public Number? Gutter { get; set; }
 
+    /// <summary>
+    /// horizontal alignment of flex layout
+    /// </summary>
     [Parameter]
     [ECMAScriptName("justify")]
     public string? Justify { get; set; }
 
+    /// <summary>
+    /// vertical alignment of flex layout
+    /// </summary>
     [Parameter]
     [ECMAScriptName("align")]
     public string? Align { get; set; }
 
+    /// <summary>
+    /// custom element tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? Tag { get; set; }
@@ -4684,78 +7709,135 @@ public sealed class ElRow : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElScrollbar")]
 public sealed class ElScrollbar : ElContentComponentBase
 {
+    /// <summary>
+    /// height of scrollbar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
+    /// <summary>
+    /// max height of scrollbar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
+    /// <summary>
+    /// whether to use the native scrollbar style
+    /// </summary>
     [Parameter]
     [ECMAScriptName("native")]
     public bool? Native { get; set; }
 
+    /// <summary>
+    /// style of wrap container
+    /// </summary>
     [Parameter]
     [ECMAScriptName("wrapStyle")]
     public VueStyleValue? WrapStyle { get; set; }
 
+    /// <summary>
+    /// class of wrap container
+    /// </summary>
     [Parameter]
     [ECMAScriptName("wrapClass")]
     public string? WrapClass { get; set; }
 
+    /// <summary>
+    /// style of view
+    /// </summary>
     [Parameter]
     [ECMAScriptName("viewStyle")]
     public VueStyleValue? ViewStyle { get; set; }
 
+    /// <summary>
+    /// class of view
+    /// </summary>
     [Parameter]
     [ECMAScriptName("viewClass")]
     public string? ViewClass { get; set; }
 
+    /// <summary>
+    /// do not respond to container size changes, if the container size does not change, it is better to set it to optimize performance
+    /// </summary>
     [Parameter]
     [ECMAScriptName("noresize")]
     public bool? Noresize { get; set; }
 
+    /// <summary>
+    /// element tag of the view
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? Tag { get; set; }
 
+    /// <summary>
+    /// always show scrollbar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("always")]
     public bool? Always { get; set; }
 
+    /// <summary>
+    /// minimum size of scrollbar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minSize")]
     public Number? MinSize { get; set; }
 
+    /// <summary>
+    /// id of view
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// role of view
+    /// </summary>
     [Parameter]
     [ECMAScriptName("role")]
     public string? Role { get; set; }
 
+    /// <summary>
+    /// aria-label of view
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// aria-orientation of view
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaOrientation")]
     public string? AriaOrientation { get; set; }
 
+    /// <summary>
+    /// tabindex of wrap container
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// trigger end-reached event distance(px)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("distance")]
     public Number? Distance { get; set; }
 
+    /// <summary>
+    /// triggers when scrolling, return distance of scrolling
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback OnScroll { get; set; }
 
+    /// <summary>
+    /// triggers when the end of a scroll is triggered
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
@@ -4768,54 +7850,93 @@ public sealed class ElScrollbar : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSegmented")]
 public sealed class ElSegmented : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// data of the options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
+    /// <summary>
+    /// configuration options, see the following table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElSegmentedPropsAlias? Props { get; set; }
 
+    /// <summary>
+    /// size of component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// fit width of parent content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("block")]
     public bool? Block { get; set; }
 
+    /// <summary>
+    /// whether segmented is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// native `name` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// native `id` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// native `aria-label` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// display direction
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
+    /// <summary>
+    /// triggers when the selected value changes, the param is current selected value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -4828,278 +7949,485 @@ public sealed class ElSegmented : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSelect")]
 public sealed class ElSelect : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether multiple-select is activated
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// data of the options, the key of `value` and `label` and `disabled` can be customize by `props`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
+    /// <summary>
+    /// configuration options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElSelectPropsAlias? Props { get; set; }
 
+    /// <summary>
+    /// whether Select is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// unique identity key name for value, required when value is an object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueKey")]
     public string? ValueKey { get; set; }
 
+    /// <summary>
+    /// size of Input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// whether select can be cleared
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// whether to collapse tags to a text when multiple selecting
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
+    /// <summary>
+    /// whether show all selected tags when mouse hover text of collapse-tags. To use this, `collapse-tags` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
+    /// <summary>
+    /// configuration object for the collapse-tags tooltip. To use this, `collapse-tags` and `collapse-tags-tooltip` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagTooltip")]
     public ElTagTooltipProps? TagTooltip { get; set; }
 
+    /// <summary>
+    /// maximum number of options user can select when `multiple` is `true`. No limit when set to 0
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
 
+    /// <summary>
+    /// native input id input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// the name attribute of select input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
+    /// <summary>
+    /// the autocomplete attribute of select input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
+    /// <summary>
+    /// placeholder, default is 'Select'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// whether Select is filterable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
+    /// <summary>
+    /// whether creating new items is allowed. To use this, `filterable` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowCreate")]
     public bool? AllowCreate { get; set; }
 
+    /// <summary>
+    /// custom filter method, the first parameter is the current input value. To use this, `filterable` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterMethod")]
     public ElSelectQueryCallback? FilterMethod { get; set; }
 
+    /// <summary>
+    /// whether options are loaded from server
+    /// </summary>
     [Parameter]
     [ECMAScriptName("remote")]
     public bool? Remote { get; set; }
 
+    /// <summary>
+    /// debounce delay during remote search, in milliseconds
+    /// </summary>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
+    /// <summary>
+    /// function that gets called when the input value changes. Its parameter is the current input value. To use this, `filterable` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("remoteMethod")]
     public ElSelectQueryCallback? RemoteMethod { get; set; }
 
+    /// <summary>
+    /// in remote search method show suffix icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("remoteShowSuffix")]
     public bool? RemoteShowSuffix { get; set; }
 
+    /// <summary>
+    /// whether Select is loading data from server
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// displayed text while loading data from server, default is 'Loading'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingText")]
     public string? LoadingText { get; set; }
 
+    /// <summary>
+    /// displayed text when no data matches the filtering query, you can also use slot `empty`, default is 'No matching data'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("noMatchText")]
     public string? NoMatchText { get; set; }
 
+    /// <summary>
+    /// displayed text when there is no options, you can also use slot `empty`, default is 'No data'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("noDataText")]
     public string? NoDataText { get; set; }
 
+    /// <summary>
+    /// custom class name for Select's dropdown and tags' tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for Select's dropdown and tags' tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// when `multiple` and `filterable` is true, whether to reserve current keyword after selecting an option
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
+    /// <summary>
+    /// select first matching option on enter key. Use with `filterable` or `remote`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultFirstOption")]
     public bool? DefaultFirstOption { get; set; }
 
+    /// <summary>
+    /// whether select dropdown is teleported, if `true` it will be teleported to where `append-to` sets
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// which element the select dropdown appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// when select dropdown is inactive and `persistent` is `false`, select dropdown will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// for non-filterable Select, this prop decides if the option menu pops up when the input is focused
+    /// </summary>
     [Parameter]
     [ECMAScriptName("automaticDropdown")]
     public bool? AutomaticDropdown { get; set; }
 
+    /// <summary>
+    /// custom clear icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
+    /// <summary>
+    /// whether the width of the dropdown is the same as the input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fitInputWidth")]
     public bool? FitInputWidth { get; set; }
 
+    /// <summary>
+    /// custom suffix icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
 
+    /// <summary>
+    /// tag type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagType")]
     public ElTagType? TagType { get; set; }
 
+    /// <summary>
+    /// tag effect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagEffect")]
     public ElTagEffect? TagEffect { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// offset of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
+    /// <summary>
+    /// whether the dropdown has an arrow
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// position of dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
+    /// <summary>
+    /// list of possible positions for dropdown [popper.js](https://popper.js.org/docs/v2/modifiers/flip/#fallbackplacements)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
+    /// <summary>
+    /// the max tags number to be shown. To use this, `collapse-tags` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
+    /// <summary>
+    /// [popper.js](https://popper.js.org/docs/v2/) parameters
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// animation when dropdown appears/disappears icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixTransition")]
     public bool? SuffixTransition { get; set; }
 
+    /// <summary>
+    /// tabindex for input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// content at the top of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// content at the bottom of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// content as Select prefix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// content when there is no options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
+    /// <summary>
+    /// content as Select tag, subTags `data`, `selectDisabled` and `deleteTag` introduced in
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
+    /// <summary>
+    /// content as Select loading
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
+    /// <summary>
+    /// content as Select label. `index` introduced in
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? Label { get; set; }
 
+    /// <summary>
+    /// triggers when the selected value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when the dropdown appears/disappears
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
+    /// <summary>
+    /// triggers when a tag is removed in multiple mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
+    /// <summary>
+    /// triggers when the clear icon is clicked in a clearable Select
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when dropdown scrolls
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPopupScroll")]
     public EventCallback OnPopupScroll { get; set; }
 
+    /// <summary>
+    /// triggers when dropdown scroll reaches an end
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
@@ -5112,26 +8440,44 @@ public sealed class ElSelect : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSkeleton")]
 public sealed class ElSkeleton : ElContentComponentBase
 {
+    /// <summary>
+    /// whether showing the animation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("animated")]
     public bool? Animated { get; set; }
 
+    /// <summary>
+    /// how many fake items to render to the DOM
+    /// </summary>
     [Parameter]
     [ECMAScriptName("count")]
     public Number? Count { get; set; }
 
+    /// <summary>
+    /// whether showing the real DOM
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// numbers of the row, only useful when no template slot were given
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rows")]
     public Number? Rows { get; set; }
 
+    /// <summary>
+    /// rendering delay in milliseconds. Numbers represent delayed display, and can also be set to delay hide, for example `{ leading: 500, trailing: 500 }`. When needing to control the initial value of loading, you can set `{ initVal: true }`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("throttle")]
     public ElThrottleValue? Throttle { get; set; }
 
+    /// <summary>
+    /// content as rendering skeleton template
+    /// </summary>
     [Parameter]
     [ECMAScriptName("template")]
     public RenderFragment? Template { get; set; }
@@ -5144,6 +8490,9 @@ public sealed class ElSkeleton : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSkeletonItem")]
 public sealed class ElSkeletonItem : ElComponentBase
 {
+    /// <summary>
+    /// the current rendering skeleton type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("variant")]
     public string? Variant { get; set; }
@@ -5156,114 +8505,198 @@ public sealed class ElSkeletonItem : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSlider")]
 public sealed class ElSlider : ElComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueNumberOrNumbersValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// minimum value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("min")]
     public Number? Min { get; set; }
 
+    /// <summary>
+    /// maximum value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public Number? Max { get; set; }
 
+    /// <summary>
+    /// whether Slider is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// step size, can be a number or `'mark'`  to restrict values to marks. When set to `'mark'`, the `marks` attribute must be set
+    /// </summary>
     [Parameter]
     [ECMAScriptName("step")]
     public VueStringNumberValue? Step { get; set; }
 
+    /// <summary>
+    /// whether to display an input box, works when `range` is false and `step` is not `'mark'`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showInput")]
     public bool? ShowInput { get; set; }
 
+    /// <summary>
+    /// whether to display control buttons when `show-input` is true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showInputControls")]
     public bool? ShowInputControls { get; set; }
 
+    /// <summary>
+    /// size of the slider wrapper, will not work in vertical mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// size of the input box, when set `size`, the default is the value of `size`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inputSize")]
     public string? InputSize { get; set; }
 
+    /// <summary>
+    /// whether to display breakpoints
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showStops")]
     public bool? ShowStops { get; set; }
 
+    /// <summary>
+    /// whether to display tooltip value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showTooltip")]
     public bool? ShowTooltip { get; set; }
 
+    /// <summary>
+    /// format to display tooltip value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("formatTooltip")]
     public ElSliderFormatTooltipCallback? FormatTooltip { get; set; }
 
+    /// <summary>
+    /// whether to select a range
+    /// </summary>
     [Parameter]
     [ECMAScriptName("range")]
     public bool? Range { get; set; }
 
+    /// <summary>
+    /// vertical mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("vertical")]
     public bool? Vertical { get; set; }
 
+    /// <summary>
+    /// slider height, required in vertical mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public string? Height { get; set; }
 
+    /// <summary>
+    /// native `aria-label` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// when `range` is true, screen reader label for the start of the range
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rangeStartLabel")]
     public string? RangeStartLabel { get; set; }
 
+    /// <summary>
+    /// when `range` is true, screen reader label for the end of the range
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rangeEndLabel")]
     public string? RangeEndLabel { get; set; }
 
+    /// <summary>
+    /// format to display the `aria-valuenow` attribute for screen readers
+    /// </summary>
     [Parameter]
     [ECMAScriptName("formatValueText")]
     public ElSliderFormatValueTextCallback? FormatValueText { get; set; }
 
+    /// <summary>
+    /// custom class name for the tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tooltipClass")]
     public string? TooltipClass { get; set; }
 
+    /// <summary>
+    /// position of Tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
+    /// <summary>
+    /// marks, type of key must be `number` and must in closed interval `[min, max]`, each mark can custom style
+    /// </summary>
     [Parameter]
     [ECMAScriptName("marks")]
     public ElSliderMarks? Marks { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// when slider tooltip inactive and `persistent` is `false` , tooltip will be destroyed. `persistent` always be `false` when `show-tooltip ` is `false`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// native `aria-label` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// triggers when the value changes (if the mouse is being dragged, this event only fires when the mouse is released)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when the data changes (It'll be emitted in real time during sliding)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onInput")]
     public EventCallback OnInput { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueNumberOrNumbersValue?> ModelValueChanged { get; set; }
@@ -5276,34 +8709,58 @@ public sealed class ElSlider : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSpace")]
 public sealed class ElSpace : ElComponentBase
 {
+    /// <summary>
+    /// Controls the alignment of items
+    /// </summary>
     [Parameter]
     [ECMAScriptName("alignment")]
     public string? Alignment { get; set; }
 
+    /// <summary>
+    /// Placement direction
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
+    /// <summary>
+    /// Prefix for space-items
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixCls")]
     public string? PrefixCls { get; set; }
 
+    /// <summary>
+    /// Spacer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("spacer")]
     public VueStringNumberVNodeValue? Spacer { get; set; }
 
+    /// <summary>
+    /// Spacing size
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElSpaceSizeValue? Size { get; set; }
 
+    /// <summary>
+    /// Auto wrapping
+    /// </summary>
     [Parameter]
     [ECMAScriptName("wrap")]
     public bool? Wrap { get; set; }
 
+    /// <summary>
+    /// Whether to fill the container
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fill")]
     public bool? Fill { get; set; }
 
+    /// <summary>
+    /// Ratio of fill
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fillRatio")]
     public Number? FillRatio { get; set; }
@@ -5316,26 +8773,44 @@ public sealed class ElSpace : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSplitter")]
 public sealed class ElSplitter : ElComponentBase
 {
+    /// <summary>
+    /// Layout direction of the splitter
+    /// </summary>
     [Parameter]
     [ECMAScriptName("layout")]
     public string? Layout { get; set; }
 
+    /// <summary>
+    /// Whether to enable lazy mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// Triggered when starting to resize a panel, `index` is the drag bar index
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onResizeStart")]
     public EventCallback OnResizeStart { get; set; }
 
+    /// <summary>
+    /// Triggered while resizing a panel, `index` is the drag bar index
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onResize")]
     public EventCallback OnResize { get; set; }
 
+    /// <summary>
+    /// Triggered when panel resizing ends, `index` is the drag bar index
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onResizeEnd")]
     public EventCallback OnResizeEnd { get; set; }
 
+    /// <summary>
+    /// Triggered when a panel is collapsed, `index` is the drag bar index
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCollapse")]
     public EventCallback OnCollapse { get; set; }
@@ -5348,34 +8823,58 @@ public sealed class ElSplitter : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSplitterPanel")]
 public sealed class ElSplitterPanel : ElContentComponentBase
 {
+    /// <summary>
+    /// Size of the panel (in pixels or percentage)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public VueStringNumberValue? Size { get; set; }
 
+    /// <summary>
+    /// Minimum size of the panel (in pixels or percentage)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("min")]
     public VueStringNumberValue? Min { get; set; }
 
+    /// <summary>
+    /// Maximum size of the panel (in pixels or percentage)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("max")]
     public VueStringNumberValue? Max { get; set; }
 
+    /// <summary>
+    /// Whether the panel can be resized
+    /// </summary>
     [Parameter]
     [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
+    /// <summary>
+    /// Whether the panel can be collapsed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapsible")]
     public bool? Collapsible { get; set; }
 
+    /// <summary>
+    /// Custom content for the start collapsible button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("start-collapsible")]
     public RenderFragment? StartCollapsible { get; set; }
 
+    /// <summary>
+    /// Custom content for the end collapsible button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("end-collapsible")]
     public RenderFragment? EndCollapsible { get; set; }
 
+    /// <summary>
+    /// Triggered when panel size changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:size")]
     public EventCallback<VueStringNumberValue?> SizeChanged { get; set; }
@@ -5388,14 +8887,23 @@ public sealed class ElSplitterPanel : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElStatistic")]
 public sealed class ElStatistic : ElComponentBase
 {
+    /// <summary>
+    /// Numeric prefix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// Suffixes for numeric values
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffix")]
     public RenderFragment? Suffix { get; set; }
 
+    /// <summary>
+    /// Numeric titles
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? Title { get; set; }
@@ -5408,30 +8916,51 @@ public sealed class ElStatistic : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElStep")]
 public sealed class ElStep : ElComponentBase
 {
+    /// <summary>
+    /// step title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public string? Title { get; set; }
 
+    /// <summary>
+    /// step description
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public string? Description { get; set; }
 
+    /// <summary>
+    /// step custom icon. Icons can be passed via named slot as well
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// current status. It will be automatically set by Steps if not configured.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("status")]
     public ElStepStatus? Status { get; set; }
 
+    /// <summary>
+    /// custom icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public RenderFragment? IconSlot { get; set; }
 
+    /// <summary>
+    /// step title
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? TitleSlot { get; set; }
 
+    /// <summary>
+    /// step description
+    /// </summary>
     [Parameter]
     [ECMAScriptName("description")]
     public RenderFragment? DescriptionSlot { get; set; }
@@ -5444,34 +8973,58 @@ public sealed class ElStep : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSteps")]
 public sealed class ElSteps : ElContentComponentBase
 {
+    /// <summary>
+    /// the spacing of each step, will be responsive if omitted. Supports percentage.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("space")]
     public VueStringNumberValue? Space { get; set; }
 
+    /// <summary>
+    /// display direction
+    /// </summary>
     [Parameter]
     [ECMAScriptName("direction")]
     public ElDirection? Direction { get; set; }
 
+    /// <summary>
+    /// current activation step
+    /// </summary>
     [Parameter]
     [ECMAScriptName("active")]
     public Number? Active { get; set; }
 
+    /// <summary>
+    /// status of current step
+    /// </summary>
     [Parameter]
     [ECMAScriptName("processStatus")]
     public ElStepStatus? ProcessStatus { get; set; }
 
+    /// <summary>
+    /// status of end step
+    /// </summary>
     [Parameter]
     [ECMAScriptName("finishStatus")]
     public ElStepStatus? FinishStatus { get; set; }
 
+    /// <summary>
+    /// center title and description
+    /// </summary>
     [Parameter]
     [ECMAScriptName("alignCenter")]
     public bool? AlignCenter { get; set; }
 
+    /// <summary>
+    /// whether to apply simple theme
+    /// </summary>
     [Parameter]
     [ECMAScriptName("simple")]
     public bool? Simple { get; set; }
 
+    /// <summary>
+    /// triggers when the active step changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
@@ -5484,54 +9037,93 @@ public sealed class ElSteps : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSubMenu")]
 public sealed class ElSubMenu : ElContentComponentBase
 {
+    /// <summary>
+    /// unique identification
+    /// </summary>
     [Parameter]
     [ECMAScriptName("index")]
     public string? Index { get; set; }
 
+    /// <summary>
+    /// custom class name for the popup menu
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for the popup menu
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// timeout before showing a sub-menu(inherit `show-timeout` of the menu by default.)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showTimeout")]
     public Number? ShowTimeout { get; set; }
 
+    /// <summary>
+    /// timeout before hiding a sub-menu(inherit `hide-timeout` of the menu by default.)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideTimeout")]
     public Number? HideTimeout { get; set; }
 
+    /// <summary>
+    /// whether the sub-menu is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether popup menu is teleported to the body, the default is true for the level one SubMenu, false for other SubMenus
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// offset of the popper (overrides the `popper` of menu)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOffset")]
     public Number? PopperOffset { get; set; }
 
+    /// <summary>
+    /// Icon when menu are expanded and submenu are closed, `expand-close-icon` and `expand-open-icon` need to be passed together to take effect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandCloseIcon")]
     public VueStringComponentValue? ExpandCloseIcon { get; set; }
 
+    /// <summary>
+    /// Icon when menu are expanded and submenu are opened, `expand-open-icon` and `expand-close-icon` need to be passed together to take effect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandOpenIcon")]
     public VueStringComponentValue? ExpandOpenIcon { get; set; }
 
+    /// <summary>
+    /// Icon when menu are collapsed and submenu are closed, `collapse-close-icon` and `collapse-open-icon` need to be passed together to take effect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseCloseIcon")]
     public VueStringComponentValue? CollapseCloseIcon { get; set; }
 
+    /// <summary>
+    /// Icon when menu are collapsed and submenu are opened, `collapse-open-icon` and `collapse-close-icon` need to be passed together to take effect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseOpenIcon")]
     public VueStringComponentValue? CollapseOpenIcon { get; set; }
 
+    /// <summary>
+    /// customize title content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("title")]
     public RenderFragment? Title { get; set; }
@@ -5544,122 +9136,212 @@ public sealed class ElSubMenu : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSwitch")]
 public sealed class ElSwitch : ElComponentBase
 {
+    /// <summary>
+    /// binding value, it should be equivalent to either `active-value` or `inactive-value`, by default it's `boolean` type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether Switch is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether Switch is in loading state
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// size of Switch
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// width of Switch
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
+    /// <summary>
+    /// whether icon or text is displayed inside dot, only the first character will be rendered for text
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inlinePrompt")]
     public bool? InlinePrompt { get; set; }
 
+    /// <summary>
+    /// component of the icon displayed when in `on` state, overrides `active-text`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeIcon")]
     public VueStringComponentValue? ActiveIcon { get; set; }
 
+    /// <summary>
+    /// component of the icon displayed when in `off` state, overrides `inactive-text`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inactiveIcon")]
     public VueStringComponentValue? InactiveIcon { get; set; }
 
+    /// <summary>
+    /// component of the icon displayed in action when in `on` state
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeActionIcon")]
     public VueStringComponentValue? ActiveActionIcon { get; set; }
 
+    /// <summary>
+    /// component of the icon displayed in action when in `off` state
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inactiveActionIcon")]
     public VueStringComponentValue? InactiveActionIcon { get; set; }
 
+    /// <summary>
+    /// text displayed when in `on` state
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeText")]
     public string? ActiveText { get; set; }
 
+    /// <summary>
+    /// text displayed when in `off` state
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inactiveText")]
     public string? InactiveText { get; set; }
 
+    /// <summary>
+    /// switch value when in `on` state
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeValue")]
     public VueBooleanStringNumberValue? ActiveValue { get; set; }
 
+    /// <summary>
+    /// switch value when in `off` state
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inactiveValue")]
     public VueBooleanStringNumberValue? InactiveValue { get; set; }
 
+    /// <summary>
+    /// input name of Switch
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// before-change hook before the switch state changes. If `false` is returned or a `Promise` is returned and then is rejected, will stop switching
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeChange")]
     public ElSwitchBeforeChangeCallback? BeforeChange { get; set; }
 
+    /// <summary>
+    /// id for input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// tabindex for input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// background color when in `on` state ( use CSS var `--el-switch-on-color` instead )
+    /// </summary>
     [Parameter]
     [ECMAScriptName("activeColor")]
     public string? ActiveColor { get; set; }
 
+    /// <summary>
+    /// background color when in `off` state ( use CSS var `--el-switch-off-color` instead )
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inactiveColor")]
     public string? InactiveColor { get; set; }
 
+    /// <summary>
+    /// border color of the switch ( use CSS var `--el-switch-border-color` instead )
+    /// </summary>
     [Parameter]
     [ECMAScriptName("borderColor")]
     public string? BorderColor { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// customize active action
+    /// </summary>
     [Parameter]
     [ECMAScriptName("active-action")]
     public RenderFragment? ActiveAction { get; set; }
 
+    /// <summary>
+    /// customize inactive action
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inactive-action")]
     public RenderFragment? InactiveAction { get; set; }
 
+    /// <summary>
+    /// customize active content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("active")]
     public RenderFragment? Active { get; set; }
 
+    /// <summary>
+    /// customize inactive content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("inactive")]
     public RenderFragment? Inactive { get; set; }
 
+    /// <summary>
+    /// triggers when value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// binding value, it should be equivalent to either `active-value` or `inactive-value`, by default it's `boolean` type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberValue?> ModelValueChanged { get; set; }
@@ -5672,26 +9354,44 @@ public sealed class ElSwitch : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTabPane")]
 public sealed class ElTabPane : ElContentComponentBase
 {
+    /// <summary>
+    /// title of the tab
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// whether Tab is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// identifier corresponding to the name of Tabs, representing the alias of the tab-pane, the default is ordinal number of the tab-pane in the sequence, e.g. the first tab-pane is '0'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public VueStringNumberValue? Name { get; set; }
 
+    /// <summary>
+    /// whether Tab is closable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
+    /// <summary>
+    /// whether Tab is lazily rendered
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// Tab-pane's label
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? LabelSlot { get; set; }
@@ -5704,266 +9404,464 @@ public sealed class ElTabPane : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTable")]
 public sealed class ElTable : ElContentComponentBase
 {
+    /// <summary>
+    /// table data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public VueValue[]? Data { get; set; }
 
+    /// <summary>
+    /// table's height. By default it has an `auto` height. If its value is a number, the height is measured in pixels; if its value is a string, the value will be assigned to element's style.height, the height is affected by external styles
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public VueStringNumberValue? Height { get; set; }
 
+    /// <summary>
+    /// table's max-height. The legal value is a number or the height in px
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public VueStringNumberValue? MaxHeight { get; set; }
 
+    /// <summary>
+    /// whether Table is striped
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stripe")]
     public bool? Stripe { get; set; }
 
+    /// <summary>
+    /// whether Table has vertical border
+    /// </summary>
     [Parameter]
     [ECMAScriptName("border")]
     public bool? Border { get; set; }
 
+    /// <summary>
+    /// size of Table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// whether width of column automatically fits its container
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fit")]
     public bool? Fit { get; set; }
 
+    /// <summary>
+    /// whether Table header is visible
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showHeader")]
     public bool? ShowHeader { get; set; }
 
+    /// <summary>
+    /// whether current row is highlighted
+    /// </summary>
     [Parameter]
     [ECMAScriptName("highlightCurrentRow")]
     public bool? HighlightCurrentRow { get; set; }
 
+    /// <summary>
+    /// key of current row, a set only prop
+    /// </summary>
     [Parameter]
     [ECMAScriptName("currentRowKey")]
     public VueStringNumberValue? CurrentRowKey { get; set; }
 
+    /// <summary>
+    /// function that returns custom class names for a row, or a string assigning class names for every row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowClassName")]
     public ElTableRowClassNameValue? RowClassName { get; set; }
 
+    /// <summary>
+    /// function that returns custom style for a row, or an object assigning custom style for every row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowStyle")]
     public ElTableRowStyleValue? RowStyle { get; set; }
 
+    /// <summary>
+    /// function that returns custom class names for a cell, or a string assigning class names for every cell
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellClassName")]
     public ElTableCellClassNameValue? CellClassName { get; set; }
 
+    /// <summary>
+    /// function that returns custom style for a cell, or an object assigning custom style for every cell
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellStyle")]
     public ElTableCellStyleValue? CellStyle { get; set; }
 
+    /// <summary>
+    /// function that returns custom class names for a row in table header, or a string assigning class names for every row in table header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerRowClassName")]
     public ElTableRowClassNameValue? HeaderRowClassName { get; set; }
 
+    /// <summary>
+    /// function that returns custom style for a row in table header, or an object assigning custom style for every row in table header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerRowStyle")]
     public ElTableRowStyleValue? HeaderRowStyle { get; set; }
 
+    /// <summary>
+    /// function that returns custom class names for a cell in table header, or a string assigning class names for every cell in table header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerCellClassName")]
     public ElTableCellClassNameValue? HeaderCellClassName { get; set; }
 
+    /// <summary>
+    /// function that returns custom style for a cell in table header, or an object assigning custom style for every cell in table header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerCellStyle")]
     public ElTableCellStyleValue? HeaderCellStyle { get; set; }
 
+    /// <summary>
+    /// key of row data, used for optimizing rendering. Required if `reserve-selection` is on or display tree data. When its type is String, multi-level access is supported, e.g. `user.info.id`, but `user.info[0].id` is not supported, in which case `Function` should be used
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowKey")]
     public ElTableRowKeyValue? RowKey { get; set; }
 
+    /// <summary>
+    /// displayed text when data is empty. You can customize this area with `#empty`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyText")]
     public string? EmptyText { get; set; }
 
+    /// <summary>
+    /// whether expand all rows by default, works when the table has a column type="expand" or contains tree structure data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultExpandAll")]
     public bool? DefaultExpandAll { get; set; }
 
+    /// <summary>
+    /// set expanded rows by this prop, prop's value is the keys of expand rows, you should set row-key before using this prop.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandRowKeys")]
     public string[]? ExpandRowKeys { get; set; }
 
+    /// <summary>
+    /// set the default sort column and order. property `prop` is used to set default sort column, property `order` is used to set default sort order
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultSort")]
     public ElTableSort? DefaultSort { get; set; }
 
+    /// <summary>
+    /// the `effect` of the overflow tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tooltipEffect")]
     public string? TooltipEffect { get; set; }
 
+    /// <summary>
+    /// the options for the overflow tooltip, [see the following tooltip component](tooltip.html#attributes)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tooltipOptions")]
     public ElTableOverflowTooltipOptions? TooltipOptions { get; set; }
 
+    /// <summary>
+    /// which element the filter panels appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendFilterPanelTo")]
     public string? AppendFilterPanelTo { get; set; }
 
+    /// <summary>
+    /// whether to display a summary row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showSummary")]
     public bool? ShowSummary { get; set; }
 
+    /// <summary>
+    /// displayed text for the first column of summary row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sumText")]
     public string? SumText { get; set; }
 
+    /// <summary>
+    /// custom summary method
+    /// </summary>
     [Parameter]
     [ECMAScriptName("summaryMethod")]
     public ElTableSummaryMethodCallback? SummaryMethod { get; set; }
 
+    /// <summary>
+    /// method that returns rowspan and colspan
+    /// </summary>
     [Parameter]
     [ECMAScriptName("spanMethod")]
     public ElTableSpanMethodCallback? SpanMethod { get; set; }
 
+    /// <summary>
+    /// controls the behavior of master checkbox in multi-select tables when only some rows are selected (but not all). If true, all rows will be selected, else deselected
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectOnIndeterminate")]
     public bool? SelectOnIndeterminate { get; set; }
 
+    /// <summary>
+    /// horizontal indentation of tree data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
 
+    /// <summary>
+    /// whether to lazy loading data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// method for loading child row data, only works when `lazy` is true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("load")]
     public ElTableLoadCallback? Load { get; set; }
 
+    /// <summary>
+    /// configuration for rendering nested data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("treeProps")]
     public ElTableTreeProps? TreeProps { get; set; }
 
+    /// <summary>
+    /// sets the algorithm used to lay out table cells, rows, and columns
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tableLayout")]
     public string? TableLayout { get; set; }
 
+    /// <summary>
+    /// always show scrollbar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollbarAlwaysOn")]
     public bool? ScrollbarAlwaysOn { get; set; }
 
+    /// <summary>
+    /// whether to hide extra content and show them in a tooltip when hovering on the cell.It will affect all the table columns, refer to table [tooltip-options](#table-attributes)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showOverflowTooltip")]
     public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
 
+    /// <summary>
+    /// ensure main axis minimum-size doesn't follow the content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("flexible")]
     public bool? Flexible { get; set; }
 
+    /// <summary>
+    /// body scrollbar's wrap container tabindex
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollbarTabindex")]
     public VueStringNumberValue? ScrollbarTabindex { get; set; }
 
+    /// <summary>
+    /// whether to allow drag the last column
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowDragLastColumn")]
     public bool? AllowDragLastColumn { get; set; }
 
+    /// <summary>
+    /// customize tooltip content when using `show-overflow-tooltip`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tooltipFormatter")]
     public ElTableTooltipFormatter? TooltipFormatter { get; set; }
 
+    /// <summary>
+    /// whether to preserve expanded row content in DOM when collapsed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("preserveExpandedContent")]
     public bool? PreserveExpandedContent { get; set; }
 
+    /// <summary>
+    /// whether to use native scrollbars
+    /// </summary>
     [Parameter]
     [ECMAScriptName("nativeScrollbar")]
     public bool? NativeScrollbar { get; set; }
 
+    /// <summary>
+    /// enable expandable rows, works when the table has a column type="expand"
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowExpandable")]
     public ElTableRowExpandableCallback? RowExpandable { get; set; }
 
+    /// <summary>
+    /// Contents to be inserted after the last row. You may need this slot if you want to implement infinite scroll for the table. This slot will be displayed above the summary row if there is one.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("append")]
     public RenderFragment? Append { get; set; }
 
+    /// <summary>
+    /// you can customize content when data is empty.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
+    /// <summary>
+    /// triggers when user clicks the checkbox in a row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelect")]
     public EventCallback OnSelect { get; set; }
 
+    /// <summary>
+    /// triggers when user clicks the checkbox in table header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelectAll")]
     public EventCallback OnSelectAll { get; set; }
 
+    /// <summary>
+    /// triggers when selection changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSelectionChange")]
     public EventCallback OnSelectionChange { get; set; }
 
+    /// <summary>
+    /// triggers when hovering into a cell
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellMouseEnter")]
     public EventCallback OnCellMouseEnter { get; set; }
 
+    /// <summary>
+    /// triggers when hovering out of a cell
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellMouseLeave")]
     public EventCallback OnCellMouseLeave { get; set; }
 
+    /// <summary>
+    /// triggers when clicking a cell
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellClick")]
     public EventCallback OnCellClick { get; set; }
 
+    /// <summary>
+    /// triggers when double clicking a cell
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellDblclick")]
     public EventCallback OnCellDblclick { get; set; }
 
+    /// <summary>
+    /// triggers when user right clicks on a cell
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCellContextmenu")]
     public EventCallback OnCellContextmenu { get; set; }
 
+    /// <summary>
+    /// triggers when clicking a row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowClick")]
     public EventCallback OnRowClick { get; set; }
 
+    /// <summary>
+    /// triggers when user right clicks on a row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowContextmenu")]
     public EventCallback OnRowContextmenu { get; set; }
 
+    /// <summary>
+    /// triggers when double clicking a row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowDblclick")]
     public EventCallback OnRowDblclick { get; set; }
 
+    /// <summary>
+    /// triggers when clicking a column header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onHeaderClick")]
     public EventCallback OnHeaderClick { get; set; }
 
+    /// <summary>
+    /// triggers when user right clicks on a column header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onHeaderContextmenu")]
     public EventCallback OnHeaderContextmenu { get; set; }
 
+    /// <summary>
+    /// triggers when Table's sorting changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSortChange")]
     public EventCallback OnSortChange { get; set; }
 
+    /// <summary>
+    /// triggers when the table's filter changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFilterChange")]
     public EventCallback OnFilterChange { get; set; }
 
+    /// <summary>
+    /// triggers when current row changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
+    /// <summary>
+    /// triggers after changing a column's width by dragging the column header's border
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onHeaderDragend")]
     public EventCallback OnHeaderDragend { get; set; }
 
+    /// <summary>
+    /// triggers when user expands or collapses a row (for expandable table, second param is expandedRows; for tree Table, second param is expanded)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpandChange")]
     public EventCallback OnExpandChange { get; set; }
 
+    /// <summary>
+    /// Invoked after scrolled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback OnScroll { get; set; }
@@ -5976,130 +9874,226 @@ public sealed class ElTable : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTableColumn")]
 public sealed class ElTableColumn : ElContentComponentBase
 {
+    /// <summary>
+    /// type of the column. If set to `selection`, the column will display checkbox. If set to `index`, the column will display index of the row (staring from 1). If set to `expand`, the column will display expand icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// customize indices for each row, works on columns with `type=index`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("index")]
     public ElTableColumnIndexValue? Index { get; set; }
 
+    /// <summary>
+    /// column label
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
 
+    /// <summary>
+    /// column's key. If you need to use the filter-change event, you need this attribute to identify which column is being filtered
+    /// </summary>
     [Parameter]
     [ECMAScriptName("columnKey")]
     public string? ColumnKey { get; set; }
 
+    /// <summary>
+    /// field name. You can also use its alias: `property`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prop")]
     public string? Prop { get; set; }
 
+    /// <summary>
+    /// column width
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public VueStringNumberValue? Width { get; set; }
 
+    /// <summary>
+    /// column minimum width. Columns with `width` has a fixed width, while columns with `min-width` has a width that is distributed in proportion
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minWidth")]
     public VueStringNumberValue? MinWidth { get; set; }
 
+    /// <summary>
+    /// whether column is fixed at left / right. Will be fixed at left if `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fixed")]
     public VueBooleanStringValue? Fixed { get; set; }
 
+    /// <summary>
+    /// render function for table header of this column
+    /// </summary>
     [Parameter]
     [ECMAScriptName("renderHeader")]
     public ElTableColumnRenderHeaderCallback? RenderHeader { get; set; }
 
+    /// <summary>
+    /// whether column can be sorted. Remote sorting can be done by setting this attribute to 'custom' and listening to the `sort-change` event of Table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortable")]
     public VueBooleanStringValue? Sortable { get; set; }
 
+    /// <summary>
+    /// sorting method, works when `sortable` is `true`. Should return a number, just like Array.sort
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortMethod")]
     public ElTableColumnSortMethodCallback? SortMethod { get; set; }
 
+    /// <summary>
+    /// specify which property to sort by, works when `sortable` is `true` and `sort-method` is `undefined`. If set to an Array, the column will sequentially sort by the next property if the previous one is equal
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortBy")]
     public ElTableColumnSortByValue? SortBy { get; set; }
 
+    /// <summary>
+    /// the order of the sorting strategies used when sorting the data, works when `sortable` is `true`. Accepts an array, as the user clicks on the header, the column is sorted in order of the elements in the array
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortOrders")]
     public ElTableSortOrder?[]? SortOrders { get; set; }
 
+    /// <summary>
+    /// whether column width can be resized, works when `border` of `el-table` is `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("resizable")]
     public bool? Resizable { get; set; }
 
+    /// <summary>
+    /// function that formats cell content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("formatter")]
     public ElTableColumnFormatterCallback? Formatter { get; set; }
 
+    /// <summary>
+    /// whether to hide extra content and show them in a tooltip when hovering on the cell
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showOverflowTooltip")]
     public ElTableOverflowTooltipValue? ShowOverflowTooltip { get; set; }
 
+    /// <summary>
+    /// alignment
+    /// </summary>
     [Parameter]
     [ECMAScriptName("align")]
     public string? Align { get; set; }
 
+    /// <summary>
+    /// alignment of the table header. If omitted, the value of the above `align` attribute will be applied
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerAlign")]
     public string? HeaderAlign { get; set; }
 
+    /// <summary>
+    /// class name of cells in the column
+    /// </summary>
     [Parameter]
     [ECMAScriptName("className")]
     public string? ClassName { get; set; }
 
+    /// <summary>
+    /// class name of the label of this column
+    /// </summary>
     [Parameter]
     [ECMAScriptName("labelClassName")]
     public string? LabelClassName { get; set; }
 
+    /// <summary>
+    /// function that determines if a certain row can be selected, works when `type` is 'selection'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("selectable")]
     public ElTableColumnSelectableCallback? Selectable { get; set; }
 
+    /// <summary>
+    /// whether to reserve selection after data refreshing, works when `type` is 'selection'. Note that `row-key` is required for this to work
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveSelection")]
     public bool? ReserveSelection { get; set; }
 
+    /// <summary>
+    /// an array of data filtering options. For each element in this array, `text` and `value` are required
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filters")]
     public ElTableFilterItem[]? Filters { get; set; }
 
+    /// <summary>
+    /// placement for the filter dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterPlacement")]
     public string? FilterPlacement { get; set; }
 
+    /// <summary>
+    /// className for the filter dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterClassName")]
     public string? FilterClassName { get; set; }
 
+    /// <summary>
+    /// whether data filtering supports multiple options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterMultiple")]
     public bool? FilterMultiple { get; set; }
 
+    /// <summary>
+    /// data filtering method. If `filter-multiple` is on, this method will be called multiple times for each row, and a row will display if one of the calls returns `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterMethod")]
     public ElTableColumnFilterMethodCallback? FilterMethod { get; set; }
 
+    /// <summary>
+    /// filter value for selected data, might be useful when table header is rendered with `render-header`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filteredValue")]
     public string[]? FilteredValue { get; set; }
 
+    /// <summary>
+    /// customize tooltip content when using `show-overflow-tooltip`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tooltipFormatter")]
     public ElTableTooltipFormatter? TooltipFormatter { get; set; }
 
+    /// <summary>
+    /// Custom content for table header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// Custom content for filter icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filter-icon")]
     public RenderFragment? FilterIcon { get; set; }
 
+    /// <summary>
+    /// Custom content for expand columns. The `expandable` property is supported starting from v2.13.2.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expand")]
     public RenderFragment? Expand { get; set; }
@@ -6112,122 +10106,212 @@ public sealed class ElTableColumn : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTableV2")]
 public sealed class ElTableV2 : ElComponentBase
 {
+    /// <summary>
+    /// Number of rows rendered in advance to boost the performance
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cache")]
     public Number? Cache { get; set; }
 
+    /// <summary>
+    /// The estimated row height for rendering dynamic height rows
+    /// </summary>
     [Parameter]
     [ECMAScriptName("estimatedRowHeight")]
     public Number? EstimatedRowHeight { get; set; }
 
+    /// <summary>
+    /// Customized class name passed to header wrapper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerClass")]
     public ElTableV2ClassValue? HeaderClass { get; set; }
 
+    /// <summary>
+    /// Customized props name passed to header component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerProps")]
     public ElTableV2DynamicPropsValue? HeaderProps { get; set; }
 
+    /// <summary>
+    /// Customized props name passed to header cell component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerCellProps")]
     public ElTableV2DynamicPropsValue? HeaderCellProps { get; set; }
 
+    /// <summary>
+    /// The height of the header is set by `height`. If given an array, it renders header rows equal to its length
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headerHeight")]
     public ElTableV2HeaderHeightValue? HeaderHeight { get; set; }
 
+    /// <summary>
+    /// The height of the footer element, when provided, will be part to the calculation of the table's height.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footerHeight")]
     public Number? FooterHeight { get; set; }
 
+    /// <summary>
+    /// Customized class name passed to row wrapper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowClass")]
     public ElTableV2ClassValue? RowClass { get; set; }
 
+    /// <summary>
+    /// The key of each row, if not provided, will be the index of the row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowKey")]
     public ElTableV2KeyValue? RowKey { get; set; }
 
+    /// <summary>
+    /// Customized props name passed to row component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowProps")]
     public ElTableV2DynamicPropsValue? RowProps { get; set; }
 
+    /// <summary>
+    /// The height of each row, used for calculating the total height of the table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowHeight")]
     public Number? RowHeight { get; set; }
 
+    /// <summary>
+    /// A collection of handlers attached to each row
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rowEventHandlers")]
     public ElTableV2RowEventHandlers? RowEventHandlers { get; set; }
 
+    /// <summary>
+    /// extra props passed to each cell (except header cells)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("cellProps")]
     public ElTableV2DynamicPropsValue? CellProps { get; set; }
 
+    /// <summary>
+    /// An array of column definitions.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("columns")]
     public ElTableV2Column[]? Columns { get; set; }
 
+    /// <summary>
+    /// An array of data to be rendered in the table.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public ElTableV2DataItem[]? Data { get; set; }
 
+    /// <summary>
+    /// A method to customize data fetch from the data source.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dataGetter")]
     public ElTableV2DataGetter? DataGetter { get; set; }
 
+    /// <summary>
+    /// Data for rendering rows above the main content and below the header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fixedData")]
     public ElTableV2DataItem[]? FixedData { get; set; }
 
+    /// <summary>
+    /// The column key indicates which row is expandable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandColumnKey")]
     public string? ExpandColumnKey { get; set; }
 
+    /// <summary>
+    /// An array of keys for expanded rows, can be used with `v-model`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandedRowKeys")]
     public ElTableV2KeyValue[]? ExpandedRowKeys { get; set; }
 
+    /// <summary>
+    /// An array of keys for default expanded rows, **NON REACTIVE**
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultExpandedRowKeys")]
     public ElTableV2KeyValue[]? DefaultExpandedRowKeys { get; set; }
 
+    /// <summary>
+    /// Flag indicates the table column's width to be fixed or flexible.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fixed")]
     public bool? Fixed { get; set; }
 
+    /// <summary>
+    /// Width of the table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public Number? Width { get; set; }
 
+    /// <summary>
+    /// Height of the table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
+    /// <summary>
+    /// Maximum height of the table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxHeight")]
     public Number? MaxHeight { get; set; }
 
+    /// <summary>
+    /// horizontal indentation of tree table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indentSize")]
     public Number? IndentSize { get; set; }
 
+    /// <summary>
+    /// Indicates the horizontal scrollbar's size for the table, used to prevent the horizontal and vertical scrollbar to collapse
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hScrollbarSize")]
     public Number? HScrollbarSize { get; set; }
 
+    /// <summary>
+    /// Indicates the vertical scrollbar's size for the table, used to prevent the horizontal and vertical scrollbar to collapse
+    /// </summary>
     [Parameter]
     [ECMAScriptName("vScrollbarSize")]
     public Number? VScrollbarSize { get; set; }
 
+    /// <summary>
+    /// If true, the scrollbar will always be shown instead of when mouse is placed above the table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollbarAlwaysOn")]
     public bool? ScrollbarAlwaysOn { get; set; }
 
+    /// <summary>
+    /// Sort indicator
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortBy")]
     public ElTableV2SortBy? SortBy { get; set; }
 
+    /// <summary>
+    /// Multiple sort indicator
+    /// </summary>
     [Parameter]
     [ECMAScriptName("sortState")]
     public ElTableV2SortState? SortState { get; set; }
@@ -6260,26 +10344,44 @@ public sealed class ElTableV2 : ElComponentBase
     [ECMAScriptName("overlay")]
     public RenderFragment? Overlay { get; set; }
 
+    /// <summary>
+    /// Invoked when column sorted
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onColumnSort")]
     public EventCallback OnColumnSort { get; set; }
 
+    /// <summary>
+    /// Invoked when expanded rows changed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExpandedRowsChange")]
     public EventCallback OnExpandedRowsChange { get; set; }
 
+    /// <summary>
+    /// Invoked when the end of the table is reached. The callback contain the remain distance, it is the usually the scrollbar height.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
 
+    /// <summary>
+    /// Invoked after scrolling
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onScroll")]
     public EventCallback OnScroll { get; set; }
 
+    /// <summary>
+    /// Invoked when rows are rendered
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowsRendered")]
     public EventCallback OnRowsRendered { get; set; }
 
+    /// <summary>
+    /// Invoked when expand/collapse the tree node by clicking the arrow icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRowExpand")]
     public EventCallback OnRowExpand { get; set; }
@@ -6292,70 +10394,121 @@ public sealed class ElTableV2 : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTabs")]
 public sealed class ElTabs : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value, name of the selected tab, the default value is the name of first tab
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// The value of the tab that should be active when initially rendered. (avoid initial transition)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultValue")]
     public VueStringNumberValue? DefaultValue { get; set; }
 
+    /// <summary>
+    /// type of Tab
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public ElTabsType? Type { get; set; }
 
+    /// <summary>
+    /// whether Tab is closable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
+    /// <summary>
+    /// whether Tab is addable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("addable")]
     public bool? Addable { get; set; }
 
+    /// <summary>
+    /// whether Tab is addable and closable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
+    /// <summary>
+    /// position of tabs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabPosition")]
     public ElPopperPlacementSide? TabPosition { get; set; }
 
+    /// <summary>
+    /// whether width of tab automatically fits its container
+    /// </summary>
     [Parameter]
     [ECMAScriptName("stretch")]
     public bool? Stretch { get; set; }
 
+    /// <summary>
+    /// hook function before switching tab. If `false` is returned or a `Promise` is returned and then is rejected, switching will be prevented
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeLeave")]
     public ElTabsBeforeLeaveCallback? BeforeLeave { get; set; }
 
+    /// <summary>
+    /// tabs tabindex
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// customize add button icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("add-icon")]
     public RenderFragment? AddIcon { get; set; }
 
+    /// <summary>
+    /// triggers when a tab is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onTabClick")]
     public EventCallback OnTabClick { get; set; }
 
+    /// <summary>
+    /// triggers when `activeName` is changed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onTabChange")]
     public EventCallback OnTabChange { get; set; }
 
+    /// <summary>
+    /// triggers when tab-remove button is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onTabRemove")]
     public EventCallback OnTabRemove { get; set; }
 
+    /// <summary>
+    /// triggers when tab-add button is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onTabAdd")]
     public EventCallback OnTabAdd { get; set; }
 
+    /// <summary>
+    /// triggers when tab-add button or tab-remove is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEdit")]
     public EventCallback OnEdit { get; set; }
 
+    /// <summary>
+    /// binding value, name of the selected tab, the default value is the name of first tab
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue?> ModelValueChanged { get; set; }
@@ -6368,42 +10521,72 @@ public sealed class ElTabs : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTag")]
 public sealed class ElTag : ElContentComponentBase
 {
+    /// <summary>
+    /// type of Tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public ElTagType? Type { get; set; }
 
+    /// <summary>
+    /// whether Tag can be removed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("closable")]
     public bool? Closable { get; set; }
 
+    /// <summary>
+    /// whether to disable animations
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disableTransitions")]
     public bool? DisableTransitions { get; set; }
 
+    /// <summary>
+    /// whether Tag has a highlighted border
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hit")]
     public bool? Hit { get; set; }
 
+    /// <summary>
+    /// background color of the Tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// size of Tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// theme of Tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public ElTagEffect? Effect { get; set; }
 
+    /// <summary>
+    /// whether Tag is rounded
+    /// </summary>
     [Parameter]
     [ECMAScriptName("round")]
     public bool? Round { get; set; }
 
+    /// <summary>
+    /// triggers when Tag is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
     public EventCallback OnClick { get; set; }
 
+    /// <summary>
+    /// triggers when Tag is removed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClose")]
     public EventCallback OnClose { get; set; }
@@ -6416,22 +10599,37 @@ public sealed class ElTag : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElText")]
 public sealed class ElText : ElContentComponentBase
 {
+    /// <summary>
+    /// text type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public ElSemanticType? Type { get; set; }
 
+    /// <summary>
+    /// text size
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// render ellipsis
+    /// </summary>
     [Parameter]
     [ECMAScriptName("truncated")]
     public bool? Truncated { get; set; }
 
+    /// <summary>
+    /// maximum lines
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lineClamp")]
     public VueStringNumberValue? LineClamp { get; set; }
 
+    /// <summary>
+    /// custom element tag
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public string? Tag { get; set; }
@@ -6444,138 +10642,240 @@ public sealed class ElText : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTimePicker")]
 public sealed class ElTimePicker : ElComponentBase
 {
+    /// <summary>
+    /// binding value, if it is an array, the length should be 2
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberDateArrayableValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether TimePicker is read only
+    /// </summary>
     [Parameter]
     [ECMAScriptName("readonly")]
     public bool? Readonly { get; set; }
 
+    /// <summary>
+    /// whether TimePicker is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether the input is editable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
+    /// <summary>
+    /// whether to show clear button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// size of Input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// placeholder in non-range mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// placeholder for the start time in range mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("startPlaceholder")]
     public string? StartPlaceholder { get; set; }
 
+    /// <summary>
+    /// placeholder for the end time in range mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("endPlaceholder")]
     public string? EndPlaceholder { get; set; }
 
+    /// <summary>
+    /// whether to pick a time range
+    /// </summary>
     [Parameter]
     [ECMAScriptName("isRange")]
     public bool? IsRange { get; set; }
 
+    /// <summary>
+    /// whether to pick time using arrow buttons
+    /// </summary>
     [Parameter]
     [ECMAScriptName("arrowControl")]
     public bool? ArrowControl { get; set; }
 
+    /// <summary>
+    /// custom class name for TimePicker's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for TimePicker's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// Customized popper option see more at [popper.js](https://popper.js.org/docs/v2/)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// list of possible positions for Tooltip [popper.js](https://popper.js.org/docs/v2/modifiers/flip/#fallbackplacements)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
+    /// <summary>
+    /// position of dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public string? Placement { get; set; }
 
+    /// <summary>
+    /// range separator
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rangeSeparator")]
     public string? RangeSeparator { get; set; }
 
+    /// <summary>
+    /// format of the displayed value in the input box
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// optional, default date of the calendar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultValue")]
     public VueDateSingleOrRangeValue? DefaultValue { get; set; }
 
+    /// <summary>
+    /// optional, format of binding value. If not specified, the binding value will be a Date object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueFormat")]
     public string? ValueFormat { get; set; }
 
+    /// <summary>
+    /// same as `id` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public VueStringSingleOrRangeValue? Id { get; set; }
 
+    /// <summary>
+    /// same as `name` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public VueStringSingleOrRangeValue? Name { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// Custom prefix icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
 
+    /// <summary>
+    /// Custom clear icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
+    /// <summary>
+    /// To specify the array of hours that cannot be selected
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabledHours")]
     public ElTimePickerDisabledHoursCallback? DisabledHours { get; set; }
 
+    /// <summary>
+    /// To specify the array of minutes that cannot be selected
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabledMinutes")]
     public ElTimePickerDisabledMinutesCallback? DisabledMinutes { get; set; }
 
+    /// <summary>
+    /// To specify the array of seconds that cannot be selected
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabledSeconds")]
     public ElTimePickerDisabledSecondsCallback? DisabledSeconds { get; set; }
 
+    /// <summary>
+    /// whether time-picker dropdown is teleported to the body
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// input tabindex
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// Whether to auto-fill the input with the current time on focus when no value is selected
+    /// </summary>
     [Parameter]
     [ECMAScriptName("saveOnBlur")]
     public bool? SaveOnBlur { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public string? Label { get; set; }
@@ -6592,26 +10892,44 @@ public sealed class ElTimePicker : ElComponentBase
     [ECMAScriptName("timeFormat")]
     public string? TimeFormat { get; set; }
 
+    /// <summary>
+    /// triggers when user confirms the value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when the clear icon is clicked in a clearable TimePicker
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// triggers when the TimePicker's dropdown appears/disappears
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
+    /// <summary>
+    /// binding value, if it is an array, the length should be 2
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberDateArrayableValue?> ModelValueChanged { get; set; }
@@ -6624,106 +10942,184 @@ public sealed class ElTimePicker : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTimeSelect")]
 public sealed class ElTimeSelect : ElComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public string? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether TimeSelect is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// whether the input is editable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("editable")]
     public bool? Editable { get; set; }
 
+    /// <summary>
+    /// whether to show clear button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// whether `end` is included in options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("includeEndTime")]
     public bool? IncludeEndTime { get; set; }
 
+    /// <summary>
+    /// size of Input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public ElComponentSize? Size { get; set; }
 
+    /// <summary>
+    /// placeholder in non-range mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// same as `name` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// Tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public string? Effect { get; set; }
 
+    /// <summary>
+    /// custom prefix icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefixIcon")]
     public VueStringComponentValue? PrefixIcon { get; set; }
 
+    /// <summary>
+    /// custom clear icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
+    /// <summary>
+    /// start time
+    /// </summary>
     [Parameter]
     [ECMAScriptName("start")]
     public string? Start { get; set; }
 
+    /// <summary>
+    /// end time
+    /// </summary>
     [Parameter]
     [ECMAScriptName("end")]
     public string? End { get; set; }
 
+    /// <summary>
+    /// time step
+    /// </summary>
     [Parameter]
     [ECMAScriptName("step")]
     public string? Step { get; set; }
 
+    /// <summary>
+    /// minimum time, any time before this time will be disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("minTime")]
     public string? MinTime { get; set; }
 
+    /// <summary>
+    /// maximum time, any time after this time will be disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxTime")]
     public string? MaxTime { get; set; }
 
+    /// <summary>
+    /// set format of time
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// custom class name for TimeSelect's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for TimeSelect's dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// triggers when user confirms the value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when the clear icon is clicked in a clearable TimeSelect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<string?> ModelValueChanged { get; set; }
@@ -6736,10 +11132,16 @@ public sealed class ElTimeSelect : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTimeline")]
 public sealed class ElTimeline : ElContentComponentBase
 {
+    /// <summary>
+    /// whether reverse order
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reverse")]
     public bool? Reverse { get; set; }
 
+    /// <summary>
+    /// relative position of timeline and content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("mode")]
     public ElTimelineMode? Mode { get; set; }
@@ -6752,42 +11154,72 @@ public sealed class ElTimeline : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTimelineItem")]
 public sealed class ElTimelineItem : ElContentComponentBase
 {
+    /// <summary>
+    /// timestamp content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("timestamp")]
     public string? Timestamp { get; set; }
 
+    /// <summary>
+    /// whether to show timestamp
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideTimestamp")]
     public bool? HideTimestamp { get; set; }
 
+    /// <summary>
+    /// whether vertically centered
+    /// </summary>
     [Parameter]
     [ECMAScriptName("center")]
     public bool? Center { get; set; }
 
+    /// <summary>
+    /// position of timestamp
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public ElTopBottomPlacement? Placement { get; set; }
 
+    /// <summary>
+    /// node type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("type")]
     public ElSemanticType? Type { get; set; }
 
+    /// <summary>
+    /// background color of node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// node size
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// icon is hollow
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hollow")]
     public bool? Hollow { get; set; }
 
+    /// <summary>
+    /// customize defined node for timeline item
+    /// </summary>
     [Parameter]
     [ECMAScriptName("dot")]
     public RenderFragment? Dot { get; set; }
@@ -6800,130 +11232,226 @@ public sealed class ElTimelineItem : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTooltip")]
 public sealed class ElTooltip : ElContentComponentBase
 {
+    /// <summary>
+    /// Which element the tooltip CONTENT appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// Tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
+    /// <summary>
+    /// Display content, can be overridden by `slot#content`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public string? Content { get; set; }
 
+    /// <summary>
+    /// Whether `content` is treated as HTML string
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rawContent")]
     public bool? RawContent { get; set; }
 
+    /// <summary>
+    /// Position of Tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
+    /// <summary>
+    /// List of possible positions for Tooltip [popper.js](https://popper.js.org/docs/v2/modifiers/flip/#fallbackplacements)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
+    /// <summary>
+    /// Visibility of Tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("visible")]
     public bool? Visible { get; set; }
 
+    /// <summary>
+    /// Whether Tooltip is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// Offset of the Tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
+    /// <summary>
+    /// Animation name
+    /// </summary>
     [Parameter]
     [ECMAScriptName("transition")]
     public string? Transition { get; set; }
 
+    /// <summary>
+    /// [popper.js](https://popper.js.org/docs/v2/) parameters
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// Controls the offset (padding) of the tooltip’s arrow relative to the popper.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("arrowOffset")]
     public Number? ArrowOffset { get; set; }
 
+    /// <summary>
+    /// Delay of appearance, in millisecond, not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showAfter")]
     public Number? ShowAfter { get; set; }
 
+    /// <summary>
+    /// Whether the tooltip content has an arrow
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// Delay of disappear, in millisecond, not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("hideAfter")]
     public Number? HideAfter { get; set; }
 
+    /// <summary>
+    /// Timeout in milliseconds to hide tooltip, not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoClose")]
     public Number? AutoClose { get; set; }
 
+    /// <summary>
+    /// Custom class name for Tooltip's popper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// Custom style for Tooltip's popper
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// Whether the mouse can enter the tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("enterable")]
     public bool? Enterable { get; set; }
 
+    /// <summary>
+    /// Whether tooltip content is teleported, if `true` it will be teleported to where `append-to` sets
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// How should the tooltip be triggered (to show), not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public ElTooltipTriggerValue? Trigger { get; set; }
 
+    /// <summary>
+    /// Indicates whether virtual triggering is enabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("virtualTriggering")]
     public bool? VirtualTriggering { get; set; }
 
+    /// <summary>
+    /// Indicates the reference element to which the tooltip is attached
+    /// </summary>
     [Parameter]
     [ECMAScriptName("virtualRef")]
     public VueTeleportTarget? VirtualRef { get; set; }
 
+    /// <summary>
+    /// When you click the mouse to focus on the trigger element, you can define a set of keyboard codes to control the display of tooltip through the keyboard, not valid in controlled mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("triggerKeys")]
     public string[]? TriggerKeys { get; set; }
 
+    /// <summary>
+    /// When tooltip inactive and `persistent` is `false` , tooltip will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// Same as `aria-label`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// When triggering tooltips through hover, whether to focus the trigger element, which improves accessibility
+    /// </summary>
     [Parameter]
     [ECMAScriptName("focusOnTarget")]
     public bool? FocusOnTarget { get; set; }
 
+    /// <summary>
+    /// Customize content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public RenderFragment? ContentSlot { get; set; }
 
+    /// <summary>
+    /// Triggers before tooltip is shown. Passes trigger reason as argument.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBeforeShow")]
     public EventCallback OnBeforeShow { get; set; }
 
+    /// <summary>
+    /// Triggers when tooltip is shown. Passes trigger reason as argument.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onShow")]
     public EventCallback OnShow { get; set; }
 
+    /// <summary>
+    /// Triggers before tooltip is hidden. Passes trigger reason as argument.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBeforeHide")]
     public EventCallback OnBeforeHide { get; set; }
 
+    /// <summary>
+    /// Triggers when tooltip is hidden. Passes trigger reason as argument.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onHide")]
     public EventCallback OnHide { get; set; }
@@ -6952,98 +11480,170 @@ public sealed class ElTourStep : ElComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTransfer")]
 public sealed class ElTransfer : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueStringNumberValue[]? ModelValue { get; set; }
 
+    /// <summary>
+    /// data source
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public ElTransferDataItem[]? Data { get; set; }
 
+    /// <summary>
+    /// whether Transfer is filterable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
+    /// <summary>
+    /// placeholder for the filter input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterPlaceholder")]
     public string? FilterPlaceholder { get; set; }
 
+    /// <summary>
+    /// custom filter method
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterMethod")]
     public ElTransferFilterMethod? FilterMethod { get; set; }
 
+    /// <summary>
+    /// order strategy for elements in the target list. If set to `original`, the elements will keep the same order as the data source. If set to `push`, the newly added elements will be pushed to the bottom. If set to `unshift`, the newly added elements will be inserted on the top
+    /// </summary>
     [Parameter]
     [ECMAScriptName("targetOrder")]
     public ElTransferTargetOrder? TargetOrder { get; set; }
 
+    /// <summary>
+    /// custom list titles
+    /// </summary>
     [Parameter]
     [ECMAScriptName("titles")]
     public ElTransferTextPair? Titles { get; set; }
 
+    /// <summary>
+    /// custom button texts
+    /// </summary>
     [Parameter]
     [ECMAScriptName("buttonTexts")]
     public ElTransferTextPair? ButtonTexts { get; set; }
 
+    /// <summary>
+    /// custom render function for data items
+    /// </summary>
     [Parameter]
     [ECMAScriptName("renderContent")]
     public ElTransferRenderContent? RenderContent { get; set; }
 
+    /// <summary>
+    /// texts for checking status in list header
+    /// </summary>
     [Parameter]
     [ECMAScriptName("format")]
     public ElTransferFormat? Format { get; set; }
 
+    /// <summary>
+    /// prop aliases for data source
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElTransferPropsAlias? Props { get; set; }
 
+    /// <summary>
+    /// key array of initially checked data items of the left list
+    /// </summary>
     [Parameter]
     [ECMAScriptName("leftDefaultChecked")]
     public VueStringNumberValue[]? LeftDefaultChecked { get; set; }
 
+    /// <summary>
+    /// key array of initially checked data items of the right list
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rightDefaultChecked")]
     public VueStringNumberValue[]? RightDefaultChecked { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// whether to enable virtual scrolling
+    /// </summary>
     [Parameter]
     [ECMAScriptName("virtualScroll")]
     public bool? VirtualScroll { get; set; }
 
+    /// <summary>
+    /// item height for virtual scrolling
+    /// </summary>
     [Parameter]
     [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
 
+    /// <summary>
+    /// content of left list footer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("left-footer")]
     public RenderFragment? LeftFooter { get; set; }
 
+    /// <summary>
+    /// content of right list footer
+    /// </summary>
     [Parameter]
     [ECMAScriptName("right-footer")]
     public RenderFragment? RightFooter { get; set; }
 
+    /// <summary>
+    /// content when left panel is empty or when no data matches the filter
+    /// </summary>
     [Parameter]
     [ECMAScriptName("left-empty")]
     public RenderFragment? LeftEmpty { get; set; }
 
+    /// <summary>
+    /// content when right panel is empty or when no data matches the filter
+    /// </summary>
     [Parameter]
     [ECMAScriptName("right-empty")]
     public RenderFragment? RightEmpty { get; set; }
 
+    /// <summary>
+    /// triggers when data items change in the right list
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when end user changes the checked state of any data item in the left list
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onLeftCheckChange")]
     public EventCallback OnLeftCheckChange { get; set; }
 
+    /// <summary>
+    /// triggers when end user changes the checked state of any data item in the right list
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRightCheckChange")]
     public EventCallback OnRightCheckChange { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueStringNumberValue[]?> ModelValueChanged { get; set; }
@@ -7056,162 +11656,282 @@ public sealed class ElTransfer : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTree")]
 public sealed class ElTree : ElContentComponentBase
 {
+    /// <summary>
+    /// tree data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public VueValue[]? Data { get; set; }
 
+    /// <summary>
+    /// text displayed when data is void
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyText")]
     public string? EmptyText { get; set; }
 
+    /// <summary>
+    /// unique identity key name for nodes, its value should be unique across the whole tree
+    /// </summary>
     [Parameter]
     [ECMAScriptName("nodeKey")]
     public string? NodeKey { get; set; }
 
+    /// <summary>
+    /// configuration options, see the following table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElTreeOptionProps? Props { get; set; }
 
+    /// <summary>
+    /// whether to render child nodes only after a parent node is expanded for the first time
+    /// </summary>
     [Parameter]
     [ECMAScriptName("renderAfterExpand")]
     public bool? RenderAfterExpand { get; set; }
 
+    /// <summary>
+    /// method for loading subtree data, only works when `lazy` is true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("load")]
     public ElTreeLoadCallback? Load { get; set; }
 
+    /// <summary>
+    /// render function for tree node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("renderContent")]
     public ElTreeRenderContentCallback? RenderContent { get; set; }
 
+    /// <summary>
+    /// whether current node is highlighted
+    /// </summary>
     [Parameter]
     [ECMAScriptName("highlightCurrent")]
     public bool? HighlightCurrent { get; set; }
 
+    /// <summary>
+    /// whether to expand all nodes by default
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultExpandAll")]
     public bool? DefaultExpandAll { get; set; }
 
+    /// <summary>
+    /// whether to expand or collapse node when clicking on the node, if false, then expand or collapse node only when clicking on the arrow icon.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; set; }
 
+    /// <summary>
+    /// whether to check or uncheck node when clicking on the node, if false, the node can only be checked or unchecked by clicking on the checkbox.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkOnClickNode")]
     public bool? CheckOnClickNode { get; set; }
 
+    /// <summary>
+    /// whether to check or uncheck node when clicking on leaf node (last children).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkOnClickLeaf")]
     public bool? CheckOnClickLeaf { get; set; }
 
+    /// <summary>
+    /// whether to expand father node when a child node is expanded
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoExpandParent")]
     public bool? AutoExpandParent { get; set; }
 
+    /// <summary>
+    /// array of keys of initially expanded nodes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultExpandedKeys")]
     public VueStringNumberValue[]? DefaultExpandedKeys { get; set; }
 
+    /// <summary>
+    /// whether node is selectable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showCheckbox")]
     public bool? ShowCheckbox { get; set; }
 
+    /// <summary>
+    /// whether checked state of a node not affects its father and child nodes when `show-checkbox` is `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
+    /// <summary>
+    /// array of keys of initially checked nodes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultCheckedKeys")]
     public VueStringNumberValue[]? DefaultCheckedKeys { get; set; }
 
+    /// <summary>
+    /// key of initially selected node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("currentNodeKey")]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
+    /// <summary>
+    /// this function will be executed on each node when use filter method. if return `false`, tree node will be hidden.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterNodeMethod")]
     public ElTreeFilterNodeMethod? FilterNodeMethod { get; set; }
 
+    /// <summary>
+    /// whether only one node among the same level can be expanded at one time
+    /// </summary>
     [Parameter]
     [ECMAScriptName("accordion")]
     public bool? Accordion { get; set; }
 
+    /// <summary>
+    /// horizontal indentation of nodes in adjacent levels in pixels
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
 
+    /// <summary>
+    /// custom tree node icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// whether to lazy load leaf node, used with `load` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// whether enable tree nodes drag and drop
+    /// </summary>
     [Parameter]
     [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
+    /// <summary>
+    /// this function will be executed before dragging a node. If `false` is returned, the node can not be dragged
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowDrag")]
     public ElTreeAllowDragCallback? AllowDrag { get; set; }
 
+    /// <summary>
+    /// this function will be executed before the dragging node is dropped. If `false` is returned, the dragging node can not be dropped at the target node. `type` has three possible values: 'prev' (inserting the dragging node before the target node), 'inner' (inserting the dragging node to the target node) and 'next' (inserting the dragging node after the target node)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowDrop")]
     public ElTreeAllowDropCallback? AllowDrop { get; set; }
 
+    /// <summary>
+    /// custom content when data is empty
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
+    /// <summary>
+    /// triggers when a node is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeClick")]
     public EventCallback OnNodeClick { get; set; }
 
+    /// <summary>
+    /// triggers when a node is clicked by right button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeContextmenu")]
     public EventCallback OnNodeContextmenu { get; set; }
 
+    /// <summary>
+    /// triggers when the selected state of the node changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCheckChange")]
     public EventCallback OnCheckChange { get; set; }
 
+    /// <summary>
+    /// triggers after clicking the checkbox of a node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCheck")]
     public EventCallback OnCheck { get; set; }
 
+    /// <summary>
+    /// triggers when current node changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
+    /// <summary>
+    /// triggers when current node open
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeExpand")]
     public EventCallback OnNodeExpand { get; set; }
 
+    /// <summary>
+    /// triggers when current node close
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeCollapse")]
     public EventCallback OnNodeCollapse { get; set; }
 
+    /// <summary>
+    /// triggers when dragging starts
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragStart")]
     public EventCallback OnNodeDragStart { get; set; }
 
+    /// <summary>
+    /// triggers when the dragging node enters another node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragEnter")]
     public EventCallback OnNodeDragEnter { get; set; }
 
+    /// <summary>
+    /// triggers when the dragging node leaves a node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragLeave")]
     public EventCallback OnNodeDragLeave { get; set; }
 
+    /// <summary>
+    /// triggers when dragging over a node (like mouseover event)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragOver")]
     public EventCallback OnNodeDragOver { get; set; }
 
+    /// <summary>
+    /// triggers when dragging ends
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragEnd")]
     public EventCallback OnNodeDragEnd { get; set; }
 
+    /// <summary>
+    /// triggers after the dragging node is dropped
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDrop")]
     public EventCallback OnNodeDrop { get; set; }
@@ -7232,426 +11952,744 @@ public sealed class ElTreeSelect : ElContentComponentBase
     [ECMAScriptName("tagTooltip")]
     public ElTagTooltipProps? TagTooltip { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public VueBooleanStringNumberObjectArrayableValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// whether multiple-select is activated
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// data of the options, the key of `value` and `label` and `disabled` can be customize by `props`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public VueValue[]? Options { get; set; }
 
+    /// <summary>
+    /// configuration options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElSelectPropsAlias? Props { get; set; }
 
+    /// <summary>
+    /// whether Select is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// unique identity key name for value, required when value is an object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueKey")]
     public string? ValueKey { get; set; }
 
+    /// <summary>
+    /// size of Input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// whether select can be cleared
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// whether to collapse tags to a text when multiple selecting
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
+    /// <summary>
+    /// whether show all selected tags when mouse hover text of collapse-tags. To use this, `collapse-tags` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
+    /// <summary>
+    /// maximum number of options user can select when `multiple` is `true`. No limit when set to 0
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
 
+    /// <summary>
+    /// native input id input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// the name attribute of select input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
+    /// <summary>
+    /// the autocomplete attribute of select input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
+    /// <summary>
+    /// placeholder, default is 'Select'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// whether Select is filterable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
+    /// <summary>
+    /// whether creating new items is allowed. To use this, `filterable` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowCreate")]
     public bool? AllowCreate { get; set; }
 
+    /// <summary>
+    /// custom filter method, the first parameter is the current input value. To use this, `filterable` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterMethod")]
     public ElSelectQueryCallback? FilterMethod { get; set; }
 
+    /// <summary>
+    /// whether options are loaded from server
+    /// </summary>
     [Parameter]
     [ECMAScriptName("remote")]
     public bool? Remote { get; set; }
 
+    /// <summary>
+    /// debounce delay during remote search, in milliseconds
+    /// </summary>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
+    /// <summary>
+    /// function that gets called when the input value changes. Its parameter is the current input value. To use this, `filterable` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("remoteMethod")]
     public ElSelectQueryCallback? RemoteMethod { get; set; }
 
+    /// <summary>
+    /// in remote search method show suffix icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("remoteShowSuffix")]
     public bool? RemoteShowSuffix { get; set; }
 
+    /// <summary>
+    /// whether Select is loading data from server
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// displayed text while loading data from server, default is 'Loading'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingText")]
     public string? LoadingText { get; set; }
 
+    /// <summary>
+    /// displayed text when no data matches the filtering query, you can also use slot `empty`, default is 'No matching data'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("noMatchText")]
     public string? NoMatchText { get; set; }
 
+    /// <summary>
+    /// displayed text when there is no options, you can also use slot `empty`, default is 'No data'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("noDataText")]
     public string? NoDataText { get; set; }
 
+    /// <summary>
+    /// custom class name for Select's dropdown and tags' tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public string? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for Select's dropdown and tags' tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// when `multiple` and `filterable` is true, whether to reserve current keyword after selecting an option
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
+    /// <summary>
+    /// select first matching option on enter key. Use with `filterable` or `remote`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultFirstOption")]
     public bool? DefaultFirstOption { get; set; }
 
+    /// <summary>
+    /// whether select dropdown is teleported, if `true` it will be teleported to where `append-to` sets
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// which element the select dropdown appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// when select dropdown is inactive and `persistent` is `false`, select dropdown will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// for non-filterable Select, this prop decides if the option menu pops up when the input is focused
+    /// </summary>
     [Parameter]
     [ECMAScriptName("automaticDropdown")]
     public bool? AutomaticDropdown { get; set; }
 
+    /// <summary>
+    /// custom clear icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
+    /// <summary>
+    /// whether the width of the dropdown is the same as the input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fitInputWidth")]
     public bool? FitInputWidth { get; set; }
 
+    /// <summary>
+    /// custom suffix icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
 
+    /// <summary>
+    /// tag type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagType")]
     public ElTagType? TagType { get; set; }
 
+    /// <summary>
+    /// tag effect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagEffect")]
     public ElTagEffect? TagEffect { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// offset of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
+    /// <summary>
+    /// whether the dropdown has an arrow
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// position of dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
+    /// <summary>
+    /// list of possible positions for dropdown [popper.js](https://popper.js.org/docs/v2/modifiers/flip/#fallbackplacements)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
+    /// <summary>
+    /// the max tags number to be shown. To use this, `collapse-tags` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
+    /// <summary>
+    /// [popper.js](https://popper.js.org/docs/v2/) parameters
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// animation when dropdown appears/disappears icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixTransition")]
     public bool? SuffixTransition { get; set; }
 
+    /// <summary>
+    /// tabindex for input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// tree data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public VueValue[]? Data { get; set; }
 
+    /// <summary>
+    /// text displayed when data is void
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyText")]
     public string? EmptyText { get; set; }
 
+    /// <summary>
+    /// unique identity key name for nodes, its value should be unique across the whole tree
+    /// </summary>
     [Parameter]
     [ECMAScriptName("nodeKey")]
     public string? NodeKey { get; set; }
 
+    /// <summary>
+    /// whether to render child nodes only after a parent node is expanded for the first time
+    /// </summary>
     [Parameter]
     [ECMAScriptName("renderAfterExpand")]
     public bool? RenderAfterExpand { get; set; }
 
+    /// <summary>
+    /// method for loading subtree data, only works when `lazy` is true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("load")]
     public ElTreeLoadCallback? Load { get; set; }
 
+    /// <summary>
+    /// render function for tree node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("renderContent")]
     public ElTreeRenderContentCallback? RenderContent { get; set; }
 
+    /// <summary>
+    /// whether current node is highlighted
+    /// </summary>
     [Parameter]
     [ECMAScriptName("highlightCurrent")]
     public bool? HighlightCurrent { get; set; }
 
+    /// <summary>
+    /// whether to expand all nodes by default
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultExpandAll")]
     public bool? DefaultExpandAll { get; set; }
 
+    /// <summary>
+    /// whether to expand or collapse node when clicking on the node, if false, then expand or collapse node only when clicking on the arrow icon.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; set; }
 
+    /// <summary>
+    /// whether to check or uncheck node when clicking on the node, if false, the node can only be checked or unchecked by clicking on the checkbox.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkOnClickNode")]
     public bool? CheckOnClickNode { get; set; }
 
+    /// <summary>
+    /// whether to check or uncheck node when clicking on leaf node (last children).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkOnClickLeaf")]
     public bool? CheckOnClickLeaf { get; set; }
 
+    /// <summary>
+    /// whether to expand father node when a child node is expanded
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoExpandParent")]
     public bool? AutoExpandParent { get; set; }
 
+    /// <summary>
+    /// array of keys of initially expanded nodes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultExpandedKeys")]
     public VueStringNumberValue[]? DefaultExpandedKeys { get; set; }
 
+    /// <summary>
+    /// whether node is selectable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showCheckbox")]
     public bool? ShowCheckbox { get; set; }
 
+    /// <summary>
+    /// whether checked state of a node not affects its father and child nodes when `show-checkbox` is `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
+    /// <summary>
+    /// array of keys of initially checked nodes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultCheckedKeys")]
     public VueStringNumberValue[]? DefaultCheckedKeys { get; set; }
 
+    /// <summary>
+    /// key of initially selected node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("currentNodeKey")]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
+    /// <summary>
+    /// this function will be executed on each node when use filter method. if return `false`, tree node will be hidden.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterNodeMethod")]
     public ElTreeFilterNodeMethod? FilterNodeMethod { get; set; }
 
+    /// <summary>
+    /// whether only one node among the same level can be expanded at one time
+    /// </summary>
     [Parameter]
     [ECMAScriptName("accordion")]
     public bool? Accordion { get; set; }
 
+    /// <summary>
+    /// horizontal indentation of nodes in adjacent levels in pixels
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
 
+    /// <summary>
+    /// custom tree node icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// whether to lazy load leaf node, used with `load` attribute
+    /// </summary>
     [Parameter]
     [ECMAScriptName("lazy")]
     public bool? Lazy { get; set; }
 
+    /// <summary>
+    /// whether enable tree nodes drag and drop
+    /// </summary>
     [Parameter]
     [ECMAScriptName("draggable")]
     public bool? Draggable { get; set; }
 
+    /// <summary>
+    /// this function will be executed before dragging a node. If `false` is returned, the node can not be dragged
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowDrag")]
     public ElTreeAllowDragCallback? AllowDrag { get; set; }
 
+    /// <summary>
+    /// this function will be executed before the dragging node is dropped. If `false` is returned, the dragging node can not be dropped at the target node. `type` has three possible values: 'prev' (inserting the dragging node before the target node), 'inner' (inserting the dragging node to the target node) and 'next' (inserting the dragging node after the target node)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowDrop")]
     public ElTreeAllowDropCallback? AllowDrop { get; set; }
 
+    /// <summary>
+    /// content at the top of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// content at the bottom of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// content as Select prefix
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// content when there is no options
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
+    /// <summary>
+    /// content as Select tag, subTags `data`, `selectDisabled` and `deleteTag` introduced in
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
+    /// <summary>
+    /// content as Select loading
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
+    /// <summary>
+    /// content as Select label. `index` introduced in
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? Label { get; set; }
 
+    /// <summary>
+    /// triggers when the selected value changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when the dropdown appears/disappears
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
+    /// <summary>
+    /// triggers when a tag is removed in multiple mode
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
+    /// <summary>
+    /// triggers when the clear icon is clicked in a clearable Select
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when dropdown scrolls
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPopupScroll")]
     public EventCallback OnPopupScroll { get; set; }
 
+    /// <summary>
+    /// triggers when dropdown scroll reaches an end
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<VueBooleanStringNumberObjectArrayableValue?> ModelValueChanged { get; set; }
 
+    /// <summary>
+    /// triggers when a node is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeClick")]
     public EventCallback OnNodeClick { get; set; }
 
+    /// <summary>
+    /// triggers when a node is clicked by right button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeContextmenu")]
     public EventCallback OnNodeContextmenu { get; set; }
 
+    /// <summary>
+    /// triggers when the selected state of the node changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCheckChange")]
     public EventCallback OnCheckChange { get; set; }
 
+    /// <summary>
+    /// triggers after clicking the checkbox of a node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCheck")]
     public EventCallback OnCheck { get; set; }
 
+    /// <summary>
+    /// triggers when current node changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
+    /// <summary>
+    /// triggers when current node open
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeExpand")]
     public EventCallback OnNodeExpand { get; set; }
 
+    /// <summary>
+    /// triggers when current node close
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeCollapse")]
     public EventCallback OnNodeCollapse { get; set; }
 
+    /// <summary>
+    /// triggers when dragging starts
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragStart")]
     public EventCallback OnNodeDragStart { get; set; }
 
+    /// <summary>
+    /// triggers when the dragging node enters another node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragEnter")]
     public EventCallback OnNodeDragEnter { get; set; }
 
+    /// <summary>
+    /// triggers when the dragging node leaves a node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragLeave")]
     public EventCallback OnNodeDragLeave { get; set; }
 
+    /// <summary>
+    /// triggers when dragging over a node (like mouseover event)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragOver")]
     public EventCallback OnNodeDragOver { get; set; }
 
+    /// <summary>
+    /// triggers when dragging ends
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDragEnd")]
     public EventCallback OnNodeDragEnd { get; set; }
 
+    /// <summary>
+    /// triggers after the dragging node is dropped
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDrop")]
     public EventCallback OnNodeDrop { get; set; }
@@ -7664,110 +12702,191 @@ public sealed class ElTreeSelect : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElTreeV2")]
 public sealed class ElTreeV2 : ElContentComponentBase
 {
+    /// <summary>
+    /// tree data
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public VueValue[]? Data { get; set; }
 
+    /// <summary>
+    /// text displayed when data is void
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyText")]
     public string? EmptyText { get; set; }
 
+    /// <summary>
+    /// configuration options, see the following table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElTreeOptionProps? Props { get; set; }
 
+    /// <summary>
+    /// whether current node is highlighted
+    /// </summary>
     [Parameter]
     [ECMAScriptName("highlightCurrent")]
     public bool? HighlightCurrent { get; set; }
 
+    /// <summary>
+    /// whether to expand or collapse node when clicking on the node, if false, then expand or collapse node only when clicking on the arrow icon.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("expandOnClickNode")]
     public bool? ExpandOnClickNode { get; set; }
 
+    /// <summary>
+    /// whether to check or uncheck node when clicking on the node, if false, the node can only be checked or unchecked by clicking on the checkbox.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkOnClickNode")]
     public bool? CheckOnClickNode { get; set; }
 
+    /// <summary>
+    /// whether to check or uncheck node when clicking on leaf node (last children).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkOnClickLeaf")]
     public bool? CheckOnClickLeaf { get; set; }
 
+    /// <summary>
+    /// array of keys of initially expanded nodes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultExpandedKeys")]
     public VueStringNumberValue[]? DefaultExpandedKeys { get; set; }
 
+    /// <summary>
+    /// whether node is selectable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showCheckbox")]
     public bool? ShowCheckbox { get; set; }
 
+    /// <summary>
+    /// whether checked state of a node not affects its father and child nodes when `show-checkbox` is `true`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("checkStrictly")]
     public bool? CheckStrictly { get; set; }
 
+    /// <summary>
+    /// array of keys of initially checked nodes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultCheckedKeys")]
     public VueStringNumberValue[]? DefaultCheckedKeys { get; set; }
 
+    /// <summary>
+    /// key of initially selected node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("currentNodeKey")]
     public VueStringNumberValue? CurrentNodeKey { get; set; }
 
+    /// <summary>
+    /// this function will be executed on each node when use filter method. if return `false`, tree node will be hidden.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterMethod")]
     public ElTreeV2FilterMethod? FilterMethod { get; set; }
 
+    /// <summary>
+    /// horizontal indentation of nodes in adjacent levels in pixels
+    /// </summary>
     [Parameter]
     [ECMAScriptName("indent")]
     public Number? Indent { get; set; }
 
+    /// <summary>
+    /// custom tree node icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("icon")]
     public VueStringComponentValue? Icon { get; set; }
 
+    /// <summary>
+    /// custom tree node height
+    /// </summary>
     [Parameter]
     [ECMAScriptName("itemSize")]
     public Number? ItemSize { get; set; }
 
+    /// <summary>
+    /// always show scrollbar
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollbarAlwaysOn")]
     public bool? ScrollbarAlwaysOn { get; set; }
 
+    /// <summary>
+    /// height of the tree
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
+    /// <summary>
+    /// custom content when data is empty
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
+    /// <summary>
+    /// triggers when a node is clicked
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeClick")]
     public EventCallback OnNodeClick { get; set; }
 
+    /// <summary>
+    /// triggers when drag something and drop on a node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeDrop")]
     public EventCallback OnNodeDrop { get; set; }
 
+    /// <summary>
+    /// triggers when a node is clicked by right button
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeContextmenu")]
     public EventCallback OnNodeContextmenu { get; set; }
 
+    /// <summary>
+    /// triggers when the selected state of the node changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCheckChange")]
     public EventCallback OnCheckChange { get; set; }
 
+    /// <summary>
+    /// triggers after clicking the checkbox of a node
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCheck")]
     public EventCallback OnCheck { get; set; }
 
+    /// <summary>
+    /// triggers when current node changes
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onCurrentChange")]
     public EventCallback OnCurrentChange { get; set; }
 
+    /// <summary>
+    /// triggers when current node open
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeExpand")]
     public EventCallback OnNodeExpand { get; set; }
 
+    /// <summary>
+    /// triggers when current node close
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onNodeCollapse")]
     public EventCallback OnNodeCollapse { get; set; }
@@ -7780,122 +12899,212 @@ public sealed class ElTreeV2 : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElUpload")]
 public sealed class ElUpload : ElContentComponentBase
 {
+    /// <summary>
+    /// request URL.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("action")]
     public string? Action { get; set; }
 
+    /// <summary>
+    /// request headers.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("headers")]
     public VueHeadersValue? Headers { get; set; }
 
+    /// <summary>
+    /// set upload request method.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("method")]
     public string? Method { get; set; }
 
+    /// <summary>
+    /// whether uploading multiple files is permitted.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// additions options of request. support `Awaitable` data and `Function` since v2.3.13.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("data")]
     public ElUploadDataValue? Data { get; set; }
 
+    /// <summary>
+    /// key name for uploaded file.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// whether cookies are sent.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("withCredentials")]
     public bool? WithCredentials { get; set; }
 
+    /// <summary>
+    /// whether to show the uploaded file list.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showFileList")]
     public bool? ShowFileList { get; set; }
 
+    /// <summary>
+    /// whether to activate drag and drop mode.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("drag")]
     public bool? Drag { get; set; }
 
+    /// <summary>
+    /// accepted [file types](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#attr-accept), will not work when `thumbnail-mode === true`.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("accept")]
     public string? Accept { get; set; }
 
+    /// <summary>
+    /// native attribute [crossorigin](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/crossorigin).
+    /// </summary>
     [Parameter]
     [ECMAScriptName("crossorigin")]
     public ElCrossorigin? Crossorigin { get; set; }
 
+    /// <summary>
+    /// hook function when clicking the uploaded files.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onPreview")]
     public ElUploadPreviewCallback? OnPreview { get; set; }
 
+    /// <summary>
+    /// hook function when files are removed.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemove")]
     public ElUploadFileListCallback? OnRemove { get; set; }
 
+    /// <summary>
+    /// hook function when uploaded successfully.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onSuccess")]
     public ElUploadSuccessCallback? OnSuccess { get; set; }
 
+    /// <summary>
+    /// hook function when some errors occurs.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onError")]
     public ElUploadErrorCallback? OnError { get; set; }
 
+    /// <summary>
+    /// hook function when some progress occurs.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onProgress")]
     public ElUploadProgressCallback? OnProgress { get; set; }
 
+    /// <summary>
+    /// hook function when select file or upload file success or upload file fail.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public ElUploadFileListCallback? OnChange { get; set; }
 
+    /// <summary>
+    /// hook function when limit is exceeded.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onExceed")]
     public ElUploadExceedCallback? OnExceed { get; set; }
 
+    /// <summary>
+    /// hook function before uploading with the file to be uploaded as its parameter. If `false` is returned or a `Promise` is returned and then is rejected, uploading will be aborted.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeUpload")]
     public ElUploadBeforeUploadCallback? BeforeUpload { get; set; }
 
+    /// <summary>
+    /// hook function before removing a file with the file and file list as its parameters. If `false` is returned or a `Promise` is returned and then is rejected, removing will be aborted.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("beforeRemove")]
     public ElUploadBeforeRemoveCallback? BeforeRemove { get; set; }
 
+    /// <summary>
+    /// default uploaded files.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fileList")]
     public ElUploadUserFile[]? FileList { get; set; }
 
+    /// <summary>
+    /// type of file list.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("listType")]
     public ElUploadListType? ListType { get; set; }
 
+    /// <summary>
+    /// whether to auto upload file.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autoUpload")]
     public bool? AutoUpload { get; set; }
 
+    /// <summary>
+    /// override default xhr behavior, allowing you to implement your own upload-file's request.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("httpRequest")]
     public ElUploadRequestCallback? HttpRequest { get; set; }
 
+    /// <summary>
+    /// whether to disable upload.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// maximum number of uploads allowed.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("limit")]
     public Number? Limit { get; set; }
 
+    /// <summary>
+    /// whether to support uploading directory. After enabling it, only folders can be selected, and after selecting a folder, the files within the folder will be flattened.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("directory")]
     public bool? Directory { get; set; }
 
+    /// <summary>
+    /// content which triggers file dialog.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("trigger")]
     public RenderFragment? Trigger { get; set; }
 
+    /// <summary>
+    /// content of tips.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tip")]
     public RenderFragment? Tip { get; set; }
 
+    /// <summary>
+    /// content of thumbnail template.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("file")]
     public RenderFragment? File { get; set; }
@@ -7908,290 +13117,506 @@ public sealed class ElUpload : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElSelectV2")]
 public sealed class ElVirtualizedSelect : ElContentComponentBase
 {
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("modelValue")]
     public ElSelectV2ModelValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// data of the options, the key of `value` and `label` can be customize by `props`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("options")]
     public ElSelectV2OptionValue[]? Options { get; set; }
 
+    /// <summary>
+    /// configuration options, see the following table
+    /// </summary>
     [Parameter]
     [ECMAScriptName("props")]
     public ElSelectPropsAlias? Props { get; set; }
 
+    /// <summary>
+    /// is multiple
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multiple")]
     public bool? Multiple { get; set; }
 
+    /// <summary>
+    /// is disabled
+    /// </summary>
     [Parameter]
     [ECMAScriptName("disabled")]
     public bool? Disabled { get; set; }
 
+    /// <summary>
+    /// unique identity key name for value, required when value is an object
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueKey")]
     public string? ValueKey { get; set; }
 
+    /// <summary>
+    /// size of component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("size")]
     public string? Size { get; set; }
 
+    /// <summary>
+    /// whether select can be cleared
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearable")]
     public bool? Clearable { get; set; }
 
+    /// <summary>
+    /// custom clear icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("clearIcon")]
     public VueStringComponentValue? ClearIcon { get; set; }
 
+    /// <summary>
+    /// whether to collapse tags to a text when multiple selecting
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTags")]
     public bool? CollapseTags { get; set; }
 
+    /// <summary>
+    /// maximum number of options user can select when multiple is true. No limit when set to 0
+    /// </summary>
     [Parameter]
     [ECMAScriptName("multipleLimit")]
     public Number? MultipleLimit { get; set; }
 
+    /// <summary>
+    /// native input id input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("id")]
     public string? Id { get; set; }
 
+    /// <summary>
+    /// the name attribute of select input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("name")]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// tooltip theme, built-in theme: `dark` / `light`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("effect")]
     public ElPopperEffect? Effect { get; set; }
 
+    /// <summary>
+    /// autocomplete of select input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("autocomplete")]
     public string? Autocomplete { get; set; }
 
+    /// <summary>
+    /// placeholder
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placeholder")]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// whether Select is filterable
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterable")]
     public bool? Filterable { get; set; }
 
+    /// <summary>
+    /// whether creating new items is allowed. To use this, `filterable` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("allowCreate")]
     public bool? AllowCreate { get; set; }
 
+    /// <summary>
+    /// custom filter method, the first parameter is the current input value. To use this, `filterable` must be true method
+    /// </summary>
     [Parameter]
     [ECMAScriptName("filterMethod")]
     public ElSelectQueryCallback? FilterMethod { get; set; }
 
+    /// <summary>
+    /// whether Select is loading data from server
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public bool? Loading { get; set; }
 
+    /// <summary>
+    /// displayed text while loading data from server, default is 'Loading'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loadingText")]
     public string? LoadingText { get; set; }
 
+    /// <summary>
+    /// whether reserve the keyword after select filtered option.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("reserveKeyword")]
     public bool? ReserveKeyword { get; set; }
 
+    /// <summary>
+    /// select first matching option on enter key. Use with `filterable` or `remote`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("defaultFirstOption")]
     public bool? DefaultFirstOption { get; set; }
 
+    /// <summary>
+    /// displayed text when no data matches the filtering query, you can also use slot `empty`, default is 'No matching data'
+    /// </summary>
     [Parameter]
     [ECMAScriptName("noMatchText")]
     public string? NoMatchText { get; set; }
 
+    /// <summary>
+    /// displayed text when there is no options, you can also use slot empty
+    /// </summary>
     [Parameter]
     [ECMAScriptName("noDataText")]
     public string? NoDataText { get; set; }
 
+    /// <summary>
+    /// custom class name for Select's dropdown and tags' tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperClass")]
     public VueClassValue? PopperClass { get; set; }
 
+    /// <summary>
+    /// custom style for Select's dropdown and tags' tooltip
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperStyle")]
     public VueStyleValue? PopperStyle { get; set; }
 
+    /// <summary>
+    /// whether select dropdown is teleported, if `true` it will be teleported to where `append-to` sets
+    /// </summary>
     [Parameter]
     [ECMAScriptName("teleported")]
     public bool? Teleported { get; set; }
 
+    /// <summary>
+    /// which element the select dropdown appends to
+    /// </summary>
     [Parameter]
     [ECMAScriptName("appendTo")]
     public VueTeleportTarget? AppendTo { get; set; }
 
+    /// <summary>
+    /// when select dropdown is inactive and `persistent` is `false`, select dropdown will be destroyed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("persistent")]
     public bool? Persistent { get; set; }
 
+    /// <summary>
+    /// [popper.js](https://popper.js.org/docs/v2/) parameters
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperOptions")]
     public VueDictionary? PopperOptions { get; set; }
 
+    /// <summary>
+    /// for non-filterable Select, this prop decides if the option menu pops up when the input is focused
+    /// </summary>
     [Parameter]
     [ECMAScriptName("automaticDropdown")]
     public bool? AutomaticDropdown { get; set; }
 
+    /// <summary>
+    /// whether the width of the dropdown is the same as the input, if the value is `number`, then the width is fixed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fitInputWidth")]
     public VueBooleanNumberValue? FitInputWidth { get; set; }
 
+    /// <summary>
+    /// custom suffix icon component
+    /// </summary>
     [Parameter]
     [ECMAScriptName("suffixIcon")]
     public VueStringComponentValue? SuffixIcon { get; set; }
 
+    /// <summary>
+    /// The height of the dropdown panel, 34px for each item
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
+    /// <summary>
+    /// The height of the dropdown item
+    /// </summary>
     [Parameter]
     [ECMAScriptName("itemHeight")]
     public Number? ItemHeight { get; set; }
 
+    /// <summary>
+    /// Controls virtual-list sizing mode: if undefined, the list uses fixed item height from `item-height`; if provided, the list uses dynamic item sizing and this value as the estimated item height.
+    /// </summary>
     [Parameter]
     [ECMAScriptName("estimatedOptionHeight")]
     public Number? EstimatedOptionHeight { get; set; }
 
+    /// <summary>
+    /// Controls whether the scrollbar is always displayed
+    /// </summary>
     [Parameter]
     [ECMAScriptName("scrollbarAlwaysOn")]
     public bool? ScrollbarAlwaysOn { get; set; }
 
+    /// <summary>
+    /// whether search data from server
+    /// </summary>
     [Parameter]
     [ECMAScriptName("remote")]
     public bool? Remote { get; set; }
 
+    /// <summary>
+    /// debounce delay during remote search, in milliseconds
+    /// </summary>
     [Parameter]
     [ECMAScriptName("debounce")]
     public Number? Debounce { get; set; }
 
+    /// <summary>
+    /// function that gets called when the input value changes. Its parameter is the current input value. To use this, `filterable` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("remoteMethod")]
     public ElSelectQueryCallback? RemoteMethod { get; set; }
 
+    /// <summary>
+    /// in remote search method show suffix icon
+    /// </summary>
     [Parameter]
     [ECMAScriptName("remoteShowSuffix")]
     public bool? RemoteShowSuffix { get; set; }
 
+    /// <summary>
+    /// whether to trigger form validation
+    /// </summary>
     [Parameter]
     [ECMAScriptName("validateEvent")]
     public bool? ValidateEvent { get; set; }
 
+    /// <summary>
+    /// offset of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public Number? Offset { get; set; }
 
+    /// <summary>
+    /// whether the dropdown has an arrow
+    /// </summary>
     [Parameter]
     [ECMAScriptName("showArrow")]
     public bool? ShowArrow { get; set; }
 
+    /// <summary>
+    /// position of dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("placement")]
     public ElPopperPlacement? Placement { get; set; }
 
+    /// <summary>
+    /// list of possible positions for dropdown [popper.js](https://popper.js.org/docs/v2/modifiers/flip/#fallbackplacements)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("fallbackPlacements")]
     public string[]? FallbackPlacements { get; set; }
 
+    /// <summary>
+    /// whether show all selected tags when mouse hover text of collapse-tags. To use this, `collapse-tags` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("collapseTagsTooltip")]
     public bool? CollapseTagsTooltip { get; set; }
 
+    /// <summary>
+    /// configuration object for the collapse-tags tooltip. To use this, `collapse-tags` and `collapse-tags-tooltip` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagTooltip")]
     public ElTagTooltipProps? TagTooltip { get; set; }
 
+    /// <summary>
+    /// The max tags number to be shown. To use this, `collapse-tags` must be true
+    /// </summary>
     [Parameter]
     [ECMAScriptName("maxCollapseTags")]
     public Number? MaxCollapseTags { get; set; }
 
+    /// <summary>
+    /// tag type
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagType")]
     public ElTagType? TagType { get; set; }
 
+    /// <summary>
+    /// tag effect
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tagEffect")]
     public ElTagEffect? TagEffect { get; set; }
 
+    /// <summary>
+    /// same as `aria-label` in native input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("ariaLabel")]
     public string? AriaLabel { get; set; }
 
+    /// <summary>
+    /// empty values of component, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("emptyValues")]
     public VueValue[]? EmptyValues { get; set; }
 
+    /// <summary>
+    /// clear return value, [see config-provider](./config-provider.md#empty-values-configurations)
+    /// </summary>
     [Parameter]
     [ECMAScriptName("valueOnClear")]
     public ElValueOnClearValue? ValueOnClear { get; set; }
 
+    /// <summary>
+    /// whether to append the popper menu to body. If the positioning of the popper is wrong, you can try to set this prop to false
+    /// </summary>
     [Parameter]
     [ECMAScriptName("popperAppendToBody")]
     public bool? PopperAppendToBody { get; set; }
 
+    /// <summary>
+    /// tabindex for input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tabindex")]
     public VueStringNumberValue? Tabindex { get; set; }
 
+    /// <summary>
+    /// content at the top of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("header")]
     public RenderFragment? Header { get; set; }
 
+    /// <summary>
+    /// content at the bottom of the dropdown
+    /// </summary>
     [Parameter]
     [ECMAScriptName("footer")]
     public RenderFragment? Footer { get; set; }
 
+    /// <summary>
+    /// content when options is empty
+    /// </summary>
     [Parameter]
     [ECMAScriptName("empty")]
     public RenderFragment? Empty { get; set; }
 
+    /// <summary>
+    /// prefix content of input
+    /// </summary>
     [Parameter]
     [ECMAScriptName("prefix")]
     public RenderFragment? Prefix { get; set; }
 
+    /// <summary>
+    /// content as Select tag, subTags `data`, `selectDisabled` and `deleteTag` introduced in
+    /// </summary>
     [Parameter]
     [ECMAScriptName("tag")]
     public RenderFragment? Tag { get; set; }
 
+    /// <summary>
+    /// content as Select loading
+    /// </summary>
     [Parameter]
     [ECMAScriptName("loading")]
     public RenderFragment? LoadingSlot { get; set; }
 
+    /// <summary>
+    /// content as Select label. `index` introduced in
+    /// </summary>
     [Parameter]
     [ECMAScriptName("label")]
     public RenderFragment? Label { get; set; }
 
+    /// <summary>
+    /// triggers when the selected value changes, the param is current selected value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
     public EventCallback OnChange { get; set; }
 
+    /// <summary>
+    /// triggers when the dropdown appears/disappears, the param will be true when it appears, and false otherwise
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onVisibleChange")]
     public EventCallback OnVisibleChange { get; set; }
 
+    /// <summary>
+    /// triggers when a tag is removed in multiple mode, the param is removed tag value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onRemoveTag")]
     public EventCallback OnRemoveTag { get; set; }
 
+    /// <summary>
+    /// triggers when the clear icon is clicked in a clearable Select
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onClear")]
     public EventCallback OnClear { get; set; }
 
+    /// <summary>
+    /// triggers when Input blurs
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onBlur")]
     public EventCallback OnBlur { get; set; }
 
+    /// <summary>
+    /// triggers when Input focuses
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onFocus")]
     public EventCallback OnFocus { get; set; }
 
+    /// <summary>
+    /// triggers when dropdown scroll reaches an end
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onEndReached")]
     public EventCallback OnEndReached { get; set; }
 
+    /// <summary>
+    /// binding value
+    /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
     public EventCallback<ElSelectV2ModelValue?> ModelValueChanged { get; set; }
@@ -8204,38 +13629,65 @@ public sealed class ElVirtualizedSelect : ElContentComponentBase
 [ECMAScript("element-plus", Transform.Component, "ElWatermark")]
 public sealed class ElWatermark : ElContentComponentBase
 {
+    /// <summary>
+    /// The width of the watermark, the default value of `content` is its own width
+    /// </summary>
     [Parameter]
     [ECMAScriptName("width")]
     public Number? Width { get; set; }
 
+    /// <summary>
+    /// The height of the watermark, the default value of `content` is its own height
+    /// </summary>
     [Parameter]
     [ECMAScriptName("height")]
     public Number? Height { get; set; }
 
+    /// <summary>
+    /// When the watermark is drawn, the rotation Angle, unit `°`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("rotate")]
     public Number? Rotate { get; set; }
 
+    /// <summary>
+    /// The z-index of the appended watermark element
+    /// </summary>
     [Parameter]
     [ECMAScriptName("zIndex")]
     public Number? ZIndex { get; set; }
 
+    /// <summary>
+    /// Image source, it is recommended to export 2x or 3x image, high priority
+    /// </summary>
     [Parameter]
     [ECMAScriptName("image")]
     public string? Image { get; set; }
 
+    /// <summary>
+    /// Watermark text content
+    /// </summary>
     [Parameter]
     [ECMAScriptName("content")]
     public VueStringOrStringsValue? Content { get; set; }
 
+    /// <summary>
+    /// Text style
+    /// </summary>
     [Parameter]
     [ECMAScriptName("font")]
     public VueProps? Font { get; set; }
 
+    /// <summary>
+    /// The spacing between watermarks
+    /// </summary>
     [Parameter]
     [ECMAScriptName("gap")]
     public VueNumberPair? Gap { get; set; }
 
+    /// <summary>
+    /// The offset of the watermark from the upper left corner of the container. The default is `gap/2`
+    /// </summary>
     [Parameter]
     [ECMAScriptName("offset")]
     public VueNumberPair? Offset { get; set; }

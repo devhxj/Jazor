@@ -4207,7 +4207,7 @@ public sealed class MemberClosureTests
 
                 import component from "./components/counter.mjs";
 
-                test("lifecycle hooks run across mount, prop update, and unmount", () => {
+                test("lifecycle hooks run across mount, prop update, and unmount", async () => {
                     const props = { Title: "one" };
                     const render = component.setup(props, { slots: {} });
 
@@ -4215,6 +4215,7 @@ public sealed class MemberClosureTests
 
                     __runMounted();
                     assert.equal(render().children, "init|params:one|after:first|");
+                    await new Promise(resolve => setTimeout(resolve, 0));
 
                     props.Title = "two";
                     __runWatchers();
@@ -5208,6 +5209,7 @@ public sealed class MemberClosureTests
                     await __runMounted();
                     assert.equal(render().children, "afterAsync:first|");
 
+                    await new Promise(resolve => setTimeout(resolve, 0));
                     await __runUpdated();
                     assert.equal(render().children, "afterAsync:first|afterAsync:update|");
 

@@ -5501,9 +5501,32 @@ internal static class RenderEmitter
         return operation.ConstantValue.HasValue ||
                operation is IParameterReferenceOperation ||
                operation is ILocalReferenceOperation ||
-               operation is IFieldReferenceOperation ||
-               operation is IPropertyReferenceOperation ||
+               operation is IInstanceReferenceOperation ||
+               operation is IFieldReferenceOperation field &&
+                   (field.Instance is null || CanOmit(field.Instance)) ||
+               operation is IPropertyReferenceOperation property &&
+                   IsSideEffectFreeProperty(property.Property) &&
+                   (property.Instance is null || CanOmit(property.Instance)) ||
                operation is IBinaryOperation binary && CanOmit(binary.LeftOperand) && CanOmit(binary.RightOperand);
+    }
+
+    private static bool IsSideEffectFreeProperty(IPropertySymbol property)
+    {
+        if (property.GetMethod is null || property.SetMethod is null)
+            return false;
+
+        foreach (var reference in property.DeclaringSyntaxReferences)
+        {
+            if (reference.GetSyntax() is PropertyDeclarationSyntax declaration &&
+                declaration.ExpressionBody is null &&
+                declaration.AccessorList is { } accessors &&
+                accessors.Accessors.All(static accessor => accessor.Body is null && accessor.ExpressionBody is null))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool IsRenderTreeBuilderMethod(IMethodSymbol method)
