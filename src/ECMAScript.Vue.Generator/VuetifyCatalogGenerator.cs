@@ -69,7 +69,7 @@ internal static class VuetifyCatalogGenerator
             var stale = outputs
                 .Where(static output =>
                     !SystemFile.Exists(output.Path) ||
-                    !string.Equals(SystemFile.ReadAllText(output.Path), output.Content, StringComparison.Ordinal))
+                    !string.Equals(NormalizeGeneratedText(SystemFile.ReadAllText(output.Path)), NormalizeGeneratedText(output.Content), StringComparison.Ordinal))
                 .Select(output => Path.GetRelativePath(repositoryRoot, output.Path).Replace('\\', '/'))
                 .OrderBy(static path => path, StringComparer.Ordinal)
                 .ToArray();
@@ -583,7 +583,10 @@ internal static class VuetifyCatalogGenerator
             relativePath.Replace('/', Path.DirectorySeparatorChar))))).ToLowerInvariant();
 
     private static string HashContent(string content)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(content))).ToLowerInvariant();
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(NormalizeGeneratedText(content)))).ToLowerInvariant();
+
+    private static string NormalizeGeneratedText(string content)
+        => content.Replace("\r\n", "\n", StringComparison.Ordinal);
 
     private static bool IsParameterProperty(PropertyDeclarationSyntax property)
         => property.AttributeLists.SelectMany(static list => list.Attributes).Any(IsParameter);
@@ -707,11 +710,13 @@ internal static class VuetifyCatalogGenerator
 
     private static void WriteIfChanged(GeneratedFile output)
     {
-        if (SystemFile.Exists(output.Path) && string.Equals(SystemFile.ReadAllText(output.Path), output.Content, StringComparison.Ordinal))
+        // Generated resources must be byte-stable across Windows/Linux generation hosts.
+        var normalized = output.Content.Replace("\r\n", "\n", StringComparison.Ordinal);
+        if (SystemFile.Exists(output.Path) && string.Equals(SystemFile.ReadAllText(output.Path).Replace("\r\n", "\n", StringComparison.Ordinal), normalized, StringComparison.Ordinal))
             return;
 
         Directory.CreateDirectory(Path.GetDirectoryName(output.Path)!);
-        SystemFile.WriteAllText(output.Path, output.Content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        SystemFile.WriteAllText(output.Path, normalized, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
     }
 
     private static string NormalizeRelativePath(string repositoryRoot, string path)

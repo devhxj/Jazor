@@ -32,11 +32,10 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### Jazor 0.31.0 - 2026-09-04
+### RazorVue P0 authoring and verification - 2026-09-06
 
-- JazorAdmin now uses typed TDesign authoring for organization, role, audit, schedule, system-settings, and the complete OpenIddict application and Scope workflows, including native textarea union binding and failed-submit draft retention.
-- The Wiki homepage now introduces what Jazor is, the problem it solves, and its supported boundary in the first viewport; its roadmap is consolidated around current capability and next-stage evidence.
-- Generated browser import maps and checkout-stable resource hashes make deployed Wiki and package artifacts more predictable.
+- 新增从 `RazorVue.Authoring` 开始的 Golden Path 指南，以及按稳定 ID、源码位置和替代写法组织的诊断矩阵。
+- 新增统一 Vue binding contract 门禁和 RazorVue clean/incremental/HMR/Release 构建基线脚本，便于在上游升级或编译器优化前后复现证据。
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

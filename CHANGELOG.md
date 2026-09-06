@@ -4,6 +4,13 @@
 
 ## 2026-09-06
 
+### RazorVue P0 authoring and verification improvements
+
+#### 新增
+
+- 新增 Golden Path 指南和诊断矩阵，开发者可以从 `RazorVue.Authoring` 样本复制 typed CRUD 页面，并按稳定诊断 ID 查找最小替代写法。
+- 新增统一组件绑定 contract 门禁和构建性能基线入口，发版前可一次校验 Element Plus、Vuetify、TDesign 的快照/文档/manifest 版本与 clean、增量、HMR、Release 测量协议。
+
 ### Jazor 0.31.2
 
 > 绑定组件的 IDE 文档注释继续对齐上游原文。本版本按 `PATCH` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。

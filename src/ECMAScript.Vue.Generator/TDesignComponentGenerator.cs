@@ -61,17 +61,20 @@ internal static class TDesignComponentGenerator
         var source = Render(components);
         if (check)
         {
-            if (!File.Exists(outputPath) || !string.Equals(File.ReadAllText(outputPath), source, StringComparison.Ordinal))
+            if (!File.Exists(outputPath) || !string.Equals(NormalizeGeneratedText(File.ReadAllText(outputPath)), NormalizeGeneratedText(source), StringComparison.Ordinal))
                 throw new InvalidOperationException("Generated TDesign component slice is stale. Run `dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components`.");
 
             Console.WriteLine($"TDesign basic component slice is current: {components.Length} components.");
         }
         else
         {
-            File.WriteAllText(outputPath, source, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            File.WriteAllText(outputPath, NormalizeGeneratedText(source), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             Console.WriteLine($"Generated {components.Length} strongly typed TDesign components: {outputPath}");
         }
     }
+
+    static string NormalizeGeneratedText(string content)
+        => content.Replace("\r\n", "\n", StringComparison.Ordinal);
 
     static Contract[] ReadContracts(string path)
     {

@@ -62,19 +62,22 @@ internal static class TDesignBindingGenerator
         }
         else if (check)
         {
-            if (!File.Exists(outputPath) || !string.Equals(File.ReadAllText(outputPath), bindingJson, StringComparison.Ordinal))
+            if (!File.Exists(outputPath) || !string.Equals(NormalizeGeneratedText(File.ReadAllText(outputPath)), NormalizeGeneratedText(bindingJson), StringComparison.Ordinal))
                 throw new InvalidOperationException("TDesign component bindings are stale. Run `dotnet run --project src/ECMAScript.Vue.Generator -- tdesign bindings`.");
-            if (!File.Exists(contractsPath) || !string.Equals(File.ReadAllText(contractsPath), contractsJson, StringComparison.Ordinal))
+            if (!File.Exists(contractsPath) || !string.Equals(NormalizeGeneratedText(File.ReadAllText(contractsPath)), NormalizeGeneratedText(contractsJson), StringComparison.Ordinal))
                 throw new InvalidOperationException("TDesign component contracts are stale. Run `dotnet run --project src/ECMAScript.Vue.Generator -- tdesign bindings`.");
 
             Console.WriteLine("TDesign component bindings and contracts are current.");
         }
         else
         {
-            File.WriteAllText(outputPath, bindingJson);
-            File.WriteAllText(contractsPath, contractsJson);
+            File.WriteAllText(outputPath, NormalizeGeneratedText(bindingJson));
+            File.WriteAllText(contractsPath, NormalizeGeneratedText(contractsJson));
         }
     }
+
+    static string NormalizeGeneratedText(string content)
+        => content.Replace("\r\n", "\n", StringComparison.Ordinal);
 
     static ComponentBinding BindComponent(
         ComponentMetadata component,

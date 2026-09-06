@@ -867,12 +867,13 @@ internal static class ElementPlusGenerator
 
     private static void WriteFile(string path, string content)
     {
-        var normalized = content.Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Replace("\n", Environment.NewLine, StringComparison.Ordinal);
+        // Generated files are repository artifacts. Keep LF regardless of the maintainer host
+        // so `--check` does not report false drift after a Windows generation run.
+        var normalized = content.Replace("\r\n", "\n", StringComparison.Ordinal);
 
         if (_check)
         {
-            if (!File.Exists(path) || !string.Equals(File.ReadAllText(path), normalized, StringComparison.Ordinal))
+            if (!File.Exists(path) || !string.Equals(File.ReadAllText(path).Replace("\r\n", "\n", StringComparison.Ordinal), normalized, StringComparison.Ordinal))
                 throw new InvalidOperationException(
                     $"Element Plus binding is stale: {GetRepositoryRelativePath(path)}. Run `dotnet run --project src/ECMAScript.Vue.Generator -- elementplus`.");
 

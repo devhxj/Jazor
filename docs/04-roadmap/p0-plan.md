@@ -22,6 +22,19 @@ P0 包含四条相互衔接的工作线：
 3. **增量构建与性能基线**：先建立可重复的首次构建、增量构建、HMR 和产物体积测量，再实施有证据的优化。
 4. **绑定生成与版本漂移门禁**：让 Vuetify、Element Plus、TDesign 及后续组件库共享同一套元数据、文档和升级检查规则。
 
+## 当前基线盘点（2026-09-06）
+
+仓库已经具备不少 P0 基础，但它们还没有收敛成一个统一的交付目标：
+
+| 工作线 | 已有基础 | 尚需完成 |
+| --- | --- | --- |
+| Golden Path | `samples/RazorVue.Authoring` 已覆盖 TDesign 表单、表格、slot、绑定、路由和 Release/browser smoke；`samples/JazorAdmin` 提供更大规模页面。 | 把推荐入口、依赖选择、API client 形状和最小 CRUD 步骤整理成一条新项目可复制的模板，并补齐独立 package consumer 说明。 |
+| 诊断闭环 | `JAZORVGA020`-`026`、`JAZORVCA001`-`011`、HelpLink、mapped source location 和 `inspect-razorvue-chain.cs` 已存在。 | 建立一份按作者场景组织的诊断矩阵，补齐每个高频错误的最小替代示例，并验证源码项目与 package consumer 的输出一致。 |
+| 增量性能 | `benchmark-razorvue-g2.cs` 已提供 direct render/runtime 基线；`benchmark-razorvue-build.cs` 提供 clean/incremental/HMR/Release 构建计时。 | 在固定机器和参数下重复采样并记录中位数，再决定是否修改缓存或编译主链。 |
+| 绑定漂移 | Vuetify、Element Plus、TDesign 已有锁定快照、生成检查和 coverage；原始注释来源已在各包记录。`verify-vue-binding-contracts.cs` 统一执行生成检查并校验版本/文档/manifest。 | 后续把 export、prop、event、slot、文档和 manifest 的具体 diff 输出为可审阅报告，并在上游升级时接入发布阻断。 |
+
+因此，P0 的第一轮实现优先补“统一入口和证据索引”，再改动底层编译器；若基线证明不存在瓶颈，不为追求任务数量而引入新的协议。
+
 ## 交付顺序
 
 顺序固定为“样本定义 → 诊断闭环 → 性能测量 → 生成规范”。后一个切片不能用来掩盖前一个切片的失败。
@@ -118,6 +131,10 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 ### 优化门槛
 
 只有在固定基线显示存在稳定瓶颈时才改实现。优化必须同时通过 compiler regression、Razor SG、Emit、浏览器 smoke 和 source-map/稳定性检查；如果收益低于预设阈值或引入新的协议 fallback，则保留基线并记录原因。
+
+### 首轮基线记录（2026-09-06）
+
+在当前工作区、`.NET 11.0.100-preview.7`、`RazorVue.Authoring` 输入和隔离输出目录下，执行 `benchmark-razorvue-build.cs --samples 2 --skip-hmr --skip-release` 得到：clean 中位数 **45.583 秒**，incremental 中位数 **2.935 秒**。该结果只建立构建测量协议，不宣称性能目标或已完成编译器优化；HMR/Release 需在具备浏览器与包发布环境时单独采样。当前没有足够证据要求修改 compiler/Emit 缓存主链，后续优化必须用同一协议重测。
 
 ## P0-D：绑定生成与版本漂移
 
