@@ -1174,7 +1174,7 @@ internal static class RazorVueM5CapabilityLedger
         },
         new(
             "P1-standard-blazor-component-adapters",
-            "Microsoft built-in UI components: DynamicComponent, ImportMap, EditForm, AntiforgeryToken, FormMappingScope, ErrorBoundary, Router, RouteView, LayoutView, NavLink, NavigationLock, FocusOnNavigate, PageTitle, HeadContent, HeadOutlet, AuthorizeView/AuthorizeRouteView, CascadingAuthenticationState, DataAnnotationsValidator, Input*, Virtualize, QuickGrid, and SectionContent/SectionOutlet",
+            "Microsoft built-in UI components: DynamicComponent, CacheView, ConfigureBrowser, ImportMap, ResourcePreloader, EditForm, AntiforgeryToken, FormMappingScope, DisplayName<T>, InputHidden, Label<T>, EnvironmentView, ErrorBoundary, Router, RouteView, LayoutView, NavLink, NavigationLock, FocusOnNavigate, PageTitle, HeadContent, HeadOutlet, AuthorizeView/AuthorizeRouteView, CascadingAuthenticationState, DataAnnotationsValidator, Input*, Virtualize, QuickGrid, and SectionContent/SectionOutlet",
             RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.Reject,
             RazorVueCapabilityStatus.Reject,
@@ -1259,7 +1259,7 @@ internal static class RazorVueM5CapabilityLedger
             "PersistentComponentState, PersistentState, and SupplyParameterFromForm are diagnosed at authored source until a versioned SSR/hydration protocol exists. Use a typed endpoint/bootstrap payload; FormName, antiforgery, enhanced post, and built-in EditForm/Input protocols remain outside this plan."),
         new(
             "P2-advanced-rendering",
-            "ImportMap, AntiforgeryToken, FormMappingScope, Virtualize, QuickGrid, SectionOutlet/SectionContent and other Microsoft Blazor built-in UI components; StreamRendering, localization, and complex validation remain separate semantic questions",
+            "CacheView, ConfigureBrowser, ImportMap, ResourcePreloader, AntiforgeryToken, FormMappingScope, DisplayName<T>, InputHidden, Label<T>, EnvironmentView, Virtualize, QuickGrid, SectionOutlet/SectionContent and other Microsoft Blazor built-in UI components; StreamRendering, localization, and complex validation remain separate semantic questions",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.Reject,
             RazorVueCapabilityStatus.Reject,

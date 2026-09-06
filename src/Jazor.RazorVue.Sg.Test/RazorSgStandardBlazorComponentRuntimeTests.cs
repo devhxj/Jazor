@@ -221,6 +221,56 @@ public sealed class RazorSgStandardBlazorComponentRuntimeTests
                     <FormMappingScope Name="scope"><span>content</span></FormMappingScope>
                     """,
                 ExpectedType: "Microsoft.AspNetCore.Components.Forms.FormMappingScope")
+            ,(
+                Name: "CacheViewHost",
+                Markup: """
+                    <CacheView><span>content</span></CacheView>
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.CacheView")
+            ,(
+                Name: "ConfigureBrowserHost",
+                Markup: """
+                    <ConfigureBrowser />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.ConfigureBrowser")
+            ,(
+                Name: "ResourcePreloaderHost",
+                Markup: """
+                    <ResourcePreloader />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.ResourcePreloader")
+            ,(
+                Name: "DisplayNameHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Forms
+
+                    <DisplayName For="@(() => Name)" />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>")
+            ,(
+                Name: "InputHiddenHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Forms
+
+                    <InputHidden />
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Forms.InputHidden")
+            ,(
+                Name: "LabelHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Forms
+
+                    <Label For="@(() => Name)">Name</Label>
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Forms.Label<TValue>")
+            ,(
+                Name: "EnvironmentViewHost",
+                Markup: """
+                    @using Microsoft.AspNetCore.Components.Web
+
+                    <EnvironmentView Include="Development"><span>content</span></EnvironmentView>
+                    """,
+                ExpectedType: "Microsoft.AspNetCore.Components.Web.EnvironmentView")
         };
 
         foreach (var testCase in cases)
@@ -232,7 +282,10 @@ public sealed class RazorSgStandardBlazorComponentRuntimeTests
                 namespace Demo.Pages;
 
                 [ECMAScriptModule("./components/{{testCase.Name.ToLowerInvariant()}}")]
-                public partial class {{testCase.Name}} : ComponentBase, IVueComponent;
+                public partial class {{testCase.Name}} : ComponentBase, IVueComponent
+                {
+                    public string Name { get; } = "name";
+                }
                 """,
                 testCase.ExpectedType);
         }

@@ -494,6 +494,13 @@ public sealed class RazorVueCompatibilityAnalyzerTests
                 <ImportMap />
                 <AntiforgeryToken />
                 <FormMappingScope Name="scope"><span>content</span></FormMappingScope>
+                <CacheView><span>content</span></CacheView>
+                <ConfigureBrowser />
+                <ResourcePreloader />
+                <DisplayName For="@(() => Name)" />
+                <InputHidden />
+                <Label For="@(() => Name)">Name</Label>
+                <EnvironmentView Include="Development"><span>content</span></EnvironmentView>
                 """)]);
 
         var messages = diagnostics
@@ -501,7 +508,7 @@ public sealed class RazorVueCompatibilityAnalyzerTests
             .Select(static item => item.GetMessage())
             .ToArray();
 
-        Assert.HasCount(9, messages);
+        Assert.HasCount(16, messages);
         foreach (var componentName in new[]
         {
             "AuthorizeRouteView",
@@ -513,6 +520,13 @@ public sealed class RazorVueCompatibilityAnalyzerTests
             "ImportMap",
             "AntiforgeryToken",
             "FormMappingScope"
+            ,"CacheView"
+            ,"ConfigureBrowser"
+            ,"ResourcePreloader"
+            ,"DisplayName"
+            ,"InputHidden"
+            ,"Label"
+            ,"EnvironmentView"
         })
         {
             Assert.IsTrue(
