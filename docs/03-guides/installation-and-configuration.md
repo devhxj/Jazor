@@ -135,6 +135,21 @@ app.UseJazorSsr(new JazorSsrRequest(
     [new JazorSsrProvider("jazor:service:MyApp.BrowserClient", new { BaseUrl = "/api" })]));
 ```
 
+如果页面需要在 SSR 首屏和 hydration 中读取认证快照，宿主可将当前请求的 `ClaimsPrincipal` 转换为
+`JazorAuthenticationState`。该状态以保留键 `jazor:auth-state` 进入同一份 `jazor-ssr-state` v1
+envelope；不要再手工添加同名 provider：
+
+```csharp
+app.UseJazorSsr(
+    (context, _) => Task.FromResult(
+        new JazorSsrRequest(
+            "components/app.mjs",
+            Authentication: JazorAuthenticationState.FromPrincipal(context.User))));
+```
+
+该快照只表达匿名、已认证、过期或禁止访问状态及只读 claims；授权事实仍由服务端 endpoint 决定。
+它不启用 `AuthenticationStateProvider`、`AuthorizeView` 或服务器 circuit，也不替代表单防伪和 token 存储。
+
 ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit
 物化的 SSR runner 和本地 Vue 服务器模块，DenoHost 执行这些模块，Netpack 负责浏览器 bundle。
 `WorkerCount` 同时限制单应用实例的 Deno worker 数和 SSR 并发数，必须大于零，默认值为

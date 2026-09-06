@@ -47,6 +47,8 @@ P1 不追求完整 Blazor parity，也不引入 `IJSRuntime` 字符串互操作�
 
 ## P1-B：强类型认证状态
 
+已交付协议基础：`JazorAuthenticationState` 是 host-owned closed snapshot，`FromPrincipal` 将匿名/已认证身份和只读 claims 映射为确定性 DTO；SSR envelope 使用协议保留键交接该快照。该切片仍不宣称刷新、过期、登出和 403 的 browser 状态机完成。
+
 先定义应用可持有的 closed contract，例如 `Anonymous`、`Authenticated`、`Expired` 和 `Forbidden`，由 endpoint 返回版本化 envelope；组件只依赖 typed browser provider。服务端 endpoint 仍是授权事实来源，组件不得读取 `HttpContext`、Identity manager 或 token storage。
 
 必须覆盖匿名、登录、刷新、过期、登出、403、SSR 首屏和 hydration；未完成前继续报告 `JAZORVCA007`/`JAZORVCA011` 对应 guidance，不注册隐式 `AuthenticationStateProvider`。

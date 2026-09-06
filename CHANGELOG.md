@@ -10,6 +10,7 @@
 
 - SSR 首屏与浏览器 hydration 现在共享带 `schema`/`version` 的 `jazor-ssr-state` 状态 envelope，props 和 typed providers 由同一份载荷交接；未知版本、缺失字段和无效 provider 会显式失败，不会静默回退到旧状态或空 HTML。
 - 新增 RazorVue P1 执行计划，明确认证状态、复杂 activation 和浏览器 history 在取得完整协议与消费者证据前继续保持 Guidance/Reject。
+- 增加 typed `JazorAuthenticationState` 快照；SSR host 可把当前 principal 以协议保留键 `jazor:auth-state` 交给同一份 hydration state envelope。
 
 ### RazorVue P0 authoring and verification improvements
 

@@ -142,6 +142,35 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
+    public async Task JazorSsrRenderer_AddsTypedAuthenticationAsReservedProvider()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = workspace.RootPath,
+            WebRootPath = Path.Combine(workspace.RootPath, "wwwroot"),
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddJazorSsr(options => options.ArtifactRootPath = artifactRoot);
+
+        await using var app = builder.Build();
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+        var authentication = new JazorAuthenticationState(
+            JazorAuthenticationStatus.Authenticated,
+            "user-42",
+            new Dictionary<string, string[]> { ["role"] = ["admin"] });
+
+        var result = await renderer.RenderAsync(new JazorSsrRequest(
+            "components/counter.mjs",
+            Authentication: authentication));
+
+        StringAssert.Contains(result.SerializedState, "\"authentication\":{\"status\":\"Authenticated\"");
+        StringAssert.Contains(result.SerializedState, "\"key\":\"jazor:auth-state\"");
+        StringAssert.Contains(result.SerializedProviders, "\"jazor:auth-state\"");
+    }
+
+    [TestMethod]
     public async Task JazorSsrRenderer_RejectsProviderWithoutKeyBeforeStartingWorker()
     {
         using var workspace = new SsrHostWorkspace();
