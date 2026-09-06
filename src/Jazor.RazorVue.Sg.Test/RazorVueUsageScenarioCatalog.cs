@@ -1242,7 +1242,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.Reject,
             "Jazor.Compiler usage-site validation + RazorVue final Compilation",
             "JAZORVGA022",
-            "RazorSourceGeneratorBootstrapPatchTests.DriverCompletionHook_CompilerBridgeFailure_ReportsMappedAuthorDiagnostic",
+            "RazorVueCompatibilityAnalyzerTests.InjectedIJSRuntime_ReportsUnsupportedTypedInteropBoundary; RazorSourceGeneratorBootstrapPatchTests.DriverCompletionHook_CompilerBridgeFailure_ReportsMappedAuthorDiagnostic",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
             "The existing unwhitelisted-type/member boundary rejects these facades at their actual use site. Jazor already emits typed ECMAScript modules, so IJSRuntime string invocation, dynamic import, object-array marshaling, runtime registries, DotNetObjectReference, and JSInvokable are intentionally unsupported; use a typed ECMAScript/WebIDL/module binding instead."),
@@ -1254,7 +1254,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.Guidance,
             "RazorVueCompatibilityAnalyzer + explicit endpoint/bootstrap contract",
             "JAZORVCA011",
-            "RazorVueCompatibilityAnalyzerTests.InjectedPersistentComponentState_ReportsExplicitSsrHandoffBoundary; RazorVueCompatibilityAnalyzerTests.PersistentStateProperty_ReportsAtAuthoredAttribute; RazorVueCompatibilityAnalyzerTests.SupplyParameterFromFormProperty_ReportsExplicitSsrHandoffBoundary",
+            "RazorVueCompatibilityAnalyzerTests.InjectedPersistentComponentState_ReportsExplicitSsrHandoffBoundary; RazorVueCompatibilityAnalyzerTests.PersistentStateProperty_ReportsAtAuthoredAttribute; RazorVueCompatibilityAnalyzerTests.SupplyParameterFromFormProperty_ReportsExplicitSsrHandoffBoundary; JazorSsrHostingTests.JazorSsrRenderer_RejectsDuplicateProviderKeysBeforeStartingWorker",
             RazorVueCapabilityEvidence.AuthorSource,
             "PersistentComponentState, PersistentState, and SupplyParameterFromForm are diagnosed at authored source until a versioned SSR/hydration protocol exists. Use a typed endpoint/bootstrap payload; FormName, antiforgery, enhanced post, and built-in EditForm/Input protocols remain outside this plan."),
         new(
@@ -1265,9 +1265,9 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.Guidance,
             "Feature-specific adapter owners",
             null,
-            "feature-specific feasibility fixture",
+            "RazorVueCompatibilityAnalyzerTests.StandardGenericComponentTag_ReportsUnsupportedBuiltInUi; RazorSgStandardBlazorComponentRuntimeTests.EditFormAndInputText_AreRejectedAsBuiltInUi",
             RazorVueCapabilityEvidence.None,
-            "Each feature needs a browser semantic proof before it can become an adapter."),
+            "Virtualize, QuickGrid, SectionContent/SectionOutlet, StreamRendering, localization, and complex validation remain explicit Guidance until each has a typed contract, browser semantic proof, and Release consumer."),
         new(
             "P1-parameterized-activation",
             "Single-constructor reference-type service activation; primary constructors, overload selectors, this(...), and base(args) remain unsupported",

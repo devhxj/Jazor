@@ -130,7 +130,16 @@ public sealed class RazorVueM5CapabilityLedgerTests
         Assert.AreEqual(RazorVueCapabilityStatus.Guidance, ssrState.Status);
         Assert.IsTrue(ssrState.Evidence.HasFlag(RazorVueCapabilityEvidence.AuthorSource));
         StringAssert.Contains(ssrState.Fixture, "SupplyParameterFromFormProperty", StringComparison.Ordinal);
+        StringAssert.Contains(ssrState.Fixture, "RejectsDuplicateProviderKeys", StringComparison.Ordinal);
         StringAssert.Contains(ssrState.Blocker, "versioned SSR/hydration", StringComparison.Ordinal);
+
+        var advancedRendering = RazorVueM5CapabilityLedger.All.Single(static entry =>
+            entry.Id == "P2-advanced-rendering");
+        Assert.AreEqual(RazorVueCapabilityDecision.GuidedAdaptation, advancedRendering.Decision);
+        Assert.AreEqual(RazorVueCapabilityStatus.Guidance, advancedRendering.Status);
+        Assert.IsTrue(advancedRendering.Evidence == RazorVueCapabilityEvidence.None);
+        StringAssert.Contains(advancedRendering.Fixture, "StandardGenericComponentTag", StringComparison.Ordinal);
+        StringAssert.Contains(advancedRendering.Blocker, "browser semantic proof", StringComparison.Ordinal);
 
         var cascading = RazorVueM5CapabilityLedger.All.Single(static entry =>
             entry.Id == "P1-cascading-values");
