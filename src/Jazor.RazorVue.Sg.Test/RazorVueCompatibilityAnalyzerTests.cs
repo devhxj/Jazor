@@ -225,6 +225,34 @@ public sealed class RazorVueCompatibilityAnalyzerTests
     }
 
     [TestMethod]
+    public async Task InjectedIJSRuntime_RemainsQuietUntilUsageSiteValidation()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/Interop.razor.cs",
+                """
+                using Microsoft.AspNetCore.Components;
+
+                namespace Microsoft.JSInterop
+                {
+                    public interface IJSRuntime;
+                }
+
+                namespace Demo.Pages
+                {
+                    public sealed class Interop : ComponentBase
+                    {
+                        [Inject]
+                        public Microsoft.JSInterop.IJSRuntime Runtime { get; set; } = null!;
+                    }
+                }
+                """));
+
+        Assert.IsFalse(diagnostics.Any(static item => item.Id == "JAZORVCA007"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
     public async Task InjectedAuthenticationStateProvider_ReportsMissingExplicitBrowserProvider()
     {
         var diagnostics = await AnalyzeAsync(

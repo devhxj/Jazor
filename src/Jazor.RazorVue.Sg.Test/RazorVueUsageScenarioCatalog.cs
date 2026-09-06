@@ -1242,7 +1242,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.Reject,
             "Jazor.Compiler usage-site validation + RazorVue final Compilation",
             "JAZORVGA022",
-            "RazorVueCompatibilityAnalyzerTests.InjectedIJSRuntime_ReportsUnsupportedTypedInteropBoundary; RazorSourceGeneratorBootstrapPatchTests.DriverCompletionHook_CompilerBridgeFailure_ReportsMappedAuthorDiagnostic",
+            "RazorVueCompatibilityAnalyzerTests.InjectedIJSRuntime_RemainsQuietUntilUsageSiteValidation; RazorSourceGeneratorBootstrapPatchTests.DriverCompletionHook_CompilerBridgeFailure_ReportsMappedAuthorDiagnostic",
             RazorVueCapabilityEvidence.AuthorSource |
             RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
             "The existing unwhitelisted-type/member boundary rejects these facades at their actual use site. Jazor already emits typed ECMAScript modules, so IJSRuntime string invocation, dynamic import, object-array marshaling, runtime registries, DotNetObjectReference, and JSInvokable are intentionally unsupported; use a typed ECMAScript/WebIDL/module binding instead."),
