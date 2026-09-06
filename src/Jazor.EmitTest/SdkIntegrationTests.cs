@@ -4407,9 +4407,56 @@ public sealed class SdkIntegrationTests
                 "-p:UseSharedCompilation=false"
             ]);
 
+        // Every external native binding consumer in this fixture restores from the
+        // same isolated feed. Keep Element Plus in the release package lane as well;
+        // otherwise the consumer test silently depends on a published version and
+        // fails whenever the checkout's computed package version is newer.
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "ECMAScript.VueRoute.csproj"),
+                "-c",
+                "Release",
+                "-o",
+                packageOutputDirectory,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:PackageVersion={packageVersion}",
+                $"-p:JazorPackageVersion={packageVersion}",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "pack",
+                Path.Combine(repoRoot, "src", "ECMAScript.ElementPlus", "ECMAScript.ElementPlus.csproj"),
+                "-c",
+                "Release",
+                "-o",
+                packageOutputDirectory,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:PackageVersion={packageVersion}",
+                $"-p:JazorPackageVersion={packageVersion}",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:NuGetPackageRoot={EnsureTrailingDirectorySeparator(restorePackagesPath)}",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
+
         var jazorPackagePath = GetPackagePath(packageOutputDirectory, packageVersion);
         var vuePackagePath = GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion);
         var tdesignPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", packageVersion);
+        var elementPlusPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", packageVersion);
         AssertPackageEntries(
             jazorPackagePath,
             "lib/net11.0/ECMAScript.dll",
@@ -4424,6 +4471,12 @@ public sealed class SdkIntegrationTests
             "jazor/tdesign-vue-next/manifest.json",
             "jazor/tdesign-vue-next/dist/tdesign.mjs",
             "jazor/tdesign-vue-next/dist/tdesign.css");
+        AssertPackageEntries(
+            elementPlusPackagePath,
+            "lib/net11.0/ECMAScript.ElementPlus.dll",
+            "jazor/element-plus/manifest.json",
+            "jazor/element-plus/dist/index.full.min.mjs",
+            "jazor/element-plus/dist/index.css");
 
         return new LocalReleasePackageFixture(
             repoRoot,
