@@ -68,8 +68,10 @@ P2 的每个可交付切片都必须满足：
 | Element Plus typed binding | 已完成独立切片 |
 | SSR 显式 envelope/bootstrap | P1 基础已完成；P2 已增加 provider key 唯一性校验，表单协议仍为 Guidance |
 | 高级渲染 | Guidance，等待 feasibility fixture |
-| IJSRuntime 等 JS 互操作 | Reject，继续完善诊断与 typed 替代说明 |
-| 性能与交付优化 | 只有基线，尚未宣称优化收益 |
+| IJSRuntime 等 JS 互操作 | Reject；作者面回归确认注入本身不误报，实际成员使用仍由 usage-site/compiler 边界裁决 |
+| 性能与交付优化 | 已完成 `benchmark-razorvue-g2.cs --measure-runtime --samples 3 --iterations 3` 基线；尚未宣称优化收益 |
+
+最近一次运行时基线（Node `v24.14.1`）为：`counter` generated render/update `476190.48/2500000`、gzip `118`；`keyed-list-100` generated render/update `136363.64/188679.25`、gzip `99`。该数据只用于后续同参数比较，不构成性能承诺。
 
 ## 证据入口
 

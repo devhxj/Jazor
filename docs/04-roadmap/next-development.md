@@ -39,6 +39,17 @@
 | 构造函数注入与复杂 activation | 只考虑有界的强类型子集，保持 base/derived、字段初始化、生命周期和 SSR/browser lifetime 的一致性。 | 至少两个真实消费者、完整 activation 矩阵与所有 profile 验证；不使用 selector 猜测或 `arguments.length` fallback。 |
 | 后退/前进与复杂 URI 状态 | 不把已发生的 `popstate`/`hashchange` 伪装成可取消内部导航。 | URL 恢复、竞态、注册释放与用户确认行为先由 reference 和真实浏览器定义。 |
 
+## P2：协议边界、评估与可测量优化
+
+P2 的执行顺序、Definition of Done 和当前证据见 [RazorVue P2 执行计划](./p2-plan.md)。当前优先级如下：
+
+| 方向 | 预期边界 | 当前状态 |
+| --- | --- | --- |
+| SSR 状态与表单交接 | 继续使用显式 `jazor-ssr-state` envelope；不模拟 `PersistentComponentState` 或 enhanced form。 | provider key 唯一性已硬化；表单协议仍 Guidance |
+| 高级渲染 | `Virtualize`、`QuickGrid`、Section、StreamRendering、localization 和复杂 validation 逐项评估。 | Guidance；没有 typed contract 与浏览器/Release 证据前不注册入口 |
+| JS 互操作 | `IJSRuntime` 家族保持 Reject，使用 typed ECMAScript/WebIDL binding 替代。 | 已有稳定诊断与作者面回归 |
+| 性能与交付 | 以固定 benchmark 比较 render/update、gzip、clean/incremental/HMR/Release。 | 已完成运行时基线，尚未宣称优化收益 |
+
 ## 不扩张的边界
 
 P2 的具体执行顺序、Definition of Done 和证据门槛见 [RazorVue P2 执行计划](./p2-plan.md)。

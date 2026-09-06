@@ -48,6 +48,7 @@ public sealed class JazorSsrHostingTests
         StringAssert.Contains(html, "\"@vue/server-renderer\"");
         StringAssert.Contains(html, "<script id=\"__jazor_ssr_state\" type=\"application/json\">{\"schema\":\"jazor-ssr-state\",\"version\":1,\"props\":{\"Title\":\"SSR \\u003Ctitle\\u003E\"},\"providers\":[{\"key\":\"app:feature\",\"value\":{\"Enabled\":true}}],\"authentication\":null}</script>");
         StringAssert.Contains(html, "state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.trim().length === 0)");
+        StringAssert.Contains(html, "new Set(state.providers.map(provider => provider.key)).size !== state.providers.length");
         StringAssert.Contains(html, "if (!stateElement) throw new Error(\"Jazor SSR state envelope element was not found.\");");
         StringAssert.Contains(html, "if (mountElement.dataset.jazorSsrHydrated === \"1\") throw new Error(\"Jazor SSR hydration was already executed for this mount element.\");");
         StringAssert.Contains(html, "for (const provider of providers) app.provide(provider.key, provider.value);");
