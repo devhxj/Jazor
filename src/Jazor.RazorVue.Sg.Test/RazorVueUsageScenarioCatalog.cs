@@ -1259,7 +1259,7 @@ internal static class RazorVueM5CapabilityLedger
             "PersistentComponentState, PersistentState, and SupplyParameterFromForm are diagnosed at authored source until a versioned SSR/hydration protocol exists. Use a typed endpoint/bootstrap payload; FormName, antiforgery, enhanced post, and built-in EditForm/Input protocols remain outside this plan."),
         new(
             "P2-advanced-rendering",
-            "Virtualize, QuickGrid, SectionOutlet/SectionContent and other Microsoft Blazor built-in UI components; StreamRendering, localization, and complex validation remain separate semantic questions",
+            "ImportMap, AntiforgeryToken, FormMappingScope, Virtualize, QuickGrid, SectionOutlet/SectionContent and other Microsoft Blazor built-in UI components; StreamRendering, localization, and complex validation remain separate semantic questions",
             RazorVueCapabilityPriority.P2,
             RazorVueCapabilityDecision.Reject,
             RazorVueCapabilityStatus.Reject,
