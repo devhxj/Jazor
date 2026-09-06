@@ -4809,18 +4809,19 @@ internal static class RenderEmitter
             "Microsoft.AspNetCore.Components.Authorization" => metadataName is
                 "AuthorizeView" or "AuthorizeRouteView" or "CascadingAuthenticationState",
             "Microsoft.AspNetCore.Components.Forms" => metadataName is
-                "AntiforgeryToken" or "DataAnnotationsValidator" or "EditForm" or "FormMappingScope" or "InputBase`1" or "InputCheckbox" or "InputDate`1" or "InputFile" or
-                "InputNumber`1" or "InputRadio`1" or "InputRadioGroup`1" or "InputSelect`1" or
-                "InputText" or "InputTextArea" or "ValidationMessage`1" or "ValidationSummary",
+                "AntiforgeryToken" or "DataAnnotationsValidator" or "DisplayName`1" or "EditForm" or "FormMappingScope" or "InputBase`1" or "InputCheckbox" or "InputDate`1" or "InputFile" or
+                "InputHidden" or "InputNumber`1" or "InputRadio`1" or "InputRadioGroup`1" or "InputSelect`1" or
+                "InputText" or "InputTextArea" or "Label`1" or "ValidationMessage`1" or "ValidationSummary",
             "Microsoft.AspNetCore.Components.Routing" => metadataName is
                 "FocusOnNavigate" or "NavigationLock" or "NavLink" or "Router",
             "Microsoft.AspNetCore.Components.Sections" => metadataName is "SectionContent" or "SectionOutlet",
             "Microsoft.AspNetCore.Components.Web" => metadataName is
-                "ErrorBoundary" or "HeadContent" or "HeadOutlet" or "PageTitle",
+                "EnvironmentView" or "ErrorBoundary" or "HeadContent" or "HeadOutlet" or "PageTitle",
             "Microsoft.AspNetCore.Components.Web.Virtualization" => metadataName is "Virtualize`1",
             "Microsoft.AspNetCore.Components.QuickGrid" => metadataName is "QuickGrid`1",
             "Microsoft.AspNetCore.Components" => metadataName is
-                "DynamicComponent" or "ImportMap" or "LayoutView" or "RouteView",
+                "CacheView" or "ConfigureBrowser" or "DynamicComponent" or "ImportMap" or "LayoutView" or "ResourcePreloader" or "RouteView",
+            "Microsoft.AspNetCore.Components.Endpoints" => metadataName is "BasePath",
             _ => false
         };
     }
