@@ -29,6 +29,8 @@ P1 不追求完整 Blazor parity，也不引入 `IJSRuntime` 字符串互操作�
 
 ## P1-A：SSR bootstrap 与状态交接
 
+当前已交付的协议基础：`JazorSsrStateEnvelope` 固定 `jazor-ssr-state` schema 和 v1 版本；`JazorSsrRequest` 保持 props/providers 强类型入口，并可携带显式 `JazorAuthenticationState` 快照。服务器 runner 与浏览器 hydration 都拒绝错误 schema、版本、provider 数组或空 provider key。该切片不宣称完整认证、PersistentComponentState 或 enhanced form parity。
+
 ### 协议
 
 - 浏览器和 SSR 共享一个 `jazor-ssr-state` envelope，字段为 `schema`、`version`、`props` 和 `providers`。
