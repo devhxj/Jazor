@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Jazor.Common;
 using Jazor.Compiler;
 using Jazor.RazorVue.Generation;
 using Acornima.Ast;
@@ -244,6 +245,24 @@ internal static class MemberClosureBuilder
         failure = null;
         failureSubject = null;
         var hierarchy = GetSourceComponentHierarchy(componentSymbol).ToImmutableArray();
+
+        // Report an authored base(...) / this(...) protocol at the derived constructor
+        // before inspecting inherited overload sets. This keeps the diagnostic attached to
+        // the actual activation boundary instead of hiding it behind an unrelated selector
+        // ambiguity on a base helper type.
+        foreach (var sourceType in hierarchy)
+        {
+            foreach (var constructor in sourceType.InstanceConstructors.Where(IsExplicitSourceConstructor))
+            {
+                if (!TryValidateConstructorInitializer(constructor, out failure))
+                {
+                    failureSubject = constructor;
+                    plan = ComponentInitializationPlan.Empty;
+                    return false;
+                }
+            }
+        }
+
         for (var index = hierarchy.Length - 1; index >= 0; index--)
         {
             var componentType = hierarchy[index];
@@ -266,25 +285,24 @@ internal static class MemberClosureBuilder
                 continue;
             }
 
-            var parameterless = constructors.SingleOrDefault(static constructor => constructor.Parameters.Length == 0);
-            if (parameterless is null)
+            if (constructors.Length > 1)
             {
-                failure = "RazorVue can execute source component constructors only when the component " +
-                          "activation path is parameterless. Constructor parameters require a Vue-to-CLR " +
-                          "activation/DI protocol that is not part of the RazorVue artifact.";
+                failure = "RazorVue requires one explicit source component constructor for typed activation. " +
+                          "Multiple constructors require an unbound runtime selector.";
                 failureSubject = constructors[0];
                 plan = ComponentInitializationPlan.Empty;
                 return false;
             }
 
-            if (!TryValidateConstructorInitializer(parameterless, out failure))
+            var constructor = constructors[0];
+            if (!TryBuildConstructorParameters(constructor, out var parameters, out failure))
             {
-                failureSubject = parameterless;
+                failureSubject = constructor;
                 plan = ComponentInitializationPlan.Empty;
                 return false;
             }
 
-            phases.Add(new ComponentInitializationPhase(componentType, parameterless));
+            phases.Add(new ComponentInitializationPhase(componentType, constructor, parameters));
         }
 
         plan = new ComponentInitializationPlan(phases.ToImmutable());
@@ -331,6 +349,41 @@ internal static class MemberClosureBuilder
             }
         }
 
+        failure = null;
+        return true;
+    }
+
+    private static bool TryBuildConstructorParameters(
+        IMethodSymbol constructor,
+        out ImmutableArray<ComponentInitializationParameter> parameters,
+        out string? failure)
+    {
+        var builder = ImmutableArray.CreateBuilder<ComponentInitializationParameter>(constructor.Parameters.Length);
+        foreach (var parameter in constructor.Parameters)
+        {
+            if (parameter.RefKind != RefKind.None || parameter.IsParams)
+            {
+                parameters = ImmutableArray<ComponentInitializationParameter>.Empty;
+                failure = "RazorVue constructor activation supports only ordinary service parameters; ref/out/in/params parameters are not supported.";
+                return false;
+            }
+
+            if (parameter.Type.IsValueType || parameter.Type is ITypeParameterSymbol ||
+                parameter.Type.TypeKind is not (TypeKind.Class or TypeKind.Interface or TypeKind.Delegate))
+            {
+                parameters = ImmutableArray<ComponentInitializationParameter>.Empty;
+                failure = "RazorVue constructor activation path is parameterless for this parameter shape; " +
+                          "only reference-type service parameters resolved from Vue providers are supported.";
+                return false;
+            }
+
+            builder.Add(new ComponentInitializationParameter(
+                parameter.Name,
+                LibraryComponentConventions.GetInjectServiceKeyForType(parameter.Type),
+                parameter.Type.ToDisplayString(Format.NameFormat)));
+        }
+
+        parameters = builder.ToImmutable();
         failure = null;
         return true;
     }
@@ -699,7 +752,13 @@ internal sealed record ComponentInitializationPlan(
 /// <summary>One source type's instance-field initializer and optional constructor-body phase.</summary>
 internal sealed record ComponentInitializationPhase(
     INamedTypeSymbol ComponentType,
-    IMethodSymbol? Constructor);
+    IMethodSymbol? Constructor,
+    ImmutableArray<ComponentInitializationParameter> Parameters = default);
+
+internal sealed record ComponentInitializationParameter(
+    string Name,
+    string ServiceKey,
+    string ServiceTypeDisplay);
 
 /// <summary>Declared component members required by one emitted Vue module. 它把 compiler closure 按 Vue 的 state/props/lifecycle 使用方式重新分类。</summary>
 internal sealed record MemberClosure(

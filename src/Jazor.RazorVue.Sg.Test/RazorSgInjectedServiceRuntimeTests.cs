@@ -179,4 +179,146 @@ public sealed class RazorSgInjectedServiceRuntimeTests
             }
             """);
     }
+
+    [TestMethod]
+    public async Task BuildComponent_ActivatesSingleReferenceTypeConstructorFromProvider()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/ConstructorServiceRuntime.razor"),
+            documentText: "<p>@Label</p>",
+            codeBehindSource:
+            """
+            using Microsoft.AspNetCore.Components;
+            using ECMAScript;
+
+            namespace Demo.Pages;
+
+            [ECMAScript]
+            public sealed class BrowserClock
+            {
+                public string Label { get; set; } = "unset";
+            }
+
+            [ECMAScriptModule("./components/constructor-service-runtime")]
+            public partial class ConstructorServiceRuntime : ComponentBase, IVueComponent
+            {
+                private readonly BrowserClock clock;
+
+                public ConstructorServiceRuntime(BrowserClock clock)
+                {
+                    this.clock = clock;
+                }
+
+                private string Label => clock.Label;
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.ConstructorServiceRuntime");
+
+        StringAssert.Contains(observation.ModuleText, "inject(\"jazor:service:Demo.Pages.BrowserClock\")", StringComparison.Ordinal);
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/constructor-service-runtime.mjs",
+            observation.ModuleText,
+            "constructor-service-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+            import component from "./components/constructor-service-runtime.mjs";
+            import { __serviceProvider } from "vue";
+
+            test("single reference constructor receives the typed provider before render", () => {
+                __serviceProvider("jazor:service:Demo.Pages.BrowserClock", { Label: "constructor-clock" });
+                const render = component.setup({}, { slots: {} });
+                assert.equal(render().children, "constructor-clock");
+            });
+            """,
+            vueRuntimeSource: """
+            const providers = new Map();
+            export function __serviceProvider(key, value) { providers.set(key, value); }
+            export function defineComponent(options) { return options; }
+            export function inject(key) { return providers.get(key); }
+            export function reactive(value) { return value; }
+            export function createStaticVNode(html, count) { return { name: "__static", props: { html, count }, children: html }; }
+            export function h(name, props, children) { return { name, props, children }; }
+            export function openBlock() { return null; }
+            export function createElementBlock(name, props, children) { return { name, props, children }; }
+            export function createBlock(name, props, children) { return { name, props, children }; }
+            """);
+    }
+
+    [TestMethod]
+    public async Task BuildComponent_ActivatesDerivedReferenceConstructorAfterBaseReplay()
+    {
+        var observation = await RazorSgOfficialAuthoringTestHost.BuildComponentAsync(
+            documentPath: RazorSgTestHost.GetTestDocumentPath("Pages/DerivedConstructorServiceRuntime.razor"),
+            documentText: "@inherits Demo.Pages.ConstructorBase\n<p>@Label</p>",
+            codeBehindSource:
+            """
+            using Microsoft.AspNetCore.Components;
+            using ECMAScript;
+
+            namespace Demo.Pages;
+
+            [ECMAScript]
+            public sealed class BrowserClock
+            {
+                public string Label { get; set; } = "unset";
+            }
+
+            public abstract class ConstructorBase : ComponentBase
+            {
+                protected string Prefix = "unset";
+
+                protected ConstructorBase()
+                {
+                    Prefix = "base";
+                }
+            }
+
+            [ECMAScriptModule("./components/derived-constructor-service-runtime")]
+            public partial class DerivedConstructorServiceRuntime : IVueComponent
+            {
+                private readonly BrowserClock clock;
+
+                public DerivedConstructorServiceRuntime(BrowserClock clock)
+                {
+                    this.clock = clock;
+                }
+
+                private string Label => Prefix + ":" + clock.Label;
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            componentMetadataName: "Demo.Pages.DerivedConstructorServiceRuntime");
+
+        StringAssert.Contains(observation.ModuleText, "inject(\"jazor:service:Demo.Pages.BrowserClock\")", StringComparison.Ordinal);
+        await RazorSgOfficialDenoRuntimeTestHost.RunModuleTestAsync(
+            "components/derived-constructor-service-runtime.mjs",
+            observation.ModuleText,
+            "derived-constructor-service-runtime.test.mjs",
+            """
+            import assert from "node:assert/strict";
+            import test from "node:test";
+            import component from "./components/derived-constructor-service-runtime.mjs";
+            import { __serviceProvider } from "vue";
+
+            test("base replay runs before derived service constructor", () => {
+                __serviceProvider("jazor:service:Demo.Pages.BrowserClock", { Label: "derived-clock" });
+                const render = component.setup({}, { slots: {} });
+                assert.equal(render().children, "base:derived-clock");
+            });
+            """,
+            vueRuntimeSource: """
+            const providers = new Map();
+            export function __serviceProvider(key, value) { providers.set(key, value); }
+            export function defineComponent(options) { return options; }
+            export function inject(key) { return providers.get(key); }
+            export function reactive(value) { return value; }
+            export function createStaticVNode(html, count) { return { name: "__static", props: { html, count }, children: html }; }
+            export function h(name, props, children) { return { name, props, children }; }
+            export function openBlock() { return null; }
+            export function createElementBlock(name, props, children) { return { name, props, children }; }
+            export function createBlock(name, props, children) { return { name, props, children }; }
+            """);
+    }
 }

@@ -868,7 +868,7 @@ public sealed class MemberClosureBuilderContractTests
                 new UnsupportedConstructorScenario(
                     components[parameterized!.Name],
                     parameterized.InstanceConstructors.Single(static constructor => !constructor.IsImplicitlyDeclared),
-                    "activation path is parameterless"),
+                    "only reference-type service parameters resolved from Vue providers are supported"),
                 new UnsupportedConstructorScenario(
                     components[thisChained!.Name],
                     thisChained.InstanceConstructors.Single(static constructor =>

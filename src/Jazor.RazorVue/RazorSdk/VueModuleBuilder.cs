@@ -641,7 +641,9 @@ internal static class VueModuleBuilder
             directRender.UsesWithCtx || ordinaryRenderFeatures.UsesWithCtx,
             directRender.UsesCreateSlots || ordinaryRenderFeatures.UsesCreateSlots,
             usesMergeProps,
-            usesInject: features.UsesInject,
+            usesInject: features.UsesInject ||
+                        setupParts.InitializationPhases.Any(static phase =>
+                            !phase.ConstructorParameters.IsDefaultOrEmpty),
             usesCascading: !cascadingBindings.IsDefaultOrEmpty,
             usesServerPrefetch: features.UsesParameterViewState ||
                                 features.OnInitializedAsync is not null));

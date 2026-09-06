@@ -877,7 +877,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer |
             RazorVueCapabilityEvidence.SsrHydration,
-            "Nested and recreated components have isolated Release package/browser proof for writable property activation; the SSR runner and hydration document carry the same serialized application providers. Constructor injection/parameterized activation remains an explicit JAZORVGA024 boundary, while provider lifetime/reference parity and SSR update side effects are explicitly excluded."),
+            "Nested and recreated components have isolated Release package/browser proof for writable property activation; the SSR runner and hydration document carry the same serialized application providers. A single explicit constructor with ordinary reference-type service parameters is also lowered through the existing typed provider key; provider lifetime/reference parity and SSR update side effects remain explicitly excluded."),
         new(
             "P1-cascading-values",
             "CascadingValue, [CascadingParameter], named/nested override, browser updates, and initial SSR hydration cascade",
@@ -1266,17 +1266,19 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.None,
             "Each feature needs a browser semantic proof before it can become an adapter."),
         new(
-            "P2-parameterized-activation",
-            "Primary constructors, constructor injection, this(...), and base(args) component activation",
-            RazorVueCapabilityPriority.P2,
+            "P1-parameterized-activation",
+            "Single-constructor reference-type service activation; primary constructors, overload selectors, this(...), and base(args) remain unsupported",
+            RazorVueCapabilityPriority.P1,
             RazorVueCapabilityDecision.Reject,
-            RazorVueCapabilityStatus.Reject,
+            RazorVueCapabilityStatus.Support,
             "MemberClosureBuilder + component activation adapter",
             "JAZORVGA024",
-            "MemberClosureBuilderContractTests.TryBuild_RejectsUnsupportedSourceConstructorActivationProtocols",
+            "RazorSgInjectedServiceRuntimeTests.BuildComponent_ActivatesSingleReferenceTypeConstructorFromProvider; ComponentInitializationLowererContractTests.Build_LowersReferenceServiceConstructorThroughTypedVueInject; MemberClosureBuilderContractTests.TryBuild_RejectsUnsupportedSourceConstructorActivationProtocols",
             RazorVueCapabilityEvidence.AuthorSource |
-            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator,
-            "No activation/DI protocol can preserve base initialization order yet."),
+            RazorVueCapabilityEvidence.OfficialRazorSourceGenerator |
+            RazorVueCapabilityEvidence.ModuleArtifact |
+            RazorVueCapabilityEvidence.DenoRuntime,
+            "The supported slice uses one Roslyn-bound constructor and existing jazor:service:<type> providers; unsupported activation shapes remain diagnosed at member closure."),
         new(
             "crosscut-hmr",
             "Component HMR identity and template/logic boundary metadata",

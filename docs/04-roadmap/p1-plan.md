@@ -59,6 +59,7 @@ P1 不追求完整 Blazor parity，也不引入 `IJSRuntime` 字符串互操作�
 
 - selector 由 Roslyn 绑定符号提供，不能按 `arguments.length` 猜测；
 - base constructor、字段初始化、派生 constructor 和 lifecycle 顺序在 browser/SSR 一致；
+- 单一显式构造函数的普通引用类型服务参数通过既有 `jazor:service:<type>` provider key 解析；缺失 provider 必须在 setup 激活处失败；
 - 外部 base type、`this(...)`、`ref/out/in/params` 驱动的 dispatch 和无法进入 module closure 的类型继续 Reject；
 - 至少两个独立 consumer 和完整 activation 矩阵通过后，才能更新作者指南为 Support。
 

@@ -115,7 +115,8 @@ Element Plus 组件按普通 Razor 组件使用：`ElButtonType` 等 enum 保持
 | 嵌套 non-record runtime class | **Support with constraints** | 可达的创建和成员会进入闭包。实例可能被 Vue deep Proxy 包装，因此 private storage 会降为 `$jazor$private$...` ordinary property；不要在作者代码中依赖该实现名。 |
 | record、interface | **Support with compiler semantics** | record 是 structural lowering，interface 是编译期 contract；两者不等同于可随意保留 CLR runtime identity 的对象模型。 |
 | 无参显式组件/源码基类实例构造函数、默认 `base()` 链、constructor body | **Support with constraints** | setup 先建立 CLR default state，再按 base-to-derived 执行 field/property initializer 与 constructor body；constructor 中的普通 C# 仍需 compiler 支持。 |
-| primary-constructor 参数、参数化 activation、`this(...)`、`base(args)` | **Reject (`JAZORVGA024`)** | Vue setup 当前没有向 component activation 传递 CLR constructor 参数的协议；把输入改为 `[Parameter]`/VueInject，或把初始化收敛到无参 constructor/lifecycle。 |
+| primary-constructor 参数、`this(...)`、`base(args)`、值类型/泛型/`ref`/`out`/`in`/`params` 构造参数、多构造函数 | **Reject (`JAZORVGA024`)** | 这些形状没有稳定的静态 activation selector；把输入改为 `[Parameter]`/VueInject，或把初始化收敛到无参 constructor/lifecycle。 |
+| 单一显式构造函数 + 普通引用类型服务参数 | **Support with constraints** | 参数按现有 `jazor:service:<type>` provider key 通过 Vue `inject()` 解析；先完成 base-to-derived initializer/constructor replay，再进入 property injection 和 lifecycle。服务必须由宿主显式提供，缺失 provider 会在 setup 激活时失败。 |
 | 当前组件 indexer | **Reject** | 当前 state/props projection 没有 indexer runtime protocol。改为普通方法或显式集合成员。 |
 
 ### 推荐的复杂逻辑形状
@@ -251,7 +252,7 @@ RazorVue 不会在 direct-render 层重新实现 C# 成员、调用、转换或 
 
 member closure 只物化 render、已支持 lifecycle、constructor replay 和捕获 handler 可达的字段、属性、方法、nested runtime class 及其依赖，并将当前组件的源码基类视为同一作者成员面。无法确定成员导出名、类型或引用关系时报告 `JAZORVGA024`，而不是生成一个运行时才失败的空引用。
 
-组件本身不是由 Vue setup `new` 出来的 CLR object；因此 constructor 支持采用结构化 replay：先创建每个 state slot 的 CLR default，再按基类到派生类执行 source initializer 和无参 constructor body。该 replay 不改变普通 nested runtime class 的 class lowering；nested class 仍按其自身 constructor protocol 执行。
+组件本身不是由 Vue setup `new` 出来的 CLR object；因此 constructor 支持采用结构化 replay：先创建每个 state slot 的 CLR default，再按基类到派生类执行 source initializer 和 constructor body。单一显式 constructor 的普通引用类型服务参数从既有 Vue provider key 解析后传入；其他 activation 形状仍在 member closure 阶段拒绝。该 replay 不改变普通 nested runtime class 的 class lowering；nested class 仍按其自身 constructor protocol 执行。
 
 ### Proxy-safe class storage
 

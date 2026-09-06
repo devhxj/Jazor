@@ -101,6 +101,22 @@ public sealed class ComponentInitializationLowererContractTests
     }
 
     [TestMethod]
+    public void Build_LowersReferenceServiceConstructorThroughTypedVueInject()
+    {
+        var fixture = CreateFixture();
+
+        var result = Build(fixture.ServiceConstructor);
+
+        var phase = result.Phases.Single(static candidate => candidate.ConstructorStatement is not null);
+        Assert.HasCount(1, phase.ConstructorParameters);
+        Assert.AreEqual("service", phase.ConstructorParameters[0].Name);
+        Assert.AreEqual("jazor:service:InitializationContracts.BrowserService", phase.ConstructorParameters[0].ServiceKey);
+        var script = phase.ConstructorStatement!.ToKnRECMAScript();
+        StringAssert.Contains(script, "inject(\"jazor:service:InitializationContracts.BrowserService\")", StringComparison.Ordinal);
+        StringAssert.Contains(script, "service", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void PrivateLoweringHelpers_RejectImplicitConstructorWithoutSourceBody()
     {
         var fixture = CreateFixture();
@@ -296,6 +312,27 @@ public sealed class ComponentInitializationLowererContractTests
                 }
             }
 
+            public sealed class BrowserService
+            {
+                public int Value { get; } = 7;
+            }
+
+            [ECMAScriptModule("./components/service-constructor")]
+            public sealed class ServiceConstructorComponent : ComponentBase, IVueComponent
+            {
+                private readonly BrowserService service;
+
+                public ServiceConstructorComponent(BrowserService service)
+                {
+                    this.service = service;
+                }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.AddContent(0, service.Value);
+                }
+            }
+
             [ECMAScriptModule("./components/initialized")]
             public sealed class InitializedComponent : BlockConstructorBase, IVueComponent
             {
@@ -347,13 +384,15 @@ public sealed class ComponentInitializationLowererContractTests
         var initializedType = compilation.GetTypeByMetadataName("InitializationContracts.InitializedComponent");
         var noConstructorType = compilation.GetTypeByMetadataName("InitializationContracts.NoConstructorComponent");
         var importingType = compilation.GetTypeByMetadataName("InitializationContracts.ImportingConstructorComponent");
+        var serviceConstructorType = compilation.GetTypeByMetadataName("InitializationContracts.ServiceConstructorComponent");
         Assert.IsNotNull(initializedType);
         Assert.IsNotNull(noConstructorType);
         Assert.IsNotNull(importingType);
+        Assert.IsNotNull(serviceConstructorType);
         Assert.IsTrue(
             GeneratedCSharpBinder.TryBindFinalCompilation(
             compilation,
-                ImmutableArray.Create(initializedType!, noConstructorType!, importingType!),
+                ImmutableArray.Create(initializedType!, noConstructorType!, importingType!, serviceConstructorType!),
                 out var binding,
                 out var bindingFailure),
             bindingFailure);
@@ -365,7 +404,8 @@ public sealed class ComponentInitializationLowererContractTests
         return new Fixture(
             CreateComponentFixture(compilation, binding, components[initializedType.Name]),
             CreateComponentFixture(compilation, binding, components[noConstructorType.Name]),
-            CreateComponentFixture(compilation, binding, components[importingType.Name]));
+            CreateComponentFixture(compilation, binding, components[importingType.Name]),
+            CreateComponentFixture(compilation, binding, components[serviceConstructorType.Name]));
     }
 
     private static ComponentFixture CreateComponentFixture(
@@ -394,7 +434,8 @@ public sealed class ComponentInitializationLowererContractTests
     private sealed record Fixture(
         ComponentFixture Initialized,
         ComponentFixture NoConstructor,
-        ComponentFixture Importing);
+        ComponentFixture Importing,
+        ComponentFixture ServiceConstructor);
 
     private sealed record ComponentFixture(
         Compilation Compilation,

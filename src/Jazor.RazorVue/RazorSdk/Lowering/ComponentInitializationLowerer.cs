@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Acornima;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -53,10 +54,11 @@ internal static class ComponentInitializationLowerer
                     compilation,
                     closure,
                     phase.Constructor,
+                    phase.Parameters,
                     declaredNames,
                     importContext.WithNewScope(),
                     cancellationToken);
-            phases.Add(new ComponentInitializationPhaseBuild(phase.ComponentType, statement));
+            phases.Add(new ComponentInitializationPhaseBuild(phase.ComponentType, statement, phase.Parameters));
         }
 
         var imports = ImmutableArray.CreateBuilder<ImportDeclaration>();
@@ -75,6 +77,23 @@ internal static class ComponentInitializationLowerer
         IReadOnlyDictionary<ISymbol, string> declaredNames,
         SenseArgument argument,
         CancellationToken cancellationToken)
+        => LowerConstructorBody(
+            compilation,
+            closure,
+            constructor,
+            ImmutableArray<ComponentInitializationParameter>.Empty,
+            declaredNames,
+            argument,
+            cancellationToken);
+
+    private static Statement LowerConstructorBody(
+        Compilation compilation,
+        MemberClosure closure,
+        IMethodSymbol constructor,
+        ImmutableArray<ComponentInitializationParameter> parameters,
+        IReadOnlyDictionary<ISymbol, string> declaredNames,
+        SenseArgument argument,
+        CancellationToken cancellationToken)
     {
         var walker = new SemanticWalker(
             closure.ComponentSymbol,
@@ -89,6 +108,12 @@ internal static class ComponentInitializationLowerer
                 parameterPropertiesUseState: closure.UsesParameterViewState)
         };
         var body = GetConstructorFunctionBody(compilation, constructor, walker, argument, cancellationToken);
+        var invocationArguments = parameters
+            .Select(static parameter => (Expression)new CallExpression(
+                new Identifier("inject"),
+                NodeList.From<Expression>(JavaScriptAstFactory.CreateStringLiteral(parameter.ServiceKey)),
+                optional: false))
+            .ToImmutableArray();
 
         // A constructor return exits only that constructor, not the surrounding setup factory.
         // Wrapping the lowered body in an IIFE keeps this C# boundary intact without inventing
@@ -96,11 +121,11 @@ internal static class ComponentInitializationLowerer
         // constructor 内的 return 只能结束该阶段，不能提前 return setup factory。
         return new NonSpecialExpressionStatement(new CallExpression(
             new ArrowFunctionExpression(
-                NodeList.Empty<Node>(),
+                NodeList.From<Node>(parameters.Select(static parameter => new Identifier(parameter.Name))),
                 body,
                 expression: false,
                 async: false),
-            NodeList.Empty<Expression>(),
+            NodeList.From<Expression>(invocationArguments),
             optional: false));
     }
 
@@ -221,4 +246,5 @@ internal sealed record ComponentInitializationBuildResult(
 /// <summary>One source type's lowered constructor statement; null means initializer-only phase.</summary>
 internal sealed record ComponentInitializationPhaseBuild(
     INamedTypeSymbol ComponentType,
-    Statement? ConstructorStatement);
+    Statement? ConstructorStatement,
+    ImmutableArray<ComponentInitializationParameter> ConstructorParameters = default);

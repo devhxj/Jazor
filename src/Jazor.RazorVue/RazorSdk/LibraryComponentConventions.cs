@@ -221,6 +221,14 @@ internal static class LibraryComponentConventions
         return "jazor:service:" + typeName;
     }
 
+    internal static string GetInjectServiceKeyForType(ITypeSymbol serviceType)
+    {
+        if (serviceType is null)
+            throw new ArgumentNullException(nameof(serviceType));
+
+        return "jazor:service:" + serviceType.ToDisplayString(Format.NameFormat);
+    }
+
     public static ImmutableDictionary<string, string> BuildParameterRuntimeNameMap(
         INamedTypeSymbol componentType)
     {
