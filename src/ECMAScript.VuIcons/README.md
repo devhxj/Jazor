@@ -63,7 +63,7 @@ RazorVue authoring contract。消费方生成的图标组件模块进入消费�
 dotnet run --file scripts/csharp/generate-vu-icons.cs -- --source .tmp/vu-icons/package --output src/ECMAScript.VuIcons
 ```
 
-生成器从 upstream `icons.json`、`icons-data.js` 和 Vue 3 wrapper source 同时验证 component/name/data 的一一对应关系，并更新 C# descriptor、`VuIconName` 与本地 browser bridge。更新后运行：
+生成器从 upstream `icons.json`、`icons-data.js`、`web-types.json` 和 Vue 3 wrapper source 同时验证 component/name/data/documentation 的一一对应关系，并更新 C# descriptor、`VuIconName` 与本地 browser bridge。生成的每个静态组件摘要和公共 prop 摘要保留 `web-types.json` 原文；按需加载说明位于 `<remarks>`。更新后运行：
 
 ```bash
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project vu-icons

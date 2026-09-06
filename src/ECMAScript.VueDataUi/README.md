@@ -59,6 +59,8 @@ Dataset 与稳定 config 字段都有具体 C# 类型。对于 upstream 仍在�
 
 ## 完整组件目录
 
+文档来源需要区分：`vue-data-ui` 3.23.4 npm 包没有 JetBrains `web-types.json`，组件 `.d.ts` 的 `Props` 类型也没有逐组件 JSDoc；因此本包不会把本地概括说明伪装成上游原始注释。上游可追溯的原文随包保存在 `dist/types/vue-data-ui.d.ts`、各组件 `.d.ts`、`README.md` 和 `dist/llms.txt` 中。当前 C# XML 注释只在上游有对应文字时保留原文，其余组件说明属于 binding contract 说明。后续若上游发布结构化组件文档，应将该快照接入生成器并补齐逐 prop 原文。
+
 当前包与 `dist/components/vue-ui-*.js` 一一对应，共 71 个公开 Razor component：
 
 - 基础与 Cartesian：`VueUiXy`、`VueUiXyCanvas`、`VueUiVerticalBar`、`VueUiHorizontalBar`、`VueUi3dBar`、`VueUiBump`、`VueUiCandlestick`、`VueUiDumbbell`、`VueUiHeatmap`、`VueUiHistoryPlot`、`VueUiRidgeline`、`VueUiScatter`、`VueUiSparkline`、`VueUiSparkTrend`、`VueUiStackbar`、`VueUiStackline`、`VueUiStripPlot`。

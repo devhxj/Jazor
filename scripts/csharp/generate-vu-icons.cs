@@ -11,8 +11,9 @@ var outputRoot = Path.GetFullPath(options.Output);
 var packagePath = Path.Combine(sourceRoot, "package.json");
 var iconListPath = Path.Combine(sourceRoot, "dist", "icons.json");
 var iconDataPath = Path.Combine(sourceRoot, "dist", "icons-data.js");
+var webTypesPath = Path.Combine(sourceRoot, "dist", "web-types.json");
 
-foreach (var path in new[] { packagePath, iconListPath, iconDataPath, Path.Combine(sourceRoot, "LICENSE") })
+foreach (var path in new[] { packagePath, iconListPath, iconDataPath, webTypesPath, Path.Combine(sourceRoot, "LICENSE") })
 {
     if (!File.Exists(path))
         throw new FileNotFoundException("vu-icons source artifact is incomplete.", path);
@@ -23,12 +24,13 @@ var version = package.RootElement.GetProperty("version").GetString()
     ?? throw new InvalidOperationException("vu-icons package.json does not contain a version.");
 var componentNames = ReadComponentNames(iconListPath);
 var iconData = ReadIconData(iconDataPath);
+var documentation = ReadDocumentation(webTypesPath);
 
 if (componentNames.Length != componentNames.Distinct(StringComparer.Ordinal).Count())
     throw new InvalidOperationException("vu-icons component names must be unique.");
 
 var icons = componentNames
-    .Select(componentName => ReadIcon(sourceRoot, componentName, iconData))
+    .Select(componentName => ReadIcon(sourceRoot, componentName, iconData, documentation))
     .OrderBy(static icon => icon.ComponentName, StringComparer.Ordinal)
     .ToArray();
 var usedIconNames = icons.Select(static icon => icon.IconName).ToHashSet(StringComparer.Ordinal);
@@ -90,7 +92,43 @@ static string[] ReadComponentNames(string path)
         .ToArray();
 }
 
-static Icon ReadIcon(string sourceRoot, string componentName, IReadOnlyDictionary<string, IconData> iconData)
+static IReadOnlyDictionary<string, IconDocumentation> ReadDocumentation(string path)
+{
+    using var document = JsonDocument.Parse(File.ReadAllText(path));
+    var result = new Dictionary<string, IconDocumentation>(StringComparer.Ordinal);
+    var tags = document.RootElement.GetProperty("contributions").GetProperty("html").GetProperty("tags");
+    foreach (var tag in tags.EnumerateArray())
+    {
+        var name = tag.GetProperty("name").GetString()
+            ?? throw new InvalidOperationException("vu-icons web-types tag has no name.");
+        var description = tag.TryGetProperty("description", out var descriptionElement)
+            ? descriptionElement.GetString()
+            : null;
+        var props = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (tag.TryGetProperty("props", out var propElements))
+        {
+            foreach (var prop in propElements.EnumerateArray())
+            {
+                var propName = prop.GetProperty("name").GetString();
+                var propDescription = prop.TryGetProperty("description", out var propDescriptionElement)
+                    ? propDescriptionElement.GetString()
+                    : null;
+                if (!string.IsNullOrWhiteSpace(propName) && !string.IsNullOrWhiteSpace(propDescription))
+                    props[propName] = propDescription!;
+            }
+        }
+
+        result[name] = new IconDocumentation(description, props);
+    }
+
+    return result;
+}
+
+static Icon ReadIcon(
+    string sourceRoot,
+    string componentName,
+    IReadOnlyDictionary<string, IconData> iconData,
+    IReadOnlyDictionary<string, IconDocumentation> documentation)
 {
     if (!componentName.StartsWith("Vu", StringComparison.Ordinal) || componentName.Length == 2)
         throw new InvalidOperationException($"Unexpected vu-icons component name '{componentName}'.");
@@ -104,7 +142,10 @@ static Icon ReadIcon(string sourceRoot, string componentName, IReadOnlyDictionar
     if (string.IsNullOrWhiteSpace(iconName) || !iconData.TryGetValue(iconName, out var data))
         throw new InvalidOperationException($"Could not resolve icon data for {componentName}.");
 
-    return new Icon(componentName, componentName[2..], iconName, data);
+    if (!documentation.TryGetValue(componentName, out var docs))
+        throw new InvalidOperationException($"Could not resolve web-types documentation for {componentName}.");
+
+    return new Icon(componentName, componentName[2..], iconName, data, docs);
 }
 
 static string GenerateIconNames(string version, IReadOnlyList<Icon> icons)
@@ -143,9 +184,10 @@ static string GenerateComponents(IReadOnlyList<Icon> icons)
     for (var index = 0; index < icons.Count; index++)
     {
         var icon = icons[index];
-        builder.Append("/// <summary>按需 static renderer for upstream <c>")
+        builder.Append("/// <summary>").Append(XmlText(icon.Documentation.Description ?? icon.ComponentName)).AppendLine("</summary>");
+        builder.Append("/// <remarks>按需 static renderer for upstream <c>")
             .Append(icon.ComponentName)
-            .AppendLine("</c>; only its SVG module is materialized.</summary>");
+            .AppendLine("</c>; only its SVG module is materialized.</remarks>");
         builder.Append("[ECMAScript(\"vu-icons/").Append(icon.ComponentName).Append("\", Transform.Component, \"").Append(icon.ComponentName).AppendLine("\")]");
         builder.Append("public sealed class ").Append(icon.ComponentName).AppendLine(" : VuIconComponentBase;");
         if (index != icons.Count - 1)
@@ -393,9 +435,16 @@ static string GetIconStyleSheet()
 }
 """;
 
+static string XmlText(string value)
+    => value.Replace("&", "&amp;", StringComparison.Ordinal)
+        .Replace("<", "&lt;", StringComparison.Ordinal)
+        .Replace(">", "&gt;", StringComparison.Ordinal);
+
 internal sealed record IconData(string ViewBox, string Content);
 
-internal sealed record Icon(string ComponentName, string EnumMember, string IconName, IconData Data);
+internal sealed record IconDocumentation(string? Description, IReadOnlyDictionary<string, string> Props);
+
+internal sealed record Icon(string ComponentName, string EnumMember, string IconName, IconData Data, IconDocumentation Documentation);
 
 internal sealed record GeneratorOptions(string Source, string Output)
 {

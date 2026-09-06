@@ -4,6 +4,15 @@
 
 ## 2026-09-06
 
+### Jazor 0.31.2
+
+> 绑定组件的 IDE 文档注释继续对齐上游原文。本版本按 `PATCH` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。
+
+#### 改进
+
+- VuIcons 生成器现在强制读取上游 `web-types.json`，静态 icon 组件与公共 props 的 XML 注释保留 `vu-icons` 原始说明，并在 remarks 中保留按需加载约束。
+- VueDataUi README 明确记录 npm 包缺少结构化 `web-types.json` 的限制和可追溯的上游 README、llms 与 TypeScript 声明来源。
+
 ### Jazor 0.31.1
 
 > 三套 Vue 组件绑定补齐上游文档注释。本版本按 `PATCH` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。

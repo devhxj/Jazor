@@ -6,22 +6,22 @@ namespace ECMAScript.VuIcons;
 /// </summary>
 public abstract class VuIconComponentBase : ComponentBase, ECMAScript.Vue.IVueComponent
 {
-    /// <summary>Icon size，number maps to px while string keeps the upstream numeric parsing behavior.</summary>
+    /// <summary>Icon size</summary>
     [Parameter]
     [ECMAScriptName("size")]
     public Vue.VueStringNumberValue? Size { get; set; }
 
-    /// <summary>CSS color token。</summary>
+    /// <summary>Icon color</summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
-    /// <summary>Forwarded CSS class for the static wrapper component。</summary>
+    /// <summary>Custom class name</summary>
     [Parameter]
     [ECMAScriptName("className")]
     public string? ClassName { get; set; }
 
-    /// <summary>Whether the icon uses the upstream spin animation。</summary>
+    /// <summary>Spin animation</summary>
     [Parameter]
     [ECMAScriptName("spin")]
     public bool? Spin { get; set; }
@@ -34,25 +34,28 @@ public abstract class VuIconComponentBase : ComponentBase, ECMAScript.Vue.IVueCo
 [ECMAScript("vu-icons", Transform.Component, "VuIcon")]
 public sealed class VuIcon : ComponentBase, ECMAScript.Vue.IVueComponent
 {
-    /// <summary>Canonical required Razor icon token。The closed enum prevents misspelled upstream names.</summary>
+    /// <summary>Icon name. The closed enum prevents misspelled upstream names.</summary>
     [Parameter]
     [EditorRequired]
     [ECMAScriptName("name")]
     public VuIconName Name { get; set; }
 
+    /// <summary>Icon size</summary>
     [Parameter]
     [ECMAScriptName("size")]
     public Vue.VueStringNumberValue? Size { get; set; }
 
+    /// <summary>Icon color</summary>
     [Parameter]
     [ECMAScriptName("color")]
     public string? Color { get; set; }
 
-    /// <summary>Falls through to the rendered element's CSS class, matching the upstream core component.</summary>
+    /// <summary>Custom class name</summary>
     [Parameter]
     [ECMAScriptName("class")]
     public string? Class { get; set; }
 
+    /// <summary>Spin animation</summary>
     [Parameter]
     [ECMAScriptName("spin")]
     public bool? Spin { get; set; }

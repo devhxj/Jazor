@@ -2,7286 +2,9107 @@
 namespace ECMAScript.VuIcons;
 
 // One descriptor per upstream wrapper keeps static icon usage on a one-icon ESM path.
-/// <summary>按需 static renderer for upstream <c>VuAArrowDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAArrowDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAArrowDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAArrowDown", Transform.Component, "VuAArrowDown")]
 public sealed class VuAArrowDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAArrowUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAArrowUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAArrowUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAArrowUp", Transform.Component, "VuAArrowUp")]
 public sealed class VuAArrowUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuALargeSmall</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuALargeSmall</summary>
+/// <remarks>按需 static renderer for upstream <c>VuALargeSmall</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuALargeSmall", Transform.Component, "VuALargeSmall")]
 public sealed class VuALargeSmall : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAccessibility</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAccessibility</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAccessibility</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAccessibility", Transform.Component, "VuAccessibility")]
 public sealed class VuAccessibility : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuActive</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuActive</summary>
+/// <remarks>按需 static renderer for upstream <c>VuActive</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuActive", Transform.Component, "VuActive")]
 public sealed class VuActive : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuActivity</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuActivity</summary>
+/// <remarks>按需 static renderer for upstream <c>VuActivity</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuActivity", Transform.Component, "VuActivity")]
 public sealed class VuActivity : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAdd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAdd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAdd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAdd", Transform.Component, "VuAdd")]
 public sealed class VuAdd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAirVent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAirVent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAirVent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAirVent", Transform.Component, "VuAirVent")]
 public sealed class VuAirVent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAirplay</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAirplay</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAirplay</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAirplay", Transform.Component, "VuAirplay")]
 public sealed class VuAirplay : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlarm</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlarm</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlarm</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlarm", Transform.Component, "VuAlarm")]
 public sealed class VuAlarm : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlarmClock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlarmClock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlarmClock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlarmClock", Transform.Component, "VuAlarmClock")]
 public sealed class VuAlarmClock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlarmClockCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlarmClockCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlarmClockCheck", Transform.Component, "VuAlarmClockCheck")]
 public sealed class VuAlarmClockCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlarmClockMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlarmClockMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlarmClockMinus", Transform.Component, "VuAlarmClockMinus")]
 public sealed class VuAlarmClockMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlarmClockOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlarmClockOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlarmClockOff", Transform.Component, "VuAlarmClockOff")]
 public sealed class VuAlarmClockOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlarmClockPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlarmClockPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlarmClockPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlarmClockPlus", Transform.Component, "VuAlarmClockPlus")]
 public sealed class VuAlarmClockPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlarmSmoke</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlarmSmoke</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlarmSmoke</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlarmSmoke", Transform.Component, "VuAlarmSmoke")]
 public sealed class VuAlarmSmoke : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlbum</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlbum</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlbum</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlbum", Transform.Component, "VuAlbum")]
 public sealed class VuAlbum : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignCenter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignCenter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignCenter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignCenter", Transform.Component, "VuAlignCenter")]
 public sealed class VuAlignCenter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignCenterHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignCenterHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignCenterHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignCenterHorizontal", Transform.Component, "VuAlignCenterHorizontal")]
 public sealed class VuAlignCenterHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignCenterVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignCenterVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignCenterVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignCenterVertical", Transform.Component, "VuAlignCenterVertical")]
 public sealed class VuAlignCenterVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignEndHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignEndHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignEndHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignEndHorizontal", Transform.Component, "VuAlignEndHorizontal")]
 public sealed class VuAlignEndHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignEndVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignEndVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignEndVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignEndVertical", Transform.Component, "VuAlignEndVertical")]
 public sealed class VuAlignEndVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignHorizontalDistributeCenter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalDistributeCenter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignHorizontalDistributeCenter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignHorizontalDistributeCenter", Transform.Component, "VuAlignHorizontalDistributeCenter")]
 public sealed class VuAlignHorizontalDistributeCenter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignHorizontalDistributeEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalDistributeEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignHorizontalDistributeEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignHorizontalDistributeEnd", Transform.Component, "VuAlignHorizontalDistributeEnd")]
 public sealed class VuAlignHorizontalDistributeEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignHorizontalDistributeStart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalDistributeStart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignHorizontalDistributeStart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignHorizontalDistributeStart", Transform.Component, "VuAlignHorizontalDistributeStart")]
 public sealed class VuAlignHorizontalDistributeStart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignHorizontalJustifyCenter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalJustifyCenter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignHorizontalJustifyCenter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignHorizontalJustifyCenter", Transform.Component, "VuAlignHorizontalJustifyCenter")]
 public sealed class VuAlignHorizontalJustifyCenter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignHorizontalJustifyEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalJustifyEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignHorizontalJustifyEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignHorizontalJustifyEnd", Transform.Component, "VuAlignHorizontalJustifyEnd")]
 public sealed class VuAlignHorizontalJustifyEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignHorizontalJustifyStart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalJustifyStart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignHorizontalJustifyStart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignHorizontalJustifyStart", Transform.Component, "VuAlignHorizontalJustifyStart")]
 public sealed class VuAlignHorizontalJustifyStart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignHorizontalSpaceAround</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalSpaceAround</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignHorizontalSpaceAround</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignHorizontalSpaceAround", Transform.Component, "VuAlignHorizontalSpaceAround")]
 public sealed class VuAlignHorizontalSpaceAround : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignHorizontalSpaceBetween</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignHorizontalSpaceBetween</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignHorizontalSpaceBetween</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignHorizontalSpaceBetween", Transform.Component, "VuAlignHorizontalSpaceBetween")]
 public sealed class VuAlignHorizontalSpaceBetween : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignJustify</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignJustify</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignJustify</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignJustify", Transform.Component, "VuAlignJustify")]
 public sealed class VuAlignJustify : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignLeft", Transform.Component, "VuAlignLeft")]
 public sealed class VuAlignLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignRight", Transform.Component, "VuAlignRight")]
 public sealed class VuAlignRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignStartHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignStartHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignStartHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignStartHorizontal", Transform.Component, "VuAlignStartHorizontal")]
 public sealed class VuAlignStartHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignStartVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignStartVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignStartVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignStartVertical", Transform.Component, "VuAlignStartVertical")]
 public sealed class VuAlignStartVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignVerticalDistributeCenter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalDistributeCenter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignVerticalDistributeCenter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignVerticalDistributeCenter", Transform.Component, "VuAlignVerticalDistributeCenter")]
 public sealed class VuAlignVerticalDistributeCenter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignVerticalDistributeEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalDistributeEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignVerticalDistributeEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignVerticalDistributeEnd", Transform.Component, "VuAlignVerticalDistributeEnd")]
 public sealed class VuAlignVerticalDistributeEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignVerticalDistributeStart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalDistributeStart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignVerticalDistributeStart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignVerticalDistributeStart", Transform.Component, "VuAlignVerticalDistributeStart")]
 public sealed class VuAlignVerticalDistributeStart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignVerticalJustifyCenter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalJustifyCenter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignVerticalJustifyCenter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignVerticalJustifyCenter", Transform.Component, "VuAlignVerticalJustifyCenter")]
 public sealed class VuAlignVerticalJustifyCenter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignVerticalJustifyEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalJustifyEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignVerticalJustifyEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignVerticalJustifyEnd", Transform.Component, "VuAlignVerticalJustifyEnd")]
 public sealed class VuAlignVerticalJustifyEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignVerticalJustifyStart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalJustifyStart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignVerticalJustifyStart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignVerticalJustifyStart", Transform.Component, "VuAlignVerticalJustifyStart")]
 public sealed class VuAlignVerticalJustifyStart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignVerticalSpaceAround</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalSpaceAround</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignVerticalSpaceAround</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignVerticalSpaceAround", Transform.Component, "VuAlignVerticalSpaceAround")]
 public sealed class VuAlignVerticalSpaceAround : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAlignVerticalSpaceBetween</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAlignVerticalSpaceBetween</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAlignVerticalSpaceBetween</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAlignVerticalSpaceBetween", Transform.Component, "VuAlignVerticalSpaceBetween")]
 public sealed class VuAlignVerticalSpaceBetween : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAmbulance</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAmbulance</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAmbulance</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAmbulance", Transform.Component, "VuAmbulance")]
 public sealed class VuAmbulance : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAmpersand</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAmpersand</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAmpersand</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAmpersand", Transform.Component, "VuAmpersand")]
 public sealed class VuAmpersand : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAmpersands</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAmpersands</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAmpersands</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAmpersands", Transform.Component, "VuAmpersands")]
 public sealed class VuAmpersands : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAmphora</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAmphora</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAmphora</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAmphora", Transform.Component, "VuAmphora")]
 public sealed class VuAmphora : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAnchor</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAnchor</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAnchor</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAnchor", Transform.Component, "VuAnchor")]
 public sealed class VuAnchor : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAngry</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAngry</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAngry</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAngry", Transform.Component, "VuAngry")]
 public sealed class VuAngry : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAnnoyed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAnnoyed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAnnoyed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAnnoyed", Transform.Component, "VuAnnoyed")]
 public sealed class VuAnnoyed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAntenna</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAntenna</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAntenna</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAntenna", Transform.Component, "VuAntenna")]
 public sealed class VuAntenna : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAnvil</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAnvil</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAnvil</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAnvil", Transform.Component, "VuAnvil")]
 public sealed class VuAnvil : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAperture</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAperture</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAperture</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAperture", Transform.Component, "VuAperture")]
 public sealed class VuAperture : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAppWindow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAppWindow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAppWindow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAppWindow", Transform.Component, "VuAppWindow")]
 public sealed class VuAppWindow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAppWindowMac</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAppWindowMac</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAppWindowMac</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAppWindowMac", Transform.Component, "VuAppWindowMac")]
 public sealed class VuAppWindowMac : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuApple</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuApple</summary>
+/// <remarks>按需 static renderer for upstream <c>VuApple</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuApple", Transform.Component, "VuApple")]
 public sealed class VuApple : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAppointment</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAppointment</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAppointment</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAppointment", Transform.Component, "VuAppointment")]
 public sealed class VuAppointment : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArchive</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArchive</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArchive</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArchive", Transform.Component, "VuArchive")]
 public sealed class VuArchive : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArchiveRestore</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArchiveRestore</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArchiveRestore</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArchiveRestore", Transform.Component, "VuArchiveRestore")]
 public sealed class VuArchiveRestore : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArchiveX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArchiveX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArchiveX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArchiveX", Transform.Component, "VuArchiveX")]
 public sealed class VuArchiveX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAreaChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAreaChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAreaChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAreaChart", Transform.Component, "VuAreaChart")]
 public sealed class VuAreaChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArmchair</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArmchair</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArmchair</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArmchair", Transform.Component, "VuArmchair")]
 public sealed class VuArmchair : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowBigDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowBigDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowBigDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowBigDown", Transform.Component, "VuArrowBigDown")]
 public sealed class VuArrowBigDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowBigDownDash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowBigDownDash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowBigDownDash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowBigDownDash", Transform.Component, "VuArrowBigDownDash")]
 public sealed class VuArrowBigDownDash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowBigLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowBigLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowBigLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowBigLeft", Transform.Component, "VuArrowBigLeft")]
 public sealed class VuArrowBigLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowBigLeftDash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowBigLeftDash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowBigLeftDash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowBigLeftDash", Transform.Component, "VuArrowBigLeftDash")]
 public sealed class VuArrowBigLeftDash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowBigRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowBigRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowBigRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowBigRight", Transform.Component, "VuArrowBigRight")]
 public sealed class VuArrowBigRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowBigRightDash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowBigRightDash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowBigRightDash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowBigRightDash", Transform.Component, "VuArrowBigRightDash")]
 public sealed class VuArrowBigRightDash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowBigUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowBigUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowBigUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowBigUp", Transform.Component, "VuArrowBigUp")]
 public sealed class VuArrowBigUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowBigUpDash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowBigUpDash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowBigUpDash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowBigUpDash", Transform.Component, "VuArrowBigUpDash")]
 public sealed class VuArrowBigUpDash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDown", Transform.Component, "VuArrowDown")]
 public sealed class VuArrowDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDown01</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDown01</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDown01</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDown01", Transform.Component, "VuArrowDown01")]
 public sealed class VuArrowDown01 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDown10</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDown10</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDown10</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDown10", Transform.Component, "VuArrowDown10")]
 public sealed class VuArrowDown10 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownAZ</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownAZ</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownAZ</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownAZ", Transform.Component, "VuArrowDownAZ")]
 public sealed class VuArrowDownAZ : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownFromLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownFromLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownFromLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownFromLine", Transform.Component, "VuArrowDownFromLine")]
 public sealed class VuArrowDownFromLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownLeft", Transform.Component, "VuArrowDownLeft")]
 public sealed class VuArrowDownLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownNarrowWide</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownNarrowWide</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownNarrowWide</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownNarrowWide", Transform.Component, "VuArrowDownNarrowWide")]
 public sealed class VuArrowDownNarrowWide : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownRight", Transform.Component, "VuArrowDownRight")]
 public sealed class VuArrowDownRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownToDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownToDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownToDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownToDot", Transform.Component, "VuArrowDownToDot")]
 public sealed class VuArrowDownToDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownToLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownToLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownToLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownToLine", Transform.Component, "VuArrowDownToLine")]
 public sealed class VuArrowDownToLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownUp", Transform.Component, "VuArrowDownUp")]
 public sealed class VuArrowDownUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownWideNarrow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownWideNarrow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownWideNarrow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownWideNarrow", Transform.Component, "VuArrowDownWideNarrow")]
 public sealed class VuArrowDownWideNarrow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowDownZA</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowDownZA</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowDownZA</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowDownZA", Transform.Component, "VuArrowDownZA")]
 public sealed class VuArrowDownZA : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowLeft", Transform.Component, "VuArrowLeft")]
 public sealed class VuArrowLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowLeftFromLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowLeftFromLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowLeftFromLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowLeftFromLine", Transform.Component, "VuArrowLeftFromLine")]
 public sealed class VuArrowLeftFromLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowLeftRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowLeftRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowLeftRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowLeftRight", Transform.Component, "VuArrowLeftRight")]
 public sealed class VuArrowLeftRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowLeftToLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowLeftToLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowLeftToLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowLeftToLine", Transform.Component, "VuArrowLeftToLine")]
 public sealed class VuArrowLeftToLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowRight", Transform.Component, "VuArrowRight")]
 public sealed class VuArrowRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowRightFromLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowRightFromLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowRightFromLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowRightFromLine", Transform.Component, "VuArrowRightFromLine")]
 public sealed class VuArrowRightFromLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowRightLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowRightLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowRightLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowRightLeft", Transform.Component, "VuArrowRightLeft")]
 public sealed class VuArrowRightLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowRightToLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowRightToLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowRightToLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowRightToLine", Transform.Component, "VuArrowRightToLine")]
 public sealed class VuArrowRightToLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUp", Transform.Component, "VuArrowUp")]
 public sealed class VuArrowUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUp01</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUp01</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUp01</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUp01", Transform.Component, "VuArrowUp01")]
 public sealed class VuArrowUp01 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUp10</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUp10</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUp10</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUp10", Transform.Component, "VuArrowUp10")]
 public sealed class VuArrowUp10 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpAZ</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpAZ</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpAZ</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpAZ", Transform.Component, "VuArrowUpAZ")]
 public sealed class VuArrowUpAZ : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpDown", Transform.Component, "VuArrowUpDown")]
 public sealed class VuArrowUpDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpFromDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpFromDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpFromDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpFromDot", Transform.Component, "VuArrowUpFromDot")]
 public sealed class VuArrowUpFromDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpFromLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpFromLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpFromLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpFromLine", Transform.Component, "VuArrowUpFromLine")]
 public sealed class VuArrowUpFromLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpLeft", Transform.Component, "VuArrowUpLeft")]
 public sealed class VuArrowUpLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpNarrowWide</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpNarrowWide</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpNarrowWide</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpNarrowWide", Transform.Component, "VuArrowUpNarrowWide")]
 public sealed class VuArrowUpNarrowWide : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpRight", Transform.Component, "VuArrowUpRight")]
 public sealed class VuArrowUpRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpToLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpToLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpToLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpToLine", Transform.Component, "VuArrowUpToLine")]
 public sealed class VuArrowUpToLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpWideNarrow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpWideNarrow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpWideNarrow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpWideNarrow", Transform.Component, "VuArrowUpWideNarrow")]
 public sealed class VuArrowUpWideNarrow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowUpZA</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowUpZA</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowUpZA</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowUpZA", Transform.Component, "VuArrowUpZA")]
 public sealed class VuArrowUpZA : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowsExpand</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowsExpand</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowsExpand</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowsExpand", Transform.Component, "VuArrowsExpand")]
 public sealed class VuArrowsExpand : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowsHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowsHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowsHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowsHorizontal", Transform.Component, "VuArrowsHorizontal")]
 public sealed class VuArrowsHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuArrowsUpFromLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuArrowsUpFromLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuArrowsUpFromLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuArrowsUpFromLine", Transform.Component, "VuArrowsUpFromLine")]
 public sealed class VuArrowsUpFromLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAsterisk</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAsterisk</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAsterisk</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAsterisk", Transform.Component, "VuAsterisk")]
 public sealed class VuAsterisk : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAt</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAt</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAt</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAt", Transform.Component, "VuAt")]
 public sealed class VuAt : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAtSign</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAtSign</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAtSign</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAtSign", Transform.Component, "VuAtSign")]
 public sealed class VuAtSign : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAtom</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAtom</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAtom</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAtom", Transform.Component, "VuAtom")]
 public sealed class VuAtom : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAudioLines</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAudioLines</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAudioLines</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAudioLines", Transform.Component, "VuAudioLines")]
 public sealed class VuAudioLines : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAudioWaveform</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAudioWaveform</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAudioWaveform</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAudioWaveform", Transform.Component, "VuAudioWaveform")]
 public sealed class VuAudioWaveform : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAvatar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAvatar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAvatar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAvatar", Transform.Component, "VuAvatar")]
 public sealed class VuAvatar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAward</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAward</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAward</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAward", Transform.Component, "VuAward")]
 public sealed class VuAward : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAxe</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAxe</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAxe</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAxe", Transform.Component, "VuAxe")]
 public sealed class VuAxe : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuAxis3d</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuAxis3d</summary>
+/// <remarks>按需 static renderer for upstream <c>VuAxis3d</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuAxis3d", Transform.Component, "VuAxis3d")]
 public sealed class VuAxis3d : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBaby</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBaby</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBaby</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBaby", Transform.Component, "VuBaby")]
 public sealed class VuBaby : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBackpack</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBackpack</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBackpack</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBackpack", Transform.Component, "VuBackpack")]
 public sealed class VuBackpack : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadge</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadge</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadge</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadge", Transform.Component, "VuBadge")]
 public sealed class VuBadge : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeAlert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeAlert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeAlert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeAlert", Transform.Component, "VuBadgeAlert")]
 public sealed class VuBadgeAlert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeCent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeCent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeCent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeCent", Transform.Component, "VuBadgeCent")]
 public sealed class VuBadgeCent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeCheck", Transform.Component, "VuBadgeCheck")]
 public sealed class VuBadgeCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeDollarSign</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeDollarSign</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeDollarSign</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeDollarSign", Transform.Component, "VuBadgeDollarSign")]
 public sealed class VuBadgeDollarSign : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeEuro</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeEuro</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeEuro</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeEuro", Transform.Component, "VuBadgeEuro")]
 public sealed class VuBadgeEuro : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeIndianRupee</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeIndianRupee</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeIndianRupee</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeIndianRupee", Transform.Component, "VuBadgeIndianRupee")]
 public sealed class VuBadgeIndianRupee : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeInfo</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeInfo</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeInfo</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeInfo", Transform.Component, "VuBadgeInfo")]
 public sealed class VuBadgeInfo : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeJapaneseYen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeJapaneseYen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeJapaneseYen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeJapaneseYen", Transform.Component, "VuBadgeJapaneseYen")]
 public sealed class VuBadgeJapaneseYen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeMinus", Transform.Component, "VuBadgeMinus")]
 public sealed class VuBadgeMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgePercent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgePercent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgePercent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgePercent", Transform.Component, "VuBadgePercent")]
 public sealed class VuBadgePercent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgePlus", Transform.Component, "VuBadgePlus")]
 public sealed class VuBadgePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgePoundSterling</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgePoundSterling</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgePoundSterling</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgePoundSterling", Transform.Component, "VuBadgePoundSterling")]
 public sealed class VuBadgePoundSterling : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeQuestionMark</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeQuestionMark</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeQuestionMark</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeQuestionMark", Transform.Component, "VuBadgeQuestionMark")]
 public sealed class VuBadgeQuestionMark : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeRussianRuble</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeRussianRuble</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeRussianRuble</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeRussianRuble", Transform.Component, "VuBadgeRussianRuble")]
 public sealed class VuBadgeRussianRuble : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeSwissFranc</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeSwissFranc</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeSwissFranc</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeSwissFranc", Transform.Component, "VuBadgeSwissFranc")]
 public sealed class VuBadgeSwissFranc : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeTurkishLira</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeTurkishLira</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeTurkishLira</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeTurkishLira", Transform.Component, "VuBadgeTurkishLira")]
 public sealed class VuBadgeTurkishLira : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBadgeX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBadgeX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBadgeX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBadgeX", Transform.Component, "VuBadgeX")]
 public sealed class VuBadgeX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBaggageClaim</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBaggageClaim</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBaggageClaim</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBaggageClaim", Transform.Component, "VuBaggageClaim")]
 public sealed class VuBaggageClaim : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBalloon</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBalloon</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBalloon</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBalloon", Transform.Component, "VuBalloon")]
 public sealed class VuBalloon : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBan", Transform.Component, "VuBan")]
 public sealed class VuBan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBanana</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBanana</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBanana</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBanana", Transform.Component, "VuBanana")]
 public sealed class VuBanana : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBandage</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBandage</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBandage</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBandage", Transform.Component, "VuBandage")]
 public sealed class VuBandage : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBankCard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBankCard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBankCard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBankCard", Transform.Component, "VuBankCard")]
 public sealed class VuBankCard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBanknote</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBanknote</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBanknote</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBanknote", Transform.Component, "VuBanknote")]
 public sealed class VuBanknote : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBanknoteArrowDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBanknoteArrowDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBanknoteArrowDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBanknoteArrowDown", Transform.Component, "VuBanknoteArrowDown")]
 public sealed class VuBanknoteArrowDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBanknoteArrowUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBanknoteArrowUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBanknoteArrowUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBanknoteArrowUp", Transform.Component, "VuBanknoteArrowUp")]
 public sealed class VuBanknoteArrowUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBanknoteX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBanknoteX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBanknoteX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBanknoteX", Transform.Component, "VuBanknoteX")]
 public sealed class VuBanknoteX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBarChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBarChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBarChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBarChart", Transform.Component, "VuBarChart")]
 public sealed class VuBarChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBarChart3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBarChart3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBarChart3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBarChart3", Transform.Component, "VuBarChart3")]
 public sealed class VuBarChart3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBarChart4</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBarChart4</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBarChart4</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBarChart4", Transform.Component, "VuBarChart4")]
 public sealed class VuBarChart4 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBarChartBig</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBarChartBig</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBarChartBig</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBarChartBig", Transform.Component, "VuBarChartBig")]
 public sealed class VuBarChartBig : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBarChartHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBarChartHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBarChartHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBarChartHorizontal", Transform.Component, "VuBarChartHorizontal")]
 public sealed class VuBarChartHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBarChartHorizontalBig</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBarChartHorizontalBig</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBarChartHorizontalBig</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBarChartHorizontalBig", Transform.Component, "VuBarChartHorizontalBig")]
 public sealed class VuBarChartHorizontalBig : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBarcode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBarcode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBarcode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBarcode", Transform.Component, "VuBarcode")]
 public sealed class VuBarcode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBarrel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBarrel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBarrel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBarrel", Transform.Component, "VuBarrel")]
 public sealed class VuBarrel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBaseline</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBaseline</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBaseline</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBaseline", Transform.Component, "VuBaseline")]
 public sealed class VuBaseline : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBath</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBath</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBath</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBath", Transform.Component, "VuBath")]
 public sealed class VuBath : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBattery</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBattery</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBattery</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBattery", Transform.Component, "VuBattery")]
 public sealed class VuBattery : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBatteryCharging</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBatteryCharging</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBatteryCharging</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBatteryCharging", Transform.Component, "VuBatteryCharging")]
 public sealed class VuBatteryCharging : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBatteryFull</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBatteryFull</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBatteryFull</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBatteryFull", Transform.Component, "VuBatteryFull")]
 public sealed class VuBatteryFull : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBatteryLow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBatteryLow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBatteryLow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBatteryLow", Transform.Component, "VuBatteryLow")]
 public sealed class VuBatteryLow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBatteryMedium</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBatteryMedium</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBatteryMedium</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBatteryMedium", Transform.Component, "VuBatteryMedium")]
 public sealed class VuBatteryMedium : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBatteryPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBatteryPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBatteryPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBatteryPlus", Transform.Component, "VuBatteryPlus")]
 public sealed class VuBatteryPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBatteryWarning</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBatteryWarning</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBatteryWarning</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBatteryWarning", Transform.Component, "VuBatteryWarning")]
 public sealed class VuBatteryWarning : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBeaker</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBeaker</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBeaker</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBeaker", Transform.Component, "VuBeaker")]
 public sealed class VuBeaker : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBean</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBean</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBean</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBean", Transform.Component, "VuBean")]
 public sealed class VuBean : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBeanOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBeanOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBeanOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBeanOff", Transform.Component, "VuBeanOff")]
 public sealed class VuBeanOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBed", Transform.Component, "VuBed")]
 public sealed class VuBed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBedDouble</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBedDouble</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBedDouble</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBedDouble", Transform.Component, "VuBedDouble")]
 public sealed class VuBedDouble : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBedSingle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBedSingle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBedSingle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBedSingle", Transform.Component, "VuBedSingle")]
 public sealed class VuBedSingle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBeef</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBeef</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBeef</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBeef", Transform.Component, "VuBeef")]
 public sealed class VuBeef : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBeer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBeer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBeer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBeer", Transform.Component, "VuBeer")]
 public sealed class VuBeer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBeerOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBeerOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBeerOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBeerOff", Transform.Component, "VuBeerOff")]
 public sealed class VuBeerOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBell</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBell</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBell</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBell", Transform.Component, "VuBell")]
 public sealed class VuBell : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBellDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBellDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBellDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBellDot", Transform.Component, "VuBellDot")]
 public sealed class VuBellDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBellElectric</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBellElectric</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBellElectric</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBellElectric", Transform.Component, "VuBellElectric")]
 public sealed class VuBellElectric : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBellMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBellMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBellMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBellMinus", Transform.Component, "VuBellMinus")]
 public sealed class VuBellMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBellOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBellOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBellOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBellOff", Transform.Component, "VuBellOff")]
 public sealed class VuBellOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBellPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBellPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBellPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBellPlus", Transform.Component, "VuBellPlus")]
 public sealed class VuBellPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBellRing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBellRing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBellRing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBellRing", Transform.Component, "VuBellRing")]
 public sealed class VuBellRing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBetweenHorizontalEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBetweenHorizontalEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBetweenHorizontalEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBetweenHorizontalEnd", Transform.Component, "VuBetweenHorizontalEnd")]
 public sealed class VuBetweenHorizontalEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBetweenHorizontalStart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBetweenHorizontalStart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBetweenHorizontalStart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBetweenHorizontalStart", Transform.Component, "VuBetweenHorizontalStart")]
 public sealed class VuBetweenHorizontalStart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBetweenVerticalEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBetweenVerticalEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBetweenVerticalEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBetweenVerticalEnd", Transform.Component, "VuBetweenVerticalEnd")]
 public sealed class VuBetweenVerticalEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBetweenVerticalStart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBetweenVerticalStart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBetweenVerticalStart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBetweenVerticalStart", Transform.Component, "VuBetweenVerticalStart")]
 public sealed class VuBetweenVerticalStart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBicepsFlexed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBicepsFlexed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBicepsFlexed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBicepsFlexed", Transform.Component, "VuBicepsFlexed")]
 public sealed class VuBicepsFlexed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBike</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBike</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBike</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBike", Transform.Component, "VuBike")]
 public sealed class VuBike : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBill</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBill</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBill</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBill", Transform.Component, "VuBill")]
 public sealed class VuBill : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBinary</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBinary</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBinary</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBinary", Transform.Component, "VuBinary")]
 public sealed class VuBinary : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBinoculars</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBinoculars</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBinoculars</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBinoculars", Transform.Component, "VuBinoculars")]
 public sealed class VuBinoculars : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBiohazard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBiohazard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBiohazard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBiohazard", Transform.Component, "VuBiohazard")]
 public sealed class VuBiohazard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBird</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBird</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBird</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBird", Transform.Component, "VuBird")]
 public sealed class VuBird : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBirdhouse</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBirdhouse</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBirdhouse</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBirdhouse", Transform.Component, "VuBirdhouse")]
 public sealed class VuBirdhouse : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBitcoin</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBitcoin</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBitcoin</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBitcoin", Transform.Component, "VuBitcoin")]
 public sealed class VuBitcoin : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBlend</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBlend</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBlend</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBlend", Transform.Component, "VuBlend")]
 public sealed class VuBlend : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBlinds</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBlinds</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBlinds</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBlinds", Transform.Component, "VuBlinds")]
 public sealed class VuBlinds : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBlocks</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBlocks</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBlocks</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBlocks", Transform.Component, "VuBlocks")]
 public sealed class VuBlocks : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBluetooth</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBluetooth</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBluetooth</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBluetooth", Transform.Component, "VuBluetooth")]
 public sealed class VuBluetooth : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBluetoothConnected</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBluetoothConnected</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBluetoothConnected</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBluetoothConnected", Transform.Component, "VuBluetoothConnected")]
 public sealed class VuBluetoothConnected : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBluetoothOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBluetoothOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBluetoothOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBluetoothOff", Transform.Component, "VuBluetoothOff")]
 public sealed class VuBluetoothOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBluetoothSearching</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBluetoothSearching</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBluetoothSearching</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBluetoothSearching", Transform.Component, "VuBluetoothSearching")]
 public sealed class VuBluetoothSearching : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBold</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBold</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBold</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBold", Transform.Component, "VuBold")]
 public sealed class VuBold : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBolt</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBolt</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBolt</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBolt", Transform.Component, "VuBolt")]
 public sealed class VuBolt : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBomb</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBomb</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBomb</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBomb", Transform.Component, "VuBomb")]
 public sealed class VuBomb : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBone", Transform.Component, "VuBone")]
 public sealed class VuBone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBook</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBook</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBook</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBook", Transform.Component, "VuBook")]
 public sealed class VuBook : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookA</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookA</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookA</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookA", Transform.Component, "VuBookA")]
 public sealed class VuBookA : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookAlert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookAlert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookAlert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookAlert", Transform.Component, "VuBookAlert")]
 public sealed class VuBookAlert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookAudio</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookAudio</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookAudio</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookAudio", Transform.Component, "VuBookAudio")]
 public sealed class VuBookAudio : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookCheck", Transform.Component, "VuBookCheck")]
 public sealed class VuBookCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookCopy</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookCopy</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookCopy</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookCopy", Transform.Component, "VuBookCopy")]
 public sealed class VuBookCopy : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookDashed", Transform.Component, "VuBookDashed")]
 public sealed class VuBookDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookDown", Transform.Component, "VuBookDown")]
 public sealed class VuBookDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookHeadphones</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookHeadphones</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookHeadphones</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookHeadphones", Transform.Component, "VuBookHeadphones")]
 public sealed class VuBookHeadphones : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookHeart", Transform.Component, "VuBookHeart")]
 public sealed class VuBookHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookImage</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookImage</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookImage</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookImage", Transform.Component, "VuBookImage")]
 public sealed class VuBookImage : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookKey</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookKey</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookKey</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookKey", Transform.Component, "VuBookKey")]
 public sealed class VuBookKey : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookLock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookLock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookLock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookLock", Transform.Component, "VuBookLock")]
 public sealed class VuBookLock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookMarked</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookMarked</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookMarked</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookMarked", Transform.Component, "VuBookMarked")]
 public sealed class VuBookMarked : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookMinus", Transform.Component, "VuBookMinus")]
 public sealed class VuBookMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookOpen", Transform.Component, "VuBookOpen")]
 public sealed class VuBookOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookOpenCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookOpenCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookOpenCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookOpenCheck", Transform.Component, "VuBookOpenCheck")]
 public sealed class VuBookOpenCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookOpenText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookOpenText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookOpenText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookOpenText", Transform.Component, "VuBookOpenText")]
 public sealed class VuBookOpenText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookPlus", Transform.Component, "VuBookPlus")]
 public sealed class VuBookPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookSearch", Transform.Component, "VuBookSearch")]
 public sealed class VuBookSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookText", Transform.Component, "VuBookText")]
 public sealed class VuBookText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookType</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookType</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookType</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookType", Transform.Component, "VuBookType")]
 public sealed class VuBookType : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookUp", Transform.Component, "VuBookUp")]
 public sealed class VuBookUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookUp2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookUp2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookUp2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookUp2", Transform.Component, "VuBookUp2")]
 public sealed class VuBookUp2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookUser</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookUser</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookUser</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookUser", Transform.Component, "VuBookUser")]
 public sealed class VuBookUser : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookX", Transform.Component, "VuBookX")]
 public sealed class VuBookX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookmark</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookmark</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookmark</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookmark", Transform.Component, "VuBookmark")]
 public sealed class VuBookmark : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookmarkCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookmarkCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookmarkCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookmarkCheck", Transform.Component, "VuBookmarkCheck")]
 public sealed class VuBookmarkCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookmarkMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookmarkMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookmarkMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookmarkMinus", Transform.Component, "VuBookmarkMinus")]
 public sealed class VuBookmarkMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookmarkPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookmarkPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookmarkPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookmarkPlus", Transform.Component, "VuBookmarkPlus")]
 public sealed class VuBookmarkPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBookmarkX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBookmarkX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBookmarkX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBookmarkX", Transform.Component, "VuBookmarkX")]
 public sealed class VuBookmarkX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBoomBox</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBoomBox</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBoomBox</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBoomBox", Transform.Component, "VuBoomBox")]
 public sealed class VuBoomBox : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBot", Transform.Component, "VuBot")]
 public sealed class VuBot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBotMessageSquare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBotMessageSquare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBotMessageSquare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBotMessageSquare", Transform.Component, "VuBotMessageSquare")]
 public sealed class VuBotMessageSquare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBotOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBotOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBotOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBotOff", Transform.Component, "VuBotOff")]
 public sealed class VuBotOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBottleWine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBottleWine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBottleWine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBottleWine", Transform.Component, "VuBottleWine")]
 public sealed class VuBottleWine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBottomBar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBottomBar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBottomBar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBottomBar", Transform.Component, "VuBottomBar")]
 public sealed class VuBottomBar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBowArrow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBowArrow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBowArrow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBowArrow", Transform.Component, "VuBowArrow")]
 public sealed class VuBowArrow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBox</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBox</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBox</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBox", Transform.Component, "VuBox")]
 public sealed class VuBox : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBoxes</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBoxes</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBoxes</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBoxes", Transform.Component, "VuBoxes")]
 public sealed class VuBoxes : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBraces</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBraces</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBraces</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBraces", Transform.Component, "VuBraces")]
 public sealed class VuBraces : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBrackets</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBrackets</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBrackets</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBrackets", Transform.Component, "VuBrackets")]
 public sealed class VuBrackets : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBrain</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBrain</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBrain</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBrain", Transform.Component, "VuBrain")]
 public sealed class VuBrain : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBrainCircuit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBrainCircuit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBrainCircuit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBrainCircuit", Transform.Component, "VuBrainCircuit")]
 public sealed class VuBrainCircuit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBrainCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBrainCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBrainCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBrainCog", Transform.Component, "VuBrainCog")]
 public sealed class VuBrainCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBreadcrumb</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBreadcrumb</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBreadcrumb</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBreadcrumb", Transform.Component, "VuBreadcrumb")]
 public sealed class VuBreadcrumb : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBrickWall</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBrickWall</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBrickWall</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBrickWall", Transform.Component, "VuBrickWall")]
 public sealed class VuBrickWall : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBrickWallFire</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBrickWallFire</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBrickWallFire</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBrickWallFire", Transform.Component, "VuBrickWallFire")]
 public sealed class VuBrickWallFire : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBrickWallShield</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBrickWallShield</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBrickWallShield</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBrickWallShield", Transform.Component, "VuBrickWallShield")]
 public sealed class VuBrickWallShield : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBriefcase</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBriefcase</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBriefcase</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBriefcase", Transform.Component, "VuBriefcase")]
 public sealed class VuBriefcase : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBriefcaseBusiness</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBriefcaseBusiness</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBriefcaseBusiness</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBriefcaseBusiness", Transform.Component, "VuBriefcaseBusiness")]
 public sealed class VuBriefcaseBusiness : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBriefcaseConveyorBelt</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBriefcaseConveyorBelt</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBriefcaseConveyorBelt</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBriefcaseConveyorBelt", Transform.Component, "VuBriefcaseConveyorBelt")]
 public sealed class VuBriefcaseConveyorBelt : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBriefcaseMedical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBriefcaseMedical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBriefcaseMedical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBriefcaseMedical", Transform.Component, "VuBriefcaseMedical")]
 public sealed class VuBriefcaseMedical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBringToFront</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBringToFront</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBringToFront</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBringToFront", Transform.Component, "VuBringToFront")]
 public sealed class VuBringToFront : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBrush</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBrush</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBrush</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBrush", Transform.Component, "VuBrush")]
 public sealed class VuBrush : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBrushCleaning</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBrushCleaning</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBrushCleaning</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBrushCleaning", Transform.Component, "VuBrushCleaning")]
 public sealed class VuBrushCleaning : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBubbles</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBubbles</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBubbles</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBubbles", Transform.Component, "VuBubbles")]
 public sealed class VuBubbles : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBug</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBug</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBug</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBug", Transform.Component, "VuBug")]
 public sealed class VuBug : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBugOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBugOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBugOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBugOff", Transform.Component, "VuBugOff")]
 public sealed class VuBugOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBugPlay</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBugPlay</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBugPlay</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBugPlay", Transform.Component, "VuBugPlay")]
 public sealed class VuBugPlay : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBuilding</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBuilding</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBuilding</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBuilding", Transform.Component, "VuBuilding")]
 public sealed class VuBuilding : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBuilding2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBuilding2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBuilding2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBuilding2", Transform.Component, "VuBuilding2")]
 public sealed class VuBuilding2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBus", Transform.Component, "VuBus")]
 public sealed class VuBus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuBusFront</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuBusFront</summary>
+/// <remarks>按需 static renderer for upstream <c>VuBusFront</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuBusFront", Transform.Component, "VuBusFront")]
 public sealed class VuBusFront : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCable</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCable</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCable</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCable", Transform.Component, "VuCable")]
 public sealed class VuCable : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCableCar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCableCar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCableCar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCableCar", Transform.Component, "VuCableCar")]
 public sealed class VuCableCar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCake</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCake</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCake</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCake", Transform.Component, "VuCake")]
 public sealed class VuCake : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCakeSlice</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCakeSlice</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCakeSlice</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCakeSlice", Transform.Component, "VuCakeSlice")]
 public sealed class VuCakeSlice : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalculator</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalculator</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalculator</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalculator", Transform.Component, "VuCalculator")]
 public sealed class VuCalculator : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendar", Transform.Component, "VuCalendar")]
 public sealed class VuCalendar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendar1</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendar1</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendar1</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendar1", Transform.Component, "VuCalendar1")]
 public sealed class VuCalendar1 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarArrowDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarArrowDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarArrowDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarArrowDown", Transform.Component, "VuCalendarArrowDown")]
 public sealed class VuCalendarArrowDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarArrowUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarArrowUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarArrowUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarArrowUp", Transform.Component, "VuCalendarArrowUp")]
 public sealed class VuCalendarArrowUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarCheck", Transform.Component, "VuCalendarCheck")]
 public sealed class VuCalendarCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarCheck2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarCheck2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarCheck2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarCheck2", Transform.Component, "VuCalendarCheck2")]
 public sealed class VuCalendarCheck2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarClock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarClock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarClock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarClock", Transform.Component, "VuCalendarClock")]
 public sealed class VuCalendarClock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarCog", Transform.Component, "VuCalendarCog")]
 public sealed class VuCalendarCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarDays</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarDays</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarDays</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarDays", Transform.Component, "VuCalendarDays")]
 public sealed class VuCalendarDays : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarFold</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarFold</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarFold</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarFold", Transform.Component, "VuCalendarFold")]
 public sealed class VuCalendarFold : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarHeart", Transform.Component, "VuCalendarHeart")]
 public sealed class VuCalendarHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarMinus", Transform.Component, "VuCalendarMinus")]
 public sealed class VuCalendarMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarMinus2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarMinus2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarMinus2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarMinus2", Transform.Component, "VuCalendarMinus2")]
 public sealed class VuCalendarMinus2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarOff", Transform.Component, "VuCalendarOff")]
 public sealed class VuCalendarOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarPlus", Transform.Component, "VuCalendarPlus")]
 public sealed class VuCalendarPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarPlus2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarPlus2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarPlus2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarPlus2", Transform.Component, "VuCalendarPlus2")]
 public sealed class VuCalendarPlus2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarRange</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarRange</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarRange</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarRange", Transform.Component, "VuCalendarRange")]
 public sealed class VuCalendarRange : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarSearch", Transform.Component, "VuCalendarSearch")]
 public sealed class VuCalendarSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarSync</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarSync</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarSync</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarSync", Transform.Component, "VuCalendarSync")]
 public sealed class VuCalendarSync : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarX", Transform.Component, "VuCalendarX")]
 public sealed class VuCalendarX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendarX2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendarX2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendarX2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendarX2", Transform.Component, "VuCalendarX2")]
 public sealed class VuCalendarX2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCalendars</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCalendars</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCalendars</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCalendars", Transform.Component, "VuCalendars")]
 public sealed class VuCalendars : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCamera</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCamera</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCamera</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCamera", Transform.Component, "VuCamera")]
 public sealed class VuCamera : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCameraOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCameraOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCameraOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCameraOff", Transform.Component, "VuCameraOff")]
 public sealed class VuCameraOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCandlestickChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCandlestickChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCandlestickChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCandlestickChart", Transform.Component, "VuCandlestickChart")]
 public sealed class VuCandlestickChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCandy</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCandy</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCandy</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCandy", Transform.Component, "VuCandy")]
 public sealed class VuCandy : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCandyCane</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCandyCane</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCandyCane</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCandyCane", Transform.Component, "VuCandyCane")]
 public sealed class VuCandyCane : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCandyOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCandyOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCandyOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCandyOff", Transform.Component, "VuCandyOff")]
 public sealed class VuCandyOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCannabis</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCannabis</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCannabis</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCannabis", Transform.Component, "VuCannabis")]
 public sealed class VuCannabis : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCannabisOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCannabisOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCannabisOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCannabisOff", Transform.Component, "VuCannabisOff")]
 public sealed class VuCannabisOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCaptions</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCaptions</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCaptions</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCaptions", Transform.Component, "VuCaptions")]
 public sealed class VuCaptions : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCaptionsOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCaptionsOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCaptionsOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCaptionsOff", Transform.Component, "VuCaptionsOff")]
 public sealed class VuCaptionsOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCar", Transform.Component, "VuCar")]
 public sealed class VuCar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCarFront</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCarFront</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCarFront</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCarFront", Transform.Component, "VuCarFront")]
 public sealed class VuCarFront : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCarTaxiFront</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCarTaxiFront</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCarTaxiFront</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCarTaxiFront", Transform.Component, "VuCarTaxiFront")]
 public sealed class VuCarTaxiFront : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCaravan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCaravan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCaravan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCaravan", Transform.Component, "VuCaravan")]
 public sealed class VuCaravan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCardSim</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCardSim</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCardSim</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCardSim", Transform.Component, "VuCardSim")]
 public sealed class VuCardSim : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCarrot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCarrot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCarrot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCarrot", Transform.Component, "VuCarrot")]
 public sealed class VuCarrot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCaseLower</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCaseLower</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCaseLower</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCaseLower", Transform.Component, "VuCaseLower")]
 public sealed class VuCaseLower : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCaseSensitive</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCaseSensitive</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCaseSensitive</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCaseSensitive", Transform.Component, "VuCaseSensitive")]
 public sealed class VuCaseSensitive : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCaseUpper</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCaseUpper</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCaseUpper</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCaseUpper", Transform.Component, "VuCaseUpper")]
 public sealed class VuCaseUpper : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCassetteTape</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCassetteTape</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCassetteTape</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCassetteTape", Transform.Component, "VuCassetteTape")]
 public sealed class VuCassetteTape : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCast</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCast</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCast</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCast", Transform.Component, "VuCast")]
 public sealed class VuCast : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCastle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCastle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCastle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCastle", Transform.Component, "VuCastle")]
 public sealed class VuCastle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCat</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCat</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCat</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCat", Transform.Component, "VuCat")]
 public sealed class VuCat : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCategory</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCategory</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCategory</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCategory", Transform.Component, "VuCategory")]
 public sealed class VuCategory : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCctv</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCctv</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCctv</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCctv", Transform.Component, "VuCctv")]
 public sealed class VuCctv : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCharging</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCharging</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCharging</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCharging", Transform.Component, "VuCharging")]
 public sealed class VuCharging : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartArea</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartArea</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartArea</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartArea", Transform.Component, "VuChartArea")]
 public sealed class VuChartArea : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartBar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartBar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartBar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartBar", Transform.Component, "VuChartBar")]
 public sealed class VuChartBar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartBarBig</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartBarBig</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartBarBig</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartBarBig", Transform.Component, "VuChartBarBig")]
 public sealed class VuChartBarBig : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartBarDecreasing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartBarDecreasing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartBarDecreasing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartBarDecreasing", Transform.Component, "VuChartBarDecreasing")]
 public sealed class VuChartBarDecreasing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartBarIncreasing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartBarIncreasing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartBarIncreasing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartBarIncreasing", Transform.Component, "VuChartBarIncreasing")]
 public sealed class VuChartBarIncreasing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartBarStacked</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartBarStacked</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartBarStacked</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartBarStacked", Transform.Component, "VuChartBarStacked")]
 public sealed class VuChartBarStacked : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartCandlestick</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartCandlestick</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartCandlestick</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartCandlestick", Transform.Component, "VuChartCandlestick")]
 public sealed class VuChartCandlestick : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartColumn</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartColumn</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartColumn</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartColumn", Transform.Component, "VuChartColumn")]
 public sealed class VuChartColumn : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartColumnBig</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartColumnBig</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartColumnBig</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartColumnBig", Transform.Component, "VuChartColumnBig")]
 public sealed class VuChartColumnBig : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartColumnDecreasing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartColumnDecreasing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartColumnDecreasing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartColumnDecreasing", Transform.Component, "VuChartColumnDecreasing")]
 public sealed class VuChartColumnDecreasing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartColumnIncreasing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartColumnIncreasing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartColumnIncreasing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartColumnIncreasing", Transform.Component, "VuChartColumnIncreasing")]
 public sealed class VuChartColumnIncreasing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartColumnStacked</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartColumnStacked</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartColumnStacked</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartColumnStacked", Transform.Component, "VuChartColumnStacked")]
 public sealed class VuChartColumnStacked : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartGantt</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartGantt</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartGantt</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartGantt", Transform.Component, "VuChartGantt")]
 public sealed class VuChartGantt : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartLine", Transform.Component, "VuChartLine")]
 public sealed class VuChartLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartNetwork</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartNetwork</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartNetwork</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartNetwork", Transform.Component, "VuChartNetwork")]
 public sealed class VuChartNetwork : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartNoAxesColumn</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesColumn</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartNoAxesColumn</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartNoAxesColumn", Transform.Component, "VuChartNoAxesColumn")]
 public sealed class VuChartNoAxesColumn : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartNoAxesColumnDecreasing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesColumnDecreasing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartNoAxesColumnDecreasing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartNoAxesColumnDecreasing", Transform.Component, "VuChartNoAxesColumnDecreasing")]
 public sealed class VuChartNoAxesColumnDecreasing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartNoAxesColumnIncreasing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesColumnIncreasing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartNoAxesColumnIncreasing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartNoAxesColumnIncreasing", Transform.Component, "VuChartNoAxesColumnIncreasing")]
 public sealed class VuChartNoAxesColumnIncreasing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartNoAxesCombined</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesCombined</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartNoAxesCombined</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartNoAxesCombined", Transform.Component, "VuChartNoAxesCombined")]
 public sealed class VuChartNoAxesCombined : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartNoAxesGantt</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartNoAxesGantt</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartNoAxesGantt</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartNoAxesGantt", Transform.Component, "VuChartNoAxesGantt")]
 public sealed class VuChartNoAxesGantt : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartPie</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartPie</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartPie</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartPie", Transform.Component, "VuChartPie")]
 public sealed class VuChartPie : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartScatter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartScatter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartScatter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartScatter", Transform.Component, "VuChartScatter")]
 public sealed class VuChartScatter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChartSpline</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChartSpline</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChartSpline</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChartSpline", Transform.Component, "VuChartSpline")]
 public sealed class VuChartSpline : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCheck", Transform.Component, "VuCheck")]
 public sealed class VuCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCheckCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCheckCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCheckCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCheckCheck", Transform.Component, "VuCheckCheck")]
 public sealed class VuCheckCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCheckLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCheckLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCheckLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCheckLine", Transform.Component, "VuCheckLine")]
 public sealed class VuCheckLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCheckup</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCheckup</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCheckup</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCheckup", Transform.Component, "VuCheckup")]
 public sealed class VuCheckup : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChefHat</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChefHat</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChefHat</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChefHat", Transform.Component, "VuChefHat")]
 public sealed class VuChefHat : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCherry</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCherry</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCherry</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCherry", Transform.Component, "VuCherry")]
 public sealed class VuCherry : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChessBishop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChessBishop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChessBishop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChessBishop", Transform.Component, "VuChessBishop")]
 public sealed class VuChessBishop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChessKing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChessKing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChessKing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChessKing", Transform.Component, "VuChessKing")]
 public sealed class VuChessKing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChessKnight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChessKnight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChessKnight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChessKnight", Transform.Component, "VuChessKnight")]
 public sealed class VuChessKnight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChessPawn</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChessPawn</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChessPawn</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChessPawn", Transform.Component, "VuChessPawn")]
 public sealed class VuChessPawn : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChessQueen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChessQueen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChessQueen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChessQueen", Transform.Component, "VuChessQueen")]
 public sealed class VuChessQueen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChessRook</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChessRook</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChessRook</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChessRook", Transform.Component, "VuChessRook")]
 public sealed class VuChessRook : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronDown", Transform.Component, "VuChevronDown")]
 public sealed class VuChevronDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronFirst</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronFirst</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronFirst</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronFirst", Transform.Component, "VuChevronFirst")]
 public sealed class VuChevronFirst : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronLast</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronLast</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronLast</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronLast", Transform.Component, "VuChevronLast")]
 public sealed class VuChevronLast : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronLeft", Transform.Component, "VuChevronLeft")]
 public sealed class VuChevronLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronRight", Transform.Component, "VuChevronRight")]
 public sealed class VuChevronRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronUp", Transform.Component, "VuChevronUp")]
 public sealed class VuChevronUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronsDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronsDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronsDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronsDown", Transform.Component, "VuChevronsDown")]
 public sealed class VuChevronsDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronsDownUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronsDownUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronsDownUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronsDownUp", Transform.Component, "VuChevronsDownUp")]
 public sealed class VuChevronsDownUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronsLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronsLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronsLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronsLeft", Transform.Component, "VuChevronsLeft")]
 public sealed class VuChevronsLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronsLeftRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronsLeftRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronsLeftRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronsLeftRight", Transform.Component, "VuChevronsLeftRight")]
 public sealed class VuChevronsLeftRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronsLeftRightEllipsis</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronsLeftRightEllipsis</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronsLeftRightEllipsis</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronsLeftRightEllipsis", Transform.Component, "VuChevronsLeftRightEllipsis")]
 public sealed class VuChevronsLeftRightEllipsis : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronsRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronsRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronsRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronsRight", Transform.Component, "VuChevronsRight")]
 public sealed class VuChevronsRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronsRightLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronsRightLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronsRightLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronsRightLeft", Transform.Component, "VuChevronsRightLeft")]
 public sealed class VuChevronsRightLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronsUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronsUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronsUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronsUp", Transform.Component, "VuChevronsUp")]
 public sealed class VuChevronsUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChevronsUpDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChevronsUpDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChevronsUpDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChevronsUpDown", Transform.Component, "VuChevronsUpDown")]
 public sealed class VuChevronsUpDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChrome</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChrome</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChrome</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChrome", Transform.Component, "VuChrome")]
 public sealed class VuChrome : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChromium</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChromium</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChromium</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChromium", Transform.Component, "VuChromium")]
 public sealed class VuChromium : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuChurch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuChurch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuChurch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuChurch", Transform.Component, "VuChurch")]
 public sealed class VuChurch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCigarette</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCigarette</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCigarette</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCigarette", Transform.Component, "VuCigarette")]
 public sealed class VuCigarette : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCigaretteOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCigaretteOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCigaretteOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCigaretteOff", Transform.Component, "VuCigaretteOff")]
 public sealed class VuCigaretteOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircle", Transform.Component, "VuCircle")]
 public sealed class VuCircle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleAlert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleAlert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleAlert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleAlert", Transform.Component, "VuCircleAlert")]
 public sealed class VuCircleAlert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleArrowDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleArrowDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleArrowDown", Transform.Component, "VuCircleArrowDown")]
 public sealed class VuCircleArrowDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleArrowLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleArrowLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleArrowLeft", Transform.Component, "VuCircleArrowLeft")]
 public sealed class VuCircleArrowLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleArrowOutDownLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutDownLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleArrowOutDownLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleArrowOutDownLeft", Transform.Component, "VuCircleArrowOutDownLeft")]
 public sealed class VuCircleArrowOutDownLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleArrowOutDownRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutDownRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleArrowOutDownRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleArrowOutDownRight", Transform.Component, "VuCircleArrowOutDownRight")]
 public sealed class VuCircleArrowOutDownRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleArrowOutUpLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutUpLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleArrowOutUpLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleArrowOutUpLeft", Transform.Component, "VuCircleArrowOutUpLeft")]
 public sealed class VuCircleArrowOutUpLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleArrowOutUpRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowOutUpRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleArrowOutUpRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleArrowOutUpRight", Transform.Component, "VuCircleArrowOutUpRight")]
 public sealed class VuCircleArrowOutUpRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleArrowRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleArrowRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleArrowRight", Transform.Component, "VuCircleArrowRight")]
 public sealed class VuCircleArrowRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleArrowUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleArrowUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleArrowUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleArrowUp", Transform.Component, "VuCircleArrowUp")]
 public sealed class VuCircleArrowUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleCheck", Transform.Component, "VuCircleCheck")]
 public sealed class VuCircleCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleCheckBig</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleCheckBig</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleCheckBig</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleCheckBig", Transform.Component, "VuCircleCheckBig")]
 public sealed class VuCircleCheckBig : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleChevronDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleChevronDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleChevronDown", Transform.Component, "VuCircleChevronDown")]
 public sealed class VuCircleChevronDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleChevronLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleChevronLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleChevronLeft", Transform.Component, "VuCircleChevronLeft")]
 public sealed class VuCircleChevronLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleChevronRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleChevronRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleChevronRight", Transform.Component, "VuCircleChevronRight")]
 public sealed class VuCircleChevronRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleChevronUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleChevronUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleChevronUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleChevronUp", Transform.Component, "VuCircleChevronUp")]
 public sealed class VuCircleChevronUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleDashed", Transform.Component, "VuCircleDashed")]
 public sealed class VuCircleDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleDivide</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleDivide</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleDivide</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleDivide", Transform.Component, "VuCircleDivide")]
 public sealed class VuCircleDivide : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleDollarSign</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleDollarSign</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleDollarSign</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleDollarSign", Transform.Component, "VuCircleDollarSign")]
 public sealed class VuCircleDollarSign : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleDot", Transform.Component, "VuCircleDot")]
 public sealed class VuCircleDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleDotDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleDotDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleDotDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleDotDashed", Transform.Component, "VuCircleDotDashed")]
 public sealed class VuCircleDotDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleEllipsis</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleEllipsis</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleEllipsis</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleEllipsis", Transform.Component, "VuCircleEllipsis")]
 public sealed class VuCircleEllipsis : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleEqual</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleEqual</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleEqual</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleEqual", Transform.Component, "VuCircleEqual")]
 public sealed class VuCircleEqual : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleFadingArrowUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleFadingArrowUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleFadingArrowUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleFadingArrowUp", Transform.Component, "VuCircleFadingArrowUp")]
 public sealed class VuCircleFadingArrowUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleFadingPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleFadingPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleFadingPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleFadingPlus", Transform.Component, "VuCircleFadingPlus")]
 public sealed class VuCircleFadingPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleGauge</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleGauge</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleGauge</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleGauge", Transform.Component, "VuCircleGauge")]
 public sealed class VuCircleGauge : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleMinus", Transform.Component, "VuCircleMinus")]
 public sealed class VuCircleMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleOff", Transform.Component, "VuCircleOff")]
 public sealed class VuCircleOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleParking</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleParking</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleParking</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleParking", Transform.Component, "VuCircleParking")]
 public sealed class VuCircleParking : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleParkingOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleParkingOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleParkingOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleParkingOff", Transform.Component, "VuCircleParkingOff")]
 public sealed class VuCircleParkingOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCirclePause</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCirclePause</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCirclePause</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCirclePause", Transform.Component, "VuCirclePause")]
 public sealed class VuCirclePause : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCirclePercent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCirclePercent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCirclePercent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCirclePercent", Transform.Component, "VuCirclePercent")]
 public sealed class VuCirclePercent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCirclePile</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCirclePile</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCirclePile</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCirclePile", Transform.Component, "VuCirclePile")]
 public sealed class VuCirclePile : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCirclePlay</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCirclePlay</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCirclePlay</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCirclePlay", Transform.Component, "VuCirclePlay")]
 public sealed class VuCirclePlay : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCirclePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCirclePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCirclePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCirclePlus", Transform.Component, "VuCirclePlus")]
 public sealed class VuCirclePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCirclePoundSterling</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCirclePoundSterling</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCirclePoundSterling</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCirclePoundSterling", Transform.Component, "VuCirclePoundSterling")]
 public sealed class VuCirclePoundSterling : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCirclePower</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCirclePower</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCirclePower</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCirclePower", Transform.Component, "VuCirclePower")]
 public sealed class VuCirclePower : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleQuestionMark</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleQuestionMark</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleQuestionMark</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleQuestionMark", Transform.Component, "VuCircleQuestionMark")]
 public sealed class VuCircleQuestionMark : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleSlash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleSlash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleSlash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleSlash", Transform.Component, "VuCircleSlash")]
 public sealed class VuCircleSlash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleSlash2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleSlash2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleSlash2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleSlash2", Transform.Component, "VuCircleSlash2")]
 public sealed class VuCircleSlash2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleSmall</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleSmall</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleSmall</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleSmall", Transform.Component, "VuCircleSmall")]
 public sealed class VuCircleSmall : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleStar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleStar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleStar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleStar", Transform.Component, "VuCircleStar")]
 public sealed class VuCircleStar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleStop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleStop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleStop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleStop", Transform.Component, "VuCircleStop")]
 public sealed class VuCircleStop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleUser</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleUser</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleUser</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleUser", Transform.Component, "VuCircleUser")]
 public sealed class VuCircleUser : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleUserRound</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleUserRound</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleUserRound</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleUserRound", Transform.Component, "VuCircleUserRound")]
 public sealed class VuCircleUserRound : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircleX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircleX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircleX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircleX", Transform.Component, "VuCircleX")]
 public sealed class VuCircleX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCircuitBoard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCircuitBoard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCircuitBoard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCircuitBoard", Transform.Component, "VuCircuitBoard")]
 public sealed class VuCircuitBoard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCitrus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCitrus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCitrus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCitrus", Transform.Component, "VuCitrus")]
 public sealed class VuCitrus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClapperboard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClapperboard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClapperboard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClapperboard", Transform.Component, "VuClapperboard")]
 public sealed class VuClapperboard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClassroom</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClassroom</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClassroom</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClassroom", Transform.Component, "VuClassroom")]
 public sealed class VuClassroom : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboard", Transform.Component, "VuClipboard")]
 public sealed class VuClipboard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardCheck", Transform.Component, "VuClipboardCheck")]
 public sealed class VuClipboardCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardClock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardClock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardClock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardClock", Transform.Component, "VuClipboardClock")]
 public sealed class VuClipboardClock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardCopy</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardCopy</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardCopy</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardCopy", Transform.Component, "VuClipboardCopy")]
 public sealed class VuClipboardCopy : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardList</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardList</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardList</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardList", Transform.Component, "VuClipboardList")]
 public sealed class VuClipboardList : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardMinus", Transform.Component, "VuClipboardMinus")]
 public sealed class VuClipboardMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardPaste</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardPaste</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardPaste</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardPaste", Transform.Component, "VuClipboardPaste")]
 public sealed class VuClipboardPaste : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardPen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardPen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardPen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardPen", Transform.Component, "VuClipboardPen")]
 public sealed class VuClipboardPen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardPenLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardPenLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardPenLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardPenLine", Transform.Component, "VuClipboardPenLine")]
 public sealed class VuClipboardPenLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardPlus", Transform.Component, "VuClipboardPlus")]
 public sealed class VuClipboardPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardType</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardType</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardType</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardType", Transform.Component, "VuClipboardType")]
 public sealed class VuClipboardType : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClipboardX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClipboardX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClipboardX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClipboardX", Transform.Component, "VuClipboardX")]
 public sealed class VuClipboardX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock", Transform.Component, "VuClock")]
 public sealed class VuClock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock1</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock1</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock1</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock1", Transform.Component, "VuClock1")]
 public sealed class VuClock1 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock10</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock10</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock10</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock10", Transform.Component, "VuClock10")]
 public sealed class VuClock10 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock11</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock11</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock11</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock11", Transform.Component, "VuClock11")]
 public sealed class VuClock11 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock12</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock12</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock12</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock12", Transform.Component, "VuClock12")]
 public sealed class VuClock12 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock2", Transform.Component, "VuClock2")]
 public sealed class VuClock2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock3", Transform.Component, "VuClock3")]
 public sealed class VuClock3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock4</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock4</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock4</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock4", Transform.Component, "VuClock4")]
 public sealed class VuClock4 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock5</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock5</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock5</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock5", Transform.Component, "VuClock5")]
 public sealed class VuClock5 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock6</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock6</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock6</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock6", Transform.Component, "VuClock6")]
 public sealed class VuClock6 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock7</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock7</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock7</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock7", Transform.Component, "VuClock7")]
 public sealed class VuClock7 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock8</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock8</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock8</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock8", Transform.Component, "VuClock8")]
 public sealed class VuClock8 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClock9</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClock9</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClock9</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClock9", Transform.Component, "VuClock9")]
 public sealed class VuClock9 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClockAlert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClockAlert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClockAlert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClockAlert", Transform.Component, "VuClockAlert")]
 public sealed class VuClockAlert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClockArrowDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClockArrowDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClockArrowDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClockArrowDown", Transform.Component, "VuClockArrowDown")]
 public sealed class VuClockArrowDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClockArrowUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClockArrowUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClockArrowUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClockArrowUp", Transform.Component, "VuClockArrowUp")]
 public sealed class VuClockArrowUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClockCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClockCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClockCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClockCheck", Transform.Component, "VuClockCheck")]
 public sealed class VuClockCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClockFading</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClockFading</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClockFading</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClockFading", Transform.Component, "VuClockFading")]
 public sealed class VuClockFading : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClockPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClockPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClockPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClockPlus", Transform.Component, "VuClockPlus")]
 public sealed class VuClockPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClose</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClose</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClose</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClose", Transform.Component, "VuClose")]
 public sealed class VuClose : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClosedCaption</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClosedCaption</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClosedCaption</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClosedCaption", Transform.Component, "VuClosedCaption")]
 public sealed class VuClosedCaption : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloud</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloud</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloud</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloud", Transform.Component, "VuCloud")]
 public sealed class VuCloud : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudAlert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudAlert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudAlert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudAlert", Transform.Component, "VuCloudAlert")]
 public sealed class VuCloudAlert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudBackup</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudBackup</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudBackup</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudBackup", Transform.Component, "VuCloudBackup")]
 public sealed class VuCloudBackup : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudCheck", Transform.Component, "VuCloudCheck")]
 public sealed class VuCloudCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudCog", Transform.Component, "VuCloudCog")]
 public sealed class VuCloudCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudDownload</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudDownload</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudDownload</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudDownload", Transform.Component, "VuCloudDownload")]
 public sealed class VuCloudDownload : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudDrizzle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudDrizzle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudDrizzle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudDrizzle", Transform.Component, "VuCloudDrizzle")]
 public sealed class VuCloudDrizzle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudFog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudFog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudFog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudFog", Transform.Component, "VuCloudFog")]
 public sealed class VuCloudFog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudHail</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudHail</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudHail</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudHail", Transform.Component, "VuCloudHail")]
 public sealed class VuCloudHail : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudLightning</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudLightning</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudLightning</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudLightning", Transform.Component, "VuCloudLightning")]
 public sealed class VuCloudLightning : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudMoon</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudMoon</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudMoon</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudMoon", Transform.Component, "VuCloudMoon")]
 public sealed class VuCloudMoon : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudMoonRain</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudMoonRain</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudMoonRain</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudMoonRain", Transform.Component, "VuCloudMoonRain")]
 public sealed class VuCloudMoonRain : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudOff", Transform.Component, "VuCloudOff")]
 public sealed class VuCloudOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudRain</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudRain</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudRain</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudRain", Transform.Component, "VuCloudRain")]
 public sealed class VuCloudRain : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudRainWind</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudRainWind</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudRainWind</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudRainWind", Transform.Component, "VuCloudRainWind")]
 public sealed class VuCloudRainWind : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudSnow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudSnow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudSnow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudSnow", Transform.Component, "VuCloudSnow")]
 public sealed class VuCloudSnow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudSun</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudSun</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudSun</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudSun", Transform.Component, "VuCloudSun")]
 public sealed class VuCloudSun : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudSunRain</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudSunRain</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudSunRain</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudSunRain", Transform.Component, "VuCloudSunRain")]
 public sealed class VuCloudSunRain : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudSync</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudSync</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudSync</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudSync", Transform.Component, "VuCloudSync")]
 public sealed class VuCloudSync : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudUpload</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudUpload</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudUpload</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudUpload", Transform.Component, "VuCloudUpload")]
 public sealed class VuCloudUpload : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCloudy</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCloudy</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCloudy</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCloudy", Transform.Component, "VuCloudy")]
 public sealed class VuCloudy : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClover</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClover</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClover</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClover", Transform.Component, "VuClover")]
 public sealed class VuClover : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuClub</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuClub</summary>
+/// <remarks>按需 static renderer for upstream <c>VuClub</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuClub", Transform.Component, "VuClub")]
 public sealed class VuClub : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCode", Transform.Component, "VuCode")]
 public sealed class VuCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCodeXml</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCodeXml</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCodeXml</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCodeXml", Transform.Component, "VuCodeXml")]
 public sealed class VuCodeXml : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCodepen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCodepen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCodepen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCodepen", Transform.Component, "VuCodepen")]
 public sealed class VuCodepen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCodesandbox</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCodesandbox</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCodesandbox</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCodesandbox", Transform.Component, "VuCodesandbox")]
 public sealed class VuCodesandbox : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCoffee</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCoffee</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCoffee</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCoffee", Transform.Component, "VuCoffee")]
 public sealed class VuCoffee : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCog", Transform.Component, "VuCog")]
 public sealed class VuCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCoins</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCoins</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCoins</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCoins", Transform.Component, "VuCoins")]
 public sealed class VuCoins : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuColumns2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuColumns2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuColumns2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuColumns2", Transform.Component, "VuColumns2")]
 public sealed class VuColumns2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuColumns3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuColumns3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuColumns3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuColumns3", Transform.Component, "VuColumns3")]
 public sealed class VuColumns3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuColumns3Cog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuColumns3Cog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuColumns3Cog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuColumns3Cog", Transform.Component, "VuColumns3Cog")]
 public sealed class VuColumns3Cog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuColumns4</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuColumns4</summary>
+/// <remarks>按需 static renderer for upstream <c>VuColumns4</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuColumns4", Transform.Component, "VuColumns4")]
 public sealed class VuColumns4 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCombine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCombine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCombine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCombine", Transform.Component, "VuCombine")]
 public sealed class VuCombine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCommand</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCommand</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCommand</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCommand", Transform.Component, "VuCommand")]
 public sealed class VuCommand : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuComment</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuComment</summary>
+/// <remarks>按需 static renderer for upstream <c>VuComment</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuComment", Transform.Component, "VuComment")]
 public sealed class VuComment : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCompass</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCompass</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCompass</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCompass", Transform.Component, "VuCompass")]
 public sealed class VuCompass : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCompleted</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCompleted</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCompleted</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCompleted", Transform.Component, "VuCompleted")]
 public sealed class VuCompleted : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuComponent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuComponent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuComponent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuComponent", Transform.Component, "VuComponent")]
 public sealed class VuComponent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuComputer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuComputer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuComputer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuComputer", Transform.Component, "VuComputer")]
 public sealed class VuComputer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuConciergeBell</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuConciergeBell</summary>
+/// <remarks>按需 static renderer for upstream <c>VuConciergeBell</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuConciergeBell", Transform.Component, "VuConciergeBell")]
 public sealed class VuConciergeBell : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCone", Transform.Component, "VuCone")]
 public sealed class VuCone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuConstruction</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuConstruction</summary>
+/// <remarks>按需 static renderer for upstream <c>VuConstruction</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuConstruction", Transform.Component, "VuConstruction")]
 public sealed class VuConstruction : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuContact</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuContact</summary>
+/// <remarks>按需 static renderer for upstream <c>VuContact</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuContact", Transform.Component, "VuContact")]
 public sealed class VuContact : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuContactRound</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuContactRound</summary>
+/// <remarks>按需 static renderer for upstream <c>VuContactRound</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuContactRound", Transform.Component, "VuContactRound")]
 public sealed class VuContactRound : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuContainer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuContainer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuContainer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuContainer", Transform.Component, "VuContainer")]
 public sealed class VuContainer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuContrast</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuContrast</summary>
+/// <remarks>按需 static renderer for upstream <c>VuContrast</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuContrast", Transform.Component, "VuContrast")]
 public sealed class VuContrast : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCookie</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCookie</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCookie</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCookie", Transform.Component, "VuCookie")]
 public sealed class VuCookie : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCookingPot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCookingPot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCookingPot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCookingPot", Transform.Component, "VuCookingPot")]
 public sealed class VuCookingPot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCopy</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCopy</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCopy</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCopy", Transform.Component, "VuCopy")]
 public sealed class VuCopy : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCopyCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCopyCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCopyCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCopyCheck", Transform.Component, "VuCopyCheck")]
 public sealed class VuCopyCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCopyMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCopyMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCopyMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCopyMinus", Transform.Component, "VuCopyMinus")]
 public sealed class VuCopyMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCopyPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCopyPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCopyPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCopyPlus", Transform.Component, "VuCopyPlus")]
 public sealed class VuCopyPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCopySlash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCopySlash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCopySlash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCopySlash", Transform.Component, "VuCopySlash")]
 public sealed class VuCopySlash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCopyX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCopyX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCopyX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCopyX", Transform.Component, "VuCopyX")]
 public sealed class VuCopyX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCopyleft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCopyleft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCopyleft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCopyleft", Transform.Component, "VuCopyleft")]
 public sealed class VuCopyleft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCopyright</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCopyright</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCopyright</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCopyright", Transform.Component, "VuCopyright")]
 public sealed class VuCopyright : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCornerDownLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCornerDownLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCornerDownLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCornerDownLeft", Transform.Component, "VuCornerDownLeft")]
 public sealed class VuCornerDownLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCornerDownRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCornerDownRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCornerDownRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCornerDownRight", Transform.Component, "VuCornerDownRight")]
 public sealed class VuCornerDownRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCornerLeftDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCornerLeftDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCornerLeftDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCornerLeftDown", Transform.Component, "VuCornerLeftDown")]
 public sealed class VuCornerLeftDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCornerLeftUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCornerLeftUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCornerLeftUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCornerLeftUp", Transform.Component, "VuCornerLeftUp")]
 public sealed class VuCornerLeftUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCornerRightDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCornerRightDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCornerRightDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCornerRightDown", Transform.Component, "VuCornerRightDown")]
 public sealed class VuCornerRightDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCornerRightUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCornerRightUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCornerRightUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCornerRightUp", Transform.Component, "VuCornerRightUp")]
 public sealed class VuCornerRightUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCornerUpLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCornerUpLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCornerUpLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCornerUpLeft", Transform.Component, "VuCornerUpLeft")]
 public sealed class VuCornerUpLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCornerUpRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCornerUpRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCornerUpRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCornerUpRight", Transform.Component, "VuCornerUpRight")]
 public sealed class VuCornerUpRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCoupon</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCoupon</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCoupon</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCoupon", Transform.Component, "VuCoupon")]
 public sealed class VuCoupon : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCourse</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCourse</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCourse</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCourse", Transform.Component, "VuCourse")]
 public sealed class VuCourse : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCpu</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCpu</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCpu</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCpu", Transform.Component, "VuCpu")]
 public sealed class VuCpu : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCreativeCommons</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCreativeCommons</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCreativeCommons</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCreativeCommons", Transform.Component, "VuCreativeCommons")]
 public sealed class VuCreativeCommons : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCreditCard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCreditCard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCreditCard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCreditCard", Transform.Component, "VuCreditCard")]
 public sealed class VuCreditCard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCroissant</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCroissant</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCroissant</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCroissant", Transform.Component, "VuCroissant")]
 public sealed class VuCroissant : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCrop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCrop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCrop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCrop", Transform.Component, "VuCrop")]
 public sealed class VuCrop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCross</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCross</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCross</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCross", Transform.Component, "VuCross")]
 public sealed class VuCross : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCrosshair</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCrosshair</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCrosshair</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCrosshair", Transform.Component, "VuCrosshair")]
 public sealed class VuCrosshair : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCrown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCrown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCrown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCrown", Transform.Component, "VuCrown")]
 public sealed class VuCrown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCuboid</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCuboid</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCuboid</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCuboid", Transform.Component, "VuCuboid")]
 public sealed class VuCuboid : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCupSoda</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCupSoda</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCupSoda</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCupSoda", Transform.Component, "VuCupSoda")]
 public sealed class VuCupSoda : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCurrency</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCurrency</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCurrency</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCurrency", Transform.Component, "VuCurrency")]
 public sealed class VuCurrency : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCut</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCut</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCut</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCut", Transform.Component, "VuCut")]
 public sealed class VuCut : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuCylinder</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuCylinder</summary>
+/// <remarks>按需 static renderer for upstream <c>VuCylinder</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuCylinder", Transform.Component, "VuCylinder")]
 public sealed class VuCylinder : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDam</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDam</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDam</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDam", Transform.Component, "VuDam")]
 public sealed class VuDam : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDataCompare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDataCompare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDataCompare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDataCompare", Transform.Component, "VuDataCompare")]
 public sealed class VuDataCompare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDataExport</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDataExport</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDataExport</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDataExport", Transform.Component, "VuDataExport")]
 public sealed class VuDataExport : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDataFilter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDataFilter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDataFilter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDataFilter", Transform.Component, "VuDataFilter")]
 public sealed class VuDataFilter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDataRefresh</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDataRefresh</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDataRefresh</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDataRefresh", Transform.Component, "VuDataRefresh")]
 public sealed class VuDataRefresh : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDatabase</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDatabase</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDatabase</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDatabase", Transform.Component, "VuDatabase")]
 public sealed class VuDatabase : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDatabaseBackup</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDatabaseBackup</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDatabaseBackup</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDatabaseBackup", Transform.Component, "VuDatabaseBackup")]
 public sealed class VuDatabaseBackup : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDatabaseZap</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDatabaseZap</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDatabaseZap</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDatabaseZap", Transform.Component, "VuDatabaseZap")]
 public sealed class VuDatabaseZap : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDecimalsArrowLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDecimalsArrowLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDecimalsArrowLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDecimalsArrowLeft", Transform.Component, "VuDecimalsArrowLeft")]
 public sealed class VuDecimalsArrowLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDecimalsArrowRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDecimalsArrowRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDecimalsArrowRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDecimalsArrowRight", Transform.Component, "VuDecimalsArrowRight")]
 public sealed class VuDecimalsArrowRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDelete</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDelete</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDelete</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDelete", Transform.Component, "VuDelete")]
 public sealed class VuDelete : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDelivery</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDelivery</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDelivery</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDelivery", Transform.Component, "VuDelivery")]
 public sealed class VuDelivery : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDessert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDessert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDessert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDessert", Transform.Component, "VuDessert")]
 public sealed class VuDessert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDiameter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDiameter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDiameter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDiameter", Transform.Component, "VuDiameter")]
 public sealed class VuDiameter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDiamond</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDiamond</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDiamond</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDiamond", Transform.Component, "VuDiamond")]
 public sealed class VuDiamond : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDiamondMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDiamondMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDiamondMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDiamondMinus", Transform.Component, "VuDiamondMinus")]
 public sealed class VuDiamondMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDiamondPercent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDiamondPercent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDiamondPercent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDiamondPercent", Transform.Component, "VuDiamondPercent")]
 public sealed class VuDiamondPercent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDiamondPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDiamondPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDiamondPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDiamondPlus", Transform.Component, "VuDiamondPlus")]
 public sealed class VuDiamondPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDice1</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDice1</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDice1</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDice1", Transform.Component, "VuDice1")]
 public sealed class VuDice1 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDice2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDice2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDice2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDice2", Transform.Component, "VuDice2")]
 public sealed class VuDice2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDice3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDice3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDice3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDice3", Transform.Component, "VuDice3")]
 public sealed class VuDice3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDice4</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDice4</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDice4</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDice4", Transform.Component, "VuDice4")]
 public sealed class VuDice4 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDice5</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDice5</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDice5</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDice5", Transform.Component, "VuDice5")]
 public sealed class VuDice5 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDice6</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDice6</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDice6</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDice6", Transform.Component, "VuDice6")]
 public sealed class VuDice6 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDices</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDices</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDices</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDices", Transform.Component, "VuDices")]
 public sealed class VuDices : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDiff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDiff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDiff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDiff", Transform.Component, "VuDiff")]
 public sealed class VuDiff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDisabled</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDisabled</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDisabled</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDisabled", Transform.Component, "VuDisabled")]
 public sealed class VuDisabled : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDisc</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDisc</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDisc</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDisc", Transform.Component, "VuDisc")]
 public sealed class VuDisc : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDisc2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDisc2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDisc2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDisc2", Transform.Component, "VuDisc2")]
 public sealed class VuDisc2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDisc3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDisc3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDisc3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDisc3", Transform.Component, "VuDisc3")]
 public sealed class VuDisc3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDiscAlbum</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDiscAlbum</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDiscAlbum</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDiscAlbum", Transform.Component, "VuDiscAlbum")]
 public sealed class VuDiscAlbum : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDislike</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDislike</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDislike</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDislike", Transform.Component, "VuDislike")]
 public sealed class VuDislike : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDivide</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDivide</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDivide</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDivide", Transform.Component, "VuDivide")]
 public sealed class VuDivide : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDna</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDna</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDna</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDna", Transform.Component, "VuDna")]
 public sealed class VuDna : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDnaOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDnaOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDnaOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDnaOff", Transform.Component, "VuDnaOff")]
 public sealed class VuDnaOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDock", Transform.Component, "VuDock")]
 public sealed class VuDock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDog", Transform.Component, "VuDog")]
 public sealed class VuDog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDollarSign</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDollarSign</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDollarSign</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDollarSign", Transform.Component, "VuDollarSign")]
 public sealed class VuDollarSign : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDonut</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDonut</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDonut</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDonut", Transform.Component, "VuDonut")]
 public sealed class VuDonut : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDoorClosed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDoorClosed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDoorClosed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDoorClosed", Transform.Component, "VuDoorClosed")]
 public sealed class VuDoorClosed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDoorClosedLocked</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDoorClosedLocked</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDoorClosedLocked</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDoorClosedLocked", Transform.Component, "VuDoorClosedLocked")]
 public sealed class VuDoorClosedLocked : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDoorOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDoorOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDoorOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDoorOpen", Transform.Component, "VuDoorOpen")]
 public sealed class VuDoorOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDot", Transform.Component, "VuDot")]
 public sealed class VuDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDoughnutChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDoughnutChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDoughnutChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDoughnutChart", Transform.Component, "VuDoughnutChart")]
 public sealed class VuDoughnutChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDownload</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDownload</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDownload</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDownload", Transform.Component, "VuDownload")]
 public sealed class VuDownload : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDraftingCompass</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDraftingCompass</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDraftingCompass</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDraftingCompass", Transform.Component, "VuDraftingCompass")]
 public sealed class VuDraftingCompass : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDrama</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDrama</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDrama</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDrama", Transform.Component, "VuDrama")]
 public sealed class VuDrama : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDribbble</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDribbble</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDribbble</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDribbble", Transform.Component, "VuDribbble")]
 public sealed class VuDribbble : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDrill</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDrill</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDrill</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDrill", Transform.Component, "VuDrill")]
 public sealed class VuDrill : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDrone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDrone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDrone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDrone", Transform.Component, "VuDrone")]
 public sealed class VuDrone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDroplet</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDroplet</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDroplet</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDroplet", Transform.Component, "VuDroplet")]
 public sealed class VuDroplet : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDropletOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDropletOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDropletOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDropletOff", Transform.Component, "VuDropletOff")]
 public sealed class VuDropletOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDroplets</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDroplets</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDroplets</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDroplets", Transform.Component, "VuDroplets")]
 public sealed class VuDroplets : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDrum</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDrum</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDrum</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDrum", Transform.Component, "VuDrum")]
 public sealed class VuDrum : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDrumstick</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDrumstick</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDrumstick</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDrumstick", Transform.Component, "VuDrumstick")]
 public sealed class VuDrumstick : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuDumbbell</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuDumbbell</summary>
+/// <remarks>按需 static renderer for upstream <c>VuDumbbell</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuDumbbell", Transform.Component, "VuDumbbell")]
 public sealed class VuDumbbell : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEar", Transform.Component, "VuEar")]
 public sealed class VuEar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEarOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEarOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEarOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEarOff", Transform.Component, "VuEarOff")]
 public sealed class VuEarOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEarth</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEarth</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEarth</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEarth", Transform.Component, "VuEarth")]
 public sealed class VuEarth : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEarthLock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEarthLock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEarthLock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEarthLock", Transform.Component, "VuEarthLock")]
 public sealed class VuEarthLock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEclipse</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEclipse</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEclipse</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEclipse", Transform.Component, "VuEclipse")]
 public sealed class VuEclipse : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEdit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEdit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEdit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEdit", Transform.Component, "VuEdit")]
 public sealed class VuEdit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEgg</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEgg</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEgg</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEgg", Transform.Component, "VuEgg")]
 public sealed class VuEgg : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEggFried</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEggFried</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEggFried</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEggFried", Transform.Component, "VuEggFried")]
 public sealed class VuEggFried : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEggOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEggOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEggOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEggOff", Transform.Component, "VuEggOff")]
 public sealed class VuEggOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEllipsis</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEllipsis</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEllipsis</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEllipsis", Transform.Component, "VuEllipsis")]
 public sealed class VuEllipsis : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEllipsisVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEllipsisVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEllipsisVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEllipsisVertical", Transform.Component, "VuEllipsisVertical")]
 public sealed class VuEllipsisVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEnter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEnter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEnter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEnter", Transform.Component, "VuEnter")]
 public sealed class VuEnter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEqual</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEqual</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEqual</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEqual", Transform.Component, "VuEqual")]
 public sealed class VuEqual : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEqualApproximately</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEqualApproximately</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEqualApproximately</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEqualApproximately", Transform.Component, "VuEqualApproximately")]
 public sealed class VuEqualApproximately : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEqualNot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEqualNot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEqualNot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEqualNot", Transform.Component, "VuEqualNot")]
 public sealed class VuEqualNot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEraser</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEraser</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEraser</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEraser", Transform.Component, "VuEraser")]
 public sealed class VuEraser : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuError</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuError</summary>
+/// <remarks>按需 static renderer for upstream <c>VuError</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuError", Transform.Component, "VuError")]
 public sealed class VuError : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEthernetPort</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEthernetPort</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEthernetPort</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEthernetPort", Transform.Component, "VuEthernetPort")]
 public sealed class VuEthernetPort : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEuro</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEuro</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEuro</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEuro", Transform.Component, "VuEuro")]
 public sealed class VuEuro : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEvCharger</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEvCharger</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEvCharger</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEvCharger", Transform.Component, "VuEvCharger")]
 public sealed class VuEvCharger : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuExam</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuExam</summary>
+/// <remarks>按需 static renderer for upstream <c>VuExam</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuExam", Transform.Component, "VuExam")]
 public sealed class VuExam : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuExitFullscreen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuExitFullscreen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuExitFullscreen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuExitFullscreen", Transform.Component, "VuExitFullscreen")]
 public sealed class VuExitFullscreen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuExpand</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuExpand</summary>
+/// <remarks>按需 static renderer for upstream <c>VuExpand</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuExpand", Transform.Component, "VuExpand")]
 public sealed class VuExpand : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuExternalLink</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuExternalLink</summary>
+/// <remarks>按需 static renderer for upstream <c>VuExternalLink</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuExternalLink", Transform.Component, "VuExternalLink")]
 public sealed class VuExternalLink : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEye</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEye</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEye</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEye", Transform.Component, "VuEye")]
 public sealed class VuEye : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEyeClosed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEyeClosed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEyeClosed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEyeClosed", Transform.Component, "VuEyeClosed")]
 public sealed class VuEyeClosed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuEyeOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuEyeOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuEyeOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuEyeOff", Transform.Component, "VuEyeOff")]
 public sealed class VuEyeOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFacebook</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFacebook</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFacebook</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFacebook", Transform.Component, "VuFacebook")]
 public sealed class VuFacebook : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFactory</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFactory</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFactory</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFactory", Transform.Component, "VuFactory")]
 public sealed class VuFactory : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFailure</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFailure</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFailure</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFailure", Transform.Component, "VuFailure")]
 public sealed class VuFailure : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFan", Transform.Component, "VuFan")]
 public sealed class VuFan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFastBackward</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFastBackward</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFastBackward</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFastBackward", Transform.Component, "VuFastBackward")]
 public sealed class VuFastBackward : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFastForward</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFastForward</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFastForward</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFastForward", Transform.Component, "VuFastForward")]
 public sealed class VuFastForward : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFavorite</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFavorite</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFavorite</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFavorite", Transform.Component, "VuFavorite")]
 public sealed class VuFavorite : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFeather</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFeather</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFeather</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFeather", Transform.Component, "VuFeather")]
 public sealed class VuFeather : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFence</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFence</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFence</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFence", Transform.Component, "VuFence")]
 public sealed class VuFence : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFerrisWheel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFerrisWheel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFerrisWheel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFerrisWheel", Transform.Component, "VuFerrisWheel")]
 public sealed class VuFerrisWheel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFigma</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFigma</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFigma</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFigma", Transform.Component, "VuFigma")]
 public sealed class VuFigma : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFile</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFile</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFile</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFile", Transform.Component, "VuFile")]
 public sealed class VuFile : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileArchive</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileArchive</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileArchive</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileArchive", Transform.Component, "VuFileArchive")]
 public sealed class VuFileArchive : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileAudio</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileAudio</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileAudio</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileAudio", Transform.Component, "VuFileAudio")]
 public sealed class VuFileAudio : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileAudio2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileAudio2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileAudio2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileAudio2", Transform.Component, "VuFileAudio2")]
 public sealed class VuFileAudio2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileAxis3d</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileAxis3d</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileAxis3d</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileAxis3d", Transform.Component, "VuFileAxis3d")]
 public sealed class VuFileAxis3d : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileBadge</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileBadge</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileBadge</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileBadge", Transform.Component, "VuFileBadge")]
 public sealed class VuFileBadge : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileBadge2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileBadge2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileBadge2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileBadge2", Transform.Component, "VuFileBadge2")]
 public sealed class VuFileBadge2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileBox</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileBox</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileBox</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileBox", Transform.Component, "VuFileBox")]
 public sealed class VuFileBox : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileBraces</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileBraces</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileBraces</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileBraces", Transform.Component, "VuFileBraces")]
 public sealed class VuFileBraces : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileBracesCorner</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileBracesCorner</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileBracesCorner</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileBracesCorner", Transform.Component, "VuFileBracesCorner")]
 public sealed class VuFileBracesCorner : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileChartColumn</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileChartColumn</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileChartColumn</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileChartColumn", Transform.Component, "VuFileChartColumn")]
 public sealed class VuFileChartColumn : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileChartColumnIncreasing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileChartColumnIncreasing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileChartColumnIncreasing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileChartColumnIncreasing", Transform.Component, "VuFileChartColumnIncreasing")]
 public sealed class VuFileChartColumnIncreasing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileChartLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileChartLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileChartLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileChartLine", Transform.Component, "VuFileChartLine")]
 public sealed class VuFileChartLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileChartPie</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileChartPie</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileChartPie</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileChartPie", Transform.Component, "VuFileChartPie")]
 public sealed class VuFileChartPie : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileCheck", Transform.Component, "VuFileCheck")]
 public sealed class VuFileCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileCheck2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileCheck2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileCheck2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileCheck2", Transform.Component, "VuFileCheck2")]
 public sealed class VuFileCheck2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileCheckCorner</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileCheckCorner</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileCheckCorner</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileCheckCorner", Transform.Component, "VuFileCheckCorner")]
 public sealed class VuFileCheckCorner : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileClock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileClock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileClock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileClock", Transform.Component, "VuFileClock")]
 public sealed class VuFileClock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileCode", Transform.Component, "VuFileCode")]
 public sealed class VuFileCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileCode2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileCode2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileCode2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileCode2", Transform.Component, "VuFileCode2")]
 public sealed class VuFileCode2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileCodeCorner</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileCodeCorner</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileCodeCorner</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileCodeCorner", Transform.Component, "VuFileCodeCorner")]
 public sealed class VuFileCodeCorner : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileCog", Transform.Component, "VuFileCog")]
 public sealed class VuFileCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileDiff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileDiff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileDiff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileDiff", Transform.Component, "VuFileDiff")]
 public sealed class VuFileDiff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileDigit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileDigit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileDigit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileDigit", Transform.Component, "VuFileDigit")]
 public sealed class VuFileDigit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileDown", Transform.Component, "VuFileDown")]
 public sealed class VuFileDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileExclamationPoint</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileExclamationPoint</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileExclamationPoint</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileExclamationPoint", Transform.Component, "VuFileExclamationPoint")]
 public sealed class VuFileExclamationPoint : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileHeadphone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileHeadphone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileHeadphone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileHeadphone", Transform.Component, "VuFileHeadphone")]
 public sealed class VuFileHeadphone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileHeart", Transform.Component, "VuFileHeart")]
 public sealed class VuFileHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileImage</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileImage</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileImage</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileImage", Transform.Component, "VuFileImage")]
 public sealed class VuFileImage : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileInput</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileInput</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileInput</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileInput", Transform.Component, "VuFileInput")]
 public sealed class VuFileInput : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileJson</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileJson</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileJson</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileJson", Transform.Component, "VuFileJson")]
 public sealed class VuFileJson : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileJson2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileJson2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileJson2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileJson2", Transform.Component, "VuFileJson2")]
 public sealed class VuFileJson2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileKey</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileKey</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileKey</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileKey", Transform.Component, "VuFileKey")]
 public sealed class VuFileKey : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileKey2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileKey2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileKey2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileKey2", Transform.Component, "VuFileKey2")]
 public sealed class VuFileKey2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileLock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileLock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileLock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileLock", Transform.Component, "VuFileLock")]
 public sealed class VuFileLock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileLock2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileLock2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileLock2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileLock2", Transform.Component, "VuFileLock2")]
 public sealed class VuFileLock2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileMinus", Transform.Component, "VuFileMinus")]
 public sealed class VuFileMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileMinus2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileMinus2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileMinus2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileMinus2", Transform.Component, "VuFileMinus2")]
 public sealed class VuFileMinus2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileMinusCorner</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileMinusCorner</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileMinusCorner</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileMinusCorner", Transform.Component, "VuFileMinusCorner")]
 public sealed class VuFileMinusCorner : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileMusic</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileMusic</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileMusic</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileMusic", Transform.Component, "VuFileMusic")]
 public sealed class VuFileMusic : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileOutput</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileOutput</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileOutput</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileOutput", Transform.Component, "VuFileOutput")]
 public sealed class VuFileOutput : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilePen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilePen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilePen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilePen", Transform.Component, "VuFilePen")]
 public sealed class VuFilePen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilePenLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilePenLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilePenLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilePenLine", Transform.Component, "VuFilePenLine")]
 public sealed class VuFilePenLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilePieChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilePieChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilePieChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilePieChart", Transform.Component, "VuFilePieChart")]
 public sealed class VuFilePieChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilePlay</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilePlay</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilePlay</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilePlay", Transform.Component, "VuFilePlay")]
 public sealed class VuFilePlay : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilePlus", Transform.Component, "VuFilePlus")]
 public sealed class VuFilePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilePlus2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilePlus2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilePlus2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilePlus2", Transform.Component, "VuFilePlus2")]
 public sealed class VuFilePlus2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilePlusCorner</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilePlusCorner</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilePlusCorner</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilePlusCorner", Transform.Component, "VuFilePlusCorner")]
 public sealed class VuFilePlusCorner : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileQuestionMark</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileQuestionMark</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileQuestionMark</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileQuestionMark", Transform.Component, "VuFileQuestionMark")]
 public sealed class VuFileQuestionMark : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileScan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileScan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileScan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileScan", Transform.Component, "VuFileScan")]
 public sealed class VuFileScan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileSearch", Transform.Component, "VuFileSearch")]
 public sealed class VuFileSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileSearch2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileSearch2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileSearch2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileSearch2", Transform.Component, "VuFileSearch2")]
 public sealed class VuFileSearch2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileSearchCorner</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileSearchCorner</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileSearchCorner</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileSearchCorner", Transform.Component, "VuFileSearchCorner")]
 public sealed class VuFileSearchCorner : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileSignal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileSignal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileSignal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileSignal", Transform.Component, "VuFileSignal")]
 public sealed class VuFileSignal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileSliders</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileSliders</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileSliders</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileSliders", Transform.Component, "VuFileSliders")]
 public sealed class VuFileSliders : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileSpreadsheet</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileSpreadsheet</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileSpreadsheet</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileSpreadsheet", Transform.Component, "VuFileSpreadsheet")]
 public sealed class VuFileSpreadsheet : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileStack</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileStack</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileStack</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileStack", Transform.Component, "VuFileStack")]
 public sealed class VuFileStack : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileSymlink</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileSymlink</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileSymlink</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileSymlink", Transform.Component, "VuFileSymlink")]
 public sealed class VuFileSymlink : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileTerminal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileTerminal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileTerminal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileTerminal", Transform.Component, "VuFileTerminal")]
 public sealed class VuFileTerminal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileText", Transform.Component, "VuFileText")]
 public sealed class VuFileText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileType</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileType</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileType</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileType", Transform.Component, "VuFileType")]
 public sealed class VuFileType : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileType2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileType2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileType2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileType2", Transform.Component, "VuFileType2")]
 public sealed class VuFileType2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileTypeCorner</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileTypeCorner</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileTypeCorner</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileTypeCorner", Transform.Component, "VuFileTypeCorner")]
 public sealed class VuFileTypeCorner : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileUp", Transform.Component, "VuFileUp")]
 public sealed class VuFileUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileUser</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileUser</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileUser</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileUser", Transform.Component, "VuFileUser")]
 public sealed class VuFileUser : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileVideoCamera</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileVideoCamera</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileVideoCamera</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileVideoCamera", Transform.Component, "VuFileVideoCamera")]
 public sealed class VuFileVideoCamera : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileVolume</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileVolume</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileVolume</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileVolume", Transform.Component, "VuFileVolume")]
 public sealed class VuFileVolume : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileVolume2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileVolume2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileVolume2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileVolume2", Transform.Component, "VuFileVolume2")]
 public sealed class VuFileVolume2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileWarning</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileWarning</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileWarning</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileWarning", Transform.Component, "VuFileWarning")]
 public sealed class VuFileWarning : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileX", Transform.Component, "VuFileX")]
 public sealed class VuFileX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileX2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileX2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileX2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileX2", Transform.Component, "VuFileX2")]
 public sealed class VuFileX2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFileXCorner</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFileXCorner</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFileXCorner</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFileXCorner", Transform.Component, "VuFileXCorner")]
 public sealed class VuFileXCorner : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFiles</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFiles</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFiles</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFiles", Transform.Component, "VuFiles")]
 public sealed class VuFiles : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilm</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilm</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilm</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilm", Transform.Component, "VuFilm")]
 public sealed class VuFilm : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilter", Transform.Component, "VuFilter")]
 public sealed class VuFilter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFilterX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFilterX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFilterX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFilterX", Transform.Component, "VuFilterX")]
 public sealed class VuFilterX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFinance</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFinance</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFinance</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFinance", Transform.Component, "VuFinance")]
 public sealed class VuFinance : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFingerprintPattern</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFingerprintPattern</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFingerprintPattern</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFingerprintPattern", Transform.Component, "VuFingerprintPattern")]
 public sealed class VuFingerprintPattern : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFireExtinguisher</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFireExtinguisher</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFireExtinguisher</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFireExtinguisher", Transform.Component, "VuFireExtinguisher")]
 public sealed class VuFireExtinguisher : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFish</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFish</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFish</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFish", Transform.Component, "VuFish")]
 public sealed class VuFish : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFishOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFishOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFishOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFishOff", Transform.Component, "VuFishOff")]
 public sealed class VuFishOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFishSymbol</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFishSymbol</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFishSymbol</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFishSymbol", Transform.Component, "VuFishSymbol")]
 public sealed class VuFishSymbol : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFishingHook</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFishingHook</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFishingHook</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFishingHook", Transform.Component, "VuFishingHook")]
 public sealed class VuFishingHook : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFitness</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFitness</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFitness</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFitness", Transform.Component, "VuFitness")]
 public sealed class VuFitness : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlag</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlag</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlag</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlag", Transform.Component, "VuFlag")]
 public sealed class VuFlag : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlagOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlagOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlagOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlagOff", Transform.Component, "VuFlagOff")]
 public sealed class VuFlagOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlagTriangleLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlagTriangleLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlagTriangleLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlagTriangleLeft", Transform.Component, "VuFlagTriangleLeft")]
 public sealed class VuFlagTriangleLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlagTriangleRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlagTriangleRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlagTriangleRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlagTriangleRight", Transform.Component, "VuFlagTriangleRight")]
 public sealed class VuFlagTriangleRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlame</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlame</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlame</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlame", Transform.Component, "VuFlame")]
 public sealed class VuFlame : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlameKindling</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlameKindling</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlameKindling</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlameKindling", Transform.Component, "VuFlameKindling")]
 public sealed class VuFlameKindling : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlashlight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlashlight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlashlight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlashlight", Transform.Component, "VuFlashlight")]
 public sealed class VuFlashlight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlashlightOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlashlightOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlashlightOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlashlightOff", Transform.Component, "VuFlashlightOff")]
 public sealed class VuFlashlightOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlaskConical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlaskConical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlaskConical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlaskConical", Transform.Component, "VuFlaskConical")]
 public sealed class VuFlaskConical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlaskConicalOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlaskConicalOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlaskConicalOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlaskConicalOff", Transform.Component, "VuFlaskConicalOff")]
 public sealed class VuFlaskConicalOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlaskRound</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlaskRound</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlaskRound</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlaskRound", Transform.Component, "VuFlaskRound")]
 public sealed class VuFlaskRound : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlipHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlipHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlipHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlipHorizontal", Transform.Component, "VuFlipHorizontal")]
 public sealed class VuFlipHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlipHorizontal2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlipHorizontal2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlipHorizontal2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlipHorizontal2", Transform.Component, "VuFlipHorizontal2")]
 public sealed class VuFlipHorizontal2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlipVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlipVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlipVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlipVertical", Transform.Component, "VuFlipVertical")]
 public sealed class VuFlipVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlipVertical2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlipVertical2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlipVertical2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlipVertical2", Transform.Component, "VuFlipVertical2")]
 public sealed class VuFlipVertical2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlower</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlower</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlower</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlower", Transform.Component, "VuFlower")]
 public sealed class VuFlower : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFlower2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFlower2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFlower2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFlower2", Transform.Component, "VuFlower2")]
 public sealed class VuFlower2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFocus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFocus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFocus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFocus", Transform.Component, "VuFocus")]
 public sealed class VuFocus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFoldHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFoldHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFoldHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFoldHorizontal", Transform.Component, "VuFoldHorizontal")]
 public sealed class VuFoldHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFoldVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFoldVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFoldVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFoldVertical", Transform.Component, "VuFoldVertical")]
 public sealed class VuFoldVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolder</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolder</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolder</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolder", Transform.Component, "VuFolder")]
 public sealed class VuFolder : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderArchive</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderArchive</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderArchive</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderArchive", Transform.Component, "VuFolderArchive")]
 public sealed class VuFolderArchive : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderCheck", Transform.Component, "VuFolderCheck")]
 public sealed class VuFolderCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderClock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderClock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderClock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderClock", Transform.Component, "VuFolderClock")]
 public sealed class VuFolderClock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderClosed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderClosed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderClosed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderClosed", Transform.Component, "VuFolderClosed")]
 public sealed class VuFolderClosed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderCode", Transform.Component, "VuFolderCode")]
 public sealed class VuFolderCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderCog", Transform.Component, "VuFolderCog")]
 public sealed class VuFolderCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderDot", Transform.Component, "VuFolderDot")]
 public sealed class VuFolderDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderDown", Transform.Component, "VuFolderDown")]
 public sealed class VuFolderDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderGit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderGit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderGit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderGit", Transform.Component, "VuFolderGit")]
 public sealed class VuFolderGit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderGit2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderGit2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderGit2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderGit2", Transform.Component, "VuFolderGit2")]
 public sealed class VuFolderGit2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderHeart", Transform.Component, "VuFolderHeart")]
 public sealed class VuFolderHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderInput</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderInput</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderInput</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderInput", Transform.Component, "VuFolderInput")]
 public sealed class VuFolderInput : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderKanban</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderKanban</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderKanban</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderKanban", Transform.Component, "VuFolderKanban")]
 public sealed class VuFolderKanban : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderKey</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderKey</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderKey</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderKey", Transform.Component, "VuFolderKey")]
 public sealed class VuFolderKey : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderLock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderLock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderLock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderLock", Transform.Component, "VuFolderLock")]
 public sealed class VuFolderLock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderMinus", Transform.Component, "VuFolderMinus")]
 public sealed class VuFolderMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderOpen", Transform.Component, "VuFolderOpen")]
 public sealed class VuFolderOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderOpenDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderOpenDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderOpenDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderOpenDot", Transform.Component, "VuFolderOpenDot")]
 public sealed class VuFolderOpenDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderOutput</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderOutput</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderOutput</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderOutput", Transform.Component, "VuFolderOutput")]
 public sealed class VuFolderOutput : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderPen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderPen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderPen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderPen", Transform.Component, "VuFolderPen")]
 public sealed class VuFolderPen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderPlus", Transform.Component, "VuFolderPlus")]
 public sealed class VuFolderPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderRoot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderRoot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderRoot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderRoot", Transform.Component, "VuFolderRoot")]
 public sealed class VuFolderRoot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderSearch", Transform.Component, "VuFolderSearch")]
 public sealed class VuFolderSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderSearch2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderSearch2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderSearch2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderSearch2", Transform.Component, "VuFolderSearch2")]
 public sealed class VuFolderSearch2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderSymlink</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderSymlink</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderSymlink</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderSymlink", Transform.Component, "VuFolderSymlink")]
 public sealed class VuFolderSymlink : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderSync</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderSync</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderSync</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderSync", Transform.Component, "VuFolderSync")]
 public sealed class VuFolderSync : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderTree</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderTree</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderTree</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderTree", Transform.Component, "VuFolderTree")]
 public sealed class VuFolderTree : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderUp", Transform.Component, "VuFolderUp")]
 public sealed class VuFolderUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolderX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolderX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolderX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolderX", Transform.Component, "VuFolderX")]
 public sealed class VuFolderX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFolders</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFolders</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFolders</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFolders", Transform.Component, "VuFolders")]
 public sealed class VuFolders : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFollow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFollow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFollow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFollow", Transform.Component, "VuFollow")]
 public sealed class VuFollow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFollowers</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFollowers</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFollowers</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFollowers", Transform.Component, "VuFollowers")]
 public sealed class VuFollowers : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFood</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFood</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFood</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFood", Transform.Component, "VuFood")]
 public sealed class VuFood : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFootprints</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFootprints</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFootprints</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFootprints", Transform.Component, "VuFootprints")]
 public sealed class VuFootprints : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuForklift</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuForklift</summary>
+/// <remarks>按需 static renderer for upstream <c>VuForklift</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuForklift", Transform.Component, "VuForklift")]
 public sealed class VuForklift : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuForm</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuForm</summary>
+/// <remarks>按需 static renderer for upstream <c>VuForm</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuForm", Transform.Component, "VuForm")]
 public sealed class VuForm : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuForward</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuForward</summary>
+/// <remarks>按需 static renderer for upstream <c>VuForward</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuForward", Transform.Component, "VuForward")]
 public sealed class VuForward : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFrame</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFrame</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFrame</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFrame", Transform.Component, "VuFrame")]
 public sealed class VuFrame : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFramer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFramer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFramer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFramer", Transform.Component, "VuFramer")]
 public sealed class VuFramer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFrown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFrown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFrown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFrown", Transform.Component, "VuFrown")]
 public sealed class VuFrown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFuel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFuel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFuel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFuel", Transform.Component, "VuFuel")]
 public sealed class VuFuel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFullscreen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFullscreen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFullscreen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFullscreen", Transform.Component, "VuFullscreen")]
 public sealed class VuFullscreen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFunnel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFunnel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFunnel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFunnel", Transform.Component, "VuFunnel")]
 public sealed class VuFunnel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFunnelChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFunnelChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFunnelChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFunnelChart", Transform.Component, "VuFunnelChart")]
 public sealed class VuFunnelChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFunnelPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFunnelPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFunnelPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFunnelPlus", Transform.Component, "VuFunnelPlus")]
 public sealed class VuFunnelPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuFunnelX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuFunnelX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuFunnelX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuFunnelX", Transform.Component, "VuFunnelX")]
 public sealed class VuFunnelX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGalleryHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGalleryHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGalleryHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGalleryHorizontal", Transform.Component, "VuGalleryHorizontal")]
 public sealed class VuGalleryHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGalleryHorizontalEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGalleryHorizontalEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGalleryHorizontalEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGalleryHorizontalEnd", Transform.Component, "VuGalleryHorizontalEnd")]
 public sealed class VuGalleryHorizontalEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGalleryThumbnails</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGalleryThumbnails</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGalleryThumbnails</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGalleryThumbnails", Transform.Component, "VuGalleryThumbnails")]
 public sealed class VuGalleryThumbnails : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGalleryVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGalleryVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGalleryVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGalleryVertical", Transform.Component, "VuGalleryVertical")]
 public sealed class VuGalleryVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGalleryVerticalEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGalleryVerticalEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGalleryVerticalEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGalleryVerticalEnd", Transform.Component, "VuGalleryVerticalEnd")]
 public sealed class VuGalleryVerticalEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGamepad</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGamepad</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGamepad</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGamepad", Transform.Component, "VuGamepad")]
 public sealed class VuGamepad : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGamepad2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGamepad2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGamepad2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGamepad2", Transform.Component, "VuGamepad2")]
 public sealed class VuGamepad2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGamepadDirectional</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGamepadDirectional</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGamepadDirectional</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGamepadDirectional", Transform.Component, "VuGamepadDirectional")]
 public sealed class VuGamepadDirectional : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGauge</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGauge</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGauge</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGauge", Transform.Component, "VuGauge")]
 public sealed class VuGauge : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGavel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGavel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGavel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGavel", Transform.Component, "VuGavel")]
 public sealed class VuGavel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGem</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGem</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGem</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGem", Transform.Component, "VuGem")]
 public sealed class VuGem : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGeorgianLari</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGeorgianLari</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGeorgianLari</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGeorgianLari", Transform.Component, "VuGeorgianLari")]
 public sealed class VuGeorgianLari : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGhost</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGhost</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGhost</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGhost", Transform.Component, "VuGhost")]
 public sealed class VuGhost : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGift</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGift</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGift</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGift", Transform.Component, "VuGift")]
 public sealed class VuGift : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitBranch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitBranch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitBranch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitBranch", Transform.Component, "VuGitBranch")]
 public sealed class VuGitBranch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitBranchMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitBranchMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitBranchMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitBranchMinus", Transform.Component, "VuGitBranchMinus")]
 public sealed class VuGitBranchMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitBranchPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitBranchPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitBranchPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitBranchPlus", Transform.Component, "VuGitBranchPlus")]
 public sealed class VuGitBranchPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitCommitHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitCommitHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitCommitHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitCommitHorizontal", Transform.Component, "VuGitCommitHorizontal")]
 public sealed class VuGitCommitHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitCommitVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitCommitVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitCommitVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitCommitVertical", Transform.Component, "VuGitCommitVertical")]
 public sealed class VuGitCommitVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitCompare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitCompare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitCompare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitCompare", Transform.Component, "VuGitCompare")]
 public sealed class VuGitCompare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitCompareArrows</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitCompareArrows</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitCompareArrows</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitCompareArrows", Transform.Component, "VuGitCompareArrows")]
 public sealed class VuGitCompareArrows : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitFork</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitFork</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitFork</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitFork", Transform.Component, "VuGitFork")]
 public sealed class VuGitFork : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitGraph</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitGraph</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitGraph</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitGraph", Transform.Component, "VuGitGraph")]
 public sealed class VuGitGraph : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitMerge</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitMerge</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitMerge</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitMerge", Transform.Component, "VuGitMerge")]
 public sealed class VuGitMerge : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitPullRequest</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequest</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitPullRequest</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitPullRequest", Transform.Component, "VuGitPullRequest")]
 public sealed class VuGitPullRequest : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitPullRequestArrow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestArrow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitPullRequestArrow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitPullRequestArrow", Transform.Component, "VuGitPullRequestArrow")]
 public sealed class VuGitPullRequestArrow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitPullRequestClosed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestClosed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitPullRequestClosed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitPullRequestClosed", Transform.Component, "VuGitPullRequestClosed")]
 public sealed class VuGitPullRequestClosed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitPullRequestCreate</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestCreate</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitPullRequestCreate</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitPullRequestCreate", Transform.Component, "VuGitPullRequestCreate")]
 public sealed class VuGitPullRequestCreate : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitPullRequestCreateArrow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestCreateArrow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitPullRequestCreateArrow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitPullRequestCreateArrow", Transform.Component, "VuGitPullRequestCreateArrow")]
 public sealed class VuGitPullRequestCreateArrow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitPullRequestDraft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitPullRequestDraft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitPullRequestDraft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitPullRequestDraft", Transform.Component, "VuGitPullRequestDraft")]
 public sealed class VuGitPullRequestDraft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGithub</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGithub</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGithub</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGithub", Transform.Component, "VuGithub")]
 public sealed class VuGithub : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGitlab</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGitlab</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGitlab</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGitlab", Transform.Component, "VuGitlab")]
 public sealed class VuGitlab : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGlassWater</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGlassWater</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGlassWater</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGlassWater", Transform.Component, "VuGlassWater")]
 public sealed class VuGlassWater : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGlasses</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGlasses</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGlasses</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGlasses", Transform.Component, "VuGlasses")]
 public sealed class VuGlasses : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGlobe</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGlobe</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGlobe</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGlobe", Transform.Component, "VuGlobe")]
 public sealed class VuGlobe : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGlobeLock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGlobeLock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGlobeLock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGlobeLock", Transform.Component, "VuGlobeLock")]
 public sealed class VuGlobeLock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGlobeX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGlobeX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGlobeX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGlobeX", Transform.Component, "VuGlobeX")]
 public sealed class VuGlobeX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGoal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGoal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGoal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGoal", Transform.Component, "VuGoal")]
 public sealed class VuGoal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGpu</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGpu</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGpu</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGpu", Transform.Component, "VuGpu")]
 public sealed class VuGpu : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGraduationCap</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGraduationCap</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGraduationCap</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGraduationCap", Transform.Component, "VuGraduationCap")]
 public sealed class VuGraduationCap : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGrape</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGrape</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGrape</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGrape", Transform.Component, "VuGrape")]
 public sealed class VuGrape : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGrid2x2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGrid2x2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGrid2x2", Transform.Component, "VuGrid2x2")]
 public sealed class VuGrid2x2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGrid2x2Check</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2Check</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGrid2x2Check</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGrid2x2Check", Transform.Component, "VuGrid2x2Check")]
 public sealed class VuGrid2x2Check : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGrid2x2Plus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2Plus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGrid2x2Plus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGrid2x2Plus", Transform.Component, "VuGrid2x2Plus")]
 public sealed class VuGrid2x2Plus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGrid2x2X</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGrid2x2X</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGrid2x2X</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGrid2x2X", Transform.Component, "VuGrid2x2X")]
 public sealed class VuGrid2x2X : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGrid3x2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGrid3x2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGrid3x2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGrid3x2", Transform.Component, "VuGrid3x2")]
 public sealed class VuGrid3x2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGrid3x3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGrid3x3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGrid3x3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGrid3x3", Transform.Component, "VuGrid3x3")]
 public sealed class VuGrid3x3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGrip</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGrip</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGrip</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGrip", Transform.Component, "VuGrip")]
 public sealed class VuGrip : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGripHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGripHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGripHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGripHorizontal", Transform.Component, "VuGripHorizontal")]
 public sealed class VuGripHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGripVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGripVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGripVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGripVertical", Transform.Component, "VuGripVertical")]
 public sealed class VuGripVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGroup</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGroup</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGroup</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGroup", Transform.Component, "VuGroup")]
 public sealed class VuGroup : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGroupBuy</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGroupBuy</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGroupBuy</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGroupBuy", Transform.Component, "VuGroupBuy")]
 public sealed class VuGroupBuy : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuGuitar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuGuitar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuGuitar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuGuitar", Transform.Component, "VuGuitar")]
 public sealed class VuGuitar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHam</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHam</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHam</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHam", Transform.Component, "VuHam")]
 public sealed class VuHam : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHamburger</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHamburger</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHamburger</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHamburger", Transform.Component, "VuHamburger")]
 public sealed class VuHamburger : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHammer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHammer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHammer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHammer", Transform.Component, "VuHammer")]
 public sealed class VuHammer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHand</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHand</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHand</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHand", Transform.Component, "VuHand")]
 public sealed class VuHand : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHandCoins</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHandCoins</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHandCoins</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHandCoins", Transform.Component, "VuHandCoins")]
 public sealed class VuHandCoins : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHandFist</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHandFist</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHandFist</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHandFist", Transform.Component, "VuHandFist")]
 public sealed class VuHandFist : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHandGrab</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHandGrab</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHandGrab</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHandGrab", Transform.Component, "VuHandGrab")]
 public sealed class VuHandGrab : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHandHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHandHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHandHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHandHeart", Transform.Component, "VuHandHeart")]
 public sealed class VuHandHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHandHelping</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHandHelping</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHandHelping</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHandHelping", Transform.Component, "VuHandHelping")]
 public sealed class VuHandHelping : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHandMetal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHandMetal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHandMetal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHandMetal", Transform.Component, "VuHandMetal")]
 public sealed class VuHandMetal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHandPlatter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHandPlatter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHandPlatter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHandPlatter", Transform.Component, "VuHandPlatter")]
 public sealed class VuHandPlatter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHandbag</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHandbag</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHandbag</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHandbag", Transform.Component, "VuHandbag")]
 public sealed class VuHandbag : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHandshake</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHandshake</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHandshake</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHandshake", Transform.Component, "VuHandshake")]
 public sealed class VuHandshake : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHardDrive</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHardDrive</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHardDrive</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHardDrive", Transform.Component, "VuHardDrive")]
 public sealed class VuHardDrive : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHardDriveDownload</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHardDriveDownload</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHardDriveDownload</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHardDriveDownload", Transform.Component, "VuHardDriveDownload")]
 public sealed class VuHardDriveDownload : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHardDriveUpload</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHardDriveUpload</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHardDriveUpload</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHardDriveUpload", Transform.Component, "VuHardDriveUpload")]
 public sealed class VuHardDriveUpload : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHardHat</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHardHat</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHardHat</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHardHat", Transform.Component, "VuHardHat")]
 public sealed class VuHardHat : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHash", Transform.Component, "VuHash")]
 public sealed class VuHash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHatGlasses</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHatGlasses</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHatGlasses</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHatGlasses", Transform.Component, "VuHatGlasses")]
 public sealed class VuHatGlasses : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHaze</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHaze</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHaze</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHaze", Transform.Component, "VuHaze")]
 public sealed class VuHaze : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHd", Transform.Component, "VuHd")]
 public sealed class VuHd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHdmiPort</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHdmiPort</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHdmiPort</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHdmiPort", Transform.Component, "VuHdmiPort")]
 public sealed class VuHdmiPort : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeading</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeading</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeading</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeading", Transform.Component, "VuHeading")]
 public sealed class VuHeading : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeading1</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeading1</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeading1</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeading1", Transform.Component, "VuHeading1")]
 public sealed class VuHeading1 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeading2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeading2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeading2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeading2", Transform.Component, "VuHeading2")]
 public sealed class VuHeading2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeading3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeading3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeading3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeading3", Transform.Component, "VuHeading3")]
 public sealed class VuHeading3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeading4</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeading4</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeading4</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeading4", Transform.Component, "VuHeading4")]
 public sealed class VuHeading4 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeading5</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeading5</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeading5</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeading5", Transform.Component, "VuHeading5")]
 public sealed class VuHeading5 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeading6</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeading6</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeading6</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeading6", Transform.Component, "VuHeading6")]
 public sealed class VuHeading6 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeadphoneOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeadphoneOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeadphoneOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeadphoneOff", Transform.Component, "VuHeadphoneOff")]
 public sealed class VuHeadphoneOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeadphones</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeadphones</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeadphones</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeadphones", Transform.Component, "VuHeadphones")]
 public sealed class VuHeadphones : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeadset</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeadset</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeadset</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeadset", Transform.Component, "VuHeadset")]
 public sealed class VuHeadset : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeart", Transform.Component, "VuHeart")]
 public sealed class VuHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeartCrack</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeartCrack</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeartCrack</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeartCrack", Transform.Component, "VuHeartCrack")]
 public sealed class VuHeartCrack : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeartHandshake</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeartHandshake</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeartHandshake</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeartHandshake", Transform.Component, "VuHeartHandshake")]
 public sealed class VuHeartHandshake : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeartMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeartMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeartMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeartMinus", Transform.Component, "VuHeartMinus")]
 public sealed class VuHeartMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeartOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeartOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeartOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeartOff", Transform.Component, "VuHeartOff")]
 public sealed class VuHeartOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeartPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeartPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeartPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeartPlus", Transform.Component, "VuHeartPlus")]
 public sealed class VuHeartPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeartPulse</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeartPulse</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeartPulse</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeartPulse", Transform.Component, "VuHeartPulse")]
 public sealed class VuHeartPulse : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHeater</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHeater</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHeater</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHeater", Transform.Component, "VuHeater")]
 public sealed class VuHeater : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHelicopter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHelicopter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHelicopter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHelicopter", Transform.Component, "VuHelicopter")]
 public sealed class VuHelicopter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHexagon</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHexagon</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHexagon</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHexagon", Transform.Component, "VuHexagon")]
 public sealed class VuHexagon : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHighlighter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHighlighter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHighlighter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHighlighter", Transform.Component, "VuHighlighter")]
 public sealed class VuHighlighter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHint</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHint</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHint</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHint", Transform.Component, "VuHint")]
 public sealed class VuHint : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHistory</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHistory</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHistory</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHistory", Transform.Component, "VuHistory")]
 public sealed class VuHistory : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHome</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHome</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHome</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHome", Transform.Component, "VuHome")]
 public sealed class VuHome : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHomework</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHomework</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHomework</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHomework", Transform.Component, "VuHomework")]
 public sealed class VuHomework : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHop", Transform.Component, "VuHop")]
 public sealed class VuHop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHopOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHopOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHopOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHopOff", Transform.Component, "VuHopOff")]
 public sealed class VuHopOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHospital</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHospital</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHospital</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHospital", Transform.Component, "VuHospital")]
 public sealed class VuHospital : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHotel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHotel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHotel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHotel", Transform.Component, "VuHotel")]
 public sealed class VuHotel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHourglass</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHourglass</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHourglass</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHourglass", Transform.Component, "VuHourglass")]
 public sealed class VuHourglass : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHouse</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHouse</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHouse</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHouse", Transform.Component, "VuHouse")]
 public sealed class VuHouse : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHouseHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHouseHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHouseHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHouseHeart", Transform.Component, "VuHouseHeart")]
 public sealed class VuHouseHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHousePlug</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHousePlug</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHousePlug</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHousePlug", Transform.Component, "VuHousePlug")]
 public sealed class VuHousePlug : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHousePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHousePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHousePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHousePlus", Transform.Component, "VuHousePlus")]
 public sealed class VuHousePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuHouseWifi</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuHouseWifi</summary>
+/// <remarks>按需 static renderer for upstream <c>VuHouseWifi</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuHouseWifi", Transform.Component, "VuHouseWifi")]
 public sealed class VuHouseWifi : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIceCreamBowl</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIceCreamBowl</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIceCreamBowl</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIceCreamBowl", Transform.Component, "VuIceCreamBowl")]
 public sealed class VuIceCreamBowl : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIceCreamCone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIceCreamCone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIceCreamCone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIceCreamCone", Transform.Component, "VuIceCreamCone")]
 public sealed class VuIceCreamCone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIdCard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIdCard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIdCard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIdCard", Transform.Component, "VuIdCard")]
 public sealed class VuIdCard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIdCardLanyard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIdCardLanyard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIdCardLanyard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIdCardLanyard", Transform.Component, "VuIdCardLanyard")]
 public sealed class VuIdCardLanyard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImage</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImage</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImage</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImage", Transform.Component, "VuImage")]
 public sealed class VuImage : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImageDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImageDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImageDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImageDown", Transform.Component, "VuImageDown")]
 public sealed class VuImageDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImageMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImageMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImageMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImageMinus", Transform.Component, "VuImageMinus")]
 public sealed class VuImageMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImageOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImageOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImageOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImageOff", Transform.Component, "VuImageOff")]
 public sealed class VuImageOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImagePlay</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImagePlay</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImagePlay</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImagePlay", Transform.Component, "VuImagePlay")]
 public sealed class VuImagePlay : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImagePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImagePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImagePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImagePlus", Transform.Component, "VuImagePlus")]
 public sealed class VuImagePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImageUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImageUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImageUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImageUp", Transform.Component, "VuImageUp")]
 public sealed class VuImageUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImageUpscale</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImageUpscale</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImageUpscale</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImageUpscale", Transform.Component, "VuImageUpscale")]
 public sealed class VuImageUpscale : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImages</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImages</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImages</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImages", Transform.Component, "VuImages")]
 public sealed class VuImages : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuImport</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuImport</summary>
+/// <remarks>按需 static renderer for upstream <c>VuImport</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuImport", Transform.Component, "VuImport")]
 public sealed class VuImport : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuInProgress</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuInProgress</summary>
+/// <remarks>按需 static renderer for upstream <c>VuInProgress</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuInProgress", Transform.Component, "VuInProgress")]
 public sealed class VuInProgress : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuInbox</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuInbox</summary>
+/// <remarks>按需 static renderer for upstream <c>VuInbox</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuInbox", Transform.Component, "VuInbox")]
 public sealed class VuInbox : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIncomplete</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIncomplete</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIncomplete</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIncomplete", Transform.Component, "VuIncomplete")]
 public sealed class VuIncomplete : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIndentDecrease</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIndentDecrease</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIndentDecrease</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIndentDecrease", Transform.Component, "VuIndentDecrease")]
 public sealed class VuIndentDecrease : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIndentIncrease</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIndentIncrease</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIndentIncrease</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIndentIncrease", Transform.Component, "VuIndentIncrease")]
 public sealed class VuIndentIncrease : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIndianRupee</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIndianRupee</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIndianRupee</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIndianRupee", Transform.Component, "VuIndianRupee")]
 public sealed class VuIndianRupee : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuInfinity</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuInfinity</summary>
+/// <remarks>按需 static renderer for upstream <c>VuInfinity</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuInfinity", Transform.Component, "VuInfinity")]
 public sealed class VuInfinity : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuInfo</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuInfo</summary>
+/// <remarks>按需 static renderer for upstream <c>VuInfo</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuInfo", Transform.Component, "VuInfo")]
 public sealed class VuInfo : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuInspectionPanel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuInspectionPanel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuInspectionPanel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuInspectionPanel", Transform.Component, "VuInspectionPanel")]
 public sealed class VuInspectionPanel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuInstagram</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuInstagram</summary>
+/// <remarks>按需 static renderer for upstream <c>VuInstagram</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuInstagram", Transform.Component, "VuInstagram")]
 public sealed class VuInstagram : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuInsurance</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuInsurance</summary>
+/// <remarks>按需 static renderer for upstream <c>VuInsurance</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuInsurance", Transform.Component, "VuInsurance")]
 public sealed class VuInsurance : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuInvoice</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuInvoice</summary>
+/// <remarks>按需 static renderer for upstream <c>VuInvoice</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuInvoice", Transform.Component, "VuInvoice")]
 public sealed class VuInvoice : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuItalic</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuItalic</summary>
+/// <remarks>按需 static renderer for upstream <c>VuItalic</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuItalic", Transform.Component, "VuItalic")]
 public sealed class VuItalic : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIterationCcw</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIterationCcw</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIterationCcw</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIterationCcw", Transform.Component, "VuIterationCcw")]
 public sealed class VuIterationCcw : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuIterationCw</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuIterationCw</summary>
+/// <remarks>按需 static renderer for upstream <c>VuIterationCw</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuIterationCw", Transform.Component, "VuIterationCw")]
 public sealed class VuIterationCw : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuJapaneseYen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuJapaneseYen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuJapaneseYen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuJapaneseYen", Transform.Component, "VuJapaneseYen")]
 public sealed class VuJapaneseYen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuJoystick</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuJoystick</summary>
+/// <remarks>按需 static renderer for upstream <c>VuJoystick</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuJoystick", Transform.Component, "VuJoystick")]
 public sealed class VuJoystick : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuKanban</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuKanban</summary>
+/// <remarks>按需 static renderer for upstream <c>VuKanban</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuKanban", Transform.Component, "VuKanban")]
 public sealed class VuKanban : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuKayak</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuKayak</summary>
+/// <remarks>按需 static renderer for upstream <c>VuKayak</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuKayak", Transform.Component, "VuKayak")]
 public sealed class VuKayak : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuKey</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuKey</summary>
+/// <remarks>按需 static renderer for upstream <c>VuKey</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuKey", Transform.Component, "VuKey")]
 public sealed class VuKey : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuKeyRound</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuKeyRound</summary>
+/// <remarks>按需 static renderer for upstream <c>VuKeyRound</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuKeyRound", Transform.Component, "VuKeyRound")]
 public sealed class VuKeyRound : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuKeySquare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuKeySquare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuKeySquare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuKeySquare", Transform.Component, "VuKeySquare")]
 public sealed class VuKeySquare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuKeyboard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuKeyboard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuKeyboard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuKeyboard", Transform.Component, "VuKeyboard")]
 public sealed class VuKeyboard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuKeyboardMusic</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuKeyboardMusic</summary>
+/// <remarks>按需 static renderer for upstream <c>VuKeyboardMusic</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuKeyboardMusic", Transform.Component, "VuKeyboardMusic")]
 public sealed class VuKeyboardMusic : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuKeyboardOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuKeyboardOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuKeyboardOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuKeyboardOff", Transform.Component, "VuKeyboardOff")]
 public sealed class VuKeyboardOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLaboratory</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLaboratory</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLaboratory</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLaboratory", Transform.Component, "VuLaboratory")]
 public sealed class VuLaboratory : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLamp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLamp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLamp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLamp", Transform.Component, "VuLamp")]
 public sealed class VuLamp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLampCeiling</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLampCeiling</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLampCeiling</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLampCeiling", Transform.Component, "VuLampCeiling")]
 public sealed class VuLampCeiling : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLampDesk</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLampDesk</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLampDesk</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLampDesk", Transform.Component, "VuLampDesk")]
 public sealed class VuLampDesk : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLampFloor</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLampFloor</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLampFloor</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLampFloor", Transform.Component, "VuLampFloor")]
 public sealed class VuLampFloor : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLampWallDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLampWallDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLampWallDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLampWallDown", Transform.Component, "VuLampWallDown")]
 public sealed class VuLampWallDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLampWallUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLampWallUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLampWallUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLampWallUp", Transform.Component, "VuLampWallUp")]
 public sealed class VuLampWallUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLandPlot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLandPlot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLandPlot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLandPlot", Transform.Component, "VuLandPlot")]
 public sealed class VuLandPlot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLandmark</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLandmark</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLandmark</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLandmark", Transform.Component, "VuLandmark")]
 public sealed class VuLandmark : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLanguages</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLanguages</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLanguages</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLanguages", Transform.Component, "VuLanguages")]
 public sealed class VuLanguages : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLaptop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLaptop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLaptop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLaptop", Transform.Component, "VuLaptop")]
 public sealed class VuLaptop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLaptopMinimal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLaptopMinimal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLaptopMinimal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLaptopMinimal", Transform.Component, "VuLaptopMinimal")]
 public sealed class VuLaptopMinimal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLaptopMinimalCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLaptopMinimalCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLaptopMinimalCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLaptopMinimalCheck", Transform.Component, "VuLaptopMinimalCheck")]
 public sealed class VuLaptopMinimalCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLasso</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLasso</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLasso</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLasso", Transform.Component, "VuLasso")]
 public sealed class VuLasso : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLassoSelect</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLassoSelect</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLassoSelect</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLassoSelect", Transform.Component, "VuLassoSelect")]
 public sealed class VuLassoSelect : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLaugh</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLaugh</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLaugh</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLaugh", Transform.Component, "VuLaugh")]
 public sealed class VuLaugh : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayers</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayers</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayers</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayers", Transform.Component, "VuLayers")]
 public sealed class VuLayers : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayers2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayers2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayers2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayers2", Transform.Component, "VuLayers2")]
 public sealed class VuLayers2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayers3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayers3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayers3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayers3", Transform.Component, "VuLayers3")]
 public sealed class VuLayers3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayersPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayersPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayersPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayersPlus", Transform.Component, "VuLayersPlus")]
 public sealed class VuLayersPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayoutDashboard</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayoutDashboard</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayoutDashboard</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayoutDashboard", Transform.Component, "VuLayoutDashboard")]
 public sealed class VuLayoutDashboard : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayoutGrid</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayoutGrid</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayoutGrid</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayoutGrid", Transform.Component, "VuLayoutGrid")]
 public sealed class VuLayoutGrid : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayoutList</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayoutList</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayoutList</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayoutList", Transform.Component, "VuLayoutList")]
 public sealed class VuLayoutList : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayoutPanelLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayoutPanelLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayoutPanelLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayoutPanelLeft", Transform.Component, "VuLayoutPanelLeft")]
 public sealed class VuLayoutPanelLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayoutPanelTop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayoutPanelTop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayoutPanelTop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayoutPanelTop", Transform.Component, "VuLayoutPanelTop")]
 public sealed class VuLayoutPanelTop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLayoutTemplate</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLayoutTemplate</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLayoutTemplate</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLayoutTemplate", Transform.Component, "VuLayoutTemplate")]
 public sealed class VuLayoutTemplate : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLeaf</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLeaf</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLeaf</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLeaf", Transform.Component, "VuLeaf")]
 public sealed class VuLeaf : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLeafyGreen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLeafyGreen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLeafyGreen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLeafyGreen", Transform.Component, "VuLeafyGreen")]
 public sealed class VuLeafyGreen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLectern</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLectern</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLectern</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLectern", Transform.Component, "VuLectern")]
 public sealed class VuLectern : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLetterText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLetterText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLetterText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLetterText", Transform.Component, "VuLetterText")]
 public sealed class VuLetterText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLibrary</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLibrary</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLibrary</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLibrary", Transform.Component, "VuLibrary")]
 public sealed class VuLibrary : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLibraryBig</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLibraryBig</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLibraryBig</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLibraryBig", Transform.Component, "VuLibraryBig")]
 public sealed class VuLibraryBig : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLifeBuoy</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLifeBuoy</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLifeBuoy</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLifeBuoy", Transform.Component, "VuLifeBuoy")]
 public sealed class VuLifeBuoy : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLigature</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLigature</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLigature</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLigature", Transform.Component, "VuLigature")]
 public sealed class VuLigature : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLightbulb</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLightbulb</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLightbulb</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLightbulb", Transform.Component, "VuLightbulb")]
 public sealed class VuLightbulb : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLightbulbOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLightbulbOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLightbulbOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLightbulbOff", Transform.Component, "VuLightbulbOff")]
 public sealed class VuLightbulbOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLike</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLike</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLike</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLike", Transform.Component, "VuLike")]
 public sealed class VuLike : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLineChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLineChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLineChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLineChart", Transform.Component, "VuLineChart")]
 public sealed class VuLineChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLineSquiggle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLineSquiggle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLineSquiggle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLineSquiggle", Transform.Component, "VuLineSquiggle")]
 public sealed class VuLineSquiggle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLink</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLink</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLink</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLink", Transform.Component, "VuLink")]
 public sealed class VuLink : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLink2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLink2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLink2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLink2", Transform.Component, "VuLink2")]
 public sealed class VuLink2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLink2Off</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLink2Off</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLink2Off</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLink2Off", Transform.Component, "VuLink2Off")]
 public sealed class VuLink2Off : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLinkedin</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLinkedin</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLinkedin</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLinkedin", Transform.Component, "VuLinkedin")]
 public sealed class VuLinkedin : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuList</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuList</summary>
+/// <remarks>按需 static renderer for upstream <c>VuList</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuList", Transform.Component, "VuList")]
 public sealed class VuList : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListCheck", Transform.Component, "VuListCheck")]
 public sealed class VuListCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListChecks</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListChecks</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListChecks</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListChecks", Transform.Component, "VuListChecks")]
 public sealed class VuListChecks : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListChevronsDownUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListChevronsDownUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListChevronsDownUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListChevronsDownUp", Transform.Component, "VuListChevronsDownUp")]
 public sealed class VuListChevronsDownUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListChevronsUpDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListChevronsUpDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListChevronsUpDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListChevronsUpDown", Transform.Component, "VuListChevronsUpDown")]
 public sealed class VuListChevronsUpDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListCollapse</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListCollapse</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListCollapse</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListCollapse", Transform.Component, "VuListCollapse")]
 public sealed class VuListCollapse : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListEnd", Transform.Component, "VuListEnd")]
 public sealed class VuListEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListFilter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListFilter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListFilter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListFilter", Transform.Component, "VuListFilter")]
 public sealed class VuListFilter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListFilterPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListFilterPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListFilterPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListFilterPlus", Transform.Component, "VuListFilterPlus")]
 public sealed class VuListFilterPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListIndentDecrease</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListIndentDecrease</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListIndentDecrease</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListIndentDecrease", Transform.Component, "VuListIndentDecrease")]
 public sealed class VuListIndentDecrease : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListIndentIncrease</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListIndentIncrease</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListIndentIncrease</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListIndentIncrease", Transform.Component, "VuListIndentIncrease")]
 public sealed class VuListIndentIncrease : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListMinus", Transform.Component, "VuListMinus")]
 public sealed class VuListMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListMusic</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListMusic</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListMusic</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListMusic", Transform.Component, "VuListMusic")]
 public sealed class VuListMusic : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListOrdered</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListOrdered</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListOrdered</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListOrdered", Transform.Component, "VuListOrdered")]
 public sealed class VuListOrdered : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListPlus", Transform.Component, "VuListPlus")]
 public sealed class VuListPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListRestart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListRestart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListRestart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListRestart", Transform.Component, "VuListRestart")]
 public sealed class VuListRestart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListStart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListStart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListStart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListStart", Transform.Component, "VuListStart")]
 public sealed class VuListStart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListTodo</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListTodo</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListTodo</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListTodo", Transform.Component, "VuListTodo")]
 public sealed class VuListTodo : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListTree</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListTree</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListTree</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListTree", Transform.Component, "VuListTree")]
 public sealed class VuListTree : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListVideo</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListVideo</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListVideo</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListVideo", Transform.Component, "VuListVideo")]
 public sealed class VuListVideo : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuListX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuListX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuListX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuListX", Transform.Component, "VuListX")]
 public sealed class VuListX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLoader</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLoader</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLoader</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLoader", Transform.Component, "VuLoader")]
 public sealed class VuLoader : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLoaderCircle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLoaderCircle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLoaderCircle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLoaderCircle", Transform.Component, "VuLoaderCircle")]
 public sealed class VuLoaderCircle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLoaderPinwheel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLoaderPinwheel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLoaderPinwheel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLoaderPinwheel", Transform.Component, "VuLoaderPinwheel")]
 public sealed class VuLoaderPinwheel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLoading</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLoading</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLoading</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLoading", Transform.Component, "VuLoading")]
 public sealed class VuLoading : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLocate</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLocate</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLocate</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLocate", Transform.Component, "VuLocate")]
 public sealed class VuLocate : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLocateFixed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLocateFixed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLocateFixed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLocateFixed", Transform.Component, "VuLocateFixed")]
 public sealed class VuLocateFixed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLocateOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLocateOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLocateOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLocateOff", Transform.Component, "VuLocateOff")]
 public sealed class VuLocateOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLocation</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLocation</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLocation</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLocation", Transform.Component, "VuLocation")]
 public sealed class VuLocation : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLock", Transform.Component, "VuLock")]
 public sealed class VuLock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLockKeyhole</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLockKeyhole</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLockKeyhole</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLockKeyhole", Transform.Component, "VuLockKeyhole")]
 public sealed class VuLockKeyhole : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLockKeyholeOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLockKeyholeOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLockKeyholeOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLockKeyholeOpen", Transform.Component, "VuLockKeyholeOpen")]
 public sealed class VuLockKeyholeOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLockOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLockOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLockOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLockOpen", Transform.Component, "VuLockOpen")]
 public sealed class VuLockOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLockScreen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLockScreen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLockScreen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLockScreen", Transform.Component, "VuLockScreen")]
 public sealed class VuLockScreen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLogIn</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLogIn</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLogIn</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLogIn", Transform.Component, "VuLogIn")]
 public sealed class VuLogIn : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLogOut</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLogOut</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLogOut</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLogOut", Transform.Component, "VuLogOut")]
 public sealed class VuLogOut : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLogs</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLogs</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLogs</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLogs", Transform.Component, "VuLogs")]
 public sealed class VuLogs : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLollipop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLollipop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLollipop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLollipop", Transform.Component, "VuLollipop")]
 public sealed class VuLollipop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuLuggage</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuLuggage</summary>
+/// <remarks>按需 static renderer for upstream <c>VuLuggage</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuLuggage", Transform.Component, "VuLuggage")]
 public sealed class VuLuggage : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMagnet</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMagnet</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMagnet</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMagnet", Transform.Component, "VuMagnet")]
 public sealed class VuMagnet : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMail</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMail</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMail</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMail", Transform.Component, "VuMail")]
 public sealed class VuMail : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMailCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMailCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMailCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMailCheck", Transform.Component, "VuMailCheck")]
 public sealed class VuMailCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMailMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMailMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMailMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMailMinus", Transform.Component, "VuMailMinus")]
 public sealed class VuMailMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMailOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMailOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMailOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMailOpen", Transform.Component, "VuMailOpen")]
 public sealed class VuMailOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMailPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMailPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMailPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMailPlus", Transform.Component, "VuMailPlus")]
 public sealed class VuMailPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMailQuestionMark</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMailQuestionMark</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMailQuestionMark</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMailQuestionMark", Transform.Component, "VuMailQuestionMark")]
 public sealed class VuMailQuestionMark : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMailSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMailSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMailSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMailSearch", Transform.Component, "VuMailSearch")]
 public sealed class VuMailSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMailWarning</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMailWarning</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMailWarning</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMailWarning", Transform.Component, "VuMailWarning")]
 public sealed class VuMailWarning : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMailX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMailX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMailX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMailX", Transform.Component, "VuMailX")]
 public sealed class VuMailX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMailbox</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMailbox</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMailbox</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMailbox", Transform.Component, "VuMailbox")]
 public sealed class VuMailbox : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMails</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMails</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMails</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMails", Transform.Component, "VuMails")]
 public sealed class VuMails : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMap</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMap</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMap</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMap", Transform.Component, "VuMap")]
 public sealed class VuMap : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapMinus", Transform.Component, "VuMapMinus")]
 public sealed class VuMapMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPin</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPin</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPin</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPin", Transform.Component, "VuMapPin")]
 public sealed class VuMapPin : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinCheck", Transform.Component, "VuMapPinCheck")]
 public sealed class VuMapPinCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinCheckInside</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinCheckInside</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinCheckInside</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinCheckInside", Transform.Component, "VuMapPinCheckInside")]
 public sealed class VuMapPinCheckInside : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinHouse</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinHouse</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinHouse</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinHouse", Transform.Component, "VuMapPinHouse")]
 public sealed class VuMapPinHouse : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinMinus", Transform.Component, "VuMapPinMinus")]
 public sealed class VuMapPinMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinMinusInside</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinMinusInside</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinMinusInside</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinMinusInside", Transform.Component, "VuMapPinMinusInside")]
 public sealed class VuMapPinMinusInside : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinOff", Transform.Component, "VuMapPinOff")]
 public sealed class VuMapPinOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinPen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinPen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinPen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinPen", Transform.Component, "VuMapPinPen")]
 public sealed class VuMapPinPen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinPlus", Transform.Component, "VuMapPinPlus")]
 public sealed class VuMapPinPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinPlusInside</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinPlusInside</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinPlusInside</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinPlusInside", Transform.Component, "VuMapPinPlusInside")]
 public sealed class VuMapPinPlusInside : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinX", Transform.Component, "VuMapPinX")]
 public sealed class VuMapPinX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinXInside</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinXInside</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinXInside</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinXInside", Transform.Component, "VuMapPinXInside")]
 public sealed class VuMapPinXInside : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPinned</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPinned</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPinned</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPinned", Transform.Component, "VuMapPinned")]
 public sealed class VuMapPinned : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMapPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMapPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMapPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMapPlus", Transform.Component, "VuMapPlus")]
 public sealed class VuMapPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMars</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMars</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMars</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMars", Transform.Component, "VuMars")]
 public sealed class VuMars : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMarsStroke</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMarsStroke</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMarsStroke</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMarsStroke", Transform.Component, "VuMarsStroke")]
 public sealed class VuMarsStroke : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMartini</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMartini</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMartini</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMartini", Transform.Component, "VuMartini")]
 public sealed class VuMartini : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMask</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMask</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMask</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMask", Transform.Component, "VuMask")]
 public sealed class VuMask : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMaximize</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMaximize</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMaximize</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMaximize", Transform.Component, "VuMaximize")]
 public sealed class VuMaximize : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMaximize2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMaximize2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMaximize2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMaximize2", Transform.Component, "VuMaximize2")]
 public sealed class VuMaximize2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMedal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMedal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMedal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMedal", Transform.Component, "VuMedal")]
 public sealed class VuMedal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMedicalRecord</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMedicalRecord</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMedicalRecord</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMedicalRecord", Transform.Component, "VuMedicalRecord")]
 public sealed class VuMedicalRecord : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMedicine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMedicine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMedicine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMedicine", Transform.Component, "VuMedicine")]
 public sealed class VuMedicine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMegaphone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMegaphone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMegaphone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMegaphone", Transform.Component, "VuMegaphone")]
 public sealed class VuMegaphone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMegaphoneOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMegaphoneOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMegaphoneOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMegaphoneOff", Transform.Component, "VuMegaphoneOff")]
 public sealed class VuMegaphoneOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMeh</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMeh</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMeh</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMeh", Transform.Component, "VuMeh")]
 public sealed class VuMeh : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMemoryStick</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMemoryStick</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMemoryStick</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMemoryStick", Transform.Component, "VuMemoryStick")]
 public sealed class VuMemoryStick : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMenu</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMenu</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMenu</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMenu", Transform.Component, "VuMenu")]
 public sealed class VuMenu : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMerge</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMerge</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMerge</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMerge", Transform.Component, "VuMerge")]
 public sealed class VuMerge : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessage</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessage</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessage</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessage", Transform.Component, "VuMessage")]
 public sealed class VuMessage : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircle", Transform.Component, "VuMessageCircle")]
 public sealed class VuMessageCircle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircleCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircleCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircleCode", Transform.Component, "VuMessageCircleCode")]
 public sealed class VuMessageCircleCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircleDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircleDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircleDashed", Transform.Component, "VuMessageCircleDashed")]
 public sealed class VuMessageCircleDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircleHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircleHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircleHeart", Transform.Component, "VuMessageCircleHeart")]
 public sealed class VuMessageCircleHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircleMore</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleMore</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircleMore</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircleMore", Transform.Component, "VuMessageCircleMore")]
 public sealed class VuMessageCircleMore : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircleOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircleOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircleOff", Transform.Component, "VuMessageCircleOff")]
 public sealed class VuMessageCircleOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCirclePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCirclePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCirclePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCirclePlus", Transform.Component, "VuMessageCirclePlus")]
 public sealed class VuMessageCirclePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircleQuestionMark</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleQuestionMark</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircleQuestionMark</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircleQuestionMark", Transform.Component, "VuMessageCircleQuestionMark")]
 public sealed class VuMessageCircleQuestionMark : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircleReply</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleReply</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircleReply</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircleReply", Transform.Component, "VuMessageCircleReply")]
 public sealed class VuMessageCircleReply : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircleWarning</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleWarning</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircleWarning</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircleWarning", Transform.Component, "VuMessageCircleWarning")]
 public sealed class VuMessageCircleWarning : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageCircleX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageCircleX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageCircleX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageCircleX", Transform.Component, "VuMessageCircleX")]
 public sealed class VuMessageCircleX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessagePrivate</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessagePrivate</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessagePrivate</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessagePrivate", Transform.Component, "VuMessagePrivate")]
 public sealed class VuMessagePrivate : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquare", Transform.Component, "VuMessageSquare")]
 public sealed class VuMessageSquare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareCode", Transform.Component, "VuMessageSquareCode")]
 public sealed class VuMessageSquareCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareDashed", Transform.Component, "VuMessageSquareDashed")]
 public sealed class VuMessageSquareDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareDiff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareDiff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareDiff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareDiff", Transform.Component, "VuMessageSquareDiff")]
 public sealed class VuMessageSquareDiff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareDot", Transform.Component, "VuMessageSquareDot")]
 public sealed class VuMessageSquareDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareHeart", Transform.Component, "VuMessageSquareHeart")]
 public sealed class VuMessageSquareHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareLock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareLock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareLock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareLock", Transform.Component, "VuMessageSquareLock")]
 public sealed class VuMessageSquareLock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareMore</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareMore</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareMore</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareMore", Transform.Component, "VuMessageSquareMore")]
 public sealed class VuMessageSquareMore : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareOff", Transform.Component, "VuMessageSquareOff")]
 public sealed class VuMessageSquareOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquarePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquarePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquarePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquarePlus", Transform.Component, "VuMessageSquarePlus")]
 public sealed class VuMessageSquarePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareQuote</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareQuote</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareQuote</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareQuote", Transform.Component, "VuMessageSquareQuote")]
 public sealed class VuMessageSquareQuote : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareReply</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareReply</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareReply</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareReply", Transform.Component, "VuMessageSquareReply")]
 public sealed class VuMessageSquareReply : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareShare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareShare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareShare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareShare", Transform.Component, "VuMessageSquareShare")]
 public sealed class VuMessageSquareShare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareText", Transform.Component, "VuMessageSquareText")]
 public sealed class VuMessageSquareText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareWarning</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareWarning</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareWarning</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareWarning", Transform.Component, "VuMessageSquareWarning")]
 public sealed class VuMessageSquareWarning : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessageSquareX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessageSquareX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessageSquareX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessageSquareX", Transform.Component, "VuMessageSquareX")]
 public sealed class VuMessageSquareX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMessagesSquare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMessagesSquare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMessagesSquare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMessagesSquare", Transform.Component, "VuMessagesSquare")]
 public sealed class VuMessagesSquare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMic</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMic</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMic</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMic", Transform.Component, "VuMic")]
 public sealed class VuMic : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMicOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMicOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMicOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMicOff", Transform.Component, "VuMicOff")]
 public sealed class VuMicOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMicVocal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMicVocal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMicVocal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMicVocal", Transform.Component, "VuMicVocal")]
 public sealed class VuMicVocal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMicrochip</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMicrochip</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMicrochip</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMicrochip", Transform.Component, "VuMicrochip")]
 public sealed class VuMicrochip : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMicroscope</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMicroscope</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMicroscope</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMicroscope", Transform.Component, "VuMicroscope")]
 public sealed class VuMicroscope : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMicrowave</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMicrowave</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMicrowave</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMicrowave", Transform.Component, "VuMicrowave")]
 public sealed class VuMicrowave : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMilestone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMilestone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMilestone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMilestone", Transform.Component, "VuMilestone")]
 public sealed class VuMilestone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMilk</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMilk</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMilk</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMilk", Transform.Component, "VuMilk")]
 public sealed class VuMilk : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMilkOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMilkOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMilkOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMilkOff", Transform.Component, "VuMilkOff")]
 public sealed class VuMilkOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMinimize</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMinimize</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMinimize</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMinimize", Transform.Component, "VuMinimize")]
 public sealed class VuMinimize : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMinimize2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMinimize2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMinimize2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMinimize2", Transform.Component, "VuMinimize2")]
 public sealed class VuMinimize2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMinus", Transform.Component, "VuMinus")]
 public sealed class VuMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitor</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitor</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitor</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitor", Transform.Component, "VuMonitor")]
 public sealed class VuMonitor : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorCheck", Transform.Component, "VuMonitorCheck")]
 public sealed class VuMonitorCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorCloud</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorCloud</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorCloud</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorCloud", Transform.Component, "VuMonitorCloud")]
 public sealed class VuMonitorCloud : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorCog", Transform.Component, "VuMonitorCog")]
 public sealed class VuMonitorCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorDot", Transform.Component, "VuMonitorDot")]
 public sealed class VuMonitorDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorDown", Transform.Component, "VuMonitorDown")]
 public sealed class VuMonitorDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorOff", Transform.Component, "VuMonitorOff")]
 public sealed class VuMonitorOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorPause</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorPause</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorPause</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorPause", Transform.Component, "VuMonitorPause")]
 public sealed class VuMonitorPause : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorPlay</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorPlay</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorPlay</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorPlay", Transform.Component, "VuMonitorPlay")]
 public sealed class VuMonitorPlay : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorSmartphone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorSmartphone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorSmartphone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorSmartphone", Transform.Component, "VuMonitorSmartphone")]
 public sealed class VuMonitorSmartphone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorSpeaker</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorSpeaker</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorSpeaker</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorSpeaker", Transform.Component, "VuMonitorSpeaker")]
 public sealed class VuMonitorSpeaker : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorStop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorStop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorStop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorStop", Transform.Component, "VuMonitorStop")]
 public sealed class VuMonitorStop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorUp", Transform.Component, "VuMonitorUp")]
 public sealed class VuMonitorUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMonitorX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMonitorX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMonitorX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMonitorX", Transform.Component, "VuMonitorX")]
 public sealed class VuMonitorX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoon</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoon</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoon</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoon", Transform.Component, "VuMoon")]
 public sealed class VuMoon : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoonStar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoonStar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoonStar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoonStar", Transform.Component, "VuMoonStar")]
 public sealed class VuMoonStar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMotorbike</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMotorbike</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMotorbike</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMotorbike", Transform.Component, "VuMotorbike")]
 public sealed class VuMotorbike : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMountain</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMountain</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMountain</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMountain", Transform.Component, "VuMountain")]
 public sealed class VuMountain : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMountainSnow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMountainSnow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMountainSnow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMountainSnow", Transform.Component, "VuMountainSnow")]
 public sealed class VuMountainSnow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMouse</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMouse</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMouse</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMouse", Transform.Component, "VuMouse")]
 public sealed class VuMouse : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMouseOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMouseOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMouseOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMouseOff", Transform.Component, "VuMouseOff")]
 public sealed class VuMouseOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMousePointer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMousePointer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMousePointer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMousePointer", Transform.Component, "VuMousePointer")]
 public sealed class VuMousePointer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMousePointer2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMousePointer2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMousePointer2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMousePointer2", Transform.Component, "VuMousePointer2")]
 public sealed class VuMousePointer2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMousePointer2Off</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMousePointer2Off</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMousePointer2Off</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMousePointer2Off", Transform.Component, "VuMousePointer2Off")]
 public sealed class VuMousePointer2Off : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMousePointerBan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMousePointerBan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMousePointerBan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMousePointerBan", Transform.Component, "VuMousePointerBan")]
 public sealed class VuMousePointerBan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMousePointerClick</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMousePointerClick</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMousePointerClick</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMousePointerClick", Transform.Component, "VuMousePointerClick")]
 public sealed class VuMousePointerClick : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMove</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMove</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMove</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMove", Transform.Component, "VuMove")]
 public sealed class VuMove : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMove3d</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMove3d</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMove3d</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMove3d", Transform.Component, "VuMove3d")]
 public sealed class VuMove3d : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveDiagonal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveDiagonal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveDiagonal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveDiagonal", Transform.Component, "VuMoveDiagonal")]
 public sealed class VuMoveDiagonal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveDiagonal2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveDiagonal2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveDiagonal2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveDiagonal2", Transform.Component, "VuMoveDiagonal2")]
 public sealed class VuMoveDiagonal2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveDown", Transform.Component, "VuMoveDown")]
 public sealed class VuMoveDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveDownLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveDownLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveDownLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveDownLeft", Transform.Component, "VuMoveDownLeft")]
 public sealed class VuMoveDownLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveDownRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveDownRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveDownRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveDownRight", Transform.Component, "VuMoveDownRight")]
 public sealed class VuMoveDownRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveHorizontal", Transform.Component, "VuMoveHorizontal")]
 public sealed class VuMoveHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveLeft", Transform.Component, "VuMoveLeft")]
 public sealed class VuMoveLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveRight", Transform.Component, "VuMoveRight")]
 public sealed class VuMoveRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveUp", Transform.Component, "VuMoveUp")]
 public sealed class VuMoveUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveUpLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveUpLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveUpLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveUpLeft", Transform.Component, "VuMoveUpLeft")]
 public sealed class VuMoveUpLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveUpRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveUpRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveUpRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveUpRight", Transform.Component, "VuMoveUpRight")]
 public sealed class VuMoveUpRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMoveVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMoveVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMoveVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMoveVertical", Transform.Component, "VuMoveVertical")]
 public sealed class VuMoveVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMovie</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMovie</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMovie</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMovie", Transform.Component, "VuMovie")]
 public sealed class VuMovie : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMultiply</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMultiply</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMultiply</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMultiply", Transform.Component, "VuMultiply")]
 public sealed class VuMultiply : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMusic</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMusic</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMusic</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMusic", Transform.Component, "VuMusic")]
 public sealed class VuMusic : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMusic2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMusic2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMusic2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMusic2", Transform.Component, "VuMusic2")]
 public sealed class VuMusic2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMusic3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMusic3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMusic3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMusic3", Transform.Component, "VuMusic3")]
 public sealed class VuMusic3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuMusic4</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuMusic4</summary>
+/// <remarks>按需 static renderer for upstream <c>VuMusic4</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuMusic4", Transform.Component, "VuMusic4")]
 public sealed class VuMusic4 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNavigation</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNavigation</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNavigation</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNavigation", Transform.Component, "VuNavigation")]
 public sealed class VuNavigation : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNavigation2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNavigation2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNavigation2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNavigation2", Transform.Component, "VuNavigation2")]
 public sealed class VuNavigation2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNavigation2Off</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNavigation2Off</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNavigation2Off</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNavigation2Off", Transform.Component, "VuNavigation2Off")]
 public sealed class VuNavigation2Off : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNavigationDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNavigationDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNavigationDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNavigationDot", Transform.Component, "VuNavigationDot")]
 public sealed class VuNavigationDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNavigationOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNavigationOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNavigationOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNavigationOff", Transform.Component, "VuNavigationOff")]
 public sealed class VuNavigationOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNetwork</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNetwork</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNetwork</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNetwork", Transform.Component, "VuNetwork")]
 public sealed class VuNetwork : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNewspaper</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNewspaper</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNewspaper</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNewspaper", Transform.Component, "VuNewspaper")]
 public sealed class VuNewspaper : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNfc</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNfc</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNfc</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNfc", Transform.Component, "VuNfc")]
 public sealed class VuNfc : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNonBinary</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNonBinary</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNonBinary</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNonBinary", Transform.Component, "VuNonBinary")]
 public sealed class VuNonBinary : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNote</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNote</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNote</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNote", Transform.Component, "VuNote")]
 public sealed class VuNote : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNotebook</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNotebook</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNotebook</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNotebook", Transform.Component, "VuNotebook")]
 public sealed class VuNotebook : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNotebookPen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNotebookPen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNotebookPen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNotebookPen", Transform.Component, "VuNotebookPen")]
 public sealed class VuNotebookPen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNotebookTabs</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNotebookTabs</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNotebookTabs</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNotebookTabs", Transform.Component, "VuNotebookTabs")]
 public sealed class VuNotebookTabs : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNotebookText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNotebookText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNotebookText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNotebookText", Transform.Component, "VuNotebookText")]
 public sealed class VuNotebookText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNotepadText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNotepadText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNotepadText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNotepadText", Transform.Component, "VuNotepadText")]
 public sealed class VuNotepadText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNotepadTextDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNotepadTextDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNotepadTextDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNotepadTextDashed", Transform.Component, "VuNotepadTextDashed")]
 public sealed class VuNotepadTextDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNut</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNut</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNut</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNut", Transform.Component, "VuNut")]
 public sealed class VuNut : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuNutOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuNutOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuNutOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuNutOff", Transform.Component, "VuNutOff")]
 public sealed class VuNutOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuOctagon</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuOctagon</summary>
+/// <remarks>按需 static renderer for upstream <c>VuOctagon</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuOctagon", Transform.Component, "VuOctagon")]
 public sealed class VuOctagon : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuOctagonAlert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuOctagonAlert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuOctagonAlert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuOctagonAlert", Transform.Component, "VuOctagonAlert")]
 public sealed class VuOctagonAlert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuOctagonMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuOctagonMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuOctagonMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuOctagonMinus", Transform.Component, "VuOctagonMinus")]
 public sealed class VuOctagonMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuOctagonPause</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuOctagonPause</summary>
+/// <remarks>按需 static renderer for upstream <c>VuOctagonPause</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuOctagonPause", Transform.Component, "VuOctagonPause")]
 public sealed class VuOctagonPause : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuOctagonX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuOctagonX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuOctagonX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuOctagonX", Transform.Component, "VuOctagonX")]
 public sealed class VuOctagonX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuOmega</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuOmega</summary>
+/// <remarks>按需 static renderer for upstream <c>VuOmega</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuOmega", Transform.Component, "VuOmega")]
 public sealed class VuOmega : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuOption</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuOption</summary>
+/// <remarks>按需 static renderer for upstream <c>VuOption</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuOption", Transform.Component, "VuOption")]
 public sealed class VuOption : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuOrbit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuOrbit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuOrbit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuOrbit", Transform.Component, "VuOrbit")]
 public sealed class VuOrbit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuOrigami</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuOrigami</summary>
+/// <remarks>按需 static renderer for upstream <c>VuOrigami</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuOrigami", Transform.Component, "VuOrigami")]
 public sealed class VuOrigami : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPackage</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPackage</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPackage</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPackage", Transform.Component, "VuPackage")]
 public sealed class VuPackage : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPackage2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPackage2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPackage2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPackage2", Transform.Component, "VuPackage2")]
 public sealed class VuPackage2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPackageCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPackageCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPackageCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPackageCheck", Transform.Component, "VuPackageCheck")]
 public sealed class VuPackageCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPackageMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPackageMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPackageMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPackageMinus", Transform.Component, "VuPackageMinus")]
 public sealed class VuPackageMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPackageOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPackageOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPackageOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPackageOpen", Transform.Component, "VuPackageOpen")]
 public sealed class VuPackageOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPackagePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPackagePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPackagePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPackagePlus", Transform.Component, "VuPackagePlus")]
 public sealed class VuPackagePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPackageSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPackageSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPackageSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPackageSearch", Transform.Component, "VuPackageSearch")]
 public sealed class VuPackageSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPackageX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPackageX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPackageX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPackageX", Transform.Component, "VuPackageX")]
 public sealed class VuPackageX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPagination</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPagination</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPagination</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPagination", Transform.Component, "VuPagination")]
 public sealed class VuPagination : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPaintBucket</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPaintBucket</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPaintBucket</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPaintBucket", Transform.Component, "VuPaintBucket")]
 public sealed class VuPaintBucket : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPaintRoller</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPaintRoller</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPaintRoller</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPaintRoller", Transform.Component, "VuPaintRoller")]
 public sealed class VuPaintRoller : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPaintbrush</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPaintbrush</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPaintbrush</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPaintbrush", Transform.Component, "VuPaintbrush")]
 public sealed class VuPaintbrush : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPaintbrushVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPaintbrushVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPaintbrushVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPaintbrushVertical", Transform.Component, "VuPaintbrushVertical")]
 public sealed class VuPaintbrushVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPalette</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPalette</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPalette</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPalette", Transform.Component, "VuPalette")]
 public sealed class VuPalette : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanda</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanda</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanda</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanda", Transform.Component, "VuPanda")]
 public sealed class VuPanda : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelBottom</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelBottom</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelBottom</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelBottom", Transform.Component, "VuPanelBottom")]
 public sealed class VuPanelBottom : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelBottomClose</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelBottomClose</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelBottomClose</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelBottomClose", Transform.Component, "VuPanelBottomClose")]
 public sealed class VuPanelBottomClose : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelBottomDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelBottomDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelBottomDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelBottomDashed", Transform.Component, "VuPanelBottomDashed")]
 public sealed class VuPanelBottomDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelBottomOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelBottomOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelBottomOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelBottomOpen", Transform.Component, "VuPanelBottomOpen")]
 public sealed class VuPanelBottomOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelLeft", Transform.Component, "VuPanelLeft")]
 public sealed class VuPanelLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelLeftClose</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftClose</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelLeftClose</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelLeftClose", Transform.Component, "VuPanelLeftClose")]
 public sealed class VuPanelLeftClose : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelLeftDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelLeftDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelLeftDashed", Transform.Component, "VuPanelLeftDashed")]
 public sealed class VuPanelLeftDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelLeftOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelLeftOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelLeftOpen", Transform.Component, "VuPanelLeftOpen")]
 public sealed class VuPanelLeftOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelLeftRightDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelLeftRightDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelLeftRightDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelLeftRightDashed", Transform.Component, "VuPanelLeftRightDashed")]
 public sealed class VuPanelLeftRightDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelRight", Transform.Component, "VuPanelRight")]
 public sealed class VuPanelRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelRightClose</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelRightClose</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelRightClose</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelRightClose", Transform.Component, "VuPanelRightClose")]
 public sealed class VuPanelRightClose : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelRightDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelRightDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelRightDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelRightDashed", Transform.Component, "VuPanelRightDashed")]
 public sealed class VuPanelRightDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelRightOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelRightOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelRightOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelRightOpen", Transform.Component, "VuPanelRightOpen")]
 public sealed class VuPanelRightOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelTop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelTop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelTop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelTop", Transform.Component, "VuPanelTop")]
 public sealed class VuPanelTop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelTopBottomDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelTopBottomDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelTopBottomDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelTopBottomDashed", Transform.Component, "VuPanelTopBottomDashed")]
 public sealed class VuPanelTopBottomDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelTopClose</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelTopClose</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelTopClose</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelTopClose", Transform.Component, "VuPanelTopClose")]
 public sealed class VuPanelTopClose : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelTopDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelTopDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelTopDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelTopDashed", Transform.Component, "VuPanelTopDashed")]
 public sealed class VuPanelTopDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelTopOpen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelTopOpen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelTopOpen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelTopOpen", Transform.Component, "VuPanelTopOpen")]
 public sealed class VuPanelTopOpen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelsLeftBottom</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelsLeftBottom</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelsLeftBottom</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelsLeftBottom", Transform.Component, "VuPanelsLeftBottom")]
 public sealed class VuPanelsLeftBottom : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelsRightBottom</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelsRightBottom</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelsRightBottom</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelsRightBottom", Transform.Component, "VuPanelsRightBottom")]
 public sealed class VuPanelsRightBottom : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPanelsTopLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPanelsTopLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPanelsTopLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPanelsTopLeft", Transform.Component, "VuPanelsTopLeft")]
 public sealed class VuPanelsTopLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPaperclip</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPaperclip</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPaperclip</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPaperclip", Transform.Component, "VuPaperclip")]
 public sealed class VuPaperclip : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuParentheses</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuParentheses</summary>
+/// <remarks>按需 static renderer for upstream <c>VuParentheses</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuParentheses", Transform.Component, "VuParentheses")]
 public sealed class VuParentheses : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuParkingMeter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuParkingMeter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuParkingMeter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuParkingMeter", Transform.Component, "VuParkingMeter")]
 public sealed class VuParkingMeter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPartyPopper</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPartyPopper</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPartyPopper</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPartyPopper", Transform.Component, "VuPartyPopper")]
 public sealed class VuPartyPopper : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPaste</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPaste</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPaste</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPaste", Transform.Component, "VuPaste")]
 public sealed class VuPaste : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPause</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPause</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPause</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPause", Transform.Component, "VuPause")]
 public sealed class VuPause : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPawPrint</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPawPrint</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPawPrint</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPawPrint", Transform.Component, "VuPawPrint")]
 public sealed class VuPawPrint : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPayment</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPayment</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPayment</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPayment", Transform.Component, "VuPayment")]
 public sealed class VuPayment : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPaymentMedical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPaymentMedical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPaymentMedical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPaymentMedical", Transform.Component, "VuPaymentMedical")]
 public sealed class VuPaymentMedical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPcCase</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPcCase</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPcCase</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPcCase", Transform.Component, "VuPcCase")]
 public sealed class VuPcCase : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPen", Transform.Component, "VuPen")]
 public sealed class VuPen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPenLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPenLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPenLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPenLine", Transform.Component, "VuPenLine")]
 public sealed class VuPenLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPenOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPenOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPenOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPenOff", Transform.Component, "VuPenOff")]
 public sealed class VuPenOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPenTool</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPenTool</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPenTool</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPenTool", Transform.Component, "VuPenTool")]
 public sealed class VuPenTool : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPencil</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPencil</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPencil</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPencil", Transform.Component, "VuPencil")]
 public sealed class VuPencil : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPencilLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPencilLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPencilLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPencilLine", Transform.Component, "VuPencilLine")]
 public sealed class VuPencilLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPencilOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPencilOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPencilOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPencilOff", Transform.Component, "VuPencilOff")]
 public sealed class VuPencilOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPencilRuler</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPencilRuler</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPencilRuler</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPencilRuler", Transform.Component, "VuPencilRuler")]
 public sealed class VuPencilRuler : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPentagon</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPentagon</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPentagon</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPentagon", Transform.Component, "VuPentagon")]
 public sealed class VuPentagon : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPercent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPercent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPercent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPercent", Transform.Component, "VuPercent")]
 public sealed class VuPercent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPersonStanding</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPersonStanding</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPersonStanding</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPersonStanding", Transform.Component, "VuPersonStanding")]
 public sealed class VuPersonStanding : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPhilippinePeso</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPhilippinePeso</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPhilippinePeso</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPhilippinePeso", Transform.Component, "VuPhilippinePeso")]
 public sealed class VuPhilippinePeso : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPhone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPhone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPhone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPhone", Transform.Component, "VuPhone")]
 public sealed class VuPhone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPhoneCall</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPhoneCall</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPhoneCall</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPhoneCall", Transform.Component, "VuPhoneCall")]
 public sealed class VuPhoneCall : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPhoneForwarded</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPhoneForwarded</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPhoneForwarded</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPhoneForwarded", Transform.Component, "VuPhoneForwarded")]
 public sealed class VuPhoneForwarded : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPhoneIncoming</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPhoneIncoming</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPhoneIncoming</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPhoneIncoming", Transform.Component, "VuPhoneIncoming")]
 public sealed class VuPhoneIncoming : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPhoneMissed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPhoneMissed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPhoneMissed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPhoneMissed", Transform.Component, "VuPhoneMissed")]
 public sealed class VuPhoneMissed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPhoneOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPhoneOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPhoneOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPhoneOff", Transform.Component, "VuPhoneOff")]
 public sealed class VuPhoneOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPhoneOutgoing</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPhoneOutgoing</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPhoneOutgoing</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPhoneOutgoing", Transform.Component, "VuPhoneOutgoing")]
 public sealed class VuPhoneOutgoing : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPi</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPi</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPi</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPi", Transform.Component, "VuPi")]
 public sealed class VuPi : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPiano</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPiano</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPiano</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPiano", Transform.Component, "VuPiano")]
 public sealed class VuPiano : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPickaxe</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPickaxe</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPickaxe</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPickaxe", Transform.Component, "VuPickaxe")]
 public sealed class VuPickaxe : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPictureInPicture</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPictureInPicture</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPictureInPicture</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPictureInPicture", Transform.Component, "VuPictureInPicture")]
 public sealed class VuPictureInPicture : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPictureInPicture2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPictureInPicture2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPictureInPicture2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPictureInPicture2", Transform.Component, "VuPictureInPicture2")]
 public sealed class VuPictureInPicture2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPieChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPieChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPieChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPieChart", Transform.Component, "VuPieChart")]
 public sealed class VuPieChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPiggyBank</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPiggyBank</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPiggyBank</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPiggyBank", Transform.Component, "VuPiggyBank")]
 public sealed class VuPiggyBank : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPilcrow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPilcrow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPilcrow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPilcrow", Transform.Component, "VuPilcrow")]
 public sealed class VuPilcrow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPilcrowLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPilcrowLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPilcrowLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPilcrowLeft", Transform.Component, "VuPilcrowLeft")]
 public sealed class VuPilcrowLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPilcrowRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPilcrowRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPilcrowRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPilcrowRight", Transform.Component, "VuPilcrowRight")]
 public sealed class VuPilcrowRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPill</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPill</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPill</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPill", Transform.Component, "VuPill")]
 public sealed class VuPill : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPillBottle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPillBottle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPillBottle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPillBottle", Transform.Component, "VuPillBottle")]
 public sealed class VuPillBottle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPin</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPin</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPin</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPin", Transform.Component, "VuPin")]
 public sealed class VuPin : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPinOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPinOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPinOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPinOff", Transform.Component, "VuPinOff")]
 public sealed class VuPinOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPipette</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPipette</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPipette</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPipette", Transform.Component, "VuPipette")]
 public sealed class VuPipette : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPizza</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPizza</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPizza</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPizza", Transform.Component, "VuPizza")]
 public sealed class VuPizza : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPlane</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPlane</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPlane</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPlane", Transform.Component, "VuPlane")]
 public sealed class VuPlane : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPlaneLanding</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPlaneLanding</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPlaneLanding</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPlaneLanding", Transform.Component, "VuPlaneLanding")]
 public sealed class VuPlaneLanding : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPlaneTakeoff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPlaneTakeoff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPlaneTakeoff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPlaneTakeoff", Transform.Component, "VuPlaneTakeoff")]
 public sealed class VuPlaneTakeoff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPlay</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPlay</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPlay</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPlay", Transform.Component, "VuPlay")]
 public sealed class VuPlay : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPlug</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPlug</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPlug</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPlug", Transform.Component, "VuPlug")]
 public sealed class VuPlug : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPlug2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPlug2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPlug2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPlug2", Transform.Component, "VuPlug2")]
 public sealed class VuPlug2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPlugZap</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPlugZap</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPlugZap</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPlugZap", Transform.Component, "VuPlugZap")]
 public sealed class VuPlugZap : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPlus", Transform.Component, "VuPlus")]
 public sealed class VuPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPocket</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPocket</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPocket</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPocket", Transform.Component, "VuPocket")]
 public sealed class VuPocket : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPocketKnife</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPocketKnife</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPocketKnife</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPocketKnife", Transform.Component, "VuPocketKnife")]
 public sealed class VuPocketKnife : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPodcast</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPodcast</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPodcast</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPodcast", Transform.Component, "VuPodcast")]
 public sealed class VuPodcast : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPointer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPointer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPointer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPointer", Transform.Component, "VuPointer")]
 public sealed class VuPointer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPointerOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPointerOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPointerOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPointerOff", Transform.Component, "VuPointerOff")]
 public sealed class VuPointerOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPoints</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPoints</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPoints</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPoints", Transform.Component, "VuPoints")]
 public sealed class VuPoints : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPopcorn</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPopcorn</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPopcorn</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPopcorn", Transform.Component, "VuPopcorn")]
 public sealed class VuPopcorn : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPopsicle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPopsicle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPopsicle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPopsicle", Transform.Component, "VuPopsicle")]
 public sealed class VuPopsicle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPoundSterling</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPoundSterling</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPoundSterling</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPoundSterling", Transform.Component, "VuPoundSterling")]
 public sealed class VuPoundSterling : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPower</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPower</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPower</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPower", Transform.Component, "VuPower")]
 public sealed class VuPower : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPowerOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPowerOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPowerOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPowerOff", Transform.Component, "VuPowerOff")]
 public sealed class VuPowerOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPresentation</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPresentation</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPresentation</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPresentation", Transform.Component, "VuPresentation")]
 public sealed class VuPresentation : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPrinter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPrinter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPrinter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPrinter", Transform.Component, "VuPrinter")]
 public sealed class VuPrinter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPrinterCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPrinterCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPrinterCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPrinterCheck", Transform.Component, "VuPrinterCheck")]
 public sealed class VuPrinterCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuProduct</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuProduct</summary>
+/// <remarks>按需 static renderer for upstream <c>VuProduct</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuProduct", Transform.Component, "VuProduct")]
 public sealed class VuProduct : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuProjector</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuProjector</summary>
+/// <remarks>按需 static renderer for upstream <c>VuProjector</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuProjector", Transform.Component, "VuProjector")]
 public sealed class VuProjector : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuProportions</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuProportions</summary>
+/// <remarks>按需 static renderer for upstream <c>VuProportions</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuProportions", Transform.Component, "VuProportions")]
 public sealed class VuProportions : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPuzzle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPuzzle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPuzzle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPuzzle", Transform.Component, "VuPuzzle")]
 public sealed class VuPuzzle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuPyramid</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuPyramid</summary>
+/// <remarks>按需 static renderer for upstream <c>VuPyramid</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuPyramid", Transform.Component, "VuPyramid")]
 public sealed class VuPyramid : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuQrCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuQrCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuQrCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuQrCode", Transform.Component, "VuQrCode")]
 public sealed class VuQrCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuQrcodeBox</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuQrcodeBox</summary>
+/// <remarks>按需 static renderer for upstream <c>VuQrcodeBox</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuQrcodeBox", Transform.Component, "VuQrcodeBox")]
 public sealed class VuQrcodeBox : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuQuote</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuQuote</summary>
+/// <remarks>按需 static renderer for upstream <c>VuQuote</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuQuote", Transform.Component, "VuQuote")]
 public sealed class VuQuote : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRabbit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRabbit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRabbit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRabbit", Transform.Component, "VuRabbit")]
 public sealed class VuRabbit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRadar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRadar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRadar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRadar", Transform.Component, "VuRadar")]
 public sealed class VuRadar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRadarChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRadarChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRadarChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRadarChart", Transform.Component, "VuRadarChart")]
 public sealed class VuRadarChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRadiation</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRadiation</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRadiation</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRadiation", Transform.Component, "VuRadiation")]
 public sealed class VuRadiation : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRadical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRadical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRadical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRadical", Transform.Component, "VuRadical")]
 public sealed class VuRadical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRadio</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRadio</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRadio</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRadio", Transform.Component, "VuRadio")]
 public sealed class VuRadio : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRadioReceiver</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRadioReceiver</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRadioReceiver</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRadioReceiver", Transform.Component, "VuRadioReceiver")]
 public sealed class VuRadioReceiver : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRadioTower</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRadioTower</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRadioTower</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRadioTower", Transform.Component, "VuRadioTower")]
 public sealed class VuRadioTower : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRadius</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRadius</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRadius</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRadius", Transform.Component, "VuRadius")]
 public sealed class VuRadius : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRailSymbol</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRailSymbol</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRailSymbol</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRailSymbol", Transform.Component, "VuRailSymbol")]
 public sealed class VuRailSymbol : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRainbow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRainbow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRainbow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRainbow", Transform.Component, "VuRainbow")]
 public sealed class VuRainbow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRainy</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRainy</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRainy</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRainy", Transform.Component, "VuRainy")]
 public sealed class VuRainy : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRat</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRat</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRat</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRat", Transform.Component, "VuRat")]
 public sealed class VuRat : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRatio</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRatio</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRatio</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRatio", Transform.Component, "VuRatio")]
 public sealed class VuRatio : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRead</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRead</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRead</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRead", Transform.Component, "VuRead")]
 public sealed class VuRead : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceipt</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceipt</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceipt</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceipt", Transform.Component, "VuReceipt")]
 public sealed class VuReceipt : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceiptCent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceiptCent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceiptCent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceiptCent", Transform.Component, "VuReceiptCent")]
 public sealed class VuReceiptCent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceiptEuro</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceiptEuro</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceiptEuro</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceiptEuro", Transform.Component, "VuReceiptEuro")]
 public sealed class VuReceiptEuro : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceiptIndianRupee</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceiptIndianRupee</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceiptIndianRupee</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceiptIndianRupee", Transform.Component, "VuReceiptIndianRupee")]
 public sealed class VuReceiptIndianRupee : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceiptJapaneseYen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceiptJapaneseYen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceiptJapaneseYen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceiptJapaneseYen", Transform.Component, "VuReceiptJapaneseYen")]
 public sealed class VuReceiptJapaneseYen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceiptPoundSterling</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceiptPoundSterling</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceiptPoundSterling</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceiptPoundSterling", Transform.Component, "VuReceiptPoundSterling")]
 public sealed class VuReceiptPoundSterling : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceiptRussianRuble</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceiptRussianRuble</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceiptRussianRuble</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceiptRussianRuble", Transform.Component, "VuReceiptRussianRuble")]
 public sealed class VuReceiptRussianRuble : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceiptSwissFranc</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceiptSwissFranc</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceiptSwissFranc</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceiptSwissFranc", Transform.Component, "VuReceiptSwissFranc")]
 public sealed class VuReceiptSwissFranc : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceiptText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceiptText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceiptText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceiptText", Transform.Component, "VuReceiptText")]
 public sealed class VuReceiptText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReceiptTurkishLira</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReceiptTurkishLira</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReceiptTurkishLira</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReceiptTurkishLira", Transform.Component, "VuReceiptTurkishLira")]
 public sealed class VuReceiptTurkishLira : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRecharge</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRecharge</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRecharge</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRecharge", Transform.Component, "VuRecharge")]
 public sealed class VuRecharge : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRectangleCircle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRectangleCircle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRectangleCircle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRectangleCircle", Transform.Component, "VuRectangleCircle")]
 public sealed class VuRectangleCircle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRectangleEllipsis</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRectangleEllipsis</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRectangleEllipsis</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRectangleEllipsis", Transform.Component, "VuRectangleEllipsis")]
 public sealed class VuRectangleEllipsis : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRectangleGoggles</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRectangleGoggles</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRectangleGoggles</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRectangleGoggles", Transform.Component, "VuRectangleGoggles")]
 public sealed class VuRectangleGoggles : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRectangleHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRectangleHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRectangleHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRectangleHorizontal", Transform.Component, "VuRectangleHorizontal")]
 public sealed class VuRectangleHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRectangleVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRectangleVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRectangleVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRectangleVertical", Transform.Component, "VuRectangleVertical")]
 public sealed class VuRectangleVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRecycle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRecycle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRecycle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRecycle", Transform.Component, "VuRecycle")]
 public sealed class VuRecycle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRedo</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRedo</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRedo</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRedo", Transform.Component, "VuRedo")]
 public sealed class VuRedo : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRedo2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRedo2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRedo2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRedo2", Transform.Component, "VuRedo2")]
 public sealed class VuRedo2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRedoDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRedoDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRedoDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRedoDot", Transform.Component, "VuRedoDot")]
 public sealed class VuRedoDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRefresh</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRefresh</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRefresh</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRefresh", Transform.Component, "VuRefresh")]
 public sealed class VuRefresh : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRefreshCcw</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRefreshCcw</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRefreshCcw</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRefreshCcw", Transform.Component, "VuRefreshCcw")]
 public sealed class VuRefreshCcw : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRefreshCcwDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRefreshCcwDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRefreshCcwDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRefreshCcwDot", Transform.Component, "VuRefreshCcwDot")]
 public sealed class VuRefreshCcwDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRefreshCw</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRefreshCw</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRefreshCw</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRefreshCw", Transform.Component, "VuRefreshCw")]
 public sealed class VuRefreshCw : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRefreshCwOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRefreshCwOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRefreshCwOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRefreshCwOff", Transform.Component, "VuRefreshCwOff")]
 public sealed class VuRefreshCwOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRefrigerator</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRefrigerator</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRefrigerator</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRefrigerator", Transform.Component, "VuRefrigerator")]
 public sealed class VuRefrigerator : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRefund</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRefund</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRefund</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRefund", Transform.Component, "VuRefund")]
 public sealed class VuRefund : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRegex</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRegex</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRegex</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRegex", Transform.Component, "VuRegex")]
 public sealed class VuRegex : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRemoveFormatting</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRemoveFormatting</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRemoveFormatting</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRemoveFormatting", Transform.Component, "VuRemoveFormatting")]
 public sealed class VuRemoveFormatting : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRepeat</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRepeat</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRepeat</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRepeat", Transform.Component, "VuRepeat")]
 public sealed class VuRepeat : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRepeat1</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRepeat1</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRepeat1</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRepeat1", Transform.Component, "VuRepeat1")]
 public sealed class VuRepeat1 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRepeat2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRepeat2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRepeat2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRepeat2", Transform.Component, "VuRepeat2")]
 public sealed class VuRepeat2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReplace</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReplace</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReplace</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReplace", Transform.Component, "VuReplace")]
 public sealed class VuReplace : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReplaceAll</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReplaceAll</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReplaceAll</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReplaceAll", Transform.Component, "VuReplaceAll")]
 public sealed class VuReplaceAll : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReply</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReply</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReply</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReply", Transform.Component, "VuReply")]
 public sealed class VuReply : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReplyAll</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReplyAll</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReplyAll</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReplyAll", Transform.Component, "VuReplyAll")]
 public sealed class VuReplyAll : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReport</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReport</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReport</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReport", Transform.Component, "VuReport")]
 public sealed class VuReport : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuReportMedical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuReportMedical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuReportMedical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuReportMedical", Transform.Component, "VuReportMedical")]
 public sealed class VuReportMedical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRewind</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRewind</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRewind</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRewind", Transform.Component, "VuRewind")]
 public sealed class VuRewind : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRibbon</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRibbon</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRibbon</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRibbon", Transform.Component, "VuRibbon")]
 public sealed class VuRibbon : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRocket</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRocket</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRocket</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRocket", Transform.Component, "VuRocket")]
 public sealed class VuRocket : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRockingChair</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRockingChair</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRockingChair</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRockingChair", Transform.Component, "VuRockingChair")]
 public sealed class VuRockingChair : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRollerCoaster</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRollerCoaster</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRollerCoaster</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRollerCoaster", Transform.Component, "VuRollerCoaster")]
 public sealed class VuRollerCoaster : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRose</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRose</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRose</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRose", Transform.Component, "VuRose")]
 public sealed class VuRose : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRotate3d</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRotate3d</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRotate3d</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRotate3d", Transform.Component, "VuRotate3d")]
 public sealed class VuRotate3d : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRotateCcw</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRotateCcw</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRotateCcw</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRotateCcw", Transform.Component, "VuRotateCcw")]
 public sealed class VuRotateCcw : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRotateCcwKey</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRotateCcwKey</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRotateCcwKey</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRotateCcwKey", Transform.Component, "VuRotateCcwKey")]
 public sealed class VuRotateCcwKey : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRotateCcwSquare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRotateCcwSquare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRotateCcwSquare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRotateCcwSquare", Transform.Component, "VuRotateCcwSquare")]
 public sealed class VuRotateCcwSquare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRotateCw</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRotateCw</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRotateCw</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRotateCw", Transform.Component, "VuRotateCw")]
 public sealed class VuRotateCw : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRotateCwSquare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRotateCwSquare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRotateCwSquare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRotateCwSquare", Transform.Component, "VuRotateCwSquare")]
 public sealed class VuRotateCwSquare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRoute</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRoute</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRoute</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRoute", Transform.Component, "VuRoute")]
 public sealed class VuRoute : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRouteOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRouteOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRouteOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRouteOff", Transform.Component, "VuRouteOff")]
 public sealed class VuRouteOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRouter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRouter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRouter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRouter", Transform.Component, "VuRouter")]
 public sealed class VuRouter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRows2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRows2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRows2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRows2", Transform.Component, "VuRows2")]
 public sealed class VuRows2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRows3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRows3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRows3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRows3", Transform.Component, "VuRows3")]
 public sealed class VuRows3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRows4</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRows4</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRows4</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRows4", Transform.Component, "VuRows4")]
 public sealed class VuRows4 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRss</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRss</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRss</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRss", Transform.Component, "VuRss")]
 public sealed class VuRss : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRuler</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRuler</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRuler</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRuler", Transform.Component, "VuRuler")]
 public sealed class VuRuler : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRulerDimensionLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRulerDimensionLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRulerDimensionLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRulerDimensionLine", Transform.Component, "VuRulerDimensionLine")]
 public sealed class VuRulerDimensionLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuRussianRuble</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuRussianRuble</summary>
+/// <remarks>按需 static renderer for upstream <c>VuRussianRuble</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuRussianRuble", Transform.Component, "VuRussianRuble")]
 public sealed class VuRussianRuble : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSailboat</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSailboat</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSailboat</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSailboat", Transform.Component, "VuSailboat")]
 public sealed class VuSailboat : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSalad</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSalad</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSalad</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSalad", Transform.Component, "VuSalad")]
 public sealed class VuSalad : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSandwich</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSandwich</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSandwich</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSandwich", Transform.Component, "VuSandwich")]
 public sealed class VuSandwich : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSatellite</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSatellite</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSatellite</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSatellite", Transform.Component, "VuSatellite")]
 public sealed class VuSatellite : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSatelliteDish</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSatelliteDish</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSatelliteDish</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSatelliteDish", Transform.Component, "VuSatelliteDish")]
 public sealed class VuSatelliteDish : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSaudiRiyal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSaudiRiyal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSaudiRiyal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSaudiRiyal", Transform.Component, "VuSaudiRiyal")]
 public sealed class VuSaudiRiyal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSave</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSave</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSave</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSave", Transform.Component, "VuSave")]
 public sealed class VuSave : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSaveAll</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSaveAll</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSaveAll</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSaveAll", Transform.Component, "VuSaveAll")]
 public sealed class VuSaveAll : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSaveOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSaveOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSaveOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSaveOff", Transform.Component, "VuSaveOff")]
 public sealed class VuSaveOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScale</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScale</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScale</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScale", Transform.Component, "VuScale")]
 public sealed class VuScale : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScale3d</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScale3d</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScale3d</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScale3d", Transform.Component, "VuScale3d")]
 public sealed class VuScale3d : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScaling</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScaling</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScaling</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScaling", Transform.Component, "VuScaling")]
 public sealed class VuScaling : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScan", Transform.Component, "VuScan")]
 public sealed class VuScan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScanBarcode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScanBarcode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScanBarcode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScanBarcode", Transform.Component, "VuScanBarcode")]
 public sealed class VuScanBarcode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScanEye</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScanEye</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScanEye</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScanEye", Transform.Component, "VuScanEye")]
 public sealed class VuScanEye : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScanFace</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScanFace</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScanFace</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScanFace", Transform.Component, "VuScanFace")]
 public sealed class VuScanFace : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScanHeart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScanHeart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScanHeart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScanHeart", Transform.Component, "VuScanHeart")]
 public sealed class VuScanHeart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScanLine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScanLine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScanLine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScanLine", Transform.Component, "VuScanLine")]
 public sealed class VuScanLine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScanQrCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScanQrCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScanQrCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScanQrCode", Transform.Component, "VuScanQrCode")]
 public sealed class VuScanQrCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScanSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScanSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScanSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScanSearch", Transform.Component, "VuScanSearch")]
 public sealed class VuScanSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScanText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScanText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScanText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScanText", Transform.Component, "VuScanText")]
 public sealed class VuScanText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScatterChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScatterChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScatterChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScatterChart", Transform.Component, "VuScatterChart")]
 public sealed class VuScatterChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSchool</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSchool</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSchool</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSchool", Transform.Component, "VuSchool")]
 public sealed class VuSchool : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScissors</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScissors</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScissors</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScissors", Transform.Component, "VuScissors")]
 public sealed class VuScissors : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScissorsLineDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScissorsLineDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScissorsLineDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScissorsLineDashed", Transform.Component, "VuScissorsLineDashed")]
 public sealed class VuScissorsLineDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScooter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScooter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScooter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScooter", Transform.Component, "VuScooter")]
 public sealed class VuScooter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScreenShare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScreenShare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScreenShare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScreenShare", Transform.Component, "VuScreenShare")]
 public sealed class VuScreenShare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScreenShareOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScreenShareOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScreenShareOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScreenShareOff", Transform.Component, "VuScreenShareOff")]
 public sealed class VuScreenShareOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScreenshot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScreenshot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScreenshot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScreenshot", Transform.Component, "VuScreenshot")]
 public sealed class VuScreenshot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScroll</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScroll</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScroll</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScroll", Transform.Component, "VuScroll")]
 public sealed class VuScroll : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuScrollText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuScrollText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuScrollText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuScrollText", Transform.Component, "VuScrollText")]
 public sealed class VuScrollText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSearch", Transform.Component, "VuSearch")]
 public sealed class VuSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSearchAlert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSearchAlert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSearchAlert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSearchAlert", Transform.Component, "VuSearchAlert")]
 public sealed class VuSearchAlert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSearchCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSearchCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSearchCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSearchCheck", Transform.Component, "VuSearchCheck")]
 public sealed class VuSearchCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSearchCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSearchCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSearchCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSearchCode", Transform.Component, "VuSearchCode")]
 public sealed class VuSearchCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSearchLarge</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSearchLarge</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSearchLarge</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSearchLarge", Transform.Component, "VuSearchLarge")]
 public sealed class VuSearchLarge : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSearchSlash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSearchSlash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSearchSlash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSearchSlash", Transform.Component, "VuSearchSlash")]
 public sealed class VuSearchSlash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSearchX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSearchX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSearchX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSearchX", Transform.Component, "VuSearchX")]
 public sealed class VuSearchX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSection</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSection</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSection</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSection", Transform.Component, "VuSection")]
 public sealed class VuSection : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSelected</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSelected</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSelected</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSelected", Transform.Component, "VuSelected")]
 public sealed class VuSelected : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSend</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSend</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSend</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSend", Transform.Component, "VuSend")]
 public sealed class VuSend : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSendHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSendHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSendHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSendHorizontal", Transform.Component, "VuSendHorizontal")]
 public sealed class VuSendHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSendToBack</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSendToBack</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSendToBack</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSendToBack", Transform.Component, "VuSendToBack")]
 public sealed class VuSendToBack : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSeparatorHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSeparatorHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSeparatorHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSeparatorHorizontal", Transform.Component, "VuSeparatorHorizontal")]
 public sealed class VuSeparatorHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSeparatorVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSeparatorVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSeparatorVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSeparatorVertical", Transform.Component, "VuSeparatorVertical")]
 public sealed class VuSeparatorVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuServer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuServer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuServer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuServer", Transform.Component, "VuServer")]
 public sealed class VuServer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuServerCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuServerCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuServerCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuServerCog", Transform.Component, "VuServerCog")]
 public sealed class VuServerCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuServerCrash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuServerCrash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuServerCrash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuServerCrash", Transform.Component, "VuServerCrash")]
 public sealed class VuServerCrash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuServerOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuServerOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuServerOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuServerOff", Transform.Component, "VuServerOff")]
 public sealed class VuServerOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSettings</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSettings</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSettings</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSettings", Transform.Component, "VuSettings")]
 public sealed class VuSettings : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSettings2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSettings2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSettings2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSettings2", Transform.Component, "VuSettings2")]
 public sealed class VuSettings2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShapes</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShapes</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShapes</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShapes", Transform.Component, "VuShapes")]
 public sealed class VuShapes : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShare", Transform.Component, "VuShare")]
 public sealed class VuShare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShare2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShare2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShare2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShare2", Transform.Component, "VuShare2")]
 public sealed class VuShare2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSheet</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSheet</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSheet</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSheet", Transform.Component, "VuSheet")]
 public sealed class VuSheet : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShell</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShell</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShell</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShell", Transform.Component, "VuShell")]
 public sealed class VuShell : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShield</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShield</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShield</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShield", Transform.Component, "VuShield")]
 public sealed class VuShield : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldAlert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldAlert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldAlert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldAlert", Transform.Component, "VuShieldAlert")]
 public sealed class VuShieldAlert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldBan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldBan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldBan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldBan", Transform.Component, "VuShieldBan")]
 public sealed class VuShieldBan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldCheck", Transform.Component, "VuShieldCheck")]
 public sealed class VuShieldCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldEllipsis</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldEllipsis</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldEllipsis</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldEllipsis", Transform.Component, "VuShieldEllipsis")]
 public sealed class VuShieldEllipsis : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldHalf</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldHalf</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldHalf</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldHalf", Transform.Component, "VuShieldHalf")]
 public sealed class VuShieldHalf : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldMinus", Transform.Component, "VuShieldMinus")]
 public sealed class VuShieldMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldOff", Transform.Component, "VuShieldOff")]
 public sealed class VuShieldOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldPlus", Transform.Component, "VuShieldPlus")]
 public sealed class VuShieldPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldQuestionMark</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldQuestionMark</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldQuestionMark</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldQuestionMark", Transform.Component, "VuShieldQuestionMark")]
 public sealed class VuShieldQuestionMark : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldUser</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldUser</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldUser</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldUser", Transform.Component, "VuShieldUser")]
 public sealed class VuShieldUser : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShieldX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShieldX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShieldX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShieldX", Transform.Component, "VuShieldX")]
 public sealed class VuShieldX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShip</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShip</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShip</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShip", Transform.Component, "VuShip")]
 public sealed class VuShip : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShipWheel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShipWheel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShipWheel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShipWheel", Transform.Component, "VuShipWheel")]
 public sealed class VuShipWheel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShirt</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShirt</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShirt</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShirt", Transform.Component, "VuShirt")]
 public sealed class VuShirt : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShoppingBag</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShoppingBag</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShoppingBag</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShoppingBag", Transform.Component, "VuShoppingBag")]
 public sealed class VuShoppingBag : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShoppingBasket</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShoppingBasket</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShoppingBasket</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShoppingBasket", Transform.Component, "VuShoppingBasket")]
 public sealed class VuShoppingBasket : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShoppingCart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShoppingCart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShoppingCart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShoppingCart", Transform.Component, "VuShoppingCart")]
 public sealed class VuShoppingCart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShovel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShovel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShovel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShovel", Transform.Component, "VuShovel")]
 public sealed class VuShovel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShowerHead</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShowerHead</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShowerHead</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShowerHead", Transform.Component, "VuShowerHead")]
 public sealed class VuShowerHead : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShredder</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShredder</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShredder</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShredder", Transform.Component, "VuShredder")]
 public sealed class VuShredder : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShrimp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShrimp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShrimp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShrimp", Transform.Component, "VuShrimp")]
 public sealed class VuShrimp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShrink</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShrink</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShrink</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShrink", Transform.Component, "VuShrink")]
 public sealed class VuShrink : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShrub</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShrub</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShrub</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShrub", Transform.Component, "VuShrub")]
 public sealed class VuShrub : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuShuffle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuShuffle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuShuffle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuShuffle", Transform.Component, "VuShuffle")]
 public sealed class VuShuffle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSidebar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSidebar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSidebar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSidebar", Transform.Component, "VuSidebar")]
 public sealed class VuSidebar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSigma</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSigma</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSigma</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSigma", Transform.Component, "VuSigma")]
 public sealed class VuSigma : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSignal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSignal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSignal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSignal", Transform.Component, "VuSignal")]
 public sealed class VuSignal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSignalHigh</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSignalHigh</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSignalHigh</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSignalHigh", Transform.Component, "VuSignalHigh")]
 public sealed class VuSignalHigh : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSignalLow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSignalLow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSignalLow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSignalLow", Transform.Component, "VuSignalLow")]
 public sealed class VuSignalLow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSignalMedium</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSignalMedium</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSignalMedium</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSignalMedium", Transform.Component, "VuSignalMedium")]
 public sealed class VuSignalMedium : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSignalZero</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSignalZero</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSignalZero</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSignalZero", Transform.Component, "VuSignalZero")]
 public sealed class VuSignalZero : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSignature</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSignature</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSignature</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSignature", Transform.Component, "VuSignature")]
 public sealed class VuSignature : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSignpost</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSignpost</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSignpost</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSignpost", Transform.Component, "VuSignpost")]
 public sealed class VuSignpost : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSignpostBig</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSignpostBig</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSignpostBig</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSignpostBig", Transform.Component, "VuSignpostBig")]
 public sealed class VuSignpostBig : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSiren</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSiren</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSiren</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSiren", Transform.Component, "VuSiren")]
 public sealed class VuSiren : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSkipBack</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSkipBack</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSkipBack</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSkipBack", Transform.Component, "VuSkipBack")]
 public sealed class VuSkipBack : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSkipBackward</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSkipBackward</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSkipBackward</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSkipBackward", Transform.Component, "VuSkipBackward")]
 public sealed class VuSkipBackward : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSkipForward</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSkipForward</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSkipForward</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSkipForward", Transform.Component, "VuSkipForward")]
 public sealed class VuSkipForward : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSkull</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSkull</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSkull</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSkull", Transform.Component, "VuSkull")]
 public sealed class VuSkull : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSlack</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSlack</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSlack</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSlack", Transform.Component, "VuSlack")]
 public sealed class VuSlack : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSlash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSlash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSlash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSlash", Transform.Component, "VuSlash")]
 public sealed class VuSlash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSlice</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSlice</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSlice</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSlice", Transform.Component, "VuSlice")]
 public sealed class VuSlice : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSlidersHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSlidersHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSlidersHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSlidersHorizontal", Transform.Component, "VuSlidersHorizontal")]
 public sealed class VuSlidersHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSlidersVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSlidersVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSlidersVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSlidersVertical", Transform.Component, "VuSlidersVertical")]
 public sealed class VuSlidersVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSmartphone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSmartphone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSmartphone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSmartphone", Transform.Component, "VuSmartphone")]
 public sealed class VuSmartphone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSmartphoneCharging</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSmartphoneCharging</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSmartphoneCharging</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSmartphoneCharging", Transform.Component, "VuSmartphoneCharging")]
 public sealed class VuSmartphoneCharging : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSmartphoneNfc</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSmartphoneNfc</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSmartphoneNfc</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSmartphoneNfc", Transform.Component, "VuSmartphoneNfc")]
 public sealed class VuSmartphoneNfc : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSmile</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSmile</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSmile</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSmile", Transform.Component, "VuSmile")]
 public sealed class VuSmile : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSmilePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSmilePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSmilePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSmilePlus", Transform.Component, "VuSmilePlus")]
 public sealed class VuSmilePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSnail</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSnail</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSnail</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSnail", Transform.Component, "VuSnail")]
 public sealed class VuSnail : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSnowflake</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSnowflake</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSnowflake</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSnowflake", Transform.Component, "VuSnowflake")]
 public sealed class VuSnowflake : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSoapDispenserDroplet</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSoapDispenserDroplet</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSoapDispenserDroplet</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSoapDispenserDroplet", Transform.Component, "VuSoapDispenserDroplet")]
 public sealed class VuSoapDispenserDroplet : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSofa</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSofa</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSofa</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSofa", Transform.Component, "VuSofa")]
 public sealed class VuSofa : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSolarPanel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSolarPanel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSolarPanel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSolarPanel", Transform.Component, "VuSolarPanel")]
 public sealed class VuSolarPanel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSort</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSort</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSort</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSort", Transform.Component, "VuSort")]
 public sealed class VuSort : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSoup</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSoup</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSoup</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSoup", Transform.Component, "VuSoup")]
 public sealed class VuSoup : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSpace</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSpace</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSpace</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSpace", Transform.Component, "VuSpace")]
 public sealed class VuSpace : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSpade</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSpade</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSpade</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSpade", Transform.Component, "VuSpade")]
 public sealed class VuSpade : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSparkle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSparkle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSparkle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSparkle", Transform.Component, "VuSparkle")]
 public sealed class VuSparkle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSparkles</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSparkles</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSparkles</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSparkles", Transform.Component, "VuSparkles")]
 public sealed class VuSparkles : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSpeaker</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSpeaker</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSpeaker</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSpeaker", Transform.Component, "VuSpeaker")]
 public sealed class VuSpeaker : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSpeech</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSpeech</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSpeech</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSpeech", Transform.Component, "VuSpeech")]
 public sealed class VuSpeech : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSpellCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSpellCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSpellCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSpellCheck", Transform.Component, "VuSpellCheck")]
 public sealed class VuSpellCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSpellCheck2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSpellCheck2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSpellCheck2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSpellCheck2", Transform.Component, "VuSpellCheck2")]
 public sealed class VuSpellCheck2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSpline</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSpline</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSpline</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSpline", Transform.Component, "VuSpline")]
 public sealed class VuSpline : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSplinePointer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSplinePointer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSplinePointer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSplinePointer", Transform.Component, "VuSplinePointer")]
 public sealed class VuSplinePointer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSplit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSplit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSplit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSplit", Transform.Component, "VuSplit")]
 public sealed class VuSplit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSplitBill</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSplitBill</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSplitBill</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSplitBill", Transform.Component, "VuSplitBill")]
 public sealed class VuSplitBill : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSpool</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSpool</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSpool</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSpool", Transform.Component, "VuSpool")]
 public sealed class VuSpool : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSports</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSports</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSports</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSports", Transform.Component, "VuSports")]
 public sealed class VuSports : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSpotlight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSpotlight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSpotlight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSpotlight", Transform.Component, "VuSpotlight")]
 public sealed class VuSpotlight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSprayCan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSprayCan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSprayCan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSprayCan", Transform.Component, "VuSprayCan")]
 public sealed class VuSprayCan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSprout</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSprout</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSprout</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSprout", Transform.Component, "VuSprout")]
 public sealed class VuSprout : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquare", Transform.Component, "VuSquare")]
 public sealed class VuSquare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareActivity</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareActivity</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareActivity</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareActivity", Transform.Component, "VuSquareActivity")]
 public sealed class VuSquareActivity : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowDown", Transform.Component, "VuSquareArrowDown")]
 public sealed class VuSquareArrowDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowDownLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowDownLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowDownLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowDownLeft", Transform.Component, "VuSquareArrowDownLeft")]
 public sealed class VuSquareArrowDownLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowDownRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowDownRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowDownRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowDownRight", Transform.Component, "VuSquareArrowDownRight")]
 public sealed class VuSquareArrowDownRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowLeft", Transform.Component, "VuSquareArrowLeft")]
 public sealed class VuSquareArrowLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowOutDownLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutDownLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowOutDownLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowOutDownLeft", Transform.Component, "VuSquareArrowOutDownLeft")]
 public sealed class VuSquareArrowOutDownLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowOutDownRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutDownRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowOutDownRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowOutDownRight", Transform.Component, "VuSquareArrowOutDownRight")]
 public sealed class VuSquareArrowOutDownRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowOutUpLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutUpLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowOutUpLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowOutUpLeft", Transform.Component, "VuSquareArrowOutUpLeft")]
 public sealed class VuSquareArrowOutUpLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowOutUpRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowOutUpRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowOutUpRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowOutUpRight", Transform.Component, "VuSquareArrowOutUpRight")]
 public sealed class VuSquareArrowOutUpRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowRight", Transform.Component, "VuSquareArrowRight")]
 public sealed class VuSquareArrowRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowUp", Transform.Component, "VuSquareArrowUp")]
 public sealed class VuSquareArrowUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowUpLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowUpLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowUpLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowUpLeft", Transform.Component, "VuSquareArrowUpLeft")]
 public sealed class VuSquareArrowUpLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareArrowUpRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareArrowUpRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareArrowUpRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareArrowUpRight", Transform.Component, "VuSquareArrowUpRight")]
 public sealed class VuSquareArrowUpRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareAsterisk</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareAsterisk</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareAsterisk</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareAsterisk", Transform.Component, "VuSquareAsterisk")]
 public sealed class VuSquareAsterisk : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareBottomDashedScissors</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareBottomDashedScissors</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareBottomDashedScissors</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareBottomDashedScissors", Transform.Component, "VuSquareBottomDashedScissors")]
 public sealed class VuSquareBottomDashedScissors : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareChartGantt</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareChartGantt</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareChartGantt</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareChartGantt", Transform.Component, "VuSquareChartGantt")]
 public sealed class VuSquareChartGantt : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareCheck", Transform.Component, "VuSquareCheck")]
 public sealed class VuSquareCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareCheckBig</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareCheckBig</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareCheckBig</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareCheckBig", Transform.Component, "VuSquareCheckBig")]
 public sealed class VuSquareCheckBig : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareChevronDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareChevronDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareChevronDown", Transform.Component, "VuSquareChevronDown")]
 public sealed class VuSquareChevronDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareChevronLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareChevronLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareChevronLeft", Transform.Component, "VuSquareChevronLeft")]
 public sealed class VuSquareChevronLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareChevronRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareChevronRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareChevronRight", Transform.Component, "VuSquareChevronRight")]
 public sealed class VuSquareChevronRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareChevronUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareChevronUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareChevronUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareChevronUp", Transform.Component, "VuSquareChevronUp")]
 public sealed class VuSquareChevronUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareCode", Transform.Component, "VuSquareCode")]
 public sealed class VuSquareCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareDashed", Transform.Component, "VuSquareDashed")]
 public sealed class VuSquareDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareDashedBottom</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedBottom</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareDashedBottom</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareDashedBottom", Transform.Component, "VuSquareDashedBottom")]
 public sealed class VuSquareDashedBottom : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareDashedBottomCode</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedBottomCode</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareDashedBottomCode</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareDashedBottomCode", Transform.Component, "VuSquareDashedBottomCode")]
 public sealed class VuSquareDashedBottomCode : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareDashedKanban</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedKanban</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareDashedKanban</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareDashedKanban", Transform.Component, "VuSquareDashedKanban")]
 public sealed class VuSquareDashedKanban : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareDashedMousePointer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedMousePointer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareDashedMousePointer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareDashedMousePointer", Transform.Component, "VuSquareDashedMousePointer")]
 public sealed class VuSquareDashedMousePointer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareDashedTopSolid</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareDashedTopSolid</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareDashedTopSolid</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareDashedTopSolid", Transform.Component, "VuSquareDashedTopSolid")]
 public sealed class VuSquareDashedTopSolid : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareDivide</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareDivide</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareDivide</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareDivide", Transform.Component, "VuSquareDivide")]
 public sealed class VuSquareDivide : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareDot", Transform.Component, "VuSquareDot")]
 public sealed class VuSquareDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareEqual</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareEqual</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareEqual</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareEqual", Transform.Component, "VuSquareEqual")]
 public sealed class VuSquareEqual : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareFunction</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareFunction</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareFunction</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareFunction", Transform.Component, "VuSquareFunction")]
 public sealed class VuSquareFunction : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareKanban</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareKanban</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareKanban</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareKanban", Transform.Component, "VuSquareKanban")]
 public sealed class VuSquareKanban : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareLibrary</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareLibrary</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareLibrary</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareLibrary", Transform.Component, "VuSquareLibrary")]
 public sealed class VuSquareLibrary : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareM</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareM</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareM</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareM", Transform.Component, "VuSquareM")]
 public sealed class VuSquareM : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareMenu</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareMenu</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareMenu</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareMenu", Transform.Component, "VuSquareMenu")]
 public sealed class VuSquareMenu : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareMinus", Transform.Component, "VuSquareMinus")]
 public sealed class VuSquareMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareMousePointer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareMousePointer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareMousePointer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareMousePointer", Transform.Component, "VuSquareMousePointer")]
 public sealed class VuSquareMousePointer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareParking</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareParking</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareParking</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareParking", Transform.Component, "VuSquareParking")]
 public sealed class VuSquareParking : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareParkingOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareParkingOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareParkingOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareParkingOff", Transform.Component, "VuSquareParkingOff")]
 public sealed class VuSquareParkingOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquarePause</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquarePause</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquarePause</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquarePause", Transform.Component, "VuSquarePause")]
 public sealed class VuSquarePause : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquarePen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquarePen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquarePen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquarePen", Transform.Component, "VuSquarePen")]
 public sealed class VuSquarePen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquarePercent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquarePercent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquarePercent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquarePercent", Transform.Component, "VuSquarePercent")]
 public sealed class VuSquarePercent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquarePi</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquarePi</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquarePi</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquarePi", Transform.Component, "VuSquarePi")]
 public sealed class VuSquarePi : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquarePilcrow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquarePilcrow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquarePilcrow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquarePilcrow", Transform.Component, "VuSquarePilcrow")]
 public sealed class VuSquarePilcrow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquarePlay</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquarePlay</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquarePlay</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquarePlay", Transform.Component, "VuSquarePlay")]
 public sealed class VuSquarePlay : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquarePlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquarePlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquarePlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquarePlus", Transform.Component, "VuSquarePlus")]
 public sealed class VuSquarePlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquarePower</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquarePower</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquarePower</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquarePower", Transform.Component, "VuSquarePower")]
 public sealed class VuSquarePower : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareRadical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareRadical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareRadical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareRadical", Transform.Component, "VuSquareRadical")]
 public sealed class VuSquareRadical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareRoundCorner</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareRoundCorner</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareRoundCorner</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareRoundCorner", Transform.Component, "VuSquareRoundCorner")]
 public sealed class VuSquareRoundCorner : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareScissors</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareScissors</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareScissors</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareScissors", Transform.Component, "VuSquareScissors")]
 public sealed class VuSquareScissors : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareSigma</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareSigma</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareSigma</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareSigma", Transform.Component, "VuSquareSigma")]
 public sealed class VuSquareSigma : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareSlash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareSlash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareSlash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareSlash", Transform.Component, "VuSquareSlash")]
 public sealed class VuSquareSlash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareSplitHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareSplitHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareSplitHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareSplitHorizontal", Transform.Component, "VuSquareSplitHorizontal")]
 public sealed class VuSquareSplitHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareSplitVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareSplitVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareSplitVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareSplitVertical", Transform.Component, "VuSquareSplitVertical")]
 public sealed class VuSquareSplitVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareSquare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareSquare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareSquare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareSquare", Transform.Component, "VuSquareSquare")]
 public sealed class VuSquareSquare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareStack</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareStack</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareStack</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareStack", Transform.Component, "VuSquareStack")]
 public sealed class VuSquareStack : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareStar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareStar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareStar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareStar", Transform.Component, "VuSquareStar")]
 public sealed class VuSquareStar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareStop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareStop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareStop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareStop", Transform.Component, "VuSquareStop")]
 public sealed class VuSquareStop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareTerminal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareTerminal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareTerminal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareTerminal", Transform.Component, "VuSquareTerminal")]
 public sealed class VuSquareTerminal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareUser</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareUser</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareUser</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareUser", Transform.Component, "VuSquareUser")]
 public sealed class VuSquareUser : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareUserRound</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareUserRound</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareUserRound</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareUserRound", Transform.Component, "VuSquareUserRound")]
 public sealed class VuSquareUserRound : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquareX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquareX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquareX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquareX", Transform.Component, "VuSquareX")]
 public sealed class VuSquareX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquaresExclude</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquaresExclude</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquaresExclude</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquaresExclude", Transform.Component, "VuSquaresExclude")]
 public sealed class VuSquaresExclude : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquaresIntersect</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquaresIntersect</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquaresIntersect</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquaresIntersect", Transform.Component, "VuSquaresIntersect")]
 public sealed class VuSquaresIntersect : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquaresSubtract</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquaresSubtract</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquaresSubtract</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquaresSubtract", Transform.Component, "VuSquaresSubtract")]
 public sealed class VuSquaresSubtract : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquaresUnite</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquaresUnite</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquaresUnite</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquaresUnite", Transform.Component, "VuSquaresUnite")]
 public sealed class VuSquaresUnite : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquircle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquircle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquircle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquircle", Transform.Component, "VuSquircle")]
 public sealed class VuSquircle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquircleDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquircleDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquircleDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquircleDashed", Transform.Component, "VuSquircleDashed")]
 public sealed class VuSquircleDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSquirrel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSquirrel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSquirrel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSquirrel", Transform.Component, "VuSquirrel")]
 public sealed class VuSquirrel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStamp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStamp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStamp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStamp", Transform.Component, "VuStamp")]
 public sealed class VuStamp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStar", Transform.Component, "VuStar")]
 public sealed class VuStar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStarHalf</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStarHalf</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStarHalf</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStarHalf", Transform.Component, "VuStarHalf")]
 public sealed class VuStarHalf : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStarOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStarOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStarOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStarOff", Transform.Component, "VuStarOff")]
 public sealed class VuStarOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStatistics</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStatistics</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStatistics</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStatistics", Transform.Component, "VuStatistics")]
 public sealed class VuStatistics : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStepBack</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStepBack</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStepBack</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStepBack", Transform.Component, "VuStepBack")]
 public sealed class VuStepBack : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStepForward</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStepForward</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStepForward</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStepForward", Transform.Component, "VuStepForward")]
 public sealed class VuStepForward : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStethoscope</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStethoscope</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStethoscope</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStethoscope", Transform.Component, "VuStethoscope")]
 public sealed class VuStethoscope : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSticker</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSticker</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSticker</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSticker", Transform.Component, "VuSticker")]
 public sealed class VuSticker : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStickyNote</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStickyNote</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStickyNote</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStickyNote", Transform.Component, "VuStickyNote")]
 public sealed class VuStickyNote : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStone", Transform.Component, "VuStone")]
 public sealed class VuStone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStop", Transform.Component, "VuStop")]
 public sealed class VuStop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStore</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStore</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStore</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStore", Transform.Component, "VuStore")]
 public sealed class VuStore : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStretchHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStretchHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStretchHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStretchHorizontal", Transform.Component, "VuStretchHorizontal")]
 public sealed class VuStretchHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStretchVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStretchVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStretchVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStretchVertical", Transform.Component, "VuStretchVertical")]
 public sealed class VuStretchVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuStrikethrough</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuStrikethrough</summary>
+/// <remarks>按需 static renderer for upstream <c>VuStrikethrough</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuStrikethrough", Transform.Component, "VuStrikethrough")]
 public sealed class VuStrikethrough : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSubscript</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSubscript</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSubscript</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSubscript", Transform.Component, "VuSubscript")]
 public sealed class VuSubscript : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSubway</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSubway</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSubway</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSubway", Transform.Component, "VuSubway")]
 public sealed class VuSubway : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSuccess</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSuccess</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSuccess</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSuccess", Transform.Component, "VuSuccess")]
 public sealed class VuSuccess : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSun</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSun</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSun</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSun", Transform.Component, "VuSun")]
 public sealed class VuSun : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSunDim</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSunDim</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSunDim</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSunDim", Transform.Component, "VuSunDim")]
 public sealed class VuSunDim : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSunMedium</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSunMedium</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSunMedium</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSunMedium", Transform.Component, "VuSunMedium")]
 public sealed class VuSunMedium : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSunMoon</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSunMoon</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSunMoon</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSunMoon", Transform.Component, "VuSunMoon")]
 public sealed class VuSunMoon : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSunSnow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSunSnow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSunSnow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSunSnow", Transform.Component, "VuSunSnow")]
 public sealed class VuSunSnow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSunny</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSunny</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSunny</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSunny", Transform.Component, "VuSunny")]
 public sealed class VuSunny : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSunrise</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSunrise</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSunrise</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSunrise", Transform.Component, "VuSunrise")]
 public sealed class VuSunrise : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSunset</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSunset</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSunset</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSunset", Transform.Component, "VuSunset")]
 public sealed class VuSunset : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSuperscript</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSuperscript</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSuperscript</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSuperscript", Transform.Component, "VuSuperscript")]
 public sealed class VuSuperscript : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSwatchBook</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSwatchBook</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSwatchBook</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSwatchBook", Transform.Component, "VuSwatchBook")]
 public sealed class VuSwatchBook : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSwissFranc</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSwissFranc</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSwissFranc</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSwissFranc", Transform.Component, "VuSwissFranc")]
 public sealed class VuSwissFranc : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSwitchCamera</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSwitchCamera</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSwitchCamera</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSwitchCamera", Transform.Component, "VuSwitchCamera")]
 public sealed class VuSwitchCamera : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSword</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSword</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSword</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSword", Transform.Component, "VuSword")]
 public sealed class VuSword : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSwords</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSwords</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSwords</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSwords", Transform.Component, "VuSwords")]
 public sealed class VuSwords : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuSyringe</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuSyringe</summary>
+/// <remarks>按需 static renderer for upstream <c>VuSyringe</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuSyringe", Transform.Component, "VuSyringe")]
 public sealed class VuSyringe : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTable</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTable</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTable</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTable", Transform.Component, "VuTable")]
 public sealed class VuTable : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTable2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTable2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTable2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTable2", Transform.Component, "VuTable2")]
 public sealed class VuTable2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTableCellsMerge</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTableCellsMerge</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTableCellsMerge</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTableCellsMerge", Transform.Component, "VuTableCellsMerge")]
 public sealed class VuTableCellsMerge : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTableCellsSplit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTableCellsSplit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTableCellsSplit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTableCellsSplit", Transform.Component, "VuTableCellsSplit")]
 public sealed class VuTableCellsSplit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTableColumnsSplit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTableColumnsSplit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTableColumnsSplit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTableColumnsSplit", Transform.Component, "VuTableColumnsSplit")]
 public sealed class VuTableColumnsSplit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTableOfContents</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTableOfContents</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTableOfContents</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTableOfContents", Transform.Component, "VuTableOfContents")]
 public sealed class VuTableOfContents : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTableProperties</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTableProperties</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTableProperties</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTableProperties", Transform.Component, "VuTableProperties")]
 public sealed class VuTableProperties : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTableRowsSplit</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTableRowsSplit</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTableRowsSplit</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTableRowsSplit", Transform.Component, "VuTableRowsSplit")]
 public sealed class VuTableRowsSplit : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTablet</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTablet</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTablet</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTablet", Transform.Component, "VuTablet")]
 public sealed class VuTablet : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTabletSmartphone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTabletSmartphone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTabletSmartphone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTabletSmartphone", Transform.Component, "VuTabletSmartphone")]
 public sealed class VuTabletSmartphone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTablets</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTablets</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTablets</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTablets", Transform.Component, "VuTablets")]
 public sealed class VuTablets : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTag</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTag</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTag</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTag", Transform.Component, "VuTag")]
 public sealed class VuTag : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTags</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTags</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTags</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTags", Transform.Component, "VuTags")]
 public sealed class VuTags : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTakeout</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTakeout</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTakeout</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTakeout", Transform.Component, "VuTakeout")]
 public sealed class VuTakeout : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTally1</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTally1</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTally1</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTally1", Transform.Component, "VuTally1")]
 public sealed class VuTally1 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTally2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTally2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTally2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTally2", Transform.Component, "VuTally2")]
 public sealed class VuTally2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTally3</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTally3</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTally3</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTally3", Transform.Component, "VuTally3")]
 public sealed class VuTally3 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTally4</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTally4</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTally4</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTally4", Transform.Component, "VuTally4")]
 public sealed class VuTally4 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTally5</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTally5</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTally5</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTally5", Transform.Component, "VuTally5")]
 public sealed class VuTally5 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTangent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTangent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTangent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTangent", Transform.Component, "VuTangent")]
 public sealed class VuTangent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTarget</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTarget</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTarget</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTarget", Transform.Component, "VuTarget")]
 public sealed class VuTarget : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTelescope</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTelescope</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTelescope</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTelescope", Transform.Component, "VuTelescope")]
 public sealed class VuTelescope : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTent", Transform.Component, "VuTent")]
 public sealed class VuTent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTentTree</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTentTree</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTentTree</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTentTree", Transform.Component, "VuTentTree")]
 public sealed class VuTentTree : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTerminal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTerminal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTerminal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTerminal", Transform.Component, "VuTerminal")]
 public sealed class VuTerminal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTestTube</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTestTube</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTestTube</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTestTube", Transform.Component, "VuTestTube")]
 public sealed class VuTestTube : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTestTubeDiagonal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTestTubeDiagonal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTestTubeDiagonal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTestTubeDiagonal", Transform.Component, "VuTestTubeDiagonal")]
 public sealed class VuTestTubeDiagonal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTestTubes</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTestTubes</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTestTubes</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTestTubes", Transform.Component, "VuTestTubes")]
 public sealed class VuTestTubes : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuText", Transform.Component, "VuText")]
 public sealed class VuText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextAlignCenter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextAlignCenter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextAlignCenter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextAlignCenter", Transform.Component, "VuTextAlignCenter")]
 public sealed class VuTextAlignCenter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextAlignEnd</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextAlignEnd</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextAlignEnd</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextAlignEnd", Transform.Component, "VuTextAlignEnd")]
 public sealed class VuTextAlignEnd : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextAlignJustify</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextAlignJustify</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextAlignJustify</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextAlignJustify", Transform.Component, "VuTextAlignJustify")]
 public sealed class VuTextAlignJustify : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextAlignStart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextAlignStart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextAlignStart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextAlignStart", Transform.Component, "VuTextAlignStart")]
 public sealed class VuTextAlignStart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextCursor</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextCursor</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextCursor</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextCursor", Transform.Component, "VuTextCursor")]
 public sealed class VuTextCursor : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextCursorInput</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextCursorInput</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextCursorInput</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextCursorInput", Transform.Component, "VuTextCursorInput")]
 public sealed class VuTextCursorInput : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextInitial</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextInitial</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextInitial</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextInitial", Transform.Component, "VuTextInitial")]
 public sealed class VuTextInitial : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextQuote</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextQuote</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextQuote</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextQuote", Transform.Component, "VuTextQuote")]
 public sealed class VuTextQuote : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextSearch", Transform.Component, "VuTextSearch")]
 public sealed class VuTextSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextSelect</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextSelect</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextSelect</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextSelect", Transform.Component, "VuTextSelect")]
 public sealed class VuTextSelect : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTextWrap</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTextWrap</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTextWrap</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTextWrap", Transform.Component, "VuTextWrap")]
 public sealed class VuTextWrap : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTheater</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTheater</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTheater</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTheater", Transform.Component, "VuTheater")]
 public sealed class VuTheater : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuThermometer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuThermometer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuThermometer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuThermometer", Transform.Component, "VuThermometer")]
 public sealed class VuThermometer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuThermometerSnowflake</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuThermometerSnowflake</summary>
+/// <remarks>按需 static renderer for upstream <c>VuThermometerSnowflake</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuThermometerSnowflake", Transform.Component, "VuThermometerSnowflake")]
 public sealed class VuThermometerSnowflake : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuThermometerSun</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuThermometerSun</summary>
+/// <remarks>按需 static renderer for upstream <c>VuThermometerSun</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuThermometerSun", Transform.Component, "VuThermometerSun")]
 public sealed class VuThermometerSun : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuThumbsDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuThumbsDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuThumbsDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuThumbsDown", Transform.Component, "VuThumbsDown")]
 public sealed class VuThumbsDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuThumbsUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuThumbsUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuThumbsUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuThumbsUp", Transform.Component, "VuThumbsUp")]
 public sealed class VuThumbsUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTicket</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTicket</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTicket</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTicket", Transform.Component, "VuTicket")]
 public sealed class VuTicket : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTicketCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTicketCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTicketCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTicketCheck", Transform.Component, "VuTicketCheck")]
 public sealed class VuTicketCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTicketMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTicketMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTicketMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTicketMinus", Transform.Component, "VuTicketMinus")]
 public sealed class VuTicketMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTicketPercent</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTicketPercent</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTicketPercent</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTicketPercent", Transform.Component, "VuTicketPercent")]
 public sealed class VuTicketPercent : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTicketPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTicketPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTicketPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTicketPlus", Transform.Component, "VuTicketPlus")]
 public sealed class VuTicketPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTicketSlash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTicketSlash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTicketSlash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTicketSlash", Transform.Component, "VuTicketSlash")]
 public sealed class VuTicketSlash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTicketX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTicketX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTicketX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTicketX", Transform.Component, "VuTicketX")]
 public sealed class VuTicketX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTickets</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTickets</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTickets</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTickets", Transform.Component, "VuTickets")]
 public sealed class VuTickets : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTicketsPlane</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTicketsPlane</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTicketsPlane</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTicketsPlane", Transform.Component, "VuTicketsPlane")]
 public sealed class VuTicketsPlane : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTimer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTimer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTimer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTimer", Transform.Component, "VuTimer")]
 public sealed class VuTimer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTimerOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTimerOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTimerOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTimerOff", Transform.Component, "VuTimerOff")]
 public sealed class VuTimerOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTimerReset</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTimerReset</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTimerReset</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTimerReset", Transform.Component, "VuTimerReset")]
 public sealed class VuTimerReset : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuToBottom</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuToBottom</summary>
+/// <remarks>按需 static renderer for upstream <c>VuToBottom</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuToBottom", Transform.Component, "VuToBottom")]
 public sealed class VuToBottom : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuToTop</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuToTop</summary>
+/// <remarks>按需 static renderer for upstream <c>VuToTop</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuToTop", Transform.Component, "VuToTop")]
 public sealed class VuToTop : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuToggleLeft</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuToggleLeft</summary>
+/// <remarks>按需 static renderer for upstream <c>VuToggleLeft</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuToggleLeft", Transform.Component, "VuToggleLeft")]
 public sealed class VuToggleLeft : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuToggleRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuToggleRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuToggleRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuToggleRight", Transform.Component, "VuToggleRight")]
 public sealed class VuToggleRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuToilet</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuToilet</summary>
+/// <remarks>按需 static renderer for upstream <c>VuToilet</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuToilet", Transform.Component, "VuToilet")]
 public sealed class VuToilet : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuToolCase</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuToolCase</summary>
+/// <remarks>按需 static renderer for upstream <c>VuToolCase</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuToolCase", Transform.Component, "VuToolCase")]
 public sealed class VuToolCase : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuToolbox</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuToolbox</summary>
+/// <remarks>按需 static renderer for upstream <c>VuToolbox</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuToolbox", Transform.Component, "VuToolbox")]
 public sealed class VuToolbox : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTopBar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTopBar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTopBar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTopBar", Transform.Component, "VuTopBar")]
 public sealed class VuTopBar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTornado</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTornado</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTornado</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTornado", Transform.Component, "VuTornado")]
 public sealed class VuTornado : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTorus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTorus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTorus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTorus", Transform.Component, "VuTorus")]
 public sealed class VuTorus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTouchpad</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTouchpad</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTouchpad</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTouchpad", Transform.Component, "VuTouchpad")]
 public sealed class VuTouchpad : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTouchpadOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTouchpadOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTouchpadOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTouchpadOff", Transform.Component, "VuTouchpadOff")]
 public sealed class VuTouchpadOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTowerControl</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTowerControl</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTowerControl</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTowerControl", Transform.Component, "VuTowerControl")]
 public sealed class VuTowerControl : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuToyBrick</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuToyBrick</summary>
+/// <remarks>按需 static renderer for upstream <c>VuToyBrick</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuToyBrick", Transform.Component, "VuToyBrick")]
 public sealed class VuToyBrick : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTractor</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTractor</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTractor</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTractor", Transform.Component, "VuTractor")]
 public sealed class VuTractor : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrafficCone</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrafficCone</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrafficCone</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrafficCone", Transform.Component, "VuTrafficCone")]
 public sealed class VuTrafficCone : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrain</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrain</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrain</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrain", Transform.Component, "VuTrain")]
 public sealed class VuTrain : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrainFront</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrainFront</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrainFront</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrainFront", Transform.Component, "VuTrainFront")]
 public sealed class VuTrainFront : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrainFrontTunnel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrainFrontTunnel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrainFrontTunnel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrainFrontTunnel", Transform.Component, "VuTrainFrontTunnel")]
 public sealed class VuTrainFrontTunnel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrainTrack</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrainTrack</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrainTrack</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrainTrack", Transform.Component, "VuTrainTrack")]
 public sealed class VuTrainTrack : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTramFront</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTramFront</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTramFront</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTramFront", Transform.Component, "VuTramFront")]
 public sealed class VuTramFront : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTransfer</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTransfer</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTransfer</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTransfer", Transform.Component, "VuTransfer")]
 public sealed class VuTransfer : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTransgender</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTransgender</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTransgender</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTransgender", Transform.Component, "VuTransgender")]
 public sealed class VuTransgender : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrash</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrash</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrash</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrash", Transform.Component, "VuTrash")]
 public sealed class VuTrash : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrash2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrash2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrash2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrash2", Transform.Component, "VuTrash2")]
 public sealed class VuTrash2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTravel</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTravel</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTravel</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTravel", Transform.Component, "VuTravel")]
 public sealed class VuTravel : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTreeDeciduous</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTreeDeciduous</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTreeDeciduous</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTreeDeciduous", Transform.Component, "VuTreeDeciduous")]
 public sealed class VuTreeDeciduous : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTreePalm</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTreePalm</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTreePalm</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTreePalm", Transform.Component, "VuTreePalm")]
 public sealed class VuTreePalm : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTreePine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTreePine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTreePine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTreePine", Transform.Component, "VuTreePine")]
 public sealed class VuTreePine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrees</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrees</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrees</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrees", Transform.Component, "VuTrees")]
 public sealed class VuTrees : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrello</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrello</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrello</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrello", Transform.Component, "VuTrello")]
 public sealed class VuTrello : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrendingDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrendingDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrendingDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrendingDown", Transform.Component, "VuTrendingDown")]
 public sealed class VuTrendingDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrendingUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrendingUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrendingUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrendingUp", Transform.Component, "VuTrendingUp")]
 public sealed class VuTrendingUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrendingUpDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrendingUpDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrendingUpDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrendingUpDown", Transform.Component, "VuTrendingUpDown")]
 public sealed class VuTrendingUpDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTriangle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTriangle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTriangle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTriangle", Transform.Component, "VuTriangle")]
 public sealed class VuTriangle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTriangleAlert</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTriangleAlert</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTriangleAlert</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTriangleAlert", Transform.Component, "VuTriangleAlert")]
 public sealed class VuTriangleAlert : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTriangleDashed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTriangleDashed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTriangleDashed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTriangleDashed", Transform.Component, "VuTriangleDashed")]
 public sealed class VuTriangleDashed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTriangleRight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTriangleRight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTriangleRight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTriangleRight", Transform.Component, "VuTriangleRight")]
 public sealed class VuTriangleRight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTrophy</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTrophy</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTrophy</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTrophy", Transform.Component, "VuTrophy")]
 public sealed class VuTrophy : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTruck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTruck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTruck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTruck", Transform.Component, "VuTruck")]
 public sealed class VuTruck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTruckElectric</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTruckElectric</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTruckElectric</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTruckElectric", Transform.Component, "VuTruckElectric")]
 public sealed class VuTruckElectric : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTurkishLira</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTurkishLira</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTurkishLira</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTurkishLira", Transform.Component, "VuTurkishLira")]
 public sealed class VuTurkishLira : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTurntable</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTurntable</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTurntable</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTurntable", Transform.Component, "VuTurntable")]
 public sealed class VuTurntable : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTurtle</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTurtle</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTurtle</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTurtle", Transform.Component, "VuTurtle")]
 public sealed class VuTurtle : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTv</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTv</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTv</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTv", Transform.Component, "VuTv")]
 public sealed class VuTv : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTvMinimal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTvMinimal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTvMinimal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTvMinimal", Transform.Component, "VuTvMinimal")]
 public sealed class VuTvMinimal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTvMinimalPlay</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTvMinimalPlay</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTvMinimalPlay</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTvMinimalPlay", Transform.Component, "VuTvMinimalPlay")]
 public sealed class VuTvMinimalPlay : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTwitch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTwitch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTwitch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTwitch", Transform.Component, "VuTwitch")]
 public sealed class VuTwitch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTwitter</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTwitter</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTwitter</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTwitter", Transform.Component, "VuTwitter")]
 public sealed class VuTwitter : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuType</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuType</summary>
+/// <remarks>按需 static renderer for upstream <c>VuType</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuType", Transform.Component, "VuType")]
 public sealed class VuType : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuTypeOutline</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuTypeOutline</summary>
+/// <remarks>按需 static renderer for upstream <c>VuTypeOutline</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuTypeOutline", Transform.Component, "VuTypeOutline")]
 public sealed class VuTypeOutline : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUmbrella</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUmbrella</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUmbrella</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUmbrella", Transform.Component, "VuUmbrella")]
 public sealed class VuUmbrella : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUmbrellaOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUmbrellaOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUmbrellaOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUmbrellaOff", Transform.Component, "VuUmbrellaOff")]
 public sealed class VuUmbrellaOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnderline</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnderline</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnderline</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnderline", Transform.Component, "VuUnderline")]
 public sealed class VuUnderline : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUndo</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUndo</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUndo</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUndo", Transform.Component, "VuUndo")]
 public sealed class VuUndo : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUndo2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUndo2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUndo2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUndo2", Transform.Component, "VuUndo2")]
 public sealed class VuUndo2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUndoDot</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUndoDot</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUndoDot</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUndoDot", Transform.Component, "VuUndoDot")]
 public sealed class VuUndoDot : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnfoldHorizontal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnfoldHorizontal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnfoldHorizontal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnfoldHorizontal", Transform.Component, "VuUnfoldHorizontal")]
 public sealed class VuUnfoldHorizontal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnfoldVertical</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnfoldVertical</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnfoldVertical</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnfoldVertical", Transform.Component, "VuUnfoldVertical")]
 public sealed class VuUnfoldVertical : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnfollow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnfollow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnfollow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnfollow", Transform.Component, "VuUnfollow")]
 public sealed class VuUnfollow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUngroup</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUngroup</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUngroup</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUngroup", Transform.Component, "VuUngroup")]
 public sealed class VuUngroup : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUniversity</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUniversity</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUniversity</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUniversity", Transform.Component, "VuUniversity")]
 public sealed class VuUniversity : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnlink</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnlink</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnlink</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnlink", Transform.Component, "VuUnlink")]
 public sealed class VuUnlink : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnlink2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnlink2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnlink2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnlink2", Transform.Component, "VuUnlink2")]
 public sealed class VuUnlink2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnlock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnlock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnlock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnlock", Transform.Component, "VuUnlock")]
 public sealed class VuUnlock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnplug</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnplug</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnplug</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnplug", Transform.Component, "VuUnplug")]
 public sealed class VuUnplug : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnread</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnread</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnread</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnread", Transform.Component, "VuUnread")]
 public sealed class VuUnread : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUnselected</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUnselected</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUnselected</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUnselected", Transform.Component, "VuUnselected")]
 public sealed class VuUnselected : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUpload</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUpload</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUpload</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUpload", Transform.Component, "VuUpload")]
 public sealed class VuUpload : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUsb</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUsb</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUsb</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUsb", Transform.Component, "VuUsb")]
 public sealed class VuUsb : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUser</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUser</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUser</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUser", Transform.Component, "VuUser")]
 public sealed class VuUser : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserCheck", Transform.Component, "VuUserCheck")]
 public sealed class VuUserCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserCog", Transform.Component, "VuUserCog")]
 public sealed class VuUserCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserLock</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserLock</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserLock</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserLock", Transform.Component, "VuUserLock")]
 public sealed class VuUserLock : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserMinus", Transform.Component, "VuUserMinus")]
 public sealed class VuUserMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserPen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserPen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserPen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserPen", Transform.Component, "VuUserPen")]
 public sealed class VuUserPen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserPlus", Transform.Component, "VuUserPlus")]
 public sealed class VuUserPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserRound</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserRound</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserRound</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserRound", Transform.Component, "VuUserRound")]
 public sealed class VuUserRound : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserRoundCheck</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserRoundCheck</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserRoundCheck</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserRoundCheck", Transform.Component, "VuUserRoundCheck")]
 public sealed class VuUserRoundCheck : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserRoundCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserRoundCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserRoundCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserRoundCog", Transform.Component, "VuUserRoundCog")]
 public sealed class VuUserRoundCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserRoundMinus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserRoundMinus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserRoundMinus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserRoundMinus", Transform.Component, "VuUserRoundMinus")]
 public sealed class VuUserRoundMinus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserRoundPen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserRoundPen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserRoundPen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserRoundPen", Transform.Component, "VuUserRoundPen")]
 public sealed class VuUserRoundPen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserRoundPlus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserRoundPlus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserRoundPlus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserRoundPlus", Transform.Component, "VuUserRoundPlus")]
 public sealed class VuUserRoundPlus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserRoundSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserRoundSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserRoundSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserRoundSearch", Transform.Component, "VuUserRoundSearch")]
 public sealed class VuUserRoundSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserRoundX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserRoundX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserRoundX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserRoundX", Transform.Component, "VuUserRoundX")]
 public sealed class VuUserRoundX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserSearch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserSearch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserSearch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserSearch", Transform.Component, "VuUserSearch")]
 public sealed class VuUserSearch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserStar</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserStar</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserStar</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserStar", Transform.Component, "VuUserStar")]
 public sealed class VuUserStar : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUserX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUserX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUserX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUserX", Transform.Component, "VuUserX")]
 public sealed class VuUserX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUsers</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUsers</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUsers</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUsers", Transform.Component, "VuUsers")]
 public sealed class VuUsers : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUsersRound</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUsersRound</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUsersRound</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUsersRound", Transform.Component, "VuUsersRound")]
 public sealed class VuUsersRound : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUtensils</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUtensils</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUtensils</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUtensils", Transform.Component, "VuUtensils")]
 public sealed class VuUtensils : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUtensilsCrossed</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUtensilsCrossed</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUtensilsCrossed</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUtensilsCrossed", Transform.Component, "VuUtensilsCrossed")]
 public sealed class VuUtensilsCrossed : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuUtilityPole</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuUtilityPole</summary>
+/// <remarks>按需 static renderer for upstream <c>VuUtilityPole</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuUtilityPole", Transform.Component, "VuUtilityPole")]
 public sealed class VuUtilityPole : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVan", Transform.Component, "VuVan")]
 public sealed class VuVan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVariable</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVariable</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVariable</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVariable", Transform.Component, "VuVariable")]
 public sealed class VuVariable : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVault</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVault</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVault</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVault", Transform.Component, "VuVault")]
 public sealed class VuVault : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVectorSquare</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVectorSquare</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVectorSquare</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVectorSquare", Transform.Component, "VuVectorSquare")]
 public sealed class VuVectorSquare : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVegan</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVegan</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVegan</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVegan", Transform.Component, "VuVegan")]
 public sealed class VuVegan : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVenetianMask</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVenetianMask</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVenetianMask</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVenetianMask", Transform.Component, "VuVenetianMask")]
 public sealed class VuVenetianMask : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVenus</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVenus</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVenus</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVenus", Transform.Component, "VuVenus")]
 public sealed class VuVenus : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVenusAndMars</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVenusAndMars</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVenusAndMars</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVenusAndMars", Transform.Component, "VuVenusAndMars")]
 public sealed class VuVenusAndMars : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVibrate</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVibrate</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVibrate</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVibrate", Transform.Component, "VuVibrate")]
 public sealed class VuVibrate : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVibrateOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVibrateOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVibrateOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVibrateOff", Transform.Component, "VuVibrateOff")]
 public sealed class VuVibrateOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVideo</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVideo</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVideo</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVideo", Transform.Component, "VuVideo")]
 public sealed class VuVideo : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVideoOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVideoOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVideoOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVideoOff", Transform.Component, "VuVideoOff")]
 public sealed class VuVideoOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVideotape</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVideotape</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVideotape</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVideotape", Transform.Component, "VuVideotape")]
 public sealed class VuVideotape : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuView</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuView</summary>
+/// <remarks>按需 static renderer for upstream <c>VuView</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuView", Transform.Component, "VuView")]
 public sealed class VuView : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVoicemail</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVoicemail</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVoicemail</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVoicemail", Transform.Component, "VuVoicemail")]
 public sealed class VuVoicemail : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVolleyball</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVolleyball</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVolleyball</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVolleyball", Transform.Component, "VuVolleyball")]
 public sealed class VuVolleyball : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVolume</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVolume</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVolume</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVolume", Transform.Component, "VuVolume")]
 public sealed class VuVolume : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVolume1</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVolume1</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVolume1</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVolume1", Transform.Component, "VuVolume1")]
 public sealed class VuVolume1 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVolume2</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVolume2</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVolume2</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVolume2", Transform.Component, "VuVolume2")]
 public sealed class VuVolume2 : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVolumeDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVolumeDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVolumeDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVolumeDown", Transform.Component, "VuVolumeDown")]
 public sealed class VuVolumeDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVolumeOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVolumeOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVolumeOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVolumeOff", Transform.Component, "VuVolumeOff")]
 public sealed class VuVolumeOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVolumeOn</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVolumeOn</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVolumeOn</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVolumeOn", Transform.Component, "VuVolumeOn")]
 public sealed class VuVolumeOn : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVolumeUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVolumeUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVolumeUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVolumeUp", Transform.Component, "VuVolumeUp")]
 public sealed class VuVolumeUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVolumeX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVolumeX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVolumeX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVolumeX", Transform.Component, "VuVolumeX")]
 public sealed class VuVolumeX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuVote</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuVote</summary>
+/// <remarks>按需 static renderer for upstream <c>VuVote</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuVote", Transform.Component, "VuVote")]
 public sealed class VuVote : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWalk</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWalk</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWalk</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWalk", Transform.Component, "VuWalk")]
 public sealed class VuWalk : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWallet</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWallet</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWallet</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWallet", Transform.Component, "VuWallet")]
 public sealed class VuWallet : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWalletCards</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWalletCards</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWalletCards</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWalletCards", Transform.Component, "VuWalletCards")]
 public sealed class VuWalletCards : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWalletMinimal</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWalletMinimal</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWalletMinimal</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWalletMinimal", Transform.Component, "VuWalletMinimal")]
 public sealed class VuWalletMinimal : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWallpaper</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWallpaper</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWallpaper</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWallpaper", Transform.Component, "VuWallpaper")]
 public sealed class VuWallpaper : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWand</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWand</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWand</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWand", Transform.Component, "VuWand")]
 public sealed class VuWand : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWandSparkles</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWandSparkles</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWandSparkles</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWandSparkles", Transform.Component, "VuWandSparkles")]
 public sealed class VuWandSparkles : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWarehouse</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWarehouse</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWarehouse</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWarehouse", Transform.Component, "VuWarehouse")]
 public sealed class VuWarehouse : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWarning</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWarning</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWarning</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWarning", Transform.Component, "VuWarning")]
 public sealed class VuWarning : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWashingMachine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWashingMachine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWashingMachine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWashingMachine", Transform.Component, "VuWashingMachine")]
 public sealed class VuWashingMachine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWatch</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWatch</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWatch</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWatch", Transform.Component, "VuWatch")]
 public sealed class VuWatch : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWaterfallChart</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWaterfallChart</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWaterfallChart</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWaterfallChart", Transform.Component, "VuWaterfallChart")]
 public sealed class VuWaterfallChart : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWaves</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWaves</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWaves</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWaves", Transform.Component, "VuWaves")]
 public sealed class VuWaves : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWavesArrowDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWavesArrowDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWavesArrowDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWavesArrowDown", Transform.Component, "VuWavesArrowDown")]
 public sealed class VuWavesArrowDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWavesArrowUp</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWavesArrowUp</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWavesArrowUp</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWavesArrowUp", Transform.Component, "VuWavesArrowUp")]
 public sealed class VuWavesArrowUp : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWavesLadder</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWavesLadder</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWavesLadder</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWavesLadder", Transform.Component, "VuWavesLadder")]
 public sealed class VuWavesLadder : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWaypoints</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWaypoints</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWaypoints</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWaypoints", Transform.Component, "VuWaypoints")]
 public sealed class VuWaypoints : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWebcam</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWebcam</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWebcam</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWebcam", Transform.Component, "VuWebcam")]
 public sealed class VuWebcam : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWebhook</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWebhook</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWebhook</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWebhook", Transform.Component, "VuWebhook")]
 public sealed class VuWebhook : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWebhookOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWebhookOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWebhookOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWebhookOff", Transform.Component, "VuWebhookOff")]
 public sealed class VuWebhookOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWeight</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWeight</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWeight</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWeight", Transform.Component, "VuWeight")]
 public sealed class VuWeight : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWeightTilde</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWeightTilde</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWeightTilde</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWeightTilde", Transform.Component, "VuWeightTilde")]
 public sealed class VuWeightTilde : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWheat</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWheat</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWheat</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWheat", Transform.Component, "VuWheat")]
 public sealed class VuWheat : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWheatOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWheatOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWheatOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWheatOff", Transform.Component, "VuWheatOff")]
 public sealed class VuWheatOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWholeWord</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWholeWord</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWholeWord</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWholeWord", Transform.Component, "VuWholeWord")]
 public sealed class VuWholeWord : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWifi</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWifi</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWifi</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWifi", Transform.Component, "VuWifi")]
 public sealed class VuWifi : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWifiCog</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWifiCog</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWifiCog</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWifiCog", Transform.Component, "VuWifiCog")]
 public sealed class VuWifiCog : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWifiHigh</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWifiHigh</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWifiHigh</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWifiHigh", Transform.Component, "VuWifiHigh")]
 public sealed class VuWifiHigh : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWifiLow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWifiLow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWifiLow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWifiLow", Transform.Component, "VuWifiLow")]
 public sealed class VuWifiLow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWifiOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWifiOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWifiOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWifiOff", Transform.Component, "VuWifiOff")]
 public sealed class VuWifiOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWifiPen</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWifiPen</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWifiPen</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWifiPen", Transform.Component, "VuWifiPen")]
 public sealed class VuWifiPen : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWifiSync</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWifiSync</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWifiSync</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWifiSync", Transform.Component, "VuWifiSync")]
 public sealed class VuWifiSync : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWifiZero</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWifiZero</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWifiZero</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWifiZero", Transform.Component, "VuWifiZero")]
 public sealed class VuWifiZero : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWind</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWind</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWind</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWind", Transform.Component, "VuWind")]
 public sealed class VuWind : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWindArrowDown</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWindArrowDown</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWindArrowDown</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWindArrowDown", Transform.Component, "VuWindArrowDown")]
 public sealed class VuWindArrowDown : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWine</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWine</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWine</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWine", Transform.Component, "VuWine")]
 public sealed class VuWine : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWineOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWineOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWineOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWineOff", Transform.Component, "VuWineOff")]
 public sealed class VuWineOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWishlist</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWishlist</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWishlist</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWishlist", Transform.Component, "VuWishlist")]
 public sealed class VuWishlist : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWithdraw</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWithdraw</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWithdraw</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWithdraw", Transform.Component, "VuWithdraw")]
 public sealed class VuWithdraw : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWorkflow</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWorkflow</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWorkflow</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWorkflow", Transform.Component, "VuWorkflow")]
 public sealed class VuWorkflow : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWorm</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWorm</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWorm</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWorm", Transform.Component, "VuWorm")]
 public sealed class VuWorm : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWrapText</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWrapText</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWrapText</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWrapText", Transform.Component, "VuWrapText")]
 public sealed class VuWrapText : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuWrench</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuWrench</summary>
+/// <remarks>按需 static renderer for upstream <c>VuWrench</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuWrench", Transform.Component, "VuWrench")]
 public sealed class VuWrench : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuX</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuX</summary>
+/// <remarks>按需 static renderer for upstream <c>VuX</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuX", Transform.Component, "VuX")]
 public sealed class VuX : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuYoutube</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuYoutube</summary>
+/// <remarks>按需 static renderer for upstream <c>VuYoutube</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuYoutube", Transform.Component, "VuYoutube")]
 public sealed class VuYoutube : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuZap</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuZap</summary>
+/// <remarks>按需 static renderer for upstream <c>VuZap</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuZap", Transform.Component, "VuZap")]
 public sealed class VuZap : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuZapOff</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuZapOff</summary>
+/// <remarks>按需 static renderer for upstream <c>VuZapOff</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuZapOff", Transform.Component, "VuZapOff")]
 public sealed class VuZapOff : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuZoomIn</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuZoomIn</summary>
+/// <remarks>按需 static renderer for upstream <c>VuZoomIn</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuZoomIn", Transform.Component, "VuZoomIn")]
 public sealed class VuZoomIn : VuIconComponentBase;
 
-/// <summary>按需 static renderer for upstream <c>VuZoomOut</c>; only its SVG module is materialized.</summary>
+/// <summary>Vue 3 &amp; UniApp Icon VuZoomOut</summary>
+/// <remarks>按需 static renderer for upstream <c>VuZoomOut</c>; only its SVG module is materialized.</remarks>
 [ECMAScript("vu-icons/VuZoomOut", Transform.Component, "VuZoomOut")]
 public sealed class VuZoomOut : VuIconComponentBase;
