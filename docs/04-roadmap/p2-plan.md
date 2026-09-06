@@ -66,7 +66,7 @@ P2 的每个可交付切片都必须满足：
 | 条目 | 状态 |
 | --- | --- |
 | Element Plus typed binding | 已完成独立切片 |
-| SSR 显式 envelope/bootstrap | P1 基础已完成，P2 继续补齐表单与失败 consumer |
+| SSR 显式 envelope/bootstrap | P1 基础已完成；P2 已增加 provider key 唯一性校验，表单协议仍为 Guidance |
 | 高级渲染 | Guidance，等待 feasibility fixture |
 | IJSRuntime 等 JS 互操作 | Reject，继续完善诊断与 typed 替代说明 |
 | 性能与交付优化 | 只有基线，尚未宣称优化收益 |
@@ -78,4 +78,3 @@ P2 的每个可交付切片都必须满足：
 - `dotnet run --file scripts/csharp/verify-vue-binding-contracts.cs`
 - `dotnet run --file scripts/csharp/benchmark-razorvue-g2.cs -- --measure-runtime --samples 3 --iterations 3`
 - 适用的 `verify-windows-spa-release.cs`、`verify-windows-ssr-release.cs` 和 development HMR 门禁
-

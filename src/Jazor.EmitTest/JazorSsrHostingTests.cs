@@ -199,6 +199,35 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
+    public async Task JazorSsrRenderer_RejectsDuplicateProviderKeysBeforeStartingWorker()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = workspace.RootPath,
+            WebRootPath = Path.Combine(workspace.RootPath, "wwwroot"),
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddJazorSsr(options => options.ArtifactRootPath = artifactRoot);
+
+        await using var app = builder.Build();
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+
+        var error = await Assert.ThrowsExactlyAsync<ArgumentException>(() => renderer.RenderAsync(
+            new JazorSsrRequest(
+                "components/counter.mjs",
+                Providers:
+                [
+                    new JazorSsrProvider("app:feature", new { Enabled = true }),
+                    new JazorSsrProvider("app:feature", new { Enabled = false })
+                ])));
+
+        StringAssert.Contains(error.Message, "unique keys");
+        Assert.IsFalse(File.Exists(Path.Combine(artifactRoot, "@jazor", "ssr-runner.mjs")));
+    }
+
+    [TestMethod]
     public void JazorAuthenticationState_FromPrincipalProducesClosedTypedSnapshot()
     {
         var principal = new ClaimsPrincipal(new ClaimsIdentity(

@@ -88,6 +88,11 @@ public sealed record JazorSsrStateEnvelope(
         if (providers.Any(static provider => provider is null || string.IsNullOrWhiteSpace(provider.Key)))
             throw new ArgumentException("Jazor SSR providers must have non-empty keys.", nameof(request));
 
+        if (providers
+            .GroupBy(static provider => provider.Key, StringComparer.Ordinal)
+            .Any(static group => group.Skip(1).Any()))
+            throw new ArgumentException("Jazor SSR providers must have unique keys.", nameof(request));
+
         if (request.Authentication is not null &&
             providers.Any(static provider => string.Equals(provider.Key, JazorAuthenticationState.ProviderKey, StringComparison.Ordinal)))
             throw new ArgumentException(

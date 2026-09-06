@@ -156,7 +156,7 @@ internal static class SsrDocumentWriter
         await response.WriteAsync("const stateElement = document.getElementById(\"" + StateElementId + "\");\n", cancellationToken);
         await response.WriteAsync("if (!stateElement) throw new Error(\"Jazor SSR state envelope element was not found.\");\n", cancellationToken);
         await response.WriteAsync("const state = JSON.parse(stateElement.textContent);\n", cancellationToken);
-        await response.WriteAsync("if (state.schema !== \"" + JazorSsrStateEnvelope.CurrentSchema + "\" || state.version !== " + JazorSsrStateEnvelope.CurrentVersion + " || !(\"props\" in state) || !Array.isArray(state.providers) || state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.trim().length === 0)) throw new Error(\"Jazor SSR state envelope version or provider shape is not supported.\");\n", cancellationToken);
+        await response.WriteAsync("if (state.schema !== \"" + JazorSsrStateEnvelope.CurrentSchema + "\" || state.version !== " + JazorSsrStateEnvelope.CurrentVersion + " || !(\"props\" in state) || !Array.isArray(state.providers) || state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.trim().length === 0) || new Set(state.providers.map(provider => provider.key)).size !== state.providers.length) throw new Error(\"Jazor SSR state envelope version or provider shape is not supported.\");\n", cancellationToken);
         await response.WriteAsync("const props = state.props;\n", cancellationToken);
         await response.WriteAsync("const providers = state.providers;\n", cancellationToken);
         await response.WriteAsync("const app = createSSRApp(component, props);\n", cancellationToken);

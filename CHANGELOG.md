@@ -4,6 +4,12 @@
 
 ## 2026-09-06
 
+### RazorVue P2 protocol hardening
+
+#### 修复
+
+- SSR `jazor-ssr-state` envelope 现在拒绝重复 provider key；服务端生成和浏览器 hydration 入口使用同一唯一性约束，避免 provider 所有权被静默覆盖。
+
 ### RazorVue P1 protocol foundation
 
 #### 改进
