@@ -321,6 +321,19 @@ public sealed class LibraryComponentConventionsTests
         Assert.AreEqual("jazor:service:string", LibraryComponentConventions.GetInjectServiceKey(inheritedInject[0]));
     }
 
+    [TestMethod]
+    public void InjectServiceKey_UsesReservedAuthenticationProtocolKey()
+    {
+        var compilation = CreateCompilation(
+            """
+            using Microsoft.AspNetCore.Components;
+            namespace Jazor.AspNetCore { public sealed class JazorAuthenticationState; }
+            namespace Demo { public sealed class AuthComponent : ComponentBase { [Inject] public Jazor.AspNetCore.JazorAuthenticationState Auth { get; set; } = null!; } }
+            """);
+        var component = GetNamedType(compilation, "Demo.AuthComponent");
+        Assert.AreEqual("jazor:auth-state", LibraryComponentConventions.GetInjectServiceKey(GetDeclaredProperty(component, "Auth")));
+    }
+
     private static T InvokePrivate<T>(string methodName, params object?[] arguments)
     {
         var method = typeof(LibraryComponentConventions)

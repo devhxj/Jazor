@@ -24,6 +24,7 @@ internal static class LibraryComponentConventions
     private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private const string InjectAttributeMetadataName = "Microsoft.AspNetCore.Components.InjectAttribute";
     private const string CascadingParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.CascadingParameterAttribute";
+    private const string AuthenticationStateMetadataName = "Jazor.AspNetCore.JazorAuthenticationState";
 
     /// <summary>
     /// Returns the effective Razor parameter contract from derived type to base type.
@@ -209,6 +210,14 @@ internal static class LibraryComponentConventions
             throw new ArgumentNullException(nameof(property));
 
         var typeName = property.Type.ToDisplayString(Format.NameFormat);
+        if (string.Equals(
+                property.Type.OriginalDefinition.ToDisplayString(),
+                AuthenticationStateMetadataName,
+                StringComparison.Ordinal))
+        {
+            return "jazor:auth-state";
+        }
+
         return "jazor:service:" + typeName;
     }
 
