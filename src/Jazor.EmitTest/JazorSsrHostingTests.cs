@@ -200,6 +200,30 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
+    public async Task JazorSsrRenderer_RejectsWhitespaceProviderKeyBeforeStartingWorker()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = workspace.RootPath,
+            WebRootPath = Path.Combine(workspace.RootPath, "wwwroot"),
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddJazorSsr(options => options.ArtifactRootPath = artifactRoot);
+
+        await using var app = builder.Build();
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+        var error = await Assert.ThrowsExactlyAsync<ArgumentException>(() => renderer.RenderAsync(
+            new JazorSsrRequest(
+                "components/counter.mjs",
+                Providers: [new JazorSsrProvider(" \t\r\n", new { Enabled = true })])));
+
+        StringAssert.Contains(error.Message, "non-empty keys", StringComparison.Ordinal);
+        Assert.IsFalse(File.Exists(Path.Combine(artifactRoot, "@jazor", "ssr-runner.mjs")));
+    }
+
+    [TestMethod]
     public async Task JazorSsrRenderer_RejectsDuplicateProviderKeysBeforeStartingWorker()
     {
         using var workspace = new SsrHostWorkspace();
