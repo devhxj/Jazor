@@ -105,7 +105,7 @@ Blazor 名称出现在作者代码中，只表示采用了熟悉的 Razor/C# 组
 | P0 | 固化真实开发闭环 | Debug、HMR、Release、PathBase、浏览器交互、SSR/hydration 的资源闭包和错误传播可重复验证。 | 已完成；命令与实跑结果见[验收证据入口](#p0p1-验收证据入口) |
 | P1 | 完善响应式与生命周期语义 | 继续验证参数替换、slot 捕获、`@key` identity、异步事件、异步 lifecycle、卸载竞态和 SSR side effect；明确哪些是 Vue 语义而非 CLR parity。 | 当前声明子集已完成；完整 CLR reference parity 和复杂 SSR side effect 仍是边界 |
 | P1 | 提供范式级调试工具 | 让作者能从 `.razor` 位置追踪到 generated C#、lowered module、source map 和最终组件边界，不要求阅读内部 AST。 | 已完成；使用 `inspect-razorvue-chain.cs` |
-| P1 | 建立中型应用体验基线 | 用多个组件、多层 slot、表单、路由和状态组合的真实页面测量首次构建、增量构建、HMR、产物体积和诊断耗时，再决定优化。 | 基线已完成；后续优化需保持同一 benchmark 参数 |
+| P1 | 建立中型应用体验基线 | 以 `samples/JazorAdmin` 真实应用和 `RazorVue.Authoring` Golden Path 测量多个组件、多层 slot、表单、路由和状态组合的首次构建、增量构建、HMR、产物体积和诊断耗时。 | 基线已完成；后续优化需保持同一 benchmark 参数 |
 | P2 | 扩展 typed 生态绑定 | **已完成本轮 Element Plus 切片**：`ElButton`/`ElInput` 覆盖枚举 prop、事件、`@bind-ModelValue`、default/prefix slot、class/style 与 attribute splat，并通过官方 SG、Deno 模块运行时、Release package consumer 和真实浏览器证据。后续组件仍按同一门槛逐切片加入。 |
 | P2 | 评估有限的协议扩展 | **本轮无需扩展协议**：现有 `ECMAScript` metadata、Razor SG 参数绑定、slot descriptor 与 Vue module pipeline 足以表达 Element Plus 切片；保持协议不变，避免引入 wrapper-JS marker 或弱类型 fallback。 |
 

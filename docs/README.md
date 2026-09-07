@@ -34,7 +34,7 @@ Razor-to-Vue 建立在这条核心路径之上。它只接收官方 Razor Source
 | 以 C# 类型系统编写受控的浏览器模块或组件库 | 在浏览器中运行完整 CLR，或调用任意未映射的 .NET API |
 | 将自定义 Razor 组件与 Vue 3、TDesign、Vue Router、Pinia 等已声明 binding 组合 | 将 Microsoft/Blazor 内置 UI 组件自动替换为 Vue 组件 |
 | 对模块、资源、发布与诊断边界有明确要求 | 通过 `IJSRuntime`、反射或弱类型 `object?` 逃逸到未经验证的运行时语义 |
-| 用生产级参考应用验证 RazorVue authoring 与交付链路 | 尚未建立浏览器与发布证据的认证状态、SSR 状态交接或复杂浏览器历史协议 |
+| 用生产级参考应用验证 RazorVue authoring 与交付链路 | `samples/JazorAdmin` 已作为生产级真实应用基线覆盖浏览器、Release、资源闭包和多页面 typed authoring；认证状态、SSR 状态交接和复杂浏览器历史仍按产品边界验证 |
 
 完整的产品范围、支持边界与非目标见[产品范围](./01-overview/product-scope.md)。边界发生变化时，应先由实现与验证证明，再写入本页。
 
