@@ -186,7 +186,7 @@ Razor SDK 能编译不等于每个 ASP.NET Core runtime API 都能在浏览器�
 <a id="ssr-state-handoff"></a>
 ### SSR 状态与表单交接
 
-`PersistentComponentState`、`[PersistentState]` 和 `[SupplyParameterFromForm]` 依赖服务器 renderer、序列化 payload、请求边界和 hydration 时机。RazorVue 的 SSR host 现在提供 `jazor-ssr-state` v1 envelope（`schema`、`version`、`props`、`providers`），并在 Deno runner 与浏览器 hydration 入口校验版本、provider key 和 provider key 唯一性；重复 provider key 会显式失败，避免后者静默覆盖前者。这只定义了 host-owned state transport，不等同于 Blazor 的 PersistentComponentState 或 enhanced form handoff。作者源中出现这些 API 仍会报告 `JAZORVCA011`，位置落在对应类型或 attribute 上；这不是要求作者改写成 builder 或 Vue API。
+`PersistentComponentState`、`[PersistentState]` 和 `[SupplyParameterFromForm]` 依赖服务器 renderer、序列化 payload、请求边界和 hydration 时机。RazorVue 的 SSR host 现在提供 `jazor-ssr-state` v1 envelope（`schema`、`version`、`props`、`providers`），并在 Deno runner 与浏览器 hydration 入口校验版本、provider key 和 provider key 唯一性；空白 key、重复 key 以及认证保留 key 冲突都会显式失败，避免状态被静默覆盖。浏览器 hydration 会在首次异步导入前占用 mount；并发入口立即失败，组件导入或挂载失败会保留失败标记而不会伪装成成功 hydration。这只定义了 host-owned state transport，不等同于 Blazor 的 PersistentComponentState 或 enhanced form handoff。作者源中出现这些 API 仍会报告 `JAZORVCA011`，位置落在对应类型或 attribute 上；这不是要求作者改写成 builder 或 Vue API。
 
 `[StreamRendering]` 同样不属于当前 RazorVue contract。它需要 renderer-owned 的流式 SSR 生命周期，而 RazorVue 只声明已验证的首屏 SSR/hydration 子集；在组件上使用该 attribute 会报告 `JAZORVCA012`。需要增量数据时，使用显式 typed endpoint/bootstrap 协议并自行定义加载状态。
 

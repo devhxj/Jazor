@@ -2,7 +2,21 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-07
+
+### RazorVue SSR hydration boundary hardening
+
+#### 修复
+
+- SSR hydration 在首次异步组件导入前锁定 mount，重复入口会立即失败；无效状态、组件导入错误和挂载错误不会被标记为成功 hydration。`jazor-ssr-state` 同时拒绝空白 provider key、重复 key 和认证保留 key 冲突。
+
 ## 2026-09-06
+
+### RazorVue SSR hydration boundary hardening
+
+#### 修复
+
+- SSR hydration 在首次异步组件导入前锁定 mount，重复入口会立即失败；无效状态、组件导入错误和挂载错误不会被标记为成功 hydration。`jazor-ssr-state` 同时拒绝空白 provider key、重复 key 和认证保留 key 冲突。
 
 ### RazorVue P2 protocol hardening
 

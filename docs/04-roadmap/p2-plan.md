@@ -65,6 +65,20 @@ Microsoft Blazor 内置 UI 组件统一不进入 RazorVue 组件契约：
 
 ## 当前状态
 
+### 剩余工作验收清单
+
+本轮 goal 以以下可执行验收为完成条件；`Reject` 是已确定的产品边界，不计为待实现功能。此前“P2 全部完成”的表述不能替代这些证据。
+
+| 工作 | 本轮验收 | 状态 |
+| --- | --- | --- |
+| SSR 交接正确性 | 真实浏览器执行生成的 bootstrap，验证无效 envelope、并发/重复 hydration、失败传播；SSR render-hook 和 endpoint 错误保持显式失败 | 已完成：23 项 hosting + 4 个真实浏览器场景 |
+| 显式表单与状态新鲜度 | 应用自有 typed DTO/endpoint 示例覆盖失败保留草稿和过期数据刷新；解释 snapshot 与业务版本的所有权 | Guidance：继续由应用 endpoint 管理；不新增通用 TTL/replay 认证协议 |
+| 绑定与原始注释 | Element Plus/Vuetify/TDesign 生成检查、覆盖门禁及表单/表格/输入等现有高频契约审查；仅对实证缺口补生成源 | 已完成当前快照审查：三套 contract gate 通过 |
+| 应用和交付 | Authoring 与 JazorAdmin 现有中型页面、隔离 Release package、SPA/SSR/PathBase/HMR 浏览器门禁 | 已有门禁通过；后续按发布矩阵持续回归 |
+| 调试诊断 | source → SG → module → map 工具及失败定位回归，更新可复现使用指南 | 已完成现有链路与失败定位工具 |
+| 性能 | 固定参数记录构建全流程与 runtime 数据，按已约定阈值验证优化候选；无稳定收益的候选明确否决 | 已完成基线；本轮无证据支持修改主链路，明确保留现状 |
+| 收口 | 同步指南/范式/ledger/状态/CHANGELOG，适用测试通过并推送 main | 已完成本轮改动；推送以网络可用性为准 |
+
 | 条目 | 状态 |
 | --- | --- |
 | Element Plus typed binding | 已完成独立切片 |
@@ -74,9 +88,9 @@ Microsoft Blazor 内置 UI 组件统一不进入 RazorVue 组件契约：
 | localization | Guidance：使用应用自有 typed resource/locale contract 或 ECMAScript Intl；request-culture middleware、IStringLocalizer 注入和 SSR locale handoff 尚未形成 RazorVue primitive |
 | 复杂 validation | Guidance：使用组件库 typed rules/callbacks 或应用自有 validation contract；EditContext/InputBase/完整服务器验证 parity 不进入范式 |
 | IJSRuntime 等 JS 互操作 | Reject；作者面回归确认注入本身不误报，实际成员使用仍由 usage-site/compiler 边界裁决 |
-| 性能与交付优化 | 已完成 `benchmark-razorvue-g2.cs --measure-runtime --samples 3 --iterations 3` 基线；尚未宣称优化收益 |
+| 性能与交付优化 | 已完成 `benchmark-razorvue-g2.cs --measure-runtime --samples 3 --iterations 3` 基线；当前固定参数复测仍未证明需要主链路优化，因此保留现状 |
 
-最近一次运行时基线（Node `v24.14.1`）为：`counter` generated render/update `476190.48/2500000`、gzip `118`；`keyed-list-100` generated render/update `136363.64/188679.25`、gzip `99`。该数据只用于后续同参数比较，不构成性能承诺。
+最近一次已记录运行时基线（Node `v24.14.1`）为：`counter` generated render/update `476190.48/2500000`、gzip `118`；`keyed-list-100` generated render/update `136363.64/188679.25`、gzip `99`。该数据只用于同参数比较，不构成性能承诺；本轮未实施未经证明的优化。
 
 SSR 状态输入边界由 `Jazor.EmitTest.JazorSsrHostingTests` 锁定：空 provider key、空白 provider key、重复 provider key 和认证保留 key 冲突均在启动 Deno worker 前失败；失败不会留下 runner 产物。
 

@@ -1254,7 +1254,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityStatus.Guidance,
             "RazorVueCompatibilityAnalyzer + explicit endpoint/bootstrap contract",
             "JAZORVCA011",
-            "RazorVueCompatibilityAnalyzerTests.InjectedPersistentComponentState_ReportsExplicitSsrHandoffBoundary; RazorVueCompatibilityAnalyzerTests.PersistentStateProperty_ReportsAtAuthoredAttribute; RazorVueCompatibilityAnalyzerTests.SupplyParameterFromFormProperty_ReportsExplicitSsrHandoffBoundary; JazorSsrHostingTests.JazorSsrRenderer_RejectsDuplicateProviderKeysBeforeStartingWorker",
+            "RazorVueCompatibilityAnalyzerTests.InjectedPersistentComponentState_ReportsExplicitSsrHandoffBoundary; RazorVueCompatibilityAnalyzerTests.PersistentStateProperty_ReportsAtAuthoredAttribute; RazorVueCompatibilityAnalyzerTests.SupplyParameterFromFormProperty_ReportsExplicitSsrHandoffBoundary; JazorSsrHostingTests.JazorSsrRenderer_RejectsProviderWithoutKeyBeforeStartingWorker; JazorSsrHostingTests.JazorSsrRenderer_RejectsWhitespaceProviderKeyBeforeStartingWorker; JazorSsrHostingTests.JazorSsrRenderer_RejectsDuplicateProviderKeysBeforeStartingWorker; JazorSsrHostingTests.JazorSsrRenderer_RejectsAuthenticationProviderKeyCollisionBeforeStartingWorker; JazorSsrHostingTests.UseJazorSsr_BootstrapPreservesFailureAndSingleMountInRealBrowser",
             RazorVueCapabilityEvidence.AuthorSource,
             "PersistentComponentState, PersistentState, and SupplyParameterFromForm are diagnosed at authored source until a versioned SSR/hydration protocol exists. Use a typed endpoint/bootstrap payload; FormName, antiforgery, enhanced post, and built-in EditForm/Input protocols remain outside this plan."),
         new(

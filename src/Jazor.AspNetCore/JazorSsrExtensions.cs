@@ -151,18 +151,20 @@ internal static class SsrDocumentWriter
         await response.WriteAsync("import { createSSRApp } from \"vue\";\n", cancellationToken);
         await response.WriteAsync("const mountElement = document.getElementById(" + mountElementIdJson + ");\n", cancellationToken);
         await response.WriteAsync("if (!mountElement) throw new Error(\"Jazor SSR mount element was not found.\");\n", cancellationToken);
-        await response.WriteAsync("if (mountElement.dataset.jazorSsrHydrated === \"1\") throw new Error(\"Jazor SSR hydration was already executed for this mount element.\");\n", cancellationToken);
-        await response.WriteAsync("const { default: component } = await import(" + componentUrlJson + ");\n", cancellationToken);
         await response.WriteAsync("const stateElement = document.getElementById(\"" + StateElementId + "\");\n", cancellationToken);
         await response.WriteAsync("if (!stateElement) throw new Error(\"Jazor SSR state envelope element was not found.\");\n", cancellationToken);
         await response.WriteAsync("const state = JSON.parse(stateElement.textContent);\n", cancellationToken);
-        await response.WriteAsync("if (state.schema !== \"" + JazorSsrStateEnvelope.CurrentSchema + "\" || state.version !== " + JazorSsrStateEnvelope.CurrentVersion + " || !(\"props\" in state) || !Array.isArray(state.providers) || state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.trim().length === 0) || new Set(state.providers.map(provider => provider.key)).size !== state.providers.length) throw new Error(\"Jazor SSR state envelope version or provider shape is not supported.\");\n", cancellationToken);
+        await response.WriteAsync("if (!state || state.schema !== \"" + JazorSsrStateEnvelope.CurrentSchema + "\" || state.version !== " + JazorSsrStateEnvelope.CurrentVersion + " || !(\"props\" in state) || !Array.isArray(state.providers) || state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.trim().length === 0) || new Set(state.providers.map(provider => provider.key)).size !== state.providers.length) throw new Error(\"Jazor SSR state envelope version or provider shape is not supported.\");\n", cancellationToken);
+        await response.WriteAsync("if (mountElement.dataset.jazorSsrHydrated === \"1\" || mountElement.dataset.jazorSsrHydrating === \"1\" || mountElement.dataset.jazorSsrHydrating === \"failed\") throw new Error(\"Jazor SSR hydration was already executed for this mount element.\");\n", cancellationToken);
+        // Claim the mount before the first await. This closes the concurrent bootstrap race while
+        // keeping malformed state validation before component code is imported.
+        await response.WriteAsync("mountElement.dataset.jazorSsrHydrating = \"1\";\n", cancellationToken);
+        await response.WriteAsync("let component; try { ({ default: component } = await import(" + componentUrlJson + ")); } catch (error) { mountElement.dataset.jazorSsrHydrating = \"failed\"; throw error; }\n", cancellationToken);
         await response.WriteAsync("const props = state.props;\n", cancellationToken);
         await response.WriteAsync("const providers = state.providers;\n", cancellationToken);
-        await response.WriteAsync("const app = createSSRApp(component, props);\n", cancellationToken);
+        await response.WriteAsync("const app = createSSRApp(component, props); let mountError; app.config.errorHandler = error => { mountError = error; };\n", cancellationToken);
         await response.WriteAsync("for (const provider of providers) app.provide(provider.key, provider.value);\n", cancellationToken);
-        await response.WriteAsync("app.mount(mountElement);\n", cancellationToken);
-        await response.WriteAsync("mountElement.dataset.jazorSsrHydrated = \"1\";\n", cancellationToken);
+        await response.WriteAsync("try { app.mount(mountElement); await Promise.resolve(); if (mountError) throw mountError; mountElement.dataset.jazorSsrHydrated = \"1\"; delete mountElement.dataset.jazorSsrHydrating; } catch (error) { mountElement.dataset.jazorSsrHydrating = \"failed\"; throw error; }\n", cancellationToken);
         await response.WriteAsync("</script>\n</body></html>", cancellationToken);
     }
 

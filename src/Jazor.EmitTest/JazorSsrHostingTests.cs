@@ -12,7 +12,7 @@ using Jazor.Emit;
 namespace Jazor.EmitTest;
 
 [TestClass]
-public sealed class JazorSsrHostingTests
+public sealed partial class JazorSsrHostingTests
 {
     [TestMethod]
     public async Task UseJazorSsr_RendersLocallyHydratesWithSamePropsAndPreservesEndpoints()
@@ -50,7 +50,7 @@ public sealed class JazorSsrHostingTests
         StringAssert.Contains(html, "state.providers.some(provider => !provider || typeof provider.key !== \"string\" || provider.key.trim().length === 0)");
         StringAssert.Contains(html, "new Set(state.providers.map(provider => provider.key)).size !== state.providers.length");
         StringAssert.Contains(html, "if (!stateElement) throw new Error(\"Jazor SSR state envelope element was not found.\");");
-        StringAssert.Contains(html, "if (mountElement.dataset.jazorSsrHydrated === \"1\") throw new Error(\"Jazor SSR hydration was already executed for this mount element.\");");
+        StringAssert.Contains(html, "mountElement.dataset.jazorSsrHydrated === \"1\" || mountElement.dataset.jazorSsrHydrating === \"1\"");
         StringAssert.Contains(html, "for (const provider of providers) app.provide(provider.key, provider.value);");
         StringAssert.Contains(html, "mountElement.dataset.jazorSsrHydrated = \"1\";");
         StringAssert.Contains(html, "\"Title\":\"SSR \\u003Ctitle\\u003E\"");

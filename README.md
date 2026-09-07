@@ -32,6 +32,10 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
+### RazorVue SSR hydration boundary - 2026-09-07
+
+- SSR hydration now claims its mount before asynchronous component loading, rejects concurrent or repeated bootstrap, and preserves explicit failure state when the envelope, component import, or mount fails.
+
 ### RazorVue P0 authoring and verification - 2026-09-06
 
 - 新增从 `RazorVue.Authoring` 开始的 Golden Path 指南，以及按稳定 ID、源码位置和替代写法组织的诊断矩阵。
