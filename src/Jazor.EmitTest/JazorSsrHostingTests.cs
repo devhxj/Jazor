@@ -229,6 +229,31 @@ public sealed class JazorSsrHostingTests
     }
 
     [TestMethod]
+    public async Task JazorSsrRenderer_RejectsAuthenticationProviderKeyCollisionBeforeStartingWorker()
+    {
+        using var workspace = new SsrHostWorkspace();
+        var artifactRoot = await workspace.CreateArtifactRootAsync();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = workspace.RootPath,
+            WebRootPath = Path.Combine(workspace.RootPath, "wwwroot"),
+            EnvironmentName = Environments.Development
+        });
+        builder.Services.AddJazorSsr(options => options.ArtifactRootPath = artifactRoot);
+
+        await using var app = builder.Build();
+        var renderer = app.Services.GetRequiredService<IJazorSsrRenderer>();
+        var error = await Assert.ThrowsExactlyAsync<ArgumentException>(() => renderer.RenderAsync(
+            new JazorSsrRequest(
+                "components/counter.mjs",
+                Providers: [new JazorSsrProvider(JazorAuthenticationState.ProviderKey, new { Spoofed = true })],
+                Authentication: new JazorAuthenticationState(JazorAuthenticationStatus.Anonymous))));
+
+        StringAssert.Contains(error.Message, "reserved", StringComparison.Ordinal);
+        Assert.IsFalse(File.Exists(Path.Combine(artifactRoot, "@jazor", "ssr-runner.mjs")));
+    }
+
+    [TestMethod]
     public void JazorAuthenticationState_FromPrincipalProducesClosedTypedSnapshot()
     {
         var principal = new ClaimsPrincipal(new ClaimsIdentity(
