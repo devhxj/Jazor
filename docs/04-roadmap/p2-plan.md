@@ -68,7 +68,7 @@ Microsoft Blazor 内置 UI 组件统一不进入 RazorVue 组件契约：
 | 条目 | 状态 |
 | --- | --- |
 | Element Plus typed binding | 已完成独立切片 |
-| SSR 显式 envelope/bootstrap | P1 基础已完成；P2 已增加 provider key 唯一性校验，表单协议仍为 Guidance |
+| SSR 显式 envelope/bootstrap | P1 基础已完成；P2 已增加 provider key 唯一性、空白 key 及认证保留 key 冲突校验，表单协议仍为 Guidance |
 | Microsoft Blazor 内置 UI 组件 | Reject（`JAZORVGA021`），包括 `CacheView`、`ConfigureBrowser`、`ImportMap`、`ResourcePreloader`、`AntiforgeryToken`、`FormMappingScope`、`DisplayName<T>`、`InputHidden`、`Label<T>`、`EnvironmentView`、`Virtualize`、`QuickGrid`、`SectionContent/SectionOutlet` |
 | StreamRendering | Reject（`JAZORVCA012`）；其 renderer-owned streaming SSR 语义不属于当前 contract |
 | localization | Guidance：使用应用自有 typed resource/locale contract 或 ECMAScript Intl；request-culture middleware、IStringLocalizer 注入和 SSR locale handoff 尚未形成 RazorVue primitive |
@@ -77,6 +77,8 @@ Microsoft Blazor 内置 UI 组件统一不进入 RazorVue 组件契约：
 | 性能与交付优化 | 已完成 `benchmark-razorvue-g2.cs --measure-runtime --samples 3 --iterations 3` 基线；尚未宣称优化收益 |
 
 最近一次运行时基线（Node `v24.14.1`）为：`counter` generated render/update `476190.48/2500000`、gzip `118`；`keyed-list-100` generated render/update `136363.64/188679.25`、gzip `99`。该数据只用于后续同参数比较，不构成性能承诺。
+
+SSR 状态输入边界由 `Jazor.EmitTest.JazorSsrHostingTests` 锁定：空 provider key、空白 provider key、重复 provider key 和认证保留 key 冲突均在启动 Deno worker 前失败；失败不会留下 runner 产物。
 
 ## 证据入口
 
