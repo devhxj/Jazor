@@ -7087,33 +7087,37 @@ public sealed class MemberClosureTests
         if (!string.IsNullOrWhiteSpace(explicitPath) && System.IO.File.Exists(explicitPath))
             return explicitPath;
 
+        // Chrome 必须排在 Edge 之前：Edge 在 Windows 上会自我重启（真实浏览器命令行带
+        // --edge-skip-compat-layer-relaunch），被 spawn 的启动器 PID 立即退出，脚本里的
+        // process.kill 打不到真实浏览器，残留进程会锁住 .browser-profile 导致临时目录清理失败。
         string[] candidates = OperatingSystem.IsWindows()
             ?
             [
-                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
                 @"C:\Program Files\Google\Chrome\Application\chrome.exe",
                 @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-                "msedge.exe",
-                "chrome.exe"
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "Application", "chrome.exe"),
+                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                "chrome.exe",
+                "msedge.exe"
             ]
             : OperatingSystem.IsMacOS()
                 ?
                 [
-                    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
                     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                    "microsoft-edge",
+                    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
                     "google-chrome",
-                    "chromium"
+                    "chromium",
+                    "microsoft-edge"
                 ]
                 :
                 [
-                    "microsoft-edge",
-                    "microsoft-edge-stable",
                     "google-chrome",
                     "google-chrome-stable",
                     "chromium",
-                    "chromium-browser"
+                    "chromium-browser",
+                    "microsoft-edge",
+                    "microsoft-edge-stable"
                 ];
 
         foreach (var candidate in candidates)

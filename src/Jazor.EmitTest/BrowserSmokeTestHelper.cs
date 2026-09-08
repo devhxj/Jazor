@@ -93,33 +93,36 @@ internal static class BrowserSmokeTestHelper
         if (!string.IsNullOrWhiteSpace(explicitPath))
             return File.Exists(explicitPath) ? explicitPath : null;
 
+        // Chrome 必须排在 Edge 之前：Edge 在 Windows 上会自我重启，被 spawn 的启动器 PID 立即退出，
+        // 调用方 kill 不到真实浏览器进程，残留进程会锁住临时 profile 目录导致清理失败。
         var candidates = OperatingSystem.IsWindows()
             ? new[]
             {
-                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
                 @"C:\Program Files\Google\Chrome\Application\chrome.exe",
                 @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-                "msedge.exe",
-                "chrome.exe"
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "Application", "chrome.exe"),
+                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                "chrome.exe",
+                "msedge.exe"
             }
             : OperatingSystem.IsMacOS()
                 ? new[]
                 {
-                    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
                     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                    "microsoft-edge",
+                    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
                     "google-chrome",
-                    "chromium"
+                    "chromium",
+                    "microsoft-edge"
                 }
                 : new[]
                 {
-                    "microsoft-edge",
-                    "microsoft-edge-stable",
                     "google-chrome",
                     "google-chrome-stable",
                     "chromium",
-                    "chromium-browser"
+                    "chromium-browser",
+                    "microsoft-edge",
+                    "microsoft-edge-stable"
                 };
 
         foreach (var candidate in candidates)
