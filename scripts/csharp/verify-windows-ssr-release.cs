@@ -897,8 +897,14 @@ internal static class SsrReleaseVerifier
         RequireContains(html, "id=\"todo-open-count\">2<", "server-rendered open count");
         RequireContains(html, "id=\"todo-done-count\">1<", "server-rendered done count");
         RequireContains(html, "id=\"todo-total-count\">3<", "server-rendered total count");
-        RequireContains(html, "<script id=\"__jazor_ssr_props\" type=\"application/json\">", "serialized SSR props");
-        RequireContains(html, "<script id=\"__jazor_ssr_providers\" type=\"application/json\">", "serialized SSR providers");
+        // props 与 providers 自 P1 起合并进单一 `__jazor_ssr_state` v1 envelope
+        // （JazorSsrStateEnvelope），旧的 `__jazor_ssr_props` / `__jazor_ssr_providers`
+        // 双 script 标签模型已退役。这里断言 envelope 的真实序列化形状，避免门禁
+        // 停留在已删除的旧协议上而误判发布产物。
+        RequireContains(html, "<script id=\"__jazor_ssr_state\" type=\"application/json\">", "serialized SSR state envelope");
+        RequireContains(html, "\"schema\":\"jazor-ssr-state\"", "SSR state envelope schema");
+        RequireContains(html, "\"props\":{\"SsrTitle\":\"SSR ParameterView title\"}", "serialized SSR props");
+        RequireContains(html, "\"providers\":[{\"key\":\"jazor:service:Todo.Library.TodoBrowserService\"", "serialized SSR providers");
         RequireContains(html, "jazor:service:Todo.Library.TodoBrowserService", "serialized browser service provider key");
         RequireContains(html, "<script type=\"importmap\">", "browser import map");
         RequireContains(html, "createSSRApp", "hydration bootstrap");
