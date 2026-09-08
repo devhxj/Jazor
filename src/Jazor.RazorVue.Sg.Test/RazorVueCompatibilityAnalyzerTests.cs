@@ -1095,6 +1095,176 @@ public sealed class RazorVueCompatibilityAnalyzerTests
         CollectionAssert.AreEqual(new[] { "InputFile", "InputFile", "InputBase" }, tags);
     }
 
+    [TestMethod]
+    public async Task ParameterViewEnumeration_IgnoresCollectionsThatAreNotParameterView()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/MixedLoops.razor.cs",
+                """
+                using Microsoft.AspNetCore.Components;
+
+                namespace Demo.Pages
+                {
+                    public sealed class MixedLoops : ComponentBase
+                    {
+                        private ParameterView Values { get; set; }
+
+                        private int[] Numbers { get; } = [];
+
+                        private void Read()
+                        {
+                            // 非 ParameterView 集合必须走完 ContainsParameterView 的
+                            // switch 默认分支并 break，不能被误报成 JAZORVCA004。
+                            foreach (var number in Numbers)
+                            {
+                            }
+
+                            foreach (var value in Values)
+                            {
+                            }
+                        }
+                    }
+                }
+                """));
+
+        var enumeration = diagnostics.Where(static item => item.Id == "JAZORVCA004").ToArray();
+        Assert.HasCount(1, enumeration);
+        StringAssert.Contains(enumeration[0].GetMessage(), "enumeration", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
+    public async Task ParameterViewEnumeration_ReportsForContractOnlyComponentWithoutInjectSurface()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/ContractOnly.razor.cs",
+                """
+                namespace Microsoft.AspNetCore.Components
+                {
+                    public interface IComponent;
+
+                    public struct ParameterView
+                    {
+                        public Enumerator GetEnumerator() => default;
+
+                        public struct Enumerator
+                        {
+                            public object Current => new object();
+
+                            public bool MoveNext() => false;
+                        }
+                    }
+                }
+
+                namespace Demo.Pages
+                {
+                    // 只有 IComponent、没有 ComponentBase 也没有 InjectAttribute：
+                    // 组件契约判定必须走 || 的右侧，且 inject 分析注册要被跳过，
+                    // 而 ParameterView 规则仍然生效。
+                    public sealed class ContractOnly : Microsoft.AspNetCore.Components.IComponent
+                    {
+                        private Microsoft.AspNetCore.Components.ParameterView Values { get; set; }
+
+                        private void Read()
+                        {
+                            foreach (var value in Values)
+                            {
+                            }
+                        }
+                    }
+                }
+                """),
+            references: RazorSgTestHost.CreateMetadataReferences()
+                .Where(static reference =>
+                    !Path.GetFileName(reference.Display ?? string.Empty)
+                        .StartsWith("Microsoft.AspNetCore", StringComparison.OrdinalIgnoreCase))
+                .ToArray());
+
+        var enumeration = diagnostics.Where(static item => item.Id == "JAZORVCA004").ToArray();
+        Assert.HasCount(1, enumeration);
+        Assert.AreEqual("Pages/ContractOnly.razor.cs", enumeration[0].Location.GetLineSpan().Path);
+    }
+
+    [TestMethod]
+    public async Task UnsupportedRazorComponent_SkipsTagsWhoseContractTypeIsAbsent()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/AbsentContracts.razor.cs",
+                """
+                namespace Demo.Pages
+                {
+                    public sealed class AbsentContracts;
+                }
+                """),
+            additionalFiles: [new InMemoryAdditionalText(
+                "Pages/AbsentContracts.razor",
+                "<InputFile />\n<InputBase />")],
+            references: RazorSgTestHost.CreateMetadataReferences()
+                .Where(static reference =>
+                    !Path.GetFileName(reference.Display ?? string.Empty)
+                        .StartsWith("Microsoft.AspNetCore", StringComparison.OrdinalIgnoreCase))
+                .ToArray());
+
+        // InputFile 是非泛型契约名，缺类型时按 arity 分支直接判否；
+        // InputBase`1 是泛型契约名，必须继续走 GetSymbolsWithName 回退后仍判否。
+        Assert.IsEmpty(diagnostics.Where(static item => item.Id == "JAZORVCA010"));
+    }
+
+    [TestMethod]
+    public async Task InjectPropertyShape_RejectsAccessorBodiesAndNonPropertyDeclarations()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/Shapes.razor.cs",
+                """
+                using System;
+                using Microsoft.AspNetCore.Components;
+
+                namespace Demo.Pages
+                {
+                    public sealed class BrowserAdapter : NavigationManager;
+
+                    public sealed class Shapes : ComponentBase
+                    {
+                        [Inject]
+                        public BrowserAdapter GetterBody { get { return null!; } set; }
+
+                        [Inject]
+                        public BrowserAdapter GetterExpression { get => null!; set; }
+
+                        // 索引器的声明语法是 IndexerDeclarationSyntax，不是
+                        // PropertyDeclarationSyntax，IsWritableAutoProperty 必须跳过它。
+                        [Inject]
+                        public BrowserAdapter this[int index] { get => null!; set { } }
+
+                        // 多个特性时 FirstOrDefault 必须先跳过非 Inject 特性再命中 Inject。
+                        [Obsolete]
+                        [Inject]
+                        public BrowserAdapter Writable { get; set; } = null!;
+                    }
+                }
+                """));
+
+        var reported = diagnostics
+            .Where(static item => item.Id == "JAZORVCA006")
+            .Select(static item => item.GetMessage())
+            .ToArray();
+        Assert.HasCount(3, reported);
+        Assert.IsEmpty(diagnostics.Where(static item => item.Id != "JAZORVCA006"));
+
+        var joined = string.Join(Environment.NewLine, reported);
+        foreach (var name in new[] { "GetterBody", "GetterExpression", "this[]" })
+        {
+            StringAssert.Contains(joined, "'" + name + "'", StringComparison.Ordinal, name);
+        }
+
+        Assert.IsFalse(
+            joined.Contains("'Writable'", StringComparison.Ordinal),
+            "A writable auto-property must not be reported by JAZORVCA006.");
+    }
+
     private static RazorVueCompatibilityAnalyzerDiagnostic AssertSingleDbContextDiagnostic(
         ImmutableArray<Diagnostic> diagnostics)
     {

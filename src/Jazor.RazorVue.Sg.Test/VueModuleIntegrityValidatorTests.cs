@@ -7,6 +7,45 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class VueModuleIntegrityValidatorTests
 {
     [TestMethod]
+    public void NullModule_IsRejected()
+    {
+        Assert.Throws<ArgumentNullException>(() => VueModuleIntegrityValidator.FindUnboundIdentifiers(null!));
+        Assert.Throws<ArgumentNullException>(() => VueModuleIntegrityValidator.Validate(null!));
+    }
+
+    [TestMethod]
+    public void StructuralSyntax_CoversRemainingStatementAndPatternForms()
+    {
+        var module = new Parser().ParseModule(
+            "import d, * as ns from 'm'; export {d}; class C extends Base { static { let x = source; } field = init; [key](arg = fallback) { try { throw error; } catch ({message = defaultMessage, ...rest}) { return message; } finally { cleanup(); } } } const f = async ({a = aa, ...rr} = value) => { for (const item of items) { if (item) continue; } switch (choice) { case one: return ns; default: return d; } }; export default f;");
+
+        var unbound = VueModuleIntegrityValidator.FindUnboundIdentifiers(module);
+        CollectionAssert.Contains(unbound.ToArray(), "Base");
+        CollectionAssert.Contains(unbound.ToArray(), "source");
+        CollectionAssert.Contains(unbound.ToArray(), "cleanup");
+    }
+
+    [TestMethod]
+    public void NamedFunctionExpressionAndMemberAssignment_SeparateBindingsFromReferences()
+    {
+        var cases = new (string Source, string[] Expected)[]
+        {
+            // 具名函数表达式的名字只在自己的函数体内绑定，外层仍需 const 声明。
+            ("const f = function named(a = fallback) { return a; };", ["fallback"]),
+            ("const f = (value = fallback) => value;", ["fallback"]),
+            // 计算成员赋值的 key 是引用，普通成员名不是。
+            ("const target = {}; target[key] = value; target.name = other;", ["key", "value", "other"]),
+            ("class C { method() {} static method2() {} }", [])
+        };
+
+        foreach (var (source, expected) in cases)
+        {
+            var actual = VueModuleIntegrityValidator.FindUnboundIdentifiers(new Parser().ParseModule(source)).ToArray();
+            CollectionAssert.AreEquivalent(expected, actual, source + " => " + string.Join(",", actual));
+        }
+    }
+
+    [TestMethod]
     public void ValidModule_DistinguishesBindingsAndPropertyKeys()
     {
         var module = new Parser().ParseModule(
@@ -190,5 +229,91 @@ public sealed class VueModuleIntegrityValidatorTests
                 VueModuleIntegrityValidator.FindUnboundIdentifiers(module).ToArray(),
                 @case.Source);
         }
+    }
+
+    [TestMethod]
+    public void StructuralSyntax_CoversComputedAssignmentsAndBindingSideEffects()
+    {
+        var module = new Parser().ParseModule(
+            "const source = input; let {[computedKey]: value = fallback, ...rest} = source; ({[assignmentKey]: target = assignmentFallback, ...remaining} = source); function render([first = firstFallback, , ...tail]) { return first + tail.length; } export default render;");
+
+        var actual = VueModuleIntegrityValidator.FindUnboundIdentifiers(module).ToArray();
+        CollectionAssert.AreEquivalent(
+            new[] { "input", "computedKey", "fallback", "assignmentKey", "assignmentFallback", "firstFallback", "remaining" },
+            actual, string.Join(",", actual));
+    }
+
+    [TestMethod]
+    public void AnonymousDefaultExport_FunctionDeclaration_BindsNoName()
+    {
+        var module = new Parser().ParseModule("export default function () { return helper; }");
+
+        CollectionAssert.AreEquivalent(
+            new[] { "helper" },
+            VueModuleIntegrityValidator.FindUnboundIdentifiers(module).ToArray());
+    }
+
+    [TestMethod]
+    public void AnonymousDefaultExport_ClassDeclaration_BindsNoName()
+    {
+        var module = new Parser().ParseModule("export default class { method() { return helper; } }");
+
+        CollectionAssert.AreEquivalent(
+            new[] { "helper" },
+            VueModuleIntegrityValidator.FindUnboundIdentifiers(module).ToArray());
+    }
+
+    [TestMethod]
+    public void ClassField_WithoutInitializer_ReportsOnlyValueReferences()
+    {
+        var module = new Parser().ParseModule("class C { declared; assigned = init; } export default C;");
+
+        CollectionAssert.AreEquivalent(
+            new[] { "init" },
+            VueModuleIntegrityValidator.FindUnboundIdentifiers(module).ToArray());
+    }
+
+    [TestMethod]
+    public void ClassExpression_NameIsBoundOnlyInsideItsOwnBody()
+    {
+        var module = new Parser().ParseModule(
+            "const anonymous = class { method() { return outer; } }; const named = class Named { method() { return Named; } }; export { anonymous, named };");
+
+        CollectionAssert.AreEquivalent(
+            new[] { "outer" },
+            VueModuleIntegrityValidator.FindUnboundIdentifiers(module).ToArray());
+    }
+
+    [TestMethod]
+    public void AssignmentTarget_NonComputedKeys_AreNotReferences()
+    {
+        var module = new Parser().ParseModule(
+            "let target = {}; ({ plain: target, nested: { deep: other } } = source);");
+
+        CollectionAssert.AreEquivalent(
+            new[] { "other", "source" },
+            VueModuleIntegrityValidator.FindUnboundIdentifiers(module).ToArray());
+    }
+
+    [TestMethod]
+    public void VarHoisting_SurvivesDoWhileLabelAndWhileBodies()
+    {
+        var module = new Parser().ParseModule(
+            "do { var doHoisted = doInit; } while (doCond); outer: { var labelHoisted = labelInit; } while (whileCond) { var whileHoisted = whileInit; } console.log(doHoisted, labelHoisted, whileHoisted);");
+
+        CollectionAssert.AreEquivalent(
+            new[] { "doInit", "doCond", "labelInit", "whileCond", "whileInit" },
+            VueModuleIntegrityValidator.FindUnboundIdentifiers(module).ToArray());
+    }
+
+    [TestMethod]
+    public void RestParameter_IsABindingNotAReference()
+    {
+        var module = new Parser().ParseModule(
+            "function collect(...items) { return items.concat(extra); } export default collect;");
+
+        CollectionAssert.AreEquivalent(
+            new[] { "extra" },
+            VueModuleIntegrityValidator.FindUnboundIdentifiers(module).ToArray());
     }
 }
