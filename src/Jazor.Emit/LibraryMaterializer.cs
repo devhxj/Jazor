@@ -623,8 +623,8 @@ internal sealed class LibraryMaterializer
                 if (!Directory.Exists(DestinationRoot))
                     Directory.CreateDirectory(DestinationRoot);
                 if (Directory.Exists(destinationVendor))
-                    Directory.Move(destinationVendor, backupVendor);
-                Directory.Move(stagedVendor, destinationVendor);
+                    DirectoryTransaction.Move(destinationVendor, backupVendor);
+                DirectoryTransaction.Move(stagedVendor, destinationVendor);
                 if (Directory.Exists(backupVendor))
                     Directory.Delete(backupVendor, recursive: true);
             }
@@ -633,7 +633,7 @@ internal sealed class LibraryMaterializer
                 if (Directory.Exists(destinationVendor) && Directory.Exists(backupVendor))
                     Directory.Delete(destinationVendor, recursive: true);
                 if (!Directory.Exists(destinationVendor) && Directory.Exists(backupVendor))
-                    Directory.Move(backupVendor, destinationVendor);
+                    DirectoryTransaction.Move(backupVendor, destinationVendor);
                 throw;
             }
             finally

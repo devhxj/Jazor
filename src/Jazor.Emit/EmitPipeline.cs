@@ -497,7 +497,7 @@ internal sealed class EmitPipeline
             {
                 if (Directory.Exists(_outputRoot))
                 {
-                    Directory.Move(_outputRoot, backupRoot);
+                    DirectoryTransaction.Move(_outputRoot, backupRoot);
                     movedOld = true;
                 }
                 else if (File.Exists(_outputRoot))
@@ -505,7 +505,7 @@ internal sealed class EmitPipeline
                     throw new InvalidOperationException($"Output path is a file, not a directory: '{_outputRoot}'.");
                 }
 
-                Directory.Move(StagingRoot, _outputRoot);
+                DirectoryTransaction.Move(StagingRoot, _outputRoot);
                 _committed = true;
                 if (movedOld && Directory.Exists(backupRoot))
                     Directory.Delete(backupRoot, recursive: true);
@@ -516,7 +516,7 @@ internal sealed class EmitPipeline
                 if (Directory.Exists(_outputRoot) && _committed == false)
                     Directory.Delete(_outputRoot, recursive: true);
                 if (movedOld && !Directory.Exists(_outputRoot) && Directory.Exists(backupRoot))
-                    Directory.Move(backupRoot, _outputRoot);
+                    DirectoryTransaction.Move(backupRoot, _outputRoot);
                 throw;
             }
             finally
