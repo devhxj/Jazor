@@ -2,6 +2,24 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-08
+
+### Jazor 0.32.0
+
+> RazorVue P1/P2 协议与作者边界完成收口。本版本在 `0.x` 阶段按 `MINOR` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。
+
+#### 新增与改进
+
+- SSR 首屏与浏览器 hydration 现在共享带版本的状态 envelope，支持 typed authentication snapshot、浏览器 history 子集和有限的组件构造函数服务注入；重复 hydration、无效 provider、导入或挂载失败都会显式失败。
+- RazorVue 作者指南、诊断矩阵和 Golden Path 补齐，真实 Razor SG/浏览器验证覆盖认证、导航、生命周期、slot、`@key`、服务注入和发布交付路径。
+- Element Plus、TDesign 和 Vuetify 绑定加入统一 contract 门禁与上游文档来源校验，发布资源闭包和参考应用验证路径同步完善。
+
+#### 边界与修复
+
+- 明确拒绝 `IJSRuntime`、完整 Blazor 内置 UI 组件、`StreamRendering`、复杂 localization/validation 以及未经协议化的服务器状态，统一返回可定位诊断并避免生成部分产物。
+- SSR provider key 现在拒绝空白、重复和认证保留键冲突；hydration 首次异步导入前锁定 mount，避免并发入口造成状态覆盖。
+- Emit 产物提交事务的目录重命名加入有限重试，吸收 Windows 上杀毒/索引器对刚写入文件的瞬时句柄占用，修复并行构建时偶发的 `MSB3075`（exit code 5）失败；永久失败仍按原样传播。
+
 ## 2026-09-07
 
 ### RazorVue SSR hydration boundary hardening
