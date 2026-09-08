@@ -3481,6 +3481,67 @@ public sealed class CompilerCoverage98BoundaryTests
             compilation.GetSemanticModel(syntaxTree).GetOperation(method.Body!));
     }
 
+    [TestMethod]
+    public void ExternalImportBoundaries_ClassifyEcmaScriptTransformShapes()
+    {
+        var compilation = CreateCompilation(
+            """
+            using ECMAScript;
+
+            [ECMAScript("./plain-import")]
+            public sealed class PlainImport;
+
+            [ECMAScript("./explicit-import", Transform.Import)]
+            public sealed class ExplicitImport;
+
+            [ECMAScript("./allow-shaped", Transform.Allow)]
+            public sealed class AllowShaped;
+
+            [ECMAScript("./component-shaped", Transform.Component)]
+            public sealed class ComponentShaped;
+
+            [ECMAScript]
+            public sealed class AmbientAllow;
+
+            [ECMAScript("   ")]
+            public sealed class BlankImport;
+
+            [System.Obsolete]
+            [ECMAScript("./after-other")]
+            public sealed class AfterOther;
+
+            public sealed class Unmarked
+            {
+                public sealed class Nested;
+            }
+
+            [ECMAScript("./outer-import")]
+            public sealed class Outer
+            {
+                public sealed class Inner;
+            }
+            """);
+
+        Assert.IsTrue(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("PlainImport")!));
+        Assert.IsTrue(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("ExplicitImport")!));
+        Assert.IsTrue(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("AfterOther")!));
+
+        // Allow/Component 不是外部 ESM import；空 specifier 与无参形式在守卫链里被跳过。
+        Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("AllowShaped")!));
+        Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("ComponentShaped")!));
+        Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("AmbientAllow")!));
+        Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("BlankImport")!));
+        Assert.IsFalse(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("Unmarked+Nested")!));
+
+        // 嵌套类型沿 ContainingType 回溯，外层标记决定归类。
+        Assert.IsTrue(Util.IsExternalECMAScriptImport(compilation.GetTypeByMetadataName("Outer+Inner")!));
+
+        Assert.IsTrue(Util.IsECMAScriptSupportMarkerAttributeData(
+            compilation.GetTypeByMetadataName("AllowShaped")!.GetAttributes().Single()));
+        Assert.IsFalse(Util.IsECMAScriptSupportMarkerAttributeData(
+            compilation.GetTypeByMetadataName("ComponentShaped")!.GetAttributes().Single()));
+    }
+
     private static CSharpCompilation CreateCompilation(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
