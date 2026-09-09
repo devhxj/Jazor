@@ -4,28 +4,41 @@
 
 ## 2026-09-09
 
-### 未发布 | Unreleased
+### Jazor 0.33.0
+
+> JazorAdmin 管理壳与 Starter 示例体验完成一轮可用性收口。本版本新增管理壳无障碍公共参数，按 `MINOR` 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。
 
 中文 | English
 
 #### 新增功能
 
-- 相关 pull request 与 main 分支变更现在自动执行核心编译器、RazorVue 和 Vue 绑定覆盖率门禁；标签与手动 NuGet 发布必须先通过全部门禁。by @devhxj
+- 管理壳导航支持可本地化的导航名称、分支展开/收起标签，并为当前导航与面包屑输出明确的当前页语义。by @devhxj
 
-#### 其他变更
+#### 体验优化
 
-- GitHub Actions 保存 TRX、Cobertura（编译器与 RazorVue）、日志和指标摘要，便于从同一运行记录追踪失败。by @devhxj
-- 发布工作流从工作流提交读取报告入口、从被测 ref 读取测试与源码，因此手动验证历史标签时仍会验证目标代码。by @devhxj
+- JazorAdmin Starter 概览使用双系列折线面积图展示访问趋势，列表与卡片搜索状态互不影响，表格列标题随界面语言切换。by @devhxj
+- 管理首页刷新按钮现在显示加载状态并重新请求平台概览，旧请求不会覆盖较新的刷新结果。by @devhxj
+- Starter 页面分别显示刷新、导出、表单、卡片、登录和注册反馈，避免一个操作的成功提示出现在另一个页面。by @devhxj
+
+#### 问题修复
+
+- 修复空路由目录解析时访问不存在的首个路由导致的越界异常。by @devhxj
+- 修复管理壳水平导航遗漏无障碍标签和展开/收起文案的问题，并补充键盘焦点样式。by @devhxj
 
 New Features
 
-- Automatically run compiler, RazorVue, and Vue binding coverage gates for relevant pull requests and main branch changes. Tag and manual NuGet publishing now require all gates to pass. by @devhxj
+- Admin-shell navigation now supports localized landmark and branch expand/collapse labels, and marks the current navigation and breadcrumb page explicitly. by @devhxj
 
-Chores
+Improvements
 
-- Preserve TRX, Cobertura reports for compiler and RazorVue, logs, and metric summaries in GitHub Actions so failures can be traced from one run. by @devhxj
-- Load the reporting tool from the workflow revision while loading tests and source from the tested ref, so manual verification of historical tags still checks the target code. by @devhxj
+- Replace the Starter overview trend with a two-series line-area chart, isolate list and card search state, and localize table column titles with the interface language. by @devhxj
+- Make the administration refresh action show loading state and fetch the platform overview again without allowing stale requests to overwrite newer results. by @devhxj
+- Give Starter refresh, export, form, card, login, and registration actions separate feedback state so messages stay with the operation that produced them. by @devhxj
 
+Bug Fixes
+
+- Prevent empty route catalogs from indexing a missing first route during resolution. by @devhxj
+- Add accessibility labels and localized expand/collapse text to horizontal shell navigation, with visible keyboard focus styles. by @devhxj
 ## 2026-09-08
 
 ### Jazor 0.32.0
