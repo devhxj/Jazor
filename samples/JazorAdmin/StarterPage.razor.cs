@@ -571,6 +571,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
     {
         advancedApproved = true;
         submitted = true;
+        feedbackKind = "approval";
     }
 
     private void CloseAdvancedDialog()
