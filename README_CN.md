@@ -1,5 +1,7 @@
 <div align="center">
 
+![今日诗词](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+
 <h1>Jazor</h1>
 
 <p><strong>将受支持的 C# 语义编译为确定性 ECMAScript 模块的强类型 .NET 工具链。</strong></p>

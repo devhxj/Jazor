@@ -1,5 +1,7 @@
 <div align="center">
 
+![Today's Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
+
 <h1>Jazor</h1>
 
 <p><strong>A typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules.</strong></p>
