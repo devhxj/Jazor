@@ -34,10 +34,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest release
 
-### [Jazor 0.33.0](https://github.com/devhxj/Jazor/releases/tag/v0.33.0) · 2026-09-09
+### Jazor 0.34.0 · 2026-09-09
 
-- `Jazor.Admin` now provides localized navigation labels, explicit current-page semantics, safe empty-route handling, and visible keyboard focus states.
-- The JazorAdmin Starter reference app now includes a comparative line-area trend, real refresh loading, isolated search state, localized table headings, and operation-specific feedback.
+- `Jazor.Admin` now exposes short `J`-prefixed public components: `JLayout`, `JFrame`, `JHeader`, `JSidebar`, `JPage`, `JBreadcrumb`, and `JAction`.
+- The component base classes are now `JComponentBase` and `JContentComponentBase`. Existing model contracts remain unchanged.
+- This is a breaking migration. Update Razor tags, C# references, container injection declarations, and custom component base classes before upgrading.
 
 Read the [release notes](CHANGELOG.md) for the complete history.
 
@@ -113,7 +114,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.33.0
+dotnet add package Jazor --version 0.34.0
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -121,8 +122,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.33.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.33.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.34.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.34.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
