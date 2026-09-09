@@ -1,0 +1,11 @@
+@inherits AdminComponentBase
+
+@if (ItemsToRender.Length > 0)
+{
+    <nav class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
+        @foreach (var item in ItemsToRender)
+        {
+            @RenderItem(item, ReferenceEquals(item, ItemsToRender[^1]))
+        }
+    </nav>
+}

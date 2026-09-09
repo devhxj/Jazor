@@ -36,20 +36,9 @@ public partial class ApplicationFrame : AdminContentComponentBase, IVueContainer
         }
     }
 
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        EnsureStylesRegistered();
+    private bool HasContent => true;
 
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", RootCssClass);
-        builder.AddAttribute(2, "style", RootStyle);
-        builder.AddAttribute(3, "lang", LanguageTag);
-        builder.AddAttribute(4, "data-theme", Theme);
-        builder.AddAttribute(5, "data-grayscale", Grayscale);
-        builder.AddMultipleAttributes(6, AdditionalAttributes);
-        builder.AddContent(7, ChildContent);
-        builder.CloseElement();
-    }
+    protected override void OnInitialized() => EnsureStylesRegistered();
 
     // Keep the display-text host call in a member position: render-position references
     // alone make RazorVue import collection emit a phantom class-name binding that the

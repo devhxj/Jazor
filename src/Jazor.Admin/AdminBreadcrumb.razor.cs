@@ -12,31 +12,9 @@ public partial class AdminBreadcrumb : AdminComponentBase, IVueContainerComponen
 
     private AdminBreadcrumbItem[] EffectiveItems => FilterRenderableItems(Items);
 
+    private AdminBreadcrumbItem[] ItemsToRender => EffectiveItems;
+
     private VueClassValue RootCssClass => BuildCssClass("ja-breadcrumb");
-
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var items = EffectiveItems;
-        if (items.Length == 0)
-        {
-            return;
-        }
-
-        // RazorVue 直线降低只接受 SG 形状的 foreach；当前页判断需在循环外预取末项。
-        var lastItem = items[^1];
-
-        builder.OpenElement(0, "nav");
-        builder.AddAttribute(1, "class", RootCssClass);
-        builder.AddAttribute(2, "style", CssStyle);
-        builder.AddMultipleAttributes(3, AdditionalAttributes);
-
-        foreach (var item in items)
-        {
-            builder.AddContent(4, RenderItem(item, ReferenceEquals(item, lastItem)));
-        }
-
-        builder.CloseElement();
-    }
 
     private RenderFragment RenderItem(AdminBreadcrumbItem item, bool isCurrent) => builder =>
     {
