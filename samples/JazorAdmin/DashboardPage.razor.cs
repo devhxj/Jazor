@@ -23,6 +23,7 @@ public partial class DashboardPage : AppComponentBase, IVueContainerComponent
     private bool loading = true;
     private string? error;
     private OverviewView? overview;
+    private int loadVersion;
 
     // KPI 数字卡走 VueUiKpi；Responsive 只解析宽度，图表容器必须提供确定高度。
     private static readonly VueUiKpiConfig ApplicationKpiConfig = new()
@@ -135,10 +136,14 @@ public partial class DashboardPage : AppComponentBase, IVueContainerComponent
 
     private void Load()
     {
+        var requestVersion = ++loadVersion;
         loading = true;
         error = null;
         ApiClient.GetOverview().Then(outcome =>
         {
+            if (requestVersion != loadVersion)
+                return;
+
             loading = false;
             if (!outcome.Ok || outcome.Data is null)
             {

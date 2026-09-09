@@ -93,6 +93,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
     private int cardPage = 1;
     private int currentStep = 1;
     private bool submitted;
+    private string feedbackKind = string.Empty;
     private string stepError = string.Empty;
     private bool advancedApproved;
     private bool advancedDialogVisible;
@@ -342,6 +343,18 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
     private void OpenBaseContract()
         => Navigate("/starter/form/base");
 
+    private void RefreshStarterDashboard()
+    {
+        submitted = true;
+        feedbackKind = "refresh";
+    }
+
+    private void ExportStarterReport()
+    {
+        submitted = true;
+        feedbackKind = "export";
+    }
+
     private void OpenBaseDetail()
         => Navigate("/starter/detail/base");
 
@@ -390,6 +403,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
                 Session?.DisplayName ?? "Administrator")
         ]).ToArray();
         submitted = true;
+        feedbackKind = "card-created";
         cardDialogVisible = false;
     }
 
@@ -451,6 +465,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
     {
         listPage = 1;
         submitted = true;
+        feedbackKind = "filter";
     }
 
     private void ResetContractFilters(TFormResetEventContext<StarterFilterDraft> context)
@@ -460,11 +475,15 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         filterDraft.Code = string.Empty;
         filterDraft.Type = string.Empty;
         submitted = false;
+        feedbackKind = string.Empty;
         listPage = 1;
     }
 
     private void SubmitBaseForm(TSubmitContext<StarterContractDraft> context)
-        => submitted = true;
+    {
+        submitted = true;
+        feedbackKind = "form";
+    }
 
     private void ResetBaseForm(TFormResetEventContext<StarterContractDraft> context)
     {
@@ -480,6 +499,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         contractDraft.Remark = string.Empty;
         attachments = [];
         submitted = false;
+        feedbackKind = string.Empty;
     }
 
     private void SubmitStep(TSubmitContext<StarterStepDraft> context)
@@ -498,6 +518,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         }
 
         submitted = true;
+        feedbackKind = "step";
         if (currentStep < 4)
             currentStep++;
     }
@@ -514,11 +535,13 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         stepDraft.MobileNumber = string.Empty;
         stepDraft.Address = string.Empty;
         submitted = false;
+        feedbackKind = string.Empty;
     }
 
     private void PreviousStep()
     {
         submitted = false;
+        feedbackKind = string.Empty;
         stepError = string.Empty;
         if (currentStep > 1)
             currentStep--;
@@ -528,6 +551,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
     {
         currentStep = 1;
         submitted = false;
+        feedbackKind = string.Empty;
         stepError = string.Empty;
     }
 
@@ -593,6 +617,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
     {
         isRegistering = !isRegistering;
         submitted = false;
+        feedbackKind = string.Empty;
         loginDraft.Error = string.Empty;
     }
 
@@ -600,6 +625,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
     {
         loginDraft.Error = string.Empty;
         submitted = true;
+        feedbackKind = "login";
     }
 
     private void SubmitStarterRegistration(TSubmitContext<StarterLoginDraft> context)
@@ -608,11 +634,13 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         {
             loginDraft.Error = L("Passwords do not match.", "两次密码不一致。");
             submitted = false;
+            feedbackKind = string.Empty;
             return;
         }
 
         loginDraft.Error = string.Empty;
         submitted = true;
+        feedbackKind = "registration";
     }
 
     private TTagThemeValue StatusTheme(string status)

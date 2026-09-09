@@ -5,7 +5,7 @@
     <section class="ja-page ja-starter-page" data-starter-page="dashboard-base">
         <header class="ja-panel__header">
             <div><h2>@L("Overview", "概览")</h2><p>@L("A focused view of current platform work.", "查看当前平台工作的核心指标。")</p></div>
-            <TButton Theme="@TButtonThemeValue.Primary" data-starter-command="refresh" OnClick="@(_ => submitted = true)">@L("Refresh", "刷新")</TButton>
+            <TButton Theme="@TButtonThemeValue.Primary" data-starter-command="refresh" OnClick="@RefreshStarterDashboard">@L("Refresh", "刷新")</TButton>
         </header>
         <div class="ja-starter-metrics">
             <TCard TitleValue="@L("Total visits", "总访问量")" Bordered="@true"><ContentSlot><strong class="ja-starter-metric-value">46,982</strong><TTag Theme="@TTagThemeValue.Success" ContentValue="+12.5%" /></ContentSlot></TCard>
@@ -24,16 +24,17 @@
         <TCard TitleValue="@L("Recent projects", "最近项目")" Bordered="@true">
             <ContentSlot><TTable T="StarterRow" Data="@rows" Columns="@TableColumns" RowKey="Code" OnRowClick="@SelectRow" /></ContentSlot>
         </TCard>
-        @if (submitted) { <TAlert Theme="@TAlertThemeValue.Success" MessageValue="@L("Dashboard refreshed.", "仪表盘已刷新。")" data-starter-message="refresh" /> }
+        @if (submitted && feedbackKind == "refresh") { <TAlert Theme="@TAlertThemeValue.Success" MessageValue="@L("Dashboard refreshed.", "仪表盘已刷新。")" data-starter-message="refresh" /> }
     </section>
 }
 else if (Template == "dashboard-detail")
 {
     <section class="ja-page ja-starter-page" data-starter-page="dashboard-detail">
-        <header class="ja-panel__header"><div><h2>@L("Operational dashboard", "运营数据报表")</h2><p>@L("Detailed indicators for the current operating window.", "当前运行窗口的详细指标。")</p></div><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => submitted = true)">@L("Export report", "导出报表")</TButton></header>
+        <header class="ja-panel__header"><div><h2>@L("Operational dashboard", "运营数据报表")</h2><p>@L("Detailed indicators for the current operating window.", "当前运行窗口的详细指标。")</p></div><TButton Theme="@TButtonThemeValue.Primary" OnClick="@ExportStarterReport">@L("Export report", "导出报表")</TButton></header>
         <div class="ja-starter-metrics"><TCard TitleValue="@L("Total visits", "总访问量")"><ContentSlot><strong class="ja-starter-metric-value">46,982</strong><TTag Theme="@TTagThemeValue.Success" ContentValue="+12.5%" /></ContentSlot></TCard><TCard TitleValue="@L("New users", "新增用户")"><ContentSlot><strong class="ja-starter-metric-value">1,268</strong><TTag Theme="@TTagThemeValue.Success" ContentValue="+8.2%" /></ContentSlot></TCard><TCard TitleValue="@L("Conversion", "转化率")"><ContentSlot><strong class="ja-starter-metric-value">32.8%</strong><TTag Theme="@TTagThemeValue.Primary" ContentValue="+3.1%" /></ContentSlot></TCard><TCard TitleValue="@L("Pending work", "待处理事项")"><ContentSlot><strong class="ja-starter-metric-value">18</strong><TTag Theme="@TTagThemeValue.Warning" ContentValue="-4" /></ContentSlot></TCard></div>
         <div class="ja-page__split"><TCard TitleValue="@L("Visit trend", "访问趋势")"><ContentSlot><div class="ja-chart-host" role="img" aria-label="@L("Visit trend", "访问趋势")"><VueUiXy Dataset="@StarterTrendSeries" Config="@StarterTrendXyConfig" /></div></ContentSlot></TCard><TCard TitleValue="@L("Channel distribution", "渠道分布")"><ContentSlot><div class="ja-chart-host"><VueUiDonut Dataset="@StarterDistributionItems" Config="@StarterDistributionConfig" /></div></ContentSlot></TCard></div>
         <TCard TitleValue="@L("Recent projects", "最近项目")"><ContentSlot><TTable T="StarterRow" Data="@rows" Columns="@TableColumns" RowKey="Code" /></ContentSlot></TCard>
+        @if (submitted && feedbackKind == "export") { <TAlert Theme="@TAlertThemeValue.Info" MessageValue="@L("Report export is prepared for this demo view.", "演示页面已准备报表导出内容。")" data-starter-message="export" /> }
     </section>
 }
 else if (Template == "list-base")

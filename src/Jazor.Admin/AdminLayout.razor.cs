@@ -200,10 +200,13 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
                         navigationBuilder.OpenComponent<SidebarMenu>(0);
                         navigationBuilder.AddComponentParameter(1, nameof(AdminComponentBase.CssClass), (VueClassValue)"ja-sidebar--horizontal");
                         navigationBuilder.AddComponentParameter(2, nameof(SidebarMenu.Items), NavItems);
-                        navigationBuilder.AddComponentParameter(3, nameof(SidebarMenu.SelectedKey), SelectedKey);
-                        navigationBuilder.AddComponentParameter(4, nameof(SidebarMenu.ExpandedKeys), ExpandedKeys);
-                        navigationBuilder.AddComponentParameter(5, nameof(SidebarMenu.SelectedKeyChanged), SelectedKeyChanged);
-                        navigationBuilder.AddComponentParameter(6, nameof(SidebarMenu.ExpandedKeysChanged), ExpandedKeysChanged);
+                        navigationBuilder.AddComponentParameter(3, nameof(SidebarMenu.NavigationLabel), NavigationLabel);
+                        navigationBuilder.AddComponentParameter(4, nameof(SidebarMenu.ExpandLabel), ExpandLabel);
+                        navigationBuilder.AddComponentParameter(5, nameof(SidebarMenu.CollapseLabel), CollapseLabel);
+                        navigationBuilder.AddComponentParameter(6, nameof(SidebarMenu.SelectedKey), SelectedKey);
+                        navigationBuilder.AddComponentParameter(7, nameof(SidebarMenu.ExpandedKeys), ExpandedKeys);
+                        navigationBuilder.AddComponentParameter(8, nameof(SidebarMenu.SelectedKeyChanged), SelectedKeyChanged);
+                        navigationBuilder.AddComponentParameter(9, nameof(SidebarMenu.ExpandedKeysChanged), ExpandedKeysChanged);
                         navigationBuilder.CloseComponent();
                     }));
                     builder.AddComponentParameter(33, nameof(HeaderBar.Actions), headerActions);

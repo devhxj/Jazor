@@ -2,6 +2,18 @@
 @inherits AppComponentBase
 
 <section class="ja-page" data-dashboard="administration">
+    <header class="ja-panel__header">
+        <div>
+            <h1>@L("Overview", "概览")</h1>
+            <p>@L("Live platform statistics and recent activity.", "平台实时统计与近期活动。")</p>
+        </div>
+        <TButton Theme="@TButtonThemeValue.Primary"
+                 Loading="@loading"
+                 OnClick="@(_ => Load())"
+                 aria-label="@L("Refresh overview", "刷新概览")">
+            @L("Refresh", "刷新")
+        </TButton>
+    </header>
     @if (error is not null)
     {
         <TAlert Theme="@TAlertThemeValue.Error" MessageValue="@error" role="alert" />
