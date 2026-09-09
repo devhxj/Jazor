@@ -40,7 +40,9 @@ public static class AdminRouteCatalog
         string fallbackKey)
         => FindByPath(routes, path)
            ?? FindByKey(routes, fallbackKey)
-           ?? routes[0];
+           ?? (routes.Length > 0
+               ? routes[0]
+               : new AdminRouteDefinition { Key = fallbackKey });
 
     public static AdminNavItems BuildNavigation(AdminRouteDefinition[] routes)
     {
@@ -114,6 +116,11 @@ public static class AdminRouteCatalog
         IVueComponent shellComponent,
         string fallbackKey)
     {
+        if (routes.Length == 0)
+        {
+            return Array.Empty<RouteRecordRaw>();
+        }
+
         var records = new List<RouteRecordRaw>();
         AddRouteRecords(routes, shellComponent, records);
 

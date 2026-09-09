@@ -31,6 +31,19 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
     [Parameter]
     public RenderFragment? Logo { get; set; }
 
+    /// <summary>
+    /// Accessible name for the navigation landmark. Applications can localize this
+    /// label while the shell keeps the navigation semantics consistent.
+    /// </summary>
+    [Parameter]
+    public string NavigationLabel { get; set; } = "Primary navigation";
+
+    [Parameter]
+    public string ExpandLabel { get; set; } = "Expand";
+
+    [Parameter]
+    public string CollapseLabel { get; set; } = "Collapse";
+
     private AdminNavItemRenderHelper.EffectiveNavItem[] EffectiveItems
         => AdminNavItemRenderHelper.BuildEffectiveItems(Items?.AsArray);
 
@@ -51,7 +64,8 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         builder.OpenElement(0, "nav");
         builder.AddAttribute(1, "class", RootCssClass);
         builder.AddAttribute(2, "style", CssStyle);
-        builder.AddMultipleAttributes(3, AdditionalAttributes);
+        builder.AddAttribute(3, "aria-label", NavigationLabel);
+        builder.AddMultipleAttributes(4, AdditionalAttributes);
 
         if (logo is not null)
         {
@@ -99,8 +113,9 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
             builder.AddAttribute(7, "class", "ja-sidebar__button ja-sidebar__button--branch");
             builder.AddAttribute(8, "disabled", isDisabled || !hasNavigableChildren);
             builder.AddAttribute(9, "aria-expanded", isExpanded);
-            builder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggledCore(item)));
-            builder.AddContent(11, RenderItemContent(item));
+            builder.AddAttribute(10, "aria-label", BranchToggleLabel(item, isExpanded));
+            builder.AddAttribute(11, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggledCore(item)));
+            builder.AddContent(12, RenderItemContent(item));
             builder.CloseElement();
         }
         else
@@ -115,8 +130,10 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
             builder.AddAttribute(22, "class", "ja-sidebar__toggle");
             builder.AddAttribute(23, "disabled", isDisabled);
             builder.AddAttribute(24, "aria-expanded", isExpanded);
-            builder.AddAttribute(25, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggledCore(item)));
-            builder.AddContent(26, isExpanded ? "-" : "+");
+            builder.AddAttribute(25, "aria-label", BranchToggleLabel(item, isExpanded));
+            builder.AddAttribute(26, "title", BranchToggleLabel(item, isExpanded));
+            builder.AddAttribute(27, "onclick", EventCallback.Factory.Create(this, () => OnBranchToggledCore(item)));
+            builder.AddContent(28, isExpanded ? "−" : "+");
             builder.CloseElement();
         }
 
@@ -166,6 +183,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
     private RenderFragment RenderNavigationElement(AdminNavItemRenderHelper.EffectiveNavItem item, bool isDisabled) => builder =>
     {
         var navigationTarget = ResolveNavigationTarget(item);
+        var isSelected = IsSelectedCore(item);
 
         if (!isDisabled && navigationTarget.HasRoute)
         {
@@ -173,7 +191,9 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
             builder.AddAttribute(1, nameof(VueRouterLink.CssClass), (VueClassValue)"ja-sidebar__link");
             builder.AddAttribute(2, nameof(VueRouterLink.To), navigationTarget.Route);
             builder.AddAttribute(3, nameof(VueRouterLink.OnClick), EventCallback.Factory.Create<MouseEvent>(this, _ => OnItemSelectedCore(item)));
-            builder.AddAttribute(4, nameof(VueRouterLink.ChildContent), RenderItemContent(item));
+            if (isSelected)
+                builder.AddAttribute(4, "aria-current", "page");
+            builder.AddAttribute(5, nameof(VueRouterLink.ChildContent), RenderItemContent(item));
             builder.CloseComponent();
             return;
         }
@@ -184,7 +204,9 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
             builder.AddAttribute(11, "class", "ja-sidebar__link");
             builder.AddAttribute(12, "href", navigationTarget.Href);
             builder.AddAttribute(13, "onclick", EventCallback.Factory.Create(this, () => OnItemSelectedCore(item)));
-            builder.AddContent(14, RenderItemContent(item));
+            if (isSelected)
+                builder.AddAttribute(14, "aria-current", "page");
+            builder.AddContent(15, RenderItemContent(item));
             builder.CloseElement();
             return;
         }
@@ -202,6 +224,9 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
         builder.AddContent(26, RenderItemContent(item));
         builder.CloseElement();
     };
+
+    private string BranchToggleLabel(AdminNavItemRenderHelper.EffectiveNavItem item, bool isExpanded)
+        => $"{(isExpanded ? CollapseLabel : ExpandLabel)} {item.Title}";
 
     /// <summary>
     /// Icon plus title shared by every navigation element variant so link, anchor,

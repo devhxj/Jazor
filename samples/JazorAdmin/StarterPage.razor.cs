@@ -79,7 +79,8 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
     private StarterRow[] cardRows = CreateRows();
     private StarterNotice[] notices = CreateNotices();
     private TUploadFile[] attachments = [];
-    private string query = string.Empty;
+    private string listQuery = string.Empty;
+    private string cardQuery = string.Empty;
     private string appliedCardSearch = string.Empty;
     private string treeFilter = string.Empty;
     private string[] selectedCodes = ["PRJ-2026-001"];
@@ -101,17 +102,17 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
     private StarterRow[] deleteCandidates = [];
     private StarterRow? cardDeleteCandidate;
 
-    private static readonly TPrimaryTableCol<StarterRow>[] TableColumns =
+    private TPrimaryTableCol<StarterRow>[] TableColumns =>
     [
-        new() { ColKey = "Name", Title = (TPrimaryTableColTitle<StarterRow>)"Project" },
-        new() { ColKey = "Status", Title = (TPrimaryTableColTitle<StarterRow>)"Status" },
-        new() { ColKey = "Code", Title = (TPrimaryTableColTitle<StarterRow>)"Code" },
-        new() { ColKey = "Group", Title = (TPrimaryTableColTitle<StarterRow>)"Group" },
-        new() { ColKey = "UpdatedAt", Title = (TPrimaryTableColTitle<StarterRow>)"Updated" },
-        new() { ColKey = "Owner", Title = (TPrimaryTableColTitle<StarterRow>)"Owner" }
+        new() { ColKey = "Name", Title = (TPrimaryTableColTitle<StarterRow>)L("Project", "项目") },
+        new() { ColKey = "Status", Title = (TPrimaryTableColTitle<StarterRow>)L("Status", "状态") },
+        new() { ColKey = "Code", Title = (TPrimaryTableColTitle<StarterRow>)L("Code", "编号") },
+        new() { ColKey = "Group", Title = (TPrimaryTableColTitle<StarterRow>)L("Group", "分组") },
+        new() { ColKey = "UpdatedAt", Title = (TPrimaryTableColTitle<StarterRow>)L("Updated", "更新时间") },
+        new() { ColKey = "Owner", Title = (TPrimaryTableColTitle<StarterRow>)L("Owner", "负责人") }
     ];
 
-    private static readonly TPrimaryTableCol<StarterRow>[] BaseTableColumns =
+    private TPrimaryTableCol<StarterRow>[] BaseTableColumns =>
     [
         new() { Type = TPrimaryTableColType.Multiple },
         .. TableColumns
@@ -162,6 +163,16 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         new() { Name = "Sun", Value = 79, Color = "#0052d9" }
     ];
 
+    // The overview uses two comparable line series with area fill, matching the
+    // Starter information hierarchy while keeping the detailed demo pages on bars.
+    private VueUiXyDatasetItem[] StarterTrendSeries =>
+    [
+        new() { Name = L("Visits", "访问量"), Series = (VueUiXySeriesValues)new double?[] { 42, 68, 54, 88, 74, 91, 79 }, Type = VueUiXySeriesType.Line, Color = "#0052d9", UseArea = true, Smooth = true },
+        new() { Name = L("Previous period", "上期"), Series = (VueUiXySeriesValues)new double?[] { 36, 55, 49, 63, 60, 72, 66 }, Type = VueUiXySeriesType.Line, Color = "#8b9bb4", UseArea = true, Smooth = true }
+    ];
+
+    private static readonly VueUiXyConfig StarterTrendXyConfig = new() { Responsive = true };
+
     private VueUiVerticalBarDatasetItem[] DeploymentTrendItems =>
     [
         new() { Name = "Mon", Value = 35, Color = "#0052d9" },
@@ -204,7 +215,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
         => advancedApproved ? TTagThemeValue.Success : TTagThemeValue.Warning;
 
     private StarterRow[] FilteredRows
-        => FilterRows(rows, query);
+        => FilterRows(rows, listQuery);
 
     private StarterRow[] VisibleRows
         => Page(FilteredRows, listPage);
@@ -324,7 +335,7 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
 
     private void ChangeListQuery(string value)
     {
-        query = value;
+        listQuery = value;
         listPage = 1;
     }
 
@@ -339,13 +350,13 @@ public partial class StarterPage : AppComponentBase, IVueContainerComponent
 
     private void ApplyCardSearch()
     {
-        appliedCardSearch = query;
+        appliedCardSearch = cardQuery;
         cardPage = 1;
     }
 
     private void ChangeCardQuery(string value)
     {
-        query = value;
+        cardQuery = value;
         cardPage = 1;
     }
 

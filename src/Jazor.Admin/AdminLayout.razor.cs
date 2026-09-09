@@ -54,6 +54,10 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
     [Parameter]
     public RenderFragment? UserRegion { get; set; }
 
+    /// <summary>Accessible name applied to the default sidebar navigation landmark.</summary>
+    [Parameter]
+    public string NavigationLabel { get; set; } = "Primary navigation";
+
     // 与 AdminStyleSheet 的 mobile media query 断点保持一致；在此宽度以下侧栏是
     // overlay drawer，不再是可折叠的 grid 列。类效果被 media query 限定，桌面布局忽略该状态。
     private const string MobileBreakpointQuery = "(max-width: 760px)";
@@ -150,6 +154,9 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
                 builder.AddComponentParameter(12, nameof(SidebarMenu.SelectedKeyChanged), EventCallback.Factory.Create<string>(this, OnNavigationSelected));
                 builder.AddComponentParameter(13, nameof(SidebarMenu.ExpandedKeysChanged), ExpandedKeysChanged);
                 builder.AddComponentParameter(14, nameof(SidebarMenu.Logo), logo);
+                builder.AddComponentParameter(15, nameof(SidebarMenu.NavigationLabel), NavigationLabel);
+                builder.AddComponentParameter(16, nameof(SidebarMenu.ExpandLabel), ExpandLabel);
+                builder.AddComponentParameter(17, nameof(SidebarMenu.CollapseLabel), CollapseLabel);
                 builder.CloseComponent();
             }
             builder.CloseElement();

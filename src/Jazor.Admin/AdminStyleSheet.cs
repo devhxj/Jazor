@@ -272,7 +272,8 @@ internal static class AdminStyleSheet
         {
             justify_content = raw("flex-end"),
             min_width = raw("0"),
-            gap = raw("16px")
+            gap = raw("12px"),
+            flex_wrap = raw("wrap")
         });
         global(".ja-header__navigation", new CssRule
         {
@@ -321,6 +322,18 @@ internal static class AdminStyleSheet
         global(".ja-page__body > * + *", new CssRule
         {
             margin_top = raw("20px")
+        });
+
+        // Keep keyboard focus visible across injected controls and links. The shell
+        // intentionally does not impose a component-library focus implementation.
+        global(".ja-shell a:focus-visible, .ja-shell button:focus-visible, .ja-page a:focus-visible, .ja-page button:focus-visible", new CssRule
+        {
+            outline = px(2) | solid | var("--accent"),
+            outline_offset = px(2)
+        });
+        global(".ja-sidebar__link[aria-current='page']", new CssRule
+        {
+            font_weight = raw("650")
         });
 
         global(".ja-breadcrumb", new CssRule

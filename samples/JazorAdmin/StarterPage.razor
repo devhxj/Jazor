@@ -15,7 +15,7 @@
         </div>
         <div class="ja-page__split">
             <TCard TitleValue="@L("Visit trend", "访问趋势")" SubtitleValue="@L("Last seven days", "最近七天")" Bordered="@true">
-                <ContentSlot><div class="ja-chart-host" aria-label="@L("Visit trend", "访问趋势")"><VueUiVerticalBar Dataset="@StarterTrendItems" Config="@StarterTrendConfig" /></div></ContentSlot>
+                <ContentSlot><div class="ja-chart-host" aria-label="@L("Visit trend", "访问趋势")" role="img"><VueUiXy Dataset="@StarterTrendSeries" Config="@StarterTrendXyConfig" /></div></ContentSlot>
             </TCard>
             <TCard TitleValue="@L("Channel distribution", "渠道分布")" Bordered="@true">
                 <ContentSlot><div class="ja-chart-host"><VueUiDonut Dataset="@StarterDistributionItems" Config="@StarterDistributionConfig" /></div></ContentSlot>
@@ -32,7 +32,7 @@ else if (Template == "dashboard-detail")
     <section class="ja-page ja-starter-page" data-starter-page="dashboard-detail">
         <header class="ja-panel__header"><div><h2>@L("Operational dashboard", "运营数据报表")</h2><p>@L("Detailed indicators for the current operating window.", "当前运行窗口的详细指标。")</p></div><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => submitted = true)">@L("Export report", "导出报表")</TButton></header>
         <div class="ja-starter-metrics"><TCard TitleValue="@L("Total visits", "总访问量")"><ContentSlot><strong class="ja-starter-metric-value">46,982</strong><TTag Theme="@TTagThemeValue.Success" ContentValue="+12.5%" /></ContentSlot></TCard><TCard TitleValue="@L("New users", "新增用户")"><ContentSlot><strong class="ja-starter-metric-value">1,268</strong><TTag Theme="@TTagThemeValue.Success" ContentValue="+8.2%" /></ContentSlot></TCard><TCard TitleValue="@L("Conversion", "转化率")"><ContentSlot><strong class="ja-starter-metric-value">32.8%</strong><TTag Theme="@TTagThemeValue.Primary" ContentValue="+3.1%" /></ContentSlot></TCard><TCard TitleValue="@L("Pending work", "待处理事项")"><ContentSlot><strong class="ja-starter-metric-value">18</strong><TTag Theme="@TTagThemeValue.Warning" ContentValue="-4" /></ContentSlot></TCard></div>
-        <div class="ja-page__split"><TCard TitleValue="@L("Visit trend", "访问趋势")"><ContentSlot><div class="ja-chart-host"><VueUiVerticalBar Dataset="@StarterTrendItems" Config="@StarterTrendConfig" /></div></ContentSlot></TCard><TCard TitleValue="@L("Channel distribution", "渠道分布")"><ContentSlot><div class="ja-chart-host"><VueUiDonut Dataset="@StarterDistributionItems" Config="@StarterDistributionConfig" /></div></ContentSlot></TCard></div>
+        <div class="ja-page__split"><TCard TitleValue="@L("Visit trend", "访问趋势")"><ContentSlot><div class="ja-chart-host" role="img" aria-label="@L("Visit trend", "访问趋势")"><VueUiXy Dataset="@StarterTrendSeries" Config="@StarterTrendXyConfig" /></div></ContentSlot></TCard><TCard TitleValue="@L("Channel distribution", "渠道分布")"><ContentSlot><div class="ja-chart-host"><VueUiDonut Dataset="@StarterDistributionItems" Config="@StarterDistributionConfig" /></div></ContentSlot></TCard></div>
         <TCard TitleValue="@L("Recent projects", "最近项目")"><ContentSlot><TTable T="StarterRow" Data="@rows" Columns="@TableColumns" RowKey="Code" /></ContentSlot></TCard>
     </section>
 }
@@ -40,7 +40,7 @@ else if (Template == "list-base")
 {
     <section class="ja-page ja-starter-page" data-starter-page="list-base">
         <header class="ja-panel__header"><div><h2>@L("Base list", "基础列表")</h2><p>@L("Manage contracts with typed table actions.", "使用强类型表格管理合同。")</p></div><div class="ja-form__commands"><TButton Theme="@TButtonThemeValue.Primary" data-starter-command="create-contract" OnClick="@(_ => OpenBaseContract())"><IconContent><TIcon Name="add" /></IconContent><ContentSlot>@L("Create contract", "新建合同")</ContentSlot></TButton><TButton Variant="@TButtonVariantValue.Outline" Disabled="@(selectedCode.Length == 0)" data-starter-command="export">@L("Export", "导出")</TButton><TButton Variant="@TButtonVariantValue.Text" Disabled="@(selectedCode.Length == 0)" data-starter-command="delete" OnClick="@(_ => RequestDeleteSelected())">@L("Delete selected", "删除所选")</TButton></div></header>
-        <div class="ja-starter-toolbar"><TInput T="string" Value="@query" OnChange="@ChangeListQuery" Placeholder="@L("Search contract name", "搜索合同名称")" Clearable="@true" /><span>@L("Selected", "已选") <strong>@selectedCode</strong></span></div>
+        <div class="ja-starter-toolbar"><TInput T="string" Value="@listQuery" OnChange="@ChangeListQuery" Placeholder="@L("Search contract name", "搜索合同名称")" Clearable="@true" /><span>@L("Selected", "已选") <strong>@selectedCode</strong></span></div>
         <TCard Bordered="@true"><ContentSlot><TTable T="StarterRow" Data="@VisibleRows" Columns="@BaseTableColumns" RowKey="Code" RowSelectionType="@TTableRowSelectionTypeValue.Multiple" SelectedRowKeys="@SelectedRowKeys" OnSelectChange="@SelectRows" OnRowClick="@SelectRow" /><div class="ja-starter-row-actions"><TButton Variant="@TButtonVariantValue.Text" OnClick="@OpenBaseDetail">@L("Details", "详情")</TButton><TButton Theme="@TButtonThemeValue.Danger" Variant="@TButtonVariantValue.Text" OnClick="@RequestDeleteSelected">@L("Delete", "删除")</TButton></div></ContentSlot></TCard>
         <TPagination Current="@((Number)listPage)" Total="@((Number)VisibleRowTotal)" PageSize="@((Number)PageSize)" ShowPageSize="@false" OnCurrentChange="@ChangePage" />
     </section>
@@ -49,7 +49,7 @@ else if (Template == "list-card")
 {
     <section class="ja-page ja-starter-page" data-starter-page="list-card">
         <header class="ja-panel__header"><div><h2>@L("Card list", "卡片列表")</h2><p>@L("A responsive collection with compact actions.", "带紧凑操作区的响应式卡片集合。")</p></div><TButton Theme="@TButtonThemeValue.Primary" OnClick="@(_ => OpenCardDialog())"><IconContent><TIcon Name="add" /></IconContent><ContentSlot>@L("Create", "新建")</ContentSlot></TButton></header>
-        <div class="ja-starter-toolbar"><TInput T="string" Value="@query" OnChange="@ChangeCardQuery" Placeholder="@L("Search project", "搜索项目")" /><TButton OnClick="@(_ => ApplyCardSearch())">@L("Filter", "筛选")</TButton><TButton Variant="@TButtonVariantValue.Outline" OnClick="@(_ => SortCards())">@L("Sort", "排序")</TButton></div>
+        <div class="ja-starter-toolbar"><TInput T="string" Value="@cardQuery" OnChange="@ChangeCardQuery" Placeholder="@L("Search project", "搜索项目")" /><TButton OnClick="@(_ => ApplyCardSearch())">@L("Filter", "筛选")</TButton><TButton Variant="@TButtonVariantValue.Outline" OnClick="@(_ => SortCards())">@L("Sort", "排序")</TButton></div>
         @if (submitted) { <TAlert Theme="@TAlertThemeValue.Success" MessageValue="@L("New card draft created.", "已创建新的卡片草稿。")" /> }
         @if (VisibleCardRows.Length == 0)
         {

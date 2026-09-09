@@ -55,7 +55,12 @@ public partial class AdminBreadcrumb : AdminComponentBase, IVueContainerComponen
             builder.OpenComponent<VueRouterLink>(0);
             builder.AddAttribute(1, nameof(VueRouterLink.CssClass), (VueClassValue)cssClass);
             builder.AddAttribute(2, nameof(VueRouterLink.To), navigationTarget.Route);
-            builder.AddAttribute(3, nameof(VueRouterLink.ChildContent), (RenderFragment)(childBuilder => childBuilder.AddContent(0, title)));
+            if (isCurrent)
+            {
+                builder.AddAttribute(3, "aria-current", "page");
+            }
+
+            builder.AddAttribute(4, nameof(VueRouterLink.ChildContent), (RenderFragment)(childBuilder => childBuilder.AddContent(0, title)));
             builder.CloseComponent();
             return;
         }
@@ -65,7 +70,12 @@ public partial class AdminBreadcrumb : AdminComponentBase, IVueContainerComponen
             builder.OpenElement(10, "a");
             builder.AddAttribute(11, "class", cssClass);
             builder.AddAttribute(12, "href", navigationTarget.Href);
-            builder.AddContent(13, title);
+            if (isCurrent)
+            {
+                builder.AddAttribute(13, "aria-current", "page");
+            }
+
+            builder.AddContent(14, title);
             builder.CloseElement();
             return;
         }
