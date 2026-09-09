@@ -1,7 +1,5 @@
 <div align="center">
 
-![Today's Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
-
 <h1>Jazor</h1>
 
 <p><strong>A typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules.</strong></p>
@@ -20,6 +18,8 @@
   <a href="docs/04-roadmap/current-status.md"><img alt="At least 97 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-97%25%2B-2ea44f" /></a>
 </p>
 
+<p><a href="docs/03-guides/quick-start.md">Quick start</a> · <a href="docs/README.md">Documentation</a> · <a href="CHANGELOG.md">Changelog</a></p>
+
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
 
 </div>
@@ -30,13 +30,14 @@ Jazor is a typed .NET toolchain for compiling supported C# semantics into determ
 
 Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.
 
-## Latest Update
+## Latest release
 
-### JazorAdmin shell and Starter usability - 2026-09-09
+### [Jazor 0.33.0](https://github.com/devhxj/Jazor/releases/tag/v0.33.0) · 2026-09-09
 
-- The admin shell now exposes localized navigation labels, explicit current-page semantics, safer empty-route handling, and visible keyboard focus. The Starter overview uses a comparative line-area trend, real refresh loading, isolated search state, and operation-specific feedback.
+- `Jazor.Admin` now provides localized navigation labels, explicit current-page semantics, safe empty-route handling, and visible keyboard focus states.
+- The JazorAdmin Starter reference app now includes a comparative line-area trend, real refresh loading, isolated search state, localized table headings, and operation-specific feedback.
 
-See the [changelog](CHANGELOG.md) for the full release history.
+Read the [release notes](CHANGELOG.md) for the complete history.
 
 ## Acknowledgements
 
@@ -85,7 +86,7 @@ Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue
 | `ECMAScript.VuIcons` | Typed `vu-icons` RazorVue icons with static per-icon and dynamic catalog paths |
 | `Jazor.Admin` | UI-library-neutral admin-shell library and RazorVue components |
 
-`samples/JazorAdmin` is the production-grade admin reference application that consumes `Jazor.Admin`; it is not part of the library's public contract.
+[`samples/JazorAdmin`](samples/JazorAdmin) is the production-grade admin reference application that consumes [`Jazor.Admin`](src/Jazor.Admin/README.md); it is not part of the library's public contract.
 
 ### Library forms and direct references
 
@@ -110,7 +111,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.28.1
+dotnet add package Jazor --version 0.33.0
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -118,8 +119,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.28.1" />
-  <PackageReference Include="Jazor.Vue" Version="0.28.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.33.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.33.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

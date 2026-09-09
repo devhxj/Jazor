@@ -1,7 +1,5 @@
 <div align="center">
 
-![今日诗词](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
-
 <h1>Jazor</h1>
 
 <p><strong>将受支持的 C# 语义编译为确定性 ECMAScript 模块的强类型 .NET 工具链。</strong></p>
@@ -20,6 +18,8 @@
   <a href="docs/04-roadmap/current-status.md"><img alt="编译器分支覆盖率至少 97%" src="https://img.shields.io/badge/compiler%20branch%20coverage-97%25%2B-2ea44f" /></a>
 </p>
 
+<p><a href="docs/03-guides/quick-start.md">快速开始</a> · <a href="docs/README.md">文档</a> · <a href="CHANGELOG.md">更新日志</a></p>
+
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
 
 </div>
@@ -30,13 +30,14 @@ Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强�
 
 Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
 
-## 最新更新
+## 最新版本
 
-### 自动覆盖率门禁 - 2026-09-09
+### [Jazor 0.33.0](https://github.com/devhxj/Jazor/releases/tag/v0.33.0) · 2026-09-09
 
-- 相关 PR 与 main 分支变更自动校验编译器、RazorVue 和 Vue 绑定覆盖率；标签发布与手动发布必须通过全部三项门禁，测试报告、日志和指标摘要可在 GitHub Actions 中查阅。
+- `Jazor.Admin` 新增可本地化导航名称、明确的当前页语义、安全的空路由处理，以及清晰可见的键盘焦点状态。
+- JazorAdmin Starter 参考应用新增双系列折线面积图、真实刷新加载、独立搜索状态、本地化表格列标题和按操作区分的反馈提示。
 
-完整版本历史见 [CHANGELOG](CHANGELOG.md)。
+完整版本历史见 [更新日志](CHANGELOG.md)。
 
 ## 致谢
 
@@ -85,7 +86,7 @@ flowchart LR
 | `ECMAScript.VuIcons` | `vu-icons` 的强类型 RazorVue 图标，支持静态单图标与动态 catalog 路径 |
 | `Jazor.Admin` | UI 库无关的管理壳库与 RazorVue 组件 |
 
-`samples/JazorAdmin` 是消费 `Jazor.Admin` 的生产级管理参考应用，不属于该库的公共契约。
+[`samples/JazorAdmin`](samples/JazorAdmin) 是消费 [`Jazor.Admin`](src/Jazor.Admin/README.md) 的生产级管理参考应用，不属于该库的公共契约。
 
 ### 类库形式与直接引用
 
@@ -109,15 +110,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.28.1
+dotnet add package Jazor --version 0.33.0
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.28.1" />
-  <PackageReference Include="Jazor.Vue" Version="0.28.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.33.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.33.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
