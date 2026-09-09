@@ -1,7 +1,7 @@
 namespace Jazor.Admin;
 
 [ECMAScriptModule("./components/admin/layout")]
-public partial class AdminLayout : AdminContentComponentBase, IVueContainerComponent
+public partial class JLayout : JContentComponentBase, IVueContainerComponent
 {
     [Parameter]
     public AdminLayoutMode Mode { get; set; } = AdminLayoutMode.Sidebar;
@@ -145,18 +145,18 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
             }
             else
             {
-                builder.OpenComponent<SidebarMenu>(7);
-                builder.AddComponentParameter(8, nameof(SidebarMenu.Items), NavItems);
-                builder.AddComponentParameter(9, nameof(SidebarMenu.Collapsed), Collapsed);
-                builder.AddComponentParameter(10, nameof(SidebarMenu.SelectedKey), SelectedKey);
-                builder.AddComponentParameter(11, nameof(SidebarMenu.ExpandedKeys), ExpandedKeys);
+                builder.OpenComponent<JSidebar>(7);
+                builder.AddComponentParameter(8, nameof(JSidebar.Items), NavItems);
+                builder.AddComponentParameter(9, nameof(JSidebar.Collapsed), Collapsed);
+                builder.AddComponentParameter(10, nameof(JSidebar.SelectedKey), SelectedKey);
+                builder.AddComponentParameter(11, nameof(JSidebar.ExpandedKeys), ExpandedKeys);
                 // 导航选中后关闭移动端抽屉，同时保持对外 SelectedKeyChanged 契约不变。
-                builder.AddComponentParameter(12, nameof(SidebarMenu.SelectedKeyChanged), EventCallback.Factory.Create<string>(this, OnNavigationSelected));
-                builder.AddComponentParameter(13, nameof(SidebarMenu.ExpandedKeysChanged), ExpandedKeysChanged);
-                builder.AddComponentParameter(14, nameof(SidebarMenu.Logo), logo);
-                builder.AddComponentParameter(15, nameof(SidebarMenu.NavigationLabel), NavigationLabel);
-                builder.AddComponentParameter(16, nameof(SidebarMenu.ExpandLabel), ExpandLabel);
-                builder.AddComponentParameter(17, nameof(SidebarMenu.CollapseLabel), CollapseLabel);
+                builder.AddComponentParameter(12, nameof(JSidebar.SelectedKeyChanged), EventCallback.Factory.Create<string>(this, OnNavigationSelected));
+                builder.AddComponentParameter(13, nameof(JSidebar.ExpandedKeysChanged), ExpandedKeysChanged);
+                builder.AddComponentParameter(14, nameof(JSidebar.Logo), logo);
+                builder.AddComponentParameter(15, nameof(JSidebar.NavigationLabel), NavigationLabel);
+                builder.AddComponentParameter(16, nameof(JSidebar.ExpandLabel), ExpandLabel);
+                builder.AddComponentParameter(17, nameof(JSidebar.CollapseLabel), CollapseLabel);
                 builder.CloseComponent();
             }
             builder.CloseElement();
@@ -190,38 +190,38 @@ public partial class AdminLayout : AdminContentComponentBase, IVueContainerCompo
 
                 if (!IsSidebarLayout && hasNavigationItems)
                 {
-                    builder.OpenComponent<HeaderBar>(28);
+                    builder.OpenComponent<JHeader>(28);
                     builder.SetKey(Mode);
-                    builder.AddComponentParameter(29, nameof(HeaderBar.Title), Title);
-                    builder.AddComponentParameter(30, nameof(HeaderBar.Subtitle), Subtitle);
-                    builder.AddComponentParameter(31, nameof(HeaderBar.Logo), defaultHeaderLogo);
-                    builder.AddComponentParameter(32, nameof(HeaderBar.Navigation), (RenderFragment)(navigationBuilder =>
+                    builder.AddComponentParameter(29, nameof(JHeader.Title), Title);
+                    builder.AddComponentParameter(30, nameof(JHeader.Subtitle), Subtitle);
+                    builder.AddComponentParameter(31, nameof(JHeader.Logo), defaultHeaderLogo);
+                    builder.AddComponentParameter(32, nameof(JHeader.Navigation), (RenderFragment)(navigationBuilder =>
                     {
-                        navigationBuilder.OpenComponent<SidebarMenu>(0);
-                        navigationBuilder.AddComponentParameter(1, nameof(AdminComponentBase.CssClass), (VueClassValue)"ja-sidebar--horizontal");
-                        navigationBuilder.AddComponentParameter(2, nameof(SidebarMenu.Items), NavItems);
-                        navigationBuilder.AddComponentParameter(3, nameof(SidebarMenu.NavigationLabel), NavigationLabel);
-                        navigationBuilder.AddComponentParameter(4, nameof(SidebarMenu.ExpandLabel), ExpandLabel);
-                        navigationBuilder.AddComponentParameter(5, nameof(SidebarMenu.CollapseLabel), CollapseLabel);
-                        navigationBuilder.AddComponentParameter(6, nameof(SidebarMenu.SelectedKey), SelectedKey);
-                        navigationBuilder.AddComponentParameter(7, nameof(SidebarMenu.ExpandedKeys), ExpandedKeys);
-                        navigationBuilder.AddComponentParameter(8, nameof(SidebarMenu.SelectedKeyChanged), SelectedKeyChanged);
-                        navigationBuilder.AddComponentParameter(9, nameof(SidebarMenu.ExpandedKeysChanged), ExpandedKeysChanged);
+                        navigationBuilder.OpenComponent<JSidebar>(0);
+                        navigationBuilder.AddComponentParameter(1, nameof(JComponentBase.CssClass), (VueClassValue)"ja-sidebar--horizontal");
+                        navigationBuilder.AddComponentParameter(2, nameof(JSidebar.Items), NavItems);
+                        navigationBuilder.AddComponentParameter(3, nameof(JSidebar.NavigationLabel), NavigationLabel);
+                        navigationBuilder.AddComponentParameter(4, nameof(JSidebar.ExpandLabel), ExpandLabel);
+                        navigationBuilder.AddComponentParameter(5, nameof(JSidebar.CollapseLabel), CollapseLabel);
+                        navigationBuilder.AddComponentParameter(6, nameof(JSidebar.SelectedKey), SelectedKey);
+                        navigationBuilder.AddComponentParameter(7, nameof(JSidebar.ExpandedKeys), ExpandedKeys);
+                        navigationBuilder.AddComponentParameter(8, nameof(JSidebar.SelectedKeyChanged), SelectedKeyChanged);
+                        navigationBuilder.AddComponentParameter(9, nameof(JSidebar.ExpandedKeysChanged), ExpandedKeysChanged);
                         navigationBuilder.CloseComponent();
                     }));
-                    builder.AddComponentParameter(33, nameof(HeaderBar.Actions), headerActions);
-                    builder.AddComponentParameter(34, nameof(HeaderBar.UserRegion), userRegion);
+                    builder.AddComponentParameter(33, nameof(JHeader.Actions), headerActions);
+                    builder.AddComponentParameter(34, nameof(JHeader.UserRegion), userRegion);
                     builder.CloseComponent();
                 }
                 else
                 {
-                    builder.OpenComponent<HeaderBar>(35);
+                    builder.OpenComponent<JHeader>(35);
                     builder.SetKey(Mode);
-                    builder.AddComponentParameter(36, nameof(HeaderBar.Title), Title);
-                    builder.AddComponentParameter(37, nameof(HeaderBar.Subtitle), Subtitle);
-                    builder.AddComponentParameter(38, nameof(HeaderBar.Logo), defaultHeaderLogo);
-                    builder.AddComponentParameter(39, nameof(HeaderBar.Actions), headerActions);
-                    builder.AddComponentParameter(40, nameof(HeaderBar.UserRegion), userRegion);
+                    builder.AddComponentParameter(36, nameof(JHeader.Title), Title);
+                    builder.AddComponentParameter(37, nameof(JHeader.Subtitle), Subtitle);
+                    builder.AddComponentParameter(38, nameof(JHeader.Logo), defaultHeaderLogo);
+                    builder.AddComponentParameter(39, nameof(JHeader.Actions), headerActions);
+                    builder.AddComponentParameter(40, nameof(JHeader.UserRegion), userRegion);
                     builder.CloseComponent();
                 }
             }

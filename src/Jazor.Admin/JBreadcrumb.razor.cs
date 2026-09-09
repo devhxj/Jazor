@@ -1,11 +1,11 @@
 namespace Jazor.Admin;
 
 /// <summary>
-/// Standalone breadcrumb renderer shared with <see cref="PageContainer" />.
-/// 导航语义与 PageContainer 一致：RouteTarget 优先于 Href，两者皆无时渲染纯文本。
+/// Standalone breadcrumb renderer shared with <see cref="JPage" />.
+/// 导航语义与 JPage 一致：RouteTarget 优先于 Href，两者皆无时渲染纯文本。
 /// </summary>
 [ECMAScriptModule("./components/admin/breadcrumb")]
-public partial class AdminBreadcrumb : AdminComponentBase, IVueContainerComponent
+public partial class JBreadcrumb : JComponentBase, IVueContainerComponent
 {
     [Parameter]
     public AdminBreadcrumbItem[]? Items { get; set; }
@@ -75,7 +75,7 @@ public partial class AdminBreadcrumb : AdminComponentBase, IVueContainerComponen
         builder.CloseElement();
     };
 
-    // Member-position wrapper for the display-text host call; see ApplicationFrame.LanguageTag
+    // Member-position wrapper for the display-text host call; see JFrame.LanguageTag
     // for why the helper must not be called directly from render-position code.
     private static string? NormalizeTitle(AdminBreadcrumbItem item)
         => AdminDisplayTextHelper.Normalize(item.Title);

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace JazorAdmin;
 
 [ECMAScriptModule("./components/tdesign/page")]
-public partial class TDesignPageContainer : AdminContentComponentBase
+public partial class TDesignPageContainer : JContentComponentBase
 {
     [Parameter]
     public string? Title { get; set; }

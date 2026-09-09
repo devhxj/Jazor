@@ -103,7 +103,7 @@ static void AssertGeneratedArtifacts(string generatedOutputRoot)
     var bootstrapModulePath = RequireModulePath(modulePaths, "JazorAdmin.Bootstrap");
     var routesModulePath = RequireModulePath(modulePaths, "JazorAdmin.Routes");
     var routeCatalogModulePath = RequireModulePath(modulePaths, "Jazor.Admin.AdminRouteCatalog");
-    var applicationFrameModulePath = RequireModulePath(modulePaths, "Jazor.Admin.ApplicationFrame");
+    var applicationFrameModulePath = RequireModulePath(modulePaths, "Jazor.Admin.JFrame");
     var adminLayoutModulePath = RequireModulePath(modulePaths, "JazorAdmin.TDesignLayout");
     var sidebarModulePath = RequireModulePath(modulePaths, "JazorAdmin.TDesignSidebarMenu");
     var pageContainerModulePath = RequireModulePath(modulePaths, "JazorAdmin.TDesignPageContainer");
@@ -359,7 +359,7 @@ static void AssertInjectGeneratedArtifacts(string generatedOutputRoot)
     AssertPathExists(manifestPath, "generated JazorAdmin VueInject manifest");
     var modulePaths = ReadModulePaths(manifestPath);
     var appModulePath = RequireModulePath(modulePaths, "JazorAdmin.InjectSmoke.InjectApp");
-    var containerModulePath = RequireModulePath(modulePaths, "JazorAdmin.InjectSmoke.InjectPageContainer");
+    var containerModulePath = RequireModulePath(modulePaths, "JazorAdmin.InjectSmoke.InjectJPage");
     var appPath = Path.Combine(generatedOutputRoot, appModulePath);
     var containerPath = Path.Combine(generatedOutputRoot, containerModulePath);
     AssertPathExists(appPath, "generated JazorAdmin VueInject app module");

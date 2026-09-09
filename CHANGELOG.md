@@ -2,6 +2,26 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 未发布
+
+### Jazor.Admin 公共组件命名迁移
+
+> 下一次能力版本将以破坏性变更方式发布。所有 `Jazor.Admin` 公共组件和组件基类统一使用简短的 `J` 前缀。
+
+#### 迁移说明
+
+- `AdminLayout` → `JLayout`
+- `ApplicationFrame` → `JFrame`
+- `HeaderBar` → `JHeader`
+- `SidebarMenu` → `JSidebar`
+- `PageContainer` → `JPage`
+- `AdminBreadcrumb` → `JBreadcrumb`
+- `PageAction` → `JAction`
+- `AdminComponentBase` → `JComponentBase`
+- `AdminContentComponentBase` → `JContentComponentBase`
+
+模型类型（例如 `AdminLayoutMode`、`AdminPageAction`、`AdminBreadcrumbItem`）保持原名。调用方需要同步更新 Razor 标签、C# 类型引用、容器替换声明和自定义组件基类。
+
 ## 2026-09-09
 
 ### Jazor 0.33.0

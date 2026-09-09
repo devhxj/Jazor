@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Jazor.Admin;
 
-public abstract class AdminComponentBase : ComponentBase, IVueComponent
+public abstract class JComponentBase : ComponentBase, IVueComponent
 {
     [Parameter]
     public VueClassValue? CssClass { get; set; }
@@ -72,7 +72,7 @@ public abstract class AdminComponentBase : ComponentBase, IVueComponent
     }
 }
 
-public abstract class AdminContentComponentBase : AdminComponentBase
+public abstract class JContentComponentBase : JComponentBase
 {
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

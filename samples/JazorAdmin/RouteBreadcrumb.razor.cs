@@ -6,7 +6,7 @@ namespace JazorAdmin;
 /// Renders the current route hierarchy between the tab strip and page content.
 /// </summary>
 [ECMAScriptModule("./components/route-breadcrumb")]
-public partial class RouteBreadcrumb : AdminComponentBase
+public partial class RouteBreadcrumb : JComponentBase
 {
     [Parameter]
     public AdminBreadcrumbItem[] Items { get; set; } = [];

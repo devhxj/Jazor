@@ -1,7 +1,7 @@
 namespace Jazor.Admin;
 
 [ECMAScriptModule("./components/admin/frame")]
-public partial class ApplicationFrame : AdminContentComponentBase, IVueContainerComponent
+public partial class JFrame : JContentComponentBase, IVueContainerComponent
 {
     [Parameter]
     public AdminThemeMode Theme { get; set; }

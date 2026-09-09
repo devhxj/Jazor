@@ -4,7 +4,7 @@ namespace Jazor.Admin;
 /// Renders one page action using the shared RouteTarget, Href, and button contract.
 /// </summary>
 [ECMAScriptModule("./components/admin/page-action")]
-public partial class PageAction : AdminComponentBase, IVueContainerComponent
+public partial class JAction : JComponentBase, IVueContainerComponent
 {
     [Parameter]
     public AdminPageAction Action { get; set; } = new();

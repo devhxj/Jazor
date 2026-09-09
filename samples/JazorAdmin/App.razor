@@ -2,7 +2,7 @@
 
 @{ EnsureShellStyles(); }
 
-<ApplicationFrame Theme="@Theme" Language="@languageTag" CssStyle="@ApplicationStyle">
+<JFrame Theme="@Theme" Language="@languageTag" CssStyle="@ApplicationStyle">
     <style data-starter-theme="">@BrandThemeCss</style>
     @if (sessionRestoring && currentRoute.Path != "/login" && currentRoute.Path != "/lock")
     {
@@ -430,4 +430,4 @@
                              Language="@Language" />
         }
     }
-</ApplicationFrame>
+</JFrame>

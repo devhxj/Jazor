@@ -23,10 +23,10 @@
 ## 职责
 
 - 提供导航、面包屑、页面操作、布局模式和应用级显示状态等强类型模型。
-- 提供 `ApplicationFrame`、`AdminLayout`、`SidebarMenu`、`HeaderBar`、`PageContainer` 和 `AdminBreadcrumb` 等原生 RazorVue 管理壳组件。
-- `SidebarMenu` 支持通过 `IconTemplate`（`RenderFragment<AdminNavItem>`）注入应用侧图标渲染；未提供时仅输出带 `data-icon` 的占位 span，不绑定任何第三方图标实现。
-- `SidebarMenu` 和 `AdminLayout` 为导航 landmark 提供可本地化的 `NavigationLabel`，分支切换按钮提供 `ExpandLabel` / `CollapseLabel`，并在当前路由项上输出 `aria-current="page"`。
-- `AdminLayout` 在窄视口（≤760px）下将侧栏切换为 overlay 抽屉：backdrop 点击与导航选中后关闭，桌面视口维持原折叠列契约。
+- 提供 `JFrame`、`JLayout`、`JSidebar`、`JHeader`、`JPage` 和 `JBreadcrumb` 等原生 RazorVue 管理壳组件。
+- `JSidebar` 支持通过 `IconTemplate`（`RenderFragment<AdminNavItem>`）注入应用侧图标渲染；未提供时仅输出带 `data-icon` 的占位 span，不绑定任何第三方图标实现。
+- `JSidebar` 和 `JLayout` 为导航 landmark 提供可本地化的 `NavigationLabel`，分支切换按钮提供 `ExpandLabel` / `CollapseLabel`，并在当前路由项上输出 `aria-current="page"`。
+- `JLayout` 在窄视口（≤760px）下将侧栏切换为 overlay 抽屉：backdrop 点击与导航选中后关闭，桌面视口维持原折叠列契约。
 - 通过 `IVueContainerComponent` 与 `IVueContainerImplementation<TContainer>` 支持应用在保持公共容器契约的前提下替换具体实现。
 - 以 `Href` 表示普通链接，以 `RouteTarget` 表示强类型 Vue Router 导航；路由目标优先于普通链接。
 - 空导航目录会安全地产生空路由记录；`AdminRouteCatalog.Resolve` 在没有候选路由时返回带 fallback key 的定义，不会因访问 `routes[0]` 抛出异常。
@@ -34,14 +34,14 @@
 ## 组件实现约定
 
 - 组件的静态 HTML 结构优先放在 `.razor` 文件中，参数、派生状态和事件处理放在同名 `.razor.cs` 文件中。
-- `HeaderBar`、`ApplicationFrame`、`AdminBreadcrumb`、`PageAction` 和 `SidebarMenu` 的外层结构已经遵循这一约定。
+- `JHeader`、`JFrame`、`JBreadcrumb`、`JAction` 和 `JSidebar` 的外层结构已经遵循这一约定。
 - 递归菜单项、复杂 `RenderFragment` 插槽和 RazorVue direct render 尚未支持的形状可以保留在 `.razor.cs`；迁移必须以生成诊断和最终 `.mjs` 链接结果通过为准。
 - 不要为了追求模板化而引入中间 JavaScript 标记协议；组件应直接生成最终 Vue render-function 结构。
 
 ## 命名约定
 
-- `Jazor.Admin` 的公共组件建议使用 `J` 前缀，例如 `JAdminLayout`、`JSidebarMenu` 和 `JPageContainer`，以便在同时使用 TDesign、Vuetify 或其他组件库时避免标签名冲突。
-- 现有 `AdminLayout`、`SidebarMenu`、`PageContainer` 等名称属于已发布公共 API，后续迁移应通过带 `J` 前缀的新入口逐步完成，不直接删除旧名称。
+- `Jazor.Admin` 的公共组件统一使用简短的 `J` 前缀，例如 `JLayout`、`JSidebar` 和 `JPage`，以便在同时使用 TDesign、Vuetify 或其他组件库时避免标签名冲突。
+- 本次版本是破坏性命名迁移：旧的 `AdminLayout`、`SidebarMenu`、`PageContainer` 等组件名称不再导出，调用方必须使用新的 `JLayout`、`JSidebar`、`JPage` 等名称。
 - `J` 前缀只用于公共组件类型；`AdminNavItem`、`AdminRouteDefinition` 等模型和内部 helper 保持现有命名，避免无意义的缩写扩散。
 
 ## 边界

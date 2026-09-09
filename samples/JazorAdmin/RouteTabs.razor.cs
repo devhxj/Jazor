@@ -8,7 +8,7 @@ namespace JazorAdmin;
 /// 路由变化只追加一个页签；关闭、拖拽和右键操作均作用于同一份有序状态。
 /// </summary>
 [ECMAScriptModule("./components/route-tabs")]
-public partial class RouteTabs : AdminComponentBase
+public partial class RouteTabs : JComponentBase
 {
     [Parameter]
     public AdminRouteDefinition[] Routes { get; set; } = [];

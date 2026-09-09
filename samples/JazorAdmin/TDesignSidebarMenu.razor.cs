@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace JazorAdmin;
 
 [ECMAScriptModule("./components/tdesign/sidebar")]
-public partial class TDesignSidebarMenu : AdminComponentBase
+public partial class TDesignSidebarMenu : JComponentBase
 {
     [Parameter]
     public bool Collapsed { get; set; }

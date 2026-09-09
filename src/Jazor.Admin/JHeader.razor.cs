@@ -1,7 +1,7 @@
 namespace Jazor.Admin;
 
 [ECMAScriptModule("./components/admin/header")]
-public partial class HeaderBar : AdminComponentBase, IVueContainerComponent
+public partial class JHeader : JComponentBase, IVueContainerComponent
 {
     [Parameter]
     public string? Title { get; set; }

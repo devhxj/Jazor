@@ -1,7 +1,7 @@
 namespace Jazor.Admin;
 
 [ECMAScriptModule("./components/admin/sidebar")]
-public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
+public partial class JSidebar : JComponentBase, IVueContainerComponent
 {
     [Parameter]
     public bool Collapsed { get; set; }

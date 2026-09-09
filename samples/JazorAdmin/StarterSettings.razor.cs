@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 namespace JazorAdmin;
 
 [ECMAScriptModule("./components/starter-settings")]
-public partial class StarterSettings : AdminComponentBase
+public partial class StarterSettings : JComponentBase
 {
     private static readonly string[] BrandColors =
     [

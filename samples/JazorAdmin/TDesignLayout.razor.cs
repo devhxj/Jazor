@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 namespace JazorAdmin;
 
 [ECMAScriptModule("./components/tdesign/layout")]
-public partial class TDesignLayout : AdminContentComponentBase
+public partial class TDesignLayout : JContentComponentBase
 {
     [Parameter]
     public AdminLayoutMode Mode { get; set; } = AdminLayoutMode.Sidebar;

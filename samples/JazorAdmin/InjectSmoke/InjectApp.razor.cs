@@ -13,15 +13,15 @@ public sealed class InjectApp : ComponentBase, IVueComponent
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenComponent<PageContainer>(0);
-        builder.AddComponentParameter(1, nameof(PageContainer.Title), "Injected administration page");
-        builder.AddComponentParameter(2, nameof(PageContainer.Subtitle), "Assembly-level admin container replacement");
-        builder.AddComponentParameter(3, nameof(PageContainer.BreadcrumbItems), new AdminBreadcrumbItem[]
+        builder.OpenComponent<JPage>(0);
+        builder.AddComponentParameter(1, nameof(JPage.Title), "Injected administration page");
+        builder.AddComponentParameter(2, nameof(JPage.Subtitle), "Assembly-level admin container replacement");
+        builder.AddComponentParameter(3, nameof(JPage.BreadcrumbItems), new AdminBreadcrumbItem[]
         {
             new() { Key = "home", Title = "Home", Href = "/" },
             new() { Key = "inject", Title = "Inject smoke", Disabled = true }
         });
-        builder.AddComponentParameter(4, nameof(PageContainer.Actions), new AdminPageAction[]
+        builder.AddComponentParameter(4, nameof(JPage.Actions), new AdminPageAction[]
         {
             new()
             {
@@ -31,7 +31,7 @@ public sealed class InjectApp : ComponentBase, IVueComponent
                 Click = EventCallback.Factory.Create(this, VerifyInjection)
             }
         });
-        builder.AddComponentParameter(5, nameof(PageContainer.Extra),
+        builder.AddComponentParameter(5, nameof(JPage.Extra),
             (RenderFragment)(extraBuilder =>
             {
                 extraBuilder.OpenElement(0, "span");
@@ -39,7 +39,7 @@ public sealed class InjectApp : ComponentBase, IVueComponent
                 extraBuilder.AddContent(2, "Extra slot preserved");
                 extraBuilder.CloseElement();
             }));
-        builder.AddComponentParameter(6, nameof(PageContainer.ChildContent),
+        builder.AddComponentParameter(6, nameof(JPage.ChildContent),
             (RenderFragment)(contentBuilder =>
             {
                 contentBuilder.OpenElement(0, "p");

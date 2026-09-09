@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace JazorAdmin;
 
 [ECMAScriptModule("./components/tdesign/header")]
-public partial class TDesignHeaderBar : AdminComponentBase
+public partial class TDesignHeaderBar : JComponentBase
 {
     [Parameter]
     public AdminThemeMode Theme { get; set; } = AdminThemeMode.Light;

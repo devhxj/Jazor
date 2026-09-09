@@ -9,7 +9,7 @@ namespace JazorAdmin;
 /// 一级和二级菜单必须共享同一份 <see cref="AdminNavItems" />，避免路由、标题和选中态漂移。
 /// </summary>
 [ECMAScriptModule("./components/iconbar")]
-public partial class IconBar : AdminComponentBase
+public partial class IconBar : JComponentBase
 {
     [Parameter]
     public AdminNavItems? Items { get; set; }

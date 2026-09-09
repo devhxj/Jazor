@@ -193,7 +193,7 @@ internal static class AdminStyleSheet
             border_radius = raw("6px")
         });
         // The default icon is an empty hook: apps style [data-icon] via icon font or
-        // CSS mask, or replace rendering entirely through SidebarMenu.IconTemplate.
+        // CSS mask, or replace rendering entirely through JSidebar.IconTemplate.
         global(".ja-sidebar__icon", new CssRule
         {
             flex = raw("0 0 20px"),

@@ -1,7 +1,7 @@
 namespace Jazor.Admin;
 
 [ECMAScriptModule("./components/admin/page")]
-public partial class PageContainer : AdminContentComponentBase, IVueContainerComponent
+public partial class JPage : JContentComponentBase, IVueContainerComponent
 {
     [Parameter]
     public string? Title { get; set; }
@@ -48,10 +48,10 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
 
                 if (header.BreadcrumbItems.Length > 0)
                 {
-                    // 面包屑渲染委托给 AdminBreadcrumb，保持库内单一实现；
+                    // 面包屑渲染委托给 JBreadcrumb，保持库内单一实现；
                     // 这里只保留布局槽位与可渲染性判断。
-                    builder.OpenComponent<AdminBreadcrumb>(8);
-                    builder.AddComponentParameter(9, nameof(AdminBreadcrumb.Items), header.BreadcrumbItems);
+                    builder.OpenComponent<JBreadcrumb>(8);
+                    builder.AddComponentParameter(9, nameof(JBreadcrumb.Items), header.BreadcrumbItems);
                     builder.CloseComponent();
                 }
 
@@ -80,8 +80,8 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
                 builder.AddAttribute(18, "class", "ja-page__actions");
                 foreach (var action in header.Actions)
                 {
-                    builder.OpenComponent<PageAction>(19);
-                    builder.AddComponentParameter(20, nameof(PageAction.Action), action);
+                    builder.OpenComponent<JAction>(19);
+                    builder.AddComponentParameter(20, nameof(JAction.Action), action);
                     builder.CloseComponent();
                 }
                 builder.AddContent(20, header.Extra);

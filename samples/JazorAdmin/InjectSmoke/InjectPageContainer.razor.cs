@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using static ECMAScript.Vue;
 
-[assembly: VueInject(typeof(PageContainer), typeof(JazorAdmin.InjectSmoke.InjectPageContainer))]
+[assembly: VueInject(typeof(JPage), typeof(JazorAdmin.InjectSmoke.InjectJPage))]
 
 namespace JazorAdmin.InjectSmoke;
 
 [ECMAScriptModule("./components/inject/page")]
-public sealed class InjectPageContainer : ComponentBase, IVueComponent,
-    IVueContainerImplementation<PageContainer>
+public sealed class InjectJPage : ComponentBase, IVueComponent,
+    IVueContainerImplementation<JPage>
 {
     [Parameter]
     public VueClassValue? CssClass { get; set; }
