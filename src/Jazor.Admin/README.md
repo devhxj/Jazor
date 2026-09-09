@@ -38,6 +38,17 @@
 - 递归菜单项、复杂 `RenderFragment` 插槽和 RazorVue direct render 尚未支持的形状可以保留在 `.razor.cs`；迁移必须以生成诊断和最终 `.mjs` 链接结果通过为准。
 - 不要为了追求模板化而引入中间 JavaScript 标记协议；组件应直接生成最终 Vue render-function 结构。
 
+当前文件化边界如下：
+
+| 组件 | 模板文件 | C# 文件保留内容 |
+|------|----------|----------------|
+| `JFrame`、`JHeader`、`JBreadcrumb`、`JAction` | 完整静态结构 | 参数、派生状态与生命周期 |
+| `JPage` | 完整页面结构 | 标题/操作过滤、区域状态与插槽判定 |
+| `JSidebar` | 导航壳结构 | 递归菜单项、路由目标解析与展开状态 |
+| `JLayout` | 暂无独立模板 | 多插槽组合、动态导航注入、移动抽屉事件协议 |
+
+`JLayout` 的渲染树同时承载桌面列布局和移动 overlay 抽屉，并需要在同一轮渲染中稳定快照多个插槽；待 RazorVue 支持等价的插槽表达后再继续拆分。
+
 ## 命名约定
 
 - `Jazor.Admin` 的公共组件统一使用简短的 `J` 前缀，例如 `JLayout`、`JSidebar` 和 `JPage`，以便在同时使用 TDesign、Vuetify 或其他组件库时避免标签名冲突。
