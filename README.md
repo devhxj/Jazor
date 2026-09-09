@@ -34,11 +34,10 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest release
 
-### Jazor 0.34.0 · 2026-09-09
+### Jazor 0.34.1 · 2026-09-09
 
-- `Jazor.Admin` now exposes short `J`-prefixed public components: `JLayout`, `JFrame`, `JHeader`, `JSidebar`, `JPage`, `JBreadcrumb`, and `JAction`.
-- The component base classes are now `JComponentBase` and `JContentComponentBase`. Existing model contracts remain unchanged.
-- This is a breaking migration. Update Razor tags, C# references, container injection declarations, and custom component base classes before upgrading.
+- `Jazor.Admin` public components now all provide a `.razor` template paired with a `.razor.cs` code-behind file; existing parameters, slots, and generated artifact contracts remain unchanged.
+- Sidebar rendering reuses one normalized navigation snapshot per render, keeping visibility checks and displayed items aligned.
 
 Read the [release notes](CHANGELOG.md) for the complete history.
 
@@ -114,7 +113,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.34.0
+dotnet add package Jazor --version 0.34.1
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -122,8 +121,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.34.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.34.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.34.1" />
+  <PackageReference Include="Jazor.Vue" Version="0.34.1" PrivateAssets="all" />
 </ItemGroup>
 ```
 

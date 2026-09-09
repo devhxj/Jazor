@@ -4,6 +4,32 @@
 
 ## 2026-09-09
 
+### Jazor 0.34.1
+
+> Jazor.Admin 完成公共 Razor 模板文件化并收紧导航渲染一致性。本版本按 PATCH 通道发布，所有 Jazor/ECMAScript 包继续使用同一版本。
+
+中文 | English
+
+#### 体验优化
+
+- `Jazor.Admin` 公共组件现在均提供 `.razor` 模板与配对的 `.razor.cs` 代码后置；现有参数、插槽和生成产物契约保持不变，便于继续使用 Razor authoring。by @devhxj
+- 侧栏在一次渲染中复用规范化导航快照，显示判断与实际条目保持一致。by @devhxj
+
+#### 其他变更
+
+- 补充路由目录 fallback、显式 catch-all、导航目标优先级和组件模板边界的回归验证。by @devhxj
+
+Improvements
+
+- `Jazor.Admin` public components now all provide a `.razor` template paired with `.razor.cs` code-behind. Existing parameters, slots, and generated artifact contracts remain unchanged, making Razor authoring easier to maintain. by @devhxj
+- Sidebar rendering reuses one normalized navigation snapshot per render, so visibility checks and displayed items stay aligned. by @devhxj
+
+Chores
+
+- Add regression coverage for route-catalog fallbacks, explicit catch-all routes, navigation-target precedence, and component-template boundaries. by @devhxj
+
+## 2026-09-09
+
 ### Jazor 0.34.0
 
 > Jazor.Admin 公共组件完成破坏性命名迁移。所有 Jazor/ECMAScript 包继续使用同一版本。

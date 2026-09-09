@@ -34,11 +34,10 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新版本
 
-### Jazor 0.34.0 · 2026-09-09
+### Jazor 0.34.1 · 2026-09-09
 
-- `Jazor.Admin` 公共组件统一使用简短的 `J` 前缀：`JLayout`、`JFrame`、`JHeader`、`JSidebar`、`JPage`、`JBreadcrumb` 和 `JAction`。
-- 组件基类改为 `JComponentBase` 和 `JContentComponentBase`；现有模型契约保持不变。
-- 这是一次破坏性迁移。升级前请同步修改 Razor 标签、C# 类型引用、容器替换声明和自定义组件基类。
+- `Jazor.Admin` 公共组件现在均提供 `.razor` 模板与配对的 `.razor.cs` 代码后置；现有参数、插槽和生成产物契约保持不变。
+- 侧栏在一次渲染中复用规范化导航快照，显示判断与实际条目保持一致。
 
 完整版本历史见 [更新日志](CHANGELOG.md)。
 
@@ -113,15 +112,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.34.0
+dotnet add package Jazor --version 0.34.1
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.34.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.34.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.34.1" />
+  <PackageReference Include="Jazor.Vue" Version="0.34.1" PrivateAssets="all" />
 </ItemGroup>
 ```
 
