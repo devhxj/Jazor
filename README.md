@@ -37,6 +37,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 - The admin shell now exposes localized navigation labels, explicit current-page semantics, safer empty-route handling, and visible keyboard focus. The Starter overview uses a comparative line-area trend, real refresh loading, isolated search state, and operation-specific feedback.
 
 See the [changelog](CHANGELOG.md) for the full release history.
+
 ## Acknowledgements
 
 Jazor builds on [Roslyn](https://github.com/dotnet/roslyn), [Acornima](https://github.com/adams85/acornima), [Netpack](https://github.com/FlorianRappl/netpack), [DenoHost](https://github.com/thomas3577/DenoHost), [WebRef](https://github.com/w3c/webref), and earlier C#-to-JavaScript projects including [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit).
