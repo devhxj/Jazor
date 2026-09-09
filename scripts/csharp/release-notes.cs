@@ -4,16 +4,15 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 var options = ReleaseNotesOptions.Parse(args);
-var curatedNotes = TryReadCuratedReleaseNotes(options.Tag);
-if (!string.IsNullOrWhiteSpace(curatedNotes))
-{
-    Console.WriteLine(curatedNotes);
-    return;
-}
-
 var previousTag = string.IsNullOrWhiteSpace(options.PreviousTag)
     ? await ResolvePreviousTagAsync(options.Tag)
     : options.PreviousTag;
+var curatedNotes = TryReadCuratedReleaseNotes(options.Tag);
+if (!string.IsNullOrWhiteSpace(curatedNotes))
+{
+    Console.WriteLine(AppendCompareLink(curatedNotes, options.Repository, previousTag, options.Tag));
+    return;
+}
 
 var range = string.IsNullOrWhiteSpace(previousTag)
     ? options.Tag
@@ -141,6 +140,22 @@ static string? TryReadCuratedReleaseNotes(string tag)
     return selected.Count <= 2
         ? null
         : string.Join(Environment.NewLine, selected);
+}
+
+static string AppendCompareLink(string notes, string? repository, string? previousTag, string tag)
+{
+    if (string.IsNullOrWhiteSpace(repository) || string.IsNullOrWhiteSpace(previousTag))
+    {
+        return notes;
+    }
+
+    return notes.TrimEnd()
+        + Environment.NewLine
+        + Environment.NewLine
+        + "## Full Changelog"
+        + Environment.NewLine
+        + Environment.NewLine
+        + $"https://github.com/{repository}/compare/{previousTag}...{tag}";
 }
 
 static async Task<string?> ResolvePreviousTagAsync(string currentTag)

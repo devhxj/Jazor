@@ -27,6 +27,7 @@ Improvements
 Chores
 
 - Add regression coverage for route-catalog fallbacks, explicit catch-all routes, navigation-target precedence, and component-template boundaries. by @devhxj
+- Release-note generation now appends the version compare link to curated GitHub Release text. by @devhxj
 
 ## 2026-09-09
 
