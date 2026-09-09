@@ -27,78 +27,8 @@ public partial class JPage : JContentComponentBase, IVueContainerComponent
     private VueClassValue RootCssClass
         => BuildCssClass("ja-page");
 
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var header = BuildHeaderRenderState();
-
-        builder.OpenElement(0, "section");
-        builder.AddAttribute(1, "class", RootCssClass);
-        builder.AddAttribute(2, "style", CssStyle);
-        builder.AddMultipleAttributes(3, AdditionalAttributes);
-
-        if (header.HasHeader)
-        {
-            builder.OpenElement(4, "div");
-            builder.AddAttribute(5, "class", "ja-page__header");
-
-            if (header.HasTitleRegion)
-            {
-                builder.OpenElement(6, "div");
-                builder.AddAttribute(7, "class", "ja-page__titles");
-
-                if (header.BreadcrumbItems.Length > 0)
-                {
-                    // 面包屑渲染委托给 JBreadcrumb，保持库内单一实现；
-                    // 这里只保留布局槽位与可渲染性判断。
-                    builder.OpenComponent<JBreadcrumb>(8);
-                    builder.AddComponentParameter(9, nameof(JBreadcrumb.Items), header.BreadcrumbItems);
-                    builder.CloseComponent();
-                }
-
-                if (NormalizedTitle is not null)
-                {
-                    builder.OpenElement(11, "h1");
-                    builder.AddAttribute(12, "class", "ja-page__title");
-                    builder.AddContent(13, NormalizedTitle);
-                    builder.CloseElement();
-                }
-
-                if (NormalizedSubtitle is not null)
-                {
-                    builder.OpenElement(14, "p");
-                    builder.AddAttribute(15, "class", "ja-page__subtitle");
-                    builder.AddContent(16, NormalizedSubtitle);
-                    builder.CloseElement();
-                }
-
-                builder.CloseElement();
-            }
-
-            if (header.HasActionsRegion)
-            {
-                builder.OpenElement(17, "div");
-                builder.AddAttribute(18, "class", "ja-page__actions");
-                foreach (var action in header.Actions)
-                {
-                    builder.OpenComponent<JAction>(19);
-                    builder.AddComponentParameter(20, nameof(JAction.Action), action);
-                    builder.CloseComponent();
-                }
-                builder.AddContent(20, header.Extra);
-                builder.CloseElement();
-            }
-
-            builder.CloseElement();
-        }
-
-        builder.OpenElement(21, "div");
-        builder.AddAttribute(22, "class", "ja-page__body");
-        builder.AddContent(23, ChildContent);
-        builder.CloseElement();
-
-        builder.CloseElement();
-    }
-
+    // Keep filtering and region decisions in C#: the Razor template only projects
+    // this stable state, preserving one evaluation per render for slot content.
     private PageHeaderRenderState BuildHeaderRenderState()
     {
         var breadcrumbItems = FilterRenderableBreadcrumbItems(BreadcrumbItems);

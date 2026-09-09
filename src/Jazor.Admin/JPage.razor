@@ -1,0 +1,38 @@
+@inherits JContentComponentBase
+
+@{ var header = BuildHeaderRenderState(); }
+<section class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
+    @if (header.HasHeader)
+    {
+        <div class="ja-page__header">
+            @if (header.HasTitleRegion)
+            {
+                <div class="ja-page__titles">
+                    @if (header.BreadcrumbItems.Length > 0)
+                    {
+                        <JBreadcrumb Items="@header.BreadcrumbItems" />
+                    }
+                    @if (NormalizedTitle is not null)
+                    {
+                        <h1 class="ja-page__title">@NormalizedTitle</h1>
+                    }
+                    @if (NormalizedSubtitle is not null)
+                    {
+                        <p class="ja-page__subtitle">@NormalizedSubtitle</p>
+                    }
+                </div>
+            }
+            @if (header.HasActionsRegion)
+            {
+                <div class="ja-page__actions">
+                    @foreach (var action in header.Actions)
+                    {
+                        <JAction Action="@action" />
+                    }
+                    @Extra
+                </div>
+            }
+        </div>
+    }
+    <div class="ja-page__body">@ChildContent</div>
+</section>
