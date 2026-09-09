@@ -80,7 +80,9 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
                 builder.AddAttribute(18, "class", "ja-page__actions");
                 foreach (var action in header.Actions)
                 {
-                    builder.AddContent(19, RenderAction(action));
+                    builder.OpenComponent<PageAction>(19);
+                    builder.AddComponentParameter(20, nameof(PageAction.Action), action);
+                    builder.CloseComponent();
                 }
                 builder.AddContent(20, header.Extra);
                 builder.CloseElement();
@@ -115,85 +117,6 @@ public partial class PageContainer : AdminContentComponentBase, IVueContainerCom
             hasTitles,
             hasActions);
     }
-
-    // Member-position wrapper: navigation-target.mjs only exports its members, and a direct
-    // render-lambda qualification would emit a phantom class-name import that breaks linking.
-    private static AdminNavigationTargetResolver.ResolvedNavigationTarget ResolveActionTarget(AdminPageAction action)
-        => AdminNavigationTargetResolver.Resolve(action.Href, action.RouteTarget);
-
-    private RenderFragment RenderAction(AdminPageAction action) => builder =>
-    {
-        var text = AdminDisplayTextHelper.Normalize(action.Text);
-        if (text is null)
-        {
-            return;
-        }
-
-        var isDisabled = action.Disabled ?? false;
-        var navigationTarget = ResolveActionTarget(action);
-        var cssClass = BuildActionCssClass(action);
-
-        if (!isDisabled && navigationTarget.HasRoute)
-        {
-            builder.OpenComponent<VueRouterLink>(0);
-            builder.AddAttribute(1, nameof(VueRouterLink.CssClass), (VueClassValue)cssClass);
-            builder.AddAttribute(2, nameof(VueRouterLink.To), navigationTarget.Route);
-            builder.AddAttribute(3, "data-action-key", action.Key);
-            builder.AddAttribute(4, nameof(VueRouterLink.ChildContent), (RenderFragment)(childBuilder => childBuilder.AddContent(0, text)));
-            builder.CloseComponent();
-            return;
-        }
-
-        if (!isDisabled && navigationTarget.HasHref)
-        {
-            builder.OpenElement(10, "a");
-            builder.AddAttribute(11, "class", cssClass);
-            builder.AddAttribute(12, "href", navigationTarget.Href);
-            builder.AddAttribute(13, "data-action-key", action.Key);
-            builder.AddContent(14, text);
-            builder.CloseElement();
-            return;
-        }
-
-        builder.OpenElement(20, "button");
-        builder.AddAttribute(21, "type", "button");
-        builder.AddAttribute(22, "class", cssClass);
-        builder.AddAttribute(23, "disabled", isDisabled);
-        builder.AddAttribute(24, "data-action-key", action.Key);
-        builder.AddAttribute(25, "onclick", action.Click);
-        if (isDisabled && navigationTarget.IsNavigable)
-        {
-            builder.AddAttribute(26, "aria-disabled", true);
-        }
-
-        builder.AddContent(27, text);
-        builder.CloseElement();
-    };
-
-    private static string BuildActionCssClass(AdminPageAction action)
-    {
-        var classes = new List<string>(4)
-        {
-            "ja-page__action",
-            $"ja-page__action--{MapActionKindSuffix(action.Kind)}"
-        };
-
-        if (action.Disabled ?? false)
-        {
-            classes.Add("is-disabled");
-        }
-
-        return string.Join(" ", classes);
-    }
-
-    private static string MapActionKindSuffix(AdminPageActionKind? kind) => kind switch
-    {
-        AdminPageActionKind.Primary => "primary",
-        AdminPageActionKind.Secondary => "secondary",
-        AdminPageActionKind.Link => "link",
-        AdminPageActionKind.Danger => "danger",
-        _ => "default"
-    };
 
     private static TItem[] FilterRenderableItems<TItem>(TItem[]? items)
         where TItem : class

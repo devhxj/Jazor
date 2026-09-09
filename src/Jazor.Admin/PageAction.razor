@@ -1,0 +1,20 @@
+@using ECMAScript
+@inherits AdminComponentBase
+
+@* RouteTarget takes precedence over Href; disabled navigation is rendered as a button
+   so the browser cannot follow a target that the caller has disabled. *@
+@if (Text is not null)
+{
+    @if (!IsDisabled && Target.HasRoute)
+    {
+        <VueRouterLink CssClass="@CssClassValue" To="@Target.Route" data-action-key="@Action.Key">@Text</VueRouterLink>
+    }
+    else if (!IsDisabled && Target.HasHref)
+    {
+        <a class="@CssClassValue" href="@Target.Href" data-action-key="@Action.Key">@Text</a>
+    }
+    else
+    {
+        <button type="button" class="@CssClassValue" disabled="@IsDisabled" data-action-key="@Action.Key" @onclick="Action.Click" aria-disabled="@AriaDisabled">@Text</button>
+    }
+}
