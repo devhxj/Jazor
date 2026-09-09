@@ -108,7 +108,7 @@ public sealed class AdminShellTests
             }
         };
 
-        var records = AdminRouteCatalog.BuildRouteRecords(routes, null!, "root");
+        var records = AdminRouteCatalog.BuildRouteRecords(routes, new TestVueComponent(), "root");
         Assert.AreEqual(3, records.Length);
         Assert.IsNotNull(records[0].AsSingleView);
         Assert.AreEqual("/root", records[0].AsSingleView!.Path);
@@ -116,6 +116,10 @@ public sealed class AdminShellTests
         Assert.AreEqual("/root/child", records[1].AsSingleView!.Path);
         Assert.IsNotNull(records[2].AsRedirect);
         Assert.AreEqual("/:pathMatch(.*)*", records[2].AsRedirect!.Path);
+    }
+
+    private sealed class TestVueComponent : ECMAScript.Vue.IVueComponent
+    {
     }
 
 }
