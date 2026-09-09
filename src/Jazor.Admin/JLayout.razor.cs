@@ -4,9 +4,11 @@ namespace Jazor.Admin;
 public partial class JLayout : JContentComponentBase, IVueContainerComponent
 {
     [Parameter]
+    /// <summary>Controls whether navigation is rendered in top, sidebar, or mixed mode.</summary>
     public AdminLayoutMode Mode { get; set; } = AdminLayoutMode.Sidebar;
 
     [Parameter]
+    /// <summary>Controlled desktop sidebar state; mobile uses the internal overlay state.</summary>
     public bool Collapsed { get; set; }
 
     [Parameter]
@@ -19,6 +21,7 @@ public partial class JLayout : JContentComponentBase, IVueContainerComponent
     public string ExpandLabel { get; set; } = "Expand sidebar";
 
     [Parameter]
+    /// <summary>Currently selected navigation key.</summary>
     public string? SelectedKey { get; set; }
 
     [Parameter]
@@ -31,6 +34,7 @@ public partial class JLayout : JContentComponentBase, IVueContainerComponent
     public EventCallback<string[]> ExpandedKeysChanged { get; set; }
 
     [Parameter]
+    /// <summary>Navigation tree used when the <see cref="Sidebar"/> slot is not supplied.</summary>
     public AdminNavItems? NavItems { get; set; }
 
     [Parameter]
