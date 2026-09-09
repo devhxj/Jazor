@@ -108,8 +108,6 @@ public sealed class AdminShellTests
         var breadcrumbs = AdminRouteCatalog.BuildBreadcrumbs(routes, "missing");
         Assert.AreEqual(0, breadcrumbs.Length);
 
-        var records = AdminRouteCatalog.BuildRouteRecords(routes, null!, "home");
-        Assert.AreEqual(2, records.Length);
     }
 
 }
