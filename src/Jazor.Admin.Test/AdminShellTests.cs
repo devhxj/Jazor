@@ -42,4 +42,17 @@ public sealed class AdminShellTests
         Assert.AreEqual("child", breadcrumbs[1].Key);
         CollectionAssert.AreEqual(new[] { "root" }, expanded);
     }
+
+    [TestMethod]
+    public void NavigationTarget_PrefersRouteAndTrimsHrefFallback()
+    {
+        var route = AdminNavigationTargetResolver.Resolve(" /legacy ", (RouteLocationRaw)"/dashboard");
+        var href = AdminNavigationTargetResolver.Resolve("  /legacy  ", null);
+        var empty = AdminNavigationTargetResolver.Resolve("   ", null);
+
+        Assert.IsTrue(route.HasRoute);
+        Assert.IsFalse(route.HasHref);
+        Assert.AreEqual("/legacy", href.Href);
+        Assert.IsFalse(empty.IsNavigable);
+    }
 }
