@@ -101,6 +101,43 @@ public sealed class RazorVueCompatibilityAnalyzerTests
     }
 
     [TestMethod]
+    public async Task RazorInjectDirective_PersistentStateUsesSsrHandoffDiagnostic()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile(
+                "Pages/State.razor.cs",
+                """
+                using Microsoft.AspNetCore.Components;
+                namespace Demo.Pages
+                {
+                    public sealed class State : ComponentBase;
+                }
+                """),
+            additionalFiles:
+            [new InMemoryAdditionalText(
+                "Pages/State.razor",
+                "@inject Microsoft.AspNetCore.Components.PersistentComponentState StateStore")]);
+
+        var diagnostic = diagnostics.Single(static item => item.Id == "JAZORVCA011");
+        Assert.AreEqual("Pages/State.razor", diagnostic.Location.GetLineSpan().Path);
+        StringAssert.Contains(diagnostic.GetMessage(), "PersistentComponentState", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task RazorInjectDirective_UnknownTypeRemainsQuietUntilBindingExists()
+    {
+        var diagnostics = await AnalyzeAsync(
+            new SourceFile("Pages/Unknown.razor.cs", "public sealed class Unknown;"),
+            additionalFiles:
+            [new InMemoryAdditionalText(
+                "Pages/Unknown.razor",
+                "@inject Demo.DoesNotExist Missing")]);
+
+        Assert.IsFalse(diagnostics.Any(static item => item.Id.StartsWith("JAZORVCA", StringComparison.Ordinal)),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
     public async Task GeneratedRazorPropertyAndBrowserCapableService_ProduceNoNoise()
     {
         var diagnostics = await AnalyzeAsync(

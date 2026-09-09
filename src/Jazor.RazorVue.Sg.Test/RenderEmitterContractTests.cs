@@ -140,6 +140,42 @@ public sealed class RenderEmitterContractTests
     }
 
     [TestMethod]
+    public void TryEmit_CascadingValueWithConcreteValue_EmitsTypedCascadePropAndSlot()
+    {
+        var fixture = CreateDirectRenderFixture(
+            """
+            builder.OpenComponent<CascadingValue<string>>(0);
+            builder.AddComponentParameter(1, "Value", Theme);
+            builder.AddComponentParameter(2, "Name", "theme");
+            builder.AddComponentParameter(3, "ChildContent", (RenderFragment)(child => child.AddContent(0, "content")));
+            builder.CloseComponent();
+            """,
+            "public string Theme { get; } = \"dark\";");
+
+        AssertDirectRenderSuccess(fixture, "__jazorCascadeType", "theme", "state.Theme", "content");
+    }
+
+    [TestMethod]
+    public void TryEmit_RenderFragmentExpressionBodiedFactory_LowersReturnedBuilderBody()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, CreateFragment());",
+            "private RenderFragment CreateFragment() => child => child.AddContent(0, \"factory\");");
+
+        AssertDirectRenderSuccess(fixture, "factory");
+    }
+
+    [TestMethod]
+    public void TryEmit_GenericRenderFragmentFactory_UsesValueSubstitution()
+    {
+        var fixture = CreateDirectRenderFixture(
+            "builder.AddContent(0, CreateFragment(), \"ctx\");",
+            "private RenderFragment<string> CreateFragment() => value => child => child.AddContent(0, value);");
+
+        AssertDirectRenderSuccess(fixture, "ctx");
+    }
+
+    [TestMethod]
     public void TryEmit_RecognizesEveryScalarConstantAsStaticTextContent()
     {
         var fixture = CreateDirectRenderFixture(

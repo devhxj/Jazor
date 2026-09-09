@@ -411,6 +411,27 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_TypeParameterCreation_ReportsActionableBoundary()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                T Build<T>() where T : new()
+                {
+                    return new T();
+                }
+            }
+            ");
+
+        var operation = block.DescendantsAndSelf().OfType<ITypeParameterObjectCreationOperation>().Single();
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).VisitTypeParameterObjectCreation(operation, new SenseArgument()));
+
+        StringAssert.Contains(exception.Message, "new T()", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "generic type parameters", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_WhitelistContainerWithErasedUnsupportedTypeArgument_Allows()
     {
         var block = GetBlockOperation(@"
@@ -3452,6 +3473,37 @@ public sealed class SemanticWalkerCreationTest
     return v$0;
   })();
 }", script);
+    }
+
+    [TestMethod]
+    public void Visit_ObjectCreation_NestedMemberInitializer_CachesPropertyReceiver()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                class Outer
+                {
+                    private Inner _inner = new();
+                    public Inner Inner => _inner;
+                }
+
+                class Inner
+                {
+                    public int Value { get; set; }
+                }
+
+                void TestMethod()
+                {
+                    var outer = new Outer { Inner = { Value = 7 } };
+                }
+            }
+            ");
+
+        var node = new SemanticWalker(true).Visit(block, new SenseArgument());
+        var script = node?.ToKnRECMAScript();
+
+        StringAssert.Contains(script, "Inner", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Value = 7", StringComparison.Ordinal);
     }
 
     /// <summary>

@@ -6057,6 +6057,48 @@ line2"";
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
+  [TestMethod]
+  public void Visit_RecursivePattern_PositionalObject_RejectsErasedITupleProtocol()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    bool result = value is (int, int);
+                }
+            }
+            ");
+
+    var exception = Assert.Throws<OperationTransformationException>(() =>
+      new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+    StringAssert.Contains(exception.Message, "runtime 'System.Runtime.CompilerServices.ITuple' protocol", StringComparison.Ordinal);
+    StringAssert.Contains(exception.Message, "tuple-typed value", StringComparison.Ordinal);
+  }
+
+  [TestMethod]
+  public void Visit_InterfacePattern_AfterLocalReassignment_ReportsUnprovableBoundary()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object value)
+                {
+                    object candidate = value;
+                    candidate = new object();
+                    bool result = candidate is IComparable;
+                }
+            }
+            ");
+
+    var exception = Assert.Throws<OperationTransformationException>(() =>
+      new SemanticWalker(true).Visit(block, new SenseArgument()));
+
+    StringAssert.Contains(exception.Message, "Unsupported interface is-type operation", StringComparison.Ordinal);
+    StringAssert.Contains(exception.Message, "source static type", StringComparison.OrdinalIgnoreCase);
+  }
+
   #endregion
 
   #region Switch 表达式高级测试
