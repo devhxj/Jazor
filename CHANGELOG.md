@@ -4,10 +4,27 @@
 
 ## 2026-09-09
 
-### 发布质量门禁（未发布）
+### 未发布 | Unreleased
 
-- 相关 PR 与 main 分支变更自动检查核心编译器、RazorVue 和 Vue 绑定覆盖率；标签和手动 NuGet 发布都要求三项门禁通过。
-- GitHub Actions 保存测试报告、覆盖率报告和日志，并显示门禁结果与指标摘要；失败时仍可下载已有诊断证据。
+中文 | English
+
+#### 新增功能
+
+- 相关 pull request 与 main 分支变更现在自动执行核心编译器、RazorVue 和 Vue 绑定覆盖率门禁；标签与手动 NuGet 发布必须先通过全部门禁。by @devhxj
+
+#### 其他变更
+
+- GitHub Actions 保存 TRX、Cobertura（编译器与 RazorVue）、日志和指标摘要，便于从同一运行记录追踪失败。by @devhxj
+- 发布工作流从工作流提交读取报告入口、从被测 ref 读取测试与源码，因此手动验证历史标签时仍会验证目标代码。by @devhxj
+
+New Features
+
+- Automatically run compiler, RazorVue, and Vue binding coverage gates for relevant pull requests and main branch changes. Tag and manual NuGet publishing now require all gates to pass. by @devhxj
+
+Chores
+
+- Preserve TRX, Cobertura reports for compiler and RazorVue, logs, and metric summaries in GitHub Actions so failures can be traced from one run. by @devhxj
+- Load the reporting tool from the workflow revision while loading tests and source from the tested ref, so manual verification of historical tags still checks the target code. by @devhxj
 
 ## 2026-09-08
 

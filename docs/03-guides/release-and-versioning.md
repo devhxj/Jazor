@@ -52,6 +52,8 @@ SPA 与 SSR 发布消费者门禁由发布工作流在上传 NuGet 之前自动�
 - 一个版本一个 `### Jazor x.y.z` 独立章节并标注日期；同一天发布多个版本也必须分节，不得把多个版本号混入同一日期段落。
 - 条目面向用户描述行为变化，不写内部实现流水账；破坏性变更必须写明迁移路径（例如 `AddJazorSSR` → `AddJazorSsr` 一类重命名应指明旧名与新名）。
 - 内容在发版准备时写入；已发布版本的章节不再改写，勘误以追加条目方式补充。
+- 未发布内容放在最新日期下的 `### 未发布 | Unreleased` 小节；发布前整理为中英双语的 `New Features`、`Improvements`、`Bug Fixes`、`Chores` 分类，条目末尾标注 GitHub 贡献者（`by @user`）。
+- 中英两部分描述同一组变更，保持条目顺序和分类一致；`scripts/csharp/release-notes.cs` 会直接提取对应版本章节作为 GitHub Release 正文。
 
 ## 发布机制备忘
 
