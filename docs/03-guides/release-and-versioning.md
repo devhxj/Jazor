@@ -55,6 +55,8 @@ SPA 与 SSR 发布消费者门禁由发布工作流在上传 NuGet 之前自动�
 - 未发布内容放在最新日期下的 `### 未发布 | Unreleased` 小节；发布前整理为中英双语的 `New Features`、`Improvements`、`Bug Fixes`、`Chores` 分类，条目末尾标注 GitHub 贡献者（`by @user`）。
 - 中英两部分描述同一组变更，保持条目顺序和分类一致；`scripts/csharp/release-notes.cs` 会直接提取对应版本章节作为 GitHub Release 正文。
 
+具体模板、分类定义、署名要求和发布前检查清单见[发布说明规范](./release-notes-format.md)。
+
 ## 发布机制备忘
 
 - 官方发布唯一入口是 `.github/workflows/nuget-publish-ref.yml`：push `v*` tag 或 `workflow_dispatch` 触发，GitHub Actions 持有 trusted publishing 凭据。tag 名去掉 `v` 前缀即为包版本。

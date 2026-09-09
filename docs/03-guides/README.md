@@ -14,6 +14,7 @@
 | [RazorVue 范式调试](./razorvue-debugging.md) | RazorVue 应用开发者 | 从 `.razor` 追踪到 generated C#、render module 与 source map |
 | [开发与测试](./development-and-testing.md) | 仓库维护者 | 构建、测试、覆盖率门槛与脚本约定 |
 | [发版与版本规则](./release-and-versioning.md) | 仓库维护者 | 版本通道语义、1.0 条件、发版门禁与 CHANGELOG 规则 |
+| [发布说明规范](./release-notes-format.md) | 仓库维护者与贡献者 | CHANGELOG 与 GitHub Release 的双语分类、条目、署名和发布前检查清单 |
 | [示例](./examples.md) | 应用开发者与维护者 | 示例项目的用途和验证范围 |
 | [文档规范](./documentation-style.md) | 文档维护者 | 目录、命名、写作和历史资料规则 |
 
