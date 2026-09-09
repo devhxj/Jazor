@@ -104,142 +104,26 @@ public partial class JLayout : JContentComponentBase, IVueContainerComponent
             ? AdminDisplayTextHelper.Normalize(ExpandLabel) ?? "Expand sidebar"
             : AdminDisplayTextHelper.Normalize(CollapseLabel) ?? "Collapse sidebar";
 
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    private VueClassValue HorizontalSidebarCssClass
+        => (VueClassValue)"ja-sidebar--horizontal";
+
+    // The top-mode header owns the horizontal navigation slot; keep this fragment in code
+    // behind so the Razor template remains declarative while the component parameters stay
+    // explicitly typed for Razor SG.
+    private RenderFragment HorizontalNavigation => builder =>
     {
-        var logo = Logo;
-        var header = Header;
-        var sidebar = Sidebar;
-        var headerActions = HeaderActions;
-        var userRegion = UserRegion;
-        var hasNavigationItems = HasNavigationItems;
-        var hasDefaultSidebarContent = logo is not null || hasNavigationItems;
-        var hasSidebarRegion = IsSidebarLayout && (sidebar is not null || hasDefaultSidebarContent);
-        var defaultHeaderLogo = IsSidebarLayout ? null : logo;
-        var hasDefaultHeaderContent =
-            !string.IsNullOrWhiteSpace(Title)
-            || !string.IsNullOrWhiteSpace(Subtitle)
-            || defaultHeaderLogo is not null
-            || (!IsSidebarLayout && hasNavigationItems)
-            || headerActions is not null
-            || userRegion is not null;
-        var hasHeaderRegion = header is not null || hasDefaultHeaderContent;
-
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", RootCssClass);
-        builder.AddAttribute(2, "style", CssStyle);
-        builder.AddMultipleAttributes(3, AdditionalAttributes);
-
-        if (hasSidebarRegion)
-        {
-            if (mobileSidebarOpen)
-            {
-                // Backdrop 仅在 mobile media query 内可见；桌面视口下保持 display:none。
-                builder.OpenElement(44, "div");
-                builder.AddAttribute(45, "class", "ja-shell__mobile-backdrop");
-                builder.AddAttribute(46, "aria-hidden", true);
-                builder.AddAttribute(47, "onclick", EventCallback.Factory.Create(this, CloseMobileSidebar));
-                builder.CloseElement();
-            }
-
-            builder.OpenElement(4, "aside");
-            builder.AddAttribute(5, "class", "ja-shell__sidebar");
-            if (sidebar is not null)
-            {
-                builder.AddContent(6, sidebar);
-            }
-            else
-            {
-                builder.OpenComponent<JSidebar>(7);
-                builder.AddComponentParameter(8, nameof(JSidebar.Items), NavItems);
-                builder.AddComponentParameter(9, nameof(JSidebar.Collapsed), Collapsed);
-                builder.AddComponentParameter(10, nameof(JSidebar.SelectedKey), SelectedKey);
-                builder.AddComponentParameter(11, nameof(JSidebar.ExpandedKeys), ExpandedKeys);
-                // 导航选中后关闭移动端抽屉，同时保持对外 SelectedKeyChanged 契约不变。
-                builder.AddComponentParameter(12, nameof(JSidebar.SelectedKeyChanged), EventCallback.Factory.Create<string>(this, OnNavigationSelected));
-                builder.AddComponentParameter(13, nameof(JSidebar.ExpandedKeysChanged), ExpandedKeysChanged);
-                builder.AddComponentParameter(14, nameof(JSidebar.Logo), logo);
-                builder.AddComponentParameter(15, nameof(JSidebar.NavigationLabel), NavigationLabel);
-                builder.AddComponentParameter(16, nameof(JSidebar.ExpandLabel), ExpandLabel);
-                builder.AddComponentParameter(17, nameof(JSidebar.CollapseLabel), CollapseLabel);
-                builder.CloseComponent();
-            }
-            builder.CloseElement();
-        }
-
-        builder.OpenElement(15, "div");
-        builder.AddAttribute(16, "class", "ja-shell__main");
-
-        if (hasHeaderRegion)
-        {
-            builder.OpenElement(17, "header");
-            builder.AddAttribute(18, "class", "ja-shell__header");
-            if (header is not null)
-            {
-                builder.AddContent(19, header);
-            }
-            else
-            {
-                if (IsSidebarLayout)
-                {
-                    builder.OpenElement(20, "button");
-                    builder.AddAttribute(21, "type", "button");
-                    builder.AddAttribute(22, "class", "ja-shell__sidebar-toggle");
-                    builder.AddAttribute(23, "data-shell-command", "toggle-sidebar");
-                    builder.AddAttribute(24, "aria-label", SidebarToggleLabel);
-                    builder.AddAttribute(25, "title", SidebarToggleLabel);
-                    builder.AddAttribute(26, "aria-expanded", mobileSidebarOpen || !Collapsed);
-                    builder.AddAttribute(27, "onclick", EventCallback.Factory.Create(this, ToggleSidebar));
-                    builder.CloseElement();
-                }
-
-                if (!IsSidebarLayout && hasNavigationItems)
-                {
-                    builder.OpenComponent<JHeader>(28);
-                    builder.SetKey(Mode);
-                    builder.AddComponentParameter(29, nameof(JHeader.Title), Title);
-                    builder.AddComponentParameter(30, nameof(JHeader.Subtitle), Subtitle);
-                    builder.AddComponentParameter(31, nameof(JHeader.Logo), defaultHeaderLogo);
-                    builder.AddComponentParameter(32, nameof(JHeader.Navigation), (RenderFragment)(navigationBuilder =>
-                    {
-                        navigationBuilder.OpenComponent<JSidebar>(0);
-                        navigationBuilder.AddComponentParameter(1, nameof(JComponentBase.CssClass), (VueClassValue)"ja-sidebar--horizontal");
-                        navigationBuilder.AddComponentParameter(2, nameof(JSidebar.Items), NavItems);
-                        navigationBuilder.AddComponentParameter(3, nameof(JSidebar.NavigationLabel), NavigationLabel);
-                        navigationBuilder.AddComponentParameter(4, nameof(JSidebar.ExpandLabel), ExpandLabel);
-                        navigationBuilder.AddComponentParameter(5, nameof(JSidebar.CollapseLabel), CollapseLabel);
-                        navigationBuilder.AddComponentParameter(6, nameof(JSidebar.SelectedKey), SelectedKey);
-                        navigationBuilder.AddComponentParameter(7, nameof(JSidebar.ExpandedKeys), ExpandedKeys);
-                        navigationBuilder.AddComponentParameter(8, nameof(JSidebar.SelectedKeyChanged), SelectedKeyChanged);
-                        navigationBuilder.AddComponentParameter(9, nameof(JSidebar.ExpandedKeysChanged), ExpandedKeysChanged);
-                        navigationBuilder.CloseComponent();
-                    }));
-                    builder.AddComponentParameter(33, nameof(JHeader.Actions), headerActions);
-                    builder.AddComponentParameter(34, nameof(JHeader.UserRegion), userRegion);
-                    builder.CloseComponent();
-                }
-                else
-                {
-                    builder.OpenComponent<JHeader>(35);
-                    builder.SetKey(Mode);
-                    builder.AddComponentParameter(36, nameof(JHeader.Title), Title);
-                    builder.AddComponentParameter(37, nameof(JHeader.Subtitle), Subtitle);
-                    builder.AddComponentParameter(38, nameof(JHeader.Logo), defaultHeaderLogo);
-                    builder.AddComponentParameter(39, nameof(JHeader.Actions), headerActions);
-                    builder.AddComponentParameter(40, nameof(JHeader.UserRegion), userRegion);
-                    builder.CloseComponent();
-                }
-            }
-            builder.CloseElement();
-        }
-
-        builder.OpenElement(41, "main");
-        builder.AddAttribute(42, "class", "ja-shell__content");
-        builder.AddContent(43, ChildContent);
-        builder.CloseElement();
-
-        builder.CloseElement();
-        builder.CloseElement();
-    }
+        builder.OpenComponent<JSidebar>(0);
+        builder.AddComponentParameter(1, nameof(JComponentBase.CssClass), HorizontalSidebarCssClass);
+        builder.AddComponentParameter(2, nameof(JSidebar.Items), NavItems);
+        builder.AddComponentParameter(3, nameof(JSidebar.NavigationLabel), NavigationLabel);
+        builder.AddComponentParameter(4, nameof(JSidebar.ExpandLabel), ExpandLabel);
+        builder.AddComponentParameter(5, nameof(JSidebar.CollapseLabel), CollapseLabel);
+        builder.AddComponentParameter(6, nameof(JSidebar.SelectedKey), SelectedKey);
+        builder.AddComponentParameter(7, nameof(JSidebar.ExpandedKeys), ExpandedKeys);
+        builder.AddComponentParameter(8, nameof(JSidebar.SelectedKeyChanged), SelectedKeyChanged);
+        builder.AddComponentParameter(9, nameof(JSidebar.ExpandedKeysChanged), ExpandedKeysChanged);
+        builder.CloseComponent();
+    };
 
     private Task ToggleSidebar()
     {
@@ -264,5 +148,4 @@ public partial class JLayout : JContentComponentBase, IVueContainerComponent
         mobileSidebarOpen = false;
         await SelectedKeyChanged.InvokeAsync(key);
     }
-
 }

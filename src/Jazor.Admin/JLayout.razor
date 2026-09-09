@@ -1,0 +1,100 @@
+@inherits JContentComponentBase
+
+@{
+    // Snapshot slots and derived visibility once so the markup uses one coherent render state.
+    var logo = Logo;
+    var header = Header;
+    var sidebar = Sidebar;
+    var headerActions = HeaderActions;
+    var userRegion = UserRegion;
+    var hasNavigationItems = HasNavigationItems;
+    var hasDefaultSidebarContent = logo is not null || hasNavigationItems;
+    var hasSidebarRegion = IsSidebarLayout && (sidebar is not null || hasDefaultSidebarContent);
+    var defaultHeaderLogo = IsSidebarLayout ? null : logo;
+    var hasDefaultHeaderContent =
+        !string.IsNullOrWhiteSpace(Title)
+        || !string.IsNullOrWhiteSpace(Subtitle)
+        || defaultHeaderLogo is not null
+        || (!IsSidebarLayout && hasNavigationItems)
+        || headerActions is not null
+        || userRegion is not null;
+    var hasHeaderRegion = header is not null || hasDefaultHeaderContent;
+}
+
+<div class="@RootCssClass" style="@CssStyle" @attributes="AdditionalAttributes">
+    @if (hasSidebarRegion)
+    {
+        @if (mobileSidebarOpen)
+        {
+            @* Backdrop 仅在 mobile media query 内可见；桌面视口下保持 display:none。 *@
+            <div class="ja-shell__mobile-backdrop" aria-hidden="true" @onclick="CloseMobileSidebar"></div>
+        }
+
+        <aside class="ja-shell__sidebar">
+            @if (sidebar is not null)
+            {
+                @sidebar
+            }
+            else
+            {
+                <JSidebar Items="@NavItems"
+                          Collapsed="@Collapsed"
+                          SelectedKey="@SelectedKey"
+                          ExpandedKeys="@ExpandedKeys"
+                          SelectedKeyChanged="@OnNavigationSelected"
+                          ExpandedKeysChanged="@ExpandedKeysChanged"
+                          Logo="@logo"
+                          NavigationLabel="@NavigationLabel"
+                          ExpandLabel="@ExpandLabel"
+                          CollapseLabel="@CollapseLabel" />
+            }
+        </aside>
+    }
+
+    <div class="ja-shell__main">
+        @if (hasHeaderRegion)
+        {
+            <header class="ja-shell__header">
+                @if (header is not null)
+                {
+                    @header
+                }
+                else
+                {
+                    @if (IsSidebarLayout)
+                    {
+                        <button type="button"
+                                class="ja-shell__sidebar-toggle"
+                                data-shell-command="toggle-sidebar"
+                                aria-label="@SidebarToggleLabel"
+                                title="@SidebarToggleLabel"
+                                aria-expanded="@(mobileSidebarOpen || !Collapsed)"
+                                @onclick="ToggleSidebar"></button>
+                    }
+
+                    @if (!IsSidebarLayout && hasNavigationItems)
+                    {
+                        <JHeader @key="Mode"
+                                 Title="@Title"
+                                 Subtitle="@Subtitle"
+                                 Logo="@defaultHeaderLogo"
+                                 Navigation="@HorizontalNavigation"
+                                 Actions="@headerActions"
+                                 UserRegion="@userRegion" />
+                    }
+                    else
+                    {
+                        <JHeader @key="Mode"
+                                 Title="@Title"
+                                 Subtitle="@Subtitle"
+                                 Logo="@defaultHeaderLogo"
+                                 Actions="@headerActions"
+                                 UserRegion="@userRegion" />
+                    }
+                }
+            </header>
+        }
+
+        <main class="ja-shell__content">@ChildContent</main>
+    </div>
+</div>

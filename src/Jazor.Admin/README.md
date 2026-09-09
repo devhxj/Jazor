@@ -12,9 +12,9 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.34.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.34.0" PrivateAssets="all" />
-  <PackageReference Include="Jazor.Admin" Version="0.34.0" />
+  <PackageReference Include="Jazor" Version="0.34.1" />
+  <PackageReference Include="Jazor.Vue" Version="0.34.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Admin" Version="0.34.1" />
 </ItemGroup>
 ```
 
@@ -33,9 +33,9 @@
 
 ## 组件实现约定
 
-- 组件的静态 HTML 结构优先放在 `.razor` 文件中，参数、派生状态和事件处理放在同名 `.razor.cs` 文件中。
-- `JHeader`、`JFrame`、`JBreadcrumb`、`JAction` 和 `JSidebar` 的外层结构已经遵循这一约定。
-- 递归菜单项、复杂 `RenderFragment` 插槽和 RazorVue direct render 尚未支持的形状可以保留在 `.razor.cs`；迁移必须以生成诊断和最终 `.mjs` 链接结果通过为准。
+- 每个公共组件都提供同名 `.razor` 文件；静态结构和模板入口放在 `.razor`，参数、派生状态和事件处理放在同名 `.razor.cs`。
+- 递归菜单项、复杂 `RenderFragment` 插槽和 RazorVue direct render 尚未支持的形状可以保留在 `.razor.cs`；这属于实现边界，不代表组件缺少 Razor 模板。
+- `.razor` 与 `.razor.cs` 由 Razor Source Generator 合并为一个组件类型，模块特性和复杂 lowering 逻辑仍可保留在代码后置文件中。
 - 不要为了追求模板化而引入中间 JavaScript 标记协议；组件应直接生成最终 Vue render-function 结构。
 
 当前文件化边界如下：
@@ -45,9 +45,9 @@
 | `JFrame`、`JHeader`、`JBreadcrumb`、`JAction` | 完整静态结构 | 参数、派生状态与生命周期 |
 | `JPage` | 完整页面结构 | 标题/操作过滤、区域状态与插槽判定 |
 | `JSidebar` | 导航壳结构 | 递归菜单项、路由目标解析与展开状态 |
-| `JLayout` | 暂无独立模板 | 多插槽组合、动态导航注入、移动抽屉事件协议 |
+| `JLayout` | 完整布局结构、侧栏、头部和内容区 | 水平导航片段、多插槽组合与移动抽屉事件协议 |
 
-`JLayout` 的渲染树同时承载桌面列布局和移动 overlay 抽屉，并需要在同一轮渲染中稳定快照多个插槽；待 RazorVue 支持等价的插槽表达后再继续拆分。
+`JLayout` 将稳定的布局骨架放在 `.razor`，仅把水平导航片段、状态计算和事件协议保留在 `.razor.cs`。模板在同一轮渲染开始时快照多个插槽，确保桌面列布局和移动 overlay 抽屉使用一致的输入。
 
 ## 命名约定
 
