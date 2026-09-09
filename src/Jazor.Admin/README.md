@@ -38,6 +38,12 @@
 - 递归菜单项、复杂 `RenderFragment` 插槽和 RazorVue direct render 尚未支持的形状可以保留在 `.razor.cs`；迁移必须以生成诊断和最终 `.mjs` 链接结果通过为准。
 - 不要为了追求模板化而引入中间 JavaScript 标记协议；组件应直接生成最终 Vue render-function 结构。
 
+## 命名约定
+
+- `Jazor.Admin` 的公共组件建议使用 `J` 前缀，例如 `JAdminLayout`、`JSidebarMenu` 和 `JPageContainer`，以便在同时使用 TDesign、Vuetify 或其他组件库时避免标签名冲突。
+- 现有 `AdminLayout`、`SidebarMenu`、`PageContainer` 等名称属于已发布公共 API，后续迁移应通过带 `J` 前缀的新入口逐步完成，不直接删除旧名称。
+- `J` 前缀只用于公共组件类型；`AdminNavItem`、`AdminRouteDefinition` 等模型和内部 helper 保持现有命名，避免无意义的缩写扩散。
+
 ## 边界
 
 - 本包只拥有应用框架与组件契约，不提供表格、表单、通知、鉴权页面或具体业务功能。
