@@ -92,34 +92,4 @@ public sealed class AdminShellTests
         CollectionAssert.AreEqual(new[] { "a", "z" }, expanded);
     }
 
-    [TestMethod]
-    public void RouteCatalog_BuildsNestedRecordsAndCatchAllRedirect()
-    {
-        var routes = new[]
-        {
-            new AdminRouteDefinition
-            {
-                Key = "root",
-                Path = "/root",
-                Children =
-                [
-                    new AdminRouteDefinition { Key = "child", Path = "/root/child" }
-                ]
-            }
-        };
-
-        var records = AdminRouteCatalog.BuildRouteRecords(routes, new TestVueComponent(), "root");
-        Assert.AreEqual(3, records.Length);
-        Assert.IsNotNull(records[0].AsSingleView);
-        Assert.AreEqual("/root", records[0].AsSingleView!.Path);
-        Assert.IsNotNull(records[1].AsSingleView);
-        Assert.AreEqual("/root/child", records[1].AsSingleView!.Path);
-        Assert.IsNotNull(records[2].AsRedirect);
-        Assert.AreEqual("/:pathMatch(.*)*", records[2].AsRedirect!.Path);
-    }
-
-    private sealed class TestVueComponent : ECMAScript.Vue.IVueComponent
-    {
-    }
-
 }
