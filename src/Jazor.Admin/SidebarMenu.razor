@@ -1,0 +1,20 @@
+@inherits AdminComponentBase
+
+@if (HasRenderableContent)
+{
+    <nav class="@RootCssClass" style="@CssStyle" aria-label="@NavigationLabel" @attributes="AdditionalAttributes">
+        @if (Logo is not null)
+        {
+            <div class="ja-sidebar__logo">@Logo</div>
+        }
+        @if (EffectiveItems.Length > 0)
+        {
+            <ul class="ja-sidebar__list">
+                @foreach (var item in EffectiveItems)
+                {
+                    @RenderEffectiveItem(item)
+                }
+            </ul>
+        }
+    </nav>
+}

@@ -52,42 +52,7 @@ public partial class SidebarMenu : AdminComponentBase, IVueContainerComponent
             ? BuildCssClass("ja-sidebar", "ja-sidebar--collapsed")
             : BuildCssClass("ja-sidebar");
 
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        var logo = Logo;
-        var items = EffectiveItems;
-        if (logo is null && items.Length == 0)
-        {
-            return;
-        }
-
-        builder.OpenElement(0, "nav");
-        builder.AddAttribute(1, "class", RootCssClass);
-        builder.AddAttribute(2, "style", CssStyle);
-        builder.AddAttribute(3, "aria-label", NavigationLabel);
-        builder.AddMultipleAttributes(4, AdditionalAttributes);
-
-        if (logo is not null)
-        {
-            builder.OpenElement(4, "div");
-            builder.AddAttribute(5, "class", "ja-sidebar__logo");
-            builder.AddContent(6, logo);
-            builder.CloseElement();
-        }
-
-        if (items.Length > 0)
-        {
-            builder.OpenElement(7, "ul");
-            builder.AddAttribute(8, "class", "ja-sidebar__list");
-            foreach (var item in items)
-            {
-                builder.AddContent(9, RenderEffectiveItem(item));
-            }
-            builder.CloseElement();
-        }
-
-        builder.CloseElement();
-    }
+    private bool HasRenderableContent => Logo is not null || EffectiveItems.Length > 0;
 
     private RenderFragment RenderEffectiveItem(AdminNavItemRenderHelper.EffectiveNavItem item) => builder =>
     {
