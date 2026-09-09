@@ -1,0 +1,83 @@
+name: Quality Gates
+
+on:
+  workflow_call:
+    inputs:
+      release_ref:
+        description: Git ref to verify; empty uses the triggering ref
+        required: false
+        type: string
+        default: ''
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/csharp/run-quality-gate.cs'
+      - 'scripts/csharp/verify-*-coverage.cs'
+      - 'Jazor.slnx'
+      - 'Directory.*.props'
+      - 'Directory.*.targets'
+      - 'global.json'
+      - 'NuGet.config'
+      - '.github/workflows/quality-gates.yml'
+      - '.github/workflows/nuget-publish-ref.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/csharp/run-quality-gate.cs'
+      - 'scripts/csharp/verify-*-coverage.cs'
+      - 'Jazor.slnx'
+      - 'Directory.*.props'
+      - 'Directory.*.targets'
+      - 'global.json'
+      - 'NuGet.config'
+      - '.github/workflows/quality-gates.yml'
+      - '.github/workflows/nuget-publish-ref.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: Coverage (${{ matrix.gate }})
+    runs-on: windows-latest
+    strategy:
+      # Keep evidence from the other gates even when one gate fails.
+      fail-fast: false
+      matrix:
+        gate: [compiler, razorvue, vue-bindings]
+    steps:
+      - name: Checkout tested ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.ref }}
+
+      # Manual publishing may test an older ref without this reporting entrypoint.
+      # Use the workflow's tooling while all test/build inputs remain at the tested ref.
+      - name: Checkout reporting tool from workflow revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .tmp/quality-tools
+          sparse-checkout: scripts/csharp/run-quality-gate.cs
+          sparse-checkout-cone-mode: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Run coverage gate and write summary
+        shell: pwsh
+        run: dotnet run --file ./.tmp/quality-tools/scripts/csharp/run-quality-gate.cs -- ${{ matrix.gate }}
+
+      - name: Upload coverage evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.gate }}-${{ github.run_attempt }}
+          path: artifacts/quality/${{ matrix.gate }}/
+          if-no-files-found: error
+          retention-days: 14

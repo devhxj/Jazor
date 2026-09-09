@@ -41,7 +41,11 @@
 | RazorVue | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 生态绑定包 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
 
-SPA 与 SSR 发布消费者门禁由 tag 工作流在上传 NuGet 之前自动执行，本地无需重复运行；工作流门禁失败时该 tag 不产生公开包。
+相关 PR 与 main 分支变更由 `Quality Gates` 工作流自动执行三项覆盖率门禁。标签发布和 `workflow_dispatch` 手动发布均对指定发布 ref 执行同一工作流，三项全部成功后才进入打包流程；任一失败、取消或跳过都会阻止发布任务。覆盖率使用与本地默认命令一致的 Debug 配置；各门禁在独立 runner 上运行，失败时其他门禁仍继续采集证据。
+
+每个门禁的 TRX、Cobertura（编译器与 RazorVue）、日志和 Markdown 摘要作为 Actions artifact 保留 14 天，关键指标同时写入 job summary。Vue 绑定指标是公共契约审计率，不是运行时代码覆盖率。本地使用上表的三个单文件 C# 命令复现；需要相同日志和摘要时，在仓库根目录运行 `dotnet run --file scripts/csharp/run-quality-gate.cs -- compiler`（或 `razorvue` / `vue-bindings`），证据写入 `artifacts/quality/`。CI 从工作流提交读取报告入口，从指定发布 ref 读取门禁脚本和被测源码，因此手动验证旧标签不会因缺少新报告入口而改变被测代码。
+
+SPA 与 SSR 发布消费者门禁由发布工作流在上传 NuGet 之前自动执行，本地无需重复运行；工作流门禁失败时不产生公开包。
 
 ## CHANGELOG 规则
 

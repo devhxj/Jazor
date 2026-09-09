@@ -32,11 +32,9 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新更新
 
-### Jazor 0.31.0 - 2026-09-04
+### 自动覆盖率门禁 - 2026-09-09
 
-- JazorAdmin 现在以 typed TDesign authoring 完成组织、角色、审计、排班、系统配置以及 OpenIddict 应用和 Scope 的完整管理流程；配置文本域支持 native union 绑定，提交失败时保留草稿。
-- Wiki 首页在首屏说明 Jazor 是什么、它解决什么问题以及适用边界；路线图收束为当前能力与下一阶段的证据要求。
-- 参考应用 Release browser smoke 覆盖上述管理流程的关键表格、表单、状态更新和失败交互。
+- 相关 PR 与 main 分支变更自动校验编译器、RazorVue 和 Vue 绑定覆盖率；标签发布与手动发布必须通过全部三项门禁，测试报告、日志和指标摘要可在 GitHub Actions 中查阅。
 
 完整版本历史见 [CHANGELOG](CHANGELOG.md)。
 

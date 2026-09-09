@@ -57,6 +57,8 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 | Windows SPA 发布消费者 | 本地 NuGet 包、Release bundle、`/docs` PathBase 与真实浏览器交互 | `dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs` |
 | Windows SSR 发布消费者 | 本地 NuGet 包、`JazorSSR=true` Release publish、SSR HTML、部署资源解析与 hydration | `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` |
 
+核心编译器、Razor-to-Vue 与 Vue 绑定覆盖率门禁由 `.github/workflows/quality-gates.yml` 在相关 pull request 和 main 分支变更中执行，并作为 tag 与手动 NuGet 发布的前置任务。每个门禁保存 TRX、Cobertura（适用时）、文本日志和 Markdown 摘要，并将关键指标写入 GitHub Actions 摘要。复现方式与报告保留期见[发版与版本规则](../03-guides/release-and-versioning.md#发版门禁)。
+
 这些门槛是对产品声明的验收规则。某次发布的实际结果应查看对应 CI、运行命令或[CHANGELOG.md](../../CHANGELOG.md)，而不是把历史快照固化在本页。
 
 ## P0/P1 已闭环切片

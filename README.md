@@ -32,18 +32,9 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest Update
 
-### RazorVue SSR hydration boundary - 2026-09-07
+### Automated coverage gates - 2026-09-09
 
-- SSR hydration now claims its mount before asynchronous component loading, rejects concurrent or repeated bootstrap, and preserves explicit failure state when the envelope, component import, or mount fails.
-
-### RazorVue P0 authoring and verification - 2026-09-06
-
-- 新增从 `RazorVue.Authoring` 开始的 Golden Path 指南，以及按稳定 ID、源码位置和替代写法组织的诊断矩阵。
-- 新增统一 Vue binding contract 门禁和 RazorVue clean/incremental/HMR/Release 构建基线脚本，便于在上游升级或编译器优化前后复现证据。
-
-### RazorVue P1 SSR state foundation - 2026-09-06
-
-- SSR 与浏览器 hydration 共享版本化 `jazor-ssr-state` envelope；新增 typed `JazorAuthenticationState` 快照，认证状态通过保留 provider key 交接。完整认证状态机、复杂 activation 和 browser history 仍按路线图保持明确边界。
+- Relevant pull requests and main-branch changes automatically check compiler, RazorVue, and Vue binding coverage. Tag and manual publishing require all three gates to pass, with test reports, logs, and summaries available in GitHub Actions.
 
 See the [changelog](CHANGELOG.md) for the full release history.
 

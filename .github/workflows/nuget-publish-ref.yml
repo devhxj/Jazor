@@ -26,9 +26,14 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     uses: ./.github/workflows/pinia-verify.yml
 
+  verify-quality:
+    uses: ./.github/workflows/quality-gates.yml
+    with:
+      release_ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref_name }}
+
   publish:
-    needs: verify-pinia
-    if: ${{ always() && (github.event_name != 'push' || needs.verify-pinia.result == 'success') }}
+    needs: [verify-pinia, verify-quality]
+    if: ${{ !cancelled() && needs.verify-quality.result == 'success' && (github.event_name != 'push' || needs.verify-pinia.result == 'success') }}
     runs-on: windows-latest
     environment: production
     env:
