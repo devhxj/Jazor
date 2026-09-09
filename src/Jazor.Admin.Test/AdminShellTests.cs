@@ -92,4 +92,24 @@ public sealed class AdminShellTests
         CollectionAssert.AreEqual(new[] { "a", "z" }, expanded);
     }
 
+    [TestMethod]
+    public void RouteCatalog_PreservesExplicitCatchAllAndReportsUnknownSelection()
+    {
+        var routes = new[]
+        {
+            new AdminRouteDefinition { Key = "home", Path = "/", Title = "Home" },
+            new AdminRouteDefinition { Key = "fallback", Path = "/:pathMatch(.*)*", Title = "Fallback" }
+        };
+
+        Assert.IsTrue(AdminRouteCatalog.ContainsPath(routes, "/"));
+        Assert.IsTrue(AdminRouteCatalog.ContainsPath(routes, "/:pathMatch(.*)*"));
+        Assert.IsFalse(AdminRouteCatalog.ContainsPath(routes, "/missing"));
+
+        var breadcrumbs = AdminRouteCatalog.BuildBreadcrumbs(routes, "missing");
+        Assert.AreEqual(0, breadcrumbs.Length);
+
+        var records = AdminRouteCatalog.BuildRouteRecords(routes, null!, "home");
+        Assert.AreEqual(2, records.Length);
+    }
+
 }
