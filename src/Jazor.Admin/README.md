@@ -12,9 +12,9 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.3" />
-  <PackageReference Include="Jazor.Vue" Version="0.26.3" PrivateAssets="all" />
-  <PackageReference Include="Jazor.Admin" Version="0.26.3" />
+  <PackageReference Include="Jazor" Version="0.33.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.33.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor.Admin" Version="0.33.0" />
 </ItemGroup>
 ```
 
@@ -30,6 +30,13 @@
 - 通过 `IVueContainerComponent` 与 `IVueContainerImplementation<TContainer>` 支持应用在保持公共容器契约的前提下替换具体实现。
 - 以 `Href` 表示普通链接，以 `RouteTarget` 表示强类型 Vue Router 导航；路由目标优先于普通链接。
 - 空导航目录会安全地产生空路由记录；`AdminRouteCatalog.Resolve` 在没有候选路由时返回带 fallback key 的定义，不会因访问 `routes[0]` 抛出异常。
+
+## 组件实现约定
+
+- 组件的静态 HTML 结构优先放在 `.razor` 文件中，参数、派生状态和事件处理放在同名 `.razor.cs` 文件中。
+- `HeaderBar`、`ApplicationFrame`、`AdminBreadcrumb`、`PageAction` 和 `SidebarMenu` 的外层结构已经遵循这一约定。
+- 递归菜单项、复杂 `RenderFragment` 插槽和 RazorVue direct render 尚未支持的形状可以保留在 `.razor.cs`；迁移必须以生成诊断和最终 `.mjs` 链接结果通过为准。
+- 不要为了追求模板化而引入中间 JavaScript 标记协议；组件应直接生成最终 Vue render-function 结构。
 
 ## 边界
 
