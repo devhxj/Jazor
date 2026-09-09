@@ -1,16 +1,19 @@
 @inherits JComponentBase
 
-@if (HasRenderableContent)
+@* Capture one normalized snapshot so visibility and iteration use identical navigation state. *@
+@{ var items = EffectiveItems; }
+
+@if (Logo is not null || items.Length > 0)
 {
     <nav class="@RootCssClass" style="@CssStyle" aria-label="@NavigationLabel" @attributes="AdditionalAttributes">
         @if (Logo is not null)
         {
             <div class="ja-sidebar__logo">@Logo</div>
         }
-        @if (EffectiveItems.Length > 0)
+        @if (items.Length > 0)
         {
             <ul class="ja-sidebar__list">
-                @foreach (var item in EffectiveItems)
+                @foreach (var item in items)
                 {
                     @RenderEffectiveItem(item)
                 }

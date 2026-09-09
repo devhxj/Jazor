@@ -52,8 +52,6 @@ public partial class JSidebar : JComponentBase, IVueContainerComponent
             ? BuildCssClass("ja-sidebar", "ja-sidebar--collapsed")
             : BuildCssClass("ja-sidebar");
 
-    private bool HasRenderableContent => Logo is not null || EffectiveItems.Length > 0;
-
     private RenderFragment RenderEffectiveItem(AdminNavItemRenderHelper.EffectiveNavItem item) => builder =>
     {
         var isExpanded = IsExpandedCore(item);
