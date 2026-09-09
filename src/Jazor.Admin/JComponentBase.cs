@@ -2,17 +2,25 @@ using Microsoft.AspNetCore.Components;
 
 namespace Jazor.Admin;
 
+/// <summary>Shared styling and attribute surface for Jazor.Admin components.</summary>
 public abstract class JComponentBase : ComponentBase, IVueComponent
 {
     [Parameter]
+    /// <summary>Additional CSS classes appended after the component's framework classes.</summary>
     public VueClassValue? CssClass { get; set; }
 
     [Parameter]
+    /// <summary>Inline style value applied to the component root element.</summary>
     public VueStyleValue? CssStyle { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
+    /// <summary>Unmatched HTML attributes forwarded to the component root element.</summary>
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// Combines stable framework classes with caller classes while preserving Vue class-value shapes.
+    /// Framework classes are emitted first so consumer overrides remain deterministic.
+    /// </summary>
     protected VueClassValue BuildCssClass(params string[] frameworkClasses)
     {
         ArgumentNullException.ThrowIfNull(frameworkClasses);
@@ -72,8 +80,10 @@ public abstract class JComponentBase : ComponentBase, IVueComponent
     }
 }
 
+/// <summary>Base class for components exposing the standard child-content slot.</summary>
 public abstract class JContentComponentBase : JComponentBase
 {
     [Parameter]
+    /// <summary>Content rendered inside the component's body slot.</summary>
     public RenderFragment? ChildContent { get; set; }
 }
