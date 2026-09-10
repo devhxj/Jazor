@@ -207,7 +207,7 @@ var typeMaps = new Dictionary<Type, string>()
 	{typeof(ParameterView),"Object"},
 	{typeof(RenderTreeBuilder),"Object"},
 	{typeof(WebRenderTreeBuilderExtensions),"Object"},
-	{typeof(ChangeEventArgs),"JazorEvent"},
+	{typeof(ChangeEventArgs),"EventRef"},
 	{typeof(ElementReference),"HTMLElement"},
 	{typeof(Microsoft.AspNetCore.Components.ElementReferenceExtensions),"Object"},
 	{typeof(MouseEventArgs),"MouseEvent"},
@@ -656,3 +656,4 @@ static string? GetComment(ISymbol? symbol, out string? summary)
 {result}
 ```";
 }
+

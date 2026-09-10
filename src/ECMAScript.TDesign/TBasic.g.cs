@@ -223,7 +223,7 @@ public readonly struct TAttachNodeReturnValue : IUnion
     private readonly byte _kind;
     private readonly HTMLElement? _value1;
     private readonly Element? _value2;
-    private readonly JazorDocument? _value3;
+    private readonly DocumentRef? _value3;
 
     public TAttachNodeReturnValue(HTMLElement value)
     {
@@ -241,7 +241,7 @@ public readonly struct TAttachNodeReturnValue : IUnion
         _value3 = default;
     }
 
-    public TAttachNodeReturnValue(JazorDocument value)
+    public TAttachNodeReturnValue(DocumentRef value)
     {
         _kind = 3;
         _value1 = default;
@@ -251,13 +251,13 @@ public readonly struct TAttachNodeReturnValue : IUnion
 
     public HTMLElement? AsHTMLElement => _kind == 1 ? _value1 : default;
     public Element? AsElement => _kind == 2 ? _value2 : default;
-    public JazorDocument? AsJazorDocument => _kind == 3 ? _value3 : default;
+    public DocumentRef? AsDocumentRef => _kind == 3 ? _value3 : default;
 
     public object? Value => _kind switch
     {
         1 => AsHTMLElement,
         2 => AsElement,
-        3 => AsJazorDocument,
+        3 => AsDocumentRef,
         _ => default
     };
 
@@ -267,7 +267,7 @@ public readonly struct TAttachNodeReturnValue : IUnion
     public static implicit operator TAttachNodeReturnValue(Element value)
         => new(value);
 
-    public static implicit operator TAttachNodeReturnValue(JazorDocument value)
+    public static implicit operator TAttachNodeReturnValue(DocumentRef value)
         => new(value);
 
 }
@@ -418,7 +418,7 @@ public record TAvatarErrorEventContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -1825,7 +1825,7 @@ public record TCheckboxChangeEventContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -1833,7 +1833,7 @@ public record TCheckboxGroupChangeContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 
     [ECMAScriptName("current")]
     public TCheckboxGroupChangeContextCurrent Current { get; init; }
@@ -1942,7 +1942,7 @@ public record TCheckboxOptionObjOnChangeContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -4449,7 +4449,7 @@ public enum TFormRequiredMarkPositionValue
 public record TFormResetEventContext<FormData> : VueProps
 {
     [ECMAScriptName("e")]
-    public JazorEvent? E { get; init; }
+    public EventRef? E { get; init; }
 }
 
 [ECMAScript]
@@ -9755,7 +9755,7 @@ public record TImageErrorEventContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -9791,12 +9791,12 @@ public record TImageInfo : VueProps
 }
 
 [ECMAScript]
-public readonly union TImageInfoMainImage(string, JazorFile)
+public readonly union TImageInfoMainImage(string, FileRef)
 {
 }
 
 [ECMAScript]
-public readonly union TImageInfoThumbnail(string, JazorFile)
+public readonly union TImageInfoThumbnail(string, FileRef)
 {
 }
 
@@ -9805,7 +9805,7 @@ public record TImageLoadEventContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -9869,7 +9869,7 @@ public enum TImageShapeValue
 }
 
 [ECMAScript]
-public readonly union TImageSrcValue(string, JazorFile)
+public readonly union TImageSrcValue(string, FileRef)
 {
 }
 
@@ -9932,7 +9932,7 @@ public record TImageViewerConfig : VueProps
 }
 
 [ECMAScript]
-public readonly union TImageViewerDownloadEventUrl(string, JazorFile)
+public readonly union TImageViewerDownloadEventUrl(string, FileRef)
 {
 }
 
@@ -9959,7 +9959,7 @@ public enum TImageViewerImageReferrerpolicyValue
 }
 
 [ECMAScript]
-public readonly union TImageViewerImagesValueItem(string, JazorFile, TImageInfo)
+public readonly union TImageViewerImagesValueItem(string, FileRef, TImageInfo)
 {
 }
 
@@ -10662,10 +10662,10 @@ public readonly struct TListScrollEventOptionsE : IUnion
     // Native unions cannot retain an exact branch when one source type inherits another.
     // 保留显式 tag，避免派生 DOM 类型同时命中基类 AsX 投影。
     private readonly byte _kind;
-    private readonly JazorEvent? _value1;
+    private readonly EventRef? _value1;
     private readonly WheelEvent? _value2;
 
-    public TListScrollEventOptionsE(JazorEvent value)
+    public TListScrollEventOptionsE(EventRef value)
     {
         _kind = 1;
         _value1 = value;
@@ -10679,17 +10679,17 @@ public readonly struct TListScrollEventOptionsE : IUnion
         _value2 = value;
     }
 
-    public JazorEvent? AsJazorEvent => _kind == 1 ? _value1 : default;
+    public EventRef? AsEventRef => _kind == 1 ? _value1 : default;
     public WheelEvent? AsWheelEvent => _kind == 2 ? _value2 : default;
 
     public object? Value => _kind switch
     {
-        1 => AsJazorEvent,
+        1 => AsEventRef,
         2 => AsWheelEvent,
         _ => default
     };
 
-    public static implicit operator TListScrollEventOptionsE(JazorEvent value)
+    public static implicit operator TListScrollEventOptionsE(EventRef value)
         => new(value);
 
     public static implicit operator TListScrollEventOptionsE(WheelEvent value)
@@ -11808,7 +11808,7 @@ public record TPrimaryTableColumnChange<T> : VueProps
     public TPrimaryTableColumnChangeType? Type { get; init; }
 
     [ECMAScriptName("e")]
-    public JazorEvent? E { get; init; }
+    public EventRef? E { get; init; }
 }
 
 [ECMAScript]
@@ -12247,7 +12247,7 @@ public record TRadioButtonChangeEventContext<T> : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -12263,7 +12263,7 @@ public record TRadioChangeEventContext<T> : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -12279,7 +12279,7 @@ public record TRadioGroupChangeEventContext<T> : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 
     [ECMAScriptName("name")]
     public string? Name { get; init; }
@@ -12811,7 +12811,7 @@ public readonly union TScrollContainer(TScrollContainerOption1, string)
 }
 
 [ECMAScript]
-public readonly union TScrollContainerElement(JazorWindow, HTMLElement)
+public readonly union TScrollContainerElement(WindowRef, HTMLElement)
 {
 }
 
@@ -13178,14 +13178,14 @@ public readonly struct TSelectInputValueChangeContextE : IUnion
     // Native unions cannot retain an exact branch when one source type inherits another.
     // 保留显式 tag，避免派生 DOM 类型同时命中基类 AsX 投影。
     private readonly byte _kind;
-    private readonly JazorEvent? _value1;
+    private readonly EventRef? _value1;
     private readonly InputEvent? _value2;
     private readonly MouseEvent? _value3;
     private readonly FocusEvent? _value4;
     private readonly KeyboardEvent? _value5;
     private readonly CompositionEvent? _value6;
 
-    public TSelectInputValueChangeContextE(JazorEvent value)
+    public TSelectInputValueChangeContextE(EventRef value)
     {
         _kind = 1;
         _value1 = value;
@@ -13251,7 +13251,7 @@ public readonly struct TSelectInputValueChangeContextE : IUnion
         _value6 = value;
     }
 
-    public JazorEvent? AsJazorEvent => _kind == 1 ? _value1 : default;
+    public EventRef? AsEventRef => _kind == 1 ? _value1 : default;
     public InputEvent? AsInputEvent => _kind == 2 ? _value2 : default;
     public MouseEvent? AsMouseEvent => _kind == 3 ? _value3 : default;
     public FocusEvent? AsFocusEvent => _kind == 4 ? _value4 : default;
@@ -13260,7 +13260,7 @@ public readonly struct TSelectInputValueChangeContextE : IUnion
 
     public object? Value => _kind switch
     {
-        1 => AsJazorEvent,
+        1 => AsEventRef,
         2 => AsInputEvent,
         3 => AsMouseEvent,
         4 => AsFocusEvent,
@@ -13269,7 +13269,7 @@ public readonly struct TSelectInputValueChangeContextE : IUnion
         _ => default
     };
 
-    public static implicit operator TSelectInputValueChangeContextE(JazorEvent value)
+    public static implicit operator TSelectInputValueChangeContextE(EventRef value)
         => new(value);
 
     public static implicit operator TSelectInputValueChangeContextE(InputEvent value)
@@ -13985,10 +13985,10 @@ public readonly struct TSortableOptionsFilterOption2Event : IUnion
     // Native unions cannot retain an exact branch when one source type inherits another.
     // 保留显式 tag，避免派生 DOM 类型同时命中基类 AsX 投影。
     private readonly byte _kind;
-    private readonly JazorEvent? _value1;
+    private readonly EventRef? _value1;
     private readonly TouchEvent? _value2;
 
-    public TSortableOptionsFilterOption2Event(JazorEvent value)
+    public TSortableOptionsFilterOption2Event(EventRef value)
     {
         _kind = 1;
         _value1 = value;
@@ -14002,17 +14002,17 @@ public readonly struct TSortableOptionsFilterOption2Event : IUnion
         _value2 = value;
     }
 
-    public JazorEvent? AsJazorEvent => _kind == 1 ? _value1 : default;
+    public EventRef? AsEventRef => _kind == 1 ? _value1 : default;
     public TouchEvent? AsTouchEvent => _kind == 2 ? _value2 : default;
 
     public object? Value => _kind switch
     {
-        1 => AsJazorEvent,
+        1 => AsEventRef,
         2 => AsTouchEvent,
         _ => default
     };
 
-    public static implicit operator TSortableOptionsFilterOption2Event(JazorEvent value)
+    public static implicit operator TSortableOptionsFilterOption2Event(EventRef value)
         => new(value);
 
     public static implicit operator TSortableOptionsFilterOption2Event(TouchEvent value)
@@ -14044,7 +14044,7 @@ public delegate void TSortableOptionsOnEndOption1(TSortableEvent @event);
 public delegate void TSortableOptionsOnFilterOption1(TSortableEvent @event);
 
 [ECMAScript]
-public delegate TSortableOptionsOnMoveOption1Result? TSortableOptionsOnMoveOption1(TMoveEvent evt, JazorEvent originalEvent);
+public delegate TSortableOptionsOnMoveOption1Result? TSortableOptionsOnMoveOption1(TMoveEvent evt, EventRef originalEvent);
 
 [ECMAScript]
 public readonly union TSortableOptionsOnMoveOption1Result(bool, Number)
@@ -14389,7 +14389,7 @@ public readonly union TStylesIndex(string, Number)
 public record TSubmitContext<T> : VueProps
 {
     [ECMAScriptName("e")]
-    public JazorEvent? E { get; init; }
+    public EventRef? E { get; init; }
 
     [ECMAScriptName("validateResult")]
     public TFormValidateResult<T> ValidateResult { get; init; }
@@ -16749,7 +16749,7 @@ public record TTransferScrollEventOptions<T> : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 
     [ECMAScriptName("bottomDistance")]
     public Number BottomDistance { get; init; }
@@ -17446,7 +17446,7 @@ public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
     private readonly byte _kind;
     private readonly MouseEvent? _value1;
     private readonly KeyboardEvent? _value2;
-    private readonly JazorEvent? _value3;
+    private readonly EventRef? _value3;
 
     public TTreeSelectChangeContextE(MouseEvent value)
     {
@@ -17464,7 +17464,7 @@ public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
         _value3 = default;
     }
 
-    public TTreeSelectChangeContextE(JazorEvent value)
+    public TTreeSelectChangeContextE(EventRef value)
     {
         _kind = 3;
         _value1 = default;
@@ -17474,13 +17474,13 @@ public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
 
     public MouseEvent? AsMouseEvent => _kind == 1 ? _value1 : default;
     public KeyboardEvent? AsKeyboardEvent => _kind == 2 ? _value2 : default;
-    public JazorEvent? AsJazorEvent => _kind == 3 ? _value3 : default;
+    public EventRef? AsEventRef => _kind == 3 ? _value3 : default;
 
     public object? Value => _kind switch
     {
         1 => AsMouseEvent,
         2 => AsKeyboardEvent,
-        3 => AsJazorEvent,
+        3 => AsEventRef,
         _ => default
     };
 
@@ -17490,7 +17490,7 @@ public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
     public static implicit operator TTreeSelectChangeContextE<DataOption>(KeyboardEvent value)
         => new(value);
 
-    public static implicit operator TTreeSelectChangeContextE<DataOption>(JazorEvent value)
+    public static implicit operator TTreeSelectChangeContextE<DataOption>(EventRef value)
         => new(value);
 
 }
@@ -18022,7 +18022,7 @@ public record TUploadFile : VueProps
     public Number? Percent { get; init; }
 
     [ECMAScriptName("raw")]
-    public JazorFile? Raw { get; init; }
+    public FileRef? Raw { get; init; }
 
     [ECMAScriptName("response")]
     public TJsonObject? Response { get; init; }
@@ -18075,7 +18075,7 @@ public delegate TJsonObject TUploadFormatRequestValue<T>(TJsonObject requestData
 public delegate TResponseType TUploadFormatResponseValue<T>(TJsonValue response, TFormatResponseContext context);
 
 [ECMAScript]
-public delegate TUploadFile TUploadFormatValue<T>(JazorFile @file);
+public delegate TUploadFile TUploadFormatValue<T>(FileRef @file);
 
 [ECMAScript]
 public record TUploadHeadersValue<T> : VueDictionary<string>
@@ -18611,7 +18611,7 @@ public record TdAvatarPropsOnErrorContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -18992,7 +18992,7 @@ public record TdCheckboxPropsOnChangeContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -19535,7 +19535,7 @@ public record TdImagePropsOnErrorContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -19546,7 +19546,7 @@ public record TdImagePropsOnLoadContext : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -19604,7 +19604,7 @@ public enum TdImagePropsShape
 }
 
 [ECMAScript]
-public readonly union TdImagePropsSrc(string, JazorFile)
+public readonly union TdImagePropsSrc(string, FileRef)
 {
 }
 
@@ -19709,7 +19709,7 @@ public enum TdImageViewerPropsImageReferrerpolicy
 }
 
 [ECMAScript]
-public readonly union TdImageViewerPropsImagesItem(string, JazorFile, TImageInfo)
+public readonly union TdImageViewerPropsImagesItem(string, FileRef, TImageInfo)
 {
 }
 
@@ -19762,7 +19762,7 @@ public enum TdImageViewerPropsOnCloseContextTrigger
 public delegate void TdImageViewerPropsOnDownload(TdImageViewerPropsOnDownloadUrl url);
 
 [ECMAScript]
-public readonly union TdImageViewerPropsOnDownloadUrl(string, JazorFile)
+public readonly union TdImageViewerPropsOnDownloadUrl(string, FileRef)
 {
 }
 
@@ -20946,7 +20946,7 @@ public record TdRadioGroupPropsOnChangeContext<T> : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 
     [ECMAScriptName("name")]
     public string? Name { get; init; }
@@ -21032,7 +21032,7 @@ public record TdRadioPropsOnChangeContext<T> : VueProps
 {
     [ECMAScriptName("e")]
     [EditorRequired]
-    public JazorEvent E { get; init; } = default!;
+    public EventRef E { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -41013,7 +41013,7 @@ public class TUpload<T> : TContentComponentBase
     /// </summary>
     [Parameter]
     [ECMAScriptName("onSelectChange")]
-    public EventCallback<JazorFile[]> OnSelectChange { get; set; }
+    public EventCallback<FileRef[]> OnSelectChange { get; set; }
 
     /// <summary>
     /// trigger on all files uploaded successfully
@@ -41882,3 +41882,4 @@ public sealed partial record TComponentRegistry
     [Description("@#Watermark")]
     public ITDesignComponent? TWatermark { get; init; }
 }
+

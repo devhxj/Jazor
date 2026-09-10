@@ -175,7 +175,7 @@ public sealed class VEmptyState : ComponentBase, IVuetifyComponent
     /// </summary>
     [Parameter]
     [ECMAScriptName("onClick:action")]
-    public EventCallback<JazorEvent> OnActionClick { get; set; }
+    public EventCallback<EventRef> OnActionClick { get; set; }
 
     /// <summary>
     /// 附加到组件的额外 HTML 属性。
@@ -233,3 +233,4 @@ public sealed class VEmptyState : ComponentBase, IVuetifyComponent
     [ECMAScriptName("text")]
     public RenderFragment? TextContent { get; set; }
 }
+

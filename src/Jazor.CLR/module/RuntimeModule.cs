@@ -178,18 +178,18 @@ public static class RuntimeModule
 
 	private static bool ThrowReadOnlyArraySet<TItem>(
 		Array<TItem> target,
-		ECMAScript.JazorPropertyKey property,
+		ECMAScript.PropertyKeyRef property,
 		object? value,
 		object receiver)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static bool ThrowReadOnlyArrayDelete<TItem>(Array<TItem> target, ECMAScript.JazorPropertyKey property)
+	private static bool ThrowReadOnlyArrayDelete<TItem>(Array<TItem> target, ECMAScript.PropertyKeyRef property)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static bool ThrowReadOnlyArrayDefine<TItem>(
 		Array<TItem> target,
-		ECMAScript.JazorPropertyKey property,
-		ECMAScript.JazorPropertyDescriptor attributes)
+		ECMAScript.PropertyKeyRef property,
+		ECMAScript.PropertyDescriptorRef attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static void ThrowReadOnlyArrayMutation<TItem>()
@@ -197,7 +197,7 @@ public static class RuntimeModule
 
 	private static object? GetReadOnlyArrayProperty<TItem>(
 		Array<TItem> target,
-		ECMAScript.JazorPropertyKey property,
+		ECMAScript.PropertyKeyRef property,
 		object receiver)
 	{
 		// Array prototype mutators execute with the proxy as `this`; returning a throwing
@@ -378,7 +378,7 @@ public static class RuntimeModule
 		return value.ToString() ?? "";
 	}
 
-	private static object? BindReadOnlyCollectionProperty<TTarget>(TTarget target, ECMAScript.JazorPropertyKey property)
+	private static object? BindReadOnlyCollectionProperty<TTarget>(TTarget target, ECMAScript.PropertyKeyRef property)
 		where TTarget : class
 	{
 		var value = ECMAScript.Reflect.Get(target, property, target);
@@ -397,7 +397,7 @@ public static class RuntimeModule
 	private static void ThrowReadOnlySetClear<T>()
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static object? GetReadOnlySetProperty<T>(Set<T> target, ECMAScript.JazorPropertyKey property, object receiver)
+	private static object? GetReadOnlySetProperty<T>(Set<T> target, ECMAScript.PropertyKeyRef property, object receiver)
 	{
 		var propertyName = property.AsString;
 		if (propertyName == "add")
@@ -412,18 +412,18 @@ public static class RuntimeModule
 
 	private static bool ThrowReadOnlySetPropertySet<T>(
 		Set<T> target,
-		ECMAScript.JazorPropertyKey property,
+		ECMAScript.PropertyKeyRef property,
 		object? value,
 		object receiver)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static bool ThrowReadOnlySetPropertyDelete<T>(Set<T> target, ECMAScript.JazorPropertyKey property)
+	private static bool ThrowReadOnlySetPropertyDelete<T>(Set<T> target, ECMAScript.PropertyKeyRef property)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static bool ThrowReadOnlySetPropertyDefine<T>(
 		Set<T> target,
-		ECMAScript.JazorPropertyKey property,
-		ECMAScript.JazorPropertyDescriptor attributes)
+		ECMAScript.PropertyKeyRef property,
+		ECMAScript.PropertyDescriptorRef attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	internal static Set<T> MarkAsReadOnlySetCarrier<T>(Set<T> instance)
@@ -460,7 +460,7 @@ public static class RuntimeModule
 
 	private static object? GetReadOnlyDictionaryProperty<TKey, TValue>(
 		Map<TKey, TValue> target,
-		ECMAScript.JazorPropertyKey property,
+		ECMAScript.PropertyKeyRef property,
 		object receiver)
 	{
 		var propertyName = property.AsString;
@@ -476,18 +476,18 @@ public static class RuntimeModule
 
 	private static bool ThrowReadOnlyDictionaryPropertySet<TKey, TValue>(
 		Map<TKey, TValue> target,
-		ECMAScript.JazorPropertyKey property,
+		ECMAScript.PropertyKeyRef property,
 		object? value,
 		object receiver)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
-	private static bool ThrowReadOnlyDictionaryPropertyDelete<TKey, TValue>(Map<TKey, TValue> target, ECMAScript.JazorPropertyKey property)
+	private static bool ThrowReadOnlyDictionaryPropertyDelete<TKey, TValue>(Map<TKey, TValue> target, ECMAScript.PropertyKeyRef property)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	private static bool ThrowReadOnlyDictionaryPropertyDefine<TKey, TValue>(
 		Map<TKey, TValue> target,
-		ECMAScript.JazorPropertyKey property,
-		ECMAScript.JazorPropertyDescriptor attributes)
+		ECMAScript.PropertyKeyRef property,
+		ECMAScript.PropertyDescriptorRef attributes)
 		=> throw new Error(ReadOnlyCarrierMutationMessage);
 
 	internal static Map<TKey, TValue> MarkAsReadOnlyDictionaryCarrier<TKey, TValue>(Map<TKey, TValue> instance)
@@ -530,7 +530,7 @@ public static class RuntimeModule
 			this.Date = new Date(date.GetTime());
 			this.Kind = 0;
 			this.SubMillisecondTicks = BigInt.Zero;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -542,7 +542,7 @@ public static class RuntimeModule
 			this.Date = new Date(date.GetTime());
 			this.Kind = kind;
 			this.SubMillisecondTicks = BigInt.Zero;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -554,7 +554,7 @@ public static class RuntimeModule
 			this.Date = new Date(date.GetTime());
 			this.Kind = kind;
 			this.SubMillisecondTicks = subMillisecondTicks;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -625,7 +625,7 @@ public static class RuntimeModule
 			this.UtcDateTime = new Date(utcDateTime.GetTime());
 			this.OffsetTicks = offsetTicks;
 			this.UtcSubMillisecondTicks = BigInt.Zero;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -637,7 +637,7 @@ public static class RuntimeModule
 			this.UtcDateTime = new Date(utcDateTime.GetTime());
 			this.OffsetTicks = offsetTicks;
 			this.UtcSubMillisecondTicks = utcSubMillisecondTicks;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -708,7 +708,7 @@ public static class RuntimeModule
 			var utcDate = CreateUtcDate(year, month, day);
 			var start = CreateUtcDate(1, 1, 1);
 			DayNumber = Math.FloorFunc((utcDate.GetTime() - start.GetTime()) / 86400000);
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -867,7 +867,7 @@ public static class RuntimeModule
 		{
 			var normalized = ticks % BigIntValue("864000000000");
 			this.Ticks = normalized < BigInt.Zero ? normalized + BigIntValue("864000000000") : normalized;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -919,7 +919,7 @@ public static class RuntimeModule
 				throw new Error("OverflowException: TimeSpan is too long or too short.");
 
 			this.Ticks = ticks;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -980,7 +980,7 @@ public static class RuntimeModule
 		{
 			this.CalendarType = calendarType;
 			this.TwoDigitYearMax = twoDigitYearMax;
-			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
 			{
 				Value = (Func<string?, object>)ToPrimitive,
 				Configurable = true
@@ -1171,3 +1171,4 @@ public static class RuntimeModule
 		return parts.Join("");
 	}
 }
+

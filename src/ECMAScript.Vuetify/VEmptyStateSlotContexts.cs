@@ -26,7 +26,7 @@ public enum VuetifyJustify
 public sealed record VEmptyStateActionsProps
 {
     [Description("@#onClick")]
-    public Action<JazorEvent>? OnClick { get; init; }
+    public Action<EventRef>? OnClick { get; init; }
 }
 
 /// <summary>
@@ -40,3 +40,4 @@ public sealed record VEmptyStateActionsSlotContext
     [Description("@#props")]
     public VEmptyStateActionsProps? Props { get; init; }
 }
+

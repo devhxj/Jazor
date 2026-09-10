@@ -1,4 +1,4 @@
-﻿namespace ECMAScript;
+namespace ECMAScript;
 
 [ECMAScript]
 [Description("@#")]
@@ -173,7 +173,7 @@ public static partial class Global
 
 	/// <summary>Gets the browser <c>document</c> global. 获取浏览器全局对象 <c>document</c>。</summary>
 	[Description("@#document")]
-	public extern static JazorDocument Document { get; }
+	public extern static DocumentRef Document { get; }
 
 	/// <summary>Gets the browser <c>window</c> proxy. 获取浏览器 <c>window</c> 代理对象。</summary>
 	[Description("@#window")]
@@ -339,3 +339,4 @@ public static partial class Global
 	[Description("@#structuredClone")]
 	public extern static object? StructuredClone(object? value, StructuredSerializeOptions? options = default);
 }
+

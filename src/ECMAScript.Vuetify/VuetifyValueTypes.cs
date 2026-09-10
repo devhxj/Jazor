@@ -891,18 +891,18 @@ public readonly union VuetifyProgressCircularIndeterminateValue(bool, VuetifyPro
 
 [ECMAScript]
 [Description("@#")]
-public readonly union VuetifyFileModelValue(JazorFile, JazorFile[])
+public readonly union VuetifyFileModelValue(FileRef, FileRef[])
 {
-    public JazorFile? AsFile
-        => Value is JazorFile value ? value : default(JazorFile?);
+    public FileRef? AsFile
+        => Value is FileRef value ? value : default(FileRef?);
 
-    public JazorFile[]? AsFiles
-        => Value is JazorFile[] value ? value : default(JazorFile[]?);
+    public FileRef[]? AsFiles
+        => Value is FileRef[] value ? value : default(FileRef[]?);
 
-    public static implicit operator VuetifyFileModelValue(JazorFile value)
+    public static implicit operator VuetifyFileModelValue(FileRef value)
         => new(value);
 
-    public static implicit operator VuetifyFileModelValue(JazorFile[] value)
+    public static implicit operator VuetifyFileModelValue(FileRef[] value)
         => new(value);
 }
 
@@ -1285,3 +1285,4 @@ public sealed record VuetifyTextModelModifiers : VueProps
     [Description("@#lazy")]
     public bool? Lazy { get; init; }
 }
+

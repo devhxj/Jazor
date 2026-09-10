@@ -28,7 +28,7 @@ public sealed class PreviewBindingEmitterTests
     }
 
     [TestMethod]
-    public async Task EmitAsync_FileInterface_UsesJazorFileAuthoringTypeAndPreservesFileAbi()
+    public async Task EmitAsync_FileInterface_UsesFileRefAuthoringTypeAndPreservesFileAbi()
     {
         var files = await EmitGeneratedFilesAsync(
             Interface("File", """
@@ -72,14 +72,14 @@ public sealed class PreviewBindingEmitterTests
                 ]
                 """));
 
-        StringAssert.Contains(files["Interfaces.cs"], "[Description(\"@#File\")]\r\npublic class JazorFile");
-        StringAssert.Contains(files["Interfaces.cs"], "public extern JazorFile();");
-        StringAssert.Contains(files["Interfaces.cs"], "public extern JazorFile File { get; }");
-        StringAssert.Contains(files["Interfaces.cs"], "public class FileChild : JazorFile");
-        StringAssert.Contains(files["Callbacks.cs"], "public delegate void FileConsumer(JazorFile file);");
+        StringAssert.Contains(files["Interfaces.cs"], "[Description(\"@#File\")]\r\npublic class FileRef");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern FileRef();");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern FileRef File { get; }");
+        StringAssert.Contains(files["Interfaces.cs"], "public class FileChild : FileRef");
+        StringAssert.Contains(files["Callbacks.cs"], "public delegate void FileConsumer(FileRef file);");
         StringAssert.Contains(files["Dictionaries.cs"], "FileReferenceValue? Value = default");
-        StringAssert.Contains(files["Unions.cs"], "public readonly union FileReferenceValue(JazorFile, string)");
-        StringAssert.Contains(files["Unions.cs"], "public JazorFile? AsFile => Value is JazorFile value ? value : default(JazorFile?);");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union FileReferenceValue(FileRef, string)");
+        StringAssert.Contains(files["Unions.cs"], "public FileRef? AsFile => Value is FileRef value ? value : default(FileRef?);");
         Assert.IsFalse(files.Values.Any(static file => file.Contains("public class File\r\n", StringComparison.Ordinal)));
     }
 
@@ -788,11 +788,11 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, ElementInternalsSetFormValueState? state = default);");
-        StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, JazorFile state);");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, FileRef state);");
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, string state);");
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, FormData state);");
-        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValue(JazorFile, string, FormData)");
-        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValueState(JazorFile, string, FormData)");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValue(FileRef, string, FormData)");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValueState(FileRef, string, FormData)");
         Assert.IsFalse(files["Interfaces.cs"].Contains("ElementInternalsSetFormValue? state", StringComparison.Ordinal));
         Assert.IsFalse(files["Interfaces.cs"].Contains("public extern void SetFormValue(SetFormValue", StringComparison.Ordinal));
     }
@@ -888,7 +888,7 @@ public sealed class PreviewBindingEmitterTests
                   }
                 ]
                 """, inheritance: "Event"));
-		Assert.Contains("public class AudioRenderCapacityEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)", output);
+		Assert.Contains("public class AudioRenderCapacityEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)", output);
     }
 
     [TestMethod]
@@ -1588,3 +1588,4 @@ public sealed class PreviewBindingEmitterTests
         return count;
     }
 }
+

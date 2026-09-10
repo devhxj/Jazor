@@ -21,9 +21,10 @@ public interface IWindow
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public sealed class WindowProxy : JazorWindow, IWindow
+public sealed class WindowProxy : WindowRef, IWindow
 {
 	/// <summary>Gets the proxied window location value. 获取代理 window 的 location 值。</summary>
 	[Description("@#location")]
 	public extern new string? Location { get; }
 }
+

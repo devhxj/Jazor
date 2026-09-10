@@ -201,28 +201,28 @@ public static class HashSetT1Module<T>
 
 		var state = (Comparer: comparer, ValuesByHash: new Map<Number, Array<T>>());
 		States.Set(instance, state);
-		Object.DefineProperty(instance, "add", new ECMAScript.JazorPropertyDescriptor
+		Object.DefineProperty(instance, "add", new ECMAScript.PropertyDescriptorRef
 		{
 			Value = (Func<T, Set<T>>)(item => AddCore(instance, item, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "has", new ECMAScript.JazorPropertyDescriptor
+		Object.DefineProperty(instance, "has", new ECMAScript.PropertyDescriptorRef
 		{
 			Value = (Func<T, bool>)(item => HasCore(instance, item, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "delete", new ECMAScript.JazorPropertyDescriptor
+		Object.DefineProperty(instance, "delete", new ECMAScript.PropertyDescriptorRef
 		{
 			Value = (Func<T, bool>)(item => DeleteCore(instance, item, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "clear", new ECMAScript.JazorPropertyDescriptor
+		Object.DefineProperty(instance, "clear", new ECMAScript.PropertyDescriptorRef
 		{
 			Value = (Action)(() => ClearCore(instance, state)),
 			Enumerable = false,
@@ -776,3 +776,4 @@ public static class HashSetT1Module<T>
 	public static System.Collections.Generic.IEqualityComparer<Set<T>> _2d028c1bc3e2f479()
 		=> CreateSetComparerCore();
 }
+

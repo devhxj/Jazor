@@ -92,18 +92,20 @@ internal static class WebIdlNaming
     public static string ToTypeName(string input)
     {
         var typeName = ToPascalCase(input);
+        // Browser globals keep their WebIDL/JavaScript names. Ref only resolves
+        // C# authoring collisions and must never leak into the runtime ABI.
         if (typeName == "File")
-            return "JazorFile";
+            return "FileRef";
 		else if (typeName == "Document")
-			return "JazorDocument";
+			return "DocumentRef";
 		else if (typeName == "Window")
-            return "JazorWindow";
+            return "WindowRef";
 		else if (typeName == "History")
-			return "JazorHistory";
+			return "HistoryRef";
 		else if (typeName == "Event")
-			return "JazorEvent";
+			return "EventRef";
 		else if (typeName == "Location")
-			return "JazorLocation";
+			return "LocationRef";
 		else
             return typeName;
     }
@@ -136,3 +138,4 @@ internal static class WebIdlNaming
         token.Clear();
     }
 }
+

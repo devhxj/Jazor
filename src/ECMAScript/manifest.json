@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "libraryId": "ecmascript",
-  "version": "0.26.3",
+  "version": "0.35.0",
   "imports": {
     "Microsoft/AspNetCore/Components/ChangeEventArgsModule.js": {
       "type": "module",
       "development": "dist/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
       "production": "dist/Microsoft/AspNetCore/Components/ChangeEventArgsModule.js",
-      "developmentHash": "fd92e8e0e9ad79fe6404e7dacdb9d5c729ee34ac7aa3de4a321e18dd9d15f68f",
-      "productionHash": "fd92e8e0e9ad79fe6404e7dacdb9d5c729ee34ac7aa3de4a321e18dd9d15f68f",
+      "developmentHash": "97a037e3aba36ece2554245a2c5bfd185f43974f35fd41d5a50fc351048983d4",
+      "productionHash": "97a037e3aba36ece2554245a2c5bfd185f43974f35fd41d5a50fc351048983d4",
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [
@@ -53,8 +53,8 @@
       "type": "module",
       "development": "dist/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
       "production": "dist/Microsoft/AspNetCore/Components/NavigationManagerModule.js",
-      "developmentHash": "44957a3925650db6a0eca17184b182ddd236e5558f2c20fefcf3b8e683254830",
-      "productionHash": "44957a3925650db6a0eca17184b182ddd236e5558f2c20fefcf3b8e683254830",
+      "developmentHash": "42937fd5c9089341286cacd9a674d4d183609b080c74cec4d53aa3d6c7269e35",
+      "productionHash": "42937fd5c9089341286cacd9a674d4d183609b080c74cec4d53aa3d6c7269e35",
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [

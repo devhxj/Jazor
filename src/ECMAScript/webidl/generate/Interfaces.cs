@@ -84,7 +84,7 @@ public class DecompressionStream
 /// </summary>
 [ECMAScript]
 [Description("@#CookieChangeEvent")]
-public class CookieChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class CookieChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://cookiestore.spec.whatwg.org/#dom-cookiechangeevent-cookiechangeevent">Cookie Store API Standard: 5.1 The CookieChangeEvent interface</see>
@@ -373,7 +373,7 @@ public class Comment : CharacterData
 /// </summary>
 [ECMAScript]
 [Description("@#CustomEvent")]
-public class CustomEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class CustomEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-customevent-customevent">DOM Standard: 2.4 Interface CustomEvent</see>
@@ -1845,7 +1845,7 @@ public partial class Element : Node
 /// </summary>
 [ECMAScript]
 [Description("@#Event")]
-public class JazorEvent
+public class EventRef
 {
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-event-event">DOM Standard: 2.2 Interface Event</see>
@@ -1855,7 +1855,7 @@ public class JazorEvent
     /// </example>
     /// <param name="type">Returns a new event whose type attribute value is set to type. The eventInitDict argument allows for setting the bubbles and cancelable attributes via object members of the same name. <see href="https://dom.spec.whatwg.org/#dom-event-event-type-eventinitdict-type">DOM Standard: 2.2 Interface Event</see></param>
     /// <param name="eventInitDict">Returns a new event whose type attribute value is set to type. The eventInitDict argument allows for setting the bubbles and cancelable attributes via object members of the same name. <see href="https://dom.spec.whatwg.org/#dom-event-event-type-eventinitdict-eventinitdict">DOM Standard: 2.2 Interface Event</see></param>
-    public extern JazorEvent(string type, EventInit? eventInitDict = default);
+    public extern EventRef(string type, EventInit? eventInitDict = default);
 
     /// <summary>
     /// Returns a new event whose type attribute value is set to type. The eventInitDict argument allows for setting the bubbles and cancelable attributes via object members of the same name.
@@ -2722,7 +2722,7 @@ public class StaticRange : AbstractRange
 /// </summary>
 [ECMAScript]
 [Description("@#XMLDocument")]
-public class XMLDocument : JazorDocument
+public class XMLDocument : DocumentRef
 {
 }
 
@@ -2891,14 +2891,14 @@ public class XSLTProcessor
     /// <param name="source"><see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-transformtofragment-source-output-source">DOM Standard: 9.1 Interface XSLTProcessor</see></param>
     /// <param name="output"><see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-transformtofragment-source-output-output">DOM Standard: 9.1 Interface XSLTProcessor</see></param>
     [Description("@#transformToFragment")]
-    public extern DocumentFragment TransformToFragment(Node source, JazorDocument output);
+    public extern DocumentFragment TransformToFragment(Node source, DocumentRef output);
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-transformtodocument">DOM Standard: 9.1 Interface XSLTProcessor</see>
     /// </summary>
     /// <param name="source"><see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-transformtodocument-source-source">DOM Standard: 9.1 Interface XSLTProcessor</see></param>
     [Description("@#transformToDocument")]
-    public extern JazorDocument TransformToDocument(Node source);
+    public extern DocumentRef TransformToDocument(Node source);
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-xsltprocessor-setparameter">DOM Standard: 9.1 Interface XSLTProcessor</see>
@@ -3337,7 +3337,7 @@ public class CSSScopeRule : CSSGroupingRule
 /// </summary>
 [ECMAScript]
 [Description("@#ContentVisibilityAutoStateChangeEvent")]
-public class ContentVisibilityAutoStateChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class ContentVisibilityAutoStateChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-contain-2/#dom-contentvisibilityautostatechangeevent-contentvisibilityautostatechangeevent">CSS Containment Module Level 2: 4.4 Detecting content-visibility: auto state changes: the contentvisibilityautostatechange event</see>
@@ -3493,7 +3493,7 @@ public class FontFacePalettes : IEnumerable<FontFacePalette>
 /// </summary>
 [ECMAScript]
 [Description("@#FontFaceSetLoadEvent")]
-public class FontFaceSetLoadEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class FontFaceSetLoadEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-font-loading-3/#dom-fontfacesetloadevent-fontfacesetloadevent">CSS Font Loading Module Level 3: 3 The FontFaceSet Interface</see>
@@ -4095,7 +4095,7 @@ public class NamedFlow : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#SnapEvent")]
-public class SnapEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class SnapEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-scroll-snap-2/#dom-snapevent-snapevent">CSS Scroll Snap Module Level 2: 5.2 SnapEvent interface</see>
@@ -4149,7 +4149,7 @@ public class NavigationEvent(string type, UIEventInit eventInitDict) : UIEvent(t
 /// </summary>
 [ECMAScript]
 [Description("@#TransitionEvent")]
-public partial class TransitionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public partial class TransitionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-transitions-1/#dom-transitionevent-transitionevent">CSS Transitions Module Level 1: 6.1.2 Attributes</see>
@@ -7371,7 +7371,7 @@ public class AnimationNodeList
 /// </summary>
 [ECMAScript]
 [Description("@#AnimationPlaybackEvent")]
-public class AnimationPlaybackEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class AnimationPlaybackEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/web-animations-2/#dom-animationplaybackevent-animationplaybackevent">Web Animations Module Level 2: 4.15 The AnimationPlaybackEvent interface</see>
@@ -7622,7 +7622,7 @@ public class FileSystemFileHandle : FileSystemHandle
     /// <code>file = await fileHandle.getFile()</code>
     /// </example>
     [Description("@#getFile")]
-    public extern PromiseResult<JazorFile> GetFile();
+    public extern PromiseResult<FileRef> GetFile();
 
     /// <summary>
     /// <see href="https://fs.spec.whatwg.org/#dom-filesystemfilehandle-createwritable">File System Standard: 2.3.2 The createWritable() method</see>
@@ -10046,7 +10046,7 @@ public class RadioNodeList : NodeList
 /// </summary>
 [ECMAScript]
 [Description("@#MessageEvent")]
-public class MessageEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class MessageEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern MessageEvent(string type, MessageEventInit? eventInitDict = default);
 
@@ -10229,7 +10229,7 @@ public class ElementInternals
     /// <code>internals.setFormValue(value)</code>
     /// </example>
     [Description("@#setFormValue")]
-    public extern void SetFormValue(ElementInternalsSetFormValue? value, JazorFile state);
+    public extern void SetFormValue(ElementInternalsSetFormValue? value, FileRef state);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/custom-elements.html#dom-elementinternals-setformvalue">HTML Standard: 4.13.7.3 Form-associated custom elements</see>
@@ -10774,7 +10774,7 @@ public partial class DataTransferItem
     /// <code>file = item.getAsFile()✔MDNDataTransferItem/getAsFileSupport in all current engines.Firefox50+Safari5.1+Chrome11+Opera12+Edge79+Edge (Legacy)12+Internet ExplorerNoFirefox Android?Safari iOS?Chrome Android?WebView Android4+Samsung Internet?Opera Android14+</code>
     /// </example>
     [Description("@#getAsFile")]
-    public extern JazorFile? GetAsFile();
+    public extern FileRef? GetAsFile();
 }
 
 /// <summary>
@@ -10812,7 +10812,7 @@ public class DataTransferItemList
     /// <code>items.add(data)✔MDNDataTransferItemList/addSupport in all current engines.Firefox50+Safari6+Chrome13+Opera12+Edge79+Edge (Legacy)12+Internet ExplorerNoFirefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android14+</code>
     /// </example>
     [Description("@#add")]
-    public extern DataTransferItem? Add(JazorFile data);
+    public extern DataTransferItem? Add(FileRef data);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransferitemlist-remove">HTML Standard: 6.11.3.1 The DataTransferItemList interface</see>
@@ -11862,7 +11862,7 @@ public class DOMParser
     /// <code>document = parser.parseFromString(string, type)✔MDNDOMParser/parseFromStringSupport in all current engines.Firefox1+Safari1.3+Chrome1+Opera8+Edge79+Edge (Legacy)12+Internet Explorer9+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android10.1+</code>
     /// </example>
     [Description("@#parseFromString")]
-    public extern JazorDocument ParseFromString(DOMParserParseFromString @string, DOMParserSupportedType type);
+    public extern DocumentRef ParseFromString(DOMParserParseFromString @string, DOMParserSupportedType type);
 }
 
 /// <summary>
@@ -12281,7 +12281,7 @@ public class HTMLSourceElement : HTMLElement
 /// </summary>
 [ECMAScript]
 [Description("@#FormDataEvent")]
-public class FormDataEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class FormDataEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern FormDataEvent(string type, FormDataEventInit eventInitDict);
 
@@ -12300,7 +12300,7 @@ public class FormDataEvent(string type, EventInit eventInitDict) : JazorEvent(ty
 /// </summary>
 [ECMAScript]
 [Description("@#SubmitEvent")]
-public class SubmitEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class SubmitEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern SubmitEvent(string type, SubmitEventInit? eventInitDict = default);
 
@@ -13948,7 +13948,7 @@ public partial class HTMLEmbedElement : HTMLElement
     /// <code>doc = iframe.getSVGDocument()</code>
     /// </example>
     [Description("@#getSVGDocument")]
-    public extern JazorDocument? GetSVGDocument();
+    public extern DocumentRef? GetSVGDocument();
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/obsolete.html#dom-embed-align">HTML Standard: 16.3.3 Other elements, attributes and APIs</see>
@@ -14051,7 +14051,7 @@ public partial class HTMLIFrameElement : HTMLElement
     /// <see href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#dom-iframe-contentdocument">HTML Standard: 4.8.5 The iframe element</see>
     /// </summary>
     [Description("@#contentDocument")]
-    public extern JazorDocument? ContentDocument { get; }
+    public extern DocumentRef? ContentDocument { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#dom-iframe-contentwindow">HTML Standard: 4.8.5 The iframe element</see>
@@ -14066,7 +14066,7 @@ public partial class HTMLIFrameElement : HTMLElement
     /// <code>doc = iframe.getSVGDocument()</code>
     /// </example>
     [Description("@#getSVGDocument")]
-    public extern JazorDocument? GetSVGDocument();
+    public extern DocumentRef? GetSVGDocument();
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/obsolete.html#dom-iframe-align">HTML Standard: 16.3.3 Other elements, attributes and APIs</see>
@@ -14172,7 +14172,7 @@ public partial class HTMLObjectElement : HTMLElement
     /// <see href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#dom-object-contentdocument">HTML Standard: 4.8.7 The object element</see>
     /// </summary>
     [Description("@#contentDocument")]
-    public extern JazorDocument? ContentDocument { get; }
+    public extern DocumentRef? ContentDocument { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#dom-object-contentwindow">HTML Standard: 4.8.7 The object element</see>
@@ -14187,7 +14187,7 @@ public partial class HTMLObjectElement : HTMLElement
     /// <code>doc = iframe.getSVGDocument()</code>
     /// </example>
     [Description("@#getSVGDocument")]
-    public extern JazorDocument? GetSVGDocument();
+    public extern DocumentRef? GetSVGDocument();
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-cva-willvalidate">HTML Standard: 4.10.21.3 The constraint validation API</see>
@@ -15125,7 +15125,7 @@ public class CloseWatcher : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#CommandEvent")]
-public class CommandEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class CommandEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern CommandEvent(string type, CommandEventInit? eventInitDict = default);
 
@@ -15153,7 +15153,7 @@ public class CommandEvent(string type, EventInit eventInitDict) : JazorEvent(typ
 /// </summary>
 [ECMAScript]
 [Description("@#ToggleEvent")]
-public class ToggleEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class ToggleEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern ToggleEvent(string type, ToggleEventInit? eventInitDict = default);
 
@@ -16395,7 +16395,7 @@ public class TimeRanges
 /// </summary>
 [ECMAScript]
 [Description("@#TrackEvent")]
-public class TrackEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class TrackEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern TrackEvent(string type, TrackEventInit? eventInitDict = default);
 
@@ -16549,7 +16549,7 @@ public class BarProp
 /// </summary>
 [ECMAScript]
 [Description("@#BeforeUnloadEvent")]
-public class BeforeUnloadEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class BeforeUnloadEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-beforeunloadevent-returnvalue">HTML Standard: 7.2.7.7 The BeforeUnloadEvent interface</see>
@@ -16563,7 +16563,7 @@ public class BeforeUnloadEvent(string type, EventInit eventInitDict) : JazorEven
 /// </summary>
 [ECMAScript]
 [Description("@#HashChangeEvent")]
-public class HashChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class HashChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern HashChangeEvent(string type, HashChangeEventInit? eventInitDict = default);
 
@@ -16591,7 +16591,7 @@ public class HashChangeEvent(string type, EventInit eventInitDict) : JazorEvent(
 /// </summary>
 [ECMAScript]
 [Description("@#History")]
-public class JazorHistory
+public class HistoryRef
 {
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-history-length">HTML Standard: 7.2.5 The History interface</see>
@@ -16671,7 +16671,7 @@ public class JazorHistory
 /// </summary>
 [ECMAScript]
 [Description("@#Location")]
-public class JazorLocation
+public class LocationRef
 {
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-location-href">HTML Standard: 7.2.4 The Location interface</see>
@@ -16796,7 +16796,7 @@ public class JazorLocation
 /// </summary>
 [ECMAScript]
 [Description("@#NavigateEvent")]
-public class NavigateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class NavigateEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern NavigateEvent(string type, NavigateEventInit eventInitDict);
 
@@ -17098,7 +17098,7 @@ public class NavigationActivation
 /// </summary>
 [ECMAScript]
 [Description("@#NavigationCurrentEntryChangeEvent")]
-public class NavigationCurrentEntryChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class NavigationCurrentEntryChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern NavigationCurrentEntryChangeEvent(string type, NavigationCurrentEntryChangeEventInit eventInitDict);
 
@@ -17420,7 +17420,7 @@ public class NotRestoredReasons
 /// </summary>
 [ECMAScript]
 [Description("@#PageRevealEvent")]
-public class PageRevealEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PageRevealEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern PageRevealEvent(string type, PageRevealEventInit? eventInitDict = default);
 
@@ -17439,7 +17439,7 @@ public class PageRevealEvent(string type, EventInit eventInitDict) : JazorEvent(
 /// </summary>
 [ECMAScript]
 [Description("@#PageSwapEvent")]
-public class PageSwapEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PageSwapEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern PageSwapEvent(string type, PageSwapEventInit? eventInitDict = default);
 
@@ -17467,7 +17467,7 @@ public class PageSwapEvent(string type, EventInit eventInitDict) : JazorEvent(ty
 /// </summary>
 [ECMAScript]
 [Description("@#PageTransitionEvent")]
-public class PageTransitionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PageTransitionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern PageTransitionEvent(string type, PageTransitionEventInit? eventInitDict = default);
 
@@ -17486,7 +17486,7 @@ public class PageTransitionEvent(string type, EventInit eventInitDict) : JazorEv
 /// </summary>
 [ECMAScript]
 [Description("@#PopStateEvent")]
-public class PopStateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PopStateEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern PopStateEvent(string type, PopStateEventInit? eventInitDict = default);
 
@@ -17514,7 +17514,7 @@ public class PopStateEvent(string type, EventInit eventInitDict) : JazorEvent(ty
 /// </summary>
 [ECMAScript]
 [Description("@#Window")]
-public partial class JazorWindow : EventTarget
+public partial class WindowRef : EventTarget
 {
     /// <summary>
     /// The credentialless flag to impose on the new Window
@@ -17765,7 +17765,7 @@ public partial class JazorWindow : EventTarget
     /// <see href="https://dom.spec.whatwg.org/#dom-window-event">DOM Standard: 2.3 Legacy extensions to the Window interface</see>
     /// </remarks>
     [Description("@#event")]
-    public extern JazorEvent? Event { get; }
+    public extern EventRef? Event { get; }
 
     /// <summary>
     /// <see href="https://wicg.github.io/fenced-frame/#dom-window-fence">Fenced Frame: 3.1 Extensions to the Window interface</see>
@@ -17836,7 +17836,7 @@ public partial class JazorWindow : EventTarget
     /// <code>window.document✔MDNWindow/documentSupport in all current engines.Firefox1+Safari1+Chrome1+Opera12.1+Edge79+Edge (Legacy)12+Internet Explorer4+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android12.1+</code>
     /// </example>
     [Description("@#document")]
-    public extern JazorDocument Document { get; }
+    public extern DocumentRef Document { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-name">HTML Standard: 7.2.2.1 Opening and closing windows</see>
@@ -17854,7 +17854,7 @@ public partial class JazorWindow : EventTarget
     /// <code>window.location [ = value ]</code>
     /// </example>
     [Description("@#location")]
-    public extern JazorLocation Location { get; }
+    public extern LocationRef Location { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-history">HTML Standard: 7.2.5 The History interface</see>
@@ -17863,7 +17863,7 @@ public partial class JazorWindow : EventTarget
     /// <code>history.length✔MDNHistory/lengthSupport in all current engines.Firefox1+Safari1+Chrome1+Opera12.1+Edge79+Edge (Legacy)12+Internet Explorer10+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android12.1+</code>
     /// </example>
     [Description("@#history")]
-    public extern JazorHistory History { get; }
+    public extern HistoryRef History { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigation">HTML Standard: 7.2.6.2 The Navigation interface</see>
@@ -19365,7 +19365,7 @@ public class HTMLFrameElement : HTMLElement
     /// <see href="https://html.spec.whatwg.org/multipage/obsolete.html#dom-frame-contentdocument">HTML Standard: 16.3.2 Frames</see>
     /// </summary>
     [Description("@#contentDocument")]
-    public extern JazorDocument? ContentDocument { get; }
+    public extern DocumentRef? ContentDocument { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/obsolete.html#dom-frame-contentwindow">HTML Standard: 16.3.2 Frames</see>
@@ -22100,7 +22100,7 @@ public class MessagePort : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#ErrorEvent")]
-public class ErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class ErrorEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern ErrorEvent(string type, ErrorEventInit? eventInitDict = default);
 
@@ -22140,7 +22140,7 @@ public class ErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type,
 /// </summary>
 [ECMAScript]
 [Description("@#PromiseRejectionEvent")]
-public class PromiseRejectionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PromiseRejectionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern PromiseRejectionEvent(string type, PromiseRejectionEventInit eventInitDict);
 
@@ -22224,7 +22224,7 @@ public class Storage
 /// </summary>
 [ECMAScript]
 [Description("@#StorageEvent")]
-public class StorageEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class StorageEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern StorageEvent(string type, StorageEventInit? eventInitDict = default);
 
@@ -23546,7 +23546,7 @@ public class XREquirectLayer : XRCompositionLayer
 /// </summary>
 [ECMAScript]
 [Description("@#XRLayerEvent")]
-public class XRLayerEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class XRLayerEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/layers/#dom-xrlayerevent-xrlayerevent">WebXR Layers API Level 1: 8.1 XRLayerEvent</see>
@@ -24393,7 +24393,7 @@ public class XRInputSourceArray : IEnumerable<XRInputSource>
 /// </summary>
 [ECMAScript]
 [Description("@#XRInputSourceEvent")]
-public class XRInputSourceEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class XRInputSourceEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrinputsourceevent-xrinputsourceevent">WebXR Device API: 12.2 XRInputSourceEvent</see>
@@ -24420,7 +24420,7 @@ public class XRInputSourceEvent(string type, EventInit eventInitDict) : JazorEve
 /// </summary>
 [ECMAScript]
 [Description("@#XRInputSourcesChangeEvent")]
-public class XRInputSourcesChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class XRInputSourcesChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrinputsourceschangeevent-xrinputsourceschangeevent">WebXR Device API: 12.3 XRInputSourcesChangeEvent</see>
@@ -24529,7 +24529,7 @@ public class XRReferenceSpace : XRSpace
 /// </summary>
 [ECMAScript]
 [Description("@#XRReferenceSpaceEvent")]
-public class XRReferenceSpaceEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class XRReferenceSpaceEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrreferencespaceevent-xrreferencespaceevent">WebXR Device API: 12.4 XRReferenceSpaceEvent</see>
@@ -24639,7 +24639,7 @@ public class XRRigidTransform
 /// </summary>
 [ECMAScript]
 [Description("@#XRSessionEvent")]
-public class XRSessionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class XRSessionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrsessionevent-xrsessionevent">WebXR Device API: 12.1 XRSessionEvent</see>
@@ -24806,7 +24806,7 @@ public class XRViewport
 /// </summary>
 [ECMAScript]
 [Description("@#XRVisibilityMaskChangeEvent")]
-public class XRVisibilityMaskChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class XRVisibilityMaskChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://immersive-web.github.io/webxr/#dom-xrvisibilitymaskchangeevent-xrvisibilitymaskchangeevent">WebXR Device API: 12.5 XRVisibilityMaskChangeEvent</see>
@@ -25974,7 +25974,7 @@ public class NavigatorLogin
 /// </summary>
 [ECMAScript]
 [Description("@#File")]
-public partial class JazorFile(BlobPart[] blobParts, BlobPropertyBag options) : Blob(blobParts, options)
+public partial class FileRef(BlobPart[] blobParts, BlobPropertyBag options) : Blob(blobParts, options)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/entries-api/#dom-file-webkitrelativepath">File and Directory Entries API: 4 The File Interface</see>
@@ -25991,7 +25991,7 @@ public partial class JazorFile(BlobPart[] blobParts, BlobPropertyBag options) : 
     /// <param name="fileBits"><see href="https://w3c.github.io/FileAPI/#dfn-fileBits">File API: 4.1.1 Constructor Parameters</see></param>
     /// <param name="fileName"><see href="https://w3c.github.io/FileAPI/#dfn-fileName">File API: 4.1.1 Constructor Parameters</see></param>
     /// <param name="options"><see href="https://w3c.github.io/FileAPI/#dom-file-file-filebits-filename-options-options">File API: 4 The File Interface</see></param>
-    public extern JazorFile(BlobPart[] fileBits, string fileName, FilePropertyBag? options = default);
+    public extern FileRef(BlobPart[] fileBits, string fileName, FilePropertyBag? options = default);
 
     /// <summary>
     /// The name of the file. On getting, this must return the name of the file as a string. There are numerous file name variations and conventions used by different underlying OS file systems; this is merely the name of the file, without path information. On getting, if user agents cannot make this information available, they must return the empty string. If a File object is created using a constructor, further normative conditions for this attribute are found in #file-constructor.
@@ -26943,7 +26943,7 @@ public class IDBTransaction : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#IDBVersionChangeEvent")]
-public class IDBVersionChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class IDBVersionChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/IndexedDB/#dom-idbversionchangeevent-idbversionchangeevent">Indexed Database API 3.0: 4.2 Event interfaces</see>
@@ -27164,7 +27164,7 @@ public class Clients
 /// </summary>
 [ECMAScript]
 [Description("@#ExtendableEvent")]
-public class ExtendableEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class ExtendableEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/ServiceWorker/#dom-extendableevent-extendableevent">Service Workers Nightly: 4.4 ExtendableEvent</see>
@@ -27704,7 +27704,7 @@ public class AttributionAggregationServices : IDictionary<string, AttributionAgg
 /// </summary>
 [ECMAScript]
 [Description("@#ClipboardChangeEvent")]
-public class ClipboardChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class ClipboardChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardchangeevent-clipboardchangeevent">Clipboard API and events: 5.2.1.2 Document focus steps</see>
@@ -27734,7 +27734,7 @@ public class ClipboardChangeEvent(string type, EventInit eventInitDict) : JazorE
 /// </summary>
 [ECMAScript]
 [Description("@#ClipboardEvent")]
-public class ClipboardEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class ClipboardEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardevent-clipboardevent">Clipboard API and events: 5.1 Clipboard event interfaces</see>
@@ -27877,7 +27877,7 @@ public class DevicePosture : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#DeviceMotionEvent")]
-public class DeviceMotionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class DeviceMotionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/deviceorientation/#dom-devicemotionevent-devicemotionevent">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see>
@@ -27974,7 +27974,7 @@ public class DeviceMotionEventRotationRate
 /// </summary>
 [ECMAScript]
 [Description("@#DeviceOrientationEvent")]
-public class DeviceOrientationEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class DeviceOrientationEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/deviceorientation/#dom-deviceorientationevent-deviceorientationevent">Device Orientation and Motion: 6.1 deviceorientation Event</see>
@@ -28519,7 +28519,7 @@ public class GamepadButton
 /// </summary>
 [ECMAScript]
 [Description("@#GamepadEvent")]
-public class GamepadEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class GamepadEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/gamepad/#dom-gamepadevent-constructor">Gamepad: 13. GamepadEvent Interface</see>
@@ -28790,7 +28790,7 @@ public class PerformanceScriptTiming : PerformanceEntry
     /// <see href="https://w3c.github.io/long-animation-frames/#dom-performancescripttiming-window">Long Animation Frames API: 2.2 PerformanceScriptTiming interface</see>
     /// </summary>
     [Description("@#window")]
-    public extern JazorWindow? Window { get; }
+    public extern WindowRef? Window { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/long-animation-frames/#dom-performancescripttiming-windowattribution">Long Animation Frames API: 2.2 PerformanceScriptTiming interface</see>
@@ -29240,7 +29240,7 @@ public class SourceBuffer : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#CaptureActionEvent")]
-public class CaptureActionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class CaptureActionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/mediacapture-handle/actions/#dom-captureactionevent-constructor">The Capture-Handle Actions Mechanism: 3.1.2.1 CaptureActionEvent</see>
@@ -29387,7 +29387,7 @@ public partial class MediaDevices : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#BlobEvent")]
-public class BlobEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class BlobEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/mediacapture-record/#dom-blobevent-blobevent">MediaStream Recording: 3.1 Constructors</see>
@@ -30088,7 +30088,7 @@ public class PermissionStatus : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#PictureInPictureEvent")]
-public class PictureInPictureEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PictureInPictureEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/picture-in-picture/#dom-pictureinpictureevent-pictureinpictureevent">Picture-in-Picture: 4.5 Event types</see>
@@ -30302,7 +30302,7 @@ public partial class MouseEvent(string type, UIEventInit eventInitDict) : UIEven
     /// <see href="https://w3c.github.io/pointerevents/#dom-mouseevent-initmouseevent">Pointer Events: 16.1 Initializers for interface MouseEvent</see>
     /// </remarks>
     [Description("@#initMouseEvent")]
-    public extern void InitMouseEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, JazorWindow? viewArg = default, int detailArg = 0, int screenXArg = 0, int screenYArg = 0, int clientXArg = 0, int clientYArg = 0, bool ctrlKeyArg = false, bool altKeyArg = false, bool shiftKeyArg = false, bool metaKeyArg = false, short buttonArg = 0, EventTarget? relatedTargetArg = default);
+    public extern void InitMouseEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, WindowRef? viewArg = default, int detailArg = 0, int screenXArg = 0, int screenYArg = 0, int clientXArg = 0, int clientYArg = 0, bool ctrlKeyArg = false, bool altKeyArg = false, bool shiftKeyArg = false, bool metaKeyArg = false, short buttonArg = 0, EventTarget? relatedTargetArg = default);
 
     /// <summary>
     /// <see href="https://w3c.github.io/pointerlock/#dom-mouseevent-movementx">Pointer Lock 2.0: 6 Extensions to the MouseEvent Interface</see>
@@ -31031,7 +31031,7 @@ public class Sensor : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#SensorErrorEvent")]
-public class SensorErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class SensorErrorEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/sensors/#dom-sensorerrorevent-sensorerrorevent">Generic Sensor API: 7.2 The SensorErrorEvent Interface</see>
@@ -31485,7 +31485,7 @@ public partial class KeyboardEvent(string type, UIEventInit eventInitDict) : UIE
     /// <param name="shiftKey"><see href="https://w3c.github.io/uievents/#dom-keyboardevent-initkeyboardevent-typearg-bubblesarg-cancelablearg-viewarg-keyarg-locationarg-ctrlkey-altkey-shiftkey-metakey-shiftkey">UI Events: 6.1.2 Initializers for interface KeyboardEvent</see></param>
     /// <param name="metaKey"><see href="https://w3c.github.io/uievents/#dom-keyboardevent-initkeyboardevent-typearg-bubblesarg-cancelablearg-viewarg-keyarg-locationarg-ctrlkey-altkey-shiftkey-metakey-metakey">UI Events: 6.1.2 Initializers for interface KeyboardEvent</see></param>
     [Description("@#initKeyboardEvent")]
-    public extern void InitKeyboardEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, JazorWindow? viewArg = default, string keyArg = "", uint locationArg = 0, bool ctrlKey = false, bool altKey = false, bool shiftKey = false, bool metaKey = false);
+    public extern void InitKeyboardEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, WindowRef? viewArg = default, string keyArg = "", uint locationArg = 0, bool ctrlKey = false, bool altKey = false, bool shiftKey = false, bool metaKey = false);
 
     /// <summary>
     /// <see href="https://w3c.github.io/uievents/#dom-keyboardevent-charcode">UI Events: 7.2.1 Interface KeyboardEvent (supplemental)</see>
@@ -31522,7 +31522,7 @@ public class TextEvent(string type, UIEventInit eventInitDict) : UIEvent(type, e
     /// <param name="view"><see href="https://w3c.github.io/uievents/#dom-textevent-inittextevent-type-bubbles-cancelable-view-data-view">UI Events: 8.4 Legacy TextEvent events</see></param>
     /// <param name="data"><see href="https://w3c.github.io/uievents/#dom-textevent-inittextevent-type-bubbles-cancelable-view-data-data">UI Events: 8.4 Legacy TextEvent events</see></param>
     [Description("@#initTextEvent")]
-    public extern void InitTextEvent(string type, bool bubbles = false, bool cancelable = false, JazorWindow? view = default, string data = "undefined");
+    public extern void InitTextEvent(string type, bool bubbles = false, bool cancelable = false, WindowRef? view = default, string data = "undefined");
 }
 
 /// <summary>
@@ -31530,7 +31530,7 @@ public class TextEvent(string type, UIEventInit eventInitDict) : UIEvent(type, e
 /// </summary>
 [ECMAScript]
 [Description("@#UIEvent")]
-public partial class UIEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public partial class UIEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// Indicates the InputDeviceCapabilities responsible for the generation of this event, or null if no input device was responsible. When a single user interaction with an input device generates a series of different input events, all events in the series should have the same sourceCapabilities. For example, when a user lifts their finger off of a touchscreen, several UIEvents may be generated including touchend, mousedown, click, and focus. All of these events must have the same sourceCapabilities representing the touchscreen.
@@ -31552,7 +31552,7 @@ public partial class UIEvent(string type, EventInit eventInitDict) : JazorEvent(
     /// <see href="https://w3c.github.io/uievents/#dom-uievent-view">UI Events: 3.2.1.1 UIEvent</see>
     /// </summary>
     [Description("@#view")]
-    public extern JazorWindow? View { get; }
+    public extern WindowRef? View { get; }
 
     /// <summary>
     /// <see href="https://w3c.github.io/uievents/#dom-uievent-detail">UI Events: 3.2.1.1 UIEvent</see>
@@ -31569,7 +31569,7 @@ public partial class UIEvent(string type, EventInit eventInitDict) : JazorEvent(
     /// <param name="viewArg"><see href="https://w3c.github.io/uievents/#dom-uievent-inituievent-typearg-bubblesarg-cancelablearg-viewarg-detailarg-viewarg">UI Events: 6.1.1 Initializers for interface UIEvent</see></param>
     /// <param name="detailArg"><see href="https://w3c.github.io/uievents/#dom-uievent-inituievent-typearg-bubblesarg-cancelablearg-viewarg-detailarg-detailarg">UI Events: 6.1.1 Initializers for interface UIEvent</see></param>
     [Description("@#initUIEvent")]
-    public extern void InitUIEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, JazorWindow? viewArg = default, int detailArg = 0);
+    public extern void InitUIEvent(string typeArg, bool bubblesArg = false, bool cancelableArg = false, WindowRef? viewArg = default, int detailArg = 0);
 
     /// <summary>
     /// <see href="https://w3c.github.io/uievents/#dom-uievent-which">UI Events: 7.1.1 Interface UIEvent (supplemental)</see>
@@ -31784,7 +31784,7 @@ public class PasswordCredential : Credential
 /// </summary>
 [ECMAScript]
 [Description("@#SecurityPolicyViolationEvent")]
-public class SecurityPolicyViolationEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class SecurityPolicyViolationEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webappsec-csp/#dom-securitypolicyviolationevent-securitypolicyviolationevent">Content Security Policy Level 3: 5.1 Violation DOM Events</see>
@@ -32806,7 +32806,7 @@ public class VideoFrame
 /// </summary>
 [ECMAScript]
 [Description("@#KeyFrameRequestEvent")]
-public class KeyFrameRequestEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class KeyFrameRequestEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-keyframerequestevent-keyframerequestevent">WebRTC Encoded Transform: 6.4 Events</see>
@@ -33009,7 +33009,7 @@ public class RTCRtpSFrameEncryptor
 /// </summary>
 [ECMAScript]
 [Description("@#RTCTransformEvent")]
-public class RTCTransformEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class RTCTransformEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtctransformevent-transformer">WebRTC Encoded Transform: 6.4 Events</see>
@@ -33112,7 +33112,7 @@ public class SFrameEncryptorStream
 /// </summary>
 [ECMAScript]
 [Description("@#SFrameTransformErrorEvent")]
-public class SFrameTransformErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class SFrameTransformErrorEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-sframetransformerrorevent-sframetransformerrorevent">WebRTC Encoded Transform: 3 SFrame transforms</see>
@@ -34649,7 +34649,7 @@ public class AudioPlaybackStats
 /// </summary>
 [ECMAScript]
 [Description("@#AudioProcessingEvent")]
-public class AudioProcessingEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class AudioProcessingEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-audio-api/#dom-audioprocessingevent-audioprocessingevent">Web Audio API 1.1: 1.12 The AudioProcessingEvent Interface - DEPRECATED</see>
@@ -35351,7 +35351,7 @@ public class MediaStreamTrackAudioSourceNode : AudioNode
 /// </summary>
 [ECMAScript]
 [Description("@#OfflineAudioCompletionEvent")]
-public class OfflineAudioCompletionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class OfflineAudioCompletionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocompletionevent-offlineaudiocompletionevent">Web Audio API 1.1: 1.3.5 The OfflineAudioCompletionEvent Interface</see>
@@ -36073,7 +36073,7 @@ public class SpeechRecognitionAlternative
 /// </summary>
 [ECMAScript]
 [Description("@#SpeechRecognitionEvent")]
-public class SpeechRecognitionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class SpeechRecognitionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-speech-api/#dom-speechrecognitionevent-speechrecognitionevent">Web Speech API: 4.1 The SpeechRecognition Interface</see>
@@ -36175,7 +36175,7 @@ public class SpeechRecognitionResult
 /// </summary>
 [ECMAScript]
 [Description("@#SpeechSynthesisEvent")]
-public class SpeechSynthesisEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class SpeechSynthesisEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-speech-api/#dom-speechsynthesisevent-speechsynthesisevent">Web Speech API: 4.2 The SpeechSynthesis Interface</see>
@@ -36285,7 +36285,7 @@ public class SpeechSynthesisVoice
 /// </summary>
 [ECMAScript]
 [Description("@#BluetoothAdvertisingEvent")]
-public class BluetoothAdvertisingEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class BluetoothAdvertisingEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothadvertisingevent-bluetoothadvertisingevent">Web Bluetooth: 5.2.3 Responding to Advertising Events</see>
@@ -36608,7 +36608,7 @@ public class BluetoothUUID
 /// </summary>
 [ECMAScript]
 [Description("@#ValueEvent")]
-public class ValueEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class ValueEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-valueevent-valueevent">Web Bluetooth: 4.2 Overall Bluetooth availability</see>
@@ -36989,7 +36989,7 @@ public class CreateMonitor : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#CloseEvent")]
-public class CloseEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class CloseEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://websockets.spec.whatwg.org/#dom-closeevent-closeevent">WebSockets Standard: 6 The CloseEvent interface</see>
@@ -37082,7 +37082,7 @@ public partial class NavigatorManagedData : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#AutofillEvent")]
-public class AutofillEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class AutofillEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/autofill-event/#dom-autofillevent-autofillevent">Autofill Event: 3 The AutofillEvent Interface</see>
@@ -37509,13 +37509,13 @@ public class DocumentPictureInPicture : EventTarget
     /// </summary>
     /// <param name="options"><see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpicture-requestwindow-options-options">Document Picture-in-Picture Specification: 5 API</see></param>
     [Description("@#requestWindow")]
-    public extern PromiseResult<JazorWindow> RequestWindow(DocumentPictureInPictureOptions? options = default);
+    public extern PromiseResult<WindowRef> RequestWindow(DocumentPictureInPictureOptions? options = default);
 
     /// <summary>
     /// <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpicture-window">Document Picture-in-Picture Specification: 5 API</see>
     /// </summary>
     [Description("@#window")]
-    public extern JazorWindow Window { get; }
+    public extern WindowRef Window { get; }
 
     /// <summary>
     /// <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpicture-onenter">Document Picture-in-Picture Specification: 5 API</see>
@@ -37529,7 +37529,7 @@ public class DocumentPictureInPicture : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#DocumentPictureInPictureEvent")]
-public class DocumentPictureInPictureEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class DocumentPictureInPictureEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpictureevent-documentpictureinpictureevent">Document Picture-in-Picture Specification: 5 API</see>
@@ -37542,7 +37542,7 @@ public class DocumentPictureInPictureEvent(string type, EventInit eventInitDict)
     /// <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpictureevent-window">Document Picture-in-Picture Specification: 5 API</see>
     /// </summary>
     [Description("@#window")]
-    public extern JazorWindow Window { get; }
+    public extern WindowRef Window { get; }
 }
 
 /// <summary>
@@ -37737,7 +37737,7 @@ public class Fence
     /// </summary>
     /// <param name="event"><see href="https://wicg.github.io/fenced-frame/#dom-fence-notifyevent-event-event">Fenced Frame: 2.4 The Fence interface</see></param>
     [Description("@#notifyEvent")]
-    public extern void NotifyEvent(JazorEvent @event);
+    public extern void NotifyEvent(EventRef @event);
 }
 
 /// <summary>
@@ -38027,7 +38027,7 @@ public class FontData
 /// </summary>
 [ECMAScript]
 [Description("@#BeforeInstallPromptEvent")]
-public class BeforeInstallPromptEvent : JazorEvent
+public class BeforeInstallPromptEvent : EventRef
 {
     /// <summary>
     /// <see href="https://wicg.github.io/manifest-incubations/#dom-beforeinstallpromptevent-constructor">Manifest Incubations: 16.1 BeforeInstallPromptEvent Interface</see>
@@ -38408,7 +38408,7 @@ public class HTMLPortalElement : HTMLElement
 /// </summary>
 [ECMAScript]
 [Description("@#PortalActivateEvent")]
-public class PortalActivateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PortalActivateEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/portals/#dom-portalactivateevent-portalactivateevent">Portals: 3.2 The PortalActivateEvent interface</see>
@@ -38518,7 +38518,7 @@ public class TaskController : AbortController
 /// </summary>
 [ECMAScript]
 [Description("@#TaskPriorityChangeEvent")]
-public class TaskPriorityChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class TaskPriorityChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/scheduling-apis/#dom-taskprioritychangeevent-taskprioritychangeevent">Prioritized Task Scheduling: 3.1 The TaskPriorityChangeEvent Interface</see>
@@ -39031,7 +39031,7 @@ public class USBConfiguration
 /// </summary>
 [ECMAScript]
 [Description("@#USBConnectionEvent")]
-public class USBConnectionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class USBConnectionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/webusb/#dom-usbconnectionevent-usbconnectionevent">WebUSB API: 5.1 Events</see>
@@ -39546,7 +39546,7 @@ public class WindowControlsOverlay : EventTarget
 /// </summary>
 [ECMAScript]
 [Description("@#WindowControlsOverlayGeometryChangeEvent")]
-public class WindowControlsOverlayGeometryChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class WindowControlsOverlayGeometryChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/window-controls-overlay/#dom-windowcontrolsoverlaygeometrychangeevent-constructor">Window Controls Overlay: 5 WindowControlsOverlay interface</see>
@@ -39726,7 +39726,7 @@ public partial class XMLHttpRequest : XMLHttpRequestEventTarget
     /// </example>
     /// <param name="body"><see href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send-body-body">XMLHttpRequest Standard: 3 Interface XMLHttpRequest</see></param>
     [Description("@#send")]
-    public extern void Send(JazorDocument body);
+    public extern void Send(DocumentRef body);
 
     /// <summary>
     /// <see href="https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send">XMLHttpRequest Standard: 3.5.6 The send() method</see>
@@ -39825,7 +39825,7 @@ public partial class XMLHttpRequest : XMLHttpRequestEventTarget
     /// <code>client.responseXML</code>
     /// </example>
     [Description("@#responseXML")]
-    public extern JazorDocument? ResponseXML { get; }
+    public extern DocumentRef? ResponseXML { get; }
 }
 
 /// <summary>
@@ -40281,7 +40281,7 @@ public class NamedNodeMap
 /// </example>
 [ECMAScript]
 [Description("@#Document")]
-public partial class JazorDocument : Node
+public partial class DocumentRef : Node
 {
     /// <summary>
     /// <see href="https://drafts.csswg.org/css-regions-1/#dom-document-namedflows">CSS Regions Module Level 1: 4.1 The NamedFlow interface</see>
@@ -40362,7 +40362,7 @@ public partial class JazorDocument : Node
     /// <example>
     /// <code>document = new Document()</code>
     /// </example>
-    public extern JazorDocument();
+    public extern DocumentRef();
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-document-implementation">DOM Standard: 4.5 Interface Document</see>
@@ -40667,7 +40667,7 @@ public partial class JazorDocument : Node
     /// </summary>
     /// <param name="interface"><see href="https://dom.spec.whatwg.org/#dom-document-createevent-interface-interface">DOM Standard: 4.5 Interface Document</see></param>
     [Description("@#createEvent")]
-    public extern JazorEvent CreateEvent(string @interface);
+    public extern EventRef CreateEvent(string @interface);
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-document-createrange">DOM Standard: 4.5 Interface Document</see>
@@ -40751,7 +40751,7 @@ public partial class JazorDocument : Node
     /// <code>doc = Document.parseHTMLUnsafe(html, options)</code>
     /// </example>
     [Description("@#parseHTMLUnsafe")]
-    public static extern JazorDocument ParseHTMLUnsafe(DocumentParseHTMLUnsafeHtml html, ParseHTMLUnsafeOptions? options = default);
+    public static extern DocumentRef ParseHTMLUnsafe(DocumentParseHTMLUnsafeHtml html, ParseHTMLUnsafeOptions? options = default);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsehtml">HTML Standard: 8.5.2 HTML parsing methods</see>
@@ -40760,7 +40760,7 @@ public partial class JazorDocument : Node
     /// <code>doc = Document.parseHTML(html, options)</code>
     /// </example>
     [Description("@#parseHTML")]
-    public static extern JazorDocument ParseHTML(string html, SetHTMLOptions? options = default);
+    public static extern DocumentRef ParseHTML(string html, SetHTMLOptions? options = default);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-document-location">HTML Standard: 7.2.4 The Location interface</see>
@@ -40769,7 +40769,7 @@ public partial class JazorDocument : Node
     /// <code>document.location [ = value ]</code>
     /// </example>
     [Description("@#location")]
-    public extern JazorLocation? Location { get; }
+    public extern LocationRef? Location { get; }
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/browsers.html#dom-document-domain">HTML Standard: 7.1.1.2 Relaxing the same-origin restriction</see>
@@ -40931,7 +40931,7 @@ public partial class JazorDocument : Node
     /// <code>document = document.open()✔MDNDocument/openSupport in all current engines.Firefox1+Safari11+Chrome64+Opera51+Edge79+Edge (Legacy)12+Internet Explorer4+Firefox Android?Safari iOS?Chrome Android?WebView Android?Samsung Internet?Opera Android47+</code>
     /// </example>
     [Description("@#open")]
-    public extern JazorDocument Open(string? unused1 = default, string? unused2 = default);
+    public extern DocumentRef Open(string? unused1 = default, string? unused2 = default);
 
     /// <summary>
     /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-document-open-window">HTML Standard: 8.4.1 Opening the input stream</see>
@@ -42825,7 +42825,7 @@ public class CSSSupportsConditionRule : CSSGroupingRule
 /// </remarks>
 [ECMAScript]
 [Description("@#AnimationEvent")]
-public partial class AnimationEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public partial class AnimationEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// Added constructor type on AnimationEvent&apos;s definition
@@ -44183,7 +44183,7 @@ public partial class EventTarget
     /// </example>
     /// <param name="event"><see href="https://dom.spec.whatwg.org/#dom-eventtarget-dispatchevent-event-event">DOM Standard: 2.7 Interface EventTarget</see></param>
     [Description("@#dispatchEvent")]
-    public extern bool DispatchEvent(JazorEvent @event);
+    public extern bool DispatchEvent(EventRef @event);
 
     /// <summary>
     /// <see href="https://wicg.github.io/observable/#dom-eventtarget-when">Observable: 3 EventTarget integration</see>
@@ -48339,7 +48339,7 @@ public partial class StorageManager
 /// </remarks>
 [ECMAScript]
 [Description("@#ProgressEvent")]
-public class ProgressEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class ProgressEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://xhr.spec.whatwg.org/#dom-progressevent-progressevent">XMLHttpRequest Standard: 5 Interface ProgressEvent</see>
@@ -48471,7 +48471,7 @@ public class CSSPseudoElement
 /// </remarks>
 [ECMAScript]
 [Description("@#CharacterBoundsUpdateEvent")]
-public class CharacterBoundsUpdateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class CharacterBoundsUpdateEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/edit-context/#dom-characterboundsupdateevent-constructor">EditContext API: 4.3 CharacterBoundsUpdateEvent</see>
@@ -48505,7 +48505,7 @@ public class CharacterBoundsUpdateEvent(string type, EventInit eventInitDict) : 
 /// </remarks>
 [ECMAScript]
 [Description("@#TextUpdateEvent")]
-public class TextUpdateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class TextUpdateEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/edit-context/#dom-textupdateevent-constructor">EditContext API: 4.1 TextUpdateEvent</see>
@@ -48566,7 +48566,7 @@ public class TextUpdateEvent(string type, EventInit eventInitDict) : JazorEvent(
 /// </remarks>
 [ECMAScript]
 [Description("@#RTCDataChannelEvent")]
-public class RTCDataChannelEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class RTCDataChannelEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
@@ -48591,7 +48591,7 @@ public class RTCDataChannelEvent(string type, EventInit eventInitDict) : JazorEv
 /// </remarks>
 [ECMAScript]
 [Description("@#SpeechRecognitionErrorEvent")]
-public class SpeechRecognitionErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class SpeechRecognitionErrorEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// Fired when a speech recognition error occurs. The event must use the SpeechRecognitionErrorEvent interface.
@@ -48630,7 +48630,7 @@ public class SpeechRecognitionErrorEvent(string type, EventInit eventInitDict) :
 /// </remarks>
 [ECMAScript]
 [Description("@#RTCErrorEvent")]
-public class RTCErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class RTCErrorEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrorevent-constructor">WebRTC: Real-Time Communication in Browsers: 11.3.1 Constructors</see>
@@ -48655,7 +48655,7 @@ public class RTCErrorEvent(string type, EventInit eventInitDict) : JazorEvent(ty
 /// </remarks>
 [ECMAScript]
 [Description("@#RTCTrackEvent")]
-public class RTCTrackEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class RTCTrackEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
@@ -49091,7 +49091,7 @@ public class SourceBufferList : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#MediaQueryListEvent")]
-public class MediaQueryListEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class MediaQueryListEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// If target&apos;s matches state has changed since the last time these steps were run, fire an event named change at target using MediaQueryListEvent, with its isTrusted attribute initialized to true, its media attribute initialized to target&apos;s media, and its matches attribute initialized to target&apos;s matches state.
@@ -49310,7 +49310,7 @@ public class RTCDTMFSender : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#RTCDTMFToneChangeEvent")]
-public class RTCDTMFToneChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class RTCDTMFToneChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
@@ -49425,7 +49425,7 @@ public class OfflineAudioContext : BaseAudioContext
 /// </remarks>
 [ECMAScript]
 [Description("@#HIDConnectionEvent")]
-public class HIDConnectionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class HIDConnectionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/webhid/#dom-hidconnectionevent-constructor">WebHID API: 8 HIDConnectionEvent interface</see>
@@ -49938,7 +49938,7 @@ public class HIDDevice : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#PaymentRequestUpdateEvent")]
-public class PaymentRequestUpdateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PaymentRequestUpdateEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent-constructor">Payment Request API: 17.3.1 Constructor</see>
@@ -50410,7 +50410,7 @@ public class DOMPoint : DOMPointReadOnly
 /// </remarks>
 [ECMAScript]
 [Description("@#MIDIMessageEvent")]
-public class MIDIMessageEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class MIDIMessageEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-midi-api/#dom-midimessageevent-constructor">Web MIDI API: 5.5 MIDIMessageEvent Interface</see>
@@ -51185,7 +51185,7 @@ public class Node : EventTarget
     /// <code>node.ownerDocument</code>
     /// </example>
     [Description("@#ownerDocument")]
-    public extern JazorDocument? OwnerDocument { get; }
+    public extern DocumentRef? OwnerDocument { get; }
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-node-getrootnode">DOM Standard: 4.4 Interface Node</see>
@@ -51873,7 +51873,7 @@ public class RTCStatsReport : IDictionary<string, object>
 /// </remarks>
 [ECMAScript]
 [Description("@#HIDInputReportEvent")]
-public class HIDInputReportEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class HIDInputReportEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://wicg.github.io/webhid/#dom-hidinputreportevent-constructor">WebHID API: 9 HIDInputReportEvent interface</see>
@@ -51916,7 +51916,7 @@ public class HIDInputReportEvent(string type, EventInit eventInitDict) : JazorEv
 /// </remarks>
 [ECMAScript]
 [Description("@#MediaEncryptedEvent")]
-public class MediaEncryptedEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class MediaEncryptedEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/encrypted-media/#dom-mediaencryptedevent-constructor">Encrypted Media Extensions: 7.3 MediaEncryptedEvent Interface</see>
@@ -51947,7 +51947,7 @@ public class MediaEncryptedEvent(string type, EventInit eventInitDict) : JazorEv
 /// </remarks>
 [ECMAScript]
 [Description("@#MediaKeyMessageEvent")]
-public class MediaKeyMessageEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class MediaKeyMessageEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/encrypted-media/#dom-mediakeymessageevent-constructor">Encrypted Media Extensions: 6.4 MediaKeyMessageEvent</see>
@@ -53511,7 +53511,7 @@ public class MediaSourceHandle
 /// </remarks>
 [ECMAScript]
 [Description("@#NDEFReadingEvent")]
-public class NDEFReadingEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class NDEFReadingEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefreadingevent-constructor">Web NFC: 9 The NDEFReader object</see>
@@ -55738,7 +55738,7 @@ public class FencedFrameConfig
 /// </remarks>
 [ECMAScript]
 [Description("@#MediaStreamTrackEvent")]
-public class MediaStreamTrackEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class MediaStreamTrackEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediastreamtrackevent-constructor">Media Capture and Streams: Constructors</see>
@@ -55867,7 +55867,7 @@ public class CSSKeyframeRule : CSSRule
 /// </remarks>
 [ECMAScript]
 [Description("@#DeviceChangeEvent")]
-public class DeviceChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class DeviceChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// Queue a task that fire an event | fires an event named devicechange, using the DeviceChangeEvent constructor with devices initialized to newExposedDevices, at mediaDevices.
@@ -55930,7 +55930,7 @@ public class SpeechGrammar
 /// </remarks>
 [ECMAScript]
 [Description("@#RTCPeerConnectionIceEvent")]
-public class RTCPeerConnectionIceEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class RTCPeerConnectionIceEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
@@ -55964,7 +55964,7 @@ public class RTCPeerConnectionIceEvent(string type, EventInit eventInitDict) : J
 /// </remarks>
 [ECMAScript]
 [Description("@#RTCPeerConnectionIceErrorEvent")]
-public class RTCPeerConnectionIceErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class RTCPeerConnectionIceErrorEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerrorevent-constructor">WebRTC: Real-Time Communication in Browsers: Constructors</see>
@@ -56895,7 +56895,7 @@ public partial class MediaStreamTrack : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#TextFormatUpdateEvent")]
-public class TextFormatUpdateEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class TextFormatUpdateEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/edit-context/#dom-textformatupdateevent-constructor">EditContext API: 4.2 TextFormatUpdateEvent</see>
@@ -57177,7 +57177,7 @@ public class HID : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#MIDIConnectionEvent")]
-public class MIDIConnectionEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class MIDIConnectionEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://webaudio.github.io/web-midi-api/#dom-midiconnectionevent-constructor">Web MIDI API: 5.6 MIDIConnectionEvent Interface</see>
@@ -57963,7 +57963,7 @@ public class CDATASection(string data) : Text(data)
 /// </remarks>
 [ECMAScript]
 [Description("@#WebGLContextEvent")]
-public class WebGLContextEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class WebGLContextEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     public extern WebGLContextEvent(string type, WebGLContextEventInit? eventInit = default);
 
@@ -59196,7 +59196,7 @@ public class DOMImplementation
     /// </example>
     /// <param name="title"><see href="https://dom.spec.whatwg.org/#dom-domimplementation-createhtmldocument-title-title">DOM Standard: 4.5.1 Interface DOMImplementation</see></param>
     [Description("@#createHTMLDocument")]
-    public extern JazorDocument CreateHTMLDocument(string? title = default);
+    public extern DocumentRef CreateHTMLDocument(string? title = default);
 
     /// <summary>
     /// <see href="https://dom.spec.whatwg.org/#dom-domimplementation-hasfeature">DOM Standard: 4.5.1 Interface DOMImplementation</see>
@@ -59443,7 +59443,7 @@ public partial class PerformanceResourceTiming : PerformanceEntry
 /// </remarks>
 [ECMAScript]
 [Description("@#CapturedMouseEvent")]
-public class CapturedMouseEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class CapturedMouseEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// If any of CapturedMouseEventInit.surfaceX or CapturedMouseEventInit.surfaceY is negative, and they are not both equal to -1, then the constructor throws a RangeError exception.
@@ -59645,7 +59645,7 @@ public class PresentationConnection : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#PresentationConnectionAvailableEvent")]
-public class PresentationConnectionAvailableEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PresentationConnectionAvailableEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// When the PresentationConnectionAvailableEvent constructor is called, the user agent MUST construct a new PresentationConnectionAvailableEvent object with its connection attribute set to the connection member of the PresentationConnectionAvailableEventInit object passed to the constructor.
@@ -59673,7 +59673,7 @@ public class PresentationConnectionAvailableEvent(string type, EventInit eventIn
 /// </remarks>
 [ECMAScript]
 [Description("@#PresentationConnectionCloseEvent")]
-public class PresentationConnectionCloseEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class PresentationConnectionCloseEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// When the PresentationConnectionCloseEvent constructor is called, the user agent MUST construct a new PresentationConnectionCloseEvent object, with its reason attribute set to the reason member of the PresentationConnectionCloseEventInit object passed to the constructor, and its message attribute set to the message member of this PresentationConnectionCloseEventInit object if set, to an empty string otherwise.
@@ -61630,7 +61630,7 @@ public class FileList
     /// </summary>
     /// <param name="index"><see href="https://w3c.github.io/FileAPI/#dfn-index">File API: 5.2 Methods and Parameters</see></param>
     [Description("@#item")]
-    public extern JazorFile? GetItem(uint index);
+    public extern FileRef? GetItem(uint index);
 
     /// <summary>
     /// <see href="https://w3c.github.io/FileAPI/#dfn-length">File API: 5.1 Attributes</see>
@@ -61837,7 +61837,7 @@ public class BluetoothDevice : EventTarget
 /// </remarks>
 [ECMAScript]
 [Description("@#BufferedChangeEvent")]
-public class BufferedChangeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class BufferedChangeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://w3c.github.io/media-source/#dom-bufferedchangeevent-constructor">Media Source Extensions™: 8 BufferedChangeEvent interface</see>
@@ -66987,7 +66987,7 @@ public class ShadowAnimation(AnimationEffect? effect, AnimationTimeline? timelin
 
 [ECMAScript]
 [Description("@#TimeEvent")]
-public class TimeEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class TimeEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     [Description("@#view")]
     public extern WindowProxy? View { get; }
@@ -66996,7 +66996,7 @@ public class TimeEvent(string type, EventInit eventInitDict) : JazorEvent(type, 
     public extern int Detail { get; }
 
     [Description("@#initTimeEvent")]
-    public extern void InitTimeEvent(string typeArg, JazorWindow? viewArg = default, int detailArg = 0);
+    public extern void InitTimeEvent(string typeArg, WindowRef? viewArg = default, int detailArg = 0);
 }
 
 [ECMAScript]

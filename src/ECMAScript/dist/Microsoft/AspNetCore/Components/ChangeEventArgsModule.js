@@ -27,8 +27,8 @@ export function captureChangeEvent(event) {
           let selectedValues = new Array;
           let selectedOptions = select.selectedOptions;
           for (let index = 0; index < selectedOptions.length; index++) {
-            let __trycast$1a3c83e0aefc2b5b5842df76;
-            let option = (__trycast$1a3c83e0aefc2b5b5842df76 = selectedOptions.item(index), __trycast$1a3c83e0aefc2b5b5842df76 instanceof HTMLOptionElement ? __trycast$1a3c83e0aefc2b5b5842df76 : null);
+            let __trycast$a6f4ac187188371bb70c330d;
+            let option = (__trycast$a6f4ac187188371bb70c330d = selectedOptions.item(index), __trycast$a6f4ac187188371bb70c330d instanceof HTMLOptionElement ? __trycast$a6f4ac187188371bb70c330d : null);
             if (option == null)
               throw new Error("InvalidOperationException: selected option is not an HTMLOptionElement.");
             selectedValues.push(option.value);

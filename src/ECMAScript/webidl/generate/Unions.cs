@@ -5463,16 +5463,16 @@ public readonly union ElementInsertAdjacentHTMLString(TrustedHTML, string)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union ElementInternalsSetFormValue(JazorFile, string, FormData)
+public readonly union ElementInternalsSetFormValue(FileRef, string, FormData)
 {
 
-    public JazorFile? AsFile => Value is JazorFile value ? value : default(JazorFile?);
+    public FileRef? AsFile => Value is FileRef value ? value : default(FileRef?);
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public FormData? AsFormData => Value is FormData value ? value : default(FormData?);
 
-    public static implicit operator ElementInternalsSetFormValue(JazorFile value)
+    public static implicit operator ElementInternalsSetFormValue(FileRef value)
         => new(value);
 
     public static implicit operator ElementInternalsSetFormValue(string value)
@@ -5485,16 +5485,16 @@ public readonly union ElementInternalsSetFormValue(JazorFile, string, FormData)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union ElementInternalsSetFormValueState(JazorFile, string, FormData)
+public readonly union ElementInternalsSetFormValueState(FileRef, string, FormData)
 {
 
-    public JazorFile? AsFile => Value is JazorFile value ? value : default(JazorFile?);
+    public FileRef? AsFile => Value is FileRef value ? value : default(FileRef?);
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public FormData? AsFormData => Value is FormData value ? value : default(FormData?);
 
-    public static implicit operator ElementInternalsSetFormValueState(JazorFile value)
+    public static implicit operator ElementInternalsSetFormValueState(FileRef value)
         => new(value);
 
     public static implicit operator ElementInternalsSetFormValueState(string value)
@@ -5772,14 +5772,14 @@ public readonly union FileReaderResult(string, ArrayBuffer)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union FormDataEntryValue(JazorFile, string)
+public readonly union FormDataEntryValue(FileRef, string)
 {
 
-    public JazorFile? AsFile => Value is JazorFile value ? value : default(JazorFile?);
+    public FileRef? AsFile => Value is FileRef value ? value : default(FileRef?);
 
     public string? AsString => Value is string value ? value : default(string?);
 
-    public static implicit operator FormDataEntryValue(JazorFile value)
+    public static implicit operator FormDataEntryValue(FileRef value)
         => new(value);
 
     public static implicit operator FormDataEntryValue(string value)
@@ -5789,7 +5789,7 @@ public readonly union FormDataEntryValue(JazorFile, string)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union GeometryNode(Text, Element, CSSPseudoElement, JazorDocument)
+public readonly union GeometryNode(Text, Element, CSSPseudoElement, DocumentRef)
 {
 
     public Text? AsText => Value is Text value ? value : default(Text?);
@@ -5798,7 +5798,7 @@ public readonly union GeometryNode(Text, Element, CSSPseudoElement, JazorDocumen
 
     public CSSPseudoElement? AsCSSPseudoElement => Value is CSSPseudoElement value ? value : default(CSSPseudoElement?);
 
-    public JazorDocument? AsJazorDocument => Value is JazorDocument value ? value : default(JazorDocument?);
+    public DocumentRef? AsDocumentRef => Value is DocumentRef value ? value : default(DocumentRef?);
 
     public static implicit operator GeometryNode(Text value)
         => new(value);
@@ -5809,7 +5809,7 @@ public readonly union GeometryNode(Text, Element, CSSPseudoElement, JazorDocumen
     public static implicit operator GeometryNode(CSSPseudoElement value)
         => new(value);
 
-    public static implicit operator GeometryNode(JazorDocument value)
+    public static implicit operator GeometryNode(DocumentRef value)
         => new(value);
 }
 
@@ -6234,34 +6234,34 @@ public readonly union InsertAdjacentHTMLString(TrustedHTML, string)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union IntersectionObserverInitRoot(Element, JazorDocument)
+public readonly union IntersectionObserverInitRoot(Element, DocumentRef)
 {
 
     public Element? AsElement => Value is Element value ? value : default(Element?);
 
-    public JazorDocument? AsJazorDocument => Value is JazorDocument value ? value : default(JazorDocument?);
+    public DocumentRef? AsDocumentRef => Value is DocumentRef value ? value : default(DocumentRef?);
 
     public static implicit operator IntersectionObserverInitRoot(Element value)
         => new(value);
 
-    public static implicit operator IntersectionObserverInitRoot(JazorDocument value)
+    public static implicit operator IntersectionObserverInitRoot(DocumentRef value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union IntersectionObserverRoot(Element, JazorDocument)
+public readonly union IntersectionObserverRoot(Element, DocumentRef)
 {
 
     public Element? AsElement => Value is Element value ? value : default(Element?);
 
-    public JazorDocument? AsJazorDocument => Value is JazorDocument value ? value : default(JazorDocument?);
+    public DocumentRef? AsDocumentRef => Value is DocumentRef value ? value : default(DocumentRef?);
 
     public static implicit operator IntersectionObserverRoot(Element value)
         => new(value);
 
-    public static implicit operator IntersectionObserverRoot(JazorDocument value)
+    public static implicit operator IntersectionObserverRoot(DocumentRef value)
         => new(value);
 }
 
@@ -6748,14 +6748,14 @@ public readonly union ParameterCurrentTarget(Element, CSSPseudoElement)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union ParameterEvent(JazorEvent, string)
+public readonly union ParameterEvent(EventRef, string)
 {
 
-    public JazorEvent? AsJazorEvent => Value is JazorEvent value ? value : default(JazorEvent?);
+    public EventRef? AsEventRef => Value is EventRef value ? value : default(EventRef?);
 
     public string? AsString => Value is string value ? value : default(string?);
 
-    public static implicit operator ParameterEvent(JazorEvent value)
+    public static implicit operator ParameterEvent(EventRef value)
         => new(value);
 
     public static implicit operator ParameterEvent(string value)
@@ -7334,14 +7334,14 @@ public readonly union ScrollIntoViewArg(bool, ScrollIntoViewOptions)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union SendBody(JazorDocument, XMLHttpRequestBodyInit)
+public readonly union SendBody(DocumentRef, XMLHttpRequestBodyInit)
 {
 
-    public JazorDocument? AsJazorDocument => Value is JazorDocument value ? value : default(JazorDocument?);
+    public DocumentRef? AsDocumentRef => Value is DocumentRef value ? value : default(DocumentRef?);
 
     public XMLHttpRequestBodyInit? AsXMLHttpRequestBodyInit => Value is XMLHttpRequestBodyInit value ? value : default(XMLHttpRequestBodyInit?);
 
-    public static implicit operator SendBody(JazorDocument value)
+    public static implicit operator SendBody(DocumentRef value)
         => new(value);
 
     public static implicit operator SendBody(XMLHttpRequestBodyInit value)
@@ -7419,16 +7419,16 @@ public readonly union SetAttributeValue(TrustedType, string)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union SetFormValueState(JazorFile, string, FormData)
+public readonly union SetFormValueState(FileRef, string, FormData)
 {
 
-    public JazorFile? AsFile => Value is JazorFile value ? value : default(JazorFile?);
+    public FileRef? AsFile => Value is FileRef value ? value : default(FileRef?);
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public FormData? AsFormData => Value is FormData value ? value : default(FormData?);
 
-    public static implicit operator SetFormValueState(JazorFile value)
+    public static implicit operator SetFormValueState(FileRef value)
         => new(value);
 
     public static implicit operator SetFormValueState(string value)
@@ -8078,16 +8078,16 @@ public readonly union StructuralCacheValue33(Path2D, string)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue34(JazorFile, string, FormData)
+public readonly union StructuralCacheValue34(FileRef, string, FormData)
 {
 
-    public JazorFile? AsFile => Value is JazorFile value ? value : default(JazorFile?);
+    public FileRef? AsFile => Value is FileRef value ? value : default(FileRef?);
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public FormData? AsFormData => Value is FormData value ? value : default(FormData?);
 
-    public static implicit operator StructuralCacheValue34(JazorFile value)
+    public static implicit operator StructuralCacheValue34(FileRef value)
         => new(value);
 
     public static implicit operator StructuralCacheValue34(string value)
@@ -8168,17 +8168,17 @@ public readonly union StructuralCacheValue4(double, KeyframeAnimationOptions)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue41(Element, JazorDocument)
+public readonly union StructuralCacheValue41(Element, DocumentRef)
 {
 
     public Element? AsElement => Value is Element value ? value : default(Element?);
 
-    public JazorDocument? AsJazorDocument => Value is JazorDocument value ? value : default(JazorDocument?);
+    public DocumentRef? AsDocumentRef => Value is DocumentRef value ? value : default(DocumentRef?);
 
     public static implicit operator StructuralCacheValue41(Element value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue41(JazorDocument value)
+    public static implicit operator StructuralCacheValue41(DocumentRef value)
         => new(value);
 }
 
@@ -8241,14 +8241,14 @@ public readonly union StructuralCacheValue45(Element, CSSPseudoElement)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue46(JazorDocument, XMLHttpRequestBodyInit)
+public readonly union StructuralCacheValue46(DocumentRef, XMLHttpRequestBodyInit)
 {
 
-    public JazorDocument? AsJazorDocument => Value is JazorDocument value ? value : default(JazorDocument?);
+    public DocumentRef? AsDocumentRef => Value is DocumentRef value ? value : default(DocumentRef?);
 
     public XMLHttpRequestBodyInit? AsXMLHttpRequestBodyInit => Value is XMLHttpRequestBodyInit value ? value : default(XMLHttpRequestBodyInit?);
 
-    public static implicit operator StructuralCacheValue46(JazorDocument value)
+    public static implicit operator StructuralCacheValue46(DocumentRef value)
         => new(value);
 
     public static implicit operator StructuralCacheValue46(XMLHttpRequestBodyInit value)
@@ -8886,14 +8886,14 @@ public readonly union WritelnText(TrustedHTML, string)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union XMLHttpRequestSendBody(JazorDocument, XMLHttpRequestBodyInit)
+public readonly union XMLHttpRequestSendBody(DocumentRef, XMLHttpRequestBodyInit)
 {
 
-    public JazorDocument? AsJazorDocument => Value is JazorDocument value ? value : default(JazorDocument?);
+    public DocumentRef? AsDocumentRef => Value is DocumentRef value ? value : default(DocumentRef?);
 
     public XMLHttpRequestBodyInit? AsXMLHttpRequestBodyInit => Value is XMLHttpRequestBodyInit value ? value : default(XMLHttpRequestBodyInit?);
 
-    public static implicit operator XMLHttpRequestSendBody(JazorDocument value)
+    public static implicit operator XMLHttpRequestSendBody(DocumentRef value)
         => new(value);
 
     public static implicit operator XMLHttpRequestSendBody(XMLHttpRequestBodyInit value)

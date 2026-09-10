@@ -7000,13 +7000,13 @@ function OnMouseMove(mouseEvent) { }
                             Spellcheck = false,
                             Rows = 18,
                             Value = "demo",
-                            Events = new VueEventHandlers<JazorEvent>
+                            Events = new VueEventHandlers<EventRef>
                             {
                                 ["onInput"] = OnInput
                             }
                         });
 
-                    private static void OnInput(JazorEvent @event)
+                    private static void OnInput(EventRef @event)
                     {
                     }
                 }
@@ -7513,7 +7513,7 @@ export function CreateFacingMode() {
                     public static string? ReadValue(FormDataEntryValue value)
                         => value.AsString;
 
-                    public static JazorFile? ReadFile(FormDataEntryValue value)
+                    public static FileRef? ReadFile(FormDataEntryValue value)
                         => value.AsFile;
                 }
             }
@@ -7689,13 +7689,13 @@ export function ReadValue(value) {
 
                     public static TMenuWidthValue CreateMenuWidth(TMenuWidthValueOption3Item[] values) => values;
 
-                    public static ElUploadBeforeUploadResult CreateUploadFile(JazorFile value) => value;
+                    public static ElUploadBeforeUploadResult CreateUploadFile(FileRef value) => value;
 
                     public static ElUploadBeforeUploadResult CreateUploadBlob(Blob value) => value;
 
                     public static ElUploadBeforeUploadResult CreateUploadPromise(IPromise<VueValue?> value) => new(value);
 
-                    public static JazorFile? ReadUploadFile(ElUploadBeforeUploadResult value) => value.AsFile;
+                    public static FileRef? ReadUploadFile(ElUploadBeforeUploadResult value) => value.AsFile;
 
                     public static Blob? ReadUploadBlob(ElUploadBeforeUploadResult value) => value.AsBlob;
                 }
@@ -15877,3 +15877,4 @@ export function Create() {{
 
     #endregion
 }
+

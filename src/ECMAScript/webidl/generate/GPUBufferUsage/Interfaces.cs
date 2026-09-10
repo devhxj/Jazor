@@ -1735,7 +1735,7 @@ public class GPUTextureView
 /// </summary>
 [ECMAScript]
 [Description("@#GPUUncapturedErrorEvent")]
-public class GPUUncapturedErrorEvent(string type, EventInit eventInitDict) : JazorEvent(type, eventInitDict)
+public class GPUUncapturedErrorEvent(string type, EventInit eventInitDict) : EventRef(type, eventInitDict)
 {
     /// <summary>
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpuuncapturederrorevent-gpuuncapturederrorevent">WebGPU: 22.4 Telemetry</see>

@@ -974,7 +974,7 @@ internal static class RazorVueM5CapabilityLedger
             "Mouse/Keyboard/Focus native getter handlers, typed lambda/method-group callbacks, direct @bind coexistence, checkbox and multiple-select shaping, and event-time async capture are covered through official SG, Deno, an isolated Release NuGet consumer, and a real browser. Constructor/setter/identity and file input remain rejected.")
         {
             TargetProfiles = "Compiler authoring, Deno runtime, real browser, and isolated Release package consumer; SSR/prerender not claimed",
-            Carrier = "MouseEvent/KeyboardEvent/FocusEvent; JazorEvent + WeakMap for ChangeEventArgs",
+            Carrier = "MouseEvent/KeyboardEvent/FocusEvent; EventRef + WeakMap for ChangeEventArgs",
             ImplementationPath = "Jazor.CLR generated Alias/Inline/Import modules; one typed onchange capture wrapper in RenderEmitter",
             ContributionContractVersion = "generated-clr-module/v1",
             Dependencies = "WebIDL event carriers; Jazor.CLR WeakMap/Array runtime; EventCallback framing",
@@ -1372,3 +1372,4 @@ internal static class RazorVueM5CapabilityLedger
             "Consumer delivery is proven with direct typed TDesign authoring; this row does not promote independent framework capabilities without their own semantic evidence.")
     ];
 }
+

@@ -231,7 +231,7 @@ public sealed class VFileUpload : ComponentBase, IVuetifyComponent
     /// </summary>
     [Parameter]
     [ECMAScriptName("onUpdate:modelValue")]
-    public EventCallback<JazorFile[]?> ModelValueChanged { get; set; }
+    public EventCallback<FileRef[]?> ModelValueChanged { get; set; }
 
     /// <summary>
     /// 是否显示清除按钮。
@@ -353,3 +353,4 @@ public sealed class VFileUpload : ComponentBase, IVuetifyComponent
     [ECMAScriptName("divider")]
     public RenderFragment? DividerContent { get; set; }
 }
+

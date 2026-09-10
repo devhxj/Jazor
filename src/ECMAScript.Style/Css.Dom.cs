@@ -12,7 +12,7 @@ public static partial class css
         if (context.Detached || context.DomHydrated)
             return;
 
-        JazorDocument domDocument;
+        DocumentRef domDocument;
         Element? existing;
         Node insertionTarget;
         if (context.Target is null)
@@ -84,7 +84,7 @@ public static partial class css
         context.HasRegistered = context.EntryIds.Length > 0;
     }
 
-    private static void AdoptDomEntries(CssContext context, JazorDocument document, string text)
+    private static void AdoptDomEntries(CssContext context, DocumentRef document, string text)
     {
         var memoryIds = context.EntryIds;
         var memoryBodies = context.EntryBodies;
@@ -196,7 +196,7 @@ public static partial class css
         return output.Join("");
     }
 
-    private static void AppendTextNode(CssContext context, JazorDocument document, string text)
+    private static void AppendTextNode(CssContext context, DocumentRef document, string text)
     {
         if (context.DomStyle is null)
             return;
@@ -204,3 +204,4 @@ public static partial class css
         context.DomStyle.AppendChild(document.CreateTextNode(text));
     }
 }
+

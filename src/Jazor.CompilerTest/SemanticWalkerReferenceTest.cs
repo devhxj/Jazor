@@ -222,7 +222,7 @@ public sealed class SemanticWalkerReferenceTest
                 {
                     var element = Global.Document.CreateElement(""button"", new ElementCreationOptions(Is: ""x-button""));
                     element.AddEventListener(""click"", null, new AddEventListenerOptions(Once: true));
-                    var evt = new JazorEvent(""click"", new EventInit(Bubbles: true, Cancelable: true));
+                    var evt = new EventRef(""click"", new EventInit(Bubbles: true, Cancelable: true));
                 }
             }
         ");
@@ -7784,7 +7784,7 @@ public sealed class SemanticWalkerReferenceTest
             {
                 void TestMethod()
                 {
-                    Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.JazorPropertyDescriptor
+                    Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptorRef
                     {
                         Value = (global::System.Func<string?, object>)ToPrimitive,
                         Configurable = true
@@ -10580,3 +10580,4 @@ public sealed class SemanticWalkerReferenceTest
 	#endregion
 }
 #endregion
+

@@ -381,7 +381,7 @@ public sealed record VuetifyTreeviewActiveStrategyActivateContext : VueProps
     public Map<VueValue, VueValue>? Parents { get; init; }
 
     [Description("@#event")]
-    public JazorEvent? Event { get; init; }
+    public EventRef? Event { get; init; }
 }
 
 [ECMAScript]
@@ -404,7 +404,7 @@ public sealed record VuetifyTreeviewSelectStrategySelectContext : VueProps
     public Map<VueValue, VueValue>? Parents { get; init; }
 
     [Description("@#event")]
-    public JazorEvent? Event { get; init; }
+    public EventRef? Event { get; init; }
 }
 
 [ECMAScript]
@@ -519,3 +519,4 @@ public sealed record VTreeviewStructuralItemSlotContext : VueProps
     [Description("@#props")]
     public VuetifyItemProps? Props { get; init; }
 }
+

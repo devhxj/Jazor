@@ -23,16 +23,16 @@ public sealed record VuetifyIntersectionObserverOptions : VueProps
 
 [ECMAScript]
 [Description("@#")]
-public readonly union VuetifyIntersectionObserverRoot(Element, JazorDocument)
+public readonly union VuetifyIntersectionObserverRoot(Element, DocumentRef)
 {
     public Element? AsElement => Value as Element;
 
-    public JazorDocument? AsDocument => Value as JazorDocument;
+    public DocumentRef? AsDocument => Value as DocumentRef;
 
     public static implicit operator VuetifyIntersectionObserverRoot(Element value)
         => new(value);
 
-    public static implicit operator VuetifyIntersectionObserverRoot(JazorDocument value)
+    public static implicit operator VuetifyIntersectionObserverRoot(DocumentRef value)
         => new(value);
 }
 
@@ -76,3 +76,4 @@ public static class VuetifyIntersectionObserverThresholdCollectionBuilder
     public static VuetifyIntersectionObserverThreshold Create(ReadOnlySpan<Number> values)
         => values.ToArray();
 }
+

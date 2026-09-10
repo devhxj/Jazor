@@ -318,17 +318,17 @@ function IsBooleanTrue(value) {
   return typeof value === "boolean" && value;
 }
 function GetUri() {
-  let __trycast$01b37d95ff9a0a4858a90df1;
-  return (__trycast$01b37d95ff9a0a4858a90df1 = Reflect.get(GetWindowLocation(), "href"), typeof __trycast$01b37d95ff9a0a4858a90df1 === "string" ? __trycast$01b37d95ff9a0a4858a90df1 : null) ?? "";
+  let __trycast$70c4ecbdd2fece14a66c35fd;
+  return (__trycast$70c4ecbdd2fece14a66c35fd = Reflect.get(GetWindowLocation(), "href"), typeof __trycast$70c4ecbdd2fece14a66c35fd === "string" ? __trycast$70c4ecbdd2fece14a66c35fd : null) ?? "";
 }
 function GetHistoryEntryState() {
   let state = Reflect.get(GetWindowHistory(), "state");
   return typeof state === "string" ? state : null;
 }
 function GetBaseUri() {
-  let __cacc$c7b5e688875840c032cb9298;
+  let __cacc$c2d289b17c2d105b1e8e6540;
   let current = GetUri();
-  let declared = (__cacc$c7b5e688875840c032cb9298 = document.querySelector("base[href]"), __cacc$c7b5e688875840c032cb9298 == null ? undefined : __cacc$c7b5e688875840c032cb9298.getAttribute("href")) ?? "/";
+  let declared = (__cacc$c2d289b17c2d105b1e8e6540 = document.querySelector("base[href]"), __cacc$c2d289b17c2d105b1e8e6540 == null ? undefined : __cacc$c2d289b17c2d105b1e8e6540.getAttribute("href")) ?? "/";
   let baseUri = URL.parse(declared, current);
   if (baseUri == null)
     return "/";

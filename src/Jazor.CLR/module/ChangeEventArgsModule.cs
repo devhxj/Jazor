@@ -12,17 +12,17 @@ namespace Jazor.CLR;
 /// value observed by an async handler even when the DOM target changes before its continuation.
 /// </remarks>
 [ECMAScriptModule("Microsoft/AspNetCore/Components/ChangeEventArgsModule.js")]
-[Jazor(Op.Alias, "Microsoft.AspNetCore.Components.ChangeEventArgs", "JazorEvent")]
+[Jazor(Op.Alias, "Microsoft.AspNetCore.Components.ChangeEventArgs", "EventRef")]
 public static class ChangeEventArgsModule
 {
-    private static readonly WeakMap<JazorEvent, object?> Values = new();
+    private static readonly WeakMap<EventRef, object?> Values = new();
 
     /// <summary>Captures one change event and returns the same native event carrier.</summary>
     [Jazor(
         Op.Import,
         "Microsoft.AspNetCore.Components.ChangeEventArgs.captureChangeEvent",
         "captureChangeEvent")]
-    public static JazorEvent CaptureChangeEvent(JazorEvent @event)
+    public static EventRef CaptureChangeEvent(EventRef @event)
     {
         if (@event is null)
             throw new Error("ArgumentNullException: event is null.");
@@ -78,7 +78,7 @@ public static class ChangeEventArgsModule
         Op.Import,
         "Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get",
         "getChangeEventValue")]
-    public static object? GetChangeEventValue(JazorEvent @event)
+    public static object? GetChangeEventValue(EventRef @event)
     {
         if (@event is null)
             throw new Error("ArgumentNullException: event is null.");
@@ -91,8 +91,9 @@ public static class ChangeEventArgsModule
     // Native DOM events are read-only carriers. Constructing or mutating a synthetic
     // ChangeEventArgs would claim a POCO contract that the browser path does not provide.
     [Jazor(Op.Discard, "Microsoft.AspNetCore.Components.ChangeEventArgs.Value.set")]
-    public extern static void _b834c09ac3cad4f5(JazorEvent instance, object? value);
+    public extern static void _b834c09ac3cad4f5(EventRef instance, object? value);
 
     [Jazor(Op.Discard, "Microsoft.AspNetCore.Components.ChangeEventArgs.ChangeEventArgs()")]
-    public extern static JazorEvent _edaab150211bc8e2();
+    public extern static EventRef _edaab150211bc8e2();
 }
+

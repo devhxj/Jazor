@@ -17,7 +17,7 @@ internal static partial class WhiteList
 		types["System.Threading.CancellationToken"] = new(Op.Alias, "AbortSignal");
 		types["System.Threading.CancellationTokenRegistration"] = new(Op.Alias, "Object", null, new("JCancellationTokenRegistration", "System/RuntimeModule.js"));
 		types["System.Threading.CancellationTokenSource"] = new(Op.Alias, "AbortController");
-		types["Microsoft.AspNetCore.Components.ChangeEventArgs"] = new(Op.Alias, "JazorEvent");
+		types["Microsoft.AspNetCore.Components.ChangeEventArgs"] = new(Op.Alias, "EventRef");
 		types["char"] = new(Op.Alias, "String");
 		types["Microsoft.AspNetCore.Components.Web.ClipboardEventArgs"] = new(Op.Alias, "ClipboardEvent");
 		types["System.Collections.Generic.Comparer<T>"] = new(Op.Alias, "Object");

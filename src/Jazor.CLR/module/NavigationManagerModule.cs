@@ -29,7 +29,7 @@ public static class NavigationManagerModule
 		var instance = Object.Create(null);
 		// Vue would otherwise proxy an injected service held in reactive component state.
 		// These WeakMap registries require the original identity for imported CLR calls.
-		Object.DefineProperty(instance, "__v_skip", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "__v_skip", new PropertyDescriptorRef
 		{
 			Value = true
 		});
@@ -38,85 +38,85 @@ public static class NavigationManagerModule
 		LocationChangingHandlers.Set(instance, []);
 		RefreshHandlers.Set(instance, refresh);
 
-		Object.DefineProperty(instance, "baseUri", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "baseUri", new PropertyDescriptorRef
 		{
 			Get = () => GetBaseUri()
 		});
-		Object.DefineProperty(instance, "uri", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "uri", new PropertyDescriptorRef
 		{
 			Get = GetUri
 		});
-		Object.DefineProperty(instance, "historyEntryState", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "historyEntryState", new PropertyDescriptorRef
 		{
 			Get = GetHistoryEntryState
 		});
-		Object.DefineProperty(instance, "version", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "version", new PropertyDescriptorRef
 		{
 			Get = () => GetVersion(instance)
 		});
-		Object.DefineProperty(instance, "addLocationChanged", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "addLocationChanged", new PropertyDescriptorRef
 		{
 			Value = (Action<object>)((value) => AddLocationChanged(instance, value))
 		});
-		Object.DefineProperty(instance, "removeLocationChanged", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "removeLocationChanged", new PropertyDescriptorRef
 		{
 			Value = (Action<object>)((value) => RemoveLocationChanged(instance, value))
 		});
-		Object.DefineProperty(instance, "addOnNotFound", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "addOnNotFound", new PropertyDescriptorRef
 		{
 			Value = (Action<object>)((value) => AddNotFound(instance, value))
 		});
-		Object.DefineProperty(instance, "removeOnNotFound", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "removeOnNotFound", new PropertyDescriptorRef
 		{
 			Value = (Action<object>)((value) => RemoveNotFound(instance, value))
 		});
-		Object.DefineProperty(instance, "notFound", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "notFound", new PropertyDescriptorRef
 		{
 			Value = (Action)(() => NotFound(instance))
 		});
-		Object.DefineProperty(instance, "registerLocationChangingHandler", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "registerLocationChangingHandler", new PropertyDescriptorRef
 		{
 			Value = (Func<object, object>)((handler) => RegisterLocationChangingHandler(instance, handler))
 		});
-		Object.DefineProperty(instance, "notifyLocationChanged", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "notifyLocationChanged", new PropertyDescriptorRef
 		{
 			Value = (Action<bool>)((intercepted) => NotifyLocationChanged(instance, intercepted))
 		});
-		Object.DefineProperty(instance, "navigateTo", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "navigateTo", new PropertyDescriptorRef
 		{
 			Value = (Action<string, object?, object?>)((uri, optionsOrForceLoad, replace) =>
 				NavigateTo(instance, uri, optionsOrForceLoad, replace))
 		});
-		Object.DefineProperty(instance, "toAbsoluteUri", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "toAbsoluteUri", new PropertyDescriptorRef
 		{
 			Value = (Func<string?, URL>)((uri) => ToAbsoluteUri(instance, uri))
 		});
-		Object.DefineProperty(instance, "toBaseRelativePath", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "toBaseRelativePath", new PropertyDescriptorRef
 		{
 			Value = (Func<string, string>)((uri) => ToBaseRelativePath(instance, uri))
 		});
-		Object.DefineProperty(instance, "getUriWithQueryParameter", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "getUriWithQueryParameter", new PropertyDescriptorRef
 		{
 			Value = (Func<string, object?, string>)((name, value) =>
 				NavigationManagerExtensionsModule.GetUriWithQueryParameterCore(GetUri(), name, value))
 		});
-		Object.DefineProperty(instance, "getUriWithQueryParameters", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "getUriWithQueryParameters", new PropertyDescriptorRef
 		{
 			Value = (Func<object, string>)((parameters) =>
 				NavigationManagerExtensionsModule.GetUriWithQueryParametersObjectCore(GetUri(), parameters))
 		});
-		Object.DefineProperty(instance, "getUriWithQueryParametersFromUri", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "getUriWithQueryParametersFromUri", new PropertyDescriptorRef
 		{
 			Value = (Func<string, object, string>)((uri, parameters) =>
 				NavigationManagerExtensionsModule.GetUriWithQueryParametersObjectCore(uri, parameters))
 		});
-		Object.DefineProperty(instance, "getUriWithFragment", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "getUriWithFragment", new PropertyDescriptorRef
 		{
 			Value = (Func<string?, string>)((fragment) =>
 				NavigationManagerExtensionsModule.GetUriWithFragmentCore(GetUri(), fragment))
 		});
 
-		Object.DefineProperty(instance, "__jazorNavigationVersion", new JazorPropertyDescriptor
+		Object.DefineProperty(instance, "__jazorNavigationVersion", new PropertyDescriptorRef
 		{
 			Value = 0d,
 			Writable = true
@@ -550,7 +550,7 @@ public static class NavigationManagerModule
 		=> Window.Location
 			?? throw new Error("The browser window does not expose a location object.");
 
-	private static JazorHistory GetWindowHistory()
+	private static HistoryRef GetWindowHistory()
 		=> Window.History
 			?? throw new Error("The browser window does not expose a history object.");
 
@@ -562,3 +562,4 @@ public static class NavigationManagerModule
 		ECMAScript.Reflect.Apply(method, location, [href]);
 	}
 }
+

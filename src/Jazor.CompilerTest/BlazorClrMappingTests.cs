@@ -31,7 +31,7 @@ public sealed class BlazorClrMappingTests
             ("Microsoft.AspNetCore.Components.Web.TouchPoint", "Touch"),
             ("Microsoft.AspNetCore.Components.Web.ErrorEventArgs", "ErrorEvent"),
             ("Microsoft.AspNetCore.Components.Web.ProgressEventArgs", "ProgressEvent"),
-            ("Microsoft.AspNetCore.Components.ChangeEventArgs", "JazorEvent"),
+            ("Microsoft.AspNetCore.Components.ChangeEventArgs", "EventRef"),
             ("Microsoft.AspNetCore.Components.ElementReference", "HTMLElement")
         };
         var expectedMembers = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -386,3 +386,4 @@ public sealed class BlazorClrMappingTests
         return Assert.IsInstanceOfType<IBlockOperation>(compilation.GetSemanticModel(syntaxTree).GetOperation(method.Body!));
     }
 }
+

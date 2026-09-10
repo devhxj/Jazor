@@ -223,7 +223,7 @@ public static class DictionaryT2Module<TKey, TValue>
 
 		var state = (Comparer: comparer, KeysByHash: new Map<Number, Array<TKey>>());
 		States.Set(instance, state);
-		Object.DefineProperty(instance, "set", new ECMAScript.JazorPropertyDescriptor
+		Object.DefineProperty(instance, "set", new ECMAScript.PropertyDescriptorRef
 		{
 			Value = (Func<TKey, TValue, Map<TKey, TValue>>)(
 				(key, value) => SetCore(instance, key, value, state)),
@@ -231,28 +231,28 @@ public static class DictionaryT2Module<TKey, TValue>
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "get", new ECMAScript.JazorPropertyDescriptor
+		Object.DefineProperty(instance, "get", new ECMAScript.PropertyDescriptorRef
 		{
 			Value = (Func<TKey, TValue?>)(key => GetCore(instance, key, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "has", new ECMAScript.JazorPropertyDescriptor
+		Object.DefineProperty(instance, "has", new ECMAScript.PropertyDescriptorRef
 		{
 			Value = (Func<TKey, bool>)(key => HasCore(key, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "delete", new ECMAScript.JazorPropertyDescriptor
+		Object.DefineProperty(instance, "delete", new ECMAScript.PropertyDescriptorRef
 		{
 			Value = (Func<TKey, bool>)(key => DeleteCore(instance, key, state)),
 			Enumerable = false,
 			Writable = false,
 			Configurable = true
 		});
-		Object.DefineProperty(instance, "clear", new ECMAScript.JazorPropertyDescriptor
+		Object.DefineProperty(instance, "clear", new ECMAScript.PropertyDescriptorRef
 		{
 			Value = (Action)(() => ClearCore(instance, state)),
 			Enumerable = false,
@@ -547,3 +547,4 @@ public static class DictionaryT2Module<TKey, TValue>
 			Capacities.Set(instance, trimmed);
 	}
 }
+

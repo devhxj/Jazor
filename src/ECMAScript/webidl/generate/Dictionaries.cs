@@ -4068,7 +4068,7 @@ public record KeyboardEventInit(
 [Description("@#UIEventInit")]
 public record UIEventInit(
     [property: Description("@#sourceCapabilities")]InputDeviceCapabilities? SourceCapabilities = null,
-    [property: Description("@#view")]JazorWindow? View = null,
+    [property: Description("@#view")]WindowRef? View = null,
     [property: Description("@#detail")]int Detail = 0,
     [property: Description("@#which")]uint Which = 0) : EventInit
 {
@@ -4078,7 +4078,7 @@ public record UIEventInit(
 
     [Category("optional")]
     public extern static UIEventInit OptionalViewDetail(
-        [Description("@#view")]JazorWindow? view = null,
+        [Description("@#view")]WindowRef? view = null,
         [Description("@#detail")]int detail = 0);
 
     [Category("optional")]
@@ -8524,7 +8524,7 @@ public record PurchaseDetails(
 [ECMAScript]
 [Description("@#DocumentPictureInPictureEventInit")]
 public record DocumentPictureInPictureEventInit(
-    [property: Description("@#window")]JazorWindow? Window = default) : EventInit;
+    [property: Description("@#window")]WindowRef? Window = default) : EventInit;
 
 /// <summary>
 /// <see href="https://wicg.github.io/document-picture-in-picture/#dictdef-documentpictureinpictureoptions">Document Picture-in-Picture Specification: 5 API</see>
@@ -9906,7 +9906,7 @@ public record BluetoothDataFilterInit(
 [ECMAScript]
 [Description("@#ShareData")]
 public record ShareData(
-    [property: Description("@#files")]JazorFile[]? Files = default,
+    [property: Description("@#files")]FileRef[]? Files = default,
     [property: Description("@#title")]string? Title = default,
     [property: Description("@#text")]string? Text = default,
     [property: Description("@#url")]string? Url = default);

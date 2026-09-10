@@ -39,7 +39,7 @@ public sealed record VSelectionControlLabelSlotContext
 public sealed record VSelectionControlInputProps
 {
     [Description("@#onBlur")]
-    public Action<JazorEvent>? OnBlur { get; init; }
+    public Action<EventRef>? OnBlur { get; init; }
 
     [Description("@#onFocus")]
     public Action<FocusEvent>? OnFocus { get; init; }
@@ -123,3 +123,4 @@ public sealed record VSelectionControlInputDefaultSlotContext : VInputSlotContex
 public sealed record VuetifyCssProperties : VueDictionary<VueStringNumberValue>
 {
 }
+

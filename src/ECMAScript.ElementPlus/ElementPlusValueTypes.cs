@@ -2032,7 +2032,7 @@ public sealed record ElTableV2RowEventHandlerContext : VueProps
     public ElTableV2KeyValue? RowKey { get; init; }
 
     [Description("@#event")]
-    public JazorEvent? Event { get; init; }
+    public EventRef? Event { get; init; }
 
     [Description("@#rowData")]
     public VueValue? RowData { get; init; }
@@ -2349,7 +2349,7 @@ public readonly struct ElUploadBeforeUploadResult : IUnion
     // File 继承 Blob；这里必须保留显式 tag，确保 AsFile 与 AsBlob 不会同时命中。
     private readonly byte _kind;
     private readonly bool? _bool;
-    private readonly JazorFile? _file;
+    private readonly FileRef? _file;
     private readonly Blob? _blob;
     private readonly IPromise<VueValue?>? _promise;
 
@@ -2362,7 +2362,7 @@ public readonly struct ElUploadBeforeUploadResult : IUnion
         _promise = default;
     }
 
-    public ElUploadBeforeUploadResult(JazorFile value)
+    public ElUploadBeforeUploadResult(FileRef value)
     {
         _kind = 2;
         _bool = default;
@@ -2393,7 +2393,7 @@ public readonly struct ElUploadBeforeUploadResult : IUnion
 
     public bool? AsBool => _kind == 1 ? _bool : default;
 
-    public JazorFile? AsFile => _kind == 2 ? _file : default;
+    public FileRef? AsFile => _kind == 2 ? _file : default;
 
     public Blob? AsBlob => _kind == 3 ? _blob : default;
 
@@ -2411,7 +2411,7 @@ public readonly struct ElUploadBeforeUploadResult : IUnion
     public static implicit operator ElUploadBeforeUploadResult(bool value)
         => new(value);
 
-    public static implicit operator ElUploadBeforeUploadResult(JazorFile value)
+    public static implicit operator ElUploadBeforeUploadResult(FileRef value)
         => new(value);
 
     public static implicit operator ElUploadBeforeUploadResult(Blob value)
@@ -2466,7 +2466,7 @@ public delegate void ElUploadErrorCallback(Error error, ElUploadFile uploadFile,
 
 [ECMAScript]
 [Description("@#")]
-public delegate void ElUploadExceedCallback(JazorFile[] files, ElUploadUserFile[] uploadFiles);
+public delegate void ElUploadExceedCallback(FileRef[] files, ElUploadUserFile[] uploadFiles);
 
 [ECMAScript]
 [Description("@#")]
@@ -2793,3 +2793,4 @@ public readonly union ElSelectV2ModelValue(VueValue, VueValue[]) : IEnumerable<V
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable<VueValue>)this).GetEnumerator();
 }
+

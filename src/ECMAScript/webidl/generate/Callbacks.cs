@@ -14,7 +14,7 @@ public delegate void MutationCallback(MutationRecord[] mutations, MutationObserv
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate void HandleEventCallback(JazorEvent @event);
+public delegate void HandleEventCallback(EventRef @event);
 
 /// <summary>
 /// <see href="https://dom.spec.whatwg.org/#dom-nodefilter-acceptnode">DOM Standard: 6.3 Interface NodeFilter</see>
@@ -116,7 +116,7 @@ public delegate PromiseResult NavigationPrecommitHandler(NavigationPrecommitCont
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate object EventHandlerNonNull(JazorEvent @event);
+public delegate object EventHandlerNonNull(EventRef @event);
 
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/webappapis.html#onbeforeunloadeventhandlernonnull">HTML Standard: 8.1.8.1 Event handlers</see>
@@ -124,7 +124,7 @@ public delegate object EventHandlerNonNull(JazorEvent @event);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate string? OnBeforeUnloadEventHandlerNonNull(JazorEvent @event);
+public delegate string? OnBeforeUnloadEventHandlerNonNull(EventRef @event);
 
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/webappapis.html#onerroreventhandlernonnull">HTML Standard: 8.1.8.1 Event handlers</see>
@@ -468,7 +468,7 @@ public delegate void ErrorCallback(DOMException err);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate void FileCallback(JazorFile file);
+public delegate void FileCallback(FileRef file);
 
 /// <summary>
 /// <see href="https://wicg.github.io/entries-api/#callbackdef-filesystementriescallback">File and Directory Entries API: 7.3 The FileSystemDirectoryReader Interface</see>
