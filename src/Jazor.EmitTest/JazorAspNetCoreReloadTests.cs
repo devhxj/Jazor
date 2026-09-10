@@ -683,7 +683,21 @@ public sealed class JazorAspNetCoreReloadTests
                 ?? throw new InvalidOperationException("HMR manifest directory must have a parent directory."),
             ".jazor-manifest-" + Guid.NewGuid().ToString("N") + ".tmp");
         await File.WriteAllTextAsync(stagingPath, JsonSerializer.Serialize(manifest));
-        File.Move(stagingPath, manifestPath, overwrite: true);
+        // Windows FileSystemWatcher may briefly hold the previous manifest while
+        // parsing the transaction. Retry the atomic replace for that bounded window;
+        // a persistent lock still fails the test instead of hiding an infrastructure issue.
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                File.Move(stagingPath, manifestPath, overwrite: true);
+                break;
+            }
+            catch (UnauthorizedAccessException) when (attempt < 8)
+            {
+                await Task.Delay(25);
+            }
+        }
     }
 
     private static async Task<JsonElement> ReceiveWebSocketJsonAsync(WebSocket socket, TimeSpan timeout)
