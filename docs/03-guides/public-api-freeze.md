@@ -81,6 +81,14 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 
 当前验证记录：快速 Emit 套件 `154/154` 通过；`emit-consumer` 消费者矩阵 `47/47` 通过。两者必须在发布候选 ref 上分别执行，不能只运行快速 lane。
 
+机器快照可在构建后生成：
+
+```bash
+dotnet run --file scripts/csharp/inspect-public-api.cs -- --output artifacts/api/public-api.md
+```
+
+发布候选应保存该文件，并与上一候选快照进行稳定排序后的差异比较。
+
 ## 变更规则
 
 冻结后，新增 API 进入 MINOR，修复行为保持 PATCH；删除、重命名、签名改变、包/命名空间迁移和序列化协议改变进入 MAJOR。文档修订不能掩盖 API 变更，所有用户可见契约必须同时更新测试和 CHANGELOG。
