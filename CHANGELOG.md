@@ -8,11 +8,13 @@
 
 - 建立 1.0 公共 API 冻结审查基线，明确包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面、ASP.NET Core 配置模型和 SSR 数据模型；最终冻结仍以发布候选 ref 的全部质量门禁、SPA/SSR 消费者门禁和 API 兼容性证据为准。by @devhxj
 - Emit 测试按快速契约与 `emit-consumer` 消费者矩阵分层，减少日常门禁等待并保留发布前的完整包消费者验收。by @devhxj
+- 增加 1.0 公共 API 基线清单，集中记录宿主扩展、配置模型、SSR 协议和 Jazor.Admin 壳契约。by @devhxj
 
 Chores
 
 - Establish the 1.0 public API freeze baseline for package names, namespaces, `AddJazor*` / `UseJazor*` extensions, ASP.NET Core options, and SSR data models. The final freeze still requires API compatibility evidence plus all quality, SPA, and SSR consumer gates on the release-candidate ref. by @devhxj
 - Split Emit verification into a fast contract lane and an explicit `emit-consumer` matrix, shortening routine feedback while retaining complete package-consumer validation before release. by @devhxj
+- Add a readable 1.0 public API baseline covering host extensions, options, SSR protocols, and the Jazor.Admin shell contract. by @devhxj
 
 ## 2026-09-10
 
