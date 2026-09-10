@@ -2,6 +2,16 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 未发布 | Unreleased
+
+### 其他变更
+
+- 建立 1.0 公共 API 冻结审查基线，明确包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面、ASP.NET Core 配置模型和 SSR 数据模型；最终冻结仍以发布候选 ref 的全部质量门禁、SPA/SSR 消费者门禁和 API 兼容性证据为准。by @devhxj
+
+Chores
+
+- Establish the 1.0 public API freeze baseline for package names, namespaces, `AddJazor*` / `UseJazor*` extensions, ASP.NET Core options, and SSR data models. The final freeze still requires API compatibility evidence plus all quality, SPA, and SSR consumer gates on the release-candidate ref. by @devhxj
+
 ## 2026-09-10
 
 ### Jazor 0.35.0
