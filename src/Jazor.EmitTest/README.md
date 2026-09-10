@@ -25,9 +25,17 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
 ```
 
+本地 NuGet、外部 Razor SG、Deno 和真实浏览器消费者矩阵属于发布验收 lane：
+
+```bash
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
+```
+
 ## 说明
 
 测试使用独立临时工作区并在结束后清理。SSR 和 runtime smoke 使用打包的 `DenoHost` runtime；还原期间出现 `NU1900` 漏洞源警告不阻断已成功完成的测试。
+
+`SdkIntegrationTests` 标记为 `Consumer`。普通 `emit` lane 会跳过这组昂贵的包消费者测试，保持模块、SourceMap、宿主、SSR 和 artifact 契约快速反馈；`emit-consumer` 执行完整消费者矩阵。发布工作流仍必须运行 SPA/SSR 消费者门禁。
 
 ## 相关文档
 

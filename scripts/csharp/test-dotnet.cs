@@ -84,6 +84,7 @@ var testTargets = options.Project switch
     "vueroute" => new[] { vueRouteTestProject },
     "razor-sg" => new[] { razorSgTestProject },
     "emit" => new[] { emitTestProject },
+    "emit-consumer" => new[] { emitTestProject },
     _ => new[]
     {
         compilerTestProject,
@@ -122,13 +123,28 @@ foreach (var testProject in testTargets)
 {
     var testArgs = new List<string> { "test", testProject, "-c", options.Configuration, "--no-build", "--no-restore", "-v", "minimal" };
     testArgs.AddRange(sharedBuildPathArguments);
-    if (!string.IsNullOrWhiteSpace(options.Filter))
+    var testFilter = GetTestFilter(options, testProject, emitTestProject);
+    if (!string.IsNullOrWhiteSpace(testFilter))
     {
         testArgs.Add("--filter");
-        testArgs.Add(options.Filter);
+        testArgs.Add(testFilter);
     }
 
     await ScriptHelpers.RunDotNetAsync(testArgs, repoRoot, dotnetCliHome);
+}
+
+static string GetTestFilter(ScriptArguments options, string testProject, string emitTestProject)
+{
+    if (!string.Equals(testProject, emitTestProject, StringComparison.OrdinalIgnoreCase))
+        return options.Filter;
+
+    var categoryFilter = options.Project == "emit-consumer"
+        ? "TestCategory=Consumer"
+        : "TestCategory!=Consumer";
+
+    return string.IsNullOrWhiteSpace(options.Filter)
+        ? categoryFilter
+        : $"({categoryFilter})&({options.Filter})";
 }
 
 internal sealed record ScriptArguments
@@ -194,7 +210,7 @@ internal sealed record ScriptArguments
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
             "all", "compiler", "clr", "style", "devtools", "dataui", "vu-icons", "pinia", "pinia-testing", "vueroute", "razor-sg",
-            "emit", "style-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
+            "emit", "emit-consumer", "style-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
 
         if (!supported.Contains(normalized))
@@ -220,7 +236,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|vu-icons|pinia|pinia-testing|vueroute|razor-sg|emit|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|vu-icons|pinia|pinia-testing|vueroute|razor-sg|emit|emit-consumer|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");

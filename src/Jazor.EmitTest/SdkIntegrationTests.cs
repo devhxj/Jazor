@@ -10,6 +10,7 @@ using Jazor.Emit;
 namespace Jazor.EmitTest;
 
 [TestClass]
+[TestCategory("Consumer")]
 public sealed class SdkIntegrationTests
 {
     private static readonly Lazy<Task<LocalPackageFixture>> LocalPackage = new(CreateLocalPackageAsync);
