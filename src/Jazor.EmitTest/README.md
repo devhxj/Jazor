@@ -33,3 +33,11 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
 
 - [Jazor.Emit](../Jazor.Emit/README.md)
 - [开发与测试](../../docs/03-guides/development-and-testing.md)
+## Test execution
+
+Emit tests use class-level parallelism: independent test classes may run concurrently,
+while methods in one fixture run in source order. Several fixtures build local packages
+or start Deno/browser processes and share repository build outputs; method-level
+parallelism can race those outputs and make the testhost appear hung behind a locked
+assembly. Use a focused `--filter` for browser or package-consumer lanes when diagnosing
+an individual failure.
