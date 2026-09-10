@@ -4,8 +4,8 @@
 using System.Collections.Generic;
 using ECMAScript;
 using static ECMAScript.Vue;
-using Event = ECMAScript.JazorEvent;
-using Location = ECMAScript.JazorLocation;
+using Event = ECMAScript.EventRef;
+using Location = ECMAScript.LocationRef;
 
 namespace Wiki;
 
@@ -2149,3 +2149,4 @@ public static partial class WikiHomeModule
         return 0;
     }
 }
+

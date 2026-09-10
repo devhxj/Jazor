@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ECMAScript;
 using static ECMAScript.Vue;
-using Event = ECMAScript.JazorEvent;
+using Event = ECMAScript.EventRef;
 
 namespace Wiki;
 
@@ -376,3 +376,4 @@ public static partial class WikiHomeModule
         ]);
     }
 }
+
