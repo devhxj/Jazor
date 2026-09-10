@@ -51,7 +51,9 @@ foreach (var assemblyPath in assemblies.OrderBy(static path => path, StringCompa
         continue;
     }
 
-    foreach (var type in exportedTypes.OrderBy(static type => type.FullName, StringComparer.Ordinal))
+    foreach (var type in exportedTypes
+                 .Where(static type => !type.Name.StartsWith("_", StringComparison.Ordinal))
+                 .OrderBy(static type => type.FullName, StringComparer.Ordinal))
     {
         builder.AppendLine($"- {FormatType(type)}");
         foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
