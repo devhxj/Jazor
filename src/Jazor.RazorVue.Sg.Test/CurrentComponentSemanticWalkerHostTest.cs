@@ -377,9 +377,7 @@ public sealed class VueSemanticWalkerHostTest
             references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var errors = compilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
+        var errors = RazorSgTestHost.GetCompilationErrorDiagnostics(compilation);
         if (errors.Length > 0)
             throw new InvalidOperationException(string.Join("\n", errors.Select(static error => $"{error.Id}: {error.GetMessage()}")));
 

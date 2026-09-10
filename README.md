@@ -7,7 +7,7 @@
 <p><strong>A typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules.</strong></p>
 
 <p>
-  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 Preview" src="https://img.shields.io/badge/.NET-11%20Preview-512BD4?logo=dotnet&amp;logoColor=white" /></a>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
   <a href="https://github.com/devhxj/Jazor/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/devhxj/Jazor?display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
@@ -34,10 +34,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest release
 
-### Jazor 0.34.1 · 2026-09-09
+### Jazor 0.35.0 · 2026-09-10
 
-- `Jazor.Admin` public components now all provide a `.razor` template paired with a `.razor.cs` code-behind file; existing parameters, slots, and generated artifact contracts remain unchanged.
-- Sidebar rendering reuses one normalized navigation snapshot per render, keeping visibility checks and displayed items aligned.
+- The compiler preserves authored labels on C# `break` and `continue`, including nested-loop targets.
+- JazorAdmin login and Dashboard flows now provide clearer autofill metadata, loading and empty states, responsive grids, and accessibility semantics.
+- The development baseline is .NET 11 RC1 with Roslyn 5.11 and matching ASP.NET Core/EF Core dependencies.
 
 Read the [release notes](CHANGELOG.md) for the complete history.
 
@@ -113,7 +114,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.34.1
+dotnet add package Jazor --version 0.35.0
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -121,8 +122,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.34.1" />
-  <PackageReference Include="Jazor.Vue" Version="0.34.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.35.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.35.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

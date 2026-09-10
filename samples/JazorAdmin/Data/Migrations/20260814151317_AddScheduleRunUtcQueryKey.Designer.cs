@@ -18,7 +18,7 @@ partial class _20260814151317_AddScheduleRunUtcQueryKey
     protected override void BuildTargetModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-preview.6.26359.118");
+        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-rc.1.26425.128");
 
         modelBuilder.Entity("JazorAdmin.Data.AdminUser", b =>
             {

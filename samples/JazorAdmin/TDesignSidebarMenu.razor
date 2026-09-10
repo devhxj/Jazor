@@ -15,13 +15,13 @@ else if (Horizontal)
     <THeadMenu Value="@MenuValue"
                Expanded="@ExpandedMenuValues"
                Theme="@HeadMenuTheme"
-               ExpandType="@THeadMenuExpandTypeValue.Popup"
+               ExpandType="@(Horizontal ? THeadMenuExpandTypeValue.Normal : THeadMenuExpandTypeValue.Popup)"
                data-navigation-orientation="horizontal"
                data-navigation-selected-key="@SelectedKey"
                OnChange="@OnMenuChanged"
                OnExpand="@OnMenuExpanded"
                LogoContent="@Logo">
-        @if (Items?.AsArray is { Length: > 0 } horizontalItems)
+        @if (HorizontalItems?.AsArray is { Length: > 0 } horizontalItems)
         {
             @foreach (var item in horizontalItems)
             {

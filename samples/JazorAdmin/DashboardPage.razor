@@ -20,19 +20,19 @@
     }
 
     <div class="ja-dash__metrics" aria-label="@L("Platform operations", "平台运营")" data-metric-count="4">
-        <div class="ja-metric" data-metric="active-applications">
+        <div class="ja-metric" data-metric="active-applications" aria-label="@L("Active applications", "活跃应用")">
             <VueUiKpi Dataset="@(overview?.Applications ?? 0)" Config="@ApplicationKpiConfig" />
             <div class="ja-metric__footer"><span>@(overview?.PortalApplications.Length ?? 0) @L("portal entries enabled", "个门户入口已启用")</span></div>
         </div>
-        <div class="ja-metric" data-metric="sign-ins">
+        <div class="ja-metric" data-metric="sign-ins" aria-label="@L("Sign-ins (7d)", "登录次数（近 7 天）")">
             <VueUiKpi Dataset="@TotalSignIns" Config="@SignInKpiConfig" />
             <div class="ja-metric__footer"><span>@L("interactive authorization-code requests", "交互式授权码请求")</span></div>
         </div>
-        <div class="ja-metric" data-metric="token-issuances">
+        <div class="ja-metric" data-metric="token-issuances" aria-label="@L("Token issuances (7d)", "令牌签发（近 7 天）")">
             <VueUiKpi Dataset="@(overview?.TokenIssuances ?? 0)" Config="@TokenKpiConfig" />
             <div class="ja-metric__footer"><span>@L("access, refresh, and authorization code", "访问、刷新与授权码")</span></div>
         </div>
-        <div class="ja-metric" data-metric="audit-events">
+        <div class="ja-metric" data-metric="audit-events" aria-label="@L("Audit events (7d)", "审计事件（近 7 天）")">
             <VueUiKpi Dataset="@(overview?.AuditEvents ?? 0)" Config="@AuditKpiConfig" />
             <div class="ja-metric__footer"><span>@L("recorded in the last 7 days", "近 7 天已记录")</span></div>
         </div>
@@ -43,19 +43,53 @@
             <header class="ja-panel__header">
                 <div><h2>@L("Sign-in trend", "登录趋势")</h2><p>@L("Interactive authorization-code events over the last 7 days (UTC)", "近 7 天交互式授权码事件（UTC）")</p></div>
             </header>
-            <div class="ja-chart-host" role="img" aria-label="@L("Sign-in trend bar chart", "登录趋势柱状图")" data-login-trend="true">
-                <TLoading Loading="@loading" TextValue="@L("Loading audit history", "正在加载审计记录")">
-                    <ContentSlot>
-                        <VueUiVerticalBar Dataset="@SignInTrendItems" Config="@SignInTrendConfig" />
-                    </ContentSlot>
-                </TLoading>
+            <div class="ja-chart-host" role="group" aria-label="@L("Sign-in trend bar chart", "登录趋势柱状图")" data-login-trend="true" data-chart-state="@SignInChartState">
+                @if (loading)
+                {
+                    <div class="ja-chart-placeholder" role="status">
+                        <TLoading Loading="true" TextValue="@L("Loading audit history", "正在加载审计记录")">
+                            <ContentSlot><span aria-hidden="true"></span></ContentSlot>
+                        </TLoading>
+                    </div>
+                }
+                else if (HasSignInActivity)
+                {
+                    <VueUiVerticalBar Dataset="@SignInTrendItems" Config="@SignInTrendConfig" />
+                }
+                else
+                {
+                    <div class="ja-chart-empty" role="status">
+                        <TIcon Name="chart-bar" Size="24px" aria-hidden="true" />
+                        <strong>@L("No sign-ins in the selected period", "所选周期内暂无登录记录")</strong>
+                        <span>@L("New authorization-code activity will appear here.", "产生新的授权码活动后会显示在这里。")</span>
+                    </div>
+                }
             </div>
         </section>
 
         <section class="ja-panel">
             <header class="ja-panel__header"><div><h2>@L("Platform inventory", "平台资源概览")</h2><p>@L("Accounts, applications, and issued tokens", "账号、应用与已签发令牌")</p></div></header>
-            <div class="ja-chart-host">
-                <VueUiDonut Dataset="@DistributionItems" Config="@DistributionConfig" />
+            <div class="ja-chart-host" data-inventory-chart="true" data-chart-state="@InventoryChartState">
+                @if (loading)
+                {
+                    <div class="ja-chart-placeholder" role="status">
+                        <TLoading Loading="true" TextValue="@L("Loading platform inventory", "正在加载平台资源")">
+                            <ContentSlot><span aria-hidden="true"></span></ContentSlot>
+                        </TLoading>
+                    </div>
+                }
+                else if (HasInventory)
+                {
+                    <VueUiDonut Dataset="@DistributionItems" Config="@DistributionConfig" />
+                }
+                else
+                {
+                    <div class="ja-chart-empty" role="status">
+                        <TIcon Name="folder-open" Size="24px" aria-hidden="true" />
+                        <strong>@L("No platform resources yet", "平台暂时没有资源")</strong>
+                        <span>@L("Accounts, applications, and tokens will be summarized here.", "账号、应用与令牌会在创建后汇总到这里。")</span>
+                    </div>
+                }
             </div>
         </section>
     </div>
@@ -124,9 +158,9 @@
     <section class="ja-panel">
         <header class="ja-panel__header"><div><h2>@L("Service overview", "服务概览")</h2><p>@L("Production paths exercised by JazorAdmin", "JazorAdmin 已接入的生产链路")</p></div></header>
         <div class="ja-dash__output">
-            <article><VuUser Size="22px" /><div><strong>Identity</strong><span>@L("Local accounts and sessions", "本地账号与会话")</span></div><em>@(overview is null ? "--" : (overview.EnabledAccounts + "/" + overview.Accounts))</em></article>
-            <article><VuAppWindow Size="22px" /><div><strong>Applications</strong><span>@L("Registered OpenID clients", "已注册 OpenID 客户端")</span></div><em>@(overview is null ? "--" : overview.Applications.ToString())</em></article>
-            <article><VuChartLine Size="22px" /><div><strong>Audit</strong><span>@L("Protocol and management activity", "协议与管理操作")</span></div><em>@(overview is null ? "--" : overview.AuditEvents.ToString())</em></article>
+            <article><VuUser Size="22px" /><div><strong>@L("Identity", "身份")</strong><span>@L("Local accounts and sessions", "本地账号与会话")</span></div><em>@(overview is null ? "--" : (overview.EnabledAccounts + "/" + overview.Accounts))</em></article>
+            <article><VuAppWindow Size="22px" /><div><strong>@L("Applications", "应用")</strong><span>@L("Registered OpenID clients", "已注册 OpenID 客户端")</span></div><em>@(overview is null ? "--" : overview.Applications.ToString())</em></article>
+            <article><VuChartLine Size="22px" /><div><strong>@L("Audit", "审计")</strong><span>@L("Protocol and management activity", "协议与管理操作")</span></div><em>@(overview is null ? "--" : overview.AuditEvents.ToString())</em></article>
             <article><VuServer Size="22px" /><div><strong>RazorVue</strong><span>@L("Package-contained frontend", "包内自包含前端")</span></div><em>@L("Online", "在线")</em></article>
         </div>
     </section>

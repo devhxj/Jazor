@@ -220,9 +220,7 @@ public sealed class CurrentComponentHostScenarioTests
             ],
             references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var errors = compilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
+        var errors = RazorSgTestHost.GetCompilationErrorDiagnostics(compilation);
         Assert.HasCount(
             0,
             errors,

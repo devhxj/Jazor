@@ -228,7 +228,7 @@ public sealed class BootstrapPatchTests
         StringAssert.Contains(catalogText, "<button>Counter</button>");
         Assert.AreEqual(
             0,
-            outputCompilation.GetDiagnostics().Count(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error),
+            RazorSgTestHost.GetCompilationErrorDiagnostics(outputCompilation).Length,
             string.Join(Environment.NewLine, outputCompilation.GetDiagnostics()));
 
     }

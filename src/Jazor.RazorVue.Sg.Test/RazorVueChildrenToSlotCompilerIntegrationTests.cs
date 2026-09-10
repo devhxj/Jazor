@@ -1486,9 +1486,7 @@ export function Render() {
             syntaxTrees,
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var diagnostics = compilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
+        var diagnostics = RazorSgTestHost.GetCompilationErrorDiagnostics(compilation);
         Assert.IsFalse(
             diagnostics.Length > 0,
             string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));

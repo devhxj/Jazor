@@ -611,19 +611,15 @@ public sealed class CompilerTraditionalCoverageBehaviorTests
 
             public sealed class TestClass
             {
-                static void TestMethod(Entry value)
+                static void TestMethod()
                 {
                     outer:
                     while (true)
                     {
-                        switch (value)
+                        while (true)
                         {
-                            case Entry { Count: > 0 }:
-                                break outer;
-                            default:
-                                break;
+                            break outer;
                         }
-                        break;
                     }
                 }
             }
@@ -632,8 +628,14 @@ public sealed class CompilerTraditionalCoverageBehaviorTests
         var continueFailure = Assert.Throws<OperationTransformationException>(() => VisitBlock(continueSource));
         StringAssert.Contains(continueFailure.Message, "Continue statements inside pattern-matching switch", StringComparison.Ordinal);
 
-        var labeledFailure = Assert.Throws<OperationTransformationException>(() => VisitBlock(labeledSource));
-        StringAssert.Contains(labeledFailure.Message, "labeled", StringComparison.OrdinalIgnoreCase);
+        var labeledScript = VisitBlock(labeledSource);
+        StringAssert.Contains(labeledScript, "break outer;", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + labeledScript);
+
+        var continueLabeledScript = VisitBlock(
+            labeledSource.Replace("break outer;", "continue outer;", StringComparison.Ordinal));
+        StringAssert.Contains(continueLabeledScript, "continue outer;", StringComparison.Ordinal);
+        _ = new Parser().ParseScript("function verify() " + continueLabeledScript);
     }
 
     [TestMethod]

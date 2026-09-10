@@ -2,6 +2,38 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-10
+
+### Jazor 0.35.0
+
+> 编译器新增带标签 `break/continue` 支持，JazorAdmin Starter 完成一轮界面细节与响应式体验完善，并将开发基线更新至 .NET 11 RC1。所有 Jazor/ECMAScript 包继续使用同一版本。
+
+中文 | English
+
+#### 新增功能
+
+- 编译器现在保留 C# 带标签 `break/continue` 的目标名称，并在嵌套循环中生成对应的 JavaScript 跳转；模式匹配 `switch` 跨 IIFE 的标签跳转仍会给出明确诊断。by @devhxj
+
+#### 体验优化
+
+- JazorAdmin 登录与解锁表单补齐浏览器自动填充、验证码输入提示和可访问性语义；Dashboard 增加图表加载态、空数据态、响应式网格与更清晰的 TDesign 视觉层次。by @devhxj
+
+#### 其他变更
+
+- 开发与构建基线更新至 .NET SDK `11.0.100-rc.1.26425.128`、Roslyn `5.11.0-1.26425.128` 及对应 ASP.NET Core/EF Core RC1 依赖；Razor Source Generator 探针同步支持 RC SDK。by @devhxj
+
+New Features
+
+- The compiler now preserves authored labels on C# `break` and `continue`, emitting the matching JavaScript targets for nested loops; labeled jumps that cross the pattern-switch IIFE boundary still report an explicit diagnostic. by @devhxj
+
+Improvements
+
+- Improve JazorAdmin login and unlock forms with browser autofill metadata, clearer captcha input guidance, and accessibility semantics. Refresh the Dashboard with loading and empty chart states, responsive grids, and clearer TDesign visual hierarchy. by @devhxj
+
+Chores
+
+- Update the development and build baseline to .NET SDK `11.0.100-rc.1.26425.128`, Roslyn `5.11.0-1.26425.128`, and matching ASP.NET Core/EF Core RC1 dependencies; update the Razor Source Generator probe for RC SDKs. by @devhxj
+
 ## 2026-09-09
 
 ### Jazor 0.34.1

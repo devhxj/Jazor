@@ -33,7 +33,10 @@ public partial class App : ComponentBase, IVueComponent
     private bool splitMenu;
     private bool isSidebarFixed = true;
     private bool showHeader = true;
-    private bool showBreadcrumb;
+    // The Starter shell keeps route context visible by default; users can still hide it from
+    // the appearance panel when a compact work surface is preferred.
+    // Starter 壳默认显示路由上下文；需要更紧凑的工作区时仍可在外观面板中关闭。
+    private bool showBreadcrumb = true;
     private bool showFooter = true;
     private bool isUseTabsRouter = true;
     private bool menuAutoCollapsed;

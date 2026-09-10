@@ -10,9 +10,16 @@ internal static class RazorSgTestHost
         new(StringComparer.OrdinalIgnoreCase);
 
     public static string[] GetCompilationErrors(Compilation compilation)
-        => compilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+        => GetCompilationErrorDiagnostics(compilation)
             .Select(static diagnostic => diagnostic.ToString())
+            .ToArray();
+
+    // RC1's Razor analyzer reports ASP0032 for the generated object-valued attribute helper.
+    // The SDK owns that generated call site; keep genuine fixture/compiler errors visible.
+    public static Diagnostic[] GetCompilationErrorDiagnostics(Compilation compilation)
+        => compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error &&
+                !string.Equals(diagnostic.Id, "ASP0032", StringComparison.Ordinal))
             .ToArray();
 
     /// <summary>

@@ -673,10 +673,28 @@ internal static class StarterStyles
             {
                 display = grid,
                 align_content = start,
-                padding = px(12),
-                background = hex("fff"),
-                border_radius = px(3)
+                min_height = px(168),
+                padding = padding(px(14), px(16), px(12)),
+                background = raw("var(--td-bg-color-container)"),
+                border = raw("1px solid var(--td-component-stroke)"),
+                border_top = px(2) | solid | raw("var(--td-brand-color)"),
+                border_radius = px(6),
+                box_shadow = raw("0 1px 2px rgba(31, 35, 41, 0.03)"),
+                contain = keyword("layout paint"),
+                transition_property = raw("box-shadow, transform"),
+                transition_duration = raw("160ms"),
+                transition_timing_function = raw("ease-out")
             });
+
+        global(".ja-metric:hover",
+            new CssRule
+            {
+                transform = raw("translateY(-1px)"),
+                box_shadow = raw("0 6px 16px rgba(31, 35, 41, 0.08)")
+            });
+
+        global(".ja-metric:focus-within",
+            new CssRule { box_shadow = raw("0 0 0 2px rgba(0, 82, 217, 0.14)") });
 
         global(".ja-metric .vue-data-ui-kpi",
             new CssRule { min_height = px(140) });
@@ -709,7 +727,46 @@ internal static class StarterStyles
             });
 
         global(".ja-chart-host",
-            new CssRule { display = grid, height = px(260), margin_top = px(8) });
+            new CssRule
+            {
+                display = grid,
+                height = px(260),
+                min_width = px(0),
+                margin_top = px(8),
+                overflow = hidden,
+                border_radius = px(4),
+                contain = keyword("layout paint")
+            });
+
+        // Keep loading and empty states inside the same chart frame. Passing an all-zero
+        // dataset to Vue Data UI produces NaN percentages, so the page owns this fallback.
+        // 加载态和空态共用图表框；全零数据交给 Vue Data UI 会产生 NaN%，因此由页面承载兜底。
+        global(".ja-chart-placeholder, .ja-chart-empty",
+            new CssRule
+            {
+                display = grid,
+                align_content = center,
+                justify_items = center,
+                gap = px(8),
+                min_width = px(0),
+                height = percent(100),
+                padding = padding(px(16), px(20)),
+                box_sizing = border_box,
+                color = raw("var(--td-text-color-placeholder)"),
+                text_align = center
+            });
+
+        global(".ja-chart-empty > .t-icon, .ja-chart-empty > svg",
+            new CssRule { color = raw("var(--td-brand-color)") });
+
+        global(".ja-chart-empty strong",
+            new CssRule { color = raw("var(--td-text-color-secondary)"), font_size = px(13), font_weight = 600 });
+
+        global(".ja-chart-empty span",
+            new CssRule { max_width = px(300), color = raw("var(--td-text-color-placeholder)"), font_size = px(12), line_height = px(20) });
+
+        global(".ja-chart-host[data-chart-state=\"empty\"]",
+            new CssRule { background = raw("var(--td-bg-color-secondarycontainer)") });
 
         // Portal is an unframed section; only each repeated application is a real TDesign card.
         // 门户本身不做浮层卡片，只有重复的应用入口使用真实 TDesign 卡片。
@@ -777,7 +834,28 @@ internal static class StarterStyles
             new CssRule { display = grid, grid_template_columns = tracks(repeat(4, min_max(px(0), fr(1)))), gap = px(16) });
 
         global(".ja-dash__output article",
-            new CssRule { display = grid, grid_template_columns = tracks(px(24), min_max(px(0), fr(1))), align_items = center, padding = px(14), gap = px(10), background = hex("f7f8fa"), border_radius = px(3) });
+            new CssRule
+            {
+                display = grid,
+                grid_template_columns = tracks(px(24), min_max(px(0), fr(1))),
+                align_items = center,
+                min_width = px(0),
+                padding = px(14),
+                gap = px(10),
+                background = raw("var(--td-bg-color-secondarycontainer)"),
+                border = raw("1px solid var(--td-component-stroke)"),
+                border_radius = px(6),
+                transition_property = raw("background, border-color"),
+                transition_duration = raw("160ms"),
+                transition_timing_function = raw("ease-out")
+            });
+
+        global(".ja-dash__output article:hover",
+            new CssRule
+            {
+                background = raw("var(--td-bg-color-secondarycontainer-hover)"),
+                border_color = raw("var(--td-brand-color-focus)")
+            });
 
         global(".ja-dash__output .vu-icon, .ja-dash__output svg",
             new CssRule { color = hex("0052d9") });
@@ -793,6 +871,24 @@ internal static class StarterStyles
 
         global(".ja-dash__output em",
             new CssRule { grid_column = grid_line(2), color = hex("00a870"), font_size = px(11), font_style = normal });
+
+        // Dashboard grids collapse before the page becomes narrow enough to clip labels or
+        // tables. The 64px IconBar + 232px secondary menu contract remains unchanged on desktop.
+        // 仪表盘网格先于页面变窄而收拢，避免标签和表格互相挤压；桌面端仍保留 64px + 232px 壳宽。
+        Media(".ja-dash__metrics", "(max-width: 1080px)",
+            new CssRule { grid_template_columns = tracks(repeat(2, min_max(px(0), fr(1)))) });
+        Media(".ja-dash__analysis, .ja-dash__rankings", "(max-width: 1080px)",
+            new CssRule { grid_template_columns = tracks(min_max(px(0), fr(1))) });
+        Media(".ja-dash__output", "(max-width: 1080px)",
+            new CssRule { grid_template_columns = tracks(repeat(2, min_max(px(0), fr(1)))) });
+        Media(".ja-panel__header", "(max-width: 620px)",
+            new CssRule { align_items = flex_start, flex_direction = column, gap = px(8) });
+        Media(".ja-panel__header > .t-button", "(max-width: 620px)",
+            new CssRule { align_self = flex_start });
+        Media(".ja-dash__metrics, .ja-dash__output", "(max-width: 620px)",
+            new CssRule { grid_template_columns = tracks(min_max(px(0), fr(1))) });
+        Media(".ja-chart-host", "(max-width: 620px)",
+            new CssRule { height = px(220) });
 
         // TDesign consumes inherited design tokens. Product page shells use the same tokens so
         // switching the header control changes both library controls and checked-in templates.

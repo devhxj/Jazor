@@ -40,6 +40,12 @@ public partial class TDesignSidebarMenu : JComponentBase
     [Parameter]
     public bool ExpandMutex { get; set; }
 
+    // The mobile rail uses HeadMenu's normal mode so TDesign keeps every primary branch
+    // visible and exposes its children in the second row. Popup mode folds branches into a
+    // hidden "more" item when the viewport is narrow, which made core routes unreachable.
+    // 移动端使用 HeadMenu 平铺模式，让所有一级分支可见并在第二行显示子项；popup 模式会在窄屏
+    // 把分支折叠进隐藏的“更多”项，导致核心路由无法访问。
+
     private TMenuValue? MenuValue
         => SelectedKey is null ? default(TMenuValue?) : (TMenuValue)SelectedKey;
 
@@ -51,6 +57,63 @@ public partial class TDesignSidebarMenu : JComponentBase
 
     private THeadMenuThemeValue HeadMenuTheme
         => Theme == AdminThemeMode.Dark ? THeadMenuThemeValue.Dark : THeadMenuThemeValue.Light;
+
+    private AdminNavItems? HorizontalItems
+    {
+        get
+        {
+            if (Items?.AsArray is not { Length: > 0 } items)
+                return null;
+
+            var flattened = new AdminNavItem[items.Length];
+            for (var index = 0; index < items.Length; index++)
+            {
+                var item = items[index];
+                flattened[index] = item.Children?.AsArray is { Length: > 0 }
+                    ? new AdminNavItem
+                    {
+                        Key = item.Key,
+                        Title = item.Title,
+                        Icon = item.Icon,
+                        Href = item.Href,
+                        RouteTarget = item.RouteTarget,
+                        Disabled = item.Disabled,
+                        Children = FlattenLeaves(item.Children)
+                    }
+                    : item;
+            }
+
+            return flattened;
+        }
+    }
+
+    // TDesign 1.20's HeadMenu normal mode derives second-row labels from each child's
+    // default-slot vnode. Nested TSubmenu nodes expose an object there, which renders as
+    // "[object Object]". The mobile row is intentionally flat so every reachable route is
+    // textual while desktop keeps the full nested tree.
+    // TDesign 1.20 的 HeadMenu 平铺模式从子项 default slot vnode 读取第二行标签；嵌套
+    // TSubmenu 会暴露对象并显示“[object Object]”。移动端因此只展平叶子路由，桌面端仍保留完整层级。
+    private static AdminNavItems FlattenLeaves(AdminNavItems? items)
+    {
+        if (items?.AsArray is not { Length: > 0 } source)
+            return Array.Empty<AdminNavItem>();
+
+        var leaves = new List<AdminNavItem>();
+        foreach (var item in source)
+        {
+            if (item.Children?.AsArray is { Length: > 0 } children)
+            {
+                foreach (var leaf in FlattenLeaves(children).AsArray ?? Array.Empty<AdminNavItem>())
+                    leaves.Add(leaf);
+            }
+            else
+            {
+                leaves.Add(item);
+            }
+        }
+
+        return leaves.ToArray();
+    }
 
     // routes.mjs 只导出成员函数；渲染 lambda 内直接限定 TDesignRouteMapper 会触发 phantom
     // 类名导入（浏览器模块链接失败），因此经成员位置间接映射，与 RouteBreadcrumb 保持同一形态。
@@ -108,7 +171,14 @@ public partial class TDesignSidebarMenu : JComponentBase
             builder.AddAttribute(12, nameof(TMenuItem.IconContent), icon);
             builder.AddAttribute(13, nameof(TMenuItem.ChildContent), (RenderFragment)(childBuilder =>
             {
-                childBuilder.AddContent(0, item.Title);
+                // HeadMenu reads the first default-slot vnode's children as the tab label;
+                // use a text-bearing element so the upstream adapter receives a string.
+                // HeadMenu 会读取 default slot 第一个 vnode 的 children 作为标签，因此用
+                // 包含文本的元素承载标题，避免纯文本节点被当作缺少 label。
+                childBuilder.OpenElement(0, "span");
+                childBuilder.AddAttribute(1, "data-nav-label", item.Key);
+                childBuilder.AddContent(2, item.Title);
+                childBuilder.CloseElement();
             }));
             builder.AddAttribute(14, nameof(TMenuItem.Disabled), item.Disabled ?? false);
             builder.AddAttribute(15, "data-nav-key", item.Key);

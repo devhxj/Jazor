@@ -474,11 +474,11 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   /// <summary>
-  /// Preview C# 的 labeled break/continue 仍是 IBranchOperation；当前 package 没有暴露
-  /// 作者 label 的结构化 syntax/operation 信息，因此必须拒绝而不能错误输出无标签跳转。
+  /// Preview C# 的 labeled break/continue 仍是 IBranchOperation；作者 label 由语法节点提供，
+  /// lowering 必须保留该名称，不能退化成当前循环的无标签跳转。
   /// </summary>
   [TestMethod]
-  public void Visit_Branch_LabeledBreakAndContinue_RejectsUntilRoslynExposesAuthoredLabel()
+  public void Visit_Branch_LabeledBreakAndContinue_PreservesAuthoredLabel()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -500,10 +500,6 @@ public sealed class SemanticWalkerOrdinaryTest
             }
             ");
 
-    // The upgrade gate intentionally inspects the operation contract before lowering. If a
-    // future Roslyn build stops exposing the authored label in Syntax, lowering must remain a
-    // visible rejection rather than silently changing the target to an ordinary jump.
-    // 先锁定 BranchKind 与 authored syntax 的可见性，再验证 SemanticWalker 的拒绝策略。
     var branches = block.Descendants().OfType<IBranchOperation>().ToArray();
     Assert.HasCount(2, branches);
     Assert.IsTrue(
@@ -515,9 +511,10 @@ public sealed class SemanticWalkerOrdinaryTest
             branch.BranchKind == BranchKind.Break &&
             branch.Syntax.ToString().Contains("break outer", StringComparison.Ordinal)));
 
-    var exception = Assert.Throws<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new()));
-    Assert.AreEqual(OperationKind.Branch, exception.Kind);
-    StringAssert.Contains(exception.Message, "Labeled break/continue requires a Roslyn operation/syntax API");
+    var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+    StringAssert.Contains(script, "continue outer;", StringComparison.Ordinal);
+    StringAssert.Contains(script, "break outer;", StringComparison.Ordinal);
+    _ = new Parser().ParseScript("function verify() " + script);
   }
 
   /// <summary>
@@ -551,7 +548,7 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.AreEqual(OperationKind.Branch, exception.Kind);
     StringAssert.Contains(
       exception.Message,
-      "Labeled break/continue requires a Roslyn operation/syntax API",
+      "Labeled break/continue inside pattern-matching switch is not supported",
       StringComparison.Ordinal);
   }
 

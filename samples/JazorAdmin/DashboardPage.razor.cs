@@ -25,28 +25,29 @@ public partial class DashboardPage : AppComponentBase, IVueContainerComponent
     private OverviewView? overview;
     private int loadVersion;
 
-    // KPI 数字卡走 VueUiKpi；Responsive 只解析宽度，图表容器必须提供确定高度。
-    private static readonly VueUiKpiConfig ApplicationKpiConfig = new()
+    // KPI 数字卡走 VueUiKpi；标题属于页面文案，必须随当前界面语言重新投影。
+    // KPI cards use VueUiKpi; their titles are page copy and must follow the active language.
+    private VueUiKpiConfig ApplicationKpiConfig => new()
     {
-        Title = "Active applications",
+        Title = L("Active applications", "活跃应用"),
         UseAnimation = true
     };
 
-    private static readonly VueUiKpiConfig SignInKpiConfig = new()
+    private VueUiKpiConfig SignInKpiConfig => new()
     {
-        Title = "Sign-ins (7d)",
+        Title = L("Sign-ins (7d)", "登录次数（近 7 天）"),
         UseAnimation = true
     };
 
-    private static readonly VueUiKpiConfig TokenKpiConfig = new()
+    private VueUiKpiConfig TokenKpiConfig => new()
     {
-        Title = "Token issuances (7d)",
+        Title = L("Token issuances (7d)", "令牌签发（近 7 天）"),
         UseAnimation = true
     };
 
-    private static readonly VueUiKpiConfig AuditKpiConfig = new()
+    private VueUiKpiConfig AuditKpiConfig => new()
     {
-        Title = "Audit events (7d)",
+        Title = L("Audit events (7d)", "审计事件（近 7 天）"),
         UseAnimation = true
     };
 
@@ -85,13 +86,41 @@ public partial class DashboardPage : AppComponentBase, IVueContainerComponent
         }
     }
 
-    // 平台运营库存：账号、OpenID 应用和当前有效令牌。
+    // 平台运营库存：账号、OpenID 应用和当前有效令牌。零库存时不把 0 值交给 donut，
+    // 因为图表库会尝试计算百分比并显示 NaN%。
+    // Do not pass an all-zero donut dataset: the chart library would calculate NaN percentages.
     private VueUiDonutDatasetItem[] DistributionItems =>
     [
-        new() { Name = "Accounts", Values = [overview?.Accounts ?? 0], Color = "#0052d9" },
-        new() { Name = "OpenID applications", Values = [overview?.Applications ?? 0], Color = "#00a6a6" },
-        new() { Name = "Tokens", Values = [overview?.Tokens ?? 0], Color = "#c9cdd4" }
+        new() { Name = L("Accounts", "账号"), Values = [overview?.Accounts ?? 0], Color = "#0052d9" },
+        new() { Name = L("OpenID applications", "OpenID 应用"), Values = [overview?.Applications ?? 0], Color = "#00a6a6" },
+        new() { Name = L("Tokens", "令牌"), Values = [overview?.Tokens ?? 0], Color = "#c9cdd4" }
     ];
+
+    private bool HasSignInActivity
+    {
+        get
+        {
+            if (overview?.RecentAudit is not { Length: > 0 } audit)
+                return false;
+
+            foreach (var day in audit)
+            {
+                if (day.SignIns > 0)
+                    return true;
+            }
+
+            return false;
+        }
+    }
+
+    private bool HasInventory
+        => overview is not null && (overview.Accounts > 0 || overview.Applications > 0 || overview.Tokens > 0);
+
+    private string SignInChartState
+        => loading ? "loading" : HasSignInActivity ? "ready" : "empty";
+
+    private string InventoryChartState
+        => loading ? "loading" : HasInventory ? "ready" : "empty";
 
     private TPrimaryTableCol<OrganizationSummary>[] OrganizationColumns =>
     [

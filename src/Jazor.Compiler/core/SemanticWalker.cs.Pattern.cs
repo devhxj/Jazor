@@ -120,6 +120,7 @@ using Acornima;
 using Acornima.Ast;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
@@ -1873,11 +1874,12 @@ public partial class SemanticWalker
 			if (operation is IBranchOperation branchOperation)
 			{
 				// Pattern switches lower through an IIFE, where an unlabeled `return` represents only
-				// an ordinary switch break. A labeled branch must use the shared explicit rejection
-				// until Roslyn exposes a target that can be preserved across this boundary.
-				if (HasUnmodeledLabeledBranchSyntax(branchOperation))
+				// an ordinary switch break. A labeled branch cannot cross that function boundary.
+				if (branchOperation.Syntax is
+					BreakStatementSyntax { Name: not null } or
+					ContinueStatementSyntax { Name: not null })
 				{
-					HandleTransformationFailure<Node>(branchOperation, LabeledBranchUnsupportedMessage);
+					HandleTransformationFailure<Node>(branchOperation, "Labeled break/continue inside pattern-matching switch is not supported (IIFE boundary).");
 				}
 
 				switch (branchOperation.BranchKind)

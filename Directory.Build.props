@@ -7,7 +7,7 @@
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <NetPackVersion>0.8.2</NetPackVersion>
     <JsonNetVersion>10.0.7</JsonNetVersion>
-    <CodeAnalysisVersion>5.10.0-1.26381.103</CodeAnalysisVersion>
+    <CodeAnalysisVersion>5.11.0-1.26425.128</CodeAnalysisVersion>
     <Net110AssembliesVersion>1.8.11</Net110AssembliesVersion>
     <CoverletVersion>10.0.1</CoverletVersion>
     <MinVerPackageVersion>7.0.0</MinVerPackageVersion>

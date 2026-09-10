@@ -7,7 +7,7 @@
 <p><strong>将受支持的 C# 语义编译为确定性 ECMAScript 模块的强类型 .NET 工具链。</strong></p>
 
 <p>
-  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 Preview" src="https://img.shields.io/badge/.NET-11%20Preview-512BD4?logo=dotnet&amp;logoColor=white" /></a>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
   <a href="https://github.com/devhxj/Jazor/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/devhxj/Jazor?display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
@@ -34,10 +34,11 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新版本
 
-### Jazor 0.34.1 · 2026-09-09
+### Jazor 0.35.0 · 2026-09-10
 
-- `Jazor.Admin` 公共组件现在均提供 `.razor` 模板与配对的 `.razor.cs` 代码后置；现有参数、插槽和生成产物契约保持不变。
-- 侧栏在一次渲染中复用规范化导航快照，显示判断与实际条目保持一致。
+- 编译器现在保留 C# `break` 与 `continue` 的作者标签，包括嵌套循环目标。
+- JazorAdmin 登录和 Dashboard 页面补齐自动填充元数据、加载与空数据状态、响应式网格和可访问性语义。
+- 开发基线更新至 .NET 11 RC1、Roslyn 5.11 以及对应 ASP.NET Core/EF Core 依赖。
 
 完整版本历史见 [更新日志](CHANGELOG.md)。
 
@@ -112,15 +113,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.34.1
+dotnet add package Jazor --version 0.35.0
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.34.1" />
-  <PackageReference Include="Jazor.Vue" Version="0.34.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.35.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.35.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

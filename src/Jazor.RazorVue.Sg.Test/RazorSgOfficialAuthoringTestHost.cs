@@ -182,7 +182,7 @@ internal static class RazorSgOfficialAuthoringTestHost
             optionsProvider: optionsProvider);
         driver = driver.RunGeneratorsAndUpdateCompilation(baseCompilation, out var compilation, out var diagnostics);
         var allDiagnostics = diagnostics
-            .AddRange(compilation.GetDiagnostics().Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
+            .AddRange(RazorSgTestHost.GetCompilationErrorDiagnostics(compilation));
 
         // The production RazorVue generator observes the post-Razor compilation through its
         // GeneratorDriver hook. This focused helper may be called before that hook has been

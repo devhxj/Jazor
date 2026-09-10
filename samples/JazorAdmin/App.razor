@@ -41,12 +41,13 @@
                     <p>@Localization.Get(Language, IsLoginPage ? TextKey.LoginSubtitle : TextKey.LockSubtitle)</p>
                 </div>
 
-                <form @onsubmit="@(IsLoginPage ? SignIn : Unlock)" @onsubmit:preventDefault>
+                <form autocomplete="@(IsLoginPage ? "on" : "off")" @onsubmit="@(IsLoginPage ? SignIn : Unlock)" @onsubmit:preventDefault>
                     <label>
                         @Localization.Get(Language, TextKey.Account)
                         <input data-access-field="account"
                                name="account"
                                type="email"
+                               autocomplete="username"
                                readonly="@(!IsLoginPage)"
                                required
                                @bind="loginAccount"
@@ -56,11 +57,11 @@
                         @Localization.Get(Language, TextKey.Password)
                         @if (IsLoginPage)
                         {
-                            <input data-access-field="password" name="password" type="password" required @bind="loginPassword" @bind:event="oninput" />
+                            <input data-access-field="password" name="password" type="password" autocomplete="current-password" required @bind="loginPassword" @bind:event="oninput" />
                         }
                         else
                         {
-                            <input data-access-field="password" name="password" type="password" required @bind="unlockPassword" @bind:event="oninput" />
+                            <input data-access-field="password" name="password" type="password" autocomplete="current-password" required @bind="unlockPassword" @bind:event="oninput" />
                         }
                     </label>
                     @if (IsLoginPage)
@@ -72,7 +73,10 @@
                                        name="captcha"
                                        type="text"
                                        maxlength="4"
-                                       autocomplete="off"
+                                       inputmode="text"
+                                       autocapitalize="characters"
+                                       spellcheck="false"
+                                       autocomplete="one-time-code"
                                        required
                                        @bind="loginCaptcha"
                                        @bind:event="oninput" />

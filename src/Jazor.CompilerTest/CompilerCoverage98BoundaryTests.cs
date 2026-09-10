@@ -201,14 +201,12 @@ public sealed class CompilerCoverage98BoundaryTests
         var block = Assert.IsInstanceOfType<IBlockOperation>(model.GetOperation(methodSyntax.Body!));
         var walker = new SemanticWalker(true);
 
-        var labeledSyntax = GetPrivateStatic(
-            typeof(SemanticWalker),
-            "HasUnmodeledLabeledBranchSyntax",
-            typeof(SyntaxNode));
-        Assert.IsFalse((bool)labeledSyntax.Invoke(null, [SyntaxFactory.ParseStatement("if (true) { }")])!);
-        Assert.IsFalse((bool)labeledSyntax.Invoke(null, [SyntaxFactory.ParseStatement("break;")])!);
-        Assert.IsTrue((bool)labeledSyntax.Invoke(null, [SyntaxFactory.ParseStatement("break label;")])!);
-        Assert.IsTrue((bool)labeledSyntax.Invoke(null, [SyntaxFactory.ParseStatement("continue label;")])!);
+        var unlabeledBreak = (BreakStatementSyntax)SyntaxFactory.ParseStatement("break;");
+        var labeledBreak = (BreakStatementSyntax)SyntaxFactory.ParseStatement("break label;");
+        var labeledContinue = (ContinueStatementSyntax)SyntaxFactory.ParseStatement("continue label;");
+        Assert.IsNull(unlabeledBreak.Name);
+        Assert.AreEqual("label", labeledBreak.Name?.Identifier.ValueText);
+        Assert.AreEqual("label", labeledContinue.Name?.Identifier.ValueText);
 
         var enumZero = GetPrivateStatic(typeof(SemanticWalker), "CreateEnumUnderlyingZeroValue", typeof(ITypeSymbol));
         Assert.AreEqual(0, enumZero.Invoke(null, [compilation.GetSpecialType(SpecialType.System_Object)]));

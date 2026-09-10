@@ -1,6 +1,6 @@
 #!/usr/bin/env dotnet run
-#:package Microsoft.CodeAnalysis.CSharp@5.10.0-1.26329.5
-#:package Basic.Reference.Assemblies.Net110@1.8.7
+#:package Microsoft.CodeAnalysis.CSharp@5.11.0-1.26425.128
+#:package Basic.Reference.Assemblies.Net110@1.8.11
 #:property EnableTrimAnalyzer=false
 
 using System.Diagnostics;
@@ -68,6 +68,20 @@ Console.WriteLine("Generated sources: " + result.GeneratedSources.Length);
 Console.WriteLine("Final compilation trees: " + finalCompilation.SyntaxTrees.Count());
 Console.WriteLine("Razor generated trees: " + finalCompilation.SyntaxTrees.Count(static tree => tree.FilePath.EndsWith("_razor.g.cs", StringComparison.Ordinal)));
 Console.WriteLine("Diagnostics: " + diagnostics.Length);
+
+static string FindRepositoryRoot()
+{
+    var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+    while (directory is not null)
+    {
+        if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+            return directory.FullName;
+
+        directory = directory.Parent;
+    }
+
+    throw new DirectoryNotFoundException("Could not locate the Jazor repository root from the current directory.");
+}
 
 internal sealed class InMemoryAdditionalText(string path, string text) : AdditionalText
 {
@@ -143,7 +157,10 @@ internal static class RazorCompilerPathResolver
         if (!Directory.Exists(sdkRoot))
             yield break;
 
-        foreach (var directory in Directory.EnumerateDirectories(sdkRoot, "11.0.100-preview.*")
+        // RC SDK folders use the same feature-band prefix as preview folders.
+        // Keep the fallback broad enough to resolve either channel when global.json
+        // points at a locally installed SDK with a matching Razor toolset.
+        foreach (var directory in Directory.EnumerateDirectories(sdkRoot, "11.0.100-*")
                      .OrderByDescending(static path => path, StringComparer.Ordinal))
         {
             var version = Path.GetFileName(directory);
@@ -300,18 +317,4 @@ internal static class RazorCompilerPathResolver
 
         return null;
     }
-}
-
-static string FindRepositoryRoot()
-{
-    var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
-    while (directory is not null)
-    {
-        if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
-            return directory.FullName;
-
-        directory = directory.Parent;
-    }
-
-    throw new DirectoryNotFoundException("Could not locate the Jazor repository root from the current directory.");
 }

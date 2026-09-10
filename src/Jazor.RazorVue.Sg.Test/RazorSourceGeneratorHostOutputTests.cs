@@ -67,9 +67,7 @@ public sealed class RazorSourceGeneratorFinalCompilationTests
         var runResult = driver.GetRunResult();
         var generatorResult = runResult.Results.Single();
         var generatedSources = generatorResult.GeneratedSources;
-        var compilationErrors = outputCompilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
+        var compilationErrors = RazorSgTestHost.GetCompilationErrorDiagnostics(outputCompilation);
 
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics.Select(static item => item.ToString())));
         Assert.AreEqual(0, compilationErrors.Length, string.Join(Environment.NewLine, compilationErrors.Select(static item => item.ToString())));

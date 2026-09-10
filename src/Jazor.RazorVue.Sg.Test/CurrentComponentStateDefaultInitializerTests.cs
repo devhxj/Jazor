@@ -138,9 +138,7 @@ public sealed class CurrentComponentStateDefaultInitializerTests
             [CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions)],
             TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(StringAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var errors = compilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
+        var errors = RazorSgTestHost.GetCompilationErrorDiagnostics(compilation);
         if (errors.Length > 0)
         {
             throw new InvalidOperationException(

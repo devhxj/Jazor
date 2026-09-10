@@ -180,72 +180,32 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitBranch(IBranchOperation operation, SenseArgument argument)
 	{
-		// Preview C# labeled break/continue remains IBranchOperation, but Target is Roslyn's
-		// internal "break"/"continue" label rather than the authored label. The current package
-		// does not expose the authored label structurally, so never silently emit an unlabeled jump.
-		// Preview 语法仍复用 IBranchOperation；当前 Roslyn API 未暴露作者 label，必须明确拒绝。
-		if (HasUnmodeledLabeledBranchSyntax(operation))
-		{
-			return HandleTransformationFailure<Node>(
-				operation,
-				LabeledBranchUnsupportedMessage);
-		}
-
 		if (operation.BranchKind == BranchKind.Break)
-			return new BreakStatement(null);
+			return new BreakStatement(GetBranchLabel(operation));
 
 		if (operation.BranchKind == BranchKind.Continue)
-			return new ContinueStatement(null);
+			return new ContinueStatement(GetBranchLabel(operation));
 
 		// Roslyn only models break, continue and goto through IBranchOperation. Goto remains an
 		// explicit product boundary because JavaScript has no equivalent structured target.
 		return HandleTransformationFailure<Node>(operation, "Goto statements are not supported in JavaScript.");
 	}
 
-	private static bool HasUnmodeledLabeledBranchSyntax(IBranchOperation operation)
+	private Identifier? GetBranchLabel(IBranchOperation operation)
 	{
-		if (operation.BranchKind != BranchKind.Break &&
-			operation.BranchKind != BranchKind.Continue)
-		{
-			return false;
-		}
+		// Roslyn binds the branch target to an internal symbol, while the authored label is carried
+		// by the syntax node. Preserve that identifier directly so nested-loop control flow remains
+		// valid JavaScript (`break outer;` / `continue outer;`).
+		if (operation.Syntax is BreakStatementSyntax breakSyntax)
+			return breakSyntax.Name is null ? null : new Identifier(breakSyntax.Name.Identifier.Text);
 
-		// A future SDK may introduce a dedicated syntax node instead of extending the current
-		// BreakStatementSyntax/ContinueStatementSyntax shape. Treat that as unmodeled until the
-		// authored target is bound end-to-end, while leaving goto on its own explicit boundary.
-		return operation.Syntax is not BreakStatementSyntax and not ContinueStatementSyntax ||
-			HasUnmodeledLabeledBranchSyntax(operation.Syntax);
+		if (operation.Syntax is ContinueStatementSyntax continueSyntax)
+			return continueSyntax.Name is null ? null : new Identifier(continueSyntax.Name.Identifier.Text);
+
+		return HandleTransformationFailure<Identifier>(
+			operation,
+			"Break/continue syntax is not recognized by the current Roslyn API.");
 	}
-
-	private static bool HasUnmodeledLabeledBranchSyntax(SyntaxNode syntax)
-	{
-		if (syntax is not BreakStatementSyntax and not ContinueStatementSyntax)
-			return false;
-
-		// Reject both today's incomplete projection and a future projection that starts exposing
-		// an identifier token before the lowering has an authored-label target contract.
-		// 不能因为 SDK 新增 token 就静默发射无标签跳转；先保持显式 Reject，再单独实现语义 lowering。
-		var tokens = syntax.DescendantTokens(descendIntoTrivia: false).ToArray();
-		var expectedKeyword = syntax is BreakStatementSyntax
-			? Microsoft.CodeAnalysis.CSharp.SyntaxKind.BreakKeyword
-			: Microsoft.CodeAnalysis.CSharp.SyntaxKind.ContinueKeyword;
-		if (tokens.Length != 2 ||
-			!tokens[0].IsKind(expectedKeyword) ||
-			!tokens[1].IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SemicolonToken))
-		{
-			return true;
-		}
-
-		// In this preview Roslyn package the branch node's child tokens contain only the keyword
-		// and semicolon, while Syntax.ToFullString still contains the source label. This detects that
-		// incomplete projection without parsing text into a second, divergent semantic protocol.
-		// 当前 package 漏出 label 文本却未给结构化 token；这里只识别 API 不完整状态，不手工解析 label。
-		var modeledText = string.Concat(syntax.ChildTokens().Select(static token => token.ToFullString()));
-		return !string.Equals(syntax.ToFullString(), modeledText, StringComparison.Ordinal);
-	}
-
-	private const string LabeledBranchUnsupportedMessage =
-		"Labeled break/continue requires a Roslyn operation/syntax API that exposes the authored label. The current compiler package only exposes an internal branch target, so Razor-to-JavaScript lowering cannot preserve the target safely.";
 
 	/// <summary>
 	/// 处理空语句操作

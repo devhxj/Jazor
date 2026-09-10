@@ -7674,9 +7674,7 @@ public sealed class MemberClosureTests
 
     private static void AssertNoCompilationErrors(Compilation compilation)
     {
-        var errors = compilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
+        var errors = RazorSgTestHost.GetCompilationErrorDiagnostics(compilation);
         Assert.AreEqual(
             0,
             errors.Length,

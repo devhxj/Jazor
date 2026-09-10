@@ -82,9 +82,7 @@ public sealed class RazorVueInheritedSlotContextIntegrationTests
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location))
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var diagnostics = compilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
+        var diagnostics = RazorSgTestHost.GetCompilationErrorDiagnostics(compilation);
         Assert.HasCount(0, diagnostics, string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
 
         var semanticModel = compilation.GetSemanticModel(syntaxTree);

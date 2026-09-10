@@ -1146,7 +1146,7 @@ internal static class Styles
             new CssRule
             {
                 display = raw("grid"),
-                grid_template_columns = raw("minmax(0, 1fr) 112px 40px"),
+                grid_template_columns = raw("minmax(0, 1fr) minmax(88px, 112px) 40px"),
                 align_items = raw("center"),
                 gap = raw("8px")
             });
@@ -1163,8 +1163,9 @@ internal static class Styles
             new CssRule
             {
                 display = raw("block"),
-                width = raw("112px"),
+                width = raw("100%"),
                 height = raw("40px"),
+                object_fit = raw("cover"),
                 background = raw("#f3f3f3"),
                 border = px(1) | solid | raw("#dcdcdc"),
                 border_radius = raw("3px")
@@ -1349,9 +1350,10 @@ internal static class Styles
             new CssRule
             {
                 display = flex,
-                align_items = center,
+                align_items = flex_start,
                 width = percent(100),
-                height = px(64),
+                height = auto,
+                min_height = px(64),
                 min_width = px(0),
                 border_bottom = px(1) | solid | var("--border")
             });
@@ -1380,7 +1382,60 @@ internal static class Styles
             {
                 flex = flex_box(1, 1, px(0)),
                 min_width = px(0),
-                overflow_x = auto
+                overflow_x = auto,
+                overflow_y = hidden
+            });
+
+        // HeadMenu normal mode renders a second tab row for the active branch. Let both rows
+        // scroll horizontally while keeping the fixed brand rail at 64px.
+        // HeadMenu 平铺模式会为当前分支渲染第二行标签；两行都允许横向滚动，品牌栏仍固定 64px。
+        Media(".ja-tdesign-sidebar-shell__mobile-navigation .t-head-menu", "(max-width: 760px)",
+            new CssRule
+            {
+                width = percent(100),
+                min_width = px(0),
+                overflow = visible
+            });
+
+        Media(".ja-tdesign-sidebar-shell__mobile-navigation .t-head-menu__inner", "(max-width: 760px)",
+            new CssRule
+            {
+                display = flex,
+                flex_direction = column,
+                align_items = flex_start,
+                min_width = raw("max-content"),
+                width = percent(100),
+                overflow = visible
+            });
+
+        Media(".ja-tdesign-sidebar-shell__mobile-navigation .t-head-menu__inner > .t-menu", "(max-width: 760px)",
+            new CssRule
+            {
+                display = flex,
+                flex = flex_box(0, 0, px(48)),
+                width = percent(100),
+                min_width = raw("max-content"),
+                white_space = nowrap,
+                overflow = visible
+            });
+
+        Media(".ja-tdesign-sidebar-shell__mobile-navigation .t-head-menu__submenu", "(max-width: 760px)",
+            new CssRule
+            {
+                display = flex,
+                flex = flex_box(0, 0, px(40)),
+                width = percent(100),
+                min_width = raw("max-content"),
+                max_width = none,
+                overflow_x = visible,
+                border_top = px(1) | solid | var("--border")
+            });
+
+        Media(".ja-tdesign-sidebar-shell__mobile-navigation .t-head-menu__submenu .t-tabs__nav", "(max-width: 760px)",
+            new CssRule
+            {
+                min_width = raw("max-content"),
+                white_space = nowrap
             });
 
         Media(".ja-tdesign-header [data-shell-command=\"toggle-sidebar\"]", "(max-width: 760px)",
@@ -1496,14 +1551,36 @@ internal static class Styles
         Media(".ja-access__captcha-control", "(max-width: 430px)",
             new CssRule
             {
-                grid_template_columns = raw("minmax(0, 1fr) 48px")
+                grid_template_columns = raw("minmax(0, 1fr) 96px 40px")
             });
 
         Media(".ja-access__captcha-image", "(max-width: 430px)",
             new CssRule
             {
-                grid_column = raw("1 / -1"),
-                grid_row = raw("2")
+                width = raw("96px"),
+                height = raw("36px")
+            });
+
+        Media(".ja-access__captcha-control", "(max-width: 360px)",
+            new CssRule
+            {
+                grid_template_columns = raw("minmax(0, 1fr) 88px 36px"),
+                gap = raw("6px")
+            });
+
+        Media(".ja-access__captcha-image", "(max-width: 360px)",
+            new CssRule
+            {
+                width = raw("88px"),
+                height = raw("34px")
+            });
+
+        Media(".ja-access__captcha-refresh", "(max-width: 360px)",
+            new CssRule
+            {
+                width = raw("36px"),
+                height = raw("36px"),
+                min_height = raw("36px")
             });
 
         Media(".ja-error__code", "(max-width: 760px)",
@@ -1519,8 +1596,9 @@ internal static class Styles
             new CssRule
             {
                 display = raw("grid"),
-                gap = raw("16px"),
-                min_width = raw("0")
+                gap = raw("20px"),
+                min_width = raw("0"),
+                align_content = raw("start")
             });
 
         global(".ja-page__split",
@@ -1539,7 +1617,9 @@ internal static class Styles
                 gap = raw("16px"),
                 padding = raw("20px"),
                 background = raw("var(--surface)"),
-                border_radius = raw("3px")
+                border = raw("1px solid var(--border)"),
+                border_radius = raw("6px"),
+                box_shadow = raw("0 1px 2px rgba(31, 35, 41, 0.03)")
             });
 
         global(".ja-panel__header",
@@ -1553,6 +1633,16 @@ internal static class Styles
 
         global(".ja-panel__header h2",
             new CssRule { margin = raw("0"), color = raw("var(--text)"), font_size = raw("16px"), font_weight = raw("600") });
+
+        global(".ja-panel__header h1",
+            new CssRule
+            {
+                margin = raw("0"),
+                color = raw("var(--text)"),
+                font_size = raw("24px"),
+                font_weight = raw("650"),
+                letter_spacing = raw("-0.01em")
+            });
 
         global(".ja-panel__header p",
             new CssRule { margin = raw("4px 0 0"), color = raw("var(--text-muted)"), font_size = raw("12px") });
@@ -1652,7 +1742,7 @@ internal static class Styles
                 padding = raw("12px 14px"),
                 border_left = raw("3px solid var(--td-warning-color)"),
                 background = raw("var(--surface-subtle)"),
-                border_radius = raw("3px)")
+                border_radius = raw("3px")
             });
 
         global(".ja-secret code",
