@@ -62,6 +62,42 @@ var popoverClass = style(new CssRule
 
 `CssSizingValue`、`CssAnchorPositionValue`、`CssInsetValue` 与锚点声明值域彼此独立，因此宽度、定位边、简写和锚点名称不会因更新 WebRef grammar 而退化为通用 `CssValue`。
 
+## 开发者工作流
+
+为组件创建样式时，先构造规则，再把 `style(...)` 返回的 class name 传给宿主元素：
+
+```csharp
+var buttonClass = style(new CssRule
+{
+    background_color = keyword("var(--brand-color)"),
+    color = color("white"),
+    padding = px(8) | px(16)
+});
+
+return new ButtonModel { ClassName = buttonClass };
+```
+
+同一 context 中内容完全相同的规则会复用 class name；不要为了“避免重复”在业务层维护另一份全局缓存。需要独立的页面、租户或测试边界时，使用 `context(...)`，并将 context 显式传给 `styleIn`、`extractFrom` 和 `snapshotFrom`。
+
+`configure(...)` 只用于默认 context，并且必须在第一次调用 `style`、`global`、`keyframes` 或 `at_rule` 之前执行。服务端渲染建议使用 `context(new CssOptions { Detached = true })` 收集快照；浏览器端再将快照交给 hydration 流程，避免服务端探测 DOM。
+
+## 性能与可预测性
+
+- 规则名称由序列化内容决定，与注册顺序和进程实例无关，适合 SSR 与客户端复用。
+- 声明会按 CSS 属性名排序，保证输出稳定；`additional` 和嵌套 `children` 保留作者顺序，因此只在确实需要重复声明或尚未建模的语法时使用。
+- 高频路径应复用 `CssContext`，避免每次渲染都创建新 context；context 不应跨请求共享可变的 SSR 状态。
+- `extract`、`snapshot` 是读取操作，不会清空 registry。重复调用不会重复注入 style 元素。
+- 生产构建应使用 `JazorMode=release`，由 Emit/Netpack 处理模块闭包和 bundle；开发模式适合 source map 和调试，不代表最终资源大小。
+
+## 常见错误
+
+- `StyleId cannot be empty`：`StyleId` 只能是非空字符串；省略它会使用 `ecmascript-style`。
+- `Configure must be called before...`：默认 context 已经注册过规则，应改用新的 `context(...)`，不要尝试重新定位已活动的 context。
+- `A detached CSS context cannot have a DOM target`：分离 context 不拥有 DOM，删除 `Target` 或关闭 `Detached`。
+- `style element ... is not owned`：目标节点中已有同名但非 ECMAScript.Style 管理的 `<style>`，请更换 `StyleId`。
+
+这些错误表示配置或 CSS grammar 与当前契约不一致；不要用 `raw(...)` 绕过已存在的类型化属性。只有规范尚未建模时，才将 `raw(...)` 作为局部、明确的兼容桥接。
+
 ## 确定性与 hydration
 
 规则名称从内容稳定推导，注册顺序、嵌套规则与 keyframe 输出保持可预测。`document`、`ShadowRoot`、detached 提取和 hydration 共享同一 runtime contract；SSR 只传递应用明确拥有的 snapshot 和 nonce 信息，不隐式建立全局状态。
