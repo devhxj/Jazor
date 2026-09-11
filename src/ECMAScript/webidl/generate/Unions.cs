@@ -1071,20 +1071,20 @@ public readonly struct SendData
 
 [ECMAScript]
 [Description("@#")]
-public readonly struct StructuralCacheValue13
+public readonly struct StructuralCacheValue11
 {
     private readonly byte _kind;
     private readonly string? _value1;
     private readonly IBufferSource? _value2;
 
-    private StructuralCacheValue13(string value)
+    private StructuralCacheValue11(string value)
     {
         _kind = 1;
         _value1 = value;
         _value2 = default;
     }
 
-    private StructuralCacheValue13(IBufferSource value)
+    private StructuralCacheValue11(IBufferSource value)
     {
         _kind = 2;
         _value1 = default;
@@ -1095,65 +1095,65 @@ public readonly struct StructuralCacheValue13
 
     public IBufferSource? AsIBufferSource => _kind == 2 ? _value2 : default;
 
-    public static implicit operator StructuralCacheValue13(string value)
+    public static implicit operator StructuralCacheValue11(string value)
         => new(value);
 
-    public static StructuralCacheValue13 FromIBufferSource(IBufferSource value)
+    public static StructuralCacheValue11 FromIBufferSource(IBufferSource value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(ArrayBuffer value)
+    public static implicit operator StructuralCacheValue11(ArrayBuffer value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(DataView value)
+    public static implicit operator StructuralCacheValue11(DataView value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Uint8Array value)
+    public static implicit operator StructuralCacheValue11(Uint8Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Uint8ClampedArray value)
+    public static implicit operator StructuralCacheValue11(Uint8ClampedArray value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Int8Array value)
+    public static implicit operator StructuralCacheValue11(Int8Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Int16Array value)
+    public static implicit operator StructuralCacheValue11(Int16Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Uint16Array value)
+    public static implicit operator StructuralCacheValue11(Uint16Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Int32Array value)
+    public static implicit operator StructuralCacheValue11(Int32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Uint32Array value)
+    public static implicit operator StructuralCacheValue11(Uint32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Float16Array value)
+    public static implicit operator StructuralCacheValue11(Float16Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Float32Array value)
+    public static implicit operator StructuralCacheValue11(Float32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(Float64Array value)
+    public static implicit operator StructuralCacheValue11(Float64Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(BigInt64Array value)
+    public static implicit operator StructuralCacheValue11(BigInt64Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue13(BigUint64Array value)
+    public static implicit operator StructuralCacheValue11(BigUint64Array value)
         => new(value);
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly struct StructuralCacheValue38
+public readonly struct StructuralCacheValue39
 {
     private readonly byte _kind;
     private readonly IDBObjectStore? _value1;
     private readonly IDBIndex? _value2;
     private readonly IDBCursor? _value3;
 
-    private StructuralCacheValue38(IDBObjectStore value)
+    private StructuralCacheValue39(IDBObjectStore value)
     {
         _kind = 1;
         _value1 = value;
@@ -1161,7 +1161,7 @@ public readonly struct StructuralCacheValue38
         _value3 = default;
     }
 
-    private StructuralCacheValue38(IDBIndex value)
+    private StructuralCacheValue39(IDBIndex value)
     {
         _kind = 2;
         _value1 = default;
@@ -1169,7 +1169,7 @@ public readonly struct StructuralCacheValue38
         _value3 = default;
     }
 
-    private StructuralCacheValue38(IDBCursor value)
+    private StructuralCacheValue39(IDBCursor value)
     {
         _kind = 3;
         _value1 = default;
@@ -1183,32 +1183,32 @@ public readonly struct StructuralCacheValue38
 
     public IDBCursor? AsIDBCursor => _kind == 3 ? _value3 : default;
 
-    public static StructuralCacheValue38 FromIDBObjectStore(IDBObjectStore value)
+    public static StructuralCacheValue39 FromIDBObjectStore(IDBObjectStore value)
         => new(value);
 
-    public static StructuralCacheValue38 FromIDBIndex(IDBIndex value)
+    public static StructuralCacheValue39 FromIDBIndex(IDBIndex value)
         => new(value);
 
-    public static StructuralCacheValue38 FromIDBCursor(IDBCursor value)
+    public static StructuralCacheValue39 FromIDBCursor(IDBCursor value)
         => new(value);
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly struct StructuralCacheValue40
+public readonly struct StructuralCacheValue41
 {
     private readonly byte _kind;
     private readonly IDBObjectStore? _value1;
     private readonly IDBIndex? _value2;
 
-    private StructuralCacheValue40(IDBObjectStore value)
+    private StructuralCacheValue41(IDBObjectStore value)
     {
         _kind = 1;
         _value1 = value;
         _value2 = default;
     }
 
-    private StructuralCacheValue40(IDBIndex value)
+    private StructuralCacheValue41(IDBIndex value)
     {
         _kind = 2;
         _value1 = default;
@@ -1219,29 +1219,29 @@ public readonly struct StructuralCacheValue40
 
     public IDBIndex? AsIDBIndex => _kind == 2 ? _value2 : default;
 
-    public static StructuralCacheValue40 FromIDBObjectStore(IDBObjectStore value)
+    public static StructuralCacheValue41 FromIDBObjectStore(IDBObjectStore value)
         => new(value);
 
-    public static StructuralCacheValue40 FromIDBIndex(IDBIndex value)
+    public static StructuralCacheValue41 FromIDBIndex(IDBIndex value)
         => new(value);
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly struct StructuralCacheValue53
+public readonly struct StructuralCacheValue54
 {
     private readonly byte _kind;
     private readonly IBufferSource? _value1;
     private readonly JsonWebKey? _value2;
 
-    private StructuralCacheValue53(IBufferSource value)
+    private StructuralCacheValue54(IBufferSource value)
     {
         _kind = 1;
         _value1 = value;
         _value2 = default;
     }
 
-    private StructuralCacheValue53(JsonWebKey value)
+    private StructuralCacheValue54(JsonWebKey value)
     {
         _kind = 2;
         _value1 = default;
@@ -1252,65 +1252,65 @@ public readonly struct StructuralCacheValue53
 
     public JsonWebKey? AsJsonWebKey => _kind == 2 ? _value2 : default;
 
-    public static StructuralCacheValue53 FromIBufferSource(IBufferSource value)
+    public static StructuralCacheValue54 FromIBufferSource(IBufferSource value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(ArrayBuffer value)
+    public static implicit operator StructuralCacheValue54(ArrayBuffer value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(DataView value)
+    public static implicit operator StructuralCacheValue54(DataView value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Uint8Array value)
+    public static implicit operator StructuralCacheValue54(Uint8Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Uint8ClampedArray value)
+    public static implicit operator StructuralCacheValue54(Uint8ClampedArray value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Int8Array value)
+    public static implicit operator StructuralCacheValue54(Int8Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Int16Array value)
+    public static implicit operator StructuralCacheValue54(Int16Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Uint16Array value)
+    public static implicit operator StructuralCacheValue54(Uint16Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Int32Array value)
+    public static implicit operator StructuralCacheValue54(Int32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Uint32Array value)
+    public static implicit operator StructuralCacheValue54(Uint32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Float16Array value)
+    public static implicit operator StructuralCacheValue54(Float16Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Float32Array value)
+    public static implicit operator StructuralCacheValue54(Float32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(Float64Array value)
+    public static implicit operator StructuralCacheValue54(Float64Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(BigInt64Array value)
+    public static implicit operator StructuralCacheValue54(BigInt64Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(BigUint64Array value)
+    public static implicit operator StructuralCacheValue54(BigUint64Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue53(JsonWebKey value)
+    public static implicit operator StructuralCacheValue54(JsonWebKey value)
         => new(value);
 }
 
 [ECMAScript]
 [Description("@#")]
-public readonly struct StructuralCacheValue60
+public readonly struct StructuralCacheValue61
 {
     private readonly byte _kind;
     private readonly IBufferSource? _value1;
     private readonly Blob? _value2;
     private readonly string? _value3;
 
-    private StructuralCacheValue60(IBufferSource value)
+    private StructuralCacheValue61(IBufferSource value)
     {
         _kind = 1;
         _value1 = value;
@@ -1318,7 +1318,7 @@ public readonly struct StructuralCacheValue60
         _value3 = default;
     }
 
-    private StructuralCacheValue60(Blob value)
+    private StructuralCacheValue61(Blob value)
     {
         _kind = 2;
         _value1 = default;
@@ -1326,7 +1326,7 @@ public readonly struct StructuralCacheValue60
         _value3 = default;
     }
 
-    private StructuralCacheValue60(string value)
+    private StructuralCacheValue61(string value)
     {
         _kind = 3;
         _value1 = default;
@@ -1340,55 +1340,55 @@ public readonly struct StructuralCacheValue60
 
     public string? AsString => _kind == 3 ? _value3 : default;
 
-    public static StructuralCacheValue60 FromIBufferSource(IBufferSource value)
+    public static StructuralCacheValue61 FromIBufferSource(IBufferSource value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(ArrayBuffer value)
+    public static implicit operator StructuralCacheValue61(ArrayBuffer value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(DataView value)
+    public static implicit operator StructuralCacheValue61(DataView value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Uint8Array value)
+    public static implicit operator StructuralCacheValue61(Uint8Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Uint8ClampedArray value)
+    public static implicit operator StructuralCacheValue61(Uint8ClampedArray value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Int8Array value)
+    public static implicit operator StructuralCacheValue61(Int8Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Int16Array value)
+    public static implicit operator StructuralCacheValue61(Int16Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Uint16Array value)
+    public static implicit operator StructuralCacheValue61(Uint16Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Int32Array value)
+    public static implicit operator StructuralCacheValue61(Int32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Uint32Array value)
+    public static implicit operator StructuralCacheValue61(Uint32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Float16Array value)
+    public static implicit operator StructuralCacheValue61(Float16Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Float32Array value)
+    public static implicit operator StructuralCacheValue61(Float32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Float64Array value)
+    public static implicit operator StructuralCacheValue61(Float64Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(BigInt64Array value)
+    public static implicit operator StructuralCacheValue61(BigInt64Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(BigUint64Array value)
+    public static implicit operator StructuralCacheValue61(BigUint64Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(Blob value)
+    public static implicit operator StructuralCacheValue61(Blob value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue60(string value)
+    public static implicit operator StructuralCacheValue61(string value)
         => new(value);
 }
 
@@ -2970,18 +2970,18 @@ public static class SetValuesCollectionBuilder
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue14CollectionBuilder), nameof(StructuralCacheValue14CollectionBuilder.Create))]
-public readonly union StructuralCacheValue14(uint, uint[]) : IEnumerable<uint>
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue12CollectionBuilder), nameof(StructuralCacheValue12CollectionBuilder.Create))]
+public readonly union StructuralCacheValue12(uint, uint[]) : IEnumerable<uint>
 {
 
     public uint? AsUint => Value is uint value ? value : default(uint?);
 
     public uint[]? AsUintArray => Value is uint[] value ? value : default(uint[]?);
 
-    public static implicit operator StructuralCacheValue14(uint value)
+    public static implicit operator StructuralCacheValue12(uint value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue14(uint[] value)
+    public static implicit operator StructuralCacheValue12(uint[] value)
         => new(value);
 
     IEnumerator<uint> IEnumerable<uint>.GetEnumerator()
@@ -2992,27 +2992,27 @@ public readonly union StructuralCacheValue14(uint, uint[]) : IEnumerable<uint>
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class StructuralCacheValue14CollectionBuilder
+public static class StructuralCacheValue12CollectionBuilder
 {
-    public static StructuralCacheValue14 Create(ReadOnlySpan<uint> items)
+    public static StructuralCacheValue12 Create(ReadOnlySpan<uint> items)
         => items.ToArray();
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue25CollectionBuilder), nameof(StructuralCacheValue25CollectionBuilder.Create))]
-public readonly union StructuralCacheValue25(string, double[]) : IEnumerable<double>
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue26CollectionBuilder), nameof(StructuralCacheValue26CollectionBuilder.Create))]
+public readonly union StructuralCacheValue26(string, double[]) : IEnumerable<double>
 {
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public double[]? AsDoubleArray => Value is double[] value ? value : default(double[]?);
 
-    public static implicit operator StructuralCacheValue25(string value)
+    public static implicit operator StructuralCacheValue26(string value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue25(double[] value)
+    public static implicit operator StructuralCacheValue26(double[] value)
         => new(value);
 
     IEnumerator<double> IEnumerable<double>.GetEnumerator()
@@ -3023,40 +3023,9 @@ public readonly union StructuralCacheValue25(string, double[]) : IEnumerable<dou
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class StructuralCacheValue25CollectionBuilder
+public static class StructuralCacheValue26CollectionBuilder
 {
-    public static StructuralCacheValue25 Create(ReadOnlySpan<double> items)
-        => items.ToArray();
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue39CollectionBuilder), nameof(StructuralCacheValue39CollectionBuilder.Create))]
-public readonly union StructuralCacheValue39(string, string[]) : IEnumerable<string>
-{
-
-    public string? AsString => Value is string value ? value : default(string?);
-
-    public string[]? AsStringArray => Value is string[] value ? value : default(string[]?);
-
-    public static implicit operator StructuralCacheValue39(string value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue39(string[] value)
-        => new(value);
-
-    IEnumerator<string> IEnumerable<string>.GetEnumerator()
-        => ((IEnumerable<string>)(AsStringArray ?? Array.Empty<string>())).GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator()
-        => ((IEnumerable<string>)this).GetEnumerator();
-}
-
-[EditorBrowsable(EditorBrowsableState.Never)]
-public static class StructuralCacheValue39CollectionBuilder
-{
-    public static StructuralCacheValue39 Create(ReadOnlySpan<string> items)
+    public static StructuralCacheValue26 Create(ReadOnlySpan<double> items)
         => items.ToArray();
 }
 
@@ -3099,18 +3068,49 @@ public static class StructuralCacheValue3CollectionBuilder
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue42CollectionBuilder), nameof(StructuralCacheValue42CollectionBuilder.Create))]
-public readonly union StructuralCacheValue42(RouterRule, RouterRule[]) : IEnumerable<RouterRule>
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue40CollectionBuilder), nameof(StructuralCacheValue40CollectionBuilder.Create))]
+public readonly union StructuralCacheValue40(string, string[]) : IEnumerable<string>
+{
+
+    public string? AsString => Value is string value ? value : default(string?);
+
+    public string[]? AsStringArray => Value is string[] value ? value : default(string[]?);
+
+    public static implicit operator StructuralCacheValue40(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue40(string[] value)
+        => new(value);
+
+    IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        => ((IEnumerable<string>)(AsStringArray ?? Array.Empty<string>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<string>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue40CollectionBuilder
+{
+    public static StructuralCacheValue40 Create(ReadOnlySpan<string> items)
+        => items.ToArray();
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue43CollectionBuilder), nameof(StructuralCacheValue43CollectionBuilder.Create))]
+public readonly union StructuralCacheValue43(RouterRule, RouterRule[]) : IEnumerable<RouterRule>
 {
 
     public RouterRule? AsRouterRule => Value is RouterRule value ? value : default(RouterRule?);
 
     public RouterRule[]? AsRouterRuleArray => Value is RouterRule[] value ? value : default(RouterRule[]?);
 
-    public static implicit operator StructuralCacheValue42(RouterRule value)
+    public static implicit operator StructuralCacheValue43(RouterRule value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue42(RouterRule[] value)
+    public static implicit operator StructuralCacheValue43(RouterRule[] value)
         => new(value);
 
     IEnumerator<RouterRule> IEnumerable<RouterRule>.GetEnumerator()
@@ -3121,17 +3121,17 @@ public readonly union StructuralCacheValue42(RouterRule, RouterRule[]) : IEnumer
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class StructuralCacheValue42CollectionBuilder
+public static class StructuralCacheValue43CollectionBuilder
 {
-    public static StructuralCacheValue42 Create(ReadOnlySpan<RouterRule> items)
+    public static StructuralCacheValue43 Create(ReadOnlySpan<RouterRule> items)
         => items.ToArray();
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue47CollectionBuilder), nameof(StructuralCacheValue47CollectionBuilder.Create))]
-public readonly union StructuralCacheValue47(string[][], Dictionary<string, string>, string) : IEnumerable<string[]>
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue48CollectionBuilder), nameof(StructuralCacheValue48CollectionBuilder.Create))]
+public readonly union StructuralCacheValue48(string[][], Dictionary<string, string>, string) : IEnumerable<string[]>
 {
 
     public string[][]? AsStringArrayArray => Value is string[][] value ? value : default(string[][]?);
@@ -3140,13 +3140,13 @@ public readonly union StructuralCacheValue47(string[][], Dictionary<string, stri
 
     public string? AsString => Value is string value ? value : default(string?);
 
-    public static implicit operator StructuralCacheValue47(string[][] value)
+    public static implicit operator StructuralCacheValue48(string[][] value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue47(Dictionary<string, string> value)
+    public static implicit operator StructuralCacheValue48(Dictionary<string, string> value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue47(string value)
+    public static implicit operator StructuralCacheValue48(string value)
         => new(value);
 
     IEnumerator<string[]> IEnumerable<string[]>.GetEnumerator()
@@ -3157,27 +3157,27 @@ public readonly union StructuralCacheValue47(string[][], Dictionary<string, stri
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class StructuralCacheValue47CollectionBuilder
+public static class StructuralCacheValue48CollectionBuilder
 {
-    public static StructuralCacheValue47 Create(ReadOnlySpan<string[]> items)
+    public static StructuralCacheValue48 Create(ReadOnlySpan<string[]> items)
         => items.ToArray();
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue54CollectionBuilder), nameof(StructuralCacheValue54CollectionBuilder.Create))]
-public readonly union StructuralCacheValue54(Int32Array, GLint[]) : IEnumerable<GLint>
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue55CollectionBuilder), nameof(StructuralCacheValue55CollectionBuilder.Create))]
+public readonly union StructuralCacheValue55(Int32Array, GLint[]) : IEnumerable<GLint>
 {
 
     public Int32Array? AsInt32Array => Value is Int32Array value ? value : default(Int32Array?);
 
     public GLint[]? AsGLintArray => Value is GLint[] value ? value : default(GLint[]?);
 
-    public static implicit operator StructuralCacheValue54(Int32Array value)
+    public static implicit operator StructuralCacheValue55(Int32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue54(GLint[] value)
+    public static implicit operator StructuralCacheValue55(GLint[] value)
         => new(value);
 
     IEnumerator<GLint> IEnumerable<GLint>.GetEnumerator()
@@ -3188,27 +3188,27 @@ public readonly union StructuralCacheValue54(Int32Array, GLint[]) : IEnumerable<
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class StructuralCacheValue54CollectionBuilder
+public static class StructuralCacheValue55CollectionBuilder
 {
-    public static StructuralCacheValue54 Create(ReadOnlySpan<GLint> items)
+    public static StructuralCacheValue55 Create(ReadOnlySpan<GLint> items)
         => items.ToArray();
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue55CollectionBuilder), nameof(StructuralCacheValue55CollectionBuilder.Create))]
-public readonly union StructuralCacheValue55(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue56CollectionBuilder), nameof(StructuralCacheValue56CollectionBuilder.Create))]
+public readonly union StructuralCacheValue56(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
 
     public Int32Array? AsInt32Array => Value is Int32Array value ? value : default(Int32Array?);
 
     public GLsizei[]? AsGLsizeiArray => Value is GLsizei[] value ? value : default(GLsizei[]?);
 
-    public static implicit operator StructuralCacheValue55(Int32Array value)
+    public static implicit operator StructuralCacheValue56(Int32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue55(GLsizei[] value)
+    public static implicit operator StructuralCacheValue56(GLsizei[] value)
         => new(value);
 
     IEnumerator<GLsizei> IEnumerable<GLsizei>.GetEnumerator()
@@ -3219,27 +3219,27 @@ public readonly union StructuralCacheValue55(Int32Array, GLsizei[]) : IEnumerabl
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class StructuralCacheValue55CollectionBuilder
+public static class StructuralCacheValue56CollectionBuilder
 {
-    public static StructuralCacheValue55 Create(ReadOnlySpan<GLsizei> items)
+    public static StructuralCacheValue56 Create(ReadOnlySpan<GLsizei> items)
         => items.ToArray();
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue56CollectionBuilder), nameof(StructuralCacheValue56CollectionBuilder.Create))]
-public readonly union StructuralCacheValue56(Uint32Array, GLuint[]) : IEnumerable<GLuint>
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue57CollectionBuilder), nameof(StructuralCacheValue57CollectionBuilder.Create))]
+public readonly union StructuralCacheValue57(Uint32Array, GLuint[]) : IEnumerable<GLuint>
 {
 
     public Uint32Array? AsUint32Array => Value is Uint32Array value ? value : default(Uint32Array?);
 
     public GLuint[]? AsGLuintArray => Value is GLuint[] value ? value : default(GLuint[]?);
 
-    public static implicit operator StructuralCacheValue56(Uint32Array value)
+    public static implicit operator StructuralCacheValue57(Uint32Array value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue56(GLuint[] value)
+    public static implicit operator StructuralCacheValue57(GLuint[] value)
         => new(value);
 
     IEnumerator<GLuint> IEnumerable<GLuint>.GetEnumerator()
@@ -3250,27 +3250,27 @@ public readonly union StructuralCacheValue56(Uint32Array, GLuint[]) : IEnumerabl
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class StructuralCacheValue56CollectionBuilder
+public static class StructuralCacheValue57CollectionBuilder
 {
-    public static StructuralCacheValue56 Create(ReadOnlySpan<GLuint> items)
+    public static StructuralCacheValue57 Create(ReadOnlySpan<GLuint> items)
         => items.ToArray();
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue57CollectionBuilder), nameof(StructuralCacheValue57CollectionBuilder.Create))]
-public readonly union StructuralCacheValue57(uint, uint[]) : IEnumerable<uint>
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue58CollectionBuilder), nameof(StructuralCacheValue58CollectionBuilder.Create))]
+public readonly union StructuralCacheValue58(uint, uint[]) : IEnumerable<uint>
 {
 
     public uint? AsUint => Value is uint value ? value : default(uint?);
 
     public uint[]? AsUintArray => Value is uint[] value ? value : default(uint[]?);
 
-    public static implicit operator StructuralCacheValue57(uint value)
+    public static implicit operator StructuralCacheValue58(uint value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue57(uint[] value)
+    public static implicit operator StructuralCacheValue58(uint[] value)
         => new(value);
 
     IEnumerator<uint> IEnumerable<uint>.GetEnumerator()
@@ -3281,9 +3281,9 @@ public readonly union StructuralCacheValue57(uint, uint[]) : IEnumerable<uint>
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class StructuralCacheValue57CollectionBuilder
+public static class StructuralCacheValue58CollectionBuilder
 {
-    public static StructuralCacheValue57 Create(ReadOnlySpan<uint> items)
+    public static StructuralCacheValue58 Create(ReadOnlySpan<uint> items)
         => items.ToArray();
 }
 
@@ -6446,6 +6446,23 @@ public readonly union MediaStreamTrackOrHandle(MediaStreamTrack, MediaStreamTrac
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
+public readonly union MediaStreamTrackStats(MediaStreamTrackAudioStats, MediaStreamTrackVideoStats)
+{
+
+    public MediaStreamTrackAudioStats? AsMediaStreamTrackAudioStats => Value is MediaStreamTrackAudioStats value ? value : default(MediaStreamTrackAudioStats?);
+
+    public MediaStreamTrackVideoStats? AsMediaStreamTrackVideoStats => Value is MediaStreamTrackVideoStats value ? value : default(MediaStreamTrackVideoStats?);
+
+    public static implicit operator MediaStreamTrackStats(MediaStreamTrackAudioStats value)
+        => new(value);
+
+    public static implicit operator MediaStreamTrackStats(MediaStreamTrackVideoStats value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
 public readonly union MediaTrackCapabilitiesEchoCancellation(bool, string)
 {
 
@@ -7694,141 +7711,136 @@ public readonly union StructuralCacheValue(string, CanvasGradient, CanvasPattern
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue10(TrustedType, string)
-{
-
-    public TrustedType? AsTrustedType => Value is TrustedType value ? value : default(TrustedType?);
-
-    public string? AsString => Value is string value ? value : default(string?);
-
-    public static implicit operator StructuralCacheValue10(TrustedType value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue10(string value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue11(TrustedHTML, string)
-{
-
-    public TrustedHTML? AsTrustedHTML => Value is TrustedHTML value ? value : default(TrustedHTML?);
-
-    public string? AsString => Value is string value ? value : default(string?);
-
-    public static implicit operator StructuralCacheValue11(TrustedHTML value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue11(string value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue12(TrustedHTML, string)
-{
-
-    public TrustedHTML? AsTrustedHTML => Value is TrustedHTML value ? value : default(TrustedHTML?);
-
-    public string? AsString => Value is string value ? value : default(string?);
-
-    public static implicit operator StructuralCacheValue12(TrustedHTML value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue12(string value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue15(Element, CSSPseudoElement)
-{
-
-    public Element? AsElement => Value is Element value ? value : default(Element?);
-
-    public CSSPseudoElement? AsCSSPseudoElement => Value is CSSPseudoElement value ? value : default(CSSPseudoElement?);
-
-    public static implicit operator StructuralCacheValue15(Element value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue15(CSSPseudoElement value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue16(string, ElementCreationOptions)
-{
-
-    public string? AsString => Value is string value ? value : default(string?);
-
-    public ElementCreationOptions? AsElementCreationOptions => Value is ElementCreationOptions value ? value : default(ElementCreationOptions?);
-
-    public static implicit operator StructuralCacheValue16(string value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue16(ElementCreationOptions value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue17(bool, ImportNodeOptions)
-{
-
-    public bool? AsBool => Value is bool value ? value : default(bool?);
-
-    public ImportNodeOptions? AsImportNodeOptions => Value is ImportNodeOptions value ? value : default(ImportNodeOptions?);
-
-    public static implicit operator StructuralCacheValue17(bool value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue17(ImportNodeOptions value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue18(bool, double, string)
-{
-
-    public bool? AsBool => Value is bool value ? value : default(bool?);
-
-    public double? AsDouble => Value is double value ? value : default(double?);
-
-    public string? AsString => Value is string value ? value : default(string?);
-
-    public static implicit operator StructuralCacheValue18(bool value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue18(double value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue18(string value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue19(TogglePopoverOptions, bool)
+public readonly union StructuralCacheValue10(TogglePopoverOptions, bool)
 {
 
     public TogglePopoverOptions? AsTogglePopoverOptions => Value is TogglePopoverOptions value ? value : default(TogglePopoverOptions?);
 
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public static implicit operator StructuralCacheValue19(TogglePopoverOptions value)
+    public static implicit operator StructuralCacheValue10(TogglePopoverOptions value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue19(bool value)
+    public static implicit operator StructuralCacheValue10(bool value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue13(ViewTransitionUpdateCallback, StartViewTransitionOptions)
+{
+
+    public ViewTransitionUpdateCallback? AsViewTransitionUpdateCallback => Value is ViewTransitionUpdateCallback value ? value : default(ViewTransitionUpdateCallback?);
+
+    public StartViewTransitionOptions? AsStartViewTransitionOptions => Value is StartViewTransitionOptions value ? value : default(StartViewTransitionOptions?);
+
+    public static implicit operator StructuralCacheValue13(ViewTransitionUpdateCallback value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue13(StartViewTransitionOptions value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue14(bool, ScrollIntoViewOptions)
+{
+
+    public bool? AsBool => Value is bool value ? value : default(bool?);
+
+    public ScrollIntoViewOptions? AsScrollIntoViewOptions => Value is ScrollIntoViewOptions value ? value : default(ScrollIntoViewOptions?);
+
+    public static implicit operator StructuralCacheValue14(bool value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue14(ScrollIntoViewOptions value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue15(TrustedType, string)
+{
+
+    public TrustedType? AsTrustedType => Value is TrustedType value ? value : default(TrustedType?);
+
+    public string? AsString => Value is string value ? value : default(string?);
+
+    public static implicit operator StructuralCacheValue15(TrustedType value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue15(string value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue16(TrustedHTML, string)
+{
+
+    public TrustedHTML? AsTrustedHTML => Value is TrustedHTML value ? value : default(TrustedHTML?);
+
+    public string? AsString => Value is string value ? value : default(string?);
+
+    public static implicit operator StructuralCacheValue16(TrustedHTML value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue16(string value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue17(TrustedHTML, string)
+{
+
+    public TrustedHTML? AsTrustedHTML => Value is TrustedHTML value ? value : default(TrustedHTML?);
+
+    public string? AsString => Value is string value ? value : default(string?);
+
+    public static implicit operator StructuralCacheValue17(TrustedHTML value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue17(string value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue18(Element, CSSPseudoElement)
+{
+
+    public Element? AsElement => Value is Element value ? value : default(Element?);
+
+    public CSSPseudoElement? AsCSSPseudoElement => Value is CSSPseudoElement value ? value : default(CSSPseudoElement?);
+
+    public static implicit operator StructuralCacheValue18(Element value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue18(CSSPseudoElement value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue19(string, ElementCreationOptions)
+{
+
+    public string? AsString => Value is string value ? value : default(string?);
+
+    public ElementCreationOptions? AsElementCreationOptions => Value is ElementCreationOptions value ? value : default(ElementCreationOptions?);
+
+    public static implicit operator StructuralCacheValue19(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue19(ElementCreationOptions value)
         => new(value);
 }
 
@@ -7852,31 +7864,31 @@ public readonly union StructuralCacheValue2(double, DOMPointInit)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue20(AddEventListenerOptions, bool)
+public readonly union StructuralCacheValue20(bool, ImportNodeOptions)
 {
-
-    public AddEventListenerOptions? AsAddEventListenerOptions => Value is AddEventListenerOptions value ? value : default(AddEventListenerOptions?);
 
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public static implicit operator StructuralCacheValue20(AddEventListenerOptions value)
-        => new(value);
+    public ImportNodeOptions? AsImportNodeOptions => Value is ImportNodeOptions value ? value : default(ImportNodeOptions?);
 
     public static implicit operator StructuralCacheValue20(bool value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue20(ImportNodeOptions value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue21(EventListenerOptions, bool)
+public readonly union StructuralCacheValue21(AddEventListenerOptions, bool)
 {
 
-    public EventListenerOptions? AsEventListenerOptions => Value is EventListenerOptions value ? value : default(EventListenerOptions?);
+    public AddEventListenerOptions? AsAddEventListenerOptions => Value is AddEventListenerOptions value ? value : default(AddEventListenerOptions?);
 
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public static implicit operator StructuralCacheValue21(EventListenerOptions value)
+    public static implicit operator StructuralCacheValue21(AddEventListenerOptions value)
         => new(value);
 
     public static implicit operator StructuralCacheValue21(bool value)
@@ -7886,82 +7898,82 @@ public readonly union StructuralCacheValue21(EventListenerOptions, bool)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue22(string, PerformanceMeasureOptions)
+public readonly union StructuralCacheValue22(EventListenerOptions, bool)
+{
+
+    public EventListenerOptions? AsEventListenerOptions => Value is EventListenerOptions value ? value : default(EventListenerOptions?);
+
+    public bool? AsBool => Value is bool value ? value : default(bool?);
+
+    public static implicit operator StructuralCacheValue22(EventListenerOptions value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue22(bool value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue23(string, PerformanceMeasureOptions)
 {
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public PerformanceMeasureOptions? AsPerformanceMeasureOptions => Value is PerformanceMeasureOptions value ? value : default(PerformanceMeasureOptions?);
 
-    public static implicit operator StructuralCacheValue22(string value)
+    public static implicit operator StructuralCacheValue23(string value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue22(PerformanceMeasureOptions value)
+    public static implicit operator StructuralCacheValue23(PerformanceMeasureOptions value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue23(string, ArrayBuffer)
+public readonly union StructuralCacheValue24(string, ArrayBuffer)
 {
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public ArrayBuffer? AsArrayBuffer => Value is ArrayBuffer value ? value : default(ArrayBuffer?);
 
-    public static implicit operator StructuralCacheValue23(string value)
+    public static implicit operator StructuralCacheValue24(string value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue23(ArrayBuffer value)
+    public static implicit operator StructuralCacheValue24(ArrayBuffer value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue24(Blob, MediaSource)
+public readonly union StructuralCacheValue25(Blob, MediaSource)
 {
 
     public Blob? AsBlob => Value is Blob value ? value : default(Blob?);
 
     public MediaSource? AsMediaSource => Value is MediaSource value ? value : default(MediaSource?);
 
-    public static implicit operator StructuralCacheValue24(Blob value)
+    public static implicit operator StructuralCacheValue25(Blob value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue24(MediaSource value)
+    public static implicit operator StructuralCacheValue25(MediaSource value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue26(HTMLCollection, Element)
+public readonly union StructuralCacheValue27(HTMLCollection, Element)
 {
 
     public HTMLCollection? AsHTMLCollection => Value is HTMLCollection value ? value : default(HTMLCollection?);
 
     public Element? AsElement => Value is Element value ? value : default(Element?);
 
-    public static implicit operator StructuralCacheValue26(HTMLCollection value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue26(Element value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue27(RadioNodeList, Element)
-{
-
-    public RadioNodeList? AsRadioNodeList => Value is RadioNodeList value ? value : default(RadioNodeList?);
-
-    public Element? AsElement => Value is Element value ? value : default(Element?);
-
-    public static implicit operator StructuralCacheValue27(RadioNodeList value)
+    public static implicit operator StructuralCacheValue27(HTMLCollection value)
         => new(value);
 
     public static implicit operator StructuralCacheValue27(Element value)
@@ -7971,41 +7983,58 @@ public readonly union StructuralCacheValue27(RadioNodeList, Element)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue28(HTMLOptionElement, HTMLOptGroupElement)
+public readonly union StructuralCacheValue28(RadioNodeList, Element)
+{
+
+    public RadioNodeList? AsRadioNodeList => Value is RadioNodeList value ? value : default(RadioNodeList?);
+
+    public Element? AsElement => Value is Element value ? value : default(Element?);
+
+    public static implicit operator StructuralCacheValue28(RadioNodeList value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue28(Element value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue29(HTMLOptionElement, HTMLOptGroupElement)
 {
 
     public HTMLOptionElement? AsHTMLOptionElement => Value is HTMLOptionElement value ? value : default(HTMLOptionElement?);
 
     public HTMLOptGroupElement? AsHTMLOptGroupElement => Value is HTMLOptGroupElement value ? value : default(HTMLOptGroupElement?);
 
-    public static implicit operator StructuralCacheValue28(HTMLOptionElement value)
+    public static implicit operator StructuralCacheValue29(HTMLOptionElement value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue28(HTMLOptGroupElement value)
+    public static implicit operator StructuralCacheValue29(HTMLOptGroupElement value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue29(HTMLElement, int)
+public readonly union StructuralCacheValue30(HTMLElement, int)
 {
 
     public HTMLElement? AsHTMLElement => Value is HTMLElement value ? value : default(HTMLElement?);
 
     public int? AsInt => Value is int value ? value : default(int?);
 
-    public static implicit operator StructuralCacheValue29(HTMLElement value)
+    public static implicit operator StructuralCacheValue30(HTMLElement value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue29(int value)
+    public static implicit operator StructuralCacheValue30(int value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue30(VideoTrack, AudioTrack, TextTrack)
+public readonly union StructuralCacheValue31(VideoTrack, AudioTrack, TextTrack)
 {
 
     public VideoTrack? AsVideoTrack => Value is VideoTrack value ? value : default(VideoTrack?);
@@ -8014,71 +8043,71 @@ public readonly union StructuralCacheValue30(VideoTrack, AudioTrack, TextTrack)
 
     public TextTrack? AsTextTrack => Value is TextTrack value ? value : default(TextTrack?);
 
-    public static implicit operator StructuralCacheValue30(VideoTrack value)
+    public static implicit operator StructuralCacheValue31(VideoTrack value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue30(AudioTrack value)
+    public static implicit operator StructuralCacheValue31(AudioTrack value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue30(TextTrack value)
+    public static implicit operator StructuralCacheValue31(TextTrack value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue31(RadioNodeList, Element)
+public readonly union StructuralCacheValue32(RadioNodeList, Element)
 {
 
     public RadioNodeList? AsRadioNodeList => Value is RadioNodeList value ? value : default(RadioNodeList?);
 
     public Element? AsElement => Value is Element value ? value : default(Element?);
 
-    public static implicit operator StructuralCacheValue31(RadioNodeList value)
+    public static implicit operator StructuralCacheValue32(RadioNodeList value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue31(Element value)
+    public static implicit operator StructuralCacheValue32(Element value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue32(Element, Text)
+public readonly union StructuralCacheValue33(Element, Text)
 {
 
     public Element? AsElement => Value is Element value ? value : default(Element?);
 
     public Text? AsText => Value is Text value ? value : default(Text?);
 
-    public static implicit operator StructuralCacheValue32(Element value)
+    public static implicit operator StructuralCacheValue33(Element value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue32(Text value)
+    public static implicit operator StructuralCacheValue33(Text value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue33(Path2D, string)
+public readonly union StructuralCacheValue34(Path2D, string)
 {
 
     public Path2D? AsPath2D => Value is Path2D value ? value : default(Path2D?);
 
     public string? AsString => Value is string value ? value : default(string?);
 
-    public static implicit operator StructuralCacheValue33(Path2D value)
+    public static implicit operator StructuralCacheValue34(Path2D value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue33(string value)
+    public static implicit operator StructuralCacheValue34(string value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue34(FileRef, string, FormData)
+public readonly union StructuralCacheValue35(FileRef, string, FormData)
 {
 
     public FileRef? AsFile => Value is FileRef value ? value : default(FileRef?);
@@ -8087,64 +8116,64 @@ public readonly union StructuralCacheValue34(FileRef, string, FormData)
 
     public FormData? AsFormData => Value is FormData value ? value : default(FormData?);
 
-    public static implicit operator StructuralCacheValue34(FileRef value)
+    public static implicit operator StructuralCacheValue35(FileRef value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue34(string value)
+    public static implicit operator StructuralCacheValue35(string value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue34(FormData value)
+    public static implicit operator StructuralCacheValue35(FormData value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue35(SanitizerConfig, SanitizerPresets)
+public readonly union StructuralCacheValue36(SanitizerConfig, SanitizerPresets)
 {
 
     public SanitizerConfig? AsSanitizerConfig => Value is SanitizerConfig value ? value : default(SanitizerConfig?);
 
     public SanitizerPresets? AsSanitizerPresets => Value is SanitizerPresets value ? value : default(SanitizerPresets?);
 
-    public static implicit operator StructuralCacheValue35(SanitizerConfig value)
+    public static implicit operator StructuralCacheValue36(SanitizerConfig value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue35(SanitizerPresets value)
+    public static implicit operator StructuralCacheValue36(SanitizerPresets value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue36(TrustedScriptURL, string)
+public readonly union StructuralCacheValue37(TrustedScriptURL, string)
 {
 
     public TrustedScriptURL? AsTrustedScriptURL => Value is TrustedScriptURL value ? value : default(TrustedScriptURL?);
 
     public string? AsString => Value is string value ? value : default(string?);
 
-    public static implicit operator StructuralCacheValue36(TrustedScriptURL value)
+    public static implicit operator StructuralCacheValue37(TrustedScriptURL value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue36(string value)
+    public static implicit operator StructuralCacheValue37(string value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue37(string, SharedWorkerOptions)
+public readonly union StructuralCacheValue38(string, SharedWorkerOptions)
 {
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public SharedWorkerOptions? AsSharedWorkerOptions => Value is SharedWorkerOptions value ? value : default(SharedWorkerOptions?);
 
-    public static implicit operator StructuralCacheValue37(string value)
+    public static implicit operator StructuralCacheValue38(string value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue37(SharedWorkerOptions value)
+    public static implicit operator StructuralCacheValue38(SharedWorkerOptions value)
         => new(value);
 }
 
@@ -8168,24 +8197,24 @@ public readonly union StructuralCacheValue4(double, KeyframeAnimationOptions)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue41(Element, DocumentRef)
+public readonly union StructuralCacheValue42(Element, DocumentRef)
 {
 
     public Element? AsElement => Value is Element value ? value : default(Element?);
 
     public DocumentRef? AsDocumentRef => Value is DocumentRef value ? value : default(DocumentRef?);
 
-    public static implicit operator StructuralCacheValue41(Element value)
+    public static implicit operator StructuralCacheValue42(Element value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue41(DocumentRef value)
+    public static implicit operator StructuralCacheValue42(DocumentRef value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue43(Client, ServiceWorker, MessagePort)
+public readonly union StructuralCacheValue44(Client, ServiceWorker, MessagePort)
 {
 
     public Client? AsClient => Value is Client value ? value : default(Client?);
@@ -8194,98 +8223,81 @@ public readonly union StructuralCacheValue43(Client, ServiceWorker, MessagePort)
 
     public MessagePort? AsMessagePort => Value is MessagePort value ? value : default(MessagePort?);
 
-    public static implicit operator StructuralCacheValue43(Client value)
+    public static implicit operator StructuralCacheValue44(Client value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue43(ServiceWorker value)
+    public static implicit operator StructuralCacheValue44(ServiceWorker value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue43(MessagePort value)
+    public static implicit operator StructuralCacheValue44(MessagePort value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue44(string, TrustedScriptURL)
+public readonly union StructuralCacheValue45(string, TrustedScriptURL)
 {
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public TrustedScriptURL? AsTrustedScriptURL => Value is TrustedScriptURL value ? value : default(TrustedScriptURL?);
 
-    public static implicit operator StructuralCacheValue44(string value)
+    public static implicit operator StructuralCacheValue45(string value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue44(TrustedScriptURL value)
+    public static implicit operator StructuralCacheValue45(TrustedScriptURL value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue45(Element, CSSPseudoElement)
+public readonly union StructuralCacheValue46(Element, CSSPseudoElement)
 {
 
     public Element? AsElement => Value is Element value ? value : default(Element?);
 
     public CSSPseudoElement? AsCSSPseudoElement => Value is CSSPseudoElement value ? value : default(CSSPseudoElement?);
 
-    public static implicit operator StructuralCacheValue45(Element value)
+    public static implicit operator StructuralCacheValue46(Element value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue45(CSSPseudoElement value)
+    public static implicit operator StructuralCacheValue46(CSSPseudoElement value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue46(DocumentRef, XMLHttpRequestBodyInit)
+public readonly union StructuralCacheValue47(DocumentRef, XMLHttpRequestBodyInit)
 {
 
     public DocumentRef? AsDocumentRef => Value is DocumentRef value ? value : default(DocumentRef?);
 
     public XMLHttpRequestBodyInit? AsXMLHttpRequestBodyInit => Value is XMLHttpRequestBodyInit value ? value : default(XMLHttpRequestBodyInit?);
 
-    public static implicit operator StructuralCacheValue46(DocumentRef value)
+    public static implicit operator StructuralCacheValue47(DocumentRef value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue46(XMLHttpRequestBodyInit value)
+    public static implicit operator StructuralCacheValue47(XMLHttpRequestBodyInit value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue48(double, KeyframeEffectOptions)
+public readonly union StructuralCacheValue49(double, KeyframeEffectOptions)
 {
 
     public double? AsDouble => Value is double value ? value : default(double?);
 
     public KeyframeEffectOptions? AsKeyframeEffectOptions => Value is KeyframeEffectOptions value ? value : default(KeyframeEffectOptions?);
 
-    public static implicit operator StructuralCacheValue48(double value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue48(KeyframeEffectOptions value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue49(double, EffectTiming)
-{
-
-    public double? AsDouble => Value is double value ? value : default(double?);
-
-    public EffectTiming? AsEffectTiming => Value is EffectTiming value ? value : default(EffectTiming?);
-
     public static implicit operator StructuralCacheValue49(double value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue49(EffectTiming value)
+    public static implicit operator StructuralCacheValue49(KeyframeEffectOptions value)
         => new(value);
 }
 
@@ -8309,85 +8321,85 @@ public readonly union StructuralCacheValue5(HTMLCanvasElement, OffscreenCanvas)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue50(string, uint)
+public readonly union StructuralCacheValue50(double, EffectTiming)
+{
+
+    public double? AsDouble => Value is double value ? value : default(double?);
+
+    public EffectTiming? AsEffectTiming => Value is EffectTiming value ? value : default(EffectTiming?);
+
+    public static implicit operator StructuralCacheValue50(double value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(EffectTiming value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue51(string, uint)
 {
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public uint? AsUint => Value is uint value ? value : default(uint?);
 
-    public static implicit operator StructuralCacheValue50(string value)
+    public static implicit operator StructuralCacheValue51(string value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue50(uint value)
+    public static implicit operator StructuralCacheValue51(uint value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue51(string, AudioSinkInfo)
+public readonly union StructuralCacheValue52(string, AudioSinkInfo)
 {
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public AudioSinkInfo? AsAudioSinkInfo => Value is AudioSinkInfo value ? value : default(AudioSinkInfo?);
 
-    public static implicit operator StructuralCacheValue51(string value)
+    public static implicit operator StructuralCacheValue52(string value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue51(AudioSinkInfo value)
+    public static implicit operator StructuralCacheValue52(AudioSinkInfo value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue52(string, AudioSinkOptions)
+public readonly union StructuralCacheValue53(string, AudioSinkOptions)
 {
 
     public string? AsString => Value is string value ? value : default(string?);
 
     public AudioSinkOptions? AsAudioSinkOptions => Value is AudioSinkOptions value ? value : default(AudioSinkOptions?);
 
-    public static implicit operator StructuralCacheValue52(string value)
+    public static implicit operator StructuralCacheValue53(string value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue52(AudioSinkOptions value)
+    public static implicit operator StructuralCacheValue53(AudioSinkOptions value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue58(MediaStreamTrack, string)
+public readonly union StructuralCacheValue59(MediaStreamTrack, string)
 {
 
     public MediaStreamTrack? AsMediaStreamTrack => Value is MediaStreamTrack value ? value : default(MediaStreamTrack?);
 
     public string? AsString => Value is string value ? value : default(string?);
 
-    public static implicit operator StructuralCacheValue58(MediaStreamTrack value)
+    public static implicit operator StructuralCacheValue59(MediaStreamTrack value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue58(string value)
-        => new(value);
-}
-
-[ECMAScript]
-[System.Runtime.CompilerServices.Union]
-[Description("@#")]
-public readonly union StructuralCacheValue59(RTCEncodedVideoFrame, RTCEncodedAudioFrame)
-{
-
-    public RTCEncodedVideoFrame? AsRTCEncodedVideoFrame => Value is RTCEncodedVideoFrame value ? value : default(RTCEncodedVideoFrame?);
-
-    public RTCEncodedAudioFrame? AsRTCEncodedAudioFrame => Value is RTCEncodedAudioFrame value ? value : default(RTCEncodedAudioFrame?);
-
-    public static implicit operator StructuralCacheValue59(RTCEncodedVideoFrame value)
-        => new(value);
-
-    public static implicit operator StructuralCacheValue59(RTCEncodedAudioFrame value)
+    public static implicit operator StructuralCacheValue59(string value)
         => new(value);
 }
 
@@ -8411,34 +8423,56 @@ public readonly union StructuralCacheValue6(TrustedHTML, string)
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue8(ViewTransitionUpdateCallback, StartViewTransitionOptions)
+public readonly union StructuralCacheValue60(RTCEncodedVideoFrame, RTCEncodedAudioFrame)
 {
 
-    public ViewTransitionUpdateCallback? AsViewTransitionUpdateCallback => Value is ViewTransitionUpdateCallback value ? value : default(ViewTransitionUpdateCallback?);
+    public RTCEncodedVideoFrame? AsRTCEncodedVideoFrame => Value is RTCEncodedVideoFrame value ? value : default(RTCEncodedVideoFrame?);
 
-    public StartViewTransitionOptions? AsStartViewTransitionOptions => Value is StartViewTransitionOptions value ? value : default(StartViewTransitionOptions?);
+    public RTCEncodedAudioFrame? AsRTCEncodedAudioFrame => Value is RTCEncodedAudioFrame value ? value : default(RTCEncodedAudioFrame?);
 
-    public static implicit operator StructuralCacheValue8(ViewTransitionUpdateCallback value)
+    public static implicit operator StructuralCacheValue60(RTCEncodedVideoFrame value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue8(StartViewTransitionOptions value)
+    public static implicit operator StructuralCacheValue60(RTCEncodedAudioFrame value)
         => new(value);
 }
 
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly union StructuralCacheValue9(bool, ScrollIntoViewOptions)
+public readonly union StructuralCacheValue8(MediaStreamTrackAudioStats, MediaStreamTrackVideoStats)
+{
+
+    public MediaStreamTrackAudioStats? AsMediaStreamTrackAudioStats => Value is MediaStreamTrackAudioStats value ? value : default(MediaStreamTrackAudioStats?);
+
+    public MediaStreamTrackVideoStats? AsMediaStreamTrackVideoStats => Value is MediaStreamTrackVideoStats value ? value : default(MediaStreamTrackVideoStats?);
+
+    public static implicit operator StructuralCacheValue8(MediaStreamTrackAudioStats value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue8(MediaStreamTrackVideoStats value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly union StructuralCacheValue9(bool, double, string)
 {
 
     public bool? AsBool => Value is bool value ? value : default(bool?);
 
-    public ScrollIntoViewOptions? AsScrollIntoViewOptions => Value is ScrollIntoViewOptions value ? value : default(ScrollIntoViewOptions?);
+    public double? AsDouble => Value is double value ? value : default(double?);
+
+    public string? AsString => Value is string value ? value : default(string?);
 
     public static implicit operator StructuralCacheValue9(bool value)
         => new(value);
 
-    public static implicit operator StructuralCacheValue9(ScrollIntoViewOptions value)
+    public static implicit operator StructuralCacheValue9(double value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue9(string value)
         => new(value);
 }
 

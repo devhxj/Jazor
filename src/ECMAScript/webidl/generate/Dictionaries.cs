@@ -244,11 +244,11 @@ public record FontFaceSetLoadEventInit(
     [property: Description("@#fontfaces")]FontFace[]? Fontfaces = default) : EventInit;
 
 /// <summary>
-/// <see href="https://drafts.csswg.org/css-mixins-1/#dictdef-functionparameter">CSS Custom Functions and Mixins Module Level 1: 8.1 The CSSFunctionRule Interface</see>
+/// <see href="https://drafts.csswg.org/css-mixins-1/#dictdef-functionparameter">CSS Custom Functions and Mixins Module Level 1: 7.1 The CSSFunctionRule Interface</see>
 /// </summary>
-/// <param name="Name">The name of the function parameter. <see href="https://drafts.csswg.org/css-mixins-1/#dom-functionparameter-name">CSS Custom Functions and Mixins Module Level 1: 8.1 The CSSFunctionRule Interface</see></param>
-/// <param name="Type"><see href="https://drafts.csswg.org/css-mixins-1/#dom-functionparameter-type">CSS Custom Functions and Mixins Module Level 1: 8.1 The CSSFunctionRule Interface</see></param>
-/// <param name="DefaultValue"><see href="https://drafts.csswg.org/css-mixins-1/#dom-functionparameter-defaultvalue">CSS Custom Functions and Mixins Module Level 1: 8.1 The CSSFunctionRule Interface</see></param>
+/// <param name="Name">The name of the function parameter. <see href="https://drafts.csswg.org/css-mixins-1/#dom-functionparameter-name">CSS Custom Functions and Mixins Module Level 1: 7.1 The CSSFunctionRule Interface</see></param>
+/// <param name="Type"><see href="https://drafts.csswg.org/css-mixins-1/#dom-functionparameter-type">CSS Custom Functions and Mixins Module Level 1: 7.1 The CSSFunctionRule Interface</see></param>
+/// <param name="DefaultValue"><see href="https://drafts.csswg.org/css-mixins-1/#dom-functionparameter-defaultvalue">CSS Custom Functions and Mixins Module Level 1: 7.1 The CSSFunctionRule Interface</see></param>
 [ECMAScript]
 [Description("@#FunctionParameter")]
 public record FunctionParameter(
@@ -815,25 +815,6 @@ public record AnimationPlaybackEventInit(
     [property: Description("@#timelineTime")]CSSNumberish? TimelineTime = null) : EventInit;
 
 /// <summary>
-/// <see href="https://drafts.csswg.org/web-animations-2/#dictdef-animationtriggeroptions">Web Animations Module Level 2: 4.17 The AnimationTriggerOptions dictionary</see>
-/// </summary>
-/// <param name="Timeline"><see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggeroptions-timeline">Web Animations Module Level 2: 4.17 The AnimationTriggerOptions dictionary</see></param>
-/// <param name="Behavior"><see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggeroptions-behavior">Web Animations Module Level 2: 4.17 The AnimationTriggerOptions dictionary</see></param>
-/// <param name="RangeStart"><see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggeroptions-rangestart">Web Animations Module Level 2: 4.17 The AnimationTriggerOptions dictionary</see></param>
-/// <param name="RangeEnd"><see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggeroptions-rangeend">Web Animations Module Level 2: 4.17 The AnimationTriggerOptions dictionary</see></param>
-/// <param name="ExitRangeStart"><see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggeroptions-exitrangestart">Web Animations Module Level 2: 4.17 The AnimationTriggerOptions dictionary</see></param>
-/// <param name="ExitRangeEnd"><see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggeroptions-exitrangeend">Web Animations Module Level 2: 4.17 The AnimationTriggerOptions dictionary</see></param>
-[ECMAScript]
-[Description("@#AnimationTriggerOptions")]
-public record AnimationTriggerOptions(
-    [property: Description("@#timeline")]AnimationTimeline? Timeline = default,
-    [property: Description("@#behavior")]AnimationTriggerBehavior? Behavior = AnimationTriggerBehavior.Once,
-    [property: Description("@#rangeStart")]AnimationTriggerOptionsRangeStart? RangeStart = default,
-    [property: Description("@#rangeEnd")]AnimationTriggerOptionsRangeEnd? RangeEnd = default,
-    [property: Description("@#exitRangeStart")]AnimationTriggerOptionsExitRangeStart? ExitRangeStart = default,
-    [property: Description("@#exitRangeEnd")]AnimationTriggerOptionsExitRangeEnd? ExitRangeEnd = default);
-
-/// <summary>
 /// <see href="https://drafts.csswg.org/web-animations-2/#dictdef-timelinerangeoffset">Web Animations Module Level 2: 4.14 The Animatable interface mixin</see>
 /// </summary>
 /// <param name="RangeName"><see href="https://drafts.csswg.org/web-animations-2/#dom-timelinerangeoffset-rangename">Web Animations Module Level 2: 4.14 The Animatable interface mixin</see></param>
@@ -1071,32 +1052,6 @@ public record FullscreenOptions(
 }
 
 /// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasrenderingcontext2dsettings">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-/// </summary>
-/// <param name="Alpha"><see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-alpha">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
-/// <param name="Desynchronized"><see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-desynchronized">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
-/// <param name="ColorSpace"><see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-colorspace">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
-/// <param name="ColorType"><see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-colortype">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
-/// <param name="WillReadFrequently"><see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-willreadfrequently">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
-[ECMAScript]
-[Description("@#CanvasRenderingContext2DSettings")]
-public record CanvasRenderingContext2DSettings(
-    [property: Description("@#alpha")]bool Alpha = false,
-    [property: Description("@#desynchronized")]bool Desynchronized = false,
-    [property: Description("@#colorSpace")]PredefinedColorSpace ColorSpace = PredefinedColorSpace.Srgb,
-    [property: Description("@#colorType")]CanvasColorType ColorType = CanvasColorType.Unorm8,
-    [property: Description("@#willReadFrequently")]bool WillReadFrequently = false);
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#imagebitmaprenderingcontextsettings">HTML Standard: 4.12.5.2.2 The ImageBitmapRenderingContext interface</see>
-/// </summary>
-/// <param name="Alpha"><see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-imagebitmaprenderingcontextsettings-alpha">HTML Standard: 4.12.5.2.2 The ImageBitmapRenderingContext interface</see></param>
-[ECMAScript]
-[Description("@#ImageBitmapRenderingContextSettings")]
-public record ImageBitmapRenderingContextSettings(
-    [property: Description("@#alpha")]bool Alpha = false);
-
-/// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#imageencodeoptions">HTML Standard: 4.12.5.3 The OffscreenCanvas interface</see>
 /// </summary>
 [ECMAScript]
@@ -1108,11 +1063,11 @@ public record ImageEncodeOptions(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/comms.html#messageeventinit">HTML Standard: 9.1 The MessageEvent interface</see>
 /// </summary>
-/// <param name="Data"><see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-data">HTML Standard: 9.1 The MessageEvent interface</see></param>
-/// <param name="Origin"><see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-origin">HTML Standard: 9.1 The MessageEvent interface</see></param>
-/// <param name="LastEventId"><see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-lasteventid">HTML Standard: 9.1 The MessageEvent interface</see></param>
-/// <param name="Source"><see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-source">HTML Standard: 9.1 The MessageEvent interface</see></param>
-/// <param name="Ports"><see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-ports">HTML Standard: 9.1 The MessageEvent interface</see></param>
+/// <param name="Data">The initMessageEvent(type, bubbles, cancelable, data, origin, lastEventId, source, ports) method must initialize the event in a manner analogous to the similarly-named initEvent() method. DOM <see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-data">HTML Standard: 9.1 The MessageEvent interface</see></param>
+/// <param name="Origin">The initMessageEvent(type, bubbles, cancelable, data, origin, lastEventId, source, ports) method must initialize the event in a manner analogous to the similarly-named initEvent() method. DOM <see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-origin">HTML Standard: 9.1 The MessageEvent interface</see></param>
+/// <param name="LastEventId">The initMessageEvent(type, bubbles, cancelable, data, origin, lastEventId, source, ports) method must initialize the event in a manner analogous to the similarly-named initEvent() method. DOM <see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-lasteventid">HTML Standard: 9.1 The MessageEvent interface</see></param>
+/// <param name="Source">The initMessageEvent(type, bubbles, cancelable, data, origin, lastEventId, source, ports) method must initialize the event in a manner analogous to the similarly-named initEvent() method. DOM <see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-source">HTML Standard: 9.1 The MessageEvent interface</see></param>
+/// <param name="Ports">The initMessageEvent(type, bubbles, cancelable, data, origin, lastEventId, source, ports) method must initialize the event in a manner analogous to the similarly-named initEvent() method. DOM <see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-ports">HTML Standard: 9.1 The MessageEvent interface</see></param>
 [ECMAScript]
 [Description("@#MessageEventInit")]
 public record MessageEventInit(
@@ -1159,7 +1114,7 @@ public record DragEventInit(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/dom.html#showpopoveroptions">HTML Standard: 3.2.2 Elements in the DOM</see>
 /// </summary>
-/// <param name="Source"><see href="https://html.spec.whatwg.org/multipage/dom.html#dom-showpopoveroptions-source">HTML Standard: 3.2.2 Elements in the DOM</see></param>
+/// <param name="Source">Let source be options[&quot;source&quot;] if it exists; otherwise, null. <see href="https://html.spec.whatwg.org/multipage/dom.html#dom-showpopoveroptions-source">HTML Standard: 3.2.2 Elements in the DOM</see></param>
 [ECMAScript]
 [Description("@#ShowPopoverOptions")]
 public record ShowPopoverOptions(
@@ -1168,7 +1123,7 @@ public record ShowPopoverOptions(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/dom.html#togglepopoveroptions">HTML Standard: 3.2.2 Elements in the DOM</see>
 /// </summary>
-/// <param name="Force"><see href="https://html.spec.whatwg.org/multipage/dom.html#dom-togglepopoveroptions-force">HTML Standard: 3.2.2 Elements in the DOM</see></param>
+/// <param name="Force">Otherwise, if options[&quot;force&quot;] exists, set force to options[&quot;force&quot;]. <see href="https://html.spec.whatwg.org/multipage/dom.html#dom-togglepopoveroptions-force">HTML Standard: 3.2.2 Elements in the DOM</see></param>
 [ECMAScript]
 [Description("@#TogglePopoverOptions")]
 public record TogglePopoverOptions(
@@ -1177,7 +1132,7 @@ public record TogglePopoverOptions(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#gethtmloptions">HTML Standard: 8.5 DOM parsing and serialization APIs</see>
 /// </summary>
-/// <param name="SerializableShadowRoots"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-gethtmloptions-serializableshadowroots">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
+/// <param name="SerializableShadowRoots">If serializableShadowRoots is true, then all shadow roots marked as serializable are serialized. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-gethtmloptions-serializableshadowroots">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
 /// <param name="ShadowRoots"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-gethtmloptions-shadowroots">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
 [ECMAScript]
 [Description("@#GetHTMLOptions")]
@@ -1188,81 +1143,16 @@ public record GetHTMLOptions(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#parsehtmlunsafeoptions">HTML Standard: 8.5 DOM parsing and serialization APIs</see>
 /// </summary>
-/// <param name="Sanitizer"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsehtmlunsafeoptions-sanitizer">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
+/// <param name="Sanitizer">Note that script elements are not evaluated during parsing, and the resulting document&apos;s encoding will always be UTF-8. The document&apos;s URL will be about:blank. If the options dictionary contains a &quot;sanitizer&quot; member, it is used to sanitize the resulting DOM. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsehtmlunsafeoptions-sanitizer">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
 [ECMAScript]
 [Description("@#ParseHTMLUnsafeOptions")]
 public record ParseHTMLUnsafeOptions(
     [property: Description("@#sanitizer")]ParseHTMLUnsafeOptionsSanitizer? Sanitizer = default);
 
 /// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerattributenamespace">HTML Standard: 8.6.3 Sanitizer configuration</see>
-/// </summary>
-/// <param name="Name"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerattributenamespace-name">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-[ECMAScript]
-[Description("@#SanitizerAttributeNamespace")]
-public record SanitizerAttributeNamespace(
-    [property: Description("@#name")]string? Name = default,
-    [property: Description("@#namespace")]string? Namespace = null);
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerconfig">HTML Standard: 8.6.3 Sanitizer configuration</see>
-/// </summary>
-/// <param name="Elements"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-elements">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-/// <param name="RemoveElements"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-removeelements">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-/// <param name="ReplaceWithChildrenElements"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-replacewithchildrenelements">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-/// <param name="ProcessingInstructions"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-processinginstructions">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-/// <param name="RemoveProcessingInstructions"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-removeprocessinginstructions">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-/// <param name="Attributes"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-attributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-/// <param name="RemoveAttributes"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-removeattributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-/// <param name="Comments"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-comments">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-/// <param name="DataAttributes"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-dataattributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-[ECMAScript]
-[Description("@#SanitizerConfig")]
-public record SanitizerConfig(
-    [property: Description("@#elements")]SanitizerElementWithAttributes[]? Elements = default,
-    [property: Description("@#removeElements")]SanitizerElement[]? RemoveElements = default,
-    [property: Description("@#replaceWithChildrenElements")]SanitizerElement[]? ReplaceWithChildrenElements = default,
-    [property: Description("@#processingInstructions")]SanitizerPI[]? ProcessingInstructions = default,
-    [property: Description("@#removeProcessingInstructions")]SanitizerPI[]? RemoveProcessingInstructions = default,
-    [property: Description("@#attributes")]SanitizerAttribute[]? Attributes = default,
-    [property: Description("@#removeAttributes")]SanitizerAttribute[]? RemoveAttributes = default,
-    [property: Description("@#comments")]bool Comments = default,
-    [property: Description("@#dataAttributes")]bool DataAttributes = default);
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerelementnamespace">HTML Standard: 8.6.3 Sanitizer configuration</see>
-/// </summary>
-/// <param name="Name"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerelementnamespace-name">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-[ECMAScript]
-[Description("@#SanitizerElementNamespace")]
-public record SanitizerElementNamespace(
-    [property: Description("@#name")]string? Name = default,
-    [property: Description("@#namespace")]string? Namespace = "http://www.w3.org/1999/xhtml");
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerelementnamespacewithattributes">HTML Standard: 8.6.3 Sanitizer configuration</see>
-/// </summary>
-/// <param name="Attributes"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerelementnamespacewithattributes-attributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-/// <param name="RemoveAttributes"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerelementnamespacewithattributes-removeattributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-[ECMAScript]
-[Description("@#SanitizerElementNamespaceWithAttributes")]
-public record SanitizerElementNamespaceWithAttributes(
-    [property: Description("@#attributes")]SanitizerAttribute[]? Attributes = default,
-    [property: Description("@#removeAttributes")]SanitizerAttribute[]? RemoveAttributes = default) : SanitizerElementNamespace;
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerprocessinginstruction">HTML Standard: 8.6.3 Sanitizer configuration</see>
-/// </summary>
-/// <param name="Target"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerprocessinginstruction-target">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-[ECMAScript]
-[Description("@#SanitizerProcessingInstruction")]
-public record SanitizerProcessingInstruction(
-    [property: Description("@#target")]string? Target = default);
-
-/// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sethtmloptions">HTML Standard: 8.5 DOM parsing and serialization APIs</see>
 /// </summary>
-/// <param name="Sanitizer"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sethtmloptions-sanitizer">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
+/// <param name="Sanitizer">Parses html using the HTML parser with options options, and replaces the children of element with the result. element provides context for the HTML parser. The parsed fragment is sanitized based on the options&apos;s &quot;sanitizer&quot; member, and unsafe content is removed. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sethtmloptions-sanitizer">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
 [ECMAScript]
 [Description("@#SetHTMLOptions")]
 public record SetHTMLOptions(
@@ -1271,8 +1161,8 @@ public record SetHTMLOptions(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sethtmlunsafeoptions">HTML Standard: 8.5 DOM parsing and serialization APIs</see>
 /// </summary>
-/// <param name="Sanitizer"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sethtmlunsafeoptions-sanitizer">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
-/// <param name="RunScripts"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sethtmlunsafeoptions-runscripts">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
+/// <param name="Sanitizer">Parses html using the HTML parser with options options, and replaces the children of element with the result. element provides context for the HTML parser. If the options dictionary contains a &quot;sanitizer&quot; member, it is used to sanitize the parsed fragment before it is inserted into element. If the options dictionary&apos;s &quot;runScripts&quot; member is true, scripts contained in html will be executed immediately after the node tree is updated. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sethtmlunsafeoptions-sanitizer">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
+/// <param name="RunScripts">Parses html using the HTML parser with options options, and replaces the children of element with the result. element provides context for the HTML parser. If the options dictionary contains a &quot;sanitizer&quot; member, it is used to sanitize the parsed fragment before it is inserted into element. If the options dictionary&apos;s &quot;runScripts&quot; member is true, scripts contained in html will be executed immediately after the node tree is updated. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sethtmlunsafeoptions-runscripts">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
 [ECMAScript]
 [Description("@#SetHTMLUnsafeOptions")]
 public record SetHTMLUnsafeOptions(
@@ -1298,12 +1188,12 @@ public record SubmitEventInit(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imagebitmapoptions">HTML Standard: 8.11.2 The ImageBitmap interface</see>
 /// </summary>
-/// <param name="ImageOrientation"><see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-imageorientation">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
-/// <param name="PremultiplyAlpha"><see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-premultiplyalpha">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
+/// <param name="ImageOrientation">If the value of the imageOrientation member of options is &quot;flipY&quot;, output must be flipped vertically, disregarding any image orientation metadata of the source (such as EXIF metadata), if any. EXIF <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-imageorientation">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
+/// <param name="PremultiplyAlpha">If options is provided, the ImageBitmap object&apos;s bitmap data is modified according to options. For example, if the premultiplyAlpha option is set to &quot;premultiply&quot;, the bitmap data&apos;s non-alpha color components are premultiplied by the alpha component. <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-premultiplyalpha">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
 /// <param name="ColorSpaceConversion"><see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-colorspaceconversion">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
-/// <param name="ResizeWidth"><see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-resizewidth">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
-/// <param name="ResizeHeight"><see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-resizeheight">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
-/// <param name="ResizeQuality"><see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-resizequality">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
+/// <param name="ResizeWidth">If either options&apos;s resizeWidth or options&apos;s resizeHeight is present and is 0, then return a promise rejected with an &quot;InvalidStateError&quot; DOMException. <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-resizewidth">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
+/// <param name="ResizeHeight">If either options&apos;s resizeWidth or options&apos;s resizeHeight is present and is 0, then return a promise rejected with an &quot;InvalidStateError&quot; DOMException. <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-resizeheight">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
+/// <param name="ResizeQuality">Scale output to the size specified by outputWidth and outputHeight. The user agent should use the value of the resizeQuality option to guide the choice of scaling algorithm. <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-resizequality">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
 [ECMAScript]
 [Description("@#ImageBitmapOptions")]
 public record ImageBitmapOptions(
@@ -1315,20 +1205,9 @@ public record ImageBitmapOptions(
     [property: Description("@#resizeQuality")]ResizeQuality ResizeQuality = ResizeQuality.Low);
 
 /// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imagedatasettings">HTML Standard: 8.11.1 The ImageData interface</see>
-/// </summary>
-/// <param name="ColorSpace"><see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatasettings-colorspace">HTML Standard: 8.11.1 The ImageData interface</see></param>
-/// <param name="PixelFormat"><see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatasettings-pixelformat">HTML Standard: 8.11.1 The ImageData interface</see></param>
-[ECMAScript]
-[Description("@#ImageDataSettings")]
-public record ImageDataSettings(
-    [property: Description("@#colorSpace")]PredefinedColorSpace? ColorSpace = default,
-    [property: Description("@#pixelFormat")]ImageDataPixelFormat PixelFormat = ImageDataPixelFormat.RgbaUnorm8);
-
-/// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/interaction.html#closewatcheroptions">HTML Standard: 6.10.3 The CloseWatcher interface</see>
 /// </summary>
-/// <param name="Signal"><see href="https://html.spec.whatwg.org/multipage/interaction.html#dom-closewatcheroptions-signal">HTML Standard: 6.10.3 The CloseWatcher interface</see></param>
+/// <param name="Signal">If the signal option is provided, then watcher can be destroyed (as if by watcher.destroy()) by aborting the given AbortSignal. <see href="https://html.spec.whatwg.org/multipage/interaction.html#dom-closewatcheroptions-signal">HTML Standard: 6.10.3 The CloseWatcher interface</see></param>
 [ECMAScript]
 [Description("@#CloseWatcherOptions")]
 public record CloseWatcherOptions(
@@ -1346,8 +1225,8 @@ public record CommandEventInit(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/interaction.html#focusoptions">HTML Standard: 6.6.6 Focus management APIs</see>
 /// </summary>
-/// <param name="PreventScroll"><see href="https://html.spec.whatwg.org/multipage/interaction.html#dom-focusoptions-preventscroll">HTML Standard: 6.6.6 Focus management APIs</see></param>
-/// <param name="FocusVisible"><see href="https://html.spec.whatwg.org/multipage/interaction.html#dom-focusoptions-focusvisible">HTML Standard: 6.6.6 Focus management APIs</see></param>
+/// <param name="PreventScroll">By default, this method also scrolls element into view. Providing the preventScroll option and setting it to true prevents this behavior. <see href="https://html.spec.whatwg.org/multipage/interaction.html#dom-focusoptions-preventscroll">HTML Standard: 6.6.6 Focus management APIs</see></param>
+/// <param name="FocusVisible">By default, user agents use implementation-defined heuristics to determine whether to indicate focus via a focus ring. Providing the focusVisible option and setting it to true will ensure the focus ring is always visible. <see href="https://html.spec.whatwg.org/multipage/interaction.html#dom-focusoptions-focusvisible">HTML Standard: 6.6.6 Focus management APIs</see></param>
 [ECMAScript]
 [Description("@#FocusOptions")]
 public record FocusOptions(
@@ -1426,8 +1305,8 @@ public record NavigationCurrentEntryChangeEventInit(
 /// </summary>
 /// <param name="PrecommitHandler"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationinterceptoptions-precommithandler">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
 /// <param name="Handler"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationinterceptoptions-handler">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
-/// <param name="FocusReset"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationinterceptoptions-focusreset">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
-/// <param name="Scroll"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationinterceptoptions-scroll">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
+/// <param name="FocusReset">By default, using this method will cause focus to reset when any handlers&apos; returned promises settle. Focus will be reset to the first element with the autofocus attribute set, or the body element if the attribute isn&apos;t present. The focusReset option can be set to &quot;manual&quot; to avoid this behavior. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationinterceptoptions-focusreset">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
+/// <param name="Scroll">By default, using this method will delay the browser&apos;s scroll restoration logic for &quot;traverse&quot; or &quot;reload&quot; navigations, or its scroll-reset/scroll-to-a-fragment logic for &quot;push&quot; or &quot;replace&quot; navigations, until any handlers&apos; returned promises settle. The scroll option can be set to &quot;manual&quot; to turn off any browser-driven scroll behavior entirely for this navigation, or scroll() can be called before the promise settles to trigger this behavior early. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationinterceptoptions-scroll">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
 [ECMAScript]
 [Description("@#NavigationInterceptOptions")]
 public record NavigationInterceptOptions(
@@ -1442,8 +1321,8 @@ public record NavigationInterceptOptions(
 /// <example>
 /// <code>precommitController.redirect(USVString url, NavigationNavigateOptions options)</code>
 /// </example>
-/// <param name="State"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationnavigateoptions-state">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
-/// <param name="History"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationnavigateoptions-history">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
+/// <param name="State">state can be set to any serializable value; it will populate the state retrieved by navigation.currentEntry.getState() once the navigation completes, for same-document navigations. (It will be ignored for navigations that end up cross-document.) <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationnavigateoptions-state">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
+/// <param name="History">history can be set to &quot;replace&quot; to replace the current session history entry, instead of pushing a new one. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationnavigateoptions-history">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
 [ECMAScript]
 [Description("@#NavigationNavigateOptions")]
 public record NavigationNavigateOptions(
@@ -1453,7 +1332,7 @@ public record NavigationNavigateOptions(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationoptions">HTML Standard: 7.2.6.2 The Navigation interface</see>
 /// </summary>
-/// <param name="Info"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationoptions-info">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
+/// <param name="Info">info can be set to any value; it will populate the info property of the corresponding NavigateEvent. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationoptions-info">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
 [ECMAScript]
 [Description("@#NavigationOptions")]
 public record NavigationOptions(
@@ -1468,20 +1347,9 @@ public record NavigationReloadOptions(
     [property: Description("@#state")]object? State = default) : NavigationOptions;
 
 /// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationresult">HTML Standard: 7.2.6.2 The Navigation interface</see>
-/// </summary>
-/// <param name="Committed"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationresult-committed">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
-/// <param name="Finished"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationresult-finished">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
-[ECMAScript]
-[Description("@#NavigationResult")]
-public record NavigationResult(
-    [property: Description("@#committed")]PromiseResult<NavigationHistoryEntry>? Committed = default,
-    [property: Description("@#finished")]PromiseResult<NavigationHistoryEntry>? Finished = default);
-
-/// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationupdatecurrententryoptions">HTML Standard: 7.2.6.2 The Navigation interface</see>
 /// </summary>
-/// <param name="State"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationupdatecurrententryoptions-state">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
+/// <param name="State">Let serializedState be StructuredSerializeForStorage(options[&quot;state&quot;]), rethrowing any exceptions. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationupdatecurrententryoptions-state">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
 [ECMAScript]
 [Description("@#NavigationUpdateCurrentEntryOptions")]
 public record NavigationUpdateCurrentEntryOptions(
@@ -1529,7 +1397,7 @@ public record PopStateEventInit(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#windowpostmessageoptions">HTML Standard: 7.2.2 The Window object</see>
 /// </summary>
-/// <param name="TargetOrigin"><see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-windowpostmessageoptions-targetorigin">HTML Standard: 7.2.2 The Window object</see></param>
+/// <param name="TargetOrigin">A target origin can be specified using the targetOrigin member of options. If not provided, it defaults to &quot;/&quot;. This default restricts the message to same-origin targets only. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-windowpostmessageoptions-targetorigin">HTML Standard: 7.2.2 The Window object</see></param>
 [ECMAScript]
 [Description("@#WindowPostMessageOptions")]
 public record WindowPostMessageOptions(
@@ -1546,7 +1414,7 @@ public record AssignedNodesOptions(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/server-sent-events.html#eventsourceinit">HTML Standard: 9.2.2 The EventSource interface</see>
 /// </summary>
-/// <param name="WithCredentials"><see href="https://html.spec.whatwg.org/multipage/server-sent-events.html#dom-eventsourceinit-withcredentials">HTML Standard: 9.2.2 The EventSource interface</see></param>
+/// <param name="WithCredentials">Setting withCredentials to true will set the credentials mode for connection requests to url to &quot;include&quot;. <see href="https://html.spec.whatwg.org/multipage/server-sent-events.html#dom-eventsourceinit-withcredentials">HTML Standard: 9.2.2 The EventSource interface</see></param>
 [ECMAScript]
 [Description("@#EventSourceInit")]
 public record EventSourceInit(
@@ -1555,7 +1423,7 @@ public record EventSourceInit(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/web-messaging.html#structuredserializeoptions">HTML Standard: 9.4.4 Message ports</see>
 /// </summary>
-/// <param name="Transfer"><see href="https://html.spec.whatwg.org/multipage/web-messaging.html#dom-structuredserializeoptions-transfer">HTML Standard: 9.4.4 Message ports</see></param>
+/// <param name="Transfer">Takes the input value and returns a deep copy by performing the structured clone algorithm. Transferable objects listed in the transfer array are transferred, not just cloned, meaning that they are no longer usable in the input value. <see href="https://html.spec.whatwg.org/multipage/web-messaging.html#dom-structuredserializeoptions-transfer">HTML Standard: 9.4.4 Message ports</see></param>
 [ECMAScript]
 [Description("@#StructuredSerializeOptions")]
 public record StructuredSerializeOptions(
@@ -1597,7 +1465,7 @@ public record StorageEventInit(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/workers.html#sharedworkeroptions">HTML Standard: 10.2.6.4 Shared workers and the SharedWorker interface</see>
 /// </summary>
-/// <param name="ExtendedLifetime"><see href="https://html.spec.whatwg.org/multipage/workers.html#dom-sharedworkeroptions-extendedlifetime">HTML Standard: 10.2.6.4 Shared workers and the SharedWorker interface</see></param>
+/// <param name="ExtendedLifetime">Set worker global scope&apos;s extended lifetime to options[&quot;extendedLifetime&quot;]. <see href="https://html.spec.whatwg.org/multipage/workers.html#dom-sharedworkeroptions-extendedlifetime">HTML Standard: 10.2.6.4 Shared workers and the SharedWorker interface</see></param>
 /// <param name="SameSiteCookies"><see href="https://privacycg.github.io/saa-non-cookie-storage/#dom-sharedworkeroptions-samesitecookies">Extending Storage Access API (SAA) to non-cookie storage: 2.3.9 Shared Workers</see></param>
 [ECMAScript]
 [Description("@#SharedWorkerOptions")]
@@ -1617,9 +1485,9 @@ public record SharedWorkerOptions(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/workers.html#workeroptions">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see>
 /// </summary>
-/// <param name="Name"><see href="https://html.spec.whatwg.org/multipage/workers.html#dom-workeroptions-name">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see></param>
-/// <param name="Type"><see href="https://html.spec.whatwg.org/multipage/workers.html#dom-workeroptions-type">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see></param>
-/// <param name="Credentials"><see href="https://html.spec.whatwg.org/multipage/workers.html#dom-workeroptions-credentials">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see></param>
+/// <param name="Name">Set worker global scope&apos;s name to options[&quot;name&quot;]. <see href="https://html.spec.whatwg.org/multipage/workers.html#dom-workeroptions-name">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see></param>
+/// <param name="Type">Set worker global scope&apos;s type to options[&quot;type&quot;]. <see href="https://html.spec.whatwg.org/multipage/workers.html#dom-workeroptions-type">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see></param>
+/// <param name="Credentials">Set worker global scope&apos;s credentials to options[&quot;credentials&quot;]. <see href="https://html.spec.whatwg.org/multipage/workers.html#dom-workeroptions-credentials">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see></param>
 [ECMAScript]
 [Description("@#WorkerOptions")]
 public record WorkerOptions(
@@ -1630,7 +1498,7 @@ public record WorkerOptions(
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/worklets.html#workletoptions">HTML Standard: 11.3.2 The Worklet class</see>
 /// </summary>
-/// <param name="Credentials"><see href="https://html.spec.whatwg.org/multipage/worklets.html#dom-workletoptions-credentials">HTML Standard: 11.3.2 The Worklet class</see></param>
+/// <param name="Credentials">await worklet.addModule(moduleURL[, { credentials }]) <see href="https://html.spec.whatwg.org/multipage/worklets.html#dom-workletoptions-credentials">HTML Standard: 11.3.2 The Worklet class</see></param>
 [ECMAScript]
 [Description("@#WorkletOptions")]
 public record WorkletOptions(
@@ -1885,21 +1753,21 @@ public record XRLightProbeInit(
     [property: Description("@#reflectionFormat")]XRReflectionFormat ReflectionFormat = XRReflectionFormat.Srgba8);
 
 /// <summary>
-/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpucubelayerinit">WebXR/WebGPU Binding Module - Level 1: 4.7 XRGPUCubeLayerInit</see>
+/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpucubelayerinit">WebXR/WebGPU Binding Module - Level 1: 5.8 XRGPUCubeLayerInit</see>
 /// </summary>
-/// <param name="Orientation"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucubelayerinit-orientation">WebXR/WebGPU Binding Module - Level 1: 4.7 XRGPUCubeLayerInit</see></param>
+/// <param name="Orientation"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucubelayerinit-orientation">WebXR/WebGPU Binding Module - Level 1: 5.8 XRGPUCubeLayerInit</see></param>
 [ECMAScript]
 [Description("@#XRGPUCubeLayerInit")]
 public record XRGPUCubeLayerInit(
     [property: Description("@#orientation")]DOMPointReadOnly? Orientation = default) : XRGPULayerInit;
 
 /// <summary>
-/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpucylinderlayerinit">WebXR/WebGPU Binding Module - Level 1: 4.5 XRGPUCylinderLayerInit</see>
+/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpucylinderlayerinit">WebXR/WebGPU Binding Module - Level 1: 5.6 XRGPUCylinderLayerInit</see>
 /// </summary>
-/// <param name="Transform"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-transform">WebXR/WebGPU Binding Module - Level 1: 4.5 XRGPUCylinderLayerInit</see></param>
-/// <param name="Radius"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-radius">WebXR/WebGPU Binding Module - Level 1: 4.5 XRGPUCylinderLayerInit</see></param>
-/// <param name="CentralAngle"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-centralangle">WebXR/WebGPU Binding Module - Level 1: 4.5 XRGPUCylinderLayerInit</see></param>
-/// <param name="AspectRatio"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-aspectratio">WebXR/WebGPU Binding Module - Level 1: 4.5 XRGPUCylinderLayerInit</see></param>
+/// <param name="Transform"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-transform">WebXR/WebGPU Binding Module - Level 1: 5.6 XRGPUCylinderLayerInit</see></param>
+/// <param name="Radius"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-radius">WebXR/WebGPU Binding Module - Level 1: 5.6 XRGPUCylinderLayerInit</see></param>
+/// <param name="CentralAngle"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-centralangle">WebXR/WebGPU Binding Module - Level 1: 5.6 XRGPUCylinderLayerInit</see></param>
+/// <param name="AspectRatio"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-aspectratio">WebXR/WebGPU Binding Module - Level 1: 5.6 XRGPUCylinderLayerInit</see></param>
 [ECMAScript]
 [Description("@#XRGPUCylinderLayerInit")]
 public record XRGPUCylinderLayerInit(
@@ -1909,13 +1777,13 @@ public record XRGPUCylinderLayerInit(
     [property: Description("@#aspectRatio")]float AspectRatio = 2.0f) : XRGPULayerInit;
 
 /// <summary>
-/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpuequirectlayerinit">WebXR/WebGPU Binding Module - Level 1: 4.6 XRGPUEquirectLayerInit</see>
+/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpuequirectlayerinit">WebXR/WebGPU Binding Module - Level 1: 5.7 XRGPUEquirectLayerInit</see>
 /// </summary>
-/// <param name="Transform"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-transform">WebXR/WebGPU Binding Module - Level 1: 4.6 XRGPUEquirectLayerInit</see></param>
-/// <param name="Radius"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-radius">WebXR/WebGPU Binding Module - Level 1: 4.6 XRGPUEquirectLayerInit</see></param>
-/// <param name="CentralHorizontalAngle"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-centralhorizontalangle">WebXR/WebGPU Binding Module - Level 1: 4.6 XRGPUEquirectLayerInit</see></param>
-/// <param name="UpperVerticalAngle"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-upperverticalangle">WebXR/WebGPU Binding Module - Level 1: 4.6 XRGPUEquirectLayerInit</see></param>
-/// <param name="LowerVerticalAngle"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-lowerverticalangle">WebXR/WebGPU Binding Module - Level 1: 4.6 XRGPUEquirectLayerInit</see></param>
+/// <param name="Transform"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-transform">WebXR/WebGPU Binding Module - Level 1: 5.7 XRGPUEquirectLayerInit</see></param>
+/// <param name="Radius"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-radius">WebXR/WebGPU Binding Module - Level 1: 5.7 XRGPUEquirectLayerInit</see></param>
+/// <param name="CentralHorizontalAngle"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-centralhorizontalangle">WebXR/WebGPU Binding Module - Level 1: 5.7 XRGPUEquirectLayerInit</see></param>
+/// <param name="UpperVerticalAngle"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-upperverticalangle">WebXR/WebGPU Binding Module - Level 1: 5.7 XRGPUEquirectLayerInit</see></param>
+/// <param name="LowerVerticalAngle"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-lowerverticalangle">WebXR/WebGPU Binding Module - Level 1: 5.7 XRGPUEquirectLayerInit</see></param>
 [ECMAScript]
 [Description("@#XRGPUEquirectLayerInit")]
 public record XRGPUEquirectLayerInit(
@@ -1926,17 +1794,17 @@ public record XRGPUEquirectLayerInit(
     [property: Description("@#lowerVerticalAngle")]float LowerVerticalAngle = -1.570795f) : XRGPULayerInit;
 
 /// <summary>
-/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpulayerinit">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see>
+/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpulayerinit">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see>
 /// </summary>
-/// <param name="ColorFormat"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-colorformat">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see></param>
-/// <param name="DepthStencilFormat"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-depthstencilformat">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see></param>
-/// <param name="TextureUsage"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-textureusage">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see></param>
-/// <param name="Space"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-space">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see></param>
-/// <param name="MipLevels"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-miplevels">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see></param>
-/// <param name="ViewPixelWidth"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-viewpixelwidth">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see></param>
-/// <param name="ViewPixelHeight"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-viewpixelheight">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see></param>
-/// <param name="Layout"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-layout">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see></param>
-/// <param name="IsStatic"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-isstatic">WebXR/WebGPU Binding Module - Level 1: 4.3 XRGPULayerInit</see></param>
+/// <param name="ColorFormat"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-colorformat">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
+/// <param name="DepthStencilFormat"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-depthstencilformat">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
+/// <param name="TextureUsage"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-textureusage">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
+/// <param name="Space"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-space">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
+/// <param name="MipLevels"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-miplevels">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
+/// <param name="ViewPixelWidth"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-viewpixelwidth">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
+/// <param name="ViewPixelHeight"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-viewpixelheight">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
+/// <param name="Layout"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-layout">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
+/// <param name="IsStatic"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-isstatic">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
 [ECMAScript]
 [Description("@#XRGPULayerInit")]
 public record XRGPULayerInit(
@@ -1951,12 +1819,12 @@ public record XRGPULayerInit(
     [property: Description("@#isStatic")]bool IsStatic = false);
 
 /// <summary>
-/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpuprojectionlayerinit">WebXR/WebGPU Binding Module - Level 1: 4.2 XRGPUProjectionLayerInit</see>
+/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpuprojectionlayerinit">WebXR/WebGPU Binding Module - Level 1: 5.3 XRGPUProjectionLayerInit</see>
 /// </summary>
-/// <param name="ColorFormat"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-colorformat">WebXR/WebGPU Binding Module - Level 1: 4.2 XRGPUProjectionLayerInit</see></param>
-/// <param name="DepthStencilFormat"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-depthstencilformat">WebXR/WebGPU Binding Module - Level 1: 4.2 XRGPUProjectionLayerInit</see></param>
-/// <param name="TextureUsage"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-textureusage">WebXR/WebGPU Binding Module - Level 1: 4.2 XRGPUProjectionLayerInit</see></param>
-/// <param name="ScaleFactor"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-scalefactor">WebXR/WebGPU Binding Module - Level 1: 4.2 XRGPUProjectionLayerInit</see></param>
+/// <param name="ColorFormat"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-colorformat">WebXR/WebGPU Binding Module - Level 1: 5.3 XRGPUProjectionLayerInit</see></param>
+/// <param name="DepthStencilFormat"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-depthstencilformat">WebXR/WebGPU Binding Module - Level 1: 5.3 XRGPUProjectionLayerInit</see></param>
+/// <param name="TextureUsage"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-textureusage">WebXR/WebGPU Binding Module - Level 1: 5.3 XRGPUProjectionLayerInit</see></param>
+/// <param name="ScaleFactor"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-scalefactor">WebXR/WebGPU Binding Module - Level 1: 5.3 XRGPUProjectionLayerInit</see></param>
 [ECMAScript]
 [Description("@#XRGPUProjectionLayerInit")]
 public record XRGPUProjectionLayerInit(
@@ -1966,11 +1834,11 @@ public record XRGPUProjectionLayerInit(
     [property: Description("@#scaleFactor")]double ScaleFactor = 1.0d);
 
 /// <summary>
-/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpuquadlayerinit">WebXR/WebGPU Binding Module - Level 1: 4.4 XRGPUQuadLayerInit</see>
+/// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpuquadlayerinit">WebXR/WebGPU Binding Module - Level 1: 5.5 XRGPUQuadLayerInit</see>
 /// </summary>
-/// <param name="Transform"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuquadlayerinit-transform">WebXR/WebGPU Binding Module - Level 1: 4.4 XRGPUQuadLayerInit</see></param>
-/// <param name="Width"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuquadlayerinit-width">WebXR/WebGPU Binding Module - Level 1: 4.4 XRGPUQuadLayerInit</see></param>
-/// <param name="Height"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuquadlayerinit-height">WebXR/WebGPU Binding Module - Level 1: 4.4 XRGPUQuadLayerInit</see></param>
+/// <param name="Transform"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuquadlayerinit-transform">WebXR/WebGPU Binding Module - Level 1: 5.5 XRGPUQuadLayerInit</see></param>
+/// <param name="Width"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuquadlayerinit-width">WebXR/WebGPU Binding Module - Level 1: 5.5 XRGPUQuadLayerInit</see></param>
+/// <param name="Height"><see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuquadlayerinit-height">WebXR/WebGPU Binding Module - Level 1: 5.5 XRGPUQuadLayerInit</see></param>
 [ECMAScript]
 [Description("@#XRGPUQuadLayerInit")]
 public record XRGPUQuadLayerInit(
@@ -3228,10 +3096,10 @@ public record GyroscopeSensorOptions(
 /// <summary>
 /// <see href="https://w3c.github.io/image-resource/#dom-imageresource">Image Resource: 4 ImageResource dictionary</see>
 /// </summary>
-/// <param name="Src">The src of an ImageResource is a URL from which a user agent can fetch image data. <see href="https://w3c.github.io/image-resource/#dom-imageresource-src">Image Resource: 4.1 src member</see></param>
-/// <param name="Sizes">The sizes member is equivalent to a [^link^] element&apos;s [^link/sizes^] attribute, and is processed in the same manner. <see href="https://w3c.github.io/image-resource/#dom-imageresource-sizes">Image Resource: 4.2 sizes member</see></param>
-/// <param name="Type">The type member represents an image MIME Type for the image resource. A user agent MAY ignore media types it does not support. <see href="https://w3c.github.io/image-resource/#dom-imageresource-type">Image Resource: 4.3 type member</see></param>
-/// <param name="Label">The label of an ImageResource is a string that provides the accessible name for the associated image. <see href="https://w3c.github.io/image-resource/#dom-imageresource-label">Image Resource: 4.4 label member</see></param>
+/// <param name="Src"><see href="https://w3c.github.io/image-resource/#dom-imageresource-src">Image Resource: 4.1 src member</see></param>
+/// <param name="Sizes"><see href="https://w3c.github.io/image-resource/#dom-imageresource-sizes">Image Resource: 4.2 sizes member</see></param>
+/// <param name="Type"><see href="https://w3c.github.io/image-resource/#dom-imageresource-type">Image Resource: 4.3 type member</see></param>
+/// <param name="Label"><see href="https://w3c.github.io/image-resource/#dom-imageresource-label">Image Resource: 4.4 label member</see></param>
 [ECMAScript]
 [Description("@#ImageResource")]
 public record ImageResource(
@@ -3328,6 +3196,22 @@ public record VideoConfiguration(
     [property: Description("@#spatialScalability")]bool SpatialScalability = default);
 
 /// <summary>
+/// <see href="https://w3c.github.io/mediacapture-extensions/#dom-backgroundblur">Media Capture and Streams Extensions: 18.2 BackgroundBlur</see>
+/// </summary>
+[ECMAScript]
+[Description("@#BackgroundBlur")]
+public abstract record BackgroundBlur();
+
+/// <summary>
+/// <see href="https://w3c.github.io/mediacapture-extensions/#dom-mediaeffectinfo">Media Capture and Streams Extensions: 18.3 MediaEffectInfo</see>
+/// </summary>
+/// <param name="Enabled"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediaeffectinfo-enabled">Media Capture and Streams Extensions: Dictionary MediaEffectInfo Members</see></param>
+[ECMAScript]
+[Description("@#MediaEffectInfo")]
+public record MediaEffectInfo(
+    [property: Description("@#enabled")]bool Enabled = default);
+
+/// <summary>
 /// <see href="https://w3c.github.io/mediacapture-handle/actions/#dom-captureactioneventinit">The Capture-Handle Actions Mechanism: 3.1.2.2 CaptureActionEventInit</see>
 /// </summary>
 /// <param name="Action"><see href="https://w3c.github.io/mediacapture-handle/actions/#dom-captureactioneventinit-action">The Capture-Handle Actions Mechanism: 3.1.2.2 CaptureActionEventInit</see></param>
@@ -3370,6 +3254,36 @@ public record MediaSettingsRange(
     [property: Description("@#max")]double Max = default,
     [property: Description("@#min")]double Min = default,
     [property: Description("@#step")]double Step = default);
+
+/// <summary>
+/// <see href="https://w3c.github.io/mediacapture-image/#dictdef-photocapabilities">MediaStream Image Capture: 4 PhotoCapabilities</see>
+/// </summary>
+/// <param name="RedEyeReduction"><see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-redeyereduction">MediaStream Image Capture: 4.1 Members</see></param>
+/// <param name="ImageHeight"><see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-imageheight">MediaStream Image Capture: 4.1 Members</see></param>
+/// <param name="ImageWidth"><see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-imagewidth">MediaStream Image Capture: 4.1 Members</see></param>
+/// <param name="FillLightMode"><see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-filllightmode">MediaStream Image Capture: 4.1 Members</see></param>
+[ECMAScript]
+[Description("@#PhotoCapabilities")]
+public record PhotoCapabilities(
+    [property: Description("@#redEyeReduction")]RedEyeReduction? RedEyeReduction = default,
+    [property: Description("@#imageHeight")]MediaSettingsRange? ImageHeight = default,
+    [property: Description("@#imageWidth")]MediaSettingsRange? ImageWidth = default,
+    [property: Description("@#fillLightMode")]FillLightMode[]? FillLightMode = default);
+
+/// <summary>
+/// <see href="https://w3c.github.io/mediacapture-image/#dictdef-photosettings">MediaStream Image Capture: 5 PhotoSettings</see>
+/// </summary>
+/// <param name="FillLightMode"><see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-filllightmode">MediaStream Image Capture: 5.1 Members</see></param>
+/// <param name="ImageHeight"><see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-imageheight">MediaStream Image Capture: 5.1 Members</see></param>
+/// <param name="ImageWidth"><see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-imagewidth">MediaStream Image Capture: 5.1 Members</see></param>
+/// <param name="RedEyeReduction"><see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-redeyereduction">MediaStream Image Capture: 5.1 Members</see></param>
+[ECMAScript]
+[Description("@#PhotoSettings")]
+public record PhotoSettings(
+    [property: Description("@#fillLightMode")]FillLightMode? FillLightMode = default,
+    [property: Description("@#imageHeight")]double ImageHeight = default,
+    [property: Description("@#imageWidth")]double ImageWidth = default,
+    [property: Description("@#redEyeReduction")]bool RedEyeReduction = default);
 
 /// <summary>
 /// <see href="https://w3c.github.io/mediacapture-image/#dictdef-point2d">MediaStream Image Capture: 12. Point2D</see>
@@ -3607,23 +3521,6 @@ public abstract record PaymentRequestUpdateEventInit();
 [Description("@#PictureInPictureEventInit")]
 public record PictureInPictureEventInit(
     [property: Description("@#pictureInPictureWindow")]PictureInPictureWindow? PictureInPictureWindow = default) : EventInit;
-
-/// <summary>
-/// <see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit">Pointer Events: 6.1.2 WheelEventInit</see>
-/// </summary>
-/// <param name="DeltaX"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltax">Pointer Events: 6.1.2 WheelEventInit</see></param>
-/// <param name="DeltaY"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltay">Pointer Events: 6.1.2 WheelEventInit</see></param>
-/// <param name="DeltaZ"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltaz">Pointer Events: 6.1.2 WheelEventInit</see></param>
-/// <param name="DeltaMode"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltamode">Pointer Events: 6.1.2 WheelEventInit</see></param>
-/// <param name="Momentum"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-momentum">Pointer Events: 6.1.2 WheelEventInit</see></param>
-[ECMAScript]
-[Description("@#WheelEventInit")]
-public record WheelEventInit(
-    [property: Description("@#deltaX")]double DeltaX = 0.0d,
-    [property: Description("@#deltaY")]double DeltaY = 0.0d,
-    [property: Description("@#deltaZ")]double DeltaZ = 0.0d,
-    [property: Description("@#deltaMode")]uint DeltaMode = 0,
-    [property: Description("@#momentum")]bool Momentum = false) : MouseEventInit;
 
 /// <summary>
 /// <see href="https://w3c.github.io/push-api/#dom-pusheventinit">Push API: 10.2 PushEvent Interface</see>
@@ -5152,7 +5049,7 @@ public record AudioDataInit(
     [property: Description("@#numberOfFrames")]uint NumberOfFrames = default,
     [property: Description("@#numberOfChannels")]uint NumberOfChannels = default,
     [property: Description("@#timestamp")]Number? Timestamp = default,
-    [property: Description("@#data")]IBufferSource? Data = default,
+    [property: Description("@#data")]IAllowSharedBufferSource? Data = default,
     [property: Description("@#transfer")]ArrayBuffer[]? Transfer = default);
 
 /// <summary>
@@ -5399,9 +5296,31 @@ public record VideoFrameInit(
 /// <summary>
 /// <see href="https://w3c.github.io/webcodecs/#dictdef-videoframemetadata">WebCodecs: 9.4 VideoFrame Interface</see>
 /// </summary>
+/// <param name="Segments"><see href="https://w3c.github.io/mediacapture-extensions/#dom-videoframemetadata-segments">Media Capture and Streams Extensions: Members</see></param>
+/// <param name="BackgroundBlur"><see href="https://w3c.github.io/mediacapture-extensions/#dom-videoframemetadata-backgroundblur">Media Capture and Streams Extensions: Members</see></param>
+/// <param name="BackgroundSegmentationMask"><see href="https://w3c.github.io/mediacapture-extensions/#dom-videoframemetadata-backgroundsegmentationmask">Media Capture and Streams Extensions: Members</see></param>
 [ECMAScript]
 [Description("@#VideoFrameMetadata")]
-public abstract record VideoFrameMetadata();
+public record VideoFrameMetadata(
+    [property: Description("@#segments")]Segment[]? Segments = default,
+    [property: Description("@#backgroundBlur")]BackgroundBlur? BackgroundBlur = default,
+    [property: Description("@#backgroundSegmentationMask")]ImageBitmap? BackgroundSegmentationMask = default)
+{
+    [Category("optional")]
+    public extern static VideoFrameMetadata OptionalSegments(
+        [Description("@#segments")]Segment[]? Segments = default);
+
+    [Category("optional")]
+    public extern static VideoFrameMetadata OptionalBackgroundBlur(
+        [Description("@#backgroundBlur")]BackgroundBlur? BackgroundBlur = default);
+
+    [Category("optional")]
+    public extern static VideoFrameMetadata OptionalBackgroundSegmentationMask(
+        [Description("@#backgroundSegmentationMask")]ImageBitmap? BackgroundSegmentationMask = default);
+
+    [Category("optional")]
+    public extern static VideoFrameMetadata Optional();
+}
 
 /// <summary>
 /// <see href="https://w3c.github.io/webcodecs/aac_codec_registration.html#dictdef-aacencoderconfig">AAC WebCodecs Registration: 5.1 AacEncoderConfig</see>
@@ -5614,9 +5533,9 @@ public record HmacKeyGenParams(
     [property: Description("@#length")]uint Length = default) : Algorithm;
 
 /// <summary>
-/// <see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedImportParams">Web Cryptography API Level 2: 20.7 RsaHashedImportParams dictionary</see>
+/// <see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedImportParams">Web Cryptography API Level 2: 20.8 RsaHashedImportParams dictionary</see>
 /// </summary>
-/// <param name="Hash"><see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedImportParams-hash">Web Cryptography API Level 2: 20.7 RsaHashedImportParams dictionary</see></param>
+/// <param name="Hash"><see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedImportParams-hash">Web Cryptography API Level 2: 20.8 RsaHashedImportParams dictionary</see></param>
 [ECMAScript]
 [Description("@#RsaHashedImportParams")]
 public record RsaHashedImportParams(
@@ -5632,10 +5551,10 @@ public record RsaHashedKeyGenParams(
     [property: Description("@#hash")]HashAlgorithmIdentifier? Hash = default) : RsaKeyGenParams;
 
 /// <summary>
-/// <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyAlgorithm">Web Cryptography API Level 2: 20.5 RsaKeyAlgorithm dictionary</see>
+/// <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyAlgorithm">Web Cryptography API Level 2: 20.6 RsaKeyAlgorithm dictionary</see>
 /// </summary>
-/// <param name="ModulusLength">The modulusLength member contains the length, in bits, of the RSA modulus. <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyAlgorithm-modulusLength">Web Cryptography API Level 2: 20.5 RsaKeyAlgorithm dictionary</see></param>
-/// <param name="PublicExponent">The publicExponent member contains the RSA public exponent. <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyAlgorithm-publicExponent">Web Cryptography API Level 2: 20.5 RsaKeyAlgorithm dictionary</see></param>
+/// <param name="ModulusLength">The modulusLength member contains the length, in bits, of the RSA modulus. <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyAlgorithm-modulusLength">Web Cryptography API Level 2: 20.6 RsaKeyAlgorithm dictionary</see></param>
+/// <param name="PublicExponent">The publicExponent member contains the RSA public exponent. <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyAlgorithm-publicExponent">Web Cryptography API Level 2: 20.6 RsaKeyAlgorithm dictionary</see></param>
 [ECMAScript]
 [Description("@#RsaKeyAlgorithm")]
 public record RsaKeyAlgorithm(
@@ -6415,7 +6334,7 @@ public record OfflineAudioCompletionEventInit(
 [Description("@#OfflineAudioContextOptions")]
 public record OfflineAudioContextOptions(
     [property: Description("@#numberOfChannels")]uint NumberOfChannels = 1,
-    [property: Description("@#length")]uint Length = default,
+    [property: Description("@#length")]uint? Length = null,
     [property: Description("@#sampleRate")]float SampleRate = default,
     [property: Description("@#renderSizeHint")]OfflineAudioContextOptionsRenderSizeHint? RenderSizeHint = default);
 
@@ -6798,7 +6717,7 @@ public record LanguageModelCloneOptions(
 public record LanguageModelCreateCoreOptions(
     [property: Description("@#topK")]double TopK = default,
     [property: Description("@#temperature")]double Temperature = default,
-    [property: Description("@#samplingMode")]LanguageModelSamplingMode SamplingMode = default,
+    [property: Description("@#samplingMode")]LanguageModelSamplingMode? SamplingMode = default,
     [property: Description("@#expectedInputs")]LanguageModelExpected[]? ExpectedInputs = default,
     [property: Description("@#expectedOutputs")]LanguageModelExpected[]? ExpectedOutputs = default,
     [property: Description("@#tools")]LanguageModelTool[]? Tools = default);
@@ -6997,15 +6916,33 @@ public record TranslatorTranslateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
 
 /// <summary>
-/// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-modelcontextregistertooloptions">WebMCP: 4.2.2 ModelContextRegisterToolOptions Dictionary</see>
+/// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-modelcontextexecutetooloptions">WebMCP: 4.2.5 ModelContextExecuteToolOptions Dictionary</see>
 /// </summary>
-/// <param name="Signal"><see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextregistertooloptions-signal">WebMCP: 4.2.2 ModelContextRegisterToolOptions Dictionary</see></param>
-/// <param name="ExposedTo"><see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextregistertooloptions-exposedto">WebMCP: 4.2.2 ModelContextRegisterToolOptions Dictionary</see></param>
+/// <param name="Signal"><see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextexecutetooloptions-signal">WebMCP: 4.2.5 ModelContextExecuteToolOptions Dictionary</see></param>
+[ECMAScript]
+[Description("@#ModelContextExecuteToolOptions")]
+public record ModelContextExecuteToolOptions(
+    [property: Description("@#signal")]AbortSignal? Signal = default);
+
+/// <summary>
+/// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-modelcontextgettooloptions">WebMCP: 4.2.4 ModelContextGetToolOptions Dictionary</see>
+/// </summary>
+/// <param name="FromOrigins"><see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextgettooloptions-fromorigins">WebMCP: 4.2.4 ModelContextGetToolOptions Dictionary</see></param>
+[ECMAScript]
+[Description("@#ModelContextGetToolOptions")]
+public record ModelContextGetToolOptions(
+    [property: Description("@#fromOrigins")]string[]? FromOrigins = default);
+
+/// <summary>
+/// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-modelcontextregistertooloptions">WebMCP: 4.2.3 ModelContextRegisterToolOptions Dictionary</see>
+/// </summary>
+/// <param name="ExposedTo"><see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextregistertooloptions-exposedto">WebMCP: 4.2.3 ModelContextRegisterToolOptions Dictionary</see></param>
+/// <param name="Signal"><see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextregistertooloptions-signal">WebMCP: 4.2.3 ModelContextRegisterToolOptions Dictionary</see></param>
 [ECMAScript]
 [Description("@#ModelContextRegisterToolOptions")]
 public record ModelContextRegisterToolOptions(
-    [property: Description("@#signal")]AbortSignal? Signal = default,
-    [property: Description("@#exposedTo")]string[]? ExposedTo = default);
+    [property: Description("@#exposedTo")]string[]? ExposedTo = default,
+    [property: Description("@#signal")]AbortSignal? Signal = default);
 
 /// <summary>
 /// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-modelcontexttool">WebMCP: 4.2.1 ModelContextTool Dictionary</see>
@@ -7027,15 +6964,47 @@ public record ModelContextTool(
     [property: Description("@#annotations")]ToolAnnotations? Annotations = default);
 
 /// <summary>
+/// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-registeredtool">WebMCP: 4.2.6 RegisteredTool Dictionary</see>
+/// </summary>
+/// <param name="Name"><see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-name">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
+/// <param name="Title"><see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-title">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
+/// <param name="Description"><see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-description">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
+/// <param name="InputSchema"><see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-inputschema">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
+/// <param name="Window"><see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-window">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
+/// <param name="Origin"><see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-origin">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
+/// <param name="Annotations"><see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-annotations">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
+[ECMAScript]
+[Description("@#RegisteredTool")]
+public record RegisteredTool(
+    [property: Description("@#name")]string? Name = default,
+    [property: Description("@#title")]string? Title = default,
+    [property: Description("@#description")]string? Description = default,
+    [property: Description("@#inputSchema")]object? InputSchema = default,
+    [property: Description("@#window")]WindowRef? Window = default,
+    [property: Description("@#origin")]string? Origin = default,
+    [property: Description("@#annotations")]ToolAnnotations? Annotations = default);
+
+/// <summary>
 /// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-toolannotations">WebMCP: 4.2.1 ModelContextTool Dictionary</see>
 /// </summary>
 /// <param name="ReadOnlyHint"><see href="https://webmachinelearning.github.io/webmcp/#dom-toolannotations-readonlyhint">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
 /// <param name="UntrustedContentHint"><see href="https://webmachinelearning.github.io/webmcp/#dom-toolannotations-untrustedcontenthint">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
+/// <param name="ConsequentialHint"><see href="https://webmachinelearning.github.io/webmcp/#dom-toolannotations-consequentialhint">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
 [ECMAScript]
 [Description("@#ToolAnnotations")]
 public record ToolAnnotations(
     [property: Description("@#readOnlyHint")]bool ReadOnlyHint = false,
-    [property: Description("@#untrustedContentHint")]bool UntrustedContentHint = false);
+    [property: Description("@#untrustedContentHint")]bool UntrustedContentHint = false,
+    [property: Description("@#consequentialHint")]bool ConsequentialHint = false);
+
+/// <summary>
+/// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-toolexecutecallbackoptions">WebMCP: 4.2.1 ModelContextTool Dictionary</see>
+/// </summary>
+/// <param name="Signal"><see href="https://webmachinelearning.github.io/webmcp/#dom-toolexecutecallbackoptions-signal">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
+[ECMAScript]
+[Description("@#ToolExecuteCallbackOptions")]
+public record ToolExecuteCallbackOptions(
+    [property: Description("@#signal")]AbortSignal? Signal = default);
 
 /// <summary>
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mlargminmaxoptions">Web Neural Network API: 8.9.5 argMin/argMax operations</see>
@@ -9179,15 +9148,15 @@ public record OTPCredentialRequestOptions(
     [property: Description("@#transport")]OTPCredentialTransportType[]? Transport = default);
 
 /// <summary>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params">Modern Algorithms in the Web Cryptography API: 16.3 Argon2Params dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see>
 /// </summary>
-/// <param name="Nonce">The nonce member represents the nonce, which is a salt for password hashing applications. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-nonce">Modern Algorithms in the Web Cryptography API: 16.3 Argon2Params dictionary</see></param>
-/// <param name="Parallelism">The parallelism member represents the degree of parallelism. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-parallelism">Modern Algorithms in the Web Cryptography API: 16.3 Argon2Params dictionary</see></param>
-/// <param name="Memory">The memory member represents the memory size in kibibytes. It must be at least 8 times the degree of parallelism. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-memory">Modern Algorithms in the Web Cryptography API: 16.3 Argon2Params dictionary</see></param>
-/// <param name="Passes">The passes member represents the number of passes. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-passes">Modern Algorithms in the Web Cryptography API: 16.3 Argon2Params dictionary</see></param>
-/// <param name="Version">The version member represents the version number. The default and currently only defined version is 19 (0x13). <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-version">Modern Algorithms in the Web Cryptography API: 16.3 Argon2Params dictionary</see></param>
-/// <param name="SecretValue">The secretValue member represents the optional secret value. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-secretValue">Modern Algorithms in the Web Cryptography API: 16.3 Argon2Params dictionary</see></param>
-/// <param name="AssociatedData">The associatedData member represents the optional associated data. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-associatedData">Modern Algorithms in the Web Cryptography API: 16.3 Argon2Params dictionary</see></param>
+/// <param name="Nonce">The nonce member represents the nonce, which is a salt for password hashing applications. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-nonce">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
+/// <param name="Parallelism">The parallelism member represents the degree of parallelism. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-parallelism">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
+/// <param name="Memory">The memory member represents the memory size in kibibytes. It must be at least 8 times the degree of parallelism. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-memory">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
+/// <param name="Passes">The passes member represents the number of passes. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-passes">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
+/// <param name="Version">The version member represents the version number. The default and currently only defined version is 19 (0x13). <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-version">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
+/// <param name="SecretValue">The secretValue member represents the optional secret value. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-secretValue">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
+/// <param name="AssociatedData">The associatedData member represents the optional associated data. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-associatedData">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
 [ECMAScript]
 [Description("@#Argon2Params")]
 public record Argon2Params(
@@ -9200,11 +9169,11 @@ public record Argon2Params(
     [property: Description("@#associatedData")]IBufferSource? AssociatedData = default) : Algorithm;
 
 /// <summary>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams">Modern Algorithms in the Web Cryptography API: 12.3 CShakeParams dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams">Modern Algorithms in the Web Cryptography API: 13.3 CShakeParams dictionary</see>
 /// </summary>
-/// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams-outputLength">Modern Algorithms in the Web Cryptography API: 12.3 CShakeParams dictionary</see></param>
-/// <param name="FunctionName">The functionName member represents the function name, used by NIST to define functions based on cSHAKE. When used, it should only be set to values defined by NIST. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams-functionName">Modern Algorithms in the Web Cryptography API: 12.3 CShakeParams dictionary</see></param>
-/// <param name="Customization">The customization member represents the customization string. The application selects this string to define a variant of the function. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams-customization">Modern Algorithms in the Web Cryptography API: 12.3 CShakeParams dictionary</see></param>
+/// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams-outputLength">Modern Algorithms in the Web Cryptography API: 13.3 CShakeParams dictionary</see></param>
+/// <param name="FunctionName">The functionName member represents the function name, used by NIST to define functions based on cSHAKE. When used, it should only be set to values defined by NIST. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams-functionName">Modern Algorithms in the Web Cryptography API: 13.3 CShakeParams dictionary</see></param>
+/// <param name="Customization">The customization member represents the customization string. The application selects this string to define a variant of the function. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams-customization">Modern Algorithms in the Web Cryptography API: 13.3 CShakeParams dictionary</see></param>
 [ECMAScript]
 [Description("@#CShakeParams")]
 public record CShakeParams(
@@ -9213,10 +9182,10 @@ public record CShakeParams(
     [property: Description("@#customization")]IBufferSource? Customization = default) : Algorithm;
 
 /// <summary>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KangarooTwelveParams">Modern Algorithms in the Web Cryptography API: 14.3 KangarooTwelveParams dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KangarooTwelveParams">Modern Algorithms in the Web Cryptography API: 15.3 KangarooTwelveParams dictionary</see>
 /// </summary>
-/// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KangarooTwelveParams-outputLength">Modern Algorithms in the Web Cryptography API: 14.3 KangarooTwelveParams dictionary</see></param>
-/// <param name="Customization">The customization member represents the customization string. The application selects this string to define a variant of the function. If not specified, it defaults to the empty string. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KangarooTwelveParams-customization">Modern Algorithms in the Web Cryptography API: 14.3 KangarooTwelveParams dictionary</see></param>
+/// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KangarooTwelveParams-outputLength">Modern Algorithms in the Web Cryptography API: 15.3 KangarooTwelveParams dictionary</see></param>
+/// <param name="Customization">The customization member represents the customization string. The application selects this string to define a variant of the function. If not specified, it defaults to the empty string. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KangarooTwelveParams-customization">Modern Algorithms in the Web Cryptography API: 15.3 KangarooTwelveParams dictionary</see></param>
 [ECMAScript]
 [Description("@#KangarooTwelveParams")]
 public record KangarooTwelveParams(
@@ -9224,28 +9193,28 @@ public record KangarooTwelveParams(
     [property: Description("@#customization")]IBufferSource? Customization = default) : Algorithm;
 
 /// <summary>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacImportParams">Modern Algorithms in the Web Cryptography API: 15.4 KmacImportParams dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacImportParams">Modern Algorithms in the Web Cryptography API: 16.4 KmacImportParams dictionary</see>
 /// </summary>
-/// <param name="Length">The length member represents the length (in bits) of the key. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacImportParams-length">Modern Algorithms in the Web Cryptography API: 15.4 KmacImportParams dictionary</see></param>
+/// <param name="Length">The length member represents the length (in bits) of the key. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacImportParams-length">Modern Algorithms in the Web Cryptography API: 16.4 KmacImportParams dictionary</see></param>
 [ECMAScript]
 [Description("@#KmacImportParams")]
 public record KmacImportParams(
     [property: Description("@#length")]uint Length = default) : Algorithm;
 
 /// <summary>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyGenParams">Modern Algorithms in the Web Cryptography API: 15.3 KmacKeyGenParams dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyGenParams">Modern Algorithms in the Web Cryptography API: 16.3 KmacKeyGenParams dictionary</see>
 /// </summary>
-/// <param name="Length">The length member represents the length (in bits) of the key to generate. If unspecified, the recommended length will be used, which is 128 for KMAC128 and 256 for KMAC256. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyGenParams-length">Modern Algorithms in the Web Cryptography API: 15.3 KmacKeyGenParams dictionary</see></param>
+/// <param name="Length">The length member represents the length (in bits) of the key to generate. If unspecified, the recommended length will be used, which is 128 for KMAC128 and 256 for KMAC256. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyGenParams-length">Modern Algorithms in the Web Cryptography API: 16.3 KmacKeyGenParams dictionary</see></param>
 [ECMAScript]
 [Description("@#KmacKeyGenParams")]
 public record KmacKeyGenParams(
     [property: Description("@#length")]uint Length = default) : Algorithm;
 
 /// <summary>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacParams">Modern Algorithms in the Web Cryptography API: 15.6 KmacParams dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacParams">Modern Algorithms in the Web Cryptography API: 16.6 KmacParams dictionary</see>
 /// </summary>
-/// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacParams-outputLength">Modern Algorithms in the Web Cryptography API: 15.6 KmacParams dictionary</see></param>
-/// <param name="Customization">The customization member represents the customization string. The application selects this string to define a variant of the function. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacParams-customization">Modern Algorithms in the Web Cryptography API: 15.6 KmacParams dictionary</see></param>
+/// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacParams-outputLength">Modern Algorithms in the Web Cryptography API: 16.6 KmacParams dictionary</see></param>
+/// <param name="Customization">The customization member represents the customization string. The application selects this string to define a variant of the function. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacParams-customization">Modern Algorithms in the Web Cryptography API: 16.6 KmacParams dictionary</see></param>
 [ECMAScript]
 [Description("@#KmacParams")]
 public record KmacParams(
@@ -9253,10 +9222,10 @@ public record KmacParams(
     [property: Description("@#customization")]IBufferSource? Customization = default) : Algorithm;
 
 /// <summary>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-TurboShakeParams">Modern Algorithms in the Web Cryptography API: 13.3 TurboShakeParams dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-TurboShakeParams">Modern Algorithms in the Web Cryptography API: 14.3 TurboShakeParams dictionary</see>
 /// </summary>
-/// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-TurboShakeParams-outputLength">Modern Algorithms in the Web Cryptography API: 13.3 TurboShakeParams dictionary</see></param>
-/// <param name="DomainSeparation">The domainSeparation member represents the domain separation byte. If not specified, it defaults to 0x1F. Valid values are in the range 0x01 to 0x7F. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-TurboShakeParams-domainSeparation">Modern Algorithms in the Web Cryptography API: 13.3 TurboShakeParams dictionary</see></param>
+/// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-TurboShakeParams-outputLength">Modern Algorithms in the Web Cryptography API: 14.3 TurboShakeParams dictionary</see></param>
+/// <param name="DomainSeparation">The domainSeparation member represents the domain separation byte. If not specified, it defaults to 0x1F. Valid values are in the range 0x01 to 0x7F. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-TurboShakeParams-domainSeparation">Modern Algorithms in the Web Cryptography API: 14.3 TurboShakeParams dictionary</see></param>
 [ECMAScript]
 [Description("@#TurboShakeParams")]
 public record TurboShakeParams(
@@ -9868,6 +9837,20 @@ public record AudioEncoderConfig(
 }
 
 /// <summary>
+/// An early error result for an exception e is a NavigationResult dictionary instance given by «[ &quot;committed&quot; → a promise rejected with e, &quot;finished&quot; → a promise rejected with e ]».
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationresult">HTML Standard: 7.2.6.2 The Navigation interface</see>
+/// </remarks>
+/// <param name="Committed">{ committed, finished } = navigation.navigate(url) <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationresult-committed">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
+/// <param name="Finished">{ committed, finished } = navigation.navigate(url) <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationresult-finished">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
+[ECMAScript]
+[Description("@#NavigationResult")]
+public record NavigationResult(
+    [property: Description("@#committed")]PromiseResult<NavigationHistoryEntry>? Committed = default,
+    [property: Description("@#finished")]PromiseResult<NavigationHistoryEntry>? Finished = default);
+
+/// <summary>
 /// An optional FilePropertyBag dictionary
 /// </summary>
 /// <remarks>
@@ -9910,6 +9893,34 @@ public record ShareData(
     [property: Description("@#title")]string? Title = default,
     [property: Description("@#text")]string? Text = default,
     [property: Description("@#url")]string? Url = default);
+
+/// <summary>
+/// Configurations can and ought to be modified by developers to suit their purposes. Options are to write a new SanitizerConfig dictionary from scratch, to modify an existing Sanitizer&apos;s configuration by using the modifier methods, or to get() an existing Sanitizer&apos;s configuration as a dictionary and modify the dictionary and then create a new Sanitizer with it.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerconfig">HTML Standard: 8.6.3 Sanitizer configuration</see>
+/// </remarks>
+/// <param name="Elements">If neither configuration[&quot;elements&quot;] nor configuration[&quot;removeElements&quot;] exists, then set configuration[&quot;removeElements&quot;] to an empty list. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-elements">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+/// <param name="RemoveElements">If neither configuration[&quot;elements&quot;] nor configuration[&quot;removeElements&quot;] exists, then set configuration[&quot;removeElements&quot;] to an empty list. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-removeelements">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+/// <param name="ReplaceWithChildrenElements">If configuration[&quot;replaceWithChildrenElements&quot;] exists, then set configuration[&quot;replaceWithChildrenElements&quot;] to the result of canonicalizing configuration[&quot;replaceWithChildrenElements&quot;]. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-replacewithchildrenelements">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+/// <param name="ProcessingInstructions"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-processinginstructions">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+/// <param name="RemoveProcessingInstructions"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-removeprocessinginstructions">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+/// <param name="Attributes">If neither configuration[&quot;attributes&quot;] nor configuration[&quot;removeAttributes&quot;] exists, then set configuration[&quot;removeAttributes&quot;] to an empty list. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-attributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+/// <param name="RemoveAttributes">If neither configuration[&quot;attributes&quot;] nor configuration[&quot;removeAttributes&quot;] exists, then set configuration[&quot;removeAttributes&quot;] to an empty list. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-removeattributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+/// <param name="Comments">If configuration[&quot;comments&quot;] does not exist, then set it to permissiveDefaults. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-comments">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+/// <param name="DataAttributes">If configuration[&quot;attributes&quot;] exists and configuration[&quot;dataAttributes&quot;] does not exist, then set it to permissiveDefaults. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-dataattributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+[ECMAScript]
+[Description("@#SanitizerConfig")]
+public record SanitizerConfig(
+    [property: Description("@#elements")]SanitizerElementWithAttributes[]? Elements = default,
+    [property: Description("@#removeElements")]SanitizerElement[]? RemoveElements = default,
+    [property: Description("@#replaceWithChildrenElements")]SanitizerElement[]? ReplaceWithChildrenElements = default,
+    [property: Description("@#processingInstructions")]SanitizerPI[]? ProcessingInstructions = default,
+    [property: Description("@#removeProcessingInstructions")]SanitizerPI[]? RemoveProcessingInstructions = default,
+    [property: Description("@#attributes")]SanitizerAttribute[]? Attributes = default,
+    [property: Description("@#removeAttributes")]SanitizerAttribute[]? RemoveAttributes = default,
+    [property: Description("@#comments")]bool Comments = default,
+    [property: Description("@#dataAttributes")]bool DataAttributes = default);
 
 /// <summary>
 /// Constructs a new FaceDetector with the optional faceDetectorOptions.
@@ -10122,22 +10133,30 @@ public record PushPermissionDescriptor(
 /// <remarks>
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediatrackcapabilities">Media Capture and Streams: 4.3.5 MediaTrackCapabilities</see>
 /// </remarks>
-/// <param name="WhiteBalanceMode">whiteBalanceMode <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-whitebalancemode">MediaStream Image Capture: 9.2.1 Members</see></param>
-/// <param name="ExposureMode">exposureMode <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-exposuremode">MediaStream Image Capture: 9.2.1 Members</see></param>
+/// <param name="WhiteBalanceMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-whitebalancemode">MediaStream Image Capture: 9.2.1 Members</see></param>
+/// <param name="ExposureMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-exposuremode">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="FocusMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-focusmode">MediaStream Image Capture: 9.2.1 Members</see></param>
-/// <param name="ExposureCompensation">exposureCompensation <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-exposurecompensation">MediaStream Image Capture: 9.2.1 Members</see></param>
-/// <param name="ExposureTime">exposureTime <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-exposuretime">MediaStream Image Capture: 9.2.1 Members</see></param>
-/// <param name="ColorTemperature">colorTemperature <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-colortemperature">MediaStream Image Capture: 9.2.1 Members</see></param>
+/// <param name="ExposureCompensation"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-exposurecompensation">MediaStream Image Capture: 9.2.1 Members</see></param>
+/// <param name="ExposureTime"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-exposuretime">MediaStream Image Capture: 9.2.1 Members</see></param>
+/// <param name="ColorTemperature"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-colortemperature">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="Iso"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-iso">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="Brightness"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-brightness">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="Contrast"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-contrast">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="Saturation"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-saturation">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="Sharpness"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-sharpness">MediaStream Image Capture: 9.2.1 Members</see></param>
-/// <param name="FocusDistance">focusDistance <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-focusdistance">MediaStream Image Capture: 9.2.1 Members</see></param>
+/// <param name="FocusDistance"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-focusdistance">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="Pan"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-pan">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="Tilt"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-tilt">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="Zoom"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-zoom">MediaStream Image Capture: 9.2.1 Members</see></param>
 /// <param name="Torch"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackcapabilities-torch">MediaStream Image Capture: 9.2.1 Members</see></param>
+/// <param name="PowerEfficient"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackcapabilities-powerefficient">Media Capture and Streams Extensions: Dictionary MediaTrackCapabilities Members</see></param>
+/// <param name="PowerEfficientPixelFormat"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackcapabilities-powerefficientpixelformat">Media Capture and Streams Extensions: Dictionary MediaTrackCapabilities Members</see></param>
+/// <param name="GestureReactions"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackcapabilities-gesturereactions">Media Capture and Streams Extensions: 12. Exposing MediaStreamTrack source heuristic reactions support</see></param>
+/// <param name="FaceFraming"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackcapabilities-faceframing">Media Capture and Streams Extensions: 13. Exposing MediaStreamTrack source automatic face framing support</see></param>
+/// <param name="EyeGazeCorrection"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackcapabilities-eyegazecorrection">Media Capture and Streams Extensions: 14. Exposing MediaStreamTrack source eye gaze correction support</see></param>
+/// <param name="VoiceIsolation"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackcapabilities-voiceisolation">Media Capture and Streams Extensions: 15. VoiceIsolation constraint</see></param>
+/// <param name="HumanFaceDetectionMode"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackcapabilities-humanfacedetectionmode">Media Capture and Streams Extensions: Dictionary MediaTrackCapabilities Members</see></param>
+/// <param name="BackgroundSegmentationMask"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackcapabilities-backgroundsegmentationmask">Media Capture and Streams Extensions: 20. Background segmentation mask</see></param>
 /// <param name="Width"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatrackcapabilities-width">Media Capture and Streams: Dictionary MediaTrackCapabilities Members</see></param>
 /// <param name="Height"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatrackcapabilities-height">Media Capture and Streams: Dictionary MediaTrackCapabilities Members</see></param>
 /// <param name="AspectRatio"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatrackcapabilities-aspectratio">Media Capture and Streams: Dictionary MediaTrackCapabilities Members</see></param>
@@ -10176,6 +10195,14 @@ public record MediaTrackCapabilities(
     [property: Description("@#tilt")]MediaSettingsRange? Tilt = default,
     [property: Description("@#zoom")]MediaSettingsRange? Zoom = default,
     [property: Description("@#torch")]bool[]? Torch = default,
+    [property: Description("@#powerEfficient")]bool[]? PowerEfficient = default,
+    [property: Description("@#powerEfficientPixelFormat")]bool[]? PowerEfficientPixelFormat = default,
+    [property: Description("@#gestureReactions")]bool[]? GestureReactions = default,
+    [property: Description("@#faceFraming")]bool[]? FaceFraming = default,
+    [property: Description("@#eyeGazeCorrection")]bool[]? EyeGazeCorrection = default,
+    [property: Description("@#voiceIsolation")]bool[]? VoiceIsolation = default,
+    [property: Description("@#humanFaceDetectionMode")]string[]? HumanFaceDetectionMode = default,
+    [property: Description("@#backgroundSegmentationMask")]bool[]? BackgroundSegmentationMask = default,
     [property: Description("@#width")]ULongRange? Width = default,
     [property: Description("@#height")]ULongRange? Height = default,
     [property: Description("@#aspectRatio")]DoubleRange? AspectRatio = default,
@@ -10216,6 +10243,38 @@ public record MediaTrackCapabilities(
         [Description("@#torch")]bool[]? Torch = default);
 
     [Category("optional")]
+    public extern static MediaTrackCapabilities OptionalPowerEfficient(
+        [Description("@#powerEfficient")]bool[]? PowerEfficient = default);
+
+    [Category("optional")]
+    public extern static MediaTrackCapabilities OptionalPowerEfficientPixelFormat(
+        [Description("@#powerEfficientPixelFormat")]bool[]? PowerEfficientPixelFormat = default);
+
+    [Category("optional")]
+    public extern static MediaTrackCapabilities OptionalGestureReactions(
+        [Description("@#gestureReactions")]bool[]? GestureReactions = default);
+
+    [Category("optional")]
+    public extern static MediaTrackCapabilities OptionalFaceFraming(
+        [Description("@#faceFraming")]bool[]? FaceFraming = default);
+
+    [Category("optional")]
+    public extern static MediaTrackCapabilities OptionalEyeGazeCorrection(
+        [Description("@#eyeGazeCorrection")]bool[]? EyeGazeCorrection = default);
+
+    [Category("optional")]
+    public extern static MediaTrackCapabilities OptionalVoiceIsolation(
+        [Description("@#voiceIsolation")]bool[]? VoiceIsolation = default);
+
+    [Category("optional")]
+    public extern static MediaTrackCapabilities OptionalHumanFaceDetectionMode(
+        [Description("@#humanFaceDetectionMode")]string[]? HumanFaceDetectionMode = default);
+
+    [Category("optional")]
+    public extern static MediaTrackCapabilities OptionalBackgroundSegmentationMask(
+        [Description("@#backgroundSegmentationMask")]bool[]? BackgroundSegmentationMask = default);
+
+    [Category("optional")]
     public extern static MediaTrackCapabilities OptionalWidthHeightAspectRatio16(
         [Description("@#width")]ULongRange? Width = default,
         [Description("@#height")]ULongRange? Height = default,
@@ -10247,23 +10306,29 @@ public record MediaTrackCapabilities(
 /// <remarks>
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediatrackconstraintset">Media Capture and Streams: 4.3.6 MediaTrackConstraints</see>
 /// </remarks>
-/// <param name="WhiteBalanceMode">whiteBalanceMode <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-whitebalancemode">MediaStream Image Capture: 9.3.1 Members</see></param>
-/// <param name="ExposureMode">exposureMode <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-exposuremode">MediaStream Image Capture: 9.3.1 Members</see></param>
+/// <param name="WhiteBalanceMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-whitebalancemode">MediaStream Image Capture: 9.3.1 Members</see></param>
+/// <param name="ExposureMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-exposuremode">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="FocusMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-focusmode">MediaStream Image Capture: 9.3.1 Members</see></param>
-/// <param name="PointsOfInterest">pointsOfInterest <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-pointsofinterest">MediaStream Image Capture: 9.3.1 Members</see></param>
-/// <param name="ExposureCompensation">exposureCompensation <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-exposurecompensation">MediaStream Image Capture: 9.3.1 Members</see></param>
-/// <param name="ExposureTime">exposureTime <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-exposuretime">MediaStream Image Capture: 9.3.1 Members</see></param>
-/// <param name="ColorTemperature">colorTemperature <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-colortemperature">MediaStream Image Capture: 9.3.1 Members</see></param>
+/// <param name="PointsOfInterest"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-pointsofinterest">MediaStream Image Capture: 9.3.1 Members</see></param>
+/// <param name="ExposureCompensation"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-exposurecompensation">MediaStream Image Capture: 9.3.1 Members</see></param>
+/// <param name="ExposureTime"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-exposuretime">MediaStream Image Capture: 9.3.1 Members</see></param>
+/// <param name="ColorTemperature"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-colortemperature">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="Iso"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-iso">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="Brightness"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-brightness">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="Contrast"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-contrast">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="Saturation"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-saturation">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="Sharpness"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-sharpness">MediaStream Image Capture: 9.3.1 Members</see></param>
-/// <param name="FocusDistance">focusDistance <see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-focusdistance">MediaStream Image Capture: 9.3.1 Members</see></param>
+/// <param name="FocusDistance"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-focusdistance">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="Pan"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-pan">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="Tilt"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-tilt">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="Zoom"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-zoom">MediaStream Image Capture: 9.3.1 Members</see></param>
 /// <param name="Torch"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatrackconstraintset-torch">MediaStream Image Capture: 9.3.1 Members</see></param>
+/// <param name="GestureReactions"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackconstraintset-gesturereactions">Media Capture and Streams Extensions: 12. Exposing MediaStreamTrack source heuristic reactions support</see></param>
+/// <param name="FaceFraming"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackconstraintset-faceframing">Media Capture and Streams Extensions: 13. Exposing MediaStreamTrack source automatic face framing support</see></param>
+/// <param name="EyeGazeCorrection"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackconstraintset-eyegazecorrection">Media Capture and Streams Extensions: 14. Exposing MediaStreamTrack source eye gaze correction support</see></param>
+/// <param name="VoiceIsolation"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackconstraintset-voiceisolation">Media Capture and Streams Extensions: 15. VoiceIsolation constraint</see></param>
+/// <param name="HumanFaceDetectionMode"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackconstraintset-humanfacedetectionmode">Media Capture and Streams Extensions: Dictionary MediaTrackConstraintSet Members</see></param>
+/// <param name="BackgroundSegmentationMask"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatrackconstraintset-backgroundsegmentationmask">Media Capture and Streams Extensions: 20. Background segmentation mask</see></param>
 /// <param name="Width"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatrackconstraintset-width">Media Capture and Streams: Dictionary MediaTrackConstraintSet Members</see></param>
 /// <param name="Height"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatrackconstraintset-height">Media Capture and Streams: Dictionary MediaTrackConstraintSet Members</see></param>
 /// <param name="AspectRatio"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatrackconstraintset-aspectratio">Media Capture and Streams: Dictionary MediaTrackConstraintSet Members</see></param>
@@ -10305,6 +10370,12 @@ public record MediaTrackConstraintSet(
     [property: Description("@#tilt")]MediaTrackConstraintSetTilt? Tilt = default,
     [property: Description("@#zoom")]MediaTrackConstraintSetZoom? Zoom = default,
     [property: Description("@#torch")]ConstrainBoolean? Torch = default,
+    [property: Description("@#gestureReactions")]ConstrainBoolean? GestureReactions = default,
+    [property: Description("@#faceFraming")]ConstrainBoolean? FaceFraming = default,
+    [property: Description("@#eyeGazeCorrection")]ConstrainBoolean? EyeGazeCorrection = default,
+    [property: Description("@#voiceIsolation")]ConstrainBoolean? VoiceIsolation = default,
+    [property: Description("@#humanFaceDetectionMode")]ConstrainDOMString? HumanFaceDetectionMode = default,
+    [property: Description("@#backgroundSegmentationMask")]ConstrainBoolean? BackgroundSegmentationMask = default,
     [property: Description("@#width")]ConstrainULong? Width = default,
     [property: Description("@#height")]ConstrainULong? Height = default,
     [property: Description("@#aspectRatio")]ConstrainDouble? AspectRatio = default,
@@ -10348,6 +10419,30 @@ public record MediaTrackConstraintSet(
         [Description("@#torch")]ConstrainBoolean? Torch = default);
 
     [Category("optional")]
+    public extern static MediaTrackConstraintSet OptionalGestureReactions(
+        [Description("@#gestureReactions")]ConstrainBoolean? GestureReactions = default);
+
+    [Category("optional")]
+    public extern static MediaTrackConstraintSet OptionalFaceFraming(
+        [Description("@#faceFraming")]ConstrainBoolean? FaceFraming = default);
+
+    [Category("optional")]
+    public extern static MediaTrackConstraintSet OptionalEyeGazeCorrection(
+        [Description("@#eyeGazeCorrection")]ConstrainBoolean? EyeGazeCorrection = default);
+
+    [Category("optional")]
+    public extern static MediaTrackConstraintSet OptionalVoiceIsolation(
+        [Description("@#voiceIsolation")]ConstrainBoolean? VoiceIsolation = default);
+
+    [Category("optional")]
+    public extern static MediaTrackConstraintSet OptionalHumanFaceDetectionMode(
+        [Description("@#humanFaceDetectionMode")]ConstrainDOMString? HumanFaceDetectionMode = default);
+
+    [Category("optional")]
+    public extern static MediaTrackConstraintSet OptionalBackgroundSegmentationMask(
+        [Description("@#backgroundSegmentationMask")]ConstrainBoolean? BackgroundSegmentationMask = default);
+
+    [Category("optional")]
     public extern static MediaTrackConstraintSet OptionalWidthHeightAspectRatio16(
         [Description("@#width")]ConstrainULong? Width = default,
         [Description("@#height")]ConstrainULong? Height = default,
@@ -10374,42 +10469,6 @@ public record MediaTrackConstraintSet(
         [Description("@#restrictOwnAudio")]ConstrainBoolean? RestrictOwnAudio = default,
         [Description("@#suppressLocalAudioPlayback")]ConstrainBoolean? SuppressLocalAudioPlayback = default);
 }
-
-/// <summary>
-/// Gather data from track into a PhotoCapabilities dictionary containing the available capabilities of the device, including ranges where appropriate. The method of doing this will depend on the underlying device.
-/// </summary>
-/// <remarks>
-/// <see href="https://w3c.github.io/mediacapture-image/#dictdef-photocapabilities">MediaStream Image Capture: 4 PhotoCapabilities</see>
-/// </remarks>
-/// <param name="RedEyeReduction">redEyeReduction <see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-redeyereduction">MediaStream Image Capture: 4.1 Members</see></param>
-/// <param name="ImageHeight"><see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-imageheight">MediaStream Image Capture: 4.1 Members</see></param>
-/// <param name="ImageWidth"><see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-imagewidth">MediaStream Image Capture: 4.1 Members</see></param>
-/// <param name="FillLightMode">fillLightMode <see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-filllightmode">MediaStream Image Capture: 4.1 Members</see></param>
-[ECMAScript]
-[Description("@#PhotoCapabilities")]
-public record PhotoCapabilities(
-    [property: Description("@#redEyeReduction")]RedEyeReduction? RedEyeReduction = default,
-    [property: Description("@#imageHeight")]MediaSettingsRange? ImageHeight = default,
-    [property: Description("@#imageWidth")]MediaSettingsRange? ImageWidth = default,
-    [property: Description("@#fillLightMode")]FillLightMode[]? FillLightMode = default);
-
-/// <summary>
-/// Gather data from track into a PhotoSettings dictionary containing the current conditions in which the device is found. The method of doing this will depend on the underlying device.
-/// </summary>
-/// <remarks>
-/// <see href="https://w3c.github.io/mediacapture-image/#dictdef-photosettings">MediaStream Image Capture: 5 PhotoSettings</see>
-/// </remarks>
-/// <param name="FillLightMode">fillLightMode <see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-filllightmode">MediaStream Image Capture: 5.1 Members</see></param>
-/// <param name="ImageHeight"><see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-imageheight">MediaStream Image Capture: 5.1 Members</see></param>
-/// <param name="ImageWidth"><see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-imagewidth">MediaStream Image Capture: 5.1 Members</see></param>
-/// <param name="RedEyeReduction">redEyeReduction <see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-redeyereduction">MediaStream Image Capture: 5.1 Members</see></param>
-[ECMAScript]
-[Description("@#PhotoSettings")]
-public record PhotoSettings(
-    [property: Description("@#fillLightMode")]FillLightMode? FillLightMode = default,
-    [property: Description("@#imageHeight")]double ImageHeight = default,
-    [property: Description("@#imageWidth")]double ImageWidth = default,
-    [property: Description("@#redEyeReduction")]bool RedEyeReduction = default);
 
 /// <summary>
 /// Given an audio/video type, MediaKeySystemMediaCapability sequence requested media capabilities, MediaKeySystemConfiguration accumulated configuration, and restrictions, this algorithm returns a sequence of supported MediaKeySystemMediaCapability values for this audio/video type or null as appropriate.
@@ -10659,9 +10718,9 @@ public record HmacKeyAlgorithm(
 /// Let algorithm be a new KmacKeyAlgorithm.
 /// </summary>
 /// <remarks>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyAlgorithm">Modern Algorithms in the Web Cryptography API: 15.5 KmacKeyAlgorithm dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyAlgorithm">Modern Algorithms in the Web Cryptography API: 16.5 KmacKeyAlgorithm dictionary</see>
 /// </remarks>
-/// <param name="Length">The length member represents the length (in bits) of the key. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyAlgorithm-length">Modern Algorithms in the Web Cryptography API: 15.5 KmacKeyAlgorithm dictionary</see></param>
+/// <param name="Length">The length member represents the length (in bits) of the key. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyAlgorithm-length">Modern Algorithms in the Web Cryptography API: 16.5 KmacKeyAlgorithm dictionary</see></param>
 [ECMAScript]
 [Description("@#KmacKeyAlgorithm")]
 public record KmacKeyAlgorithm(
@@ -10671,9 +10730,9 @@ public record KmacKeyAlgorithm(
 /// Let algorithm be a new RsaHashedKeyAlgorithm dictionary.
 /// </summary>
 /// <remarks>
-/// <see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedKeyAlgorithm">Web Cryptography API Level 2: 20.6 RsaHashedKeyAlgorithm dictionary</see>
+/// <see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedKeyAlgorithm">Web Cryptography API Level 2: 20.7 RsaHashedKeyAlgorithm dictionary</see>
 /// </remarks>
-/// <param name="Hash"><see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedKeyAlgorithm-hash">Web Cryptography API Level 2: 20.6 RsaHashedKeyAlgorithm dictionary</see></param>
+/// <param name="Hash"><see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedKeyAlgorithm-hash">Web Cryptography API Level 2: 20.7 RsaHashedKeyAlgorithm dictionary</see></param>
 [ECMAScript]
 [Description("@#RsaHashedKeyAlgorithm")]
 public record RsaHashedKeyAlgorithm(
@@ -10991,23 +11050,31 @@ public record ProfilerSample(
 /// <remarks>
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediatracksettings">Media Capture and Streams: 4.3.7 MediaTrackSettings</see>
 /// </remarks>
-/// <param name="WhiteBalanceMode">whiteBalanceMode <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-whitebalancemode">MediaStream Image Capture: 9.4.1 Members</see></param>
-/// <param name="ExposureMode">exposureMode <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-exposuremode">MediaStream Image Capture: 9.4.1 Members</see></param>
+/// <param name="WhiteBalanceMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-whitebalancemode">MediaStream Image Capture: 9.4.1 Members</see></param>
+/// <param name="ExposureMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-exposuremode">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="FocusMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-focusmode">MediaStream Image Capture: 9.4.1 Members</see></param>
-/// <param name="PointsOfInterest">pointsOfInterest <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-pointsofinterest">MediaStream Image Capture: 9.4.1 Members</see></param>
-/// <param name="ExposureCompensation">exposureCompensation <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-exposurecompensation">MediaStream Image Capture: 9.4.1 Members</see></param>
-/// <param name="ExposureTime">exposureTime <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-exposuretime">MediaStream Image Capture: 9.4.1 Members</see></param>
-/// <param name="ColorTemperature">colorTemperature <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-colortemperature">MediaStream Image Capture: 9.4.1 Members</see></param>
+/// <param name="PointsOfInterest"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-pointsofinterest">MediaStream Image Capture: 9.4.1 Members</see></param>
+/// <param name="ExposureCompensation"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-exposurecompensation">MediaStream Image Capture: 9.4.1 Members</see></param>
+/// <param name="ExposureTime"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-exposuretime">MediaStream Image Capture: 9.4.1 Members</see></param>
+/// <param name="ColorTemperature"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-colortemperature">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="Iso"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-iso">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="Brightness"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-brightness">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="Contrast"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-contrast">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="Saturation"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-saturation">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="Sharpness"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-sharpness">MediaStream Image Capture: 9.4.1 Members</see></param>
-/// <param name="FocusDistance">focusDistance <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-focusdistance">MediaStream Image Capture: 9.4.1 Members</see></param>
+/// <param name="FocusDistance"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-focusdistance">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="Pan"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-pan">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="Tilt"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-tilt">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="Zoom"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-zoom">MediaStream Image Capture: 9.4.1 Members</see></param>
 /// <param name="Torch"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksettings-torch">MediaStream Image Capture: 9.4.1 Members</see></param>
+/// <param name="PowerEfficient"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksettings-powerefficient">Media Capture and Streams Extensions: Dictionary MediaTrackSettings Members</see></param>
+/// <param name="PowerEfficientPixelFormat"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksettings-powerefficientpixelformat">Media Capture and Streams Extensions: Dictionary MediaTrackSettings Members</see></param>
+/// <param name="GestureReactions"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksettings-gesturereactions">Media Capture and Streams Extensions: 12. Exposing MediaStreamTrack source heuristic reactions support</see></param>
+/// <param name="FaceFraming"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksettings-faceframing">Media Capture and Streams Extensions: 13. Exposing MediaStreamTrack source automatic face framing support</see></param>
+/// <param name="EyeGazeCorrection"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksettings-eyegazecorrection">Media Capture and Streams Extensions: 14. Exposing MediaStreamTrack source eye gaze correction support</see></param>
+/// <param name="VoiceIsolation"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksettings-voiceisolation">Media Capture and Streams Extensions: 15. VoiceIsolation constraint</see></param>
+/// <param name="HumanFaceDetectionMode"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksettings-humanfacedetectionmode">Media Capture and Streams Extensions: Dictionary MediaTrackSettings Members</see></param>
+/// <param name="BackgroundSegmentationMask"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksettings-backgroundsegmentationmask">Media Capture and Streams Extensions: 20. Background segmentation mask</see></param>
 /// <param name="Width"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatracksettings-width">Media Capture and Streams: Dictionary MediaTrackSettings Members</see></param>
 /// <param name="Height"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatracksettings-height">Media Capture and Streams: Dictionary MediaTrackSettings Members</see></param>
 /// <param name="AspectRatio"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatracksettings-aspectratio">Media Capture and Streams: Dictionary MediaTrackSettings Members</see></param>
@@ -11050,6 +11117,14 @@ public record MediaTrackSettings(
     [property: Description("@#tilt")]double Tilt = default,
     [property: Description("@#zoom")]double Zoom = default,
     [property: Description("@#torch")]bool Torch = default,
+    [property: Description("@#powerEfficient")]bool PowerEfficient = default,
+    [property: Description("@#powerEfficientPixelFormat")]bool PowerEfficientPixelFormat = default,
+    [property: Description("@#gestureReactions")]bool GestureReactions = default,
+    [property: Description("@#faceFraming")]bool FaceFraming = default,
+    [property: Description("@#eyeGazeCorrection")]bool EyeGazeCorrection = default,
+    [property: Description("@#voiceIsolation")]bool VoiceIsolation = default,
+    [property: Description("@#humanFaceDetectionMode")]string? HumanFaceDetectionMode = default,
+    [property: Description("@#backgroundSegmentationMask")]bool BackgroundSegmentationMask = default,
     [property: Description("@#width")]uint Width = default,
     [property: Description("@#height")]uint Height = default,
     [property: Description("@#aspectRatio")]double AspectRatio = default,
@@ -11094,6 +11169,38 @@ public record MediaTrackSettings(
         [Description("@#torch")]bool Torch = default);
 
     [Category("optional")]
+    public extern static MediaTrackSettings OptionalPowerEfficient(
+        [Description("@#powerEfficient")]bool PowerEfficient = default);
+
+    [Category("optional")]
+    public extern static MediaTrackSettings OptionalPowerEfficientPixelFormat(
+        [Description("@#powerEfficientPixelFormat")]bool PowerEfficientPixelFormat = default);
+
+    [Category("optional")]
+    public extern static MediaTrackSettings OptionalGestureReactions(
+        [Description("@#gestureReactions")]bool GestureReactions = default);
+
+    [Category("optional")]
+    public extern static MediaTrackSettings OptionalFaceFraming(
+        [Description("@#faceFraming")]bool FaceFraming = default);
+
+    [Category("optional")]
+    public extern static MediaTrackSettings OptionalEyeGazeCorrection(
+        [Description("@#eyeGazeCorrection")]bool EyeGazeCorrection = default);
+
+    [Category("optional")]
+    public extern static MediaTrackSettings OptionalVoiceIsolation(
+        [Description("@#voiceIsolation")]bool VoiceIsolation = default);
+
+    [Category("optional")]
+    public extern static MediaTrackSettings OptionalHumanFaceDetectionMode(
+        [Description("@#humanFaceDetectionMode")]string? HumanFaceDetectionMode = default);
+
+    [Category("optional")]
+    public extern static MediaTrackSettings OptionalBackgroundSegmentationMask(
+        [Description("@#backgroundSegmentationMask")]bool BackgroundSegmentationMask = default);
+
+    [Category("optional")]
     public extern static MediaTrackSettings OptionalWidthHeightAspectRatio16(
         [Description("@#width")]uint Width = default,
         [Description("@#height")]uint Height = default,
@@ -11121,6 +11228,52 @@ public record MediaTrackSettings(
         [Description("@#suppressLocalAudioPlayback")]bool SuppressLocalAudioPlayback = default,
         [Description("@#screenPixelRatio")]double ScreenPixelRatio = default);
 }
+
+/// <summary>
+/// Let settings be the ImageDataSettings object «[ &quot;colorSpace&quot; → this&apos;s colorSpace, &quot;pixelFormat&quot; → this&apos;s pixelFormat ]».
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imagedatasettings">HTML Standard: 8.11.1 The ImageData interface</see>
+/// </remarks>
+/// <param name="ColorSpace">Let settings be the ImageDataSettings object «[ &quot;colorSpace&quot; → this&apos;s colorSpace, &quot;pixelFormat&quot; → this&apos;s pixelFormat ]». <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatasettings-colorspace">HTML Standard: 8.11.1 The ImageData interface</see></param>
+/// <param name="PixelFormat">Let settings be the ImageDataSettings object «[ &quot;colorSpace&quot; → this&apos;s colorSpace, &quot;pixelFormat&quot; → this&apos;s pixelFormat ]». <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatasettings-pixelformat">HTML Standard: 8.11.1 The ImageData interface</see></param>
+[ECMAScript]
+[Description("@#ImageDataSettings")]
+public record ImageDataSettings(
+    [property: Description("@#colorSpace")]PredefinedColorSpace? ColorSpace = default,
+    [property: Description("@#pixelFormat")]ImageDataPixelFormat PixelFormat = ImageDataPixelFormat.RgbaUnorm8);
+
+/// <summary>
+/// Let settings be the result of converting options to the dictionary type CanvasRenderingContext2DSettings. (This can throw an exception.)
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasrenderingcontext2dsettings">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+/// </remarks>
+/// <param name="Alpha">If the alpha member is false, then the context is forced to always be opaque. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-alpha">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
+/// <param name="Desynchronized">If the desynchronized member is true, then the context might be desynchronized. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-desynchronized">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
+/// <param name="ColorSpace">The colorSpace member specifies the color space of the rendering context. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-colorspace">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
+/// <param name="ColorType">The colorType member specifies the color type of the rendering context. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-colortype">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
+/// <param name="WillReadFrequently">If the willReadFrequently member is true, then the context is marked for readback optimization. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-willreadfrequently">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
+[ECMAScript]
+[Description("@#CanvasRenderingContext2DSettings")]
+public record CanvasRenderingContext2DSettings(
+    [property: Description("@#alpha")]bool Alpha = false,
+    [property: Description("@#desynchronized")]bool Desynchronized = false,
+    [property: Description("@#colorSpace")]PredefinedColorSpace ColorSpace = PredefinedColorSpace.Srgb,
+    [property: Description("@#colorType")]CanvasColorType ColorType = CanvasColorType.Unorm8,
+    [property: Description("@#willReadFrequently")]bool WillReadFrequently = false);
+
+/// <summary>
+/// Let settings be the result of converting options to the dictionary type ImageBitmapRenderingContextSettings. (This can throw an exception.)
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#imagebitmaprenderingcontextsettings">HTML Standard: 4.12.5.2.2 The ImageBitmapRenderingContext interface</see>
+/// </remarks>
+/// <param name="Alpha">If the alpha setting is provided and set to false, then the canvas is forced to always be opaque. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-imagebitmaprenderingcontextsettings-alpha">HTML Standard: 4.12.5.2.2 The ImageBitmapRenderingContext interface</see></param>
+[ECMAScript]
+[Description("@#ImageBitmapRenderingContextSettings")]
+public record ImageBitmapRenderingContextSettings(
+    [property: Description("@#alpha")]bool Alpha = false);
 
 /// <summary>
 /// Make MLOperandDescriptor.shape a required property (#764)
@@ -11180,23 +11333,31 @@ public record RTCVideoSourceStats(
 /// <remarks>
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediatracksupportedconstraints">Media Capture and Streams: 4.3.4 MediaTrackSupportedConstraints</see>
 /// </remarks>
-/// <param name="WhiteBalanceMode">whiteBalanceMode <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-whitebalancemode">MediaStream Image Capture: 9.1.1 Members</see></param>
-/// <param name="ExposureMode">exposureMode <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-exposuremode">MediaStream Image Capture: 9.1.1 Members</see></param>
+/// <param name="WhiteBalanceMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-whitebalancemode">MediaStream Image Capture: 9.1.1 Members</see></param>
+/// <param name="ExposureMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-exposuremode">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="FocusMode"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-focusmode">MediaStream Image Capture: 9.1.1 Members</see></param>
-/// <param name="PointsOfInterest">pointsOfInterest <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-pointsofinterest">MediaStream Image Capture: 9.1.1 Members</see></param>
-/// <param name="ExposureCompensation">exposureCompensation <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-exposurecompensation">MediaStream Image Capture: 9.1.1 Members</see></param>
-/// <param name="ExposureTime">exposureTime <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-exposuretime">MediaStream Image Capture: 9.1.1 Members</see></param>
-/// <param name="ColorTemperature">colorTemperature <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-colortemperature">MediaStream Image Capture: 9.1.1 Members</see></param>
+/// <param name="PointsOfInterest"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-pointsofinterest">MediaStream Image Capture: 9.1.1 Members</see></param>
+/// <param name="ExposureCompensation"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-exposurecompensation">MediaStream Image Capture: 9.1.1 Members</see></param>
+/// <param name="ExposureTime"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-exposuretime">MediaStream Image Capture: 9.1.1 Members</see></param>
+/// <param name="ColorTemperature"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-colortemperature">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="Iso"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-iso">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="Brightness"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-brightness">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="Contrast"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-contrast">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="Pan"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-pan">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="Saturation"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-saturation">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="Sharpness"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-sharpness">MediaStream Image Capture: 9.1.1 Members</see></param>
-/// <param name="FocusDistance">focusDistance <see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-focusdistance">MediaStream Image Capture: 9.1.1 Members</see></param>
+/// <param name="FocusDistance"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-focusdistance">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="Tilt"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-tilt">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="Zoom"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-zoom">MediaStream Image Capture: 9.1.1 Members</see></param>
 /// <param name="Torch"><see href="https://w3c.github.io/mediacapture-image/#dom-mediatracksupportedconstraints-torch">MediaStream Image Capture: 9.1.1 Members</see></param>
+/// <param name="PowerEfficient"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksupportedconstraints-powerefficient">Media Capture and Streams Extensions: Dictionary MediaTrackSupportedConstraints Members</see></param>
+/// <param name="PowerEfficientPixelFormat"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksupportedconstraints-powerefficientpixelformat">Media Capture and Streams Extensions: Dictionary MediaTrackSupportedConstraints Members</see></param>
+/// <param name="GestureReactions"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksupportedconstraints-gesturereactions">Media Capture and Streams Extensions: 12. Exposing MediaStreamTrack source heuristic reactions support</see></param>
+/// <param name="FaceFraming"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksupportedconstraints-faceframing">Media Capture and Streams Extensions: 13. Exposing MediaStreamTrack source automatic face framing support</see></param>
+/// <param name="EyeGazeCorrection"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksupportedconstraints-eyegazecorrection">Media Capture and Streams Extensions: 14. Exposing MediaStreamTrack source eye gaze correction support</see></param>
+/// <param name="VoiceIsolation"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksupportedconstraints-voiceisolation">Media Capture and Streams Extensions: 15. VoiceIsolation constraint</see></param>
+/// <param name="HumanFaceDetectionMode"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksupportedconstraints-humanfacedetectionmode">Media Capture and Streams Extensions: Dictionary MediaTrackSupportedConstraints Members</see></param>
+/// <param name="BackgroundSegmentationMask"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediatracksupportedconstraints-backgroundsegmentationmask">Media Capture and Streams Extensions: 20. Background segmentation mask</see></param>
 /// <param name="Width"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatracksupportedconstraints-width">Media Capture and Streams: Dictionary MediaTrackSupportedConstraints Members</see></param>
 /// <param name="Height"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatracksupportedconstraints-height">Media Capture and Streams: Dictionary MediaTrackSupportedConstraints Members</see></param>
 /// <param name="AspectRatio"><see href="https://w3c.github.io/mediacapture-main/#dom-mediatracksupportedconstraints-aspectratio">Media Capture and Streams: Dictionary MediaTrackSupportedConstraints Members</see></param>
@@ -11238,6 +11399,14 @@ public record MediaTrackSupportedConstraints(
     [property: Description("@#tilt")]bool Tilt = false,
     [property: Description("@#zoom")]bool Zoom = false,
     [property: Description("@#torch")]bool Torch = false,
+    [property: Description("@#powerEfficient")]bool PowerEfficient = false,
+    [property: Description("@#powerEfficientPixelFormat")]bool PowerEfficientPixelFormat = false,
+    [property: Description("@#gestureReactions")]bool GestureReactions = false,
+    [property: Description("@#faceFraming")]bool FaceFraming = false,
+    [property: Description("@#eyeGazeCorrection")]bool EyeGazeCorrection = false,
+    [property: Description("@#voiceIsolation")]bool VoiceIsolation = false,
+    [property: Description("@#humanFaceDetectionMode")]bool HumanFaceDetectionMode = false,
+    [property: Description("@#backgroundSegmentationMask")]bool BackgroundSegmentationMask = false,
     [property: Description("@#width")]bool Width = false,
     [property: Description("@#height")]bool Height = false,
     [property: Description("@#aspectRatio")]bool AspectRatio = false,
@@ -11279,6 +11448,38 @@ public record MediaTrackSupportedConstraints(
         [Description("@#tilt")]bool tilt = false,
         [Description("@#zoom")]bool zoom = false,
         [Description("@#torch")]bool torch = false);
+
+    [Category("optional")]
+    public extern static MediaTrackSupportedConstraints OptionalPowerEfficient(
+        [Description("@#powerEfficient")]bool powerEfficient = false);
+
+    [Category("optional")]
+    public extern static MediaTrackSupportedConstraints OptionalPowerEfficientPixelFormat(
+        [Description("@#powerEfficientPixelFormat")]bool powerEfficientPixelFormat = false);
+
+    [Category("optional")]
+    public extern static MediaTrackSupportedConstraints OptionalGestureReactions(
+        [Description("@#gestureReactions")]bool gestureReactions = false);
+
+    [Category("optional")]
+    public extern static MediaTrackSupportedConstraints OptionalFaceFraming(
+        [Description("@#faceFraming")]bool faceFraming = false);
+
+    [Category("optional")]
+    public extern static MediaTrackSupportedConstraints OptionalEyeGazeCorrection(
+        [Description("@#eyeGazeCorrection")]bool eyeGazeCorrection = false);
+
+    [Category("optional")]
+    public extern static MediaTrackSupportedConstraints OptionalVoiceIsolation(
+        [Description("@#voiceIsolation")]bool voiceIsolation = false);
+
+    [Category("optional")]
+    public extern static MediaTrackSupportedConstraints OptionalHumanFaceDetectionMode(
+        [Description("@#humanFaceDetectionMode")]bool humanFaceDetectionMode = false);
+
+    [Category("optional")]
+    public extern static MediaTrackSupportedConstraints OptionalBackgroundSegmentationMask(
+        [Description("@#backgroundSegmentationMask")]bool backgroundSegmentationMask = false);
 
     [Category("optional")]
     public extern static MediaTrackSupportedConstraints OptionalWidthHeightAspectRatio16(
@@ -11611,6 +11812,58 @@ public record VideoDecoderConfig(
     [property: Description("@#flip")]bool Flip = false);
 
 /// <summary>
+/// SanitizerElementNamespace, SanitizerAttributeNamespace, SanitizerElementNamespaceWithAttributes, and SanitizerProcessingInstruction dictionaries are considered equal when all of their members are equal.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerattributenamespace">HTML Standard: 8.6.3 Sanitizer configuration</see>
+/// </remarks>
+/// <param name="Name"><see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerattributenamespace-name">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+[ECMAScript]
+[Description("@#SanitizerAttributeNamespace")]
+public record SanitizerAttributeNamespace(
+    [property: Description("@#name")]string? Name = default,
+    [property: Description("@#namespace")]string? Namespace = null);
+
+/// <summary>
+/// SanitizerElementNamespace, SanitizerAttributeNamespace, SanitizerElementNamespaceWithAttributes, and SanitizerProcessingInstruction dictionaries are considered equal when all of their members are equal.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerelementnamespace">HTML Standard: 8.6.3 Sanitizer configuration</see>
+/// </remarks>
+/// <param name="Name">Let currentElement be the item in configuration[&quot;elements&quot;] whose name member is element&apos;s name member and whose namespace member is element&apos;s namespace member. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerelementnamespace-name">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+[ECMAScript]
+[Description("@#SanitizerElementNamespace")]
+public record SanitizerElementNamespace(
+    [property: Description("@#name")]string? Name = default,
+    [property: Description("@#namespace")]string? Namespace = "http://www.w3.org/1999/xhtml");
+
+/// <summary>
+/// SanitizerElementNamespace, SanitizerAttributeNamespace, SanitizerElementNamespaceWithAttributes, and SanitizerProcessingInstruction dictionaries are considered equal when all of their members are equal.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerelementnamespacewithattributes">HTML Standard: 8.6.3 Sanitizer configuration</see>
+/// </remarks>
+/// <param name="Attributes">If element[&quot;attributes&quot;] exists, then set element[&quot;attributes&quot;] to the result of sorting element[&quot;attributes&quot;], with compare sanitizer items. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerelementnamespacewithattributes-attributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+/// <param name="RemoveAttributes">If element[&quot;removeAttributes&quot;] exists, then set element[&quot;removeAttributes&quot;] to the result of sorting element[&quot;removeAttributes&quot;], with compare sanitizer items. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerelementnamespacewithattributes-removeattributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+[ECMAScript]
+[Description("@#SanitizerElementNamespaceWithAttributes")]
+public record SanitizerElementNamespaceWithAttributes(
+    [property: Description("@#attributes")]SanitizerAttribute[]? Attributes = default,
+    [property: Description("@#removeAttributes")]SanitizerAttribute[]? RemoveAttributes = default) : SanitizerElementNamespace;
+
+/// <summary>
+/// SanitizerElementNamespace, SanitizerAttributeNamespace, SanitizerElementNamespaceWithAttributes, and SanitizerProcessingInstruction dictionaries are considered equal when all of their members are equal.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerprocessinginstruction">HTML Standard: 8.6.3 Sanitizer configuration</see>
+/// </remarks>
+/// <param name="Target">If pi is a DOMString, then return «[ &quot;target&quot; → pi ]». <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerprocessinginstruction-target">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
+[ECMAScript]
+[Description("@#SanitizerProcessingInstruction")]
+public record SanitizerProcessingInstruction(
+    [property: Description("@#target")]string? Target = default);
+
+/// <summary>
 /// Set this&apos;s XMLHttpRequest/private state token to privateToken.
 /// </summary>
 /// <remarks>
@@ -11646,20 +11899,20 @@ public record PressureObserverOptions(
 /// <remarks>
 /// <see href="https://dom.spec.whatwg.org/#dictdef-shadowrootinit">DOM Standard: 4.9 Interface Element</see>
 /// </remarks>
-/// <param name="Mode">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;clonable&quot;], init[&quot;serializable&quot;], init[&quot;delegatesFocus&quot;], init[&quot;slotAssignment&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-mode">DOM Standard: 4.9 Interface Element</see></param>
-/// <param name="DelegatesFocus">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;clonable&quot;], init[&quot;serializable&quot;], init[&quot;delegatesFocus&quot;], init[&quot;slotAssignment&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-delegatesfocus">DOM Standard: 4.9 Interface Element</see></param>
-/// <param name="SlotAssignment">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;clonable&quot;], init[&quot;serializable&quot;], init[&quot;delegatesFocus&quot;], init[&quot;slotAssignment&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-slotassignment">DOM Standard: 4.9 Interface Element</see></param>
-/// <param name="Clonable">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;clonable&quot;], init[&quot;serializable&quot;], init[&quot;delegatesFocus&quot;], init[&quot;slotAssignment&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-clonable">DOM Standard: 4.9 Interface Element</see></param>
-/// <param name="Serializable">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;clonable&quot;], init[&quot;serializable&quot;], init[&quot;delegatesFocus&quot;], init[&quot;slotAssignment&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-serializable">DOM Standard: 4.9 Interface Element</see></param>
+/// <param name="Mode">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;delegatesFocus&quot;], init[&quot;serializable&quot;], init[&quot;slotAssignment&quot;], init[&quot;clonable&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-mode">DOM Standard: 4.9 Interface Element</see></param>
+/// <param name="DelegatesFocus">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;delegatesFocus&quot;], init[&quot;serializable&quot;], init[&quot;slotAssignment&quot;], init[&quot;clonable&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-delegatesfocus">DOM Standard: 4.9 Interface Element</see></param>
+/// <param name="Serializable">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;delegatesFocus&quot;], init[&quot;serializable&quot;], init[&quot;slotAssignment&quot;], init[&quot;clonable&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-serializable">DOM Standard: 4.9 Interface Element</see></param>
+/// <param name="SlotAssignment">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;delegatesFocus&quot;], init[&quot;serializable&quot;], init[&quot;slotAssignment&quot;], init[&quot;clonable&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-slotassignment">DOM Standard: 4.9 Interface Element</see></param>
+/// <param name="Clonable">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;delegatesFocus&quot;], init[&quot;serializable&quot;], init[&quot;slotAssignment&quot;], init[&quot;clonable&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-clonable">DOM Standard: 4.9 Interface Element</see></param>
 /// <param name="CustomElementRegistry">ShadowRootInit somewhat unusually allows both undefined and null to be passed to its customElementRegistry member to allow web developers to pass a ShadowRoot node instead of a dictionary to attachShadow(). <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-customelementregistry">DOM Standard: 4.9 Interface Element</see></param>
 [ECMAScript]
 [Description("@#ShadowRootInit")]
 public record ShadowRootInit(
     [property: Description("@#mode")]ShadowRootMode? Mode = default,
     [property: Description("@#delegatesFocus")]bool DelegatesFocus = false,
+    [property: Description("@#serializable")]bool Serializable = false,
     [property: Description("@#slotAssignment")]SlotAssignmentMode SlotAssignment = SlotAssignmentMode.Named,
     [property: Description("@#clonable")]bool Clonable = false,
-    [property: Description("@#serializable")]bool Serializable = false,
     [property: Description("@#customElementRegistry")]CustomElementRegistry? CustomElementRegistry = default);
 
 /// <summary>
@@ -11728,11 +11981,11 @@ public record RTCPeerConnectionStats(
 /// The AeadParams dictionary is identical to the AesGcmParams dictionary of webcrypto, and the latter may be replaced by the former when merging this proposal.
 /// </summary>
 /// <remarks>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams">Modern Algorithms in the Web Cryptography API: 9.3 AeadParams dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams">Modern Algorithms in the Web Cryptography API: 10.3 AeadParams dictionary</see>
 /// </remarks>
-/// <param name="Iv"><see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams-iv">Modern Algorithms in the Web Cryptography API: 9.3 AeadParams dictionary</see></param>
-/// <param name="AdditionalData">The additionalData member represents the additional authentication data to include. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams-additionalData">Modern Algorithms in the Web Cryptography API: 9.3 AeadParams dictionary</see></param>
-/// <param name="TagLength">The tagLength member represents the desired length of the authentication tag. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams-tagLength">Modern Algorithms in the Web Cryptography API: 9.3 AeadParams dictionary</see></param>
+/// <param name="Iv"><see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams-iv">Modern Algorithms in the Web Cryptography API: 10.3 AeadParams dictionary</see></param>
+/// <param name="AdditionalData">The additionalData member represents the additional authentication data to include. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams-additionalData">Modern Algorithms in the Web Cryptography API: 10.3 AeadParams dictionary</see></param>
+/// <param name="TagLength">The tagLength member represents the desired length of the authentication tag. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams-tagLength">Modern Algorithms in the Web Cryptography API: 10.3 AeadParams dictionary</see></param>
 [ECMAScript]
 [Description("@#AeadParams")]
 public record AeadParams(
@@ -11772,9 +12025,9 @@ public record CaptureHandleConfig(
 /// The ContextParams dictionary is identical to the Ed448Params dictionary of webcrypto-secure-curves, and the latter may be replaced by the former when merging this proposal.
 /// </summary>
 /// <remarks>
-/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-ContextParams">Modern Algorithms in the Web Cryptography API: 7.3 ContextParams dictionary</see>
+/// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-ContextParams">Modern Algorithms in the Web Cryptography API: 8.3 ContextParams dictionary</see>
 /// </remarks>
-/// <param name="Context">The context member represents the optional context data to associate with the message. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-ContextParams-context">Modern Algorithms in the Web Cryptography API: 7.3 ContextParams dictionary</see></param>
+/// <param name="Context">The context member represents the optional context data to associate with the message. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-ContextParams-context">Modern Algorithms in the Web Cryptography API: 8.3 ContextParams dictionary</see></param>
 [ECMAScript]
 [Description("@#ContextParams")]
 public record ContextParams(
@@ -12204,26 +12457,70 @@ public record Pbkdf2Params(
     [property: Description("@#hash")]HashAlgorithmIdentifier? Hash = default) : Algorithm;
 
 /// <summary>
-/// The PointerEventInit dictionary is used by the PointerEvent interface&apos;s constructor to provide a mechanism by which to construct untrusted (synthetic) pointer events. It inherits from the MouseEventInit dictionary defined in UIEVENTS. See the examples for sample code demonstrating how to fire an untrusted pointer event.
+/// The PointerEventInit dictionary is used by the PointerEvent interface&apos;s constructor to provide a mechanism by which to construct untrusted (synthetic) pointer events. It inherits from the MouseEventInit dictionary. See the examples for sample code demonstrating how to fire an untrusted pointer event.
 /// </summary>
 /// <remarks>
-/// <see href="https://w3c.github.io/pointerevents/#dom-pointereventinit">Pointer Events: 5.1 PointerEvent interface</see>
+/// <see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit">Pointer Events: 11.1 MouseEvent interface</see>
 /// </remarks>
-/// <param name="PointerId"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-pointerid">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="Width"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-width">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="Height"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-height">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="Pressure"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-pressure">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="TangentialPressure"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-tangentialpressure">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="TiltX"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-tiltx">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="TiltY"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-tilty">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="Twist"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-twist">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="AltitudeAngle"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-altitudeangle">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="AzimuthAngle"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-azimuthangle">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="PointerType"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-pointertype">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="IsPrimary"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-isprimary">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="PersistentDeviceId"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-persistentdeviceid">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="CoalescedEvents"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-coalescedevents">Pointer Events: 5.1 PointerEvent interface</see></param>
-/// <param name="PredictedEvents"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-predictedevents">Pointer Events: 5.1 PointerEvent interface</see></param>
+/// <param name="ScreenX"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-screenx">Pointer Events: 11.1 MouseEvent interface</see></param>
+/// <param name="ScreenY"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-screeny">Pointer Events: 11.1 MouseEvent interface</see></param>
+/// <param name="ClientX"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-clientx">Pointer Events: 11.1 MouseEvent interface</see></param>
+/// <param name="ClientY"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-clienty">Pointer Events: 11.1 MouseEvent interface</see></param>
+/// <param name="Button"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-button">Pointer Events: 11.1 MouseEvent interface</see></param>
+/// <param name="Buttons"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-buttons">Pointer Events: 11.1 MouseEvent interface</see></param>
+/// <param name="RelatedTarget">Similar to MouseEvent relatedTarget, the relatedTarget should be initialized to the element whose bounds the pointer just left (in the case of a pointerover or pointerenter event) or the element whose bounds the pointer is entering (in the case of a pointerout or pointerleave). For other pointer events, this value will default to null. Note that when an element receives the pointer capture all the following events for that pointer are considered to be inside the boundary of the capturing element. <see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-relatedtarget">Pointer Events: 11.1 MouseEvent interface</see></param>
+/// <param name="MovementX"><see href="https://w3c.github.io/pointerlock/#dom-mouseeventinit-movementx">Pointer Lock 2.0: 7 Extensions to the MouseEventInit Dictionary</see></param>
+/// <param name="MovementY"><see href="https://w3c.github.io/pointerlock/#dom-mouseeventinit-movementy">Pointer Lock 2.0: 7 Extensions to the MouseEventInit Dictionary</see></param>
+[ECMAScript]
+[Description("@#MouseEventInit")]
+public record MouseEventInit(
+    [property: Description("@#screenX")]int ScreenX = 0,
+    [property: Description("@#screenY")]int ScreenY = 0,
+    [property: Description("@#clientX")]int ClientX = 0,
+    [property: Description("@#clientY")]int ClientY = 0,
+    [property: Description("@#button")]short Button = 0,
+    [property: Description("@#buttons")]ushort Buttons = 0,
+    [property: Description("@#relatedTarget")]EventTarget? RelatedTarget = null,
+    [property: Description("@#movementX")]double MovementX = 0d,
+    [property: Description("@#movementY")]double MovementY = 0d) : EventModifierInit
+{
+    [Category("optional")]
+    public extern static MouseEventInit OptionalScreenXScreenYClientX7(
+        [Description("@#screenX")]int screenX = 0,
+        [Description("@#screenY")]int screenY = 0,
+        [Description("@#clientX")]int clientX = 0,
+        [Description("@#clientY")]int clientY = 0,
+        [Description("@#button")]short button = 0,
+        [Description("@#buttons")]ushort buttons = 0,
+        [Description("@#relatedTarget")]EventTarget? relatedTarget = null);
+
+    [Category("optional")]
+    public extern static MouseEventInit OptionalMovementXMovementY(
+        [Description("@#movementX")]double movementX = 0d,
+        [Description("@#movementY")]double movementY = 0d);
+}
+
+/// <summary>
+/// The PointerEventInit dictionary is used by the PointerEvent interface&apos;s constructor to provide a mechanism by which to construct untrusted (synthetic) pointer events. It inherits from the MouseEventInit dictionary. See the examples for sample code demonstrating how to fire an untrusted pointer event.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/pointerevents/#dom-pointereventinit">Pointer Events: 3.1 PointerEvent interface</see>
+/// </remarks>
+/// <param name="PointerId"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-pointerid">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="Width"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-width">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="Height"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-height">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="Pressure"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-pressure">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="TangentialPressure"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-tangentialpressure">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="TiltX"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-tiltx">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="TiltY"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-tilty">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="Twist"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-twist">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="AltitudeAngle"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-altitudeangle">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="AzimuthAngle"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-azimuthangle">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="PointerType"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-pointertype">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="IsPrimary"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-isprimary">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="PersistentDeviceId"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-persistentdeviceid">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="CoalescedEvents"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-coalescedevents">Pointer Events: 3.1 PointerEvent interface</see></param>
+/// <param name="PredictedEvents"><see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-predictedevents">Pointer Events: 3.1 PointerEvent interface</see></param>
 [ECMAScript]
 [Description("@#PointerEventInit")]
 public record PointerEventInit(
@@ -12741,6 +13038,7 @@ public record SpeechRecognitionOptions(
 /// <remarks>
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediastreamconstraints">Media Capture and Streams: 10.2 MediaStreamConstraints</see>
 /// </remarks>
+/// <param name="Semantics"><see href="https://w3c.github.io/mediacapture-extensions/#dom-mediastreamconstraints-semantics">Media Capture and Streams Extensions: Dictionary MediaStreamConstraints Members</see></param>
 /// <param name="Video"><see href="https://w3c.github.io/mediacapture-main/#dom-mediastreamconstraints-video">Media Capture and Streams: Dictionary MediaStreamConstraints Members</see></param>
 /// <param name="Audio"><see href="https://w3c.github.io/mediacapture-main/#dom-mediastreamconstraints-audio">Media Capture and Streams: Dictionary MediaStreamConstraints Members</see></param>
 /// <param name="PreferCurrentTab"><see href="https://wicg.github.io/prefer-current-tab/#dom-mediastreamconstraints-prefercurrenttab">preferCurrentTab: 3 preferCurrentTab</see></param>
@@ -12748,11 +13046,16 @@ public record SpeechRecognitionOptions(
 [ECMAScript]
 [Description("@#MediaStreamConstraints")]
 public record MediaStreamConstraints(
+    [property: Description("@#semantics")]GetUserMediaSemantics? Semantics = default,
     [property: Description("@#video")]MediaStreamConstraintsVideo? Video = default,
     [property: Description("@#audio")]MediaStreamConstraintsAudio? Audio = default,
     [property: Description("@#preferCurrentTab")]bool PreferCurrentTab = false,
     [property: Description("@#peerIdentity")]string? PeerIdentity = default)
 {
+    [Category("optional")]
+    public extern static MediaStreamConstraints OptionalSemantics(
+        [Description("@#semantics")]GetUserMediaSemantics? Semantics = default);
+
     [Category("optional")]
     public extern static MediaStreamConstraints OptionalVideoAudio(
         [Description("@#video")]MediaStreamConstraintsVideo? video = default,
@@ -13055,48 +13358,24 @@ public record RTCIdentityProviderOptions(
     [property: Description("@#peerIdentity")]string? PeerIdentity = default);
 
 /// <summary>
-/// To create an instance of the MouseEvent interface, use the MouseEvent constructor, passing an optional MouseEventInit dictionary.
+/// To create an instance of the WheelEvent interface, use the WheelEvent constructor, passing an optional WheelEventInit dictionary.
 /// </summary>
 /// <remarks>
-/// <see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit">Pointer Events: 4.1.2 MouseEventInit</see>
+/// <see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit">Pointer Events: 12.1 WheelEvent interface</see>
 /// </remarks>
-/// <param name="ScreenX"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-screenx">Pointer Events: 4.1.2 MouseEventInit</see></param>
-/// <param name="ScreenY"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-screeny">Pointer Events: 4.1.2 MouseEventInit</see></param>
-/// <param name="ClientX"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-clientx">Pointer Events: 4.1.2 MouseEventInit</see></param>
-/// <param name="ClientY"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-clienty">Pointer Events: 4.1.2 MouseEventInit</see></param>
-/// <param name="Button"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-button">Pointer Events: 4.1.2 MouseEventInit</see></param>
-/// <param name="Buttons"><see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-buttons">Pointer Events: 4.1.2 MouseEventInit</see></param>
-/// <param name="RelatedTarget">Similar to MouseEvent relatedTarget, the relatedTarget should be initialized to the element whose bounds the pointer just left (in the case of a pointerover or pointerenter event) or the element whose bounds the pointer is entering (in the case of a pointerout or pointerleave). For other pointer events, this value will default to null. Note that when an element receives the pointer capture all the following events for that pointer are considered to be inside the boundary of the capturing element. <see href="https://w3c.github.io/pointerevents/#dom-mouseeventinit-relatedtarget">Pointer Events: 4.1.2 MouseEventInit</see></param>
-/// <param name="MovementX"><see href="https://w3c.github.io/pointerlock/#dom-mouseeventinit-movementx">Pointer Lock 2.0: 7 Extensions to the MouseEventInit Dictionary</see></param>
-/// <param name="MovementY"><see href="https://w3c.github.io/pointerlock/#dom-mouseeventinit-movementy">Pointer Lock 2.0: 7 Extensions to the MouseEventInit Dictionary</see></param>
+/// <param name="DeltaX"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltax">Pointer Events: 12.1 WheelEvent interface</see></param>
+/// <param name="DeltaY"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltay">Pointer Events: 12.1 WheelEvent interface</see></param>
+/// <param name="DeltaZ"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltaz">Pointer Events: 12.1 WheelEvent interface</see></param>
+/// <param name="DeltaMode"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltamode">Pointer Events: 12.1 WheelEvent interface</see></param>
+/// <param name="Momentum"><see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-momentum">Pointer Events: 12.1 WheelEvent interface</see></param>
 [ECMAScript]
-[Description("@#MouseEventInit")]
-public record MouseEventInit(
-    [property: Description("@#screenX")]int ScreenX = 0,
-    [property: Description("@#screenY")]int ScreenY = 0,
-    [property: Description("@#clientX")]int ClientX = 0,
-    [property: Description("@#clientY")]int ClientY = 0,
-    [property: Description("@#button")]short Button = 0,
-    [property: Description("@#buttons")]ushort Buttons = 0,
-    [property: Description("@#relatedTarget")]EventTarget? RelatedTarget = null,
-    [property: Description("@#movementX")]double MovementX = 0d,
-    [property: Description("@#movementY")]double MovementY = 0d) : EventModifierInit
-{
-    [Category("optional")]
-    public extern static MouseEventInit OptionalScreenXScreenYClientX7(
-        [Description("@#screenX")]int screenX = 0,
-        [Description("@#screenY")]int screenY = 0,
-        [Description("@#clientX")]int clientX = 0,
-        [Description("@#clientY")]int clientY = 0,
-        [Description("@#button")]short button = 0,
-        [Description("@#buttons")]ushort buttons = 0,
-        [Description("@#relatedTarget")]EventTarget? relatedTarget = null);
-
-    [Category("optional")]
-    public extern static MouseEventInit OptionalMovementXMovementY(
-        [Description("@#movementX")]double movementX = 0d,
-        [Description("@#movementY")]double movementY = 0d);
-}
+[Description("@#WheelEventInit")]
+public record WheelEventInit(
+    [property: Description("@#deltaX")]double DeltaX = 0.0d,
+    [property: Description("@#deltaY")]double DeltaY = 0.0d,
+    [property: Description("@#deltaZ")]double DeltaZ = 0.0d,
+    [property: Description("@#deltaMode")]uint DeltaMode = 0,
+    [property: Description("@#momentum")]bool Momentum = false) : MouseEventInit;
 
 /// <summary>
 /// Transport statistics related to the RTCPeerConnection object. It is accessed by the RTCTransportStats.
@@ -13201,6 +13480,20 @@ public record PresentationConnectionCloseEventInit(
     [property: Description("@#message")]string? Message = default) : EventInit;
 
 /// <summary>
+/// \constraints - Holds an HTMLMediaStreamConstraints.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/mediacapture-extensions/#dom-htmlmediastreamconstraints">Media Capture and Streams Extensions: 21.3 The usermedia HTML element</see>
+/// </remarks>
+/// <param name="Video"><see href="https://w3c.github.io/mediacapture-extensions/#dom-htmlmediastreamconstraints-video">Media Capture and Streams Extensions: 21.3 The usermedia HTML element</see></param>
+/// <param name="Audio"><see href="https://w3c.github.io/mediacapture-extensions/#dom-htmlmediastreamconstraints-audio">Media Capture and Streams Extensions: 21.3 The usermedia HTML element</see></param>
+[ECMAScript]
+[Description("@#HTMLMediaStreamConstraints")]
+public record HTMLMediaStreamConstraints(
+    [property: Description("@#video")]MediaTrackConstraintSet? Video = default,
+    [property: Description("@#audio")]MediaTrackConstraintSet? Audio = default);
+
+/// <summary>
 /// aspectRatio of type DoubleRange
 /// </summary>
 /// <remarks>
@@ -13273,6 +13566,28 @@ public record RTCRtcpParameters(
     [property: Description("@#reducedSize")]bool ReducedSize = default);
 
 /// <summary>
+/// segments of type sequence&lt;Segment&gt;
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/mediacapture-extensions/#dom-segment">Media Capture and Streams Extensions: 17.2 Segment</see>
+/// </remarks>
+/// <param name="Type">segments of type sequence&lt;Segment&gt; <see href="https://w3c.github.io/mediacapture-extensions/#dom-segment-type">Media Capture and Streams Extensions: Dictionary Segment Members</see></param>
+/// <param name="Id"><see href="https://w3c.github.io/mediacapture-extensions/#dom-segment-id">Media Capture and Streams Extensions: Dictionary Segment Members</see></param>
+/// <param name="PartOf">An identifier of the object described by the segment, unique within a sequence. If the same object can be tracked over multiple frames originating from the same MediaStreamTrack source or it can be matched to correspond to the same object in MediaStreamTracks which are cloned from the same original MediaStreamTrack, the user agent SHOULD use the same id for the segments which describe the object. id is also used in conjunction with the member partOf. <see href="https://w3c.github.io/mediacapture-extensions/#dom-segment-partof">Media Capture and Streams Extensions: Dictionary Segment Members</see></param>
+/// <param name="Probability">If nonzero, this is the estimate of the conditional probability that the segmented object actually is of the type indicated by the type member on the condition that the detection has been made. The value of this member must be always zero or above with a maximum of one. The special value of zero indicates that the probability estimate is not available. <see href="https://w3c.github.io/mediacapture-extensions/#dom-segment-probability">Media Capture and Streams Extensions: Dictionary Segment Members</see></param>
+/// <param name="CenterPoint">See the member centerPoint for the definition of the coordinate system. <see href="https://w3c.github.io/mediacapture-extensions/#dom-segment-centerpoint">Media Capture and Streams Extensions: Dictionary Segment Members</see></param>
+/// <param name="BoundingBox"><see href="https://w3c.github.io/mediacapture-extensions/#dom-segment-boundingbox">Media Capture and Streams Extensions: Dictionary Segment Members</see></param>
+[ECMAScript]
+[Description("@#Segment")]
+public record Segment(
+    [property: Description("@#type")]SegmentType? Type = default,
+    [property: Description("@#id")]int Id = default,
+    [property: Description("@#partOf")]int PartOf = default,
+    [property: Description("@#probability")]float Probability = default,
+    [property: Description("@#centerPoint")]Point2D? CenterPoint = default,
+    [property: Description("@#boundingBox")]DOMRectInit? BoundingBox = default);
+
+/// <summary>
 /// setParameters does not cause SDP renegotiation and can only be used to change what the media stack is sending or receiving within the envelope negotiated by Offer/Answer. The attributes in the RTCRtpSendParameters dictionary are designed to not enable this, so attributes like cname that cannot be changed are read-only. Other things, like bitrate, are controlled using limits such as maxBitrate, where the user agent needs to ensure it does not exceed the maximum bitrate specified by maxBitrate, while at the same time making sure it satisfies constraints on bitrate specified in other places such as the SDP.
 /// </summary>
 /// <remarks>
@@ -13325,6 +13640,16 @@ public record AddressInit(
     [property: Description("@#organization")]string? Organization = default,
     [property: Description("@#recipient")]string? Recipient = default,
     [property: Description("@#phone")]string? Phone = default);
+
+[ECMAScript]
+[Description("@#AnimationTriggerOptions")]
+public record AnimationTriggerOptions(
+    [property: Description("@#timeline")]AnimationTimeline? Timeline = default,
+    [property: Description("@#behavior")]AnimationTriggerBehavior? Behavior = AnimationTriggerBehavior.Once,
+    [property: Description("@#rangeStart")]AnimationTriggerOptionsRangeStart? RangeStart = default,
+    [property: Description("@#rangeEnd")]AnimationTriggerOptionsRangeEnd? RangeEnd = default,
+    [property: Description("@#exitRangeStart")]AnimationTriggerOptionsExitRangeStart? ExitRangeStart = default,
+    [property: Description("@#exitRangeEnd")]AnimationTriggerOptionsExitRangeEnd? ExitRangeEnd = default);
 
 [ECMAScript]
 [Description("@#CrashReportBody")]

@@ -1,35 +1,35 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@webref/css@8.7.1": "8.7.1_css-tree@3.2.1",
-    "npm:@webref/events@1.24.2": "1.24.2",
-    "npm:@webref/idl@3.82.0": "3.82.0_webidl2@24.5.0",
-    "npm:@webref/xref@1.2.11": "1.2.11",
-    "npm:parse5@8.0.0": "8.0.0",
+    "npm:@webref/css@8.7.4": "8.7.4_css-tree@3.2.1",
+    "npm:@webref/events@1.25.1": "1.25.1",
+    "npm:@webref/idl@3.83.1": "3.83.1_webidl2@24.5.0",
+    "npm:@webref/xref@1.2.16": "1.2.16",
+    "npm:parse5@8.0.1": "8.0.1",
     "npm:webidl2@24.5.0": "24.5.0"
   },
   "npm": {
-    "@webref/css@8.7.1_css-tree@3.2.1": {
-      "integrity": "sha512-O60bIKYKl5RpLYsWOnOlWzBCEa2NYKapaeg28gOxsjfHHFK51BWRFcwFNJG04lcZxE6yzrEhWzsW35Bjv5RRXA==",
+    "@webref/css@8.7.4_css-tree@3.2.1": {
+      "integrity": "sha512-Wo1iEFRPnMehms5A9xUpZxUkUMkNEGXEVX97yB3up2CsqyK/UtKgVcxUOplMVeL1SLVry0c1JPepMIXNAOWXPA==",
       "dependencies": [
         "css-tree"
       ],
-      "tarball": "https://registry.npmmirror.com/@webref/css/-/css-8.7.1.tgz"
+      "tarball": "https://registry.npmmirror.com/@webref/css/-/css-8.7.4.tgz"
     },
-    "@webref/events@1.24.2": {
-      "integrity": "sha512-S3JHyiNM7zk0Y2WVmrOVCGXRxzEIWcw7dWEVpLCiWw5MhTaCOKimD/qHIqgBwOzVn0a5uOEGEQXbd2sHngfnug==",
-      "tarball": "https://registry.npmmirror.com/@webref/events/-/events-1.24.2.tgz"
+    "@webref/events@1.25.1": {
+      "integrity": "sha512-H2ydxA6vHqtzd1IOzOwxubk+Pj6roWNbQH8y+DYVy4M0mGfxtI2IUf1wGuUdgG6M4aoGO+ctg2xQFCqRRa+Oyw==",
+      "tarball": "https://registry.npmmirror.com/@webref/events/-/events-1.25.1.tgz"
     },
-    "@webref/idl@3.82.0_webidl2@24.5.0": {
-      "integrity": "sha512-jlL7eUjthI3DQu/3c+vfXIFQMDiDN4u4U+6pYrYk5NSdsCY7nRsbqMnI5WktUqrTrcCl1czL02xFZyaiLbEVmw==",
+    "@webref/idl@3.83.1_webidl2@24.5.0": {
+      "integrity": "sha512-Z3b6MzknPTYKhW3cEFQYEJ1UJfIfeZaP5NqHivfeJ1OD/NqQO9nb+OdSo7J/hiTPMfySJVu6OQvLDbFwHzFhaA==",
       "dependencies": [
         "webidl2"
       ],
-      "tarball": "https://registry.npmmirror.com/@webref/idl/-/idl-3.82.0.tgz"
+      "tarball": "https://registry.npmmirror.com/@webref/idl/-/idl-3.83.1.tgz"
     },
-    "@webref/xref@1.2.11": {
-      "integrity": "sha512-f7Floj+3w5p0uNcpgWDgSeOlZzjYtVF5uRYowHK8yovJLxxbRUjS4ZHNeP8Zpf45t3c6bMm6Ac5q9Tdko4t+MA==",
-      "tarball": "https://registry.npmmirror.com/@webref/xref/-/xref-1.2.11.tgz"
+    "@webref/xref@1.2.16": {
+      "integrity": "sha512-xrVjSyEAPMsLFEaKyW52Aoc7ybKYOodn+Y69y8W62rL8biLLMsVVlAQpyUyezeYJomGeRiYicZoepKgQQNDY8g==",
+      "tarball": "https://registry.npmmirror.com/@webref/xref/-/xref-1.2.16.tgz"
     },
     "css-tree@3.2.1": {
       "integrity": "sha512-X7sjQzceUhu1u7Y/ylrRZFU2FS6LRiFVp6rKLPg23y3x3c3DOKAwuXGDp+PAGjh6CSnCjYeAul8pcT8bAl+lSA==",
@@ -39,20 +39,20 @@
       ],
       "tarball": "https://registry.npmmirror.com/css-tree/-/css-tree-3.2.1.tgz"
     },
-    "entities@6.0.1": {
-      "integrity": "sha512-aN97NXWF6AWBTahfVOIrB/NShkzi5H7F9r1s9mD3cDj4Ko5f2qhhVoYMibXF7GlLveb/D2ioWay8lxI97Ven3g==",
-      "tarball": "https://registry.npmmirror.com/entities/-/entities-6.0.1.tgz"
+    "entities@8.1.0": {
+      "integrity": "sha512-kxL7msIffSuh9aaFAMD7rxAIuTRMAHMeBtgHW2yUdWw732ZNh4MehkF2gdjvtdmikkaIP9bFDDJOPlsvm7avrA==",
+      "tarball": "https://registry.npmmirror.com/entities/-/entities-8.1.0.tgz"
     },
     "mdn-data@2.27.1": {
       "integrity": "sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==",
       "tarball": "https://registry.npmmirror.com/mdn-data/-/mdn-data-2.27.1.tgz"
     },
-    "parse5@8.0.0": {
-      "integrity": "sha512-9m4m5GSgXjL4AjumKzq1Fgfp3Z8rsvjRNbnkVwfu2ImRqE5D0LnY2QfDen18FSY9C573YU5XxSapdHZTZ2WolA==",
+    "parse5@8.0.1": {
+      "integrity": "sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==",
       "dependencies": [
         "entities"
       ],
-      "tarball": "https://registry.npmmirror.com/parse5/-/parse5-8.0.0.tgz"
+      "tarball": "https://registry.npmmirror.com/parse5/-/parse5-8.0.1.tgz"
     },
     "source-map-js@1.2.1": {
       "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==",
@@ -65,11 +65,11 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@webref/css@8.7.1",
-      "npm:@webref/events@1.24.2",
-      "npm:@webref/idl@3.82.0",
-      "npm:@webref/xref@1.2.11",
-      "npm:parse5@8.0.0",
+      "npm:@webref/css@8.7.4",
+      "npm:@webref/events@1.25.1",
+      "npm:@webref/idl@3.83.1",
+      "npm:@webref/xref@1.2.16",
+      "npm:parse5@8.0.1",
       "npm:webidl2@24.5.0"
     ]
   }

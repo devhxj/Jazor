@@ -1800,7 +1800,13 @@ public enum GPUVertexFormat
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpuvertexformat-unorm8x4-bgra">WebGPU: 10.3.7.1 Vertex Formats</see>
     /// </summary>
     [Description("@#unorm8x4-bgra")]
-    Unorm8x4Bgra = 40
+    Unorm8x4Bgra = 40,
+
+    /// <summary>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpuvertexformat-snorm10-10-10-2">WebGPU: 10.3.7.1 Vertex Formats</see>
+    /// </summary>
+    [Description("@#snorm10-10-10-2")]
+    Snorm1010102 = 41
 }
 
 /// <summary>
@@ -1867,7 +1873,7 @@ public enum GPUCanvasToneMappingMode
 }
 
 /// <summary>
-/// <see href="https://gpuweb.github.io/gpuweb/#gpufeaturename">WebGPU: 4.3.1.1 GPUFeatureName</see>
+/// <see href="https://gpuweb.github.io/gpuweb/#gpufeaturename">WebGPU: 3.6.1.1 GPUFeatureName</see>
 /// </summary>
 [Description("@#GPUFeatureName")]
 [ECMAScript]
@@ -2028,5 +2034,11 @@ public enum GPUFeatureName
     /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpufeaturename-subgroup-size-control">WebGPU: 25.23 &quot;subgroup-size-control&quot;</see>
     /// </summary>
     [Description("@#subgroup-size-control")]
-    SubgroupSizeControl = 22
+    SubgroupSizeControl = 22,
+
+    /// <summary>
+    /// <see href="https://gpuweb.github.io/gpuweb/#dom-gpufeaturename-texture-compression-unaligned">WebGPU: 25.24 &quot;texture-compression-unaligned&quot;</see>
+    /// </summary>
+    [Description("@#texture-compression-unaligned")]
+    TextureCompressionUnaligned = 23
 }

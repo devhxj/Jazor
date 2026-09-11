@@ -68,14 +68,6 @@ public delegate void EffectCallback(double? progress, ParameterCurrentTarget cur
 public delegate void BlobCallback(Blob? blob);
 
 /// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/custom-elements.html#customelementconstructor">HTML Standard: 4.13.4 The CustomElementRegistry interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#")]
-[Category("literal")]
-public delegate HTMLElement CustomElementConstructor();
-
-/// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/dnd.html#functionstringcallback">HTML Standard: 6.11.3.2 The DataTransferItem interface</see>
 /// </summary>
 [ECMAScript]
@@ -90,25 +82,6 @@ public delegate void FunctionStringCallback(string data);
 [Description("@#")]
 [Category("literal")]
 public delegate void FrameRequestCallback(double time);
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationintercepthandler">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
-/// </summary>
-/// <example>
-/// <code>precommitController.addHandler(NavigationInterceptHandler handler)</code>
-/// </example>
-[ECMAScript]
-[Description("@#")]
-[Category("literal")]
-public delegate PromiseResult NavigationInterceptHandler();
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationprecommithandler">HTML Standard: 7.2.6.10.2 The NavigationPrecommitController interface</see>
-/// </summary>
-[ECMAScript]
-[Description("@#")]
-[Category("literal")]
-public delegate PromiseResult NavigationPrecommitHandler(NavigationPrecommitController controller);
 
 /// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/webappapis.html#eventhandlernonnull">HTML Standard: 8.1.8.1 Event handlers</see>
@@ -436,7 +409,7 @@ public delegate PromiseResult<string> LanguageModelToolFunction(object arguments
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate PromiseResult<object> ToolExecuteCallback(object input);
+public delegate PromiseResult<object> ToolExecuteCallback(object inputObject, ToolExecuteCallbackOptions options);
 
 /// <summary>
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#callbackdef-createmonitorcallback">Writing Assistance APIs: 5.1 Common APIs</see>
@@ -567,6 +540,17 @@ public delegate void VideoFrameRequestCallback(double now, VideoFrameCallbackMet
 public delegate object LaunchConsumer(LaunchParams @params);
 
 /// <summary>
+/// A Web IDL CustomElementConstructor callback function type value wrapping the custom element constructor
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/custom-elements.html#customelementconstructor">HTML Standard: 4.13.4 The CustomElementRegistry interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#")]
+[Category("literal")]
+public delegate HTMLElement CustomElementConstructor();
+
+/// <summary>
 /// All MediaSessions have a map of supported media session actions with, as a key, a media session action and as a value a MediaSessionActionHandler.
 /// </summary>
 /// <remarks>
@@ -576,6 +560,31 @@ public delegate object LaunchConsumer(LaunchParams @params);
 [Description("@#")]
 [Category("literal")]
 public delegate void MediaSessionActionHandler(MediaSessionActionDetails details);
+
+/// <summary>
+/// Each NavigateEvent has a navigation handler list, a list of NavigationInterceptHandler callbacks, initially empty.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationintercepthandler">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
+/// </remarks>
+/// <example>
+/// <code>precommitController.addHandler(NavigationInterceptHandler handler)</code>
+/// </example>
+[ECMAScript]
+[Description("@#")]
+[Category("literal")]
+public delegate PromiseResult NavigationInterceptHandler();
+
+/// <summary>
+/// Each NavigateEvent has a navigation precommit handler list, a list of NavigationPrecommitHandler callbacks, initially empty.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationprecommithandler">HTML Standard: 7.2.6.10.2 The NavigationPrecommitController interface</see>
+/// </remarks>
+[ECMAScript]
+[Description("@#")]
+[Category("literal")]
+public delegate PromiseResult NavigationPrecommitHandler(NavigationPrecommitController controller);
 
 /// <summary>
 /// If observer is an ObservableSubscriptionCallback

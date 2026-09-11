@@ -98,7 +98,7 @@ public record PaintRenderingContext2DSettings(
 public record PropertyDefinition(
     [property: Description("@#name")]string? Name = default,
     [property: Description("@#syntax")]string? Syntax = default,
-    [property: Description("@#inherits")]bool Inherits = default,
+    [property: Description("@#inherits")]bool Inherits = false,
     [property: Description("@#initialValue")]string? InitialValue = default);
 
 /// <summary>

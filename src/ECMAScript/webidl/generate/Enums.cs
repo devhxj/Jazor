@@ -868,51 +868,6 @@ public enum PlaybackDirection
 }
 
 /// <summary>
-/// <see href="https://drafts.csswg.org/web-animations-2/#enumdef-animationtriggerbehavior">Web Animations Module Level 2: 4.18 The AnimationTriggerBehavior enumeration</see>
-/// </summary>
-[Description("@#AnimationTriggerBehavior")]
-[ECMAScript]
-[String]
-public enum AnimationTriggerBehavior
-{
-    /// <summary>
-    /// &apos;&apos;animation-trigger-behavior/once&apos;&apos;
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggerbehavior-once">Web Animations Module Level 2: 4.18 The AnimationTriggerBehavior enumeration</see>
-    /// </remarks>
-    [Description("@#once")]
-    Once = 0,
-
-    /// <summary>
-    /// &apos;&apos;animation-trigger-behavior/repeat&apos;&apos;
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggerbehavior-repeat">Web Animations Module Level 2: 4.18 The AnimationTriggerBehavior enumeration</see>
-    /// </remarks>
-    [Description("@#repeat")]
-    Repeat = 1,
-
-    /// <summary>
-    /// &apos;&apos;animation-trigger-behavior/alternate&apos;&apos;
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggerbehavior-alternate">Web Animations Module Level 2: 4.18 The AnimationTriggerBehavior enumeration</see>
-    /// </remarks>
-    [Description("@#alternate")]
-    Alternate = 2,
-
-    /// <summary>
-    /// &apos;&apos;animation-trigger-behavior/state&apos;&apos;
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://drafts.csswg.org/web-animations-2/#dom-animationtriggerbehavior-state">Web Animations Module Level 2: 4.18 The AnimationTriggerBehavior enumeration</see>
-    /// </remarks>
-    [Description("@#state")]
-    State = 3
-}
-
-/// <summary>
 /// <see href="https://drafts.csswg.org/web-animations-2/#enumdef-iterationcompositeoperation">Web Animations Module Level 2: 4.11 The IterationCompositeOperation enumeration</see>
 /// </summary>
 [Description("@#IterationCompositeOperation")]
@@ -1288,27 +1243,6 @@ public enum FullscreenNavigationUI
 }
 
 /// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvascolortype">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-/// </summary>
-[Description("@#CanvasColorType")]
-[ECMAScript]
-[String]
-public enum CanvasColorType
-{
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvascolortype-unorm8">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-    /// </summary>
-    [Description("@#unorm8")]
-    Unorm8 = 0,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvascolortype-float16">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-    /// </summary>
-    [Description("@#float16")]
-    Float16 = 1
-}
-
-/// <summary>
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasdirection">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </summary>
 [Description("@#CanvasDirection")]
@@ -1333,27 +1267,6 @@ public enum CanvasDirection
     /// </summary>
     [Description("@#inherit")]
     Inherit = 2
-}
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasfillrule">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-/// </summary>
-[Description("@#CanvasFillRule")]
-[ECMAScript]
-[String]
-public enum CanvasFillRule
-{
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fillrule-nonzero">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-    /// </summary>
-    [Description("@#nonzero")]
-    Nonzero = 0,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fillrule-evenodd">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-    /// </summary>
-    [Description("@#evenodd")]
-    Evenodd = 1
 }
 
 /// <summary>
@@ -1392,26 +1305,38 @@ public enum CanvasFontKerning
 public enum CanvasFontStretch
 {
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-ultra-condensed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// ultra-condensed
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-ultra-condensed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#ultra-condensed")]
     UltraCondensed = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-extra-condensed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// extra-condensed
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-extra-condensed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#extra-condensed")]
     ExtraCondensed = 1,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-condensed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// ultra-condensed
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-condensed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#condensed")]
     Condensed = 2,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-semi-condensed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// semi-condensed
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-semi-condensed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#semi-condensed")]
     SemiCondensed = 3,
 
@@ -1422,26 +1347,38 @@ public enum CanvasFontStretch
     Normal = 4,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-semi-expanded">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// semi-expanded
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-semi-expanded">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#semi-expanded")]
     SemiExpanded = 5,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-expanded">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// semi-expanded
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-expanded">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#expanded")]
     Expanded = 6,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-extra-expanded">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// extra-expanded
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-extra-expanded">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#extra-expanded")]
     ExtraExpanded = 7,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-ultra-expanded">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// ultra-expanded
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontstretch-ultra-expanded">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#ultra-expanded")]
     UltraExpanded = 8
 }
@@ -1461,26 +1398,38 @@ public enum CanvasFontVariantCaps
     Normal = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-small-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// all-small-caps
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-small-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#small-caps")]
     SmallCaps = 1,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-all-small-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// all-small-caps
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-all-small-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#all-small-caps")]
     AllSmallCaps = 2,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-petite-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// all-petite-caps
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-petite-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#petite-caps")]
     PetiteCaps = 3,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-all-petite-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// all-petite-caps
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-all-petite-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#all-petite-caps")]
     AllPetiteCaps = 4,
 
@@ -1491,8 +1440,11 @@ public enum CanvasFontVariantCaps
     Unicase = 5,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-titling-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// titling-caps
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fontvariantcaps-titling-caps">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#titling-caps")]
     TitlingCaps = 6
 }
@@ -1632,49 +1584,31 @@ public enum CanvasTextRendering
     Auto = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-textrendering-optimizespeed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// optimizeSpeed
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-textrendering-optimizespeed">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#optimizeSpeed")]
     OptimizeSpeed = 1,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-textrendering-optimizelegibility">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// optimizeLegibility
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-textrendering-optimizelegibility">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#optimizeLegibility")]
     OptimizeLegibility = 2,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-textrendering-geometricprecision">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// geometricPrecision
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-textrendering-geometricprecision">HTML Standard: 4.12.5.1.5 Text styles</see>
+    /// </remarks>
     [Description("@#geometricPrecision")]
     GeometricPrecision = 3
-}
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#imagesmoothingquality">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-/// </summary>
-[Description("@#ImageSmoothingQuality")]
-[ECMAScript]
-[String]
-public enum ImageSmoothingQuality
-{
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-imagesmoothingquality-low">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-    /// </summary>
-    [Description("@#low")]
-    Low = 0,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-imagesmoothingquality-medium">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-    /// </summary>
-    [Description("@#medium")]
-    Medium = 1,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-imagesmoothingquality-high">HTML Standard: 4.12.5.1 The 2D rendering context</see>
-    /// </summary>
-    [Description("@#high")]
-    High = 2
 }
 
 /// <summary>
@@ -1699,39 +1633,6 @@ public enum OffscreenRenderingContextId
 
     [Description("@#webgpu")]
     Webgpu = 4
-}
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#predefinedcolorspace">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
-/// </summary>
-[Description("@#PredefinedColorSpace")]
-[ECMAScript]
-[String]
-public enum PredefinedColorSpace
-{
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-predefinedcolorspace-srgb">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
-    /// </summary>
-    [Description("@#srgb")]
-    Srgb = 0,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-predefinedcolorspace-srgb-linear">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
-    /// </summary>
-    [Description("@#srgb-linear")]
-    SrgbLinear = 1,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-predefinedcolorspace-display-p3">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
-    /// </summary>
-    [Description("@#display-p3")]
-    DisplayP3 = 2,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-predefinedcolorspace-display-p3-linear">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
-    /// </summary>
-    [Description("@#display-p3-linear")]
-    DisplayP3Linear = 3
 }
 
 /// <summary>
@@ -1803,8 +1704,11 @@ public enum DOMParserSupportedType
 public enum SanitizerPresets
 {
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerpresets-default">HTML Standard: 8.6.3.1 Configuration invariants</see>
+    /// Assert: configuration is &quot;default&quot;.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerpresets-default">HTML Standard: 8.6.3.1 Configuration invariants</see>
+    /// </remarks>
     [Description("@#default")]
     Default = 0
 }
@@ -1818,26 +1722,38 @@ public enum SanitizerPresets
 public enum SelectionMode
 {
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-selectionmode-select">HTML Standard: 4.10.20 APIs for the text control selections</see>
+    /// If the fourth argument&apos;s value is &quot;select&quot;
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-selectionmode-select">HTML Standard: 4.10.20 APIs for the text control selections</see>
+    /// </remarks>
     [Description("@#select")]
     Select = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-selectionmode-start">HTML Standard: 4.10.20 APIs for the text control selections</see>
+    /// If the fourth argument&apos;s value is &quot;start&quot;
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-selectionmode-start">HTML Standard: 4.10.20 APIs for the text control selections</see>
+    /// </remarks>
     [Description("@#start")]
     Start = 1,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-selectionmode-end">HTML Standard: 4.10.20 APIs for the text control selections</see>
+    /// If the fourth argument&apos;s value is &quot;end&quot;
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-selectionmode-end">HTML Standard: 4.10.20 APIs for the text control selections</see>
+    /// </remarks>
     [Description("@#end")]
     End = 2,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-selectionmode-preserve">HTML Standard: 4.10.20 APIs for the text control selections</see>
+    /// If the fourth argument&apos;s value is &quot;preserve&quot;
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#dom-selectionmode-preserve">HTML Standard: 4.10.20 APIs for the text control selections</see>
+    /// </remarks>
     [Description("@#preserve")]
     Preserve = 3
 }
@@ -1851,37 +1767,22 @@ public enum SelectionMode
 public enum ColorSpaceConversion
 {
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-colorspaceconversion-none">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// If val is &quot;none&quot;, output must be decoded without performing any color space conversions. This means that the image decoding algorithm must ignore color profile metadata embedded in the source data as well as the display device color profile.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-colorspaceconversion-none">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
     [Description("@#none")]
     None = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-colorspaceconversion-default">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// If val is &quot;default&quot;, the color space conversion behavior is implementation-specific, and should be chosen according to the default color space that the implementation uses for drawing images onto the canvas.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-colorspaceconversion-default">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
     [Description("@#default")]
     Default = 1
-}
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imagedatapixelformat">HTML Standard: 8.11.1 The ImageData interface</see>
-/// </summary>
-[Description("@#ImageDataPixelFormat")]
-[ECMAScript]
-[String]
-public enum ImageDataPixelFormat
-{
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatapixelformat-rgba-unorm8">HTML Standard: 8.11.1 The ImageData interface</see>
-    /// </summary>
-    [Description("@#rgba-unorm8")]
-    RgbaUnorm8 = 0,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatapixelformat-rgba-float16">HTML Standard: 8.11.1 The ImageData interface</see>
-    /// </summary>
-    [Description("@#rgba-float16")]
-    RgbaFloat16 = 1
 }
 
 /// <summary>
@@ -1893,76 +1794,22 @@ public enum ImageDataPixelFormat
 public enum ImageOrientation
 {
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imageorientation-from-image">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// There used to be a &quot;none&quot; enum value. It was renamed to &quot;from-image&quot;. In the future, &quot;none&quot; will be added back with a different meaning.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imageorientation-from-image">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
     [Description("@#from-image")]
     FromImage = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imageorientation-flipy">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// If the value of the imageOrientation member of options is &quot;flipY&quot;, output must be flipped vertically, disregarding any image orientation metadata of the source (such as EXIF metadata), if any. EXIF
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imageorientation-flipy">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
     [Description("@#flipY")]
     FlipY = 1
-}
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#premultiplyalpha">HTML Standard: 8.11.2 The ImageBitmap interface</see>
-/// </summary>
-[Description("@#PremultiplyAlpha")]
-[ECMAScript]
-[String]
-public enum PremultiplyAlpha
-{
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-premultiplyalpha-none">HTML Standard: 8.11.2 The ImageBitmap interface</see>
-    /// </summary>
-    [Description("@#none")]
-    None = 0,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-premultiplyalpha-premultiply">HTML Standard: 8.11.2 The ImageBitmap interface</see>
-    /// </summary>
-    [Description("@#premultiply")]
-    Premultiply = 1,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-premultiplyalpha-default">HTML Standard: 8.11.2 The ImageBitmap interface</see>
-    /// </summary>
-    [Description("@#default")]
-    Default = 2
-}
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#resizequality">HTML Standard: 8.11.2 The ImageBitmap interface</see>
-/// </summary>
-[Description("@#ResizeQuality")]
-[ECMAScript]
-[String]
-public enum ResizeQuality
-{
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-resizequality-pixelated">HTML Standard: 8.11.2 The ImageBitmap interface</see>
-    /// </summary>
-    [Description("@#pixelated")]
-    Pixelated = 0,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-resizequality-low">HTML Standard: 8.11.2 The ImageBitmap interface</see>
-    /// </summary>
-    [Description("@#low")]
-    Low = 1,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-resizequality-medium">HTML Standard: 8.11.2 The ImageBitmap interface</see>
-    /// </summary>
-    [Description("@#medium")]
-    Medium = 2,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-resizequality-high">HTML Standard: 8.11.2 The ImageBitmap interface</see>
-    /// </summary>
-    [Description("@#high")]
-    High = 3
 }
 
 /// <summary>
@@ -1977,14 +1824,20 @@ public enum CanPlayTypeResult
     Empty = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-canplaytyperesult-maybe">HTML Standard: 4.8.11.3 MIME types</see>
+    /// The canPlayType(type) method must return the empty string if type is a type that the user agent knows it cannot render or is the type &quot;application/octet-stream&quot;; it must return &quot;probably&quot; if the user agent is confident that the type represents a media resource that it can render if used with this audio or video element; and it must return &quot;maybe&quot; otherwise. Implementers are encouraged to return &quot;maybe&quot; unless the type can be confidently established as being supported or not. Generally, a user agent should never return &quot;probably&quot; for a type that allows the codecs parameter if that parameter is not present.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-canplaytyperesult-maybe">HTML Standard: 4.8.11.3 MIME types</see>
+    /// </remarks>
     [Description("@#maybe")]
     Maybe = 1,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-canplaytyperesult-probably">HTML Standard: 4.8.11.3 MIME types</see>
+    /// The canPlayType(type) method must return the empty string if type is a type that the user agent knows it cannot render or is the type &quot;application/octet-stream&quot;; it must return &quot;probably&quot; if the user agent is confident that the type represents a media resource that it can render if used with this audio or video element; and it must return &quot;maybe&quot; otherwise. Implementers are encouraged to return &quot;maybe&quot; unless the type can be confidently established as being supported or not. Generally, a user agent should never return &quot;probably&quot; for a type that allows the codecs parameter if that parameter is not present.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-canplaytyperesult-probably">HTML Standard: 4.8.11.3 MIME types</see>
+    /// </remarks>
     [Description("@#probably")]
     Probably = 2
 }
@@ -2022,43 +1875,31 @@ public enum TextTrackKind
 public enum TextTrackMode
 {
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-texttrack-disabled">HTML Standard: 4.8.11.11.5 Text track API</see>
+    /// When the user agent is required to populate the list of pending text tracks of a media element, the user agent must add to the element&apos;s list of pending text tracks each text track in the element&apos;s list of text tracks whose text track mode is not disabled and whose text track readiness state is loading.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-texttrack-disabled">HTML Standard: 4.8.11.11.5 Text track API</see>
+    /// </remarks>
     [Description("@#disabled")]
     Disabled = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-texttrack-hidden">HTML Standard: 4.8.11.11.5 Text track API</see>
+    /// If there are any text tracks in the media element&apos;s list of text tracks whose text track kind is chapters or metadata that correspond to track elements with a default attribute set whose text track mode is set to disabled, then set the text track mode of all such tracks to hidden.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-texttrack-hidden">HTML Standard: 4.8.11.11.5 Text track API</see>
+    /// </remarks>
     [Description("@#hidden")]
     Hidden = 1,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-texttrack-showing">HTML Standard: 4.8.11.11.5 Text track API</see>
+    /// The user agent must synchronously unset this flag whenever the text track cue is removed from its text track&apos;s text track list of cues; whenever the text track itself is removed from its media element&apos;s list of text tracks or has its text track mode changed to disabled; and whenever the media element&apos;s readyState is changed back to HAVE_NOTHING. When the flag is unset in this way for one or more cues in text tracks that were showing prior to the relevant incident, the user agent must, after having unset the flag for all the affected cues, apply the rules for updating the text track rendering of those text tracks....
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/media.html#dom-texttrack-showing">HTML Standard: 4.8.11.11.5 Text track API</see>
+    /// </remarks>
     [Description("@#showing")]
     Showing = 2
-}
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationfocusreset">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
-/// </summary>
-[Description("@#NavigationFocusReset")]
-[ECMAScript]
-[String]
-public enum NavigationFocusReset
-{
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationfocusreset-after-transition">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
-    /// </summary>
-    [Description("@#after-transition")]
-    AfterTransition = 0,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationfocusreset-manual">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
-    /// </summary>
-    [Description("@#manual")]
-    Manual = 1
 }
 
 /// <summary>
@@ -2082,31 +1923,13 @@ public enum NavigationHistoryBehavior
     Push = 1,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/browsing-the-web.html#navigationhistorybehavior-replace">HTML Standard: 7.4.2.1 Supporting concepts</see>
+    /// After the refresh has come due (as defined below), if the user has not canceled the redirect and, if meta is given, document&apos;s active sandboxing flag set does not have the sandboxed automatic features browsing context flag set, then navigate document&apos;s node navigable to urlRecord using document, with historyHandling set to &quot;replace&quot;.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/browsing-the-web.html#navigationhistorybehavior-replace">HTML Standard: 7.4.2.1 Supporting concepts</see>
+    /// </remarks>
     [Description("@#replace")]
     Replace = 2
-}
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationscrollbehavior">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
-/// </summary>
-[Description("@#NavigationScrollBehavior")]
-[ECMAScript]
-[String]
-public enum NavigationScrollBehavior
-{
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationscrollbehavior-after-transition">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
-    /// </summary>
-    [Description("@#after-transition")]
-    AfterTransition = 0,
-
-    /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationscrollbehavior-manual">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
-    /// </summary>
-    [Description("@#manual")]
-    Manual = 1
 }
 
 /// <summary>
@@ -2118,26 +1941,38 @@ public enum NavigationScrollBehavior
 public enum NavigationType
 {
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationtype-push">HTML Standard: 7.2.6.3 Core infrastructure</see>
+    /// Let continue be the result of firing a push/replace/reload navigate event at navigation with navigationType set to historyHandling, isSameDocument set to true, destinationURL set to newURL, and classicHistoryAPIState set to serializedData.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationtype-push">HTML Standard: 7.2.6.3 Core infrastructure</see>
+    /// </remarks>
     [Description("@#push")]
     Push = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationtype-replace">HTML Standard: 7.2.6.3 Core infrastructure</see>
+    /// Let continue be the result of firing a push/replace/reload navigate event at navigation with navigationType set to historyHandling, isSameDocument set to true, destinationURL set to newURL, and classicHistoryAPIState set to serializedData.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationtype-replace">HTML Standard: 7.2.6.3 Core infrastructure</see>
+    /// </remarks>
     [Description("@#replace")]
     Replace = 1,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationtype-reload">HTML Standard: 7.2.6.3 Core infrastructure</see>
+    /// Let continue be the result of firing a push/replace/reload navigate event at navigation with navigationType set to historyHandling, isSameDocument set to true, destinationURL set to newURL, and classicHistoryAPIState set to serializedData.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationtype-reload">HTML Standard: 7.2.6.3 Core infrastructure</see>
+    /// </remarks>
     [Description("@#reload")]
     Reload = 2,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationtype-traverse">HTML Standard: 7.2.6.3 Core infrastructure</see>
+    /// The cancelable property will be false for some &quot;traverse&quot; navigations, such as those taking place inside child navigables, those crossing to new origins, or when the user attempts to traverse again shortly after a previous call to preventDefault() prevented them from doing so.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationtype-traverse">HTML Standard: 7.2.6.3 Core infrastructure</see>
+    /// </remarks>
     [Description("@#traverse")]
     Traverse = 3
 }
@@ -2151,31 +1986,22 @@ public enum NavigationType
 public enum ScrollRestoration
 {
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/browsing-the-web.html#dom-scrollrestoration-auto">HTML Standard: 7.4.1.1 Session history entries</see>
+    /// scroll restoration mode, a scroll restoration mode, initially &quot;auto&quot;.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/browsing-the-web.html#dom-scrollrestoration-auto">HTML Standard: 7.4.1.1 Session history entries</see>
+    /// </remarks>
     [Description("@#auto")]
     Auto = 0,
 
     /// <summary>
-    /// <see href="https://html.spec.whatwg.org/multipage/browsing-the-web.html#dom-scrollrestoration-manual">HTML Standard: 7.4.1.1 Session history entries</see>
+    /// By default, using this method will delay the browser&apos;s scroll restoration logic for &quot;traverse&quot; or &quot;reload&quot; navigations, or its scroll-reset/scroll-to-a-fragment logic for &quot;push&quot; or &quot;replace&quot; navigations, until any handlers&apos; returned promises settle. The scroll option can be set to &quot;manual&quot; to turn off any browser-driven scroll behavior entirely for this navigation, or scroll() can be called before the promise settles to trigger this behavior early.
     /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/browsing-the-web.html#dom-scrollrestoration-manual">HTML Standard: 7.4.1.1 Session history entries</see>
+    /// </remarks>
     [Description("@#manual")]
     Manual = 1
-}
-
-/// <summary>
-/// <see href="https://html.spec.whatwg.org/multipage/workers.html#workertype">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see>
-/// </summary>
-[Description("@#WorkerType")]
-[ECMAScript]
-[String]
-public enum WorkerType
-{
-    [Description("@#classic")]
-    Classic = 0,
-
-    [Description("@#module")]
-    Module = 1
 }
 
 /// <summary>
@@ -4642,6 +4468,93 @@ public enum CaptureAction
     /// </summary>
     [Description("@#last")]
     Last = 3
+}
+
+/// <summary>
+/// <see href="https://w3c.github.io/mediacapture-image/#enumdef-filllightmode">MediaStream Image Capture: 8 FillLightMode</see>
+/// </summary>
+[Description("@#FillLightMode")]
+[ECMAScript]
+[String]
+public enum FillLightMode
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-filllightmode-auto">MediaStream Image Capture: 8.1 Values</see>
+    /// </summary>
+    [Description("@#auto")]
+    Auto = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-filllightmode-off">MediaStream Image Capture: 8.1 Values</see>
+    /// </summary>
+    [Description("@#off")]
+    Off = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-filllightmode-flash">MediaStream Image Capture: 8.1 Values</see>
+    /// </summary>
+    [Description("@#flash")]
+    Flash = 2
+}
+
+/// <summary>
+/// <see href="https://w3c.github.io/mediacapture-image/#enumdef-meteringmode">MediaStream Image Capture: 11. MeteringMode</see>
+/// </summary>
+[Description("@#MeteringMode")]
+[ECMAScript]
+[String]
+public enum MeteringMode
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-meteringmode-none">MediaStream Image Capture: 11.1 Values</see>
+    /// </summary>
+    [Description("@#none")]
+    None = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-meteringmode-manual">MediaStream Image Capture: 11.1 Values</see>
+    /// </summary>
+    [Description("@#manual")]
+    Manual = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-meteringmode-single-shot">MediaStream Image Capture: 11.1 Values</see>
+    /// </summary>
+    [Description("@#single-shot")]
+    SingleShot = 2,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-meteringmode-continuous">MediaStream Image Capture: 11.1 Values</see>
+    /// </summary>
+    [Description("@#continuous")]
+    Continuous = 3
+}
+
+/// <summary>
+/// <see href="https://w3c.github.io/mediacapture-image/#enumdef-redeyereduction">MediaStream Image Capture: 7 RedEyeReduction</see>
+/// </summary>
+[Description("@#RedEyeReduction")]
+[ECMAScript]
+[String]
+public enum RedEyeReduction
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-redeyereduction-never">MediaStream Image Capture: 7.1 Values</see>
+    /// </summary>
+    [Description("@#never")]
+    Never = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-redeyereduction-always">MediaStream Image Capture: 7.1 Values</see>
+    /// </summary>
+    [Description("@#always")]
+    Always = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-image/#dom-redeyereduction-controllable">MediaStream Image Capture: 7.1 Values</see>
+    /// </summary>
+    [Description("@#controllable")]
+    Controllable = 2
 }
 
 /// <summary>
@@ -7362,22 +7275,34 @@ public enum LanguageModelSamplingMode
     Predictable = 1,
 
     /// <summary>
+    /// <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelsamplingmode-slightly-predictable">Prompt API: 3 The API</see>
+    /// </summary>
+    [Description("@#slightly-predictable")]
+    SlightlyPredictable = 2,
+
+    /// <summary>
     /// <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelsamplingmode-balanced">Prompt API: 3 The API</see>
     /// </summary>
     [Description("@#balanced")]
-    Balanced = 2,
+    Balanced = 3,
+
+    /// <summary>
+    /// <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelsamplingmode-slightly-creative">Prompt API: 3 The API</see>
+    /// </summary>
+    [Description("@#slightly-creative")]
+    SlightlyCreative = 4,
 
     /// <summary>
     /// <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelsamplingmode-creative">Prompt API: 3 The API</see>
     /// </summary>
     [Description("@#creative")]
-    Creative = 3,
+    Creative = 5,
 
     /// <summary>
     /// <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelsamplingmode-most-creative">Prompt API: 3 The API</see>
     /// </summary>
     [Description("@#most-creative")]
-    MostCreative = 4
+    MostCreative = 6
 }
 
 /// <summary>
@@ -9364,51 +9289,6 @@ public enum HandwritingRecognitionType
 }
 
 /// <summary>
-/// A sequence of supported white balance modes. Each string MUST be one of the members of MeteringMode.
-/// </summary>
-/// <remarks>
-/// <see href="https://w3c.github.io/mediacapture-image/#enumdef-meteringmode">MediaStream Image Capture: 11. MeteringMode</see>
-/// </remarks>
-[Description("@#MeteringMode")]
-[ECMAScript]
-[String]
-public enum MeteringMode
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-meteringmode-none">MediaStream Image Capture: 11.1 Values</see>
-    /// </summary>
-    [Description("@#none")]
-    None = 0,
-
-    /// <summary>
-    /// Exposure is the amount of light that is allowed to fall on the photosensitive device. In auto-exposure modes (single-shot or continuous exposureMode), the exposure time and/or camera aperture are automatically adjusted by the implementation based on the subject of the photo. In manual exposureMode, these parameters are set to fixed absolute values.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-meteringmode-manual">MediaStream Image Capture: 11.1 Values</see>
-    /// </remarks>
-    [Description("@#manual")]
-    Manual = 1,
-
-    /// <summary>
-    /// Current exposure compensation setting. A value of 0 EV is interpreted as no exposure compensation. This field is only significant if exposureMode is continuous or single-shot
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-meteringmode-single-shot">MediaStream Image Capture: 11.1 Values</see>
-    /// </remarks>
-    [Description("@#single-shot")]
-    SingleShot = 2,
-
-    /// <summary>
-    /// Current exposure compensation setting. A value of 0 EV is interpreted as no exposure compensation. This field is only significant if exposureMode is continuous or single-shot
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-meteringmode-continuous">MediaStream Image Capture: 11.1 Values</see>
-    /// </remarks>
-    [Description("@#continuous")]
-    Continuous = 3
-}
-
-/// <summary>
 /// Add touchType, altitudeAngle, azimuthAngle (Safari iOS 10.3 extensions for stylus)
 /// </summary>
 /// <remarks>
@@ -9619,6 +9499,66 @@ public enum HevcBitstreamFormat
 }
 
 /// <summary>
+/// Each NavigateEvent has a focus reset behavior, a NavigationFocusReset-or-null, initially null.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationfocusreset">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
+/// </remarks>
+[Description("@#NavigationFocusReset")]
+[ECMAScript]
+[String]
+public enum NavigationFocusReset
+{
+    /// <summary>
+    /// If it was left as null, then we treat that as &quot;after-transition&quot;, and continue onward.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationfocusreset-after-transition">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
+    /// </remarks>
+    [Description("@#after-transition")]
+    AfterTransition = 0,
+
+    /// <summary>
+    /// By default, using this method will cause focus to reset when any handlers&apos; returned promises settle. Focus will be reset to the first element with the autofocus attribute set, or the body element if the attribute isn&apos;t present. The focusReset option can be set to &quot;manual&quot; to avoid this behavior.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationfocusreset-manual">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
+    /// </remarks>
+    [Description("@#manual")]
+    Manual = 1
+}
+
+/// <summary>
+/// Each NavigateEvent has a scroll behavior, a NavigationScrollBehavior-or-null, initially null.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationscrollbehavior">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
+/// </remarks>
+[Description("@#NavigationScrollBehavior")]
+[ECMAScript]
+[String]
+public enum NavigationScrollBehavior
+{
+    /// <summary>
+    /// If called more than once, or called after automatic post-transition scroll processing has happened due to the scroll option being left as &quot;after-transition&quot;, or called before the navigation has committed, this method will throw an &quot;InvalidStateError&quot; DOMException.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationscrollbehavior-after-transition">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
+    /// </remarks>
+    [Description("@#after-transition")]
+    AfterTransition = 0,
+
+    /// <summary>
+    /// By default, using this method will delay the browser&apos;s scroll restoration logic for &quot;traverse&quot; or &quot;reload&quot; navigations, or its scroll-reset/scroll-to-a-fragment logic for &quot;push&quot; or &quot;replace&quot; navigations, until any handlers&apos; returned promises settle. The scroll option can be set to &quot;manual&quot; to turn off any browser-driven scroll behavior entirely for this navigation, or scroll() can be called before the promise settles to trigger this behavior early.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationscrollbehavior-manual">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
+    /// </remarks>
+    [Description("@#manual")]
+    Manual = 1
+}
+
+/// <summary>
 /// Encryption keys used for push message encryption are provided to a web application through the getKey() method or the serializer of PushSubscription. Each key is named using a value from the PushEncryptionKeyName enumeration.
 /// </summary>
 /// <remarks>
@@ -9784,6 +9724,45 @@ public enum MediaEncodingType
     /// </remarks>
     [Description("@#webrtc")]
     Webrtc = 1
+}
+
+/// <summary>
+/// If options is provided, the ImageBitmap object&apos;s bitmap data is modified according to options. For example, if the premultiplyAlpha option is set to &quot;premultiply&quot;, the bitmap data&apos;s non-alpha color components are premultiplied by the alpha component.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#premultiplyalpha">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+/// </remarks>
+[Description("@#PremultiplyAlpha")]
+[ECMAScript]
+[String]
+public enum PremultiplyAlpha
+{
+    /// <summary>
+    /// If val is &quot;none&quot;, the output that is not premultiplied by alpha must be left untouched and that is premultiplied by alpha must have its color components divided by alpha.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-premultiplyalpha-none">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
+    [Description("@#none")]
+    None = 0,
+
+    /// <summary>
+    /// If options is provided, the ImageBitmap object&apos;s bitmap data is modified according to options. For example, if the premultiplyAlpha option is set to &quot;premultiply&quot;, the bitmap data&apos;s non-alpha color components are premultiplied by the alpha component.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-premultiplyalpha-premultiply">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
+    [Description("@#premultiply")]
+    Premultiply = 1,
+
+    /// <summary>
+    /// If val is &quot;default&quot;, the alpha premultiplication behavior is implementation-specific, and should be chosen according to implementation deems optimal for drawing images onto the canvas.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-premultiplyalpha-default">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
+    [Description("@#default")]
+    Default = 2
 }
 
 /// <summary>
@@ -10570,6 +10549,132 @@ public enum AppBannerPromptOutcome
 }
 
 /// <summary>
+/// The CanvasColorType enumeration is used to specify the color type of the canvas&apos;s backing store.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvascolortype">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+/// </remarks>
+[Description("@#CanvasColorType")]
+[ECMAScript]
+[String]
+public enum CanvasColorType
+{
+    /// <summary>
+    /// The &quot;unorm8&quot; value indicates that the type for all color components is 8-bit unsigned normalized.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvascolortype-unorm8">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+    /// </remarks>
+    [Description("@#unorm8")]
+    Unorm8 = 0,
+
+    /// <summary>
+    /// The &quot;float16&quot; value indicates that the type for all color components is 16-bit floating point.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvascolortype-float16">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+    /// </remarks>
+    [Description("@#float16")]
+    Float16 = 1
+}
+
+/// <summary>
+/// The CanvasFillRule enumeration is used to select the fill rule algorithm by which to determine if a point is inside or outside a path.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasfillrule">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+/// </remarks>
+[Description("@#CanvasFillRule")]
+[ECMAScript]
+[String]
+public enum CanvasFillRule
+{
+    /// <summary>
+    /// The &quot;nonzero&quot; value indicates the nonzero winding rule, wherein
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fillrule-nonzero">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+    /// </remarks>
+    [Description("@#nonzero")]
+    Nonzero = 0,
+
+    /// <summary>
+    /// The &quot;evenodd&quot; value indicates the even-odd rule, wherein
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-fillrule-evenodd">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+    /// </remarks>
+    [Description("@#evenodd")]
+    Evenodd = 1
+}
+
+/// <summary>
+/// The ImageDataPixelFormat enumeration is used to specify type of the data attribute of an ImageData and the arrangement and numerical representation of the color components for each pixel.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imagedatapixelformat">HTML Standard: 8.11.1 The ImageData interface</see>
+/// </remarks>
+[Description("@#ImageDataPixelFormat")]
+[ECMAScript]
+[String]
+public enum ImageDataPixelFormat
+{
+    /// <summary>
+    /// Let bytesPerPixel be 4 if settings[&quot;pixelFormat&quot;] is &quot;rgba-unorm8&quot;; otherwise 8.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatapixelformat-rgba-unorm8">HTML Standard: 8.11.1 The ImageData interface</see>
+    /// </remarks>
+    [Description("@#rgba-unorm8")]
+    RgbaUnorm8 = 0,
+
+    /// <summary>
+    /// If settings[&quot;pixelFormat&quot;] is &quot;rgba-float16&quot; and source is not a Float16Array, then throw an &quot;InvalidStateError&quot; DOMException.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatapixelformat-rgba-float16">HTML Standard: 8.11.1 The ImageData interface</see>
+    /// </remarks>
+    [Description("@#rgba-float16")]
+    RgbaFloat16 = 1
+}
+
+/// <summary>
+/// The ImageSmoothingQuality enumeration is used to express a preference for the interpolation quality to use when smoothing images.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#imagesmoothingquality">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+/// </remarks>
+[Description("@#ImageSmoothingQuality")]
+[ECMAScript]
+[String]
+public enum ImageSmoothingQuality
+{
+    /// <summary>
+    /// The &quot;low&quot; value indicates a preference for a low level of image interpolation quality. Low-quality image interpolation may be more computationally efficient than higher settings.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-imagesmoothingquality-low">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+    /// </remarks>
+    [Description("@#low")]
+    Low = 0,
+
+    /// <summary>
+    /// The &quot;medium&quot; value indicates a preference for a medium level of image interpolation quality.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-imagesmoothingquality-medium">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+    /// </remarks>
+    [Description("@#medium")]
+    Medium = 1,
+
+    /// <summary>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-context-2d-imagesmoothingquality-high">HTML Standard: 4.12.5.1 The 2D rendering context</see>
+    /// </summary>
+    [Description("@#high")]
+    High = 2
+}
+
+/// <summary>
 /// The MediaSource interface represents a source of media data for an HTMLMediaElement. It keeps track of the readyState for this source as well as a list of SourceBuffer objects that can be used to add media data to the presentation. MediaSource objects are created by the web application and then attached to an HTMLMediaElement. The application uses the SourceBuffer objects in sourceBuffers to add media data to this source. The HTMLMediaElement fetches this media data from the MediaSource object when it is needed during playback.
 /// </summary>
 /// <remarks>
@@ -10723,6 +10828,54 @@ public enum OrientationType
     /// </summary>
     [Description("@#landscape-secondary")]
     LandscapeSecondary = 3
+}
+
+/// <summary>
+/// The PredefinedColorSpace enumeration is used to specify the color space of the canvas&apos;s backing store.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/canvas.html#predefinedcolorspace">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
+/// </remarks>
+[Description("@#PredefinedColorSpace")]
+[ECMAScript]
+[String]
+public enum PredefinedColorSpace
+{
+    /// <summary>
+    /// The &quot;srgb&quot; value indicates the &apos;srgb&apos; color space.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-predefinedcolorspace-srgb">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
+    /// </remarks>
+    [Description("@#srgb")]
+    Srgb = 0,
+
+    /// <summary>
+    /// The &quot;srgb-linear&quot; value indicates the &apos;srgb-linear&apos; color space.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-predefinedcolorspace-srgb-linear">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
+    /// </remarks>
+    [Description("@#srgb-linear")]
+    SrgbLinear = 1,
+
+    /// <summary>
+    /// The &quot;display-p3&quot; value indicates the &apos;display-p3&apos; color space.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-predefinedcolorspace-display-p3">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
+    /// </remarks>
+    [Description("@#display-p3")]
+    DisplayP3 = 2,
+
+    /// <summary>
+    /// The &quot;display-p3-linear&quot; value indicates the &apos;display-p3-linear&apos; color space.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-predefinedcolorspace-display-p3-linear">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
+    /// </remarks>
+    [Description("@#display-p3-linear")]
+    DisplayP3Linear = 3
 }
 
 /// <summary>
@@ -10885,6 +11038,51 @@ public enum RemotePlaybackState
     /// </remarks>
     [Description("@#disconnected")]
     Disconnected = 2
+}
+
+/// <summary>
+/// The ResizeQuality enumeration is used to express a preference for the interpolation quality to use when scaling images.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#resizequality">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+/// </remarks>
+[Description("@#ResizeQuality")]
+[ECMAScript]
+[String]
+public enum ResizeQuality
+{
+    /// <summary>
+    /// The &quot;pixelated&quot; value indicates a preference for scaling the image to preserve the pixelation of the original as much as possible, with minor smoothing as necessary to avoid distorting the image when the target size is not a clean multiple of the original.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-resizequality-pixelated">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
+    [Description("@#pixelated")]
+    Pixelated = 0,
+
+    /// <summary>
+    /// The &quot;low&quot; value indicates a preference for a low level of image interpolation quality. Low-quality image interpolation may be more computationally efficient than higher settings.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-resizequality-low">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
+    [Description("@#low")]
+    Low = 1,
+
+    /// <summary>
+    /// The &quot;medium&quot; value indicates a preference for a medium level of image interpolation quality.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-resizequality-medium">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </remarks>
+    [Description("@#medium")]
+    Medium = 2,
+
+    /// <summary>
+    /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-resizequality-high">HTML Standard: 8.11.2 The ImageBitmap interface</see>
+    /// </summary>
+    [Description("@#high")]
+    High = 3
 }
 
 /// <summary>
@@ -11101,6 +11299,57 @@ public enum CorrectionType
 }
 
 /// <summary>
+/// The sequence of supported face detection modes. Each string MUST be one of the members of HumanFaceDetectionModeEnum. See humanFaceDetectionMode for additional details.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/mediacapture-extensions/#dom-humanfacedetectionmodeenum">Media Capture and Streams Extensions: 17.7 HumanFaceDetectionModeEnum</see>
+/// </remarks>
+[Description("@#HumanFaceDetectionModeEnum")]
+[ECMAScript]
+[String]
+public enum HumanFaceDetectionModeEnum
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-humanfacedetectionmodeenum-none">Media Capture and Streams Extensions: HumanFaceDetectionModeEnum Enumeration Description</see>
+    /// </summary>
+    [Description("@#none")]
+    None = 0,
+
+    /// <summary>
+    /// With this setting, the source sets a superset of the metadata compared to the &quot;bounding-box&quot; setting. The source sets the same metadata and additionally metadata related to human face landmarks (all other SegmentTypes except &quot;human-face&quot;) including center point information in the member centerPoint of each Segment related to a detected landmark. As an input, this is interpreted as a command to enable the setting of human face and face landmark detection and to set bounding box related information to face segment metadata and to set the center point information of each detected face landmark.
+    /// </summary>
+    /// <remarks>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-humanfacedetectionmodeenum-bounding-box">Media Capture and Streams Extensions: HumanFaceDetectionModeEnum Enumeration Description</see>
+    /// </remarks>
+    [Description("@#bounding-box")]
+    BoundingBox = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-humanfacedetectionmodeenum-bounding-box-with-landmark-center-point">Media Capture and Streams Extensions: HumanFaceDetectionModeEnum Enumeration Description</see>
+    /// </summary>
+    [Description("@#bounding-box-with-landmark-center-point")]
+    BoundingBoxWithLandmarkCenterPoint = 2
+}
+
+/// <summary>
+/// The type argument has to exactly match these values; we do not perform an ASCII case-insensitive match. This is different from how type content attribute values are treated, and how DOMTokenList&apos;s supports() method works, but it aligns with the WorkerType enumeration used in the Worker() constructor.
+/// </summary>
+/// <remarks>
+/// <see href="https://html.spec.whatwg.org/multipage/workers.html#workertype">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see>
+/// </remarks>
+[Description("@#WorkerType")]
+[ECMAScript]
+[String]
+public enum WorkerType
+{
+    [Description("@#classic")]
+    Classic = 0,
+
+    [Description("@#module")]
+    Module = 1
+}
+
+/// <summary>
 /// The type of display surface that is being captured. This assumes values from the DisplayCaptureSurfaceType enumeration.
 /// </summary>
 /// <remarks>
@@ -11134,6 +11383,48 @@ public enum DisplayCaptureSurfaceType
     /// </remarks>
     [Description("@#browser")]
     Browser = 2
+}
+
+/// <summary>
+/// This MediaStreamTrack source does not set metadata in VideoFrameMetadata of VideoFrames related to human faces or human face landmarks, that is, to any Segment which has the type set to any of the alternatives listed in enumeration SegmentType. As an input, this is interpreted as a command to turn off the setting of human face and landmark detection.
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/mediacapture-extensions/#dom-segmenttype">Media Capture and Streams Extensions: 17.2 Segment</see>
+/// </remarks>
+[Description("@#SegmentType")]
+[ECMAScript]
+[String]
+public enum SegmentType
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-segmenttype-human-face">Media Capture and Streams Extensions: Dictionary Segment Members</see>
+    /// </summary>
+    [Description("@#human-face")]
+    HumanFace = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-segmenttype-left-eye">Media Capture and Streams Extensions: Dictionary Segment Members</see>
+    /// </summary>
+    [Description("@#left-eye")]
+    LeftEye = 1,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-segmenttype-right-eye">Media Capture and Streams Extensions: Dictionary Segment Members</see>
+    /// </summary>
+    [Description("@#right-eye")]
+    RightEye = 2,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-segmenttype-eye">Media Capture and Streams Extensions: Dictionary Segment Members</see>
+    /// </summary>
+    [Description("@#eye")]
+    Eye = 3,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-segmenttype-mouth">Media Capture and Streams Extensions: Dictionary Segment Members</see>
+    /// </summary>
+    [Description("@#mouth")]
+    Mouth = 4
 }
 
 /// <summary>
@@ -11293,6 +11584,30 @@ public enum RTCIceComponent
 }
 
 /// <summary>
+/// defaultSemantics of type GetUserMediaSemantics, readonly
+/// </summary>
+/// <remarks>
+/// <see href="https://w3c.github.io/mediacapture-extensions/#dom-getusermediasemantics">Media Capture and Streams Extensions: 4.5 GetUserMediaSemantics enum</see>
+/// </remarks>
+[Description("@#GetUserMediaSemantics")]
+[ECMAScript]
+[String]
+public enum GetUserMediaSemantics
+{
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-getusermediasemantics-browser-chooses">Media Capture and Streams Extensions: 4.5 GetUserMediaSemantics enum</see>
+    /// </summary>
+    [Description("@#browser-chooses")]
+    BrowserChooses = 0,
+
+    /// <summary>
+    /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-getusermediasemantics-user-chooses">Media Capture and Streams Extensions: 4.5 GetUserMediaSemantics enum</see>
+    /// </summary>
+    [Description("@#user-chooses")]
+    UserChooses = 1
+}
+
+/// <summary>
 /// degradationPreference of type RTCDegradationPreference.
 /// </summary>
 /// <remarks>
@@ -11371,39 +11686,6 @@ public enum RTCDtlsRole
     /// </remarks>
     [Description("@#unknown")]
     Unknown = 2
-}
-
-/// <summary>
-/// fillLightMode
-/// </summary>
-/// <remarks>
-/// <see href="https://w3c.github.io/mediacapture-image/#enumdef-filllightmode">MediaStream Image Capture: 8 FillLightMode</see>
-/// </remarks>
-[Description("@#FillLightMode")]
-[ECMAScript]
-[String]
-public enum FillLightMode
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-filllightmode-auto">MediaStream Image Capture: 8.1 Values</see>
-    /// </summary>
-    [Description("@#auto")]
-    Auto = 0,
-
-    /// <summary>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-filllightmode-off">MediaStream Image Capture: 8.1 Values</see>
-    /// </summary>
-    [Description("@#off")]
-    Off = 1,
-
-    /// <summary>
-    /// This reflects the supported fill light mode (flash) settings, if any.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-filllightmode-flash">MediaStream Image Capture: 8.1 Values</see>
-    /// </remarks>
-    [Description("@#flash")]
-    Flash = 2
 }
 
 /// <summary>
@@ -11713,42 +11995,6 @@ public enum RTCDataChannelState
     /// </remarks>
     [Description("@#closed")]
     Closed = 3
-}
-
-/// <summary>
-/// redEyeReduction
-/// </summary>
-/// <remarks>
-/// <see href="https://w3c.github.io/mediacapture-image/#enumdef-redeyereduction">MediaStream Image Capture: 7 RedEyeReduction</see>
-/// </remarks>
-[Description("@#RedEyeReduction")]
-[ECMAScript]
-[String]
-public enum RedEyeReduction
-{
-    /// <summary>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-redeyereduction-never">MediaStream Image Capture: 7.1 Values</see>
-    /// </summary>
-    [Description("@#never")]
-    Never = 0,
-
-    /// <summary>
-    /// Red eye reduction is available in the device and it is always configured to true.
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-redeyereduction-always">MediaStream Image Capture: 7.1 Values</see>
-    /// </remarks>
-    [Description("@#always")]
-    Always = 1,
-
-    /// <summary>
-    /// controllable
-    /// </summary>
-    /// <remarks>
-    /// <see href="https://w3c.github.io/mediacapture-image/#dom-redeyereduction-controllable">MediaStream Image Capture: 7.1 Values</see>
-    /// </remarks>
-    [Description("@#controllable")]
-    Controllable = 2
 }
 
 /// <summary>
@@ -12283,6 +12529,24 @@ public enum WindowAudioPreferenceEnum
     /// </summary>
     [Description("@#exclude")]
     Exclude = 2
+}
+
+[Description("@#AnimationTriggerBehavior")]
+[ECMAScript]
+[String]
+public enum AnimationTriggerBehavior
+{
+    [Description("@#once")]
+    Once = 0,
+
+    [Description("@#repeat")]
+    Repeat = 1,
+
+    [Description("@#alternate")]
+    Alternate = 2,
+
+    [Description("@#state")]
+    State = 3
 }
 
 [Description("@#WebGLPowerPreference")]

@@ -25,10 +25,10 @@ const skipSpecificationProse = Deno.args.includes("--skip-spec-prose") ||
   Deno.env.get("JAZOR_SKIP_SPEC_PROSE") === "1";
 
 const parserVersion = "webidl2@24.5.0";
-const webrefIdlVersion = "@webref/idl@3.82.0";
-const webrefCssVersion = "@webref/css@8.7.1";
-const webrefEventsVersion = "@webref/events@1.24.2";
-const webrefXrefVersion = "@webref/xref@1.2.11";
+const webrefIdlVersion = "@webref/idl@3.83.1";
+const webrefCssVersion = "@webref/css@8.7.4";
+const webrefEventsVersion = "@webref/events@1.25.1";
+const webrefXrefVersion = "@webref/xref@1.2.16";
 
 interface CollectedIdlFile {
   fileName: string;
@@ -342,8 +342,11 @@ class SpecificationSourceCatalog {
     let document = this._documentsByShortname.get(specification.shortname);
     if (!document) {
       document = this.schedule(async () => {
+        console.error(`[webidl] Reading specification: ${specification.shortname}`);
         const source = await fetchSpecificationSource(sourceUrl);
-        return source ? createSpecificationSourceDocument(source) : undefined;
+        const parsed = source ? createSpecificationSourceDocument(source) : undefined;
+        console.error(`[webidl] Specification ${specification.shortname}: ${parsed ? `${parsed.blocks.length} prose blocks` : "source unavailable"}`);
+        return parsed;
       });
       this._documentsByShortname.set(specification.shortname, document);
     }
@@ -418,13 +421,15 @@ async function fetchSpecificationSource(sourceUrl: string): Promise<string | und
       signal: controller.signal,
     });
     if (!response.ok) {
+      console.error(`[webidl] HTTP ${response.status}: ${sourceUrl}`);
       return undefined;
     }
 
     return await response.text();
-  } catch {
+  } catch (error) {
     // Source prose is additive. Exact xref links remain available when a spec
     // repository is temporarily unreachable during collection.
+    console.error(`[webidl] Source request failed: ${sourceUrl}: ${error instanceof Error ? error.message : String(error)}`);
     return undefined;
   } finally {
     clearTimeout(timeout);
@@ -447,11 +452,14 @@ function maskCodeBlocks(source: string): string {
 
 function extractSpecificationProseBlocks(source: string): SpecificationSourceBlock[] {
   const blocks: SpecificationSourceBlock[] = [];
+  // 大型规范有成千上万个段落；只转换一次，避免每个段落重复复制整份源码。
+  // Hoist the existing case-insensitive end-tag search without changing offsets.
+  const lowerSource = source.toLocaleLowerCase();
   const startPattern = /<(p|li|dt|dd)\b[^>]*>/gi;
   let match: RegExpExecArray | null;
   while ((match = startPattern.exec(source)) !== null) {
     const start = match.index;
-    const end = findSpecificationBlockEnd(source, startPattern.lastIndex, match[1]);
+    const end = findSpecificationBlockEnd(source, lowerSource, startPattern.lastIndex, match[1]);
     if (end <= startPattern.lastIndex) {
       continue;
     }
@@ -490,8 +498,8 @@ function extractSpecificationAnchorPositions(source: string): ReadonlyMap<string
   return anchors;
 }
 
-function findSpecificationBlockEnd(source: string, contentStart: number, tagName: string): number {
-  const closeIndex = source.toLocaleLowerCase().indexOf(`</${tagName.toLocaleLowerCase()}`, contentStart);
+function findSpecificationBlockEnd(source: string, lowerSource: string, contentStart: number, tagName: string): number {
+  const closeIndex = lowerSource.indexOf(`</${tagName.toLocaleLowerCase()}`, contentStart);
   const blankLineIndex = source.indexOf("\n\n", contentStart);
   const boundaryPattern = /<(?:p|li|dt|dd|pre|xmp|h[1-6]|section|div)\b/gi;
   boundaryPattern.lastIndex = contentStart;
@@ -1208,6 +1216,7 @@ async function collectInterfaceEvents(): Promise<InterfaceEventMap[]> {
 }
 
 async function collectInventory(): Promise<WebIdlInventory> {
+  console.error(`[webidl] Loading WebRef packages; specification prose ${skipSpecificationProse ? "disabled" : "enabled"}.`);
   const [files, interfaceEvents, xrefCatalog] = await Promise.all([
     collectFiles(),
     collectInterfaceEvents(),
@@ -1215,6 +1224,7 @@ async function collectInventory(): Promise<WebIdlInventory> {
   ]);
 
   const sourceCatalog = new SpecificationSourceCatalog();
+  console.error(`[webidl] Normalizing ${files.length} IDL files and their documentation.`);
   const normalizedFiles = await Promise.all(files
     .sort((left, right) => left.fileName.localeCompare(right.fileName))
     .map(async (file): Promise<WebIdlFile> => {
@@ -1282,6 +1292,7 @@ async function run(): Promise<void> {
   const outputPath = parseArgs(Deno.args);
   const inventory = await collectInventory();
   const json = JSON.stringify(inventory, null, 2);
+  console.error(`[webidl] Collected ${inventory.stats.fileCount} files, ${inventory.stats.declarationCount} declarations.`);
 
   if (!outputPath) {
     console.log(json);
@@ -1297,3 +1308,4 @@ async function run(): Promise<void> {
 if (import.meta.main) {
   await run();
 }
+
