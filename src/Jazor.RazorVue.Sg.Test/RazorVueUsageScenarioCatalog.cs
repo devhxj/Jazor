@@ -692,9 +692,9 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.DenoRuntime |
             RazorVueCapabilityEvidence.BrowserSmoke |
             RazorVueCapabilityEvidence.PackageConsumer,
-            "Natural TDesign form/control/dialog/table authoring, including typed rules, validation/reset callbacks, and async submit state, is covered through official SG, module/Deno runtime, the Authoring Release browser journey, and an isolated Release NuGet consumer mounted and interacted with in a real Edge browser. The contract excludes application bridge components and Microsoft built-in Blazor UI components.")
+            "Natural TDesign form/control/dialog/table authoring, including typed rules, validation/reset callbacks, and async submit state, is covered through official SG, module/Deno runtime, the Authoring Release browser journey, and an isolated Release NuGet consumer mounted and interacted with in a real Chrome browser. The contract excludes application bridge components and Microsoft built-in Blazor UI components.")
         {
-            TargetProfiles = "Compiler authoring, Deno runtime, real Edge browser, and isolated Release package consumer",
+            TargetProfiles = "Compiler authoring, Deno runtime, real Chrome browser, and isolated Release package consumer",
             Carrier = "TDesign component contracts, native erased unions, and Vue named slots",
             ImplementationPath = "ECMAScript.TDesign generated Parameter/ECMAScriptName contracts -> official Razor SG -> RenderEmitter/VueModuleBuilder",
             Dependencies = "ECMAScript.TDesign resource manifest; Jazor.RazorVue direct-render pipeline",
@@ -783,7 +783,7 @@ internal static class RazorVueM5CapabilityLedger
             RazorVueCapabilityEvidence.PackageConsumer,
             "The app-owned route catalog covers page/layout activation, typed route/query refresh, not-found, push/replace history, HistoryEntryState, and LocationChanged through an isolated Release package consumer. Microsoft Router/RouteView/LayoutView/NavLink tags and LocationChanging cancellation stay outside this P0 contract.")
         {
-            TargetProfiles = "Compiler authoring, Deno runtime, real Chrome/Chromium/Edge browser, and isolated Release package consumer; SSR/prerender not claimed",
+            TargetProfiles = "Compiler authoring, Deno runtime, real Chrome browser, and isolated Release package consumer; SSR/prerender not claimed",
             Carrier = "Generated route catalog + application-owned Vue route host + browser NavigationManager",
             ImplementationPath = "Official Razor SG -> generated route catalog -> @jazor/vue-runtime/blazor-routing.mjs -> application-owned Vue framing",
             Dependencies = "Jazor.RazorVue route catalog lowering; Jazor.CLR NavigationManager browser adapter; Jazor.Emit Release bundle/source-map materialization",

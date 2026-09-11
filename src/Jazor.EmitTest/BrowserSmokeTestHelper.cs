@@ -101,28 +101,21 @@ internal static class BrowserSmokeTestHelper
                 @"C:\Program Files\Google\Chrome\Application\chrome.exe",
                 @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "Application", "chrome.exe"),
-                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-                "chrome.exe",
-                "msedge.exe"
+                "chrome.exe"
             }
             : OperatingSystem.IsMacOS()
                 ? new[]
                 {
                     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
                     "google-chrome",
-                    "chromium",
-                    "microsoft-edge"
+                    "chromium"
                 }
                 : new[]
                 {
                     "google-chrome",
                     "google-chrome-stable",
                     "chromium",
-                    "chromium-browser",
-                    "microsoft-edge",
-                    "microsoft-edge-stable"
+                    "chromium-browser"
                 };
 
         foreach (var candidate in candidates)

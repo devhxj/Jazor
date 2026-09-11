@@ -471,7 +471,7 @@ public sealed partial class JazorSsrHostingTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Real browser SSR hydration smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Real browser SSR hydration smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }

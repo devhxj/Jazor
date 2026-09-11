@@ -471,7 +471,7 @@ static async Task VerifyBrowserSmokeAsync(
     var browserPath = ResolveBrowserExecutable();
     if (browserPath is null)
     {
-        Console.WriteLine("JazorAdmin browser smoke skipped: Microsoft Edge, Chrome, or Chromium was not found. Set RAZORVUE_BROWSER_EXE to enable it.");
+        Console.WriteLine("JazorAdmin browser smoke skipped: Google Chrome or Chromium was not found. Set RAZORVUE_BROWSER_EXE to enable it.");
         return;
     }
 
@@ -2849,26 +2849,19 @@ static string? ResolveBrowserExecutable()
     var candidates = OperatingSystem.IsWindows()
         ? new[]
         {
-            @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-            @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
             @"C:\Program Files\Google\Chrome\Application\chrome.exe",
             @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-            "msedge.exe",
             "chrome.exe"
         }
         : OperatingSystem.IsMacOS()
             ? new[]
             {
-                "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
                 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                "microsoft-edge",
                 "google-chrome",
                 "chromium"
             }
             : new[]
             {
-                "microsoft-edge",
-                "microsoft-edge-stable",
                 "google-chrome",
                 "google-chrome-stable",
                 "chromium",

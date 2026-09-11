@@ -355,7 +355,7 @@ public sealed class ToolchainTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Real browser Netpack SFC smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Real browser Netpack SFC smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
@@ -448,7 +448,7 @@ public sealed class ToolchainTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Real browser Netpack Vuetify smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Real browser Netpack Vuetify smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }

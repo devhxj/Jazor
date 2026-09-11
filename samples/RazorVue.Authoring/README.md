@@ -40,8 +40,8 @@ under `.tmp/authoring-local-build/package-jazor`, and Release artifacts under
 `.tmp/authoring-local-build/release-jazor`. The second command checks manifests, modules,
 source maps, package nuspec IDs, vendor closure, and the absence of `node_modules`.
 
-To include the browser mount in the same gate, omit `--skip-browser` (the default). Edge,
-Chrome, or Chromium is discovered automatically; set `RAZORVUE_BROWSER_EXE` or
+To include the browser mount in the same gate, omit `--skip-browser` (the default). Google Chrome
+is discovered automatically; set `RAZORVUE_BROWSER_EXE` or
 `RAZORVUE_BROWSER_PATH` to choose a specific executable.
 
 The browser journey runs below `/authoring/` to keep the PathBase contract visible. The sample

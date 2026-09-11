@@ -260,7 +260,7 @@ static async Task VerifyReleaseHostInBrowserAsync(
     string? requestedBrowserPath)
 {
     var browserPath = ScriptHelpers.ResolveBrowserExecutable(requestedBrowserPath)
-        ?? throw new FileNotFoundException("Microsoft Edge, Google Chrome, or Chromium is required for RazorVue.Authoring browser smoke.");
+        ?? throw new FileNotFoundException("Google Chrome is required for RazorVue.Authoring browser smoke.");
     var hostAssembly = Path.Combine(workRoot, "consumer-build-out", "RazorVue.Authoring", "bin", configuration, "net11.0", "RazorVue.Authoring.dll");
     RequireFile(Path.GetDirectoryName(hostAssembly)!, Path.GetFileName(hostAssembly), "isolated package-consumer host assembly");
 
@@ -695,14 +695,11 @@ internal static class ScriptHelpers
         var candidates = OperatingSystem.IsWindows()
             ? new[]
             {
-                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
                 @"C:\Program Files\Google\Chrome\Application\chrome.exe",
                 @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-                "msedge.exe",
                 "chrome.exe"
             }
-            : new[] { "microsoft-edge", "google-chrome", "chromium", "chromium-browser" };
+            : new[] { "google-chrome" };
         return candidates.Select(ResolveExecutable).FirstOrDefault(static path => path is not null);
     }
 

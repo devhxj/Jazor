@@ -3067,7 +3067,7 @@ public sealed class MemberClosureTests
     {
         var browserPath = ResolveBrowserExecutable();
         if (browserPath is null)
-            Assert.Inconclusive("RazorVue generated module browser smoke requires Microsoft Edge, Chrome, or Chromium.");
+            Assert.Inconclusive("RazorVue generated module browser smoke requires Google Chrome or Chromium.");
 
         var fixture = CreateManualGeneratedFixture(
             """
@@ -7085,39 +7085,28 @@ public sealed class MemberClosureTests
     {
         var explicitPath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_EXE");
         if (!string.IsNullOrWhiteSpace(explicitPath) && System.IO.File.Exists(explicitPath))
-            return explicitPath;
-
-        // Chrome 必须排在 Edge 之前：Edge 在 Windows 上会自我重启（真实浏览器命令行带
-        // --edge-skip-compat-layer-relaunch），被 spawn 的启动器 PID 立即退出，脚本里的
-        // process.kill 打不到真实浏览器，残留进程会锁住 .browser-profile 导致临时目录清理失败。
+            return explicitPath; // 统一使用 Chrome，避免不同浏览器启动器行为导致 smoke 结果漂移。
         string[] candidates = OperatingSystem.IsWindows()
             ?
             [
                 @"C:\Program Files\Google\Chrome\Application\chrome.exe",
                 @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "Application", "chrome.exe"),
-                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-                "chrome.exe",
-                "msedge.exe"
+                "chrome.exe"
             ]
             : OperatingSystem.IsMacOS()
                 ?
                 [
                     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
                     "google-chrome",
-                    "chromium",
-                    "microsoft-edge"
+                    "chromium"
                 ]
                 :
                 [
                     "google-chrome",
                     "google-chrome-stable",
                     "chromium",
-                    "chromium-browser",
-                    "microsoft-edge",
-                    "microsoft-edge-stable"
+                    "chromium-browser"
                 ];
 
         foreach (var candidate in candidates)

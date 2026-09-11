@@ -3467,7 +3467,7 @@ public sealed class SdkIntegrationTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Real browser Counter smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Real browser Counter smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
@@ -3557,7 +3557,7 @@ public sealed class SdkIntegrationTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Native TDesign browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Native TDesign browser smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
@@ -3633,7 +3633,7 @@ public sealed class SdkIntegrationTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Native Element Plus browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Native Element Plus browser smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
@@ -3686,7 +3686,7 @@ public sealed class SdkIntegrationTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "ElementReference browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "ElementReference browser smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
@@ -3775,7 +3775,7 @@ public sealed class SdkIntegrationTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Core DOM event browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Core DOM event browser smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
@@ -3882,7 +3882,7 @@ public sealed class SdkIntegrationTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Framework primitive browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Framework primitive browser smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
@@ -3992,7 +3992,7 @@ public sealed class SdkIntegrationTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Navigation LocationChanging browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Navigation LocationChanging browser smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
@@ -4102,7 +4102,7 @@ public sealed class SdkIntegrationTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Complex lifecycle browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Complex lifecycle browser smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
@@ -4202,7 +4202,7 @@ public sealed class SdkIntegrationTests
         if (browserPath is null)
         {
             Assert.Inconclusive(
-                "Extended DOM event browser smoke requires Microsoft Edge, Chrome, or Chromium. " +
+                "Extended DOM event browser smoke requires Google Chrome or Chromium. " +
                 "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
             return;
         }
