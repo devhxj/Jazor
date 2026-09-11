@@ -6,6 +6,11 @@
 
 ### Jazor 0.40.0
 
+> 按维护者指定发布 `0.40.0`，从 `0.35.0` 跳过 `0.36`–`0.39`；这些版本未发布。
+> Release `0.40.0` as requested by the maintainer, skipping the unpublished `0.36`–`0.39` versions after `0.35.0`.
+
+中文 | English
+
 #### 其他变更
 
 - WebIDL inventory 更新至 WebRef IDL `3.83.1`、CSS `8.7.4`、Events `1.25.1` 和 XRef `1.2.16`，重新生成 332 个绑定文件；规范正文抓取失败时仅跳过对应文档增强，不影响绑定生成。by @devhxj
@@ -17,6 +22,7 @@
 
 Chores
 
+- Update the WebIDL inventory to WebRef IDL `3.83.1`, CSS `8.7.4`, Events `1.25.1`, and XRef `1.2.16`, and regenerate 332 binding files. A specification prose fetch failure skips only that document's enrichment without blocking binding generation. by @devhxj
 - **Breaking:** Remove the `Jazor` prefix from ECMAScript browser and bridge authoring types. Use the standard name or `Ref` suffix: `JazorFile` → `FileRef`, `JazorDocument` → `DocumentRef`, `JazorWindow` → `WindowRef`, `JazorHistory` → `HistoryRef`, `JazorEvent` → `EventRef`, `JazorLocation` → `LocationRef`, `JazorPropertyKey` → `PropertyKeyRef`, and `JazorPropertyDescriptor` → `PropertyDescriptorRef`. Generated JavaScript/WebIDL names are unchanged; migrate source references accordingly. by @devhxj
 - Establish the 1.0 public API freeze baseline for package names, namespaces, `AddJazor*` / `UseJazor*` extensions, ASP.NET Core options, and SSR data models. The final freeze still requires API compatibility evidence plus all quality, SPA, and SSR consumer gates on the release-candidate ref. by @devhxj
 - Update the Vue runtime to `3.5.42` and Vue Router to `5.3.1`; Pinia remains current at `4.0.3`. Refresh the ESM assets, manifest hashes, and dependency closure. Vue Router 4 → 5 is a breaking upgrade; migrate callers to the new API. by @devhxj
