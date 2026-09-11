@@ -502,6 +502,7 @@ void DeleteDirectoryWithinRepo(string repoRoot, string path)
 
 async Task DeleteDirectoryWithRetryAsync(string path, int attempts = 6)
 {
+    Exception? lastFailure = null;
     for (var attempt = 0; attempt < attempts; attempt++)
     {
         if (!Directory.Exists(path))
@@ -514,11 +515,19 @@ async Task DeleteDirectoryWithRetryAsync(string path, int attempts = 6)
             Directory.Delete(path, recursive: true);
             return;
         }
-        catch when (attempt < attempts - 1)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            lastFailure = ex;
             await Task.Delay(250);
         }
     }
+
+    // Browser profile files can remain briefly locked after the child process exits. Cleanup
+    // must not turn an otherwise successful consumer verification into a false failure; keep
+    // the work root for inspection and report the lock explicitly.
+    Console.WriteLine("Warning: could not remove temporary directory after " + attempts +
+        " attempts; preserving it for diagnostics: " + path +
+        (lastFailure is null ? string.Empty : " (" + lastFailure.Message + ")"));
 }
 
 string RequireRepoRoot()
