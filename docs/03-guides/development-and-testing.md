@@ -48,4 +48,19 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 - RazorVue 的 C# 语义必须使用 `Jazor.Compiler` translation hooks；不要在集成层拼接 JavaScript 或重建 AST 语义。
 - `Jazor.Admin` 是库，`samples/JazorAdmin` 是示例；测试与文档应分别说明它们的职责。
 
+## 发布消费者兼容矩阵
+
+发布工作流和本地消费者门禁使用以下基线；升级其中任一项时，应先在独立 consumer 中重跑 SPA、SSR、PathBase、HMR 和浏览器验证：
+
+| 层 | 当前基线 | 验证入口 |
+| --- | --- | --- |
+| .NET SDK | `11.0.100-rc.1.26425.128`（由 `global.json` 固定） | `dotnet build Jazor.slnx`、质量门禁 |
+| Node.js | `22`（GitHub Actions）；本地 benchmark 应记录实际版本 | 发布 workflow、`benchmark-razorvue-build.cs` |
+| 浏览器 | Windows Microsoft Edge headless；Wiki lane 另验证 Google Chrome | SPA/SSR、Wiki browser scripts |
+| 发布配置 | Release、NuGet 本地源、`JazorMode=release` | SPA/SSR consumer scripts |
+| 部署路径 | `/docs`（SPA）、`/todo`（SSR） | 对应 Windows 发布消费者门禁 |
+
+Node 与浏览器的绝对版本由运行器提供；门禁日志必须记录实际版本，不能把本地运行结果当作跨版本保证。组件库升级还需先通过
+`verify-vue-binding-contracts.cs`，再运行发布消费者验证。
+
 项目内脚本、测试说明和特殊验证路径见 [scripts/csharp README](../../scripts/csharp/README.md)。
