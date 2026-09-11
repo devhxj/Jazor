@@ -13,8 +13,8 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.3" />
-  <PackageReference Include="ECMAScript.Style" Version="0.26.3" />
+  <PackageReference Include="Jazor" Version="0.40.0" />
+  <PackageReference Include="ECMAScript.Style" Version="0.40.0" />
 </ItemGroup>
 ```
 
@@ -84,3 +84,4 @@ dotnet test src/ECMAScript.Style.Test/ECMAScript.Style.Test.csproj
 
 - [安装与配置](../../docs/03-guides/installation-and-configuration.md)
 - [产物管线](../../docs/02-architecture/artifact-pipeline.md)
+
