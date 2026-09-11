@@ -279,7 +279,7 @@ static async Task<BrowserProbeReport> RunBrowserProbeAsync(string repoRoot, Benc
             "razorvue-g2-direct-browser-v1",
             "unavailable",
             "",
-            "No Edge/Chrome executable was found. Set RAZORVUE_BROWSER_EXE to enable this lane.",
+            "No Chrome/Chromium executable was found. Set RAZORVUE_BROWSER_EXE to enable this lane.",
             "direct render-function calls only; no DOM patch or hydration");
     }
 
@@ -326,7 +326,7 @@ static async Task<ProductionVueRuntimeVerification> RunProductionVueRuntimeVerif
             false,
             "unavailable",
             string.Empty,
-            "No Edge/Chrome executable was found. Set RAZORVUE_BROWSER_EXE to enable this gate.");
+            "No Chrome/Chromium executable was found. Set RAZORVUE_BROWSER_EXE to enable this gate.");
     }
 
     var directory = Path.Combine(repoRoot, ".tmp", "razorvue-production-vue", Guid.NewGuid().ToString("N"));
@@ -630,10 +630,10 @@ static string? ResolveBrowserExecutable()
         return explicitPath;
 
     var candidates = OperatingSystem.IsWindows()
-        ? new[] { @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe", @"C:\Program Files\Microsoft\Edge\Application\msedge.exe", @"C:\Program Files\Google\Chrome\Application\chrome.exe" }
+        ? new[] { @"C:\Program Files\Google\Chrome\Application\chrome.exe", @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" }
         : OperatingSystem.IsMacOS()
-            ? new[] { "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" }
-            : new[] { "microsoft-edge", "google-chrome", "chromium" };
+            ? new[] { "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" }
+            : new[] { "google-chrome", "google-chrome-stable", "chromium" };
     return candidates.FirstOrDefault(File.Exists);
 }
 

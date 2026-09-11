@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 var repoRoot = RequireRepoRoot();
 var browserPath = ResolveBrowserExecutable()
     ?? throw new FileNotFoundException(
-        "Microsoft Edge, Google Chrome, or Chromium is required for the ECMAScript.Style browser smoke.");
+        "Google Chrome or Chromium is required for the ECMAScript.Style browser smoke.");
 var root = Path.Combine(repoRoot, ".tmp", "ecmascript-style-browser-" + Environment.ProcessId);
 var profileRoot = Path.Combine(root, "browser-profile");
 
@@ -258,26 +258,19 @@ static string? ResolveBrowserExecutable()
     var candidates = OperatingSystem.IsWindows()
         ? new[]
         {
-            @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-            @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
             @"C:\Program Files\Google\Chrome\Application\chrome.exe",
             @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-            "msedge.exe",
             "chrome.exe"
         }
         : OperatingSystem.IsMacOS()
             ? new[]
             {
-                "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
                 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                "microsoft-edge",
                 "google-chrome",
                 "chromium"
             }
             : new[]
             {
-                "microsoft-edge",
-                "microsoft-edge-stable",
                 "google-chrome",
                 "google-chrome-stable",
                 "chromium",

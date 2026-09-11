@@ -152,7 +152,7 @@ dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --skip-build --w
 ```
 
 第二条命令会检查 source authoring、official Razor SG 生成物、Debug module/source map、Release
-package consumer、资源闭包和 HTTP-origin 浏览器 journey。没有 Edge/Chrome/Chromium 时可以加
+package consumer、资源闭包和 HTTP-origin 浏览器 journey。没有 Chrome/Chromium 时可以加
 `--skip-browser`，但这只能验证静态产物，不能替代浏览器证据。
 
 更细的边界和诊断 ID 见 [RazorVue 作者指南](./razorvue-authoring.md)；样例中的完整页面见

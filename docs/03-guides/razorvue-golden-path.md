@@ -47,7 +47,7 @@ dotnet run --file samples/RazorVue.Authoring/build-local.cs -- --configuration R
 dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --skip-build --work-root .tmp/authoring-local-build --package-output .tmp/nupkg-sample/RazorVue.Authoring
 ```
 
-第一条命令确认源码引用和 official Razor SG；第二条命令构建本地包、独立 package consumer 以及 Release artifact；第三条命令检查模块、source map、manifest、资源闭包、PathBase 和浏览器交互。没有 Edge/Chrome/Chromium 时可使用 `--skip-browser`，但这只能证明静态产物，不能把浏览器路径标记为完成。
+第一条命令确认源码引用和 official Razor SG；第二条命令构建本地包、独立 package consumer 以及 Release artifact；第三条命令检查模块、source map、manifest、资源闭包、PathBase 和浏览器交互。没有 Chrome/Chromium 时可使用 `--skip-browser`，但这只能证明静态产物，不能把浏览器路径标记为完成。
 
 正式提交前，再运行适用的完整门禁：
 
