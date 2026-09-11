@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "source": "@webref/css@8.7.1",
+  "source": "@webref/css@8.7.4",
   "properties": {
     "-webkit-align-content": [
       "normal | \u003Cbaseline-position\u003E | \u003Ccontent-distribution\u003E | \u003Coverflow-position\u003E? \u003Ccontent-position\u003E"
@@ -39,7 +39,7 @@
       "\u003Ceasing-function\u003E#"
     ],
     "-webkit-appearance": [
-      "none | auto | base | base-select | \u003Ccompat-auto\u003E | \u003Ccompat-special\u003E | base"
+      "none | auto | base | base-select | \u003Ccompat-auto\u003E | \u003Ccompat-special\u003E"
     ],
     "-webkit-backface-visibility": [
       "visible | hidden"
@@ -276,7 +276,7 @@
       "[ none | [ \u003Cdashed-ident\u003E \u003Canimation-action\u003E\u002B ]\u002B ]#"
     ],
     "appearance": [
-      "none | auto | base | base-select | \u003Ccompat-auto\u003E | \u003Ccompat-special\u003E | base"
+      "none | auto | base | base-select | \u003Ccompat-auto\u003E | \u003Ccompat-special\u003E"
     ],
     "aspect-ratio": [
       "auto || \u003Cratio\u003E"
@@ -354,7 +354,7 @@
       "no-ellipsis | auto | \u003Cstring\u003E"
     ],
     "block-size": [
-      "\u003C\u0027width\u0027\u003E"
+      "auto | \u003Cbox-size\u003E"
     ],
     "block-step": [
       "\u003C\u0027block-step-size\u0027\u003E || \u003C\u0027block-step-insert\u0027\u003E || \u003C\u0027block-step-align\u0027\u003E || \u003C\u0027block-step-round\u0027\u003E"
@@ -771,7 +771,7 @@
       "none | \u003Cinteger [1,\u221E]\u003E | all | auto"
     ],
     "column-width": [
-      "auto | \u003Clength [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage\u003E)"
+      "auto | \u003Clength [0,\u221E]\u003E | \u003Cbox-size\u003E"
     ],
     "column-wrap": [
       "auto | nowrap | wrap"
@@ -1218,19 +1218,19 @@
       "none | [ first || [ force-end | allow-end ] || last ]"
     ],
     "height": [
-      "auto | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E) | \u003Ccalc-size()\u003E | \u003Canchor-size()\u003E | stretch | fit-content | contain"
+      "auto | \u003Cbox-size\u003E | \u003Canchor-size()\u003E | contain | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
     ],
     "hyphenate-character": [
       "auto | \u003Cstring\u003E"
     ],
     "hyphenate-limit-chars": [
-      "[ auto | \u003Cinteger\u003E ]{1,3}"
+      "[ auto | \u003Cinteger [0,\u221E]\u003E ]{1,3}"
     ],
     "hyphenate-limit-last": [
       "none | always | column | page | spread"
     ],
     "hyphenate-limit-lines": [
-      "no-limit | \u003Cinteger\u003E"
+      "no-limit | \u003Cinteger [0,\u221E]\u003E"
     ],
     "hyphenate-limit-zone": [
       "\u003Clength-percentage\u003E"
@@ -1260,7 +1260,7 @@
       "none | first | all | grid | \u003Clength-percentage\u003E"
     ],
     "inline-size": [
-      "\u003C\u0027width\u0027\u003E"
+      "auto | \u003Cbox-size\u003E"
     ],
     "inline-sizing": [
       "normal | stretch"
@@ -1401,7 +1401,7 @@
       "\u003Clength-percentage\u003E | auto | \u003Canchor-size()\u003E"
     ],
     "margin-trim": [
-      "none | [ block || inline ] | [ block-start || inline-start || block-end || inline-end ]"
+      "none | block | [ block-start || block-end ]"
     ],
     "marker": [
       "none | \u003Cmarker-ref\u003E"
@@ -1479,34 +1479,40 @@
       "normal | compact"
     ],
     "max-block-size": [
-      "\u003C\u0027max-width\u0027\u003E"
+      "none | \u003Cbox-size\u003E"
     ],
     "max-height": [
-      "none | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E) | \u003Ccalc-size()\u003E | \u003Canchor-size()\u003E | stretch | fit-content | contain"
+      "none | \u003Cbox-size\u003E | \u003Canchor-size()\u003E | contain | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
     ],
     "max-inline-size": [
-      "\u003C\u0027max-width\u0027\u003E"
+      "none | \u003Cbox-size\u003E"
     ],
     "max-lines": [
       "none | \u003Cinteger [1,\u221E]\u003E"
     ],
+    "max-size": [
+      "\u003C\u0027max-width\u0027\u003E \u003C\u0027max-height\u0027\u003E?"
+    ],
     "max-width": [
-      "none | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E) | \u003Ccalc-size()\u003E | \u003Canchor-size()\u003E | stretch | fit-content | contain"
+      "none | \u003Cbox-size\u003E | \u003Canchor-size()\u003E | contain | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
     ],
     "min-block-size": [
-      "\u003C\u0027min-width\u0027\u003E"
+      "auto | \u003Cbox-size\u003E"
     ],
     "min-height": [
-      "auto | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E) | \u003Ccalc-size()\u003E | \u003Canchor-size()\u003E | stretch | fit-content | contain"
+      "auto | \u003Cbox-size\u003E | \u003Canchor-size()\u003E | contain | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
     ],
     "min-inline-size": [
-      "\u003C\u0027min-width\u0027\u003E"
+      "auto | \u003Cbox-size\u003E"
     ],
     "min-intrinsic-sizing": [
       "legacy | zero-if-scroll || zero-if-extrinsic"
     ],
+    "min-size": [
+      "\u003C\u0027min-width\u0027\u003E \u003C\u0027min-height\u0027\u003E?"
+    ],
     "min-width": [
-      "auto | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E) | \u003Ccalc-size()\u003E | \u003Canchor-size()\u003E | stretch | fit-content | contain"
+      "auto | \u003Cbox-size\u003E | \u003Canchor-size()\u003E | contain | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
     ],
     "mix-blend-mode": [
       "\u003Cblend-mode\u003E | plus-lighter"
@@ -1895,6 +1901,9 @@
     "scale": [
       "none | [ \u003Cnumber\u003E | \u003Cpercentage\u003E ]{1,3}"
     ],
+    "scroll-axis-lock": [
+      "auto | none"
+    ],
     "scroll-behavior": [
       "auto | smooth"
     ],
@@ -1977,7 +1986,7 @@
       "normal | always"
     ],
     "scroll-snap-type": [
-      "none | [ x | y | block | inline | both ] [ mandatory | proximity ]?"
+      "none | [ x | y | block | inline | both | pair ] [ mandatory | proximity ]?"
     ],
     "scroll-target-group": [
       "none | auto"
@@ -2017,6 +2026,9 @@
     ],
     "shape-rendering": [
       "auto | optimizeSpeed | crispEdges | geometricPrecision"
+    ],
+    "size": [
+      "\u003C\u0027width\u0027\u003E \u003C\u0027height\u0027\u003E?"
     ],
     "slider-orientation": [
       "auto | left-to-right | right-to-left | top-to-bottom | bottom-to-top"
@@ -2148,7 +2160,7 @@
       "\u003Ccolor\u003E"
     ],
     "text-decoration-inset": [
-      "\u003Clength\u003E{1,2} | auto"
+      "\u003Clength-percentage\u003E{1,2} | auto"
     ],
     "text-decoration-line": [
       "none | [ underline || overline || line-through || blink ] | spelling-error | grammar-error"
@@ -2238,7 +2250,7 @@
       "wrap | nowrap"
     ],
     "text-wrap-style": [
-      "auto | balance | stable | pretty | avoid-orphans"
+      "auto | balance | stable | pretty | avoid-short-last-line"
     ],
     "timeline-scope": [
       "none | all | \u003Cdashed-ident\u003E#"
@@ -2388,7 +2400,7 @@
       "\u003Cinteger [1,\u221E]\u003E"
     ],
     "width": [
-      "auto | \u003Clength-percentage [0,\u221E]\u003E | min-content | max-content | fit-content(\u003Clength-percentage [0,\u221E]\u003E) | \u003Ccalc-size()\u003E | \u003Canchor-size()\u003E | stretch | fit-content | contain"
+      "auto | \u003Cbox-size\u003E | \u003Canchor-size()\u003E | contain | fit-content(\u003Clength-percentage [0,\u221E]\u003E)"
     ],
     "will-change": [
       "auto | \u003Canimateable-feature\u003E#"
