@@ -1,0 +1,35 @@
+import isDate from 'validator/lib/isDate';
+import isEmail from 'validator/lib/isEmail';
+import isURL from 'validator/lib/isURL';
+import { CustomValidator, FormRule, ValueType, AllValidateResult, Data } from '../type';
+export declare function isValueEmpty(val: ValueType): boolean;
+declare const VALIDATE_MAP: {
+    date: typeof isDate;
+    url: typeof isURL;
+    email: typeof isEmail;
+    required: (val: ValueType) => boolean;
+    whitespace: (val: ValueType) => boolean;
+    boolean: (val: ValueType) => boolean;
+    max: (val: ValueType, num: number) => boolean;
+    min: (val: ValueType, num: number) => boolean;
+    len: (val: ValueType, num: number) => boolean;
+    number: (val: ValueType) => boolean;
+    enum: (val: ValueType, strs: Array<string>) => boolean;
+    idcard: (val: ValueType) => boolean;
+    telnumber: (val: ValueType) => boolean;
+    pattern: (val: ValueType, regexp: RegExp | string) => boolean;
+    validator: (val: ValueType, validate: CustomValidator, context: {
+        formData: FormData;
+        name: string;
+    }) => ReturnType<CustomValidator>;
+};
+export type ValidateFuncType = typeof VALIDATE_MAP[keyof typeof VALIDATE_MAP];
+export declare function validateOneRule(value: ValueType, rule: FormRule, context?: {
+    formData: Data;
+    name: string;
+}): Promise<AllValidateResult>;
+export declare function validate(value: ValueType, rules: Array<FormRule>, context?: {
+    formData: Data;
+    name: string;
+}): Promise<AllValidateResult[]>;
+export {};

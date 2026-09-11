@@ -21,10 +21,10 @@ internal static class TDesignSnapshotGenerator
     {
         var externalTypes = new[]
         {
-    new ExternalTypePackage("@types/sortablejs", "1.15.1", "sortablejs"),
-    new ExternalTypePackage("@types/validator", "13.7.17", "validator"),
-    new ExternalTypePackage("dayjs", "1.11.10", "dayjs"),
-    new ExternalTypePackage("tdesign-icons-vue-next", "0.4.7", "tdesign-icons-vue-next")
+    new ExternalTypePackage("@types/sortablejs", "1.15.9", "sortablejs"),
+    new ExternalTypePackage("@types/validator", "13.15.10", "validator"),
+    new ExternalTypePackage("dayjs", "1.11.23", "dayjs"),
+    new ExternalTypePackage("tdesign-icons-vue-next", "0.4.11", "tdesign-icons-vue-next")
 };
         var options = GeneratorOptions.Parse(args);
         var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
@@ -389,7 +389,7 @@ internal static class TDesignSnapshotGenerator
     {
         public static GeneratorOptions Parse(string[] args)
         {
-            const string defaultVersion = "1.20.5";
+            const string defaultVersion = "1.20.7";
             var version = defaultVersion;
             string? snapshotDirectory = null;
             var check = false;

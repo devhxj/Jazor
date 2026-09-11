@@ -15,7 +15,7 @@ namespace ECMAScript.VueGenerator;
 /// </summary>
 internal static class VuetifyCatalogGenerator
 {
-    private const string Version = "4.1.8";
+    private const string Version = "4.2.1";
     private const int ContractSchemaVersion = 1;
     private const string StableModule = "vuetify/components";
     private const string LabsModule = "vuetify/labs/components";

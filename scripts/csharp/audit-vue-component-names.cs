@@ -11,7 +11,7 @@ using System.Text.Json.Serialization.Metadata;
 
 var options = AuditOptions.Parse(args);
 var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
-const string VuetifyVersion = "4.1.8";
+const string VuetifyVersion = "4.2.1";
 
 var targetDirectory = Path.Combine(repoRoot, "src", "ECMAScript.Vuetify");
 

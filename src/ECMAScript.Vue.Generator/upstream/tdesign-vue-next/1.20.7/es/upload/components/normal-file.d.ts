@@ -1,0 +1,67 @@
+import { CommonDisplayFileProps } from '../types';
+export interface NormalFileProps extends CommonDisplayFileProps {
+    multiple: boolean;
+}
+declare const NormalFile: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+    accept: StringConstructor;
+    files: import("vue").PropType<CommonDisplayFileProps["files"]>;
+    toUploadFiles: import("vue").PropType<CommonDisplayFileProps["toUploadFiles"]>;
+    displayFiles: import("vue").PropType<CommonDisplayFileProps["displayFiles"]>;
+    theme: import("vue").PropType<CommonDisplayFileProps["theme"]>;
+    abridgeName: import("vue").PropType<CommonDisplayFileProps["abridgeName"]>;
+    placeholder: StringConstructor;
+    classPrefix: StringConstructor;
+    tips: (StringConstructor | FunctionConstructor)[];
+    status: import("vue").PropType<CommonDisplayFileProps["status"]>;
+    locale: import("vue").PropType<CommonDisplayFileProps["locale"]>;
+    sizeOverLimitMessage: StringConstructor;
+    autoUpload: BooleanConstructor;
+    uploadPastedFiles: BooleanConstructor;
+    onPasteFileChange: import("vue").PropType<CommonDisplayFileProps["onPasteFileChange"]>;
+    disabled: BooleanConstructor;
+    uploading: BooleanConstructor;
+    tipsClasses: import("vue").PropType<CommonDisplayFileProps["tipsClasses"]>;
+    errorClasses: import("vue").PropType<CommonDisplayFileProps["errorClasses"]>;
+    placeholderClass: import("vue").PropType<CommonDisplayFileProps["placeholderClass"]>;
+    showUploadProgress: BooleanConstructor;
+    default: import("vue").PropType<CommonDisplayFileProps["default"]>;
+    fileListDisplay: import("vue").PropType<CommonDisplayFileProps["fileListDisplay"]>;
+    onRemove: import("vue").PropType<CommonDisplayFileProps["onRemove"]>;
+    imageViewerProps: import("vue").PropType<CommonDisplayFileProps["imageViewerProps"]>;
+    multiple: BooleanConstructor;
+}>, () => import("vue/jsx-runtime").JSX.Element, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+    accept: StringConstructor;
+    files: import("vue").PropType<CommonDisplayFileProps["files"]>;
+    toUploadFiles: import("vue").PropType<CommonDisplayFileProps["toUploadFiles"]>;
+    displayFiles: import("vue").PropType<CommonDisplayFileProps["displayFiles"]>;
+    theme: import("vue").PropType<CommonDisplayFileProps["theme"]>;
+    abridgeName: import("vue").PropType<CommonDisplayFileProps["abridgeName"]>;
+    placeholder: StringConstructor;
+    classPrefix: StringConstructor;
+    tips: (StringConstructor | FunctionConstructor)[];
+    status: import("vue").PropType<CommonDisplayFileProps["status"]>;
+    locale: import("vue").PropType<CommonDisplayFileProps["locale"]>;
+    sizeOverLimitMessage: StringConstructor;
+    autoUpload: BooleanConstructor;
+    uploadPastedFiles: BooleanConstructor;
+    onPasteFileChange: import("vue").PropType<CommonDisplayFileProps["onPasteFileChange"]>;
+    disabled: BooleanConstructor;
+    uploading: BooleanConstructor;
+    tipsClasses: import("vue").PropType<CommonDisplayFileProps["tipsClasses"]>;
+    errorClasses: import("vue").PropType<CommonDisplayFileProps["errorClasses"]>;
+    placeholderClass: import("vue").PropType<CommonDisplayFileProps["placeholderClass"]>;
+    showUploadProgress: BooleanConstructor;
+    default: import("vue").PropType<CommonDisplayFileProps["default"]>;
+    fileListDisplay: import("vue").PropType<CommonDisplayFileProps["fileListDisplay"]>;
+    onRemove: import("vue").PropType<CommonDisplayFileProps["onRemove"]>;
+    imageViewerProps: import("vue").PropType<CommonDisplayFileProps["imageViewerProps"]>;
+    multiple: BooleanConstructor;
+}>> & Readonly<{}>, {
+    multiple: boolean;
+    disabled: boolean;
+    uploading: boolean;
+    autoUpload: boolean;
+    uploadPastedFiles: boolean;
+    showUploadProgress: boolean;
+}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+export default NormalFile;

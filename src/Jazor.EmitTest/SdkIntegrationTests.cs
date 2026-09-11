@@ -474,7 +474,7 @@ public sealed class SdkIntegrationTests
 
         var root = manifest.RootElement;
         Assert.AreEqual("tdesign-vue-next", root.GetProperty("libraryId").GetString());
-        Assert.AreEqual("1.20.5", root.GetProperty("version").GetString());
+        Assert.AreEqual("1.20.7", root.GetProperty("version").GetString());
         var entry = root.GetProperty("imports").GetProperty("tdesign-vue-next");
         Assert.AreEqual("dist/tdesign.mjs", entry.GetProperty("development").GetString());
         Assert.AreEqual("dist/tdesign.mjs", entry.GetProperty("production").GetString());

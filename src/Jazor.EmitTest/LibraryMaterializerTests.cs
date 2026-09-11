@@ -892,21 +892,21 @@ public sealed class LibraryMaterializerTests
             outputRoot,
             "vendor",
             "vuetify",
-            "4.1.8",
+            "4.2.1",
             "dist",
             "vuetify-labs.esm.js")));
         Assert.IsFalse(File.Exists(Path.Combine(
             outputRoot,
             "vendor",
             "vuetify",
-            "4.1.8",
+            "4.2.1",
             "dist",
             "components.mjs")));
         Assert.IsFalse(File.Exists(Path.Combine(
             outputRoot,
             "vendor",
             "vuetify",
-            "4.1.8",
+            "4.2.1",
             "dist",
             "directives.mjs")));
     }

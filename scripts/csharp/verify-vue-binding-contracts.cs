@@ -22,9 +22,9 @@ foreach (var check in checks)
 
 var targets = new[]
 {
-    new BindingTarget("element-plus", "2.14.4", Path.Combine(repoRoot, "src", "ECMAScript.ElementPlus"), Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "upstream", "element-plus", "2.14.4"), "Element Plus"),
-    new BindingTarget("vuetify", "4.1.8", Path.Combine(repoRoot, "src", "ECMAScript.Vuetify"), Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "upstream", "vuetify", "4.1.8"), "Vuetify"),
-    new BindingTarget("tdesign-vue-next", "1.20.5", Path.Combine(repoRoot, "src", "ECMAScript.TDesign"), Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "upstream", "tdesign-vue-next", "1.20.5"), "TDesign")
+    new BindingTarget("element-plus", "2.14.5", Path.Combine(repoRoot, "src", "ECMAScript.ElementPlus"), Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "upstream", "element-plus", "2.14.5"), "Element Plus"),
+    new BindingTarget("vuetify", "4.2.1", Path.Combine(repoRoot, "src", "ECMAScript.Vuetify"), Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "upstream", "vuetify", "4.2.1"), "Vuetify"),
+    new BindingTarget("tdesign-vue-next", "1.20.7", Path.Combine(repoRoot, "src", "ECMAScript.TDesign"), Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "upstream", "tdesign-vue-next", "1.20.7"), "TDesign")
 };
 
 foreach (var target in targets)

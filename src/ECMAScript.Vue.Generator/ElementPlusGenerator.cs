@@ -14,7 +14,7 @@ using File = global::System.IO.File;
 internal static class ElementPlusGenerator
 {
     private static bool _check;
-    private const string UpstreamVersion = "2.14.4";
+    private const string UpstreamVersion = "2.14.5";
     private const string CssClassPropertyName = "CssClass";
     private const string CssStylePropertyName = "CssStyle";
     private const string AdditionalAttributesPropertyName = "AdditionalAttributes";

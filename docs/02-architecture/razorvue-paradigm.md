@@ -138,7 +138,7 @@ Blazor 名称出现在作者代码中，只表示采用了熟悉的 Razor/C# 组
 ### P2 Element Plus 验收入口
 
 Element Plus 的 typed binding 以生成源 `src/ECMAScript.Vue.Generator/ElementPlusGenerator.cs` 和上游
-`2.14.4` metadata 为单一来源。生成器 `elementplus --check` 必须报告 `111 components and 2 directives`
+`2.14.5` metadata 为单一来源。生成器 `elementplus --check` 必须报告 `111 components and 2 directives`
 且工作区无生成漂移。官方 SG 回归
 `RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests` 验证 `ElButton` 的枚举与 click、`ElInput`
 的 `VueStringNumberValue` 双向绑定、named slot、属性 splat 以及最终 `element-plus` import；Emit 的

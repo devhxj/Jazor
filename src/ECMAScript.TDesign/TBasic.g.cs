@@ -3935,6 +3935,11 @@ public record TDropdownClickEventContext : VueProps
 }
 
 [ECMAScript]
+public readonly union TDropdownClickEventDropdownItem(string, Number, TJsonObject)
+{
+}
+
+[ECMAScript]
 [String]
 public enum TDropdownDirectionValue
 {
@@ -3950,6 +3955,11 @@ public record TDropdownItemClickEventContext : VueProps
     [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
+}
+
+[ECMAScript]
+public readonly union TDropdownItemClickEventDropdownItem(string, Number, TJsonObject)
+{
 }
 
 [ECMAScript]
@@ -8750,6 +8760,10 @@ public record TGlobalIconConfig : VueProps
 
     public TGlobalIconType? TableIcon { get; init; }
 
+    public TGlobalIconType? TabletFilledIcon { get; init; }
+
+    public TGlobalIconType? TabletIcon { get; init; }
+
     public TGlobalIconType? TagFilledIcon { get; init; }
 
     public TGlobalIconType? TagStateFilledIcon { get; init; }
@@ -10446,11 +10460,27 @@ public record TIsEmailOptions : VueProps
     [ECMAScriptName("domain_specific_validation")]
     public bool? DomainSpecificValidation { get; init; }
 
+    [ECMAScriptName("allow_underscores")]
+    public bool? AllowUnderscores { get; init; }
+
     [ECMAScriptName("host_blacklist")]
-    public string[]? HostBlacklist { get; init; }
+    public TIsEmailOptionsHostBlacklistOption1Item[]? HostBlacklist { get; init; }
+
+    [ECMAScriptName("host_whitelist")]
+    public TIsEmailOptionsHostWhitelistOption1Item[]? HostWhitelist { get; init; }
 
     [ECMAScriptName("blacklisted_chars")]
     public string? BlacklistedChars { get; init; }
+}
+
+[ECMAScript]
+public readonly union TIsEmailOptionsHostBlacklistOption1Item(string, RegExp)
+{
+}
+
+[ECMAScript]
+public readonly union TIsEmailOptionsHostWhitelistOption1Item(string, RegExp)
+{
 }
 
 [ECMAScript]
@@ -10500,6 +10530,9 @@ public record TIsURLOptions : VueProps
 
     [ECMAScriptName("validate_length")]
     public bool? ValidateLength { get; init; }
+
+    [ECMAScriptName("max_allowed_length")]
+    public TIsURLOptionsMaxAllowedLength? MaxAllowedLength { get; init; }
 }
 
 [ECMAScript]
@@ -10509,6 +10542,11 @@ public readonly union TIsURLOptionsHostBlacklistOption1Item(string, RegExp)
 
 [ECMAScript]
 public readonly union TIsURLOptionsHostWhitelistOption1Item(string, RegExp)
+{
+}
+
+[ECMAScript]
+public readonly union TIsURLOptionsMaxAllowedLength(Number, bool)
 {
 }
 
@@ -19339,7 +19377,7 @@ public readonly union TdDropdownItemPropsContent(string, RenderFragment)
 }
 
 [ECMAScript]
-public delegate void TdDropdownItemPropsOnClick(TDropdownOption dropdownItem, TdDropdownItemPropsOnClickContext context);
+public delegate void TdDropdownItemPropsOnClick(TdDropdownItemPropsOnClickDropdownItem dropdownItem, TdDropdownItemPropsOnClickContext context);
 
 [ECMAScript]
 public record TdDropdownItemPropsOnClickContext : VueProps
@@ -19347,6 +19385,11 @@ public record TdDropdownItemPropsOnClickContext : VueProps
     [ECMAScriptName("e")]
     [EditorRequired]
     public MouseEvent E { get; init; } = default!;
+}
+
+[ECMAScript]
+public readonly union TdDropdownItemPropsOnClickDropdownItem(string, Number, TJsonObject)
+{
 }
 
 [ECMAScript]
@@ -27410,7 +27453,7 @@ public sealed class TComment : TContentComponentBase
     /// </summary>
     [Parameter]
     [ECMAScriptName("actions")]
-    public RenderFragment[]? Actions { get; set; }
+    public RenderFragment[]? ActionsValue { get; set; }
 
     /// <summary>
     /// 作者
@@ -27453,6 +27496,10 @@ public sealed class TComment : TContentComponentBase
     [Parameter]
     [ECMAScriptName("reply")]
     public string? ReplyValue { get; set; }
+
+    [Parameter]
+    [ECMAScriptName("actions")]
+    public RenderFragment? ActionsContent { get; set; }
 
     /// <summary>
     /// 作者
@@ -29521,7 +29568,7 @@ public sealed class TDropdown : TContentComponentBase
     /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
-    public EventCallback<TDropdownOption> OnClick { get; set; }
+    public EventCallback<TDropdownClickEventDropdownItem> OnClick { get; set; }
 }
 
 /// <summary>
@@ -29593,7 +29640,7 @@ public sealed class TDropdownItem : TContentComponentBase
     /// </summary>
     [Parameter]
     [ECMAScriptName("onClick")]
-    public EventCallback<TDropdownOption> OnClick { get; set; }
+    public EventCallback<TDropdownItemClickEventDropdownItem> OnClick { get; set; }
 }
 
 /// <summary>
@@ -39659,7 +39706,7 @@ public class TTransfer<T> : TContentComponentBase
     public RenderFragment? TreeContent { get; set; }
 
     /// <summary>
-    /// 数据列表发生变化时触发，`type` 值为 `source`，表示源列表移动到目标列表，值为 `target` 表示目标列表移动到源列表，movedValue 则表示被移动的选项
+    /// 数据列表发生变化时触发，`type` 表示移动的目标列表，值为 `target` 表示源列表移动到目标列表，值为 `source` 表示目标列表移动到源列表，movedValue 则表示被移动的选项
     /// </summary>
     [Parameter]
     [ECMAScriptName("onChange")]
@@ -41882,4 +41929,3 @@ public sealed partial record TComponentRegistry
     [Description("@#Watermark")]
     public ITDesignComponent? TWatermark { get; init; }
 }
-

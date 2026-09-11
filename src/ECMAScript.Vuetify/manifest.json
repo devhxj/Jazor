@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "libraryId": "vuetify",
-  "version": "4.1.8",
+  "version": "4.2.1",
   "imports": {
     "vuetify": {
       "type": "module",
       "development": "dist/vuetify.esm.js",
       "production": "dist/vuetify.esm.js",
-      "developmentHash": "7d7afa4f002ceff47da0af378621e68fcf730cff05bbbfd2b7f78be10e2bd065",
-      "productionHash": "7d7afa4f002ceff47da0af378621e68fcf730cff05bbbfd2b7f78be10e2bd065",
+      "developmentHash": "70615fb2076893acab49d33beeba66a380cc63e6707afc43cd91495d7544735d",
+      "productionHash": "70615fb2076893acab49d33beeba66a380cc63e6707afc43cd91495d7544735d",
       "developmentDependencies": [
         "vue"
       ],
@@ -81,7 +81,7 @@
         {
           "type": "module",
           "path": "dist/vuetify-labs.esm.js",
-          "hash": "e8968b7a0416edeee089a6a3d119bfb6ef6ad974c536c4e94d02bc02d9c4b991",
+          "hash": "f9495a386a47223d6c14eb67d281e75dcf0915557f22d677b673b9735d616fab",
           "moduleId": "dist/vuetify-labs.esm.js"
         }
       ]
@@ -94,7 +94,7 @@
     {
       "type": "style",
       "path": "dist/vuetify.min.css",
-      "hash": "fd62ad54c12c709140d81372894ac34ddd1683c91779eb9d31a7265d4f4f8bb6"
+      "hash": "ee950fff1c2d876bca59054d73a018aa0065a0b9cdf1e56b442f4a702cc083da"
     }
   ],
   "files": [

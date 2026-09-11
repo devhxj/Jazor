@@ -8,7 +8,7 @@ using Node = global::TreeSitter.Node;
 
 internal static class TDesignComponentGenerator
 {
-    private const string Version = "1.20.5";
+    private const string Version = "1.20.7";
 
     public static void Run(string[] args)
     {
@@ -1437,6 +1437,12 @@ internal static class TDesignComponentGenerator
         private bool TryMapNode(Node node, string suggestedName, out MappedType type)
         {
             if (node.Type is "parenthesized_type" or "type_annotation" or "opting_type_annotation")
+                return TryMapNode(node.NamedChildren.Single(), suggestedName, out type);
+
+            // TypeScript prefixes readonly array/union contracts with a wrapper node.
+            // The C# host contract is immutable by construction, so map its contained
+            // value shape directly instead of dropping the owning component.
+            if (node.Type == "readonly_type")
                 return TryMapNode(node.NamedChildren.Single(), suggestedName, out type);
 
             if (node.Type == "predefined_type")

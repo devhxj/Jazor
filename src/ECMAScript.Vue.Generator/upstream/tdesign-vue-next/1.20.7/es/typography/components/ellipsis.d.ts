@@ -1,0 +1,304 @@
+import type { TypographyEllipsis } from '../type';
+declare const _default: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+    renderCopy: FunctionConstructor;
+    content: {
+        type: import("vue").PropType<import("..").TdParagraphProps["content"]>;
+    };
+    default: {
+        type: import("vue").PropType<import("..").TdParagraphProps["default"]>;
+    };
+    ellipsis: {
+        type: import("vue").PropType<import("..").TdParagraphProps["ellipsis"]>;
+        default: import("..").TdParagraphProps["ellipsis"];
+    };
+}>, () => import("vue/jsx-runtime").JSX.Element, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+    renderCopy: FunctionConstructor;
+    content: {
+        type: import("vue").PropType<import("..").TdParagraphProps["content"]>;
+    };
+    default: {
+        type: import("vue").PropType<import("..").TdParagraphProps["default"]>;
+    };
+    ellipsis: {
+        type: import("vue").PropType<import("..").TdParagraphProps["ellipsis"]>;
+        default: import("..").TdParagraphProps["ellipsis"];
+    };
+}>> & Readonly<{}>, {
+    ellipsis: boolean | TypographyEllipsis;
+}, {}, {
+    TTooltip: {
+        new (...args: any[]): import("vue").CreateComponentPublicInstanceWithMixins<Readonly<import("vue").ExtractPropTypes<{
+            delay: {
+                type: NumberConstructor;
+            };
+            destroyOnClose: {
+                type: BooleanConstructor;
+                default: boolean;
+            };
+            duration: {
+                type: NumberConstructor;
+            };
+            placement: {
+                type: import("vue").PropType<import("../..").TdTooltipProps["placement"]>;
+                default: string;
+            };
+            showArrow: {
+                type: BooleanConstructor;
+                default: boolean;
+            };
+            theme: {
+                type: import("vue").PropType<import("../..").TdTooltipProps["theme"]>;
+                default: import("../..").TdTooltipProps["theme"];
+                validator(val: import("../..").TdTooltipProps["theme"]): boolean;
+            };
+            attach: {
+                type: import("vue").PropType<import("../..").TdPopupProps["attach"]>;
+                default: import("../..").TdPopupProps["attach"];
+            };
+            content: {
+                type: import("vue").PropType<import("../..").TdPopupProps["content"]>;
+            };
+            default: {
+                type: import("vue").PropType<import("../..").TdPopupProps["default"]>;
+            };
+            disabled: BooleanConstructor;
+            hideEmptyPopup: BooleanConstructor;
+            overlayClassName: {
+                type: import("vue").PropType<import("../..").TdPopupProps["overlayClassName"]>;
+            };
+            overlayInnerClassName: {
+                type: import("vue").PropType<import("../..").TdPopupProps["overlayInnerClassName"]>;
+            };
+            overlayInnerStyle: {
+                type: import("vue").PropType<import("../..").TdPopupProps["overlayInnerStyle"]>;
+            };
+            overlayStyle: {
+                type: import("vue").PropType<import("../..").TdPopupProps["overlayStyle"]>;
+            };
+            popperOptions: {
+                type: import("vue").PropType<import("../..").TdPopupProps["popperOptions"]>;
+            };
+            trigger: {
+                type: import("vue").PropType<import("../..").TdPopupProps["trigger"]>;
+                default: import("../..").TdPopupProps["trigger"];
+                validator(val: import("../..").TdPopupProps["trigger"]): boolean;
+            };
+            triggerElement: {
+                type: import("vue").PropType<import("../..").TdPopupProps["triggerElement"]>;
+            };
+            visible: {
+                type: BooleanConstructor;
+                default: any;
+            };
+            modelValue: {
+                type: BooleanConstructor;
+                default: any;
+            };
+            defaultVisible: BooleanConstructor;
+            zIndex: {
+                type: NumberConstructor;
+            };
+            onOverlayClick: import("vue").PropType<import("../..").TdPopupProps["onOverlayClick"]>;
+            onScroll: import("vue").PropType<import("../..").TdPopupProps["onScroll"]>;
+            onScrollToBottom: import("vue").PropType<import("../..").TdPopupProps["onScrollToBottom"]>;
+            onVisibleChange: import("vue").PropType<import("../..").TdPopupProps["onVisibleChange"]>;
+        }>> & Readonly<{}>, () => import("vue/jsx-runtime").JSX.Element, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, import("vue").PublicProps, {
+            disabled: boolean;
+            visible: boolean;
+            theme: "default" | "primary" | "success" | "warning" | "danger" | "light";
+            modelValue: boolean;
+            attach: import("../..").AttachNode;
+            placement: "mouse" | import("../..").PopupPlacement;
+            trigger: "mousedown" | "click" | "focus" | "hover" | "context-menu";
+            destroyOnClose: boolean;
+            hideEmptyPopup: boolean;
+            showArrow: boolean;
+            defaultVisible: boolean;
+        }, true, {}, {}, import("vue").GlobalComponents, import("vue").GlobalDirectives, string, {}, any, import("vue").ComponentProvideOptions, {
+            P: {};
+            B: {};
+            D: {};
+            C: {};
+            M: {};
+            Defaults: {};
+        }, Readonly<import("vue").ExtractPropTypes<{
+            delay: {
+                type: NumberConstructor;
+            };
+            destroyOnClose: {
+                type: BooleanConstructor;
+                default: boolean;
+            };
+            duration: {
+                type: NumberConstructor;
+            };
+            placement: {
+                type: import("vue").PropType<import("../..").TdTooltipProps["placement"]>;
+                default: string;
+            };
+            showArrow: {
+                type: BooleanConstructor;
+                default: boolean;
+            };
+            theme: {
+                type: import("vue").PropType<import("../..").TdTooltipProps["theme"]>;
+                default: import("../..").TdTooltipProps["theme"];
+                validator(val: import("../..").TdTooltipProps["theme"]): boolean;
+            };
+            attach: {
+                type: import("vue").PropType<import("../..").TdPopupProps["attach"]>;
+                default: import("../..").TdPopupProps["attach"];
+            };
+            content: {
+                type: import("vue").PropType<import("../..").TdPopupProps["content"]>;
+            };
+            default: {
+                type: import("vue").PropType<import("../..").TdPopupProps["default"]>;
+            };
+            disabled: BooleanConstructor;
+            hideEmptyPopup: BooleanConstructor;
+            overlayClassName: {
+                type: import("vue").PropType<import("../..").TdPopupProps["overlayClassName"]>;
+            };
+            overlayInnerClassName: {
+                type: import("vue").PropType<import("../..").TdPopupProps["overlayInnerClassName"]>;
+            };
+            overlayInnerStyle: {
+                type: import("vue").PropType<import("../..").TdPopupProps["overlayInnerStyle"]>;
+            };
+            overlayStyle: {
+                type: import("vue").PropType<import("../..").TdPopupProps["overlayStyle"]>;
+            };
+            popperOptions: {
+                type: import("vue").PropType<import("../..").TdPopupProps["popperOptions"]>;
+            };
+            trigger: {
+                type: import("vue").PropType<import("../..").TdPopupProps["trigger"]>;
+                default: import("../..").TdPopupProps["trigger"];
+                validator(val: import("../..").TdPopupProps["trigger"]): boolean;
+            };
+            triggerElement: {
+                type: import("vue").PropType<import("../..").TdPopupProps["triggerElement"]>;
+            };
+            visible: {
+                type: BooleanConstructor;
+                default: any;
+            };
+            modelValue: {
+                type: BooleanConstructor;
+                default: any;
+            };
+            defaultVisible: BooleanConstructor;
+            zIndex: {
+                type: NumberConstructor;
+            };
+            onOverlayClick: import("vue").PropType<import("../..").TdPopupProps["onOverlayClick"]>;
+            onScroll: import("vue").PropType<import("../..").TdPopupProps["onScroll"]>;
+            onScrollToBottom: import("vue").PropType<import("../..").TdPopupProps["onScrollToBottom"]>;
+            onVisibleChange: import("vue").PropType<import("../..").TdPopupProps["onVisibleChange"]>;
+        }>> & Readonly<{}>, () => import("vue/jsx-runtime").JSX.Element, {}, {}, {}, {
+            disabled: boolean;
+            visible: boolean;
+            theme: "default" | "primary" | "success" | "warning" | "danger" | "light";
+            modelValue: boolean;
+            attach: import("../..").AttachNode;
+            placement: "mouse" | import("../..").PopupPlacement;
+            trigger: "mousedown" | "click" | "focus" | "hover" | "context-menu";
+            destroyOnClose: boolean;
+            hideEmptyPopup: boolean;
+            showArrow: boolean;
+            defaultVisible: boolean;
+        }>;
+        __isFragment?: never;
+        __isTeleport?: never;
+        __isSuspense?: never;
+    } & import("vue").ComponentOptionsBase<Readonly<import("vue").ExtractPropTypes<{
+        delay: {
+            type: NumberConstructor;
+        };
+        destroyOnClose: {
+            type: BooleanConstructor;
+            default: boolean;
+        };
+        duration: {
+            type: NumberConstructor;
+        };
+        placement: {
+            type: import("vue").PropType<import("../..").TdTooltipProps["placement"]>;
+            default: string;
+        };
+        showArrow: {
+            type: BooleanConstructor;
+            default: boolean;
+        };
+        theme: {
+            type: import("vue").PropType<import("../..").TdTooltipProps["theme"]>;
+            default: import("../..").TdTooltipProps["theme"];
+            validator(val: import("../..").TdTooltipProps["theme"]): boolean;
+        };
+        attach: {
+            type: import("vue").PropType<import("../..").TdPopupProps["attach"]>;
+            default: import("../..").TdPopupProps["attach"];
+        };
+        content: {
+            type: import("vue").PropType<import("../..").TdPopupProps["content"]>;
+        };
+        default: {
+            type: import("vue").PropType<import("../..").TdPopupProps["default"]>;
+        };
+        disabled: BooleanConstructor;
+        hideEmptyPopup: BooleanConstructor;
+        overlayClassName: {
+            type: import("vue").PropType<import("../..").TdPopupProps["overlayClassName"]>;
+        };
+        overlayInnerClassName: {
+            type: import("vue").PropType<import("../..").TdPopupProps["overlayInnerClassName"]>;
+        };
+        overlayInnerStyle: {
+            type: import("vue").PropType<import("../..").TdPopupProps["overlayInnerStyle"]>;
+        };
+        overlayStyle: {
+            type: import("vue").PropType<import("../..").TdPopupProps["overlayStyle"]>;
+        };
+        popperOptions: {
+            type: import("vue").PropType<import("../..").TdPopupProps["popperOptions"]>;
+        };
+        trigger: {
+            type: import("vue").PropType<import("../..").TdPopupProps["trigger"]>;
+            default: import("../..").TdPopupProps["trigger"];
+            validator(val: import("../..").TdPopupProps["trigger"]): boolean;
+        };
+        triggerElement: {
+            type: import("vue").PropType<import("../..").TdPopupProps["triggerElement"]>;
+        };
+        visible: {
+            type: BooleanConstructor;
+            default: any;
+        };
+        modelValue: {
+            type: BooleanConstructor;
+            default: any;
+        };
+        defaultVisible: BooleanConstructor;
+        zIndex: {
+            type: NumberConstructor;
+        };
+        onOverlayClick: import("vue").PropType<import("../..").TdPopupProps["onOverlayClick"]>;
+        onScroll: import("vue").PropType<import("../..").TdPopupProps["onScroll"]>;
+        onScrollToBottom: import("vue").PropType<import("../..").TdPopupProps["onScrollToBottom"]>;
+        onVisibleChange: import("vue").PropType<import("../..").TdPopupProps["onVisibleChange"]>;
+    }>> & Readonly<{}>, () => import("vue/jsx-runtime").JSX.Element, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, {
+        disabled: boolean;
+        visible: boolean;
+        theme: "default" | "primary" | "success" | "warning" | "danger" | "light";
+        modelValue: boolean;
+        attach: import("../..").AttachNode;
+        placement: "mouse" | import("../..").PopupPlacement;
+        trigger: "mousedown" | "click" | "focus" | "hover" | "context-menu";
+        destroyOnClose: boolean;
+        hideEmptyPopup: boolean;
+        showArrow: boolean;
+        defaultVisible: boolean;
+    }, {}, string, {}, import("vue").GlobalComponents, import("vue").GlobalDirectives, string, import("vue").ComponentProvideOptions> & import("vue").VNodeProps & import("vue").AllowedComponentProps & import("vue").ComponentCustomProps & import("vue").Plugin;
+}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+export default _default;

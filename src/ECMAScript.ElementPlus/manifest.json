@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "libraryId": "element-plus",
-  "version": "2.14.4",
+  "version": "2.14.5",
   "imports": {
     "element-plus": {
       "type": "module",
       "development": "dist/index.full.min.mjs",
       "production": "dist/index.full.min.mjs",
-      "developmentHash": "ee707da60d54edd857ce74eede8d036ca05167a6ade708ce9144f9d8dc094d4a",
-      "productionHash": "ee707da60d54edd857ce74eede8d036ca05167a6ade708ce9144f9d8dc094d4a",
+      "developmentHash": "59be33bc2940648ec88ddacdf9b0b98d5740b9e14dadc9ecad8a678555978fef",
+      "productionHash": "59be33bc2940648ec88ddacdf9b0b98d5740b9e14dadc9ecad8a678555978fef",
       "developmentDependencies": [
         "vue"
       ],
@@ -27,7 +27,7 @@
     {
       "type": "style",
       "path": "dist/index.css",
-      "hash": "021149175910e9ee160dcdaca04a1ad4b9ac7f80927ca0512543524754061ea2"
+      "hash": "b8e0285a92f57d52d66c8d07fe2d1e135eb6b2cf3f467840ddb72bb76e92b4dc"
     }
   ],
   "files": [

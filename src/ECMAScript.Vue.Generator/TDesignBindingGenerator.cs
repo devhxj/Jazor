@@ -7,7 +7,7 @@ using Node = global::TreeSitter.Node;
 
 internal static class TDesignBindingGenerator
 {
-    private const string Version = "1.20.5";
+    private const string Version = "1.20.7";
 
     public static void Run(string[] args)
     {

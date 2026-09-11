@@ -4175,7 +4175,7 @@ public sealed class EcmaScriptVueProxyTests
             "ECMAScript.Vue.Generator",
             "upstream",
             "tdesign-vue-next",
-            "1.20.5",
+            "1.20.7",
             "contracts.json");
         using var document = JsonDocument.Parse(System.IO.File.ReadAllText(path));
         var bindingsPath = Path.Combine(
@@ -4184,7 +4184,7 @@ public sealed class EcmaScriptVueProxyTests
             "ECMAScript.Vue.Generator",
             "upstream",
             "tdesign-vue-next",
-            "1.20.5",
+            "1.20.7",
             "bindings.json");
         using var bindings = JsonDocument.Parse(System.IO.File.ReadAllText(bindingsPath));
         var runtimeExports = bindings.RootElement.GetProperty("components").EnumerateArray()

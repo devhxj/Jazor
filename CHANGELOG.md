@@ -14,6 +14,14 @@ New Features
 
 - `ECMAScript.Style` now supports type-safe `|` composition for padding, transforms, and filters. Padding intermediate types cap shorthands at four values, while named factories remain available for other shorthands. by @devhxj
 
+#### 体验优化
+
+- 更新 Vuetify、TDesign Vue Next 与 Element Plus 绑定库至上游最新稳定版本 `4.2.1`、`1.20.7` 和 `2.14.5`，同步刷新生成契约、浏览器 ESM/CSS 资源、manifest 哈希与版本漂移门禁。by @devhxj
+
+Improvements
+
+- Update the Vuetify, TDesign Vue Next, and Element Plus bindings to upstream stable versions `4.2.1`, `1.20.7`, and `2.14.5`, including generated contracts, browser ESM/CSS resources, manifest hashes, and version-drift gates. by @devhxj
+
 ### Jazor 0.40.0
 
 > 按维护者指定发布 `0.40.0`，从 `0.35.0` 跳过 `0.36`–`0.39`；这些版本未发布。
