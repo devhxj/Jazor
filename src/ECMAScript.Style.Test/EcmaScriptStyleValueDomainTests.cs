@@ -139,7 +139,7 @@ public sealed class EcmaScriptStyleValueDomainTests
             BindingFlags.Public | BindingFlags.Static,
             [typeof(CssLength), typeof(CssLength)]);
         Assert.IsNotNull(paddingPipe);
-        Assert.AreEqual(typeof(CssPadding), paddingPipe.ReturnType);
+        Assert.AreEqual(typeof(CssPaddingPair), paddingPipe.ReturnType);
 
         var invalidSource = """
             using ECMAScript.Style;

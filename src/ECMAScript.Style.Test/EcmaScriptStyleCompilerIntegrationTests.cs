@@ -87,7 +87,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         StringAssert.Contains(script, "display: inlineFlex");
         StringAssert.Contains(script, "calc(${percent(100)} - ${rem(2)})");
         StringAssert.Contains(script, "gap: rem(0.5)");
- StringAssert.Contains(script, "variableFallback");
+        StringAssert.Contains(script, "color: variableFallback(\"--button-color\", color(\"red\"))");
         StringAssert.Contains(script, "\"background-color\": hex(\"1769aa\")");
         StringAssert.Contains(script, "border: importantValue(px(1) + \" \" + solid + \" \" + hex(\"d7ebe4\"))");
         StringAssert.Contains(script, "padding: importantValue(px(8) + \" \" + px(12))");
@@ -397,6 +397,92 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         StringAssert.Contains(invalidErrors[0].GetMessage(), nameof(CssBorder));
         StringAssert.Contains(invalidErrors[1].GetMessage(), nameof(CssImportant<CssColor>));
         StringAssert.Contains(invalidErrors[2].GetMessage(), nameof(CssImportant<CssLength>));
+    }
+
+    [TestMethod]
+    public async Task Convert_TypedPipes_ExecuteOrderedCssWithNamedShorthands()
+    {
+        const string source = """
+            using ECMAScript;
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
+
+            [ECMAScriptModule("composed.mjs")]
+            public static class ComposedStyles
+            {
+                public static string Build()
+                {
+                    var registry = context(new CssOptions { Detached = true });
+                    global(registry, ".card", new CssRule
+                    {
+                        padding = important(px(8) | percent(10) | (percent(50) - rem(1)) | var("--space", px(32))),
+                        border = px(1) | solid | var("--brand", hex("fff")),
+                        outline = thin | dashed | current_color,
+                        transform = translate_x(px(2)) | rotate(deg(90)) | scale(2),
+                        filter = blur(px(2)) | saturate(1.2) | blur(px(1)),
+                        margin = margin(px(8), auto),
+                        gap = gap(px(8), px(16)),
+                        border_radius = radius(px(4), px(8), px(12))
+                    });
+                    global(registry, ".pair", new CssRule { padding = percent(5) | px(8) });
+                    global(registry, ".triple", new CssRule { padding = (percent(50) - px(4)) | rem(1) | percent(5) });
+                    return extract(registry);
+                }
+            }
+            """;
+        var compilation = CreateCompilation(source, "TypedPipeConsumer");
+        var errors = compilation.GetDiagnostics().Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors.Select(static error => error.ToString())));
+        var tree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(tree);
+        var declaration = tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
+        var symbol = model.GetDeclaredSymbol(declaration);
+        Assert.IsNotNull(symbol);
+        var module = await new AstConverter(symbol, model).Convert();
+        Assert.IsNotNull(module);
+        // Execute actual consumer lowering against the generated runtime, not a handwritten
+        // imitation of the pipe operators. 捕获值域擦除、Inline 拼接和导出名之间的集成回归。
+        var runner = module.ToKnRECMAScript().Replace("\"style.mjs\"", "\"./runtime.mjs\"", StringComparison.Ordinal)
+            + "\nconsole.log(Build());";
+        var result = await EcmaScriptStyleModuleTestHost.RunDenoAsync(runner);
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        Assert.AreEqual(
+            ".card{border:1px solid var(--brand,#fff);border-radius:4px 8px 12px;"
+            + "filter:blur(2px) saturate(1.2) blur(1px);gap:8px 16px;margin:8px auto;"
+            + "outline:thin dashed currentColor;padding:8px 10% calc(50% - 1rem) var(--space,32px)!important;"
+            + "transform:translateX(2px) rotate(90deg) scale(2);}"
+            + ".pair{padding:5% 8px;}.triple{padding:calc(50% - 4px) 1rem 5%;}",
+            result.StandardOutput.Trim());
+    }
+
+    [TestMethod]
+    public void Compile_TypedPipes_RejectFifthSideAndCrossDomainComposition()
+    {
+        const string source = """
+            using ECMAScript.Style;
+            using static ECMAScript.Style.css;
+            public static class InvalidPipes
+            {
+                public static readonly CssRule Rule = new()
+                {
+                    padding = px(1) | px(2) | px(3) | px(4) | px(5),
+                    margin = px(1) | px(2),
+                    gap = important(px(1) | px(2)),
+                    width = px(1) | px(2),
+                    height = important(px(1) | px(2) | px(3)),
+                    filter = rotate(deg(90)) | scale(2),
+                    transform = blur(px(1)) | saturate(1),
+                    border = px(1) | rotate(deg(2)),
+                    padding_top = padding(px(1), px(2)) | px(3)
+                };
+            }
+            """;
+        var errors = CreateCompilation(source, "InvalidTypedPipes").GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
+        Assert.HasCount(9, errors, string.Join(Environment.NewLine, errors.Select(static error => error.ToString())));
+        // Every initializer must fail at its own use site; a count alone can hide duplicate diagnostics.
+        // 每一条误用分别拒绝，避免单纯计数掩盖某条合法化或重复报错。
+        Assert.HasCount(9, errors.Select(static error => error.Location.GetLineSpan().StartLinePosition.Line).Distinct());
     }
 
     private static CSharpCompilation CreateCompilation(string source, string assemblyName)

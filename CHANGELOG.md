@@ -4,6 +4,16 @@
 
 ## 2026-09-11
 
+### 未发布 | Unreleased
+
+#### 新增功能
+
+- `ECMAScript.Style` 支持按值域安全地使用 `|` 组合 padding、transform 和 filter；padding 通过中间类型限制为最多四值，其它简写继续使用命名工厂。by @devhxj
+
+New Features
+
+- `ECMAScript.Style` now supports type-safe `|` composition for padding, transforms, and filters. Padding intermediate types cap shorthands at four values, while named factories remain available for other shorthands. by @devhxj
+
 ### Jazor 0.40.0
 
 > 按维护者指定发布 `0.40.0`，从 `0.35.0` 跳过 `0.36`–`0.39`；这些版本未发布。

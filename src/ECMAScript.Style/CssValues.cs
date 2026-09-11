@@ -69,7 +69,7 @@ public sealed class CssVariable : ICssBorderPart
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public sealed class CssLength : ICssBorderPart
+public sealed partial class CssLength : ICssBorderPart
 {
     internal CssLength() { }
 
@@ -106,7 +106,7 @@ public sealed class CssLength : ICssBorderPart
     /// 为多值属性组合两个尺寸，结果不能用作单个长度；精确重载优先于 border-part 组合。
     /// </summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
-    public static extern CssPadding operator |(CssLength left, CssLength right);
+    public static extern CssPaddingPair operator |(CssLength left, CssLength right);
 
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssBorder operator |(CssLength left, ICssBorderPart right);
@@ -123,7 +123,7 @@ public sealed class CssLength : ICssBorderPart
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public sealed class CssPercentage
+public sealed partial class CssPercentage
 {
     internal CssPercentage() { }
 
@@ -157,7 +157,7 @@ public sealed class CssPercentage
 /// </summary>
 [ECMAScript]
 [Description("@#")]
-public sealed class CssLengthPercentage
+public sealed partial class CssLengthPercentage
 {
     internal CssLengthPercentage() { }
 
@@ -544,6 +544,10 @@ public sealed class CssTransform
 
     [ECMAScriptInline("__arg1")]
     internal static extern CssTransform create(string value);
+
+    /// <summary>Composes transforms in application order; order is observable。按书写顺序组合变换，顺序影响结果。</summary>
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssTransform operator |(CssTransform left, CssTransform right);
 }
 
 /// <summary>
@@ -558,6 +562,10 @@ public sealed class CssFilter
 
     [ECMAScriptInline("__arg1")]
     internal static extern CssFilter create(string value);
+
+    /// <summary>Composes filters in application order; never sorts or deduplicates them。按书写顺序组合滤镜，不排序或去重。</summary>
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssFilter operator |(CssFilter left, CssFilter right);
 }
 
 /// <summary>
@@ -626,9 +634,6 @@ public sealed class CssPadding
 
     [ECMAScriptInline("__arg1")]
     internal static extern CssPadding create(string value);
-
-    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
-    public static extern CssPadding operator |(CssPadding left, CssLength right);
 }
 
 /// <summary>
@@ -1233,6 +1238,8 @@ public readonly union CssValue(
     CssShadowList,
     CssTrack,
     CssPadding,
+    CssPaddingPair,
+    CssPaddingTriple,
     CssMargin,
     CssInset,
     CssGap,
@@ -1279,7 +1286,8 @@ public readonly union CssValue(
     CssImportant<CssResolution>, CssImportant<CssColor>, CssImportant<CssImage>, CssImportant<CssUrl>,
     CssImportant<CssString>, CssImportant<CssIdent>, CssImportant<CssKeyword>, CssImportant<CssTransform>,
     CssImportant<CssFilter>, CssImportant<CssBorder>, CssImportant<CssShadowList>, CssImportant<CssTrack>,
-    CssImportant<CssPadding>, CssImportant<CssMargin>, CssImportant<CssInset>, CssImportant<CssGap>, CssImportant<CssRadius>,
+    CssImportant<CssPadding>, CssImportant<CssPaddingPair>, CssImportant<CssPaddingTriple>,
+    CssImportant<CssMargin>, CssImportant<CssInset>, CssImportant<CssGap>, CssImportant<CssRadius>,
     CssImportant<CssFlex>, CssImportant<CssBackgroundSize>, CssImportant<CssGridLine>, CssImportant<CssGradient>,
     CssImportant<CssAnimation>, CssImportant<CssFontFamily>, CssImportant<CssRatio>, CssImportant<CssWideKeyword>,
     CssImportant<CssAutoKeyword>, CssImportant<CssNoneKeyword>, CssImportant<CssNormalKeyword>,
@@ -1342,9 +1350,10 @@ public readonly union CssRadiusPart(CssRaw, CssVariable, CssLength, CssPercentag
 [ECMAScript]
 [Description("@#")]
 public readonly union CssPaddingValue(
-    CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssPadding, CssWideKeyword,
+    CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssPadding, CssPaddingPair, CssPaddingTriple, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>, CssImportant<CssPercentage>,
-    CssImportant<CssLengthPercentage>, CssImportant<CssPadding>, CssImportant<CssWideKeyword>);
+    CssImportant<CssLengthPercentage>, CssImportant<CssPadding>, CssImportant<CssPaddingPair>,
+    CssImportant<CssPaddingTriple>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for margin properties, including anchor-size where CSS permits it。margin 属性值域，在 CSS 允许处包含 anchor-size。</summary>
 [ECMAScript]

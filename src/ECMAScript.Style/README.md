@@ -41,9 +41,9 @@ CSS authoring DSL uses `lower_snake_case`: generated declaration properties, `cs
 
 CSS authoring DSL 使用 `lower_snake_case`：生成的声明属性、`css` facade 成员、token，以及 `additional`、`children` 等结构成员都采用面向 CSS 的拼写。CLR 数据/配置模型仍保持 PascalCase，包括 `CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 与 `CssOptions`。C# 拼写变化不会改变生成的 CSS 或 `style.mjs` 的 JavaScript 导出 ABI。
 
-The public API uses typed domains for lengths, colors, time, display, selectors, and at-rules. Use an existing typed value directly; reserve `raw(...)` for CSS grammar that is not yet modeled and whose semantics the caller deliberately owns. `px(8) | px(12) | px(16) | px(20)` is a two-side padding shorthand, while `px(1) | solid` remains a typed border shorthand.
+The public API uses typed domains for lengths, colors, time, display, selectors, and at-rules. Use an existing typed value directly; reserve `raw(...)` for CSS grammar that is not yet modeled and whose semantics the caller deliberately owns. `px(8) | px(12) | px(16) | px(20)` is a one-to-four-value padding shorthand, while `px(1) | solid` remains a typed border shorthand.
 
-公开 API 使用类型化长度、颜色、时间、display、selector 与 at-rule 值域。已存在的强类型值应直接使用；`raw(...)` 只用于尚未建模且调用方明确承担语义的 CSS 语法。`px(8) | px(12) | px(16) | px(20)` 表示一至四值 padding 简写，而 `px(1) | solid` 仍表示强类型 border 简写。其它简写优先使用 `margin(...)`、`gap(...)`、`radius(...)` 等命名工厂，因为它们能在 C# 中保留各自的值域。
+公开 API 使用类型化长度、颜色、时间、display、selector 与 at-rule 值域。已存在的强类型值应直接使用；`raw(...)` 只用于尚未建模且调用方明确承担语义的 CSS 语法。`px(8) | px(12) | px(16) | px(20)` 表示一至四值 padding 简写，第五个值会在 C# 编译时被拒绝；`px(1) | solid` 仍表示强类型 border 简写。Transform 与 filter 也可按书写顺序使用 `|` 组合。其它简写优先使用 `margin(...)`、`gap(...)`、`radius(...)` 等命名工厂，因为它们能在 C# 中保留各自的值域。
 
 现代尺寸与锚点定位同样使用专用值域，不需要把 `anchor-size()` 或 `calc-size()` 写回原始字符串：
 

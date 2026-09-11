@@ -706,13 +706,18 @@ public static partial class css
     public static CssGap gap(CssGapPart row, CssGapPart column)
         => CssGap.create(join(StringValue(row.Value), StringValue(column.Value)));
 
-    /// <summary>Creates a one-, two-, or four-corner radius shorthand。创建一、二或四角 radius 简写。</summary>
+    /// <summary>Creates a one- to four-corner radius shorthand。创建一至四值 radius 简写。</summary>
     public static CssRadius radius(CssRadiusPart value)
         => CssRadius.create(StringValue(value.Value));
 
     [ECMAScriptName("radius2")]
     public static CssRadius radius(CssRadiusPart vertical, CssRadiusPart horizontal)
         => CssRadius.create(join(StringValue(vertical.Value), StringValue(horizontal.Value)));
+
+    /// <summary>Creates three radii: top-left, top-right/bottom-left, bottom-right。三值依次为左上、右上/左下、右下。</summary>
+    [ECMAScriptName("radius3")]
+    public static CssRadius radius(CssRadiusPart topLeft, CssRadiusPart topRightAndBottomLeft, CssRadiusPart bottomRight)
+        => CssRadius.create(join(StringValue(topLeft.Value), StringValue(topRightAndBottomLeft.Value), StringValue(bottomRight.Value)));
 
     [ECMAScriptName("radius4")]
     public static CssRadius radius(CssRadiusPart topLeft, CssRadiusPart topRight, CssRadiusPart bottomRight, CssRadiusPart bottomLeft)
