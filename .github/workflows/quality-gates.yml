@@ -9,6 +9,9 @@ on:
         type: string
         default: ''
   workflow_dispatch:
+  schedule:
+    # Keep the compatibility and coverage baseline fresh even when main is quiet.
+    - cron: '0 2 * * 1'
   push:
     branches: [main]
     paths:
