@@ -150,6 +150,35 @@ app.UseJazorSsr(
 该快照只表达匿名、已认证、过期或禁止访问状态及只读 claims；授权事实仍由服务端 endpoint 决定。
 它不启用 `AuthenticationStateProvider`、`AuthorizeView` 或服务器 circuit，也不替代表单防伪和 token 存储。
 
+### 显式 typed bootstrap
+
+业务首屏数据建议使用应用自己的 DTO，由 endpoint 同时返回业务版本。版本失配时重新读取数据；提交失败时保留
+客户端草稿，防伪、权限和最终写入仍由 endpoint 负责：
+
+```csharp
+public sealed record EditorBootstrap(int Version, IReadOnlyList<EditorRow> Rows);
+public sealed record EditorRow(string Id, string Name);
+public sealed record EditorCommand(int Version, IReadOnlyList<EditorRow> Rows);
+
+app.MapGet("/api/editor/bootstrap", async (EditorService service, CancellationToken cancellationToken) =>
+    Results.Ok(await service.ReadAsync(cancellationToken)));
+
+app.MapPost("/api/editor/commit", async (EditorCommand command, EditorService service,
+    CancellationToken cancellationToken) =>
+{
+    // Endpoint owns antiforgery, authorization, and optimistic-version checks.
+    var result = await service.CommitAsync(command, cancellationToken);
+    return result.IsVersionConflict
+        ? Results.Conflict(await service.ReadAsync(cancellationToken))
+        : result.IsValid
+            ? Results.Ok(result)
+            : Results.UnprocessableEntity(result.Errors);
+});
+```
+
+页面通过 `JazorSsrRequest.Props` 交接 `EditorBootstrap`。收到 `409` 时刷新 bootstrap 并让用户确认覆盖；收到验证错误
+或网络错误时继续显示并保留当前编辑草稿。这个协议不会模拟 `PersistentComponentState`、enhanced form 或服务器 circuit。
+
 浏览器交互使用 `@jazor/vue-runtime/authentication.mjs` 的显式 typed provider。登录、刷新和登出回调由应用
 endpoint 提供，并返回 `JazorAuthenticationEnvelope.Create(state)` 生成的 `jazor-auth-state` v1 载荷；provider
 不保存 token，也不自行推断授权结果。endpoint 异常通过 `provider.error` 暴露且不会覆盖当前状态，并发请求按
