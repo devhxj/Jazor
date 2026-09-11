@@ -93,11 +93,11 @@ public delegate IPromise<IVueComponent> RouteComponentLoader();
 public delegate RouteLocationRaw RouteRedirectCallback(RouteLocation to, RouteLocationNormalizedLoaded from);
 
 /// <summary>
-/// 导航守卫 next 回调，Vue Router 4 推荐使用返回值方式。
-/// Navigation guard next callback. Vue Router 4 recommends using return values instead.
+/// 导航守卫 next 回调，Vue Router 5 推荐使用返回值方式。
+/// Navigation guard next callback. Vue Router 5 recommends using return values instead.
 /// </summary>
 /// <param name="instance">当前 Vue 组件公共实例。Current Vue component public instance.</param>
-[Obsolete("Vue Router 4 recommends return-based navigation guards. Use bool/RouteLocationRaw/Error returns instead of next(...).")]
+[Obsolete("Vue Router 5 recommends return-based navigation guards. Use bool/RouteLocationRaw/Error returns instead of next(...).")]
 public delegate void NavigationGuardNextCallback(Vue.VueComponentPublicInstance instance);
 
 /// <summary>
@@ -105,7 +105,7 @@ public delegate void NavigationGuardNextCallback(Vue.VueComponentPublicInstance 
 /// Navigation guard next function used in the legacy API to control navigation behavior.
 /// </summary>
 /// <param name="value">导航守卫参数，可传递布尔值、路由位置或错误。Navigation guard argument; can pass a boolean, route location, or error.</param>
-[Obsolete("Vue Router 4 recommends return-based navigation guards. Use bool/RouteLocationRaw/Error returns instead of next(...).")]
+[Obsolete("Vue Router 5 recommends return-based navigation guards. Use bool/RouteLocationRaw/Error returns instead of next(...).")]
 public delegate void NavigationGuardNext(NavigationGuardNextArgument? value = default);
 
 /// <summary>
@@ -116,7 +116,7 @@ public delegate void NavigationGuardNext(NavigationGuardNextArgument? value = de
 /// <param name="from">来源路由位置。Source route location.</param>
 /// <param name="next">导航守卫 next 函数，用于控制导航行为。Navigation guard next function to control navigation behavior.</param>
 /// <returns>导航守卫返回值。Navigation guard return value.</returns>
-[Obsolete("Vue Router 4 keeps the third next parameter for backward compatibility only. Prefer RouteNavigationGuard return values.")]
+[Obsolete("Vue Router 5 keeps the third next parameter for backward compatibility only. Prefer RouteNavigationGuard return values.")]
 public delegate NavigationGuardReturn? LegacyRouteNavigationGuard(RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next);
 
 /// <summary>
@@ -127,7 +127,7 @@ public delegate NavigationGuardReturn? LegacyRouteNavigationGuard(RouteLocationN
 /// <param name="from">来源路由位置。Source route location.</param>
 /// <param name="next">导航守卫 next 函数，用于控制导航行为。Navigation guard next function to control navigation behavior.</param>
 /// <returns>Promise 包装的导航守卫返回值。Promise-wrapped navigation guard return value.</returns>
-[Obsolete("Vue Router 4 keeps the third next parameter for backward compatibility only. Prefer AsyncRouteNavigationGuard return values.")]
+[Obsolete("Vue Router 5 keeps the third next parameter for backward compatibility only. Prefer AsyncRouteNavigationGuard return values.")]
 public delegate IPromise<NavigationGuardReturn?> LegacyAsyncRouteNavigationGuard(RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next);
 
 /// <summary>

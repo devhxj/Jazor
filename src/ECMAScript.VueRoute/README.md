@@ -1,6 +1,6 @@
 # ECMAScript.VueRoute
 
-> 定位：Vue Router 4 的独立强类型 C# binding 与 Razor-to-Vue authoring 接口。
+> 定位：Vue Router 5 的独立强类型 C# binding 与 Razor-to-Vue authoring 接口。
 
 本包属于 JS resource library：Vue Router 的已有 runtime ESM 位于包内
 `manifest.json + dist/**`，许可证等附属文件由 manifest 显式声明；C# 程序集只提供映射和

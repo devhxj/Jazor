@@ -2,16 +2,6 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
-## 未发布 | Unreleased
-
-### 其他变更
-
-- 更新 Vue runtime 至 `3.5.42`、Vue Router 至 `5.3.1`，Pinia 保持最新 `4.0.3`；同步刷新对应 ESM 资源、manifest 哈希和依赖闭包。by @devhxj
-
-Chores
-
-- Update the Vue runtime to `3.5.42` and Vue Router to `5.3.1`; Pinia remains current at `4.0.3`. Refresh the corresponding ESM assets, manifest hashes, and dependency closure. by @devhxj
-
 ## 2026-09-11
 
 ### Jazor 0.40.0
@@ -21,6 +11,7 @@ Chores
 - WebIDL inventory 更新至 WebRef IDL `3.83.1`、CSS `8.7.4`、Events `1.25.1` 和 XRef `1.2.16`，重新生成 332 个绑定文件；规范正文抓取失败时仅跳过对应文档增强，不影响绑定生成。by @devhxj
 - **破坏性变更：** ECMAScript 绑定库统一移除浏览器类型和 ECMAScript 桥接类型的 `Jazor` 前缀，改用标准名称或 `Ref` 后缀：`JazorFile` → `FileRef`、`JazorDocument` → `DocumentRef`、`JazorWindow` → `WindowRef`、`JazorHistory` → `HistoryRef`、`JazorEvent` → `EventRef`、`JazorLocation` → `LocationRef`、`JazorPropertyKey` → `PropertyKeyRef`、`JazorPropertyDescriptor` → `PropertyDescriptorRef`。生成的 JavaScript/WebIDL 名称保持不变；请在源码中完成对应迁移。by @devhxj
 - 建立 1.0 公共 API 冻结审查基线，明确包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面、ASP.NET Core 配置模型和 SSR 数据模型；最终冻结仍以发布候选 ref 的全部质量门禁、SPA/SSR 消费者门禁和 API 兼容性证据为准。by @devhxj
+- 更新 Vue runtime 至 `3.5.42`、Vue Router 至 `5.3.1`，Pinia 保持最新 `4.0.3`；同步刷新对应 ESM 资源、manifest 哈希和依赖闭包。Vue Router 4 → 5 属于破坏性升级，请按新版 API 迁移。by @devhxj
 - Emit 测试按快速契约与 `emit-consumer` 消费者矩阵分层，减少日常门禁等待并保留发布前的完整包消费者验收。by @devhxj
 - 增加 1.0 公共 API 基线清单，集中记录宿主扩展、配置模型、SSR 协议和 Jazor.Admin 壳契约。by @devhxj
 
@@ -28,6 +19,7 @@ Chores
 
 - **Breaking:** Remove the `Jazor` prefix from ECMAScript browser and bridge authoring types. Use the standard name or `Ref` suffix: `JazorFile` → `FileRef`, `JazorDocument` → `DocumentRef`, `JazorWindow` → `WindowRef`, `JazorHistory` → `HistoryRef`, `JazorEvent` → `EventRef`, `JazorLocation` → `LocationRef`, `JazorPropertyKey` → `PropertyKeyRef`, and `JazorPropertyDescriptor` → `PropertyDescriptorRef`. Generated JavaScript/WebIDL names are unchanged; migrate source references accordingly. by @devhxj
 - Establish the 1.0 public API freeze baseline for package names, namespaces, `AddJazor*` / `UseJazor*` extensions, ASP.NET Core options, and SSR data models. The final freeze still requires API compatibility evidence plus all quality, SPA, and SSR consumer gates on the release-candidate ref. by @devhxj
+- Update the Vue runtime to `3.5.42` and Vue Router to `5.3.1`; Pinia remains current at `4.0.3`. Refresh the ESM assets, manifest hashes, and dependency closure. Vue Router 4 → 5 is a breaking upgrade; migrate callers to the new API. by @devhxj
 - Split Emit verification into a fast contract lane and an explicit `emit-consumer` matrix, shortening routine feedback while retaining complete package-consumer validation before release. by @devhxj
 - Add a readable 1.0 public API baseline covering host extensions, options, SSR protocols, and the Jazor.Admin shell contract. by @devhxj
 

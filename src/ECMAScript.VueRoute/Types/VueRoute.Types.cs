@@ -46,7 +46,7 @@ public record RouterOptions : Vue.VueProps
 	/// Whether to match the pattern to the end of the path. Deprecated and always true.
 	/// </summary>
 	[Description("@#end")]
-	[Obsolete("Vue Router 4 documents end as deprecated and always true. Do not author new router options with End.")]
+	[Obsolete("Vue Router 5 documents end as deprecated and always true. Do not author new router options with End.")]
 	public bool? End { get; init; }
 
 	/// <summary>
@@ -831,7 +831,7 @@ public record PathParserOptions : Vue.VueProps
 	/// Whether to match the pattern to the end of the path. Deprecated and always true.
 	/// </summary>
 	[Description("@#end")]
-	[Obsolete("Vue Router 4 documents end as deprecated and always true. Do not author new path parser options with End.")]
+	[Obsolete("Vue Router 5 documents end as deprecated and always true. Do not author new path parser options with End.")]
 	public bool? End { get; init; }
 }
 
@@ -2281,7 +2281,7 @@ public abstract record RouteRecordBase : Vue.VueProps
 	/// Whether to match the pattern to the end of the path. Deprecated and always true.
 	/// </summary>
 	[Description("@#end")]
-	[Obsolete("Vue Router 4 documents end as deprecated and always true. Do not author new route records with End.")]
+	[Obsolete("Vue Router 5 documents end as deprecated and always true. Do not author new route records with End.")]
 	public bool? End { get; init; }
 }
 
