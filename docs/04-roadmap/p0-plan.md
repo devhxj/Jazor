@@ -134,7 +134,7 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 
 ### 首轮基线记录（2026-09-06）
 
-在当前工作区、`.NET 11.0.100-preview.7`、`RazorVue.Authoring` 输入和隔离输出目录下，执行 `benchmark-razorvue-build.cs --samples 2 --skip-hmr --skip-release` 得到：clean 中位数 **45.583 秒**，incremental 中位数 **2.935 秒**。该结果只建立构建测量协议，不宣称性能目标或已完成编译器优化；HMR/Release 需在具备浏览器与包发布环境时单独采样。当前没有足够证据要求修改 compiler/Emit 缓存主链，后续优化必须用同一协议重测。
+在当前工作区、`.NET SDK 11.0.100-rc.1.26425.128`、`RazorVue.Authoring` 输入和隔离输出目录下，执行 `benchmark-razorvue-build.cs --samples 2 --skip-hmr --skip-release` 得到：clean 中位数 **63.871 秒**，incremental 中位数 **4.003 秒**；单轮 HMR 采样为 **22.508 秒**。该结果只建立构建测量协议，不宣称性能目标或已完成编译器优化；机器负载、SDK 和浏览器环境变化都会影响绝对值。当前没有足够证据要求修改 compiler/Emit 缓存主链，后续优化必须用同一协议重测。
 
 ## P0-D：绑定生成与版本漂移
 
