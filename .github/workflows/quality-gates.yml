@@ -43,6 +43,29 @@ permissions:
   contents: read
 
 jobs:
+  toolchain:
+    name: Toolchain matrix
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Record toolchain matrix
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/write-toolchain-matrix.cs -- artifacts/quality/toolchain-matrix.md
+
+      - name: Upload toolchain matrix
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolchain-matrix-${{ github.run_attempt }}
+          path: artifacts/quality/toolchain-matrix.md
+          if-no-files-found: error
+
   coverage:
     name: Coverage (${{ matrix.gate }})
     runs-on: windows-latest

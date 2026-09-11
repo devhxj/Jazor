@@ -25,6 +25,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `verify-vue-binding-coverage.cs` | 审核 Vue 生态 binding 的公开契约覆盖 |
 | `verify-vue-binding-contracts.cs` | 统一校验 Element Plus、Vuetify、TDesign 的生成快照、原始文档与资源 manifest |
 | `benchmark-razorvue-build.cs` | 测量 RazorVue clean、incremental、HMR 和 Release 构建时间并输出 JSON 基线 |
+| `write-toolchain-matrix.cs` | 记录当前 commit、global.json SDK、.NET CLI、Node.js、Chrome 和操作系统版本到 Markdown，供兼容矩阵与门禁日志引用 |
 | `verify-development-hmr.cs` | 验证开发模式的 HMR artifact 和浏览器路径 |
 | `wiki-import-docs.cs`、`wiki-build-local.cs`、`wiki-serve.cs`、`wiki-verify-*.cs`、`wiki-export-static.cs` | 导入 `docs/`、构建、预览、验证与静态导出 Jazor 官方网站 |
 | `verify-windows-spa-release.cs` | 打包本地 NuGet 后，以隔离 Wiki 消费者完成 Windows Release publish 和 Chrome 浏览器验证 |
