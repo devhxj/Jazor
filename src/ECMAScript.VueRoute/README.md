@@ -23,7 +23,7 @@ authoring contract。消费方编写的 RazorVue 组件生成到消费程序集�
 
 - router 与 history：`createRouter()`、`createWebHistory()`、`createWebHashHistory()`、`createMemoryHistory()`。
 - composition API：`useRouter()`、`useRoute()`、`useLink()` 与公开 injection key。
-- 组件：`RouterLink`、`RouterView` 及 `VueRouterLink` Razor authoring proxy。
+- 组件：`RouterLink`、`RouterView` 及 `VueRouterLink` / `VueRouterView` Razor authoring proxies，支持强类型参数和作用域插槽。
 - 路由记录、`RouteLocationRaw`、query/params、`push`、`replace`、`resolve` 与常用导航 guard。
 
 ## authoring 规则

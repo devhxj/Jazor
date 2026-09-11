@@ -109,7 +109,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
             typeof(EventCallback<ECMAScript.MouseEvent>),
             componentType.GetProperty(nameof(ECMAScript.VueRouterLink.OnClick))!.PropertyType);
         Assert.AreEqual(
-            typeof(RenderFragment),
+            typeof(RenderFragment<ECMAScript.RouterLinkSlotScope>),
             componentType.GetProperty(nameof(ECMAScript.VueRouterLink.ChildContent))!.PropertyType);
 
         var additionalAttributes = componentType.GetProperty(nameof(ECMAScript.VueRouterLink.AdditionalAttributes));
@@ -118,6 +118,23 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
             typeof(IReadOnlyDictionary<string, object?>),
             additionalAttributes!.PropertyType);
         Assert.IsTrue(additionalAttributes.GetCustomAttribute<ParameterAttribute>()!.CaptureUnmatchedValues);
+    }
+
+    [TestMethod]
+    public void VueRoute_RouterViewProxy_ExposesTypedPropsAndScopedSlot()
+    {
+        var componentType = typeof(ECMAScript.VueRouterView);
+        Assert.IsTrue(typeof(ComponentBase).IsAssignableFrom(componentType));
+
+        var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
+        Assert.IsNotNull(component);
+        Assert.AreEqual("vue-router", component!.Import);
+        Assert.AreEqual(Transform.Component, component.Transform);
+        Assert.AreEqual("RouterView", component.ExportName);
+        Assert.AreEqual(typeof(string), componentType.GetProperty(nameof(ECMAScript.VueRouterView.Name))!.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.RouteLocationNormalized), componentType.GetProperty(nameof(ECMAScript.VueRouterView.Route))!.PropertyType);
+        Assert.AreEqual(typeof(RenderFragment<ECMAScript.RouterViewSlotScope>), componentType.GetProperty(nameof(ECMAScript.VueRouterView.ChildContent))!.PropertyType);
+        Assert.IsTrue(componentType.GetProperty(nameof(ECMAScript.VueRouterView.AdditionalAttributes))!.GetCustomAttribute<ParameterAttribute>()!.CaptureUnmatchedValues);
     }
 
     [TestMethod]

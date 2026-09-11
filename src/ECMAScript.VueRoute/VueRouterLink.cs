@@ -27,6 +27,9 @@ public sealed class VueRouterLink : ComponentBase, IVueComponent
     public bool Replace { get; set; }
 
     [Parameter]
+    public bool? Custom { get; set; }
+
+    [Parameter]
     public string? ActiveClass { get; set; }
 
     [Parameter]
@@ -45,5 +48,6 @@ public sealed class VueRouterLink : ComponentBase, IVueComponent
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     [Parameter]
-    public RenderFragment? ChildContent { get; set; }
+    [ECMAScriptName("default")]
+    public RenderFragment<RouterLinkSlotScope>? ChildContent { get; set; }
 }
