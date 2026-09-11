@@ -50,6 +50,7 @@ internal sealed class DenoWebIdlCollector
                 "--allow-read",
                 "--allow-write",
                 "--allow-net",
+                "--allow-env",
                 _options.WorkerPath,
                 "--out",
                 tempFile,

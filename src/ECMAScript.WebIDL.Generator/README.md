@@ -23,6 +23,8 @@ dotnet run --project src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator
 dotnet run --project src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj -- --out src/ECMAScript/webidl --from-inventory src/ECMAScript/webidl/webidl.inventory.json
 ```
 
+规范源码正文属于可选文档增强，不阻塞 inventory 和绑定生成。默认跳过 GitHub 源码正文；需要刷新正文时可直接运行 collector 并传入 `--with-spec-prose`（或设置 `JAZOR_WITH_SPEC_PROSE=1`）。
+
 ## 边界
 
 `src/ECMAScript.WebIDL` 是归档的 legacy TypeScript generator，不参与当前构建。该项目不以旧 TypeScript 输出作为当前 WebIDL contract 的唯一依据。
