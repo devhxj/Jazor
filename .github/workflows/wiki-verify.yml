@@ -1,6 +1,7 @@
 name: Wiki Verify
 
 on:
+  workflow_dispatch:
   schedule:
     # Periodically exercise the Chrome SPA and packaged consumer paths while main is quiet.
     - cron: '30 2 * * 1'
