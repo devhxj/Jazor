@@ -6,7 +6,7 @@
 
 ### Jazor 0.40.0
 
-### 其他变更
+#### 其他变更
 
 - WebIDL inventory 更新至 WebRef IDL `3.83.1`、CSS `8.7.4`、Events `1.25.1` 和 XRef `1.2.16`，重新生成 332 个绑定文件；规范正文抓取失败时仅跳过对应文档增强，不影响绑定生成。by @devhxj
 - **破坏性变更：** ECMAScript 绑定库统一移除浏览器类型和 ECMAScript 桥接类型的 `Jazor` 前缀，改用标准名称或 `Ref` 后缀：`JazorFile` → `FileRef`、`JazorDocument` → `DocumentRef`、`JazorWindow` → `WindowRef`、`JazorHistory` → `HistoryRef`、`JazorEvent` → `EventRef`、`JazorLocation` → `LocationRef`、`JazorPropertyKey` → `PropertyKeyRef`、`JazorPropertyDescriptor` → `PropertyDescriptorRef`。生成的 JavaScript/WebIDL 名称保持不变；请在源码中完成对应迁移。by @devhxj
