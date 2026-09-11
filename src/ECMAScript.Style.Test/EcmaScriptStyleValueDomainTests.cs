@@ -120,7 +120,7 @@ public sealed class EcmaScriptStyleValueDomainTests
             {
                 public static readonly CssRule Rule = new()
                 {
-                    padding = important(px(8) | px(12)),
+                    padding = important(px(8) | px(12) | px(16) | px(20)),
                     margin = important(margin(px(0), auto)),
                     gap = gap(px(8), px(12)),
                     border_radius = radius(px(4), px(4), px(0), px(0)),

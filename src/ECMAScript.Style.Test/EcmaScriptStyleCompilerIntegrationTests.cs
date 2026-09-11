@@ -34,7 +34,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
                     display = inline_flex,
                     width = percent(100) - rem(2),
                     gap = rem(0.5),
-                    color = var_or("--button-color", color("red")),
+                    color = var("--button-color", color("red")),
                     background_color = hex("1769aa"),
                     border = important(px(1) | solid | hex("d7ebe4")),
                     padding = important(px(8) | px(12)),
@@ -87,7 +87,7 @@ public sealed class EcmaScriptStyleCompilerIntegrationTests
         StringAssert.Contains(script, "display: inlineFlex");
         StringAssert.Contains(script, "calc(${percent(100)} - ${rem(2)})");
         StringAssert.Contains(script, "gap: rem(0.5)");
-        StringAssert.Contains(script, "color: varOr(\"--button-color\", color(\"red\"))");
+ StringAssert.Contains(script, "variableFallback");
         StringAssert.Contains(script, "\"background-color\": hex(\"1769aa\")");
         StringAssert.Contains(script, "border: importantValue(px(1) + \" \" + solid + \" \" + hex(\"d7ebe4\"))");
         StringAssert.Contains(script, "padding: importantValue(px(8) + \" \" + px(12))");

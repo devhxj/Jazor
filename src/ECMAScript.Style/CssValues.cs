@@ -101,11 +101,9 @@ public sealed class CssLength : ICssBorderPart
     public static extern CssLength operator -(CssLength value);
 
     /// <summary>
-    /// Joins two lengths as a two-side CSS padding shorthand. This exact overload deliberately wins over the broader
-    /// border-part overload below, so <c>px(8) | px(12)</c> remains a padding value while <c>px(1) | solid</c>
-    /// remains a border value.
-    /// 将两个长度连接为双边 CSS padding 简写。该精确重载刻意优先于下面更宽泛的 border-part 重载，
-    /// 因而 <c>px(8) | px(12)</c> 保持为 padding 值，而 <c>px(1) | solid</c> 仍是 border 值。
+    /// Joins two dimensions for multi-value properties; the result cannot be used as a single length.
+    /// This exact overload takes precedence over border-part composition.
+    /// 为多值属性组合两个尺寸，结果不能用作单个长度；精确重载优先于 border-part 组合。
     /// </summary>
     [ECMAScriptInline("__arg1 + \" \" + __arg2")]
     public static extern CssPadding operator |(CssLength left, CssLength right);
@@ -628,6 +626,9 @@ public sealed class CssPadding
 
     [ECMAScriptInline("__arg1")]
     internal static extern CssPadding create(string value);
+
+    [ECMAScriptInline("__arg1 + \" \" + __arg2")]
+    public static extern CssPadding operator |(CssPadding left, CssLength right);
 }
 
 /// <summary>

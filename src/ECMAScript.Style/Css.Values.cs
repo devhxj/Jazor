@@ -277,6 +277,15 @@ public static partial class css
     }
 
     /// <summary>
+    /// References a custom property with a typed fallback, including another <c>var(...)</c>.
+    /// The browser resolves substitution; the fallback is not a runtime type check.
+    /// 引用自定义属性并提供类型化后备值（可嵌套 var）；替换由浏览器解析，fallback 并非运行时类型检查。
+    /// </summary>
+    [ECMAScriptName("variableFallback")]
+    public static CssVariable var(string name, CssValue fallback)
+        => var_or(name, fallback);
+
+    /// <summary>
     /// Creates a typed custom-property reference with a typed CSS fallback.
     /// Fallback serialization keeps its original union branch rather than accepting an arbitrary string.
     /// 创建带类型化 CSS 后备值的自定义属性引用。后备值序列化会保持原始 union 分支，而非接受任意字符串。

@@ -33,7 +33,7 @@ var actionClass = style(new CssRule
     display = inline_flex,
     gap = rem(0.5),
     align_items = keyword("center"),
-    padding = important(px(8) | px(12))
+    padding = important(px(8) | px(12) | px(16) | px(20))
 });
 ```
 
@@ -41,9 +41,9 @@ CSS authoring DSL uses `lower_snake_case`: generated declaration properties, `cs
 
 CSS authoring DSL 使用 `lower_snake_case`：生成的声明属性、`css` facade 成员、token，以及 `additional`、`children` 等结构成员都采用面向 CSS 的拼写。CLR 数据/配置模型仍保持 PascalCase，包括 `CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 与 `CssOptions`。C# 拼写变化不会改变生成的 CSS 或 `style.mjs` 的 JavaScript 导出 ABI。
 
-The public API uses typed domains for lengths, colors, time, display, selectors, and at-rules. Use an existing typed value directly; reserve `raw(...)` for CSS grammar that is not yet modeled and whose semantics the caller deliberately owns. `px(8) | px(12)` is a two-side padding shorthand, while `px(1) | solid` remains a typed border shorthand.
+The public API uses typed domains for lengths, colors, time, display, selectors, and at-rules. Use an existing typed value directly; reserve `raw(...)` for CSS grammar that is not yet modeled and whose semantics the caller deliberately owns. `px(8) | px(12) | px(16) | px(20)` is a two-side padding shorthand, while `px(1) | solid` remains a typed border shorthand.
 
-公开 API 使用类型化长度、颜色、时间、display、selector 与 at-rule 值域。已存在的强类型值应直接使用；`raw(...)` 只用于尚未建模且调用方明确承担语义的 CSS 语法。`px(8) | px(12)` 表示双边 padding 简写，而 `px(1) | solid` 仍表示强类型 border 简写。
+公开 API 使用类型化长度、颜色、时间、display、selector 与 at-rule 值域。已存在的强类型值应直接使用；`raw(...)` 只用于尚未建模且调用方明确承担语义的 CSS 语法。`px(8) | px(12) | px(16) | px(20)` 表示一至四值 padding 简写，而 `px(1) | solid` 仍表示强类型 border 简写。其它简写优先使用 `margin(...)`、`gap(...)`、`radius(...)` 等命名工厂，因为它们能在 C# 中保留各自的值域。
 
 现代尺寸与锚点定位同样使用专用值域，不需要把 `anchor-size()` 或 `calc-size()` 写回原始字符串：
 
@@ -69,13 +69,15 @@ var popoverClass = style(new CssRule
 ```csharp
 var buttonClass = style(new CssRule
 {
-    background_color = keyword("var(--brand-color)"),
+    background_color = var("--brand-color"),
     color = color("white"),
     padding = px(8) | px(16)
 });
 
 return new ButtonModel { ClassName = buttonClass };
 ```
+
+`var("--brand-color")` 是 `var(--brand-color)` 的专用入口；需要后备值时使用 `var_or("--brand-color", color("white"))`，或使用等价的 `var("--brand-color", color("white"))`。不要用 `keyword("var(...)")`，因为 `var()` 是函数值而不是 keyword。
 
 同一 context 中内容完全相同的规则会复用 class name；不要为了“避免重复”在业务层维护另一份全局缓存。需要独立的页面、租户或测试边界时，使用 `context(...)`，并将 context 显式传给 `styleIn`、`extractFrom` 和 `snapshotFrom`。
 
