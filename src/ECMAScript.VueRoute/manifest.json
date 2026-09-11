@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "libraryId": "vue-router",
-  "version": "4.6.4",
+  "version": "5.3.1",
   "imports": {
     "vue-router": {
       "type": "module",
       "development": "dist/vue-router.esm-browser.js",
       "production": "dist/vue-router.esm-browser.prod.js",
-      "developmentHash": "39d3a1b79d029da21bda316340e4651ebfd19cc998946f2a8c9226d735e3cbb9",
-      "productionHash": "48ba299e3aca7ae7e8b8274156ffa9e9e26dde459bcebb19c9d43eab2771401d",
+      "developmentHash": "dc505cd4dce716477fc9a07d4986c1fe115cd4545546b80f254bf1be402d5610",
+      "productionHash": "156c6ca2774d3f95180d9bad9c8bf495066e335a35883e2311e513b94163edb7",
       "developmentDependencies": [
         "@vue/devtools-api",
         "vue"
@@ -33,3 +33,6 @@
     }
   ]
 }
+
+
+

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "libraryId": "vue3",
-  "version": "3.5.13",
+  "version": "3.5.42",
   "imports": {
     "@vue/devtools-api": {
       "type": "module",
@@ -29,8 +29,8 @@
       "type": "module",
       "development": "dist/server-renderer.esm-browser.js",
       "production": "dist/server-renderer.esm-browser.prod.js",
-      "developmentHash": "b80bd93432c1400332b51fd338c785dddab31795d6332e00a376faba5e17d33b",
-      "productionHash": "5a19174ffbae344935dd7c2445ef6916d20f1c4699295b5b588ef0f7586dbe40",
+      "developmentHash": "6e7ec164b4a8a3e50245b5cde34257dd3825302f6f152ef6e65f68ac601ca63a",
+      "productionHash": "e437e2c2b46d00e96bb82dfee68d2212b8ee4812a8166d26acaed0689ec35830",
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [],
@@ -65,8 +65,8 @@
       "type": "module",
       "development": "dist/vue.runtime.esm-browser.js",
       "production": "dist/vue.runtime.esm-browser.prod.js",
-      "developmentHash": "998bf204fd015a280d9b6752c1decdbe1263f1cdef404b564c94fbf1b2d0ff44",
-      "productionHash": "beb6a8f2953386b171fb20e5c719e96082f3b0cf29a88d24158f61b824e3c1d4",
+      "developmentHash": "279bb17c041aae672a190377ed95293cd20648dd9a890f46fea0a38adeabb293",
+      "productionHash": "85c5bc17be41da2f3491c25a6930d94a9e54d7ad878dcfa67e2fca3b55ee8cc9",
       "developmentDependencies": [],
       "productionDependencies": [],
       "developmentModuleDependencies": [],
@@ -84,3 +84,8 @@
     }
   ]
 }
+
+
+
+
+

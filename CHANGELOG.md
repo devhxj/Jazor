@@ -2,6 +2,16 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 未发布 | Unreleased
+
+### 其他变更
+
+- 更新 Vue runtime 至 `3.5.42`、Vue Router 至 `5.3.1`，Pinia 保持最新 `4.0.3`；同步刷新对应 ESM 资源、manifest 哈希和依赖闭包。by @devhxj
+
+Chores
+
+- Update the Vue runtime to `3.5.42` and Vue Router to `5.3.1`; Pinia remains current at `4.0.3`. Refresh the corresponding ESM assets, manifest hashes, and dependency closure. by @devhxj
+
 ## 2026-09-11
 
 ### Jazor 0.40.0
