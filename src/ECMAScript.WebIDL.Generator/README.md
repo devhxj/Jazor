@@ -23,7 +23,7 @@ dotnet run --project src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator
 dotnet run --project src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj -- --out src/ECMAScript/webidl --from-inventory src/ECMAScript/webidl/webidl.inventory.json
 ```
 
-规范源码正文属于可选文档增强，不阻塞 inventory 和绑定生成。默认跳过 GitHub 源码正文；需要刷新正文时可直接运行 collector 并传入 `--with-spec-prose`（或设置 `JAZOR_WITH_SPEC_PROSE=1`）。
+规范源码正文默认抓取，因为它是生成 XML 文档的重要来源；单个源码请求失败不会阻塞 inventory 和绑定生成。离线或诊断运行可传入 `--skip-spec-prose`，或设置 `JAZOR_SKIP_SPEC_PROSE=1`。
 
 ## 边界
 

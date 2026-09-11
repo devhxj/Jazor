@@ -19,9 +19,10 @@ import type {
   WebIdlSpecificationSource,
 } from "./types.ts";
 
-// Inventory and binding generation must not depend on GitHub prose fetches.
-// Pass --with-spec-prose only when refreshing optional XML documentation text.
-const includeSpecificationProse = Deno.args.includes("--with-spec-prose");
+// Keep specification prose enabled by default because it is part of the authoring
+// documentation contract. Pass --skip-spec-prose only for offline/diagnostic runs.
+const skipSpecificationProse = Deno.args.includes("--skip-spec-prose") ||
+  Deno.env.get("JAZOR_SKIP_SPEC_PROSE") === "1";
 
 const parserVersion = "webidl2@24.5.0";
 const webrefIdlVersion = "@webref/idl@3.82.0";
@@ -328,10 +329,9 @@ class SpecificationSourceCatalog {
   private _activeFetches = 0;
 
   public async getProse(specification: XrefSpec | undefined, definition: XrefDefinition): Promise<string | undefined> {
-    // Specification prose is optional enrichment. Keep the primary inventory
-    // path independent from GitHub source availability; set JAZOR_SKIP_SPEC_PROSE
-    // for fast/offline collection while retaining xref links and declarations.
-    if (!includeSpecificationProse && Deno.env.get("JAZOR_WITH_SPEC_PROSE") !== "1") {
+    // A source failure affects only prose for this definition; xref links and
+    // declarations remain available, so the primary inventory stays usable.
+    if (skipSpecificationProse) {
       return undefined;
     }
     const sourceUrl = specification ? getSpecificationSourceUrl(specification) : undefined;
