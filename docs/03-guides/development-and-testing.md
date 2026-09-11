@@ -56,7 +56,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 | --- | --- | --- |
 | .NET SDK | `11.0.100-rc.1.26425.128`（由 `global.json` 固定） | `dotnet build Jazor.slnx`、质量门禁 |
 | Node.js | `22`（GitHub Actions）；本地 benchmark 应记录实际版本 | 发布 workflow、`benchmark-razorvue-build.cs` |
-| 浏览器 | Windows Microsoft Edge headless；Wiki lane 另验证 Google Chrome | SPA/SSR、Wiki browser scripts |
+| 浏览器 | Windows SPA/Wiki/SSR 统一使用 Google Chrome headless | SPA/SSR、Wiki browser scripts |
 | 发布配置 | Release、NuGet 本地源、`JazorMode=release` | SPA/SSR consumer scripts |
 | 部署路径 | `/docs`（SPA）、`/todo`（SSR） | 对应 Windows 发布消费者门禁 |
 

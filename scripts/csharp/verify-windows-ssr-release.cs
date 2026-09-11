@@ -22,19 +22,19 @@ var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 var browserScriptPath = Path.Combine(consumerRoot, "verify-ssr-browser.mjs");
 var hostStdoutLog = Path.Combine(workRoot, "todo-host.stdout.log");
 var hostStderrLog = Path.Combine(workRoot, "todo-host.stderr.log");
-var edgeStdoutLog = Path.Combine(workRoot, "todo-edge.stdout.log");
-var edgeStderrLog = Path.Combine(workRoot, "todo-edge.stderr.log");
+var chromeStdoutLog = Path.Combine(workRoot, "todo-chrome.stdout.log");
+var chromeStderrLog = Path.Combine(workRoot, "todo-chrome.stderr.log");
 var nodeStdoutLog = Path.Combine(workRoot, "todo-node.stdout.log");
 var nodeStderrLog = Path.Combine(workRoot, "todo-node.stderr.log");
-var edgeUserDataRoot = Path.Combine(workRoot, "todo-edge-profile");
+var chromeUserDataRoot = Path.Combine(workRoot, "todo-chrome-profile");
 var nodeExecutable = FindExecutableOnPath(OperatingSystem.IsWindows() ? "node.exe" : "node")
     ?? throw new FileNotFoundException("Node.js executable 'node' was not found on PATH.");
-var edgeExecutable = ResolveEdgeExecutable();
+var chromeExecutable = ResolveChromeExecutable();
 
 Console.WriteLine("Starting Windows SSR release consumer verification.");
 
 Process? hostProcess = null;
-Process? edgeProcess = null;
+Process? chromeProcess = null;
 try
 {
     DeleteDirectoryWithinRepo(repoRoot, workRoot);
@@ -127,28 +127,28 @@ try
 
     await VerifyDeploymentAssetsAsync(httpClient, rootUrl, options.PathBase, html);
 
-    if (Directory.Exists(edgeUserDataRoot))
+    if (Directory.Exists(chromeUserDataRoot))
     {
-        await DeleteDirectoryWithRetryAsync(edgeUserDataRoot);
+        await DeleteDirectoryWithRetryAsync(chromeUserDataRoot);
     }
 
-    edgeProcess = StartProcess(
-        edgeExecutable,
+    chromeProcess = StartProcess(
+        chromeExecutable,
         [
             "--headless=new",
             "--disable-gpu",
             "--no-first-run",
             "--no-default-browser-check",
             "--remote-debugging-port=" + options.CdpPort,
-            "--user-data-dir=" + edgeUserDataRoot,
+            "--user-data-dir=" + chromeUserDataRoot,
             "about:blank"
         ],
         workRoot,
         [],
-        edgeStdoutLog,
-        edgeStderrLog);
+        chromeStdoutLog,
+        chromeStderrLog);
 
-    await WaitForCdpReadyAsync(options.CdpPort, edgeProcess, TimeSpan.FromSeconds(options.BrowserStartupTimeoutSeconds), edgeStdoutLog, edgeStderrLog);
+    await WaitForCdpReadyAsync(options.CdpPort, chromeProcess, TimeSpan.FromSeconds(options.BrowserStartupTimeoutSeconds), chromeStdoutLog, chromeStderrLog);
 
     await RunProcessAsync(
         nodeExecutable,
@@ -166,10 +166,10 @@ catch
 }
 finally
 {
-    if (edgeProcess is not null && !edgeProcess.HasExited)
+    if (chromeProcess is not null && !chromeProcess.HasExited)
     {
-        edgeProcess.Kill(entireProcessTree: true);
-        await edgeProcess.WaitForExitAsync();
+        chromeProcess.Kill(entireProcessTree: true);
+        await chromeProcess.WaitForExitAsync();
     }
 
     if (hostProcess is not null && !hostProcess.HasExited)
@@ -406,7 +406,7 @@ async Task WaitForCdpReadyAsync(int port, Process process, TimeSpan timeout, str
         await Task.Delay(250);
     }
 
-    throw new TimeoutException("Timed out waiting for Edge CDP endpoint on port " + port + ".");
+    throw new TimeoutException("Timed out waiting for chrome CDP endpoint on port " + port + ".");
 }
 
 void CopyConsumerProps(string repoRoot, string consumerRoot)
@@ -572,13 +572,13 @@ string? FindExecutableOnPath(string fileName)
     return null;
 }
 
-string ResolveEdgeExecutable()
+string ResolveChromeExecutable()
 {
     var candidates = OperatingSystem.IsWindows()
         ? new[]
         {
-            @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-            @"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
+            @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+            @"C:\Program Files\Google\Chrome\Application\chrome.exe"
         }
         : Array.Empty<string>();
 
@@ -590,7 +590,7 @@ string ResolveEdgeExecutable()
         }
     }
 
-    throw new FileNotFoundException("Microsoft Edge executable was not found in the expected install locations.");
+    throw new FileNotFoundException("Google Chrome executable was not found in the expected install locations.");
 }
 
 string ReadLogHead(string path, int maxChars = 2000)
