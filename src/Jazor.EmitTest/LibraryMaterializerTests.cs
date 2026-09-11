@@ -45,7 +45,7 @@ public sealed class LibraryMaterializerTests
         workspace.WriteFile("dist/main.css", ".app { color: green; }");
         var manifestPath = workspace.WriteManifest(
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "vue",
             "dist/dev.mjs",
             "dist/prod.mjs",
@@ -54,11 +54,11 @@ public sealed class LibraryMaterializerTests
         var outputRoot = Path.Combine(workspace.Root, "out");
         var result = new LibraryMaterializer().Materialize([manifestPath], outputRoot, BuildMode.Production);
 
-        Assert.AreEqual("vendor/vue3/3.5.13/dist/prod.mjs", result.ImportPaths["vue"]);
-        Assert.AreEqual("vendor/vue3/3.5.13/dist/main.css", result.StylePaths.Single());
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vue3", "3.5.13", "dist", "prod.mjs")));
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vue3", "3.5.13", "dist", "main.css")));
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "vendor", "vue3", "3.5.13", "dist", "dev.mjs")));
+        Assert.AreEqual("vendor/vue3/3.5.42/dist/prod.mjs", result.ImportPaths["vue"]);
+        Assert.AreEqual("vendor/vue3/3.5.42/dist/main.css", result.StylePaths.Single());
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vue3", "3.5.42", "dist", "prod.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "vendor", "vue3", "3.5.42", "dist", "main.css")));
+        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "vendor", "vue3", "3.5.42", "dist", "dev.mjs")));
     }
 
     [TestMethod]
@@ -406,13 +406,13 @@ public sealed class LibraryMaterializerTests
     public async Task ImportMapWriter_WritesLocalSsrImportsAlongsideBrowserImports()
     {
         using var workspace = new LibraryWorkspace();
-        var vueManifest = workspace.WriteLibrary("vue", "vue3", "3.5.13", "vue");
+        var vueManifest = workspace.WriteLibrary("vue", "vue3", "3.5.42", "vue");
         var rendererManifest = workspace.WriteLibrary(
             "renderer",
             "vue-server-renderer",
-            "3.5.13",
+            "3.5.42",
             "@vue/server-renderer",
-            new Dictionary<string, string> { ["vue3"] = "3.5.13" });
+            new Dictionary<string, string> { ["vue3"] = "3.5.42" });
         var outputRoot = Path.Combine(workspace.Root, "out");
         var materialization = new LibraryMaterializer().Materialize(
             [vueManifest, rendererManifest],
@@ -428,13 +428,13 @@ public sealed class LibraryMaterializerTests
         using var ssrMap = System.Text.Json.JsonDocument.Parse(
             await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)));
         Assert.AreEqual(
-            "/jazor/vendor/vue3/3.5.13/dist/index.mjs",
+            "/jazor/vendor/vue3/3.5.42/dist/index.mjs",
             browserMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
         Assert.AreEqual(
-            "./vendor/vue3/3.5.13/dist/index.mjs",
+            "./vendor/vue3/3.5.42/dist/index.mjs",
             ssrMap.RootElement.GetProperty("imports").GetProperty("vue").GetString());
         Assert.AreEqual(
-            "./vendor/vue-server-renderer/3.5.13/dist/index.mjs",
+            "./vendor/vue-server-renderer/3.5.42/dist/index.mjs",
             ssrMap.RootElement.GetProperty("imports").GetProperty("@vue/server-renderer").GetString());
         Assert.IsFalse(
             (await File.ReadAllTextAsync(Path.Combine(outputRoot, ImportMapWriter.SsrImportMapFileName)))
@@ -550,8 +550,8 @@ public sealed class LibraryMaterializerTests
     public void Materialize_RejectsDuplicateLibraryProvider()
     {
         using var workspace = new LibraryWorkspace();
-        var first = workspace.WriteLibrary("first", "vue3", "3.5.13", "vue");
-        var second = workspace.WriteLibrary("second", "vue3", "3.5.13", "vue");
+        var first = workspace.WriteLibrary("first", "vue3", "3.5.42", "vue");
+        var second = workspace.WriteLibrary("second", "vue3", "3.5.42", "vue");
 
         var exception = Assert.Throws<LibraryException>(() =>
             new LibraryMaterializer().Materialize(
@@ -566,8 +566,8 @@ public sealed class LibraryMaterializerTests
     public void Materialize_RejectsMissingRequiredImport()
     {
         using var workspace = new LibraryWorkspace();
-        workspace.WriteFile("dist/vue.mjs", "export const version = '3.5.13';");
-        var manifestPath = workspace.WriteManifest("vue3", "3.5.13", "vue", "dist/vue.mjs", "dist/vue.mjs");
+        workspace.WriteFile("dist/vue.mjs", "export const version = '3.5.42';");
+        var manifestPath = workspace.WriteManifest("vue3", "3.5.42", "vue", "dist/vue.mjs", "dist/vue.mjs");
 
         var exception = Assert.Throws<LibraryException>(() =>
             new LibraryMaterializer().Materialize(
@@ -660,21 +660,21 @@ public sealed class LibraryMaterializerTests
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "dist",
             "vue.runtime.esm-browser.prod.js")));
         Assert.IsFalse(File.Exists(Path.Combine(
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "dist",
             "server-renderer.esm-browser.prod.js")));
         Assert.IsFalse(File.Exists(Path.Combine(
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "dist",
             "devtools-api",
             "vue-devtools-api.esm-browser.js")));
@@ -682,7 +682,7 @@ public sealed class LibraryMaterializerTests
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "dist",
             "devtools-api",
             "perfect-debounce.mjs")));
@@ -690,7 +690,7 @@ public sealed class LibraryMaterializerTests
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "licenses",
             "LICENSE")));
     }
@@ -711,16 +711,16 @@ public sealed class LibraryMaterializerTests
             new[] { "@vue/devtools-api", "perfect-debounce" },
             result.ImportPaths.Keys.ToArray());
         Assert.AreEqual(
-            "vendor/vue3/3.5.13/dist/devtools-api/vue-devtools-api.esm-browser.js",
+            "vendor/vue3/3.5.42/dist/devtools-api/vue-devtools-api.esm-browser.js",
             result.ImportPaths["@vue/devtools-api"]);
         Assert.AreEqual(
-            "vendor/vue3/3.5.13/dist/devtools-api/perfect-debounce.mjs",
+            "vendor/vue3/3.5.42/dist/devtools-api/perfect-debounce.mjs",
             result.ImportPaths["perfect-debounce"]);
         Assert.IsTrue(File.Exists(Path.Combine(
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "dist",
             "devtools-api",
             "vue-devtools-api.esm-browser.js")));
@@ -728,7 +728,7 @@ public sealed class LibraryMaterializerTests
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "dist",
             "devtools-api",
             "perfect-debounce.mjs")));
@@ -777,7 +777,7 @@ public sealed class LibraryMaterializerTests
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "dist",
             "devtools-api",
             "vue-devtools-api.esm-browser.js")));
@@ -820,7 +820,7 @@ public sealed class LibraryMaterializerTests
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "dist",
             "devtools-api",
             "vue-devtools-api.esm-browser.js")));
@@ -828,7 +828,7 @@ public sealed class LibraryMaterializerTests
             outputRoot,
             "vendor",
             "vue3",
-            "3.5.13",
+            "3.5.42",
             "dist",
             "devtools-api",
             "perfect-debounce.mjs")));

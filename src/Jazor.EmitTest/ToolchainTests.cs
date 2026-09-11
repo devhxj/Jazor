@@ -293,7 +293,7 @@ public sealed class ToolchainTests
 
         // Browser graph requests only the Vue runtime; SSR/devtools stay outside its vendor closure.
         // 该断言经真实 Toolchain 路径验证，而非只测 LibraryMaterializer 的拷贝逻辑。
-        var vueVendorRoot = Path.Combine(workspace.OutputRoot, "vendor", "vue3", "3.5.13", "dist");
+        var vueVendorRoot = Path.Combine(workspace.OutputRoot, "vendor", "vue3", "3.5.42", "dist");
         Assert.IsTrue(File.Exists(Path.Combine(vueVendorRoot, "vue.runtime.esm-browser.prod.js")));
         Assert.IsFalse(File.Exists(Path.Combine(vueVendorRoot, "server-renderer.esm-browser.prod.js")));
         Assert.IsFalse(File.Exists(Path.Combine(vueVendorRoot, "devtools-api", "vue-devtools-api.esm-browser.js")));

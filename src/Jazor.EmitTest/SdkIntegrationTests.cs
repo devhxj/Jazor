@@ -666,19 +666,19 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "ssr-importmap.json")), "SSR local import map was not generated.");
         Assert.IsTrue(File.Exists(Path.Combine(ssrRoot, "manifest.json")), "SSR asset manifest was not generated.");
         Assert.IsTrue(
-            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.13", "dist", "server-renderer.esm-browser.prod.js")),
+            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.42", "dist", "server-renderer.esm-browser.prod.js")),
             "SSR server renderer was not materialized.");
         Assert.IsTrue(
-            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.13", "licenses", "VUE-SERVER-RENDERER-LICENSE")),
+            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.42", "licenses", "VUE-SERVER-RENDERER-LICENSE")),
             "SSR server renderer license was not materialized.");
         Assert.IsFalse(
-            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.13", "dist", "server-renderer.esm-browser.prod.js")),
+            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.42", "dist", "server-renderer.esm-browser.prod.js")),
             "Browser release must not carry the SSR-only renderer entry.");
         Assert.IsFalse(
-            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.13", "dist", "devtools-api", "vue-devtools-api.esm-browser.js")),
+            File.Exists(Path.Combine(browserRoot, "vendor", "vue3", "3.5.42", "dist", "devtools-api", "vue-devtools-api.esm-browser.js")),
             "Browser release must not carry unused Vue devtools assets.");
         Assert.IsFalse(
-            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.13", "dist", "devtools-api", "vue-devtools-api.esm-browser.js")),
+            File.Exists(Path.Combine(ssrRoot, "vendor", "vue3", "3.5.42", "dist", "devtools-api", "vue-devtools-api.esm-browser.js")),
             "SSR release must not carry browser-only Vue devtools assets.");
 
         var ssrImportMap = await File.ReadAllTextAsync(Path.Combine(ssrRoot, "ssr-importmap.json"));
@@ -722,7 +722,7 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "importmap.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishedSsrRoot, "ssr-importmap.json")));
         Assert.IsTrue(
-            File.Exists(Path.Combine(publishedSsrRoot, "vendor", "vue3", "3.5.13", "dist", "server-renderer.esm-browser.prod.js")),
+            File.Exists(Path.Combine(publishedSsrRoot, "vendor", "vue3", "3.5.42", "dist", "server-renderer.esm-browser.prod.js")),
             "Publish output must carry the SSR renderer dependency.");
     }
 
