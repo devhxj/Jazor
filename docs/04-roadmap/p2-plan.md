@@ -72,7 +72,7 @@ Microsoft Blazor 内置 UI 组件统一不进入 RazorVue 组件契约：
 | 工作 | 本轮验收 | 状态 |
 | --- | --- | --- |
 | SSR 交接正确性 | 真实浏览器执行生成的 bootstrap，验证无效 envelope、并发/重复 hydration、失败传播；SSR render-hook 和 endpoint 错误保持显式失败 | 已完成：23 项 hosting + 4 个真实浏览器场景 |
-| 显式表单与状态新鲜度 | 应用自有 typed DTO/endpoint 示例覆盖失败保留草稿和过期数据刷新；解释 snapshot 与业务版本的所有权 | Guidance：继续由应用 endpoint 管理；不新增通用 TTL/replay 认证协议 |
+| 显式表单与状态新鲜度 | 应用自有 typed DTO/endpoint 示例覆盖失败保留草稿和过期数据刷新；解释 snapshot 与业务版本的所有权 | 已完成 consumer 验证：`verify-typed-bootstrap.cs` 覆盖 GET bootstrap、过期版本 409、校验失败 422、客户端草稿保留和成功提交；协议属于应用 endpoint，不属于 Jazor runtime。`PersistentComponentState`、enhanced form、antiforgery 和服务器 circuit 仍为 Guidance/Reject |
 | 绑定与原始注释 | Element Plus/Vuetify/TDesign 生成检查、覆盖门禁及表单/表格/输入等现有高频契约审查；仅对实证缺口补生成源 | 已完成当前快照审查：三套 contract gate 通过 |
 | 应用和交付 | Authoring 与 JazorAdmin 现有中型页面、隔离 Release package、SPA/SSR/PathBase/HMR 浏览器门禁 | 已有门禁通过；后续按发布矩阵持续回归 |
 | 调试诊断 | source → SG → module → map 工具及失败定位回归，更新可复现使用指南 | 已完成现有链路与失败定位工具 |
