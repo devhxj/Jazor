@@ -41,7 +41,7 @@ dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 ## 已验证的 Razor 写法
 
 以下语法已通过作者源码、official Razor Source Generator、render module、Deno runtime、隔离
-Release NuGet consumer 和真实 Edge browser smoke。它证明的是 TDesign typed authoring 这一条
+Release NuGet consumer 和真实 Chrome browser smoke。它证明的是 TDesign typed authoring 这一条
 能力，不会扩大 Microsoft/Blazor 内置 UI、`IJSRuntime` 或 server-only service 的明确 Reject 边界。
 
 ```razor

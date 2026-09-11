@@ -37,7 +37,6 @@ jobs:
     runs-on: windows-latest
     environment: production
     env:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       NUGET_USER: ${{ secrets.NUGET_USER }}
 
     steps:
@@ -154,15 +153,14 @@ jobs:
         if: ${{ steps.release_ref.outputs.publish_enabled == 'true' }}
         shell: pwsh
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY) -and [string]::IsNullOrWhiteSpace($env:NUGET_USER))
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_USER))
           {
-              throw 'Configure NUGET_API_KEY or NUGET_USER before publishing to nuget.org.'
+              throw 'Configure the NuGet trusted-publishing user before publishing to nuget.org.'
           }
 
       - name: NuGet trusted publishing login
         if: ${{ steps.release_ref.outputs.publish_enabled == 'true' && env.NUGET_USER != '' }}
         id: nuget_login
-        continue-on-error: true
         uses: NuGet/login@v1
         with:
           user: ${{ secrets.NUGET_USER }}
@@ -175,16 +173,6 @@ jobs:
           if (-not $packages) { throw 'No packages found in artifacts/packages.' }
           foreach ($pkg in $packages) {
             dotnet nuget push $pkg.FullName --api-key '${{ steps.nuget_login.outputs.NUGET_API_KEY }}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
-          }
-
-      - name: Push package with API key fallback
-        if: ${{ steps.release_ref.outputs.publish_enabled == 'true' && steps.nuget_login.outcome != 'success' && env.NUGET_API_KEY != '' }}
-        shell: pwsh
-        run: |
-          $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
-          if (-not $packages) { throw 'No packages found in artifacts/packages.' }
-          foreach ($pkg in $packages) {
-            dotnet nuget push $pkg.FullName --api-key '${{ secrets.NUGET_API_KEY }}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
           }
 
       - name: Push to GitHub Packages
