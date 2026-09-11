@@ -4,7 +4,7 @@
 
 ## 2026-09-11
 
-### Jazor 0.5.0
+### Jazor 0.50.0
 
 > 三套 Vue 组件绑定库升级至最新稳定版本，更新生成契约与浏览器资源；TDesign 新版类型语法兼容性同步修复。
 > Upgrade the three Vue component bindings to current stable releases, refresh generated contracts and browser assets, and fix compatibility with TDesign's newer TypeScript syntax.
