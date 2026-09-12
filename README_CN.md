@@ -34,11 +34,11 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 最新版本
 
-### Jazor 0.35.0 · 2026-09-10
+### Jazor 0.60.0 · 2026-09-12
 
-- 编译器现在保留 C# `break` 与 `continue` 的作者标签，包括嵌套循环目标。
-- JazorAdmin 登录和 Dashboard 页面补齐自动填充元数据、加载与空数据状态、响应式网格和可访问性语义。
-- 开发基线更新至 .NET 11 RC1、Roslyn 5.11 以及对应 ASP.NET Core/EF Core 依赖。
+- 发布候选现在通过一条可归档的统一路径检查 API 兼容性、质量门禁、包形状以及 Windows SPA/SSR 消费者。
+- Element Plus、Vuetify 和 TDesign 的 Vue 绑定会在发布前对照生成快照、manifest 与上游版本执行契约检查。
+- RazorVue 诊断支持输出带稳定 ID、HelpLink 和作者源码位置的 SARIF，便于 IDE 集成。
 
 完整版本历史见 [更新日志](CHANGELOG.md)。
 
@@ -113,15 +113,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.35.0
+dotnet add package Jazor --version 0.60.0
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.35.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.35.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.60.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.60.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

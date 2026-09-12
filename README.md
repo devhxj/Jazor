@@ -34,11 +34,11 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Latest release
 
-### Jazor 0.35.0 · 2026-09-10
+### Jazor 0.60.0 · 2026-09-12
 
-- The compiler preserves authored labels on C# `break` and `continue`, including nested-loop targets.
-- JazorAdmin login and Dashboard flows now provide clearer autofill metadata, loading and empty states, responsive grids, and accessibility semantics.
-- The development baseline is .NET 11 RC1 with Roslyn 5.11 and matching ASP.NET Core/EF Core dependencies.
+- Release candidates now run one archived verification path covering API compatibility, quality gates, package shape, and Windows SPA/SSR consumers.
+- Vue binding contracts for Element Plus, Vuetify, and TDesign are checked against generated snapshots, manifests, and upstream versions before release.
+- RazorVue diagnostics can emit SARIF with stable IDs, HelpLinks, and authored source locations for IDE integration.
 
 Read the [release notes](CHANGELOG.md) for the complete history.
 
@@ -114,7 +114,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.35.0
+dotnet add package Jazor --version 0.60.0
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -122,8 +122,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.35.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.35.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="0.60.0" />
+  <PackageReference Include="Jazor.Vue" Version="0.60.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
