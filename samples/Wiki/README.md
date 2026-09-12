@@ -11,6 +11,10 @@
 `obj/wiki/WikiDocsContent.g.cs` 的纯数据目录，随后由 `WikiHomeModule.DocsPage.cs`
 渲染为 Vue `H()` VNode。不要手动编辑 `obj/wiki/WikiDocsContent.g.cs`。
 
+机器生成的 `*.snapshot.md` 默认作为发布证据保留在仓库，但不会内嵌进浏览器目录，
+以免大型快照耗尽 C# 编译器的用户字符串池；文档中的链接会回到仓库文件。只有需要
+专门检查快照导入时才同时使用 `--include-machine-snapshots --include-large-docs`，网站发布和 consumer 门禁使用默认策略。
+
 | Markdown 来源 | 网站路由 |
 | --- | --- |
 | `docs/README.md` | `/` |

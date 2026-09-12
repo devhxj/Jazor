@@ -29,7 +29,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `benchmark-razorvue-build.cs` | 测量 RazorVue clean、incremental、HMR 和 Release 构建时间；clean/incremental 还在 JSON/Markdown 基线中记录生成模块与 `.mjs`/source map 数量、原始与逐文件 gzip 字节数、manifest/完整 Emit 输出体积及增量产物内容变化；不把产物未变化解释为内部缓存命中 |
 | `write-toolchain-matrix.cs` | 记录当前 commit、global.json SDK、.NET CLI、Node.js、Chrome 和操作系统版本到 Markdown，供兼容矩阵与门禁日志引用 |
 | `verify-development-hmr.cs` | 验证开发模式的 HMR artifact 和浏览器路径 |
-| `wiki-import-docs.cs`、`wiki-build-local.cs`、`wiki-serve.cs`、`wiki-verify-*.cs`、`wiki-export-static.cs` | 导入 `docs/`、构建、预览、验证与静态导出 Jazor 官方网站 |
+| `wiki-import-docs.cs`、`wiki-build-local.cs`、`wiki-serve.cs`、`wiki-verify-*.cs`、`wiki-export-static.cs` | 导入 `docs/`、构建、预览、验证与静态导出 Jazor 官方网站；机器生成的 `*.snapshot.md` 默认只作为仓库证据，不进入浏览器目录 |
 | `verify-windows-spa-release.cs` | 打包本地 NuGet 后，以隔离 Wiki 消费者完成 Windows Release publish 和 Chrome 浏览器验证 |
 | `verify-windows-ssr-release.cs` | 打包本地 NuGet 后，以隔离 RazorVue TodoList 消费者完成 `JazorSSR=true` Release publish、Deno SSR HTML、发布目录资源解析与 Chrome hydration 交互验证 |
 | `verify-typed-bootstrap.cs` | 启动应用自有 typed bootstrap endpoint，验证 GET、过期版本 409、校验失败 422、客户端草稿保留和成功提交；支持 `--report` 生成可归档证据；不注册 Jazor runtime 服务 |

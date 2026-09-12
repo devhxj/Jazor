@@ -8,6 +8,7 @@
 //   dotnet run --file scripts/csharp/wiki-import-docs.cs
 //   dotnet run --file scripts/csharp/wiki-import-docs.cs -- --check     // 校验已提交的生成文件是否最新（漂移门禁）
 //   dotnet run --file scripts/csharp/wiki-import-docs.cs -- --output <file>
+//   dotnet run --file scripts/csharp/wiki-import-docs.cs -- --include-machine-snapshots --include-large-docs
 //
 // 生成契约（与手写渲染层 WikiHomeModule.DocsPage.cs 对齐）：
 //   DocsRun.Kind:   0=text 1=strong 2=em 3=code 4=link 5=inline-anchor(id 存于 Href)
@@ -46,11 +47,18 @@ static string? LocateRepositoryRoot(string startDirectory)
 var docsDir = Path.Combine(repoRootPath, "docs");
 var outputPath = Path.Combine(repoRootPath, "samples", "Wiki", "obj", "wiki", "WikiDocsContent.g.cs");
 var checkOnly = false;
+var includeMachineSnapshots = false;
+var includeLargeDocuments = false;
+const long MaxEmbeddedDocumentBytes = 512 * 1024;
 
 for (var i = 0; i < args.Length; i++)
 {
     if (args[i] == "--check")
         checkOnly = true;
+    else if (args[i] == "--include-machine-snapshots")
+        includeMachineSnapshots = true;
+    else if (args[i] == "--include-large-docs")
+        includeLargeDocuments = true;
     else if (args[i] == "--output" && i + 1 < args.Length)
         outputPath = Path.GetFullPath(args[++i]);
     else if (args[i] == "--docs" && i + 1 < args.Length)
@@ -92,6 +100,10 @@ foreach (var group in groups)
 
     var contentFiles = Directory.EnumerateFiles(groupDir, "*.md")
         .Where(file => !string.Equals(Path.GetFileName(file), "README.md", StringComparison.OrdinalIgnoreCase))
+        // Machine snapshots are release evidence, not website content. Keeping them out of
+        // the generated C# catalog prevents a single evidence file from exhausting the
+        // compiler's user-string pool; links still resolve to the repository file below.
+        .Where(file => ShouldEmbedDocument(file, includeMachineSnapshots, includeLargeDocuments, MaxEmbeddedDocumentBytes))
         .OrderBy(file => Path.GetFileName(file), StringComparer.Ordinal);
 
     foreach (var file in contentFiles)
@@ -99,6 +111,27 @@ foreach (var group in groups)
         var route = group.Route + "/" + Path.GetFileNameWithoutExtension(file);
         pages.Add(Importer.Import(repoRootPath, file, route, group.Id, pipeline, "docs/" + group.Dir + "/" + Path.GetFileName(file)));
     }
+}
+
+static bool IsMachineSnapshot(string file)
+    => Path.GetFileName(file).EndsWith(".snapshot.md", StringComparison.OrdinalIgnoreCase);
+
+static bool ShouldEmbedDocument(string file, bool includeMachineSnapshots, bool includeLargeDocuments, long maxBytes)
+{
+    var info = new FileInfo(file);
+    if (IsMachineSnapshot(file) && !includeMachineSnapshots)
+    {
+        Console.WriteLine("wiki-import-docs: excluding machine snapshot from browser catalog: " + file);
+        return false;
+    }
+
+    if (info.Length > maxBytes && !includeLargeDocuments)
+    {
+        Console.WriteLine($"wiki-import-docs: excluding large document ({info.Length} bytes > {maxBytes}): {file}");
+        return false;
+    }
+
+    return true;
 }
 
 // ── 链接目标映射：docs 相对路径 → 站内路由 / Link target map: docs relative path → site route ──
