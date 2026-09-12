@@ -200,19 +200,19 @@ jobs:
 
       - name: Verify typed bootstrap contract
         shell: pwsh
-        run: dotnet run --file ./scripts/csharp/verify-typed-bootstrap.cs -- --report artifacts/quality/typed-bootstrap/report.md
+        run: dotnet run --file ./scripts/csharp/verify-typed-bootstrap.cs -- --report "${{ github.workspace }}/artifacts/quality/typed-bootstrap/report.md"
 
       - name: Ensure typed bootstrap evidence directory
         if: ${{ always() }}
         shell: pwsh
-        run: New-Item -ItemType Directory -Path artifacts/quality/typed-bootstrap -Force | Out-Null
+        run: New-Item -ItemType Directory -Path "${{ github.workspace }}/artifacts/quality/typed-bootstrap" -Force | Out-Null
 
       - name: Upload typed bootstrap evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: typed-bootstrap-${{ github.run_attempt }}
-          path: artifacts/quality/typed-bootstrap/
+          path: ${{ github.workspace }}/artifacts/quality/typed-bootstrap/
           if-no-files-found: error
           retention-days: 14
 
