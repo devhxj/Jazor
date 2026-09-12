@@ -130,7 +130,7 @@ jobs:
 
       - name: Build public API assemblies
         shell: pwsh
-        run: dotnet build Jazor.slnx --no-restore
+        run: dotnet build Jazor.slnx --nologo
 
       - name: Generate public API snapshot
         shell: pwsh
