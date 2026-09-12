@@ -11,12 +11,14 @@
 - 公共 API 兼容性门禁现在覆盖宿主、开发 reload、`Jazor.Admin`、`Jazor.Vue` 与已发布 ECMAScript 绑定程序集；缺失候选基线会阻断 CI，候选快照保存在 `docs/03-guides/public-api-baseline.snapshot.md`。by @devhxj
 - Quality Gates 新增隔离输出的 Release 主线测试，并要求手动发布流程同样通过 Pinia 生态验证；Emit 当前套件为 `201/201`。by @devhxj
 - 当前 TDesign 和持续浏览器门禁统一使用 Google Chrome；历史版本记录保持不变。by @devhxj
+- 修正 TDesign 1.20.7 声明快照计数漂移，重新生成后保持 120/120 文档组件绑定与 118 个 runtime 组件门禁一致。by @devhxj
 
 Other Changes
 
 - Extend the public API compatibility gate to host, development reload, `Jazor.Admin`, `Jazor.Vue`, and published ECMAScript binding assemblies. CI now blocks when the candidate baseline is missing; the retained snapshot is `docs/03-guides/public-api-baseline.snapshot.md`. by @devhxj
 - Add an isolated-output Release main test lane to Quality Gates and require Pinia ecosystem verification for manual publishing as well as tag publishing; the current Emit suite is `201/201`. by @devhxj
 - Current TDesign and continuous browser gates consistently use Google Chrome; historical release entries are unchanged. by @devhxj
+- Correct the TDesign 1.20.7 declaration snapshot count drift so the regenerated metadata remains aligned with the 120/120 documented bindings and 118 runtime component gate. by @devhxj
 
 ## 2026-09-11
 
