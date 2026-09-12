@@ -22,6 +22,7 @@ on:
       - 'scripts/csharp/inspect-public-api.cs'
       - 'scripts/csharp/compare-public-api.cs'
       - 'scripts/csharp/verify-typed-bootstrap.cs'
+      - 'scripts/csharp/verify-vue-binding-contracts.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -39,6 +40,7 @@ on:
       - 'scripts/csharp/inspect-public-api.cs'
       - 'scripts/csharp/compare-public-api.cs'
       - 'scripts/csharp/verify-typed-bootstrap.cs'
+      - 'scripts/csharp/verify-vue-binding-contracts.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -155,8 +157,10 @@ jobs:
     name: Typed bootstrap consumer
     runs-on: windows-latest
     steps:
-      - name: Checkout
+      - name: Checkout tested ref
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.ref }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -175,6 +179,24 @@ jobs:
           path: artifacts/quality/typed-bootstrap/
           if-no-files-found: error
           retention-days: 14
+
+  binding-contracts:
+    name: Vue binding contract gate
+    runs-on: windows-latest
+    steps:
+      - name: Checkout tested ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Verify generated binding contracts
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/verify-vue-binding-contracts.cs
 
   mainline:
     name: Main test lane
