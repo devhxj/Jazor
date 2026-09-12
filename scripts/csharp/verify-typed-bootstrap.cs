@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
 var port = AllocateLoopbackPort();
+var reportPath = GetOption("--report");
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -121,6 +122,19 @@ try
     Console.WriteLine("Typed bootstrap consumer verification passed.");
     Console.WriteLine(
         "GET bootstrap, stale 409 refresh, validation 422, draft retention, and successful commit were verified.");
+    if (reportPath is not null)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportPath))!);
+        await File.WriteAllTextAsync(
+            reportPath,
+            "# Typed bootstrap verification\n\n" +
+            "- GET bootstrap: passed\n" +
+            "- stale business version (409): passed\n" +
+            "- validation failure (422): passed\n" +
+            "- client draft retention: passed\n" +
+            "- successful commit/version increment: passed\n");
+        Console.WriteLine($"Wrote typed bootstrap report: {Path.GetFullPath(reportPath)}");
+    }
 }
 finally
 {
@@ -159,6 +173,12 @@ static void Ensure(bool condition, string message)
 {
     if (!condition)
         throw new InvalidOperationException(message);
+}
+
+string? GetOption(string name)
+{
+    var index = Array.IndexOf(args, name);
+    return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
 }
 
 sealed class EditorService

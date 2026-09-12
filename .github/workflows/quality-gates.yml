@@ -20,6 +20,7 @@ on:
       - 'scripts/csharp/verify-*-coverage.cs'
       - 'scripts/csharp/inspect-public-api.cs'
       - 'scripts/csharp/compare-public-api.cs'
+      - 'scripts/csharp/verify-typed-bootstrap.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -35,6 +36,7 @@ on:
       - 'scripts/csharp/verify-*-coverage.cs'
       - 'scripts/csharp/inspect-public-api.cs'
       - 'scripts/csharp/compare-public-api.cs'
+      - 'scripts/csharp/verify-typed-bootstrap.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -144,5 +146,30 @@ jobs:
         with:
           name: public-api-${{ github.run_attempt }}
           path: artifacts/quality/public-api/
+          if-no-files-found: error
+          retention-days: 14
+
+  typed-bootstrap:
+    name: Typed bootstrap consumer
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Verify typed bootstrap contract
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/verify-typed-bootstrap.cs -- --report artifacts/quality/typed-bootstrap/report.md
+
+      - name: Upload typed bootstrap evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: typed-bootstrap-${{ github.run_attempt }}
+          path: artifacts/quality/typed-bootstrap/
           if-no-files-found: error
           retention-days: 14
