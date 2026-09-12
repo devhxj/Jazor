@@ -3,9 +3,11 @@
 
 using System.Text.Json;
 
+string? sourceForSarif = null;
 try
 {
 var options = ChainOptions.Parse(args);
+sourceForSarif = options.Source;
 var source = RequireFile(options.Source, "source .razor");
 var generated = RequireFile(options.Generated, "generated C#");
 var artifact = RequireFile(options.Artifact, "render-function artifact");
@@ -33,6 +35,10 @@ var report = new ChainReport(
             sourceMap.SourcesContentCount,
             mappedSource));
 
+var sarifPath = GetOptionValue(args, "--sarif");
+if (sarifPath is not null)
+    WriteSarif(sarifPath, report, null, sourceForSarif);
+
 if (options.Json)
 {
     Console.WriteLine(JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
@@ -58,6 +64,9 @@ if (map is not null && !hasMapReference)
 catch (Exception exception)
 {
     Console.Error.WriteLine(exception.Message);
+    var sarifPath = GetOptionValue(args, "--sarif");
+    if (sarifPath is not null)
+        WriteSarif(sarifPath, null, exception, sourceForSarif);
     Environment.ExitCode = 1;
 }
 
@@ -80,6 +89,72 @@ static string NormalizePath(string path)
 static bool PathEndsWith(string path, string suffix)
     => path.Equals(suffix, StringComparison.OrdinalIgnoreCase) ||
        path.EndsWith('/' + suffix.TrimStart('/'), StringComparison.OrdinalIgnoreCase);
+
+static string? GetOptionValue(string[] arguments, string option)
+{
+    var index = Array.IndexOf(arguments, option);
+    return index >= 0 && index + 1 < arguments.Length ? arguments[index + 1] : null;
+}
+
+static void WriteSarif(string path, ChainReport? report, Exception? error, string? source)
+{
+    var fullPath = Path.GetFullPath(path);
+    Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+    var results = error is null
+        ? Array.Empty<object>()
+        : new object[]
+        {
+            new
+            {
+                ruleId = error.Message.Contains("source map", StringComparison.OrdinalIgnoreCase) ||
+                         error.Message.Contains("sourceMappingURL", StringComparison.OrdinalIgnoreCase)
+                    ? "JAZORVGA026"
+                    : "JAZORVGA020",
+                level = "error",
+                message = new { text = error.Message },
+                helpUri = "https://github.com/devhxj/Jazor/blob/main/docs/03-guides/razorvue-diagnostic-matrix.md",
+                locations = (report?.Source ?? source) is null
+                    ? Array.Empty<object>()
+                    : new object[]
+                    {
+                        new
+                        {
+                            physicalLocation = new
+                            {
+                                artifactLocation = new { uri = report?.Source ?? source },
+                                region = new { startLine = 1 }
+                            }
+                        }
+                    }
+            }
+        };
+    var payload = new Dictionary<string, object?>
+    {
+        ["$schema"] = "https://json.schemastore.org/sarif-2.1.0.json",
+        ["version"] = "2.1.0",
+        ["runs"] = new[]
+        {
+            new
+            {
+                tool = new
+                {
+                    driver = new
+                    {
+                        name = "inspect-razorvue-chain",
+                        informationUri = "https://github.com/devhxj/Jazor",
+                        rules = new[]
+                        {
+                            new { id = "JAZORVGA020", helpUri = "https://github.com/devhxj/Jazor/blob/main/docs/03-guides/razorvue-diagnostic-matrix.md" },
+                            new { id = "JAZORVGA026", helpUri = "https://github.com/devhxj/Jazor/blob/main/docs/03-guides/razorvue-diagnostic-matrix.md" }
+                        }
+                    }
+                },
+                results
+            }
+        }
+    };
+    File.WriteAllText(fullPath, JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine);
+}
 
 static SourceMapData ReadSourceMap(string path)
 {
@@ -139,8 +214,9 @@ internal sealed record ChainOptions(
                 case "--artifact": artifact = ReadValue(args, ref index); break;
                 case "--map": map = ReadValue(args, ref index); break;
                 case "--json": json = true; break;
+                case "--sarif": _ = ReadValue(args, ref index); break;
                 case "--help":
-                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/inspect-razorvue-chain.cs -- --source page.razor --generated page.razor.g.cs --artifact page.mjs [--map page.mjs.map] [--json]");
+                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/inspect-razorvue-chain.cs -- --source page.razor --generated page.razor.g.cs --artifact page.mjs [--map page.mjs.map] [--json] [--sarif report.sarif]");
                     Environment.Exit(0);
                     break;
                 default: throw new InvalidOperationException("Unknown argument: " + args[index]);

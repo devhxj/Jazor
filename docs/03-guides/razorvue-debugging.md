@@ -13,6 +13,8 @@ dotnet run --file scripts/csharp/inspect-razorvue-chain.cs -- \
 
 脚本输出四段稳定信息：生成 C# 是否包含 `BuildRenderTree`、模块是否包含 `sourceMappingURL`、source map 的 source 列表以及 `.razor` 是否被映射。提供 `--map` 时，缺少源映射或模块引用会以非零退出码失败；这表示 Debug 交付不完整，应修复产物管线，而不是在应用侧改写路径。
 
+需要接入 IDE 或代码扫描器时，可以额外传入 `--sarif report.sarif`。脚本会生成 SARIF 2.1.0：成功链路的 `results` 为空；断链会保留稳定的 `JAZORVGA020`/`JAZORVGA026` rule ID、HelpLink 和 `.razor` 源位置，便于在 Problems 面板中直接定位。
+
 脚本只读取文件，不改变生成目录。CI 或本地诊断应保存 JSON 输出、提交 SHA、SDK 版本和实际产物路径，便于把作者源位置与浏览器错误对应起来。Release bundle 没有逐模块 source map 时，继续使用 Debug profile 定位 lowering 问题，再用 Release consumer 门禁验证最终交付。
 
 相关入口：
