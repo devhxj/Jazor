@@ -84,7 +84,8 @@ if (options.SkipPush)
     return;
 }
 
-var apiKey = ResolveApiKey(options.ApiKey);
+if (string.IsNullOrWhiteSpace(options.ApiKey))
+    throw new InvalidOperationException("Package push requires an explicit --api-key. The repository release workflow uses NuGet trusted publishing and does not call this local push path.");
 foreach (var packageFile in packedPackageFiles
              .GroupBy(static file => file.FullName, StringComparer.OrdinalIgnoreCase)
              .Select(static group => group.First()))
@@ -99,27 +100,11 @@ foreach (var packageFile in packedPackageFiles
         "--skip-duplicate"
     };
 
-    if (!string.IsNullOrWhiteSpace(apiKey))
-    {
-        pushArguments.Add("--api-key");
-        pushArguments.Add(apiKey);
-    }
+    pushArguments.Add("--api-key");
+    pushArguments.Add(options.ApiKey);
 
     await ScriptHelpers.RunDotNetAsync(pushArguments, repoRoot, dotnetCliHome);
     Console.WriteLine("Published package: " + packageFile.FullName);
-}
-
-static string ResolveApiKey(string? explicitApiKey)
-{
-    if (!string.IsNullOrWhiteSpace(explicitApiKey))
-    {
-        return explicitApiKey;
-    }
-
-    return Environment.GetEnvironmentVariable("NUGET_API_KEY")
-        ?? Environment.GetEnvironmentVariable("NUGET_API_KEY", EnvironmentVariableTarget.User)
-        ?? Environment.GetEnvironmentVariable("NUGET_API_KEY", EnvironmentVariableTarget.Machine)
-        ?? string.Empty;
 }
 
 static FileInfo GetMostRecentPackageFile(string outputDirectory, string packageId)
@@ -520,7 +505,7 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("Release note:");
         Console.WriteLine("  Local use of this script should stay on --skip-push for package verification.");
         Console.WriteLine("  Official NuGet publishing is performed by .github/workflows/nuget-publish-ref.yml from a pushed v* tag or workflow_dispatch run.");
-        Console.WriteLine("  Do not require a local NUGET_API_KEY for the repository release workflow.");
+        Console.WriteLine("  The repository release workflow uses NuGet trusted publishing; this local script does not probe NUGET_API_KEY.");
     }
 }
 
