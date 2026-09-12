@@ -13,6 +13,7 @@
 - 当前 TDesign 和持续浏览器门禁统一使用 Google Chrome；历史版本记录保持不变。by @devhxj
 - 修正 TDesign 1.20.7 声明快照计数漂移，重新生成后保持 120/120 文档组件绑定与 118 个 runtime 组件门禁一致。by @devhxj
 - Quality Gates 新增独立 Vue binding contract job，发布候选会强制检查三套生成快照、manifest 与上游版本一致性。by @devhxj
+- Vue binding contract job 现在上传完整检查日志，失败运行也保留可追溯证据。by @devhxj
 
 Other Changes
 
@@ -21,6 +22,7 @@ Other Changes
 - Current TDesign and continuous browser gates consistently use Google Chrome; historical release entries are unchanged. by @devhxj
 - Correct the TDesign 1.20.7 declaration snapshot count drift so the regenerated metadata remains aligned with the 120/120 documented bindings and 118 runtime component gate. by @devhxj
 - Add a dedicated Vue binding contract job to Quality Gates so release candidates enforce generated snapshot, manifest, and upstream version consistency across all three binding libraries. by @devhxj
+- Upload the complete Vue binding contract log, including failed runs, as traceable CI evidence. by @devhxj
 
 ## 2026-09-11
 

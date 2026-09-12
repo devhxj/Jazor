@@ -196,7 +196,20 @@ jobs:
 
       - name: Verify generated binding contracts
         shell: pwsh
-        run: dotnet run --file ./scripts/csharp/verify-vue-binding-contracts.cs
+        run: |
+          New-Item -ItemType Directory -Path artifacts/quality/binding-contracts -Force | Out-Null
+          dotnet run --file ./scripts/csharp/verify-vue-binding-contracts.cs 2>&1 |
+            Tee-Object -FilePath artifacts/quality/binding-contracts/report.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload binding contract evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: binding-contracts-${{ github.run_attempt }}
+          path: artifacts/quality/binding-contracts/
+          if-no-files-found: error
+          retention-days: 14
 
   mainline:
     name: Main test lane
