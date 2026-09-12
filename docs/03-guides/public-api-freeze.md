@@ -95,7 +95,7 @@ dotnet run --file scripts/csharp/inspect-public-api.cs -- --output artifacts/api
 dotnet run --file scripts/csharp/compare-public-api.cs -- --current artifacts/api/public-api.md --baseline artifacts/api/public-api-baseline.md --output artifacts/api/public-api-compatibility.md
 ```
 
-首次建立候选快照时可以省略 `--baseline`，脚本会成功生成“baseline missing”报告；这不代表兼容性已经通过。存在基线时，新增 API 会列在报告中，删除或签名变化会使命令失败。
+首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，删除或签名变化会使命令失败。快照覆盖宿主、开发 reload、Jazor.Admin、Jazor/Jazor.Vue 以及已发布 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common、Contract、RazorVue 和 Blazor 程序集不计入作者 API 冻结面。
 
 ## 变更规则
 

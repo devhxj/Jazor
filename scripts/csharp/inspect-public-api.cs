@@ -14,19 +14,32 @@ while (!File.Exists(Path.Combine(repoRoot, "Jazor.slnx")))
 
 var configuration = GetOption("--configuration") ?? "Debug";
 var outputPath = GetOption("--output");
-AssemblyLoadContext.Default.Resolving += static (_, name) =>
+var assemblyPaths = new Dictionary<string, string>(StringComparer.Ordinal)
 {
+    ["Jazor.AspNetCore"] = "net11.0", ["Jazor.AspNetCore.Dev"] = "net11.0", ["Jazor.Admin"] = "net11.0",
+    ["ECMAScript"] = "net11.0", ["ECMAScript.ElementPlus"] = "net11.0", ["ECMAScript.Pinia"] = "net11.0",
+    ["ECMAScript.Pinia.Testing"] = "net11.0", ["ECMAScript.Style"] = "net11.0", ["ECMAScript.TDesign"] = "net11.0",
+    ["ECMAScript.Vue"] = "net11.0", ["ECMAScript.Vue.Devtools"] = "net11.0", ["ECMAScript.VueDataUi"] = "net11.0",
+    ["ECMAScript.VueRoute"] = "net11.0", ["ECMAScript.Vuetify"] = "net11.0", ["ECMAScript.VuIcons"] = "net11.0",
+    ["Jazor"] = "net11.0", ["Jazor.Vue"] = "net11.0"
+};
+var assemblies = assemblyPaths.Select(pair => Path.Combine(repoRoot, "src", pair.Key, "bin", configuration, pair.Value, pair.Key + ".dll"));
+var preferredPaths = assemblyPaths.ToDictionary(pair => pair.Key, pair => Path.Combine(repoRoot, "src", pair.Key, "bin", configuration, pair.Value, pair.Key + ".dll"), StringComparer.Ordinal);
+AssemblyLoadContext.Default.Resolving += (_, name) =>
+{
+    if (name.Name is not null && preferredPaths.TryGetValue(name.Name, out var preferred) && File.Exists(preferred))
+        return AssemblyLoadContext.Default.LoadFromAssemblyPath(preferred);
+    var local = Directory.GetFiles(Path.Combine(repoRoot, "src"), name.Name + ".dll", SearchOption.AllDirectories)
+        .Where(static path => path.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(static path => path.Contains(Path.DirectorySeparatorChar + ".tmp" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        .FirstOrDefault();
+    if (local is not null)
+        return AssemblyLoadContext.Default.LoadFromAssemblyPath(local);
     var sharedRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "shared", "Microsoft.AspNetCore.App");
     var candidate = Directory.Exists(sharedRoot)
         ? Directory.GetDirectories(sharedRoot).OrderByDescending(static path => path, StringComparer.Ordinal).Select(path => Path.Combine(path, name.Name + ".dll")).FirstOrDefault(File.Exists)
         : null;
     return candidate is null ? null : AssemblyLoadContext.Default.LoadFromAssemblyPath(candidate);
-};
-var assemblies = new[]
-{
-    Path.Combine(repoRoot, "src", "Jazor.AspNetCore", "bin", configuration, "net11.0", "Jazor.AspNetCore.dll"),
-    Path.Combine(repoRoot, "src", "Jazor.AspNetCore.Dev", "bin", configuration, "net11.0", "Jazor.AspNetCore.Dev.dll"),
-    Path.Combine(repoRoot, "src", "Jazor.Admin", "bin", configuration, "net11.0", "Jazor.Admin.dll")
 };
 
 var builder = new StringBuilder();
@@ -44,6 +57,12 @@ foreach (var assemblyPath in assemblies.OrderBy(static path => path, StringCompa
     {
         exportedTypes = assembly.GetExportedTypes();
     }
+    catch (TypeLoadException exception)
+    {
+        builder.AppendLine($"> Skipped: exported type could not be resolved ({exception.TypeName ?? exception.Message}).");
+        builder.AppendLine();
+        continue;
+    }
     catch (FileNotFoundException exception)
     {
         builder.AppendLine($"> Skipped: dependency could not be resolved ({exception.FileName}).");
@@ -58,9 +77,9 @@ foreach (var assemblyPath in assemblies.OrderBy(static path => path, StringCompa
         builder.AppendLine($"- {FormatType(type)}");
         foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
                      .Where(static member => member.MemberType is MemberTypes.Constructor or MemberTypes.Method or MemberTypes.Property or MemberTypes.Field or MemberTypes.Event)
-                     .OrderBy(static member => member.MemberType).ThenBy(static member => member.ToString(), StringComparer.Ordinal))
+                     .OrderBy(static member => member.MemberType).ThenBy(FormatMember, StringComparer.Ordinal))
         {
-            builder.AppendLine($"  - {member}");
+            builder.AppendLine($"  - {FormatMember(member)}");
         }
     }
 
@@ -87,3 +106,10 @@ string? GetOption(string name)
 
 static string FormatType(Type type)
     => type.IsEnum ? $"enum {type.FullName}" : $"type {type.FullName}";
+
+static string FormatMember(MemberInfo member)
+{
+    try { return member.ToString() ?? member.Name; }
+    catch (FileNotFoundException) { return member.Name; }
+    catch (TypeLoadException) { return member.Name; }
+}

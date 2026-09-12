@@ -138,7 +138,7 @@ jobs:
 
       - name: Check for checked-in candidate baseline
         shell: pwsh
-        run: dotnet run --file ./scripts/csharp/compare-public-api.cs -- --current artifacts/quality/public-api/public-api.md --baseline artifacts/quality/public-api/public-api-baseline.md --output artifacts/quality/public-api/public-api-compatibility.md
+        run: dotnet run --file ./scripts/csharp/compare-public-api.cs -- --current artifacts/quality/public-api/public-api.md --baseline docs/03-guides/public-api-baseline.snapshot.md --output artifacts/quality/public-api/public-api-compatibility.md
 
       - name: Upload public API evidence
         if: ${{ always() }}

@@ -4,6 +4,7 @@ using System.Text;
 
 var currentPath = GetOption("--current") ?? throw new ArgumentException("Missing --current <path>.");
 var baselinePath = GetOption("--baseline");
+var allowMissingBaseline = args.Contains("--allow-missing-baseline", StringComparer.Ordinal);
 var current = ReadSnapshot(currentPath);
 var outputPath = GetOption("--output");
 
@@ -12,6 +13,8 @@ if (baselinePath is null || !File.Exists(baselinePath))
     var missingReport = $"# Public API compatibility report\n\nCurrent: `{currentPath}`\n\n- Current entries: {current.Count}\n- Baseline entries: unavailable\n- Compatibility: not established\n\nThe candidate snapshot must be retained as the next baseline before 1.0 freeze.\n";
     WriteReport(missingReport, outputPath);
     Console.WriteLine($"Public API baseline missing; current snapshot contains {current.Count} entries.");
+    if (!allowMissingBaseline)
+        throw new InvalidOperationException("Public API baseline is required. Generate and retain a candidate baseline, or pass --allow-missing-baseline only when creating one locally.");
     return;
 }
 
