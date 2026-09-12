@@ -211,9 +211,9 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "needs: [verify-pinia, verify-quality]");
 		StringAssert.Contains(source, "uses: ./.github/workflows/quality-gates.yml");
 		StringAssert.Contains(source, "release_ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref_name }}");
-		// Both release entrypoints require coverage success, including when the Pinia push-only job is skipped.
-		StringAssert.Contains(source, "!cancelled() && needs.verify-quality.result == 'success' && (");
-		StringAssert.Contains(source, "github.event_name != 'push' || needs.verify-pinia.result == 'success'");
+		// Every release entrypoint requires both the full quality lane and the reusable Pinia lane.
+		StringAssert.Contains(source, "!cancelled() && needs.verify-quality.result == 'success' && needs.verify-pinia.result == 'success'");
+		Assert.IsFalse(source.Contains("github.event_name != 'push' || needs.verify-pinia.result == 'success'", StringComparison.Ordinal));
 		StringAssert.Contains(source, "id: release_ref");
 		StringAssert.Contains(source, "$releaseRef = '${{ github.ref_name }}'");
 		StringAssert.Contains(source, "--package jazor `");
