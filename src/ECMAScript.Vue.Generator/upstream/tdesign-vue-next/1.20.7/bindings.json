@@ -2,7 +2,7 @@
   "package": "tdesign-vue-next",
   "version": "1.20.7",
   "componentCount": 120,
-  "declarationCount": 940,
+  "declarationCount": 938,
   "components": [
     {
       "tag": "icon",
