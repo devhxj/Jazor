@@ -46,7 +46,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 ## 1.0 冻结前状态
 
-公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型没有计划中的重命名；但在发布候选 ref 上重新生成并通过 API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据前，仍不将 1.0 标记为可发布。冻结状态必须由一组可追溯的门禁结果和对应 `1.0.0-rc.1` 或 `1.0.0` CHANGELOG 条目共同确认。
+公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型没有计划中的重命名；`verify-release-candidate.cs` 与手动 `Release Candidate Verification` workflow 已提供统一候选验收入口，在发布候选 ref 上重新生成并通过 API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据前，仍不将 1.0 标记为可发布。冻结状态必须由一组可追溯的门禁结果和对应 `1.0.0-rc.1` 或 `1.0.0` CHANGELOG 条目共同确认。
 
 ## 质量门槛与验证
 

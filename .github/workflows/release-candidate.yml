@@ -1,0 +1,47 @@
+name: Release Candidate Verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_ref:
+        description: "Candidate ref to verify, for example v1.0.0-rc.1"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify ${{ inputs.release_ref }}
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout candidate ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref }}
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify release candidate
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/verify-release-candidate.cs -- --tag '${{ inputs.release_ref }}'
+
+      - name: Upload release candidate evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-${{ github.run_attempt }}
+          path: artifacts/release-candidate/
+          if-no-files-found: error
+          retention-days: 30

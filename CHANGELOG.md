@@ -19,6 +19,8 @@
 - Wiki Chrome browser 与发布 consumer 现以 Node 20/22 矩阵持续验证；发布打包流程仍使用 Node 22。by @devhxj
 - `inspect-razorvue-chain.cs` 新增 SARIF 2.1.0 输出，断链诊断可由 IDE 直接消费稳定 ID、HelpLink 和作者源位置。by @devhxj
 - 发布 workflow 在 NuGet 打包前强制校验带日期的 CHANGELOG 版本章节，避免无整理的自动生成说明进入正式发布。by @devhxj
+- 新增 `verify-release-candidate.cs` 与手动 Release Candidate workflow，统一归档 1.0 候选的 API、质量、包形状和 SPA/SSR consumer 证据。by @devhxj
+- 发布候选覆盖率报告现在写入候选专用目录，并连同工具链矩阵一起归档，避免 RC 证据散落在共享质量目录。by @devhxj
 
 Other Changes
 
@@ -33,6 +35,8 @@ Other Changes
 - Run Wiki Chrome browser and publish consumer checks across a Node 20/22 matrix; the packaging workflow remains on Node 22. by @devhxj
 - Add SARIF 2.1.0 output to `inspect-razorvue-chain.cs`, allowing IDEs to consume stable IDs, HelpLinks, and authored source locations for broken-chain diagnostics. by @devhxj
 - Require a dated, non-empty CHANGELOG version section before NuGet packaging so uncurated generated notes cannot enter an official release. by @devhxj
+- Add `verify-release-candidate.cs` and a manual Release Candidate workflow to archive API, quality, package-shape, and SPA/SSR consumer evidence in one 1.0 candidate run. by @devhxj
+- Write release-candidate coverage reports under the candidate directory and archive them with the toolchain matrix so RC evidence is not scattered across the shared quality directory. by @devhxj
 
 ## 2026-09-11
 

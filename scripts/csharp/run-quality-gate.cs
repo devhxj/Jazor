@@ -3,17 +3,20 @@
 using System.Diagnostics;
 using System.Text;
 
-if (args.Length != 1 || args[0] is not ("compiler" or "razorvue" or "vue-bindings"))
+if (args.Length < 1 || args[0] is not ("compiler" or "razorvue" or "vue-bindings"))
 {
-    Console.Error.WriteLine("Usage: dotnet run --file scripts/csharp/run-quality-gate.cs -- <compiler|razorvue|vue-bindings>");
+    Console.Error.WriteLine("Usage: dotnet run --file scripts/csharp/run-quality-gate.cs -- <compiler|razorvue|vue-bindings> [--output-directory DIR]");
     return 1;
 }
 
 var gate = args[0];
+var outputDirectory = ReadOption(args, "--output-directory");
 var script = gate == "vue-bindings" ? "verify-vue-binding-coverage.cs" : $"verify-{gate}-coverage.cs";
 // The working directory owns the tested sources, even when CI loads this tool from a different revision.
 var repoRoot = Directory.GetCurrentDirectory();
-var resultRoot = Path.Combine(repoRoot, "artifacts", "quality", gate, Guid.NewGuid().ToString("N"));
+var resultRoot = outputDirectory is null
+    ? Path.Combine(repoRoot, "artifacts", "quality", gate, Guid.NewGuid().ToString("N"))
+    : Path.GetFullPath(Path.IsPathRooted(outputDirectory) ? outputDirectory : Path.Combine(repoRoot, outputDirectory));
 Directory.CreateDirectory(resultRoot);
 using var log = new StreamWriter(Path.Combine(resultRoot, "gate.log"), append: false, Encoding.UTF8) { AutoFlush = true };
 var metrics = new List<string>();
@@ -72,6 +75,12 @@ if (!string.IsNullOrEmpty(githubSummary))
     await File.AppendAllTextAsync(githubSummary, summary.ToString());
 Console.WriteLine($"Evidence: {resultRoot}");
 return exitCode;
+
+static string? ReadOption(string[] arguments, string option)
+{
+    var index = Array.IndexOf(arguments, option);
+    return index >= 0 && index + 1 < arguments.Length ? arguments[index + 1] : null;
+}
 
 async Task CopyOutputAsync(StreamReader reader, TextWriter destination)
 {

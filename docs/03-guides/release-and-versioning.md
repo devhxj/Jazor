@@ -22,6 +22,8 @@
 2. 当时的全部质量门禁通过，门槛以[当前状态](../04-roadmap/current-status.md)的门槛表为准。
 3. CHANGELOG 完整覆盖全部已发布版本，且本规则已生效。
 
+发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、包形状和 SPA/SSR consumer 证据。它通过后才进入正式发布工作流。
+
 `1.0.0` 发布之后，通道语义不再有例外：`MINOR` 只做新增，`PATCH` 只做修复，一切破坏性变更走 `MAJOR`。本节在 `1.0.0` 发布后收敛删除。
 
 ## 发版节奏

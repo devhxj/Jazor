@@ -79,6 +79,14 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 5. 在 CHANGELOG 的 `1.0.0-rc.1` 或 `1.0.0` 条目中写明冻结日期、迁移说明（如无迁移则明确写“无已知迁移”）和全部门禁链接。
 6. 只有以上证据全部成功，才把本文状态改为“已冻结”，再决定是否创建 `v1.0.0` tag。
 
+候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
+
+```bash
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-rc.1
+```
+
+脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only stage1,stage2` 只适用于局部复核，正式候选必须运行完整序列。
+
 当前验证记录：Emit 套件 `201/201` 通过；`emit-consumer` 消费者矩阵 `47/47` 通过。两者必须在发布候选 ref 上分别执行，不能只运行快速 lane。
 
 机器快照可在构建后生成：
