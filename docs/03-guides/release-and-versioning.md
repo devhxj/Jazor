@@ -60,6 +60,7 @@ SPA 与 SSR 发布消费者门禁由发布工作流在上传 NuGet 之前自动�
 ## 发布机制备忘
 
 - 官方发布唯一入口是 `.github/workflows/nuget-publish-ref.yml`：push `v*` tag 或 `workflow_dispatch` 触发，GitHub Actions 持有 trusted publishing 凭据。tag 名去掉 `v` 前缀即为包版本。
+- 发布 workflow 在打包前运行 `scripts/csharp/verify-release-notes.cs`，要求目标 tag 在带日期的 `CHANGELOG.md` 中拥有非空版本章节；缺少整理后的章节会阻止发布。
 - 本地 `scripts/csharp/publish-nuget.cs` 仅用于打包验证，必须携带 `--skip-push`。
 - 不要求、不探测本地 `NUGET_API_KEY`。
 

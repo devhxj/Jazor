@@ -36,6 +36,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `generate-jazoradmin-brand-assets.cs` | 再生成或检查 JazorAdmin 本地品牌图标 |
 | `publish-nuget.cs` | 本地打包 NuGet 验证；正式发布只走 tag 触发的 NuGet 工作流，本地必须 `--skip-push`；脚本不探测环境变量中的 `NUGET_API_KEY` |
 | `release-notes.cs` | 为 tag 输出发布说明：优先取 CHANGELOG 对应版本章节，否则按 tag 区间提交生成 |
+| `verify-release-notes.cs` | 在发布前确认目标 tag 存在带日期的 `CHANGELOG.md` 版本章节和非空双语说明 |
 
 覆盖率脚本默认把 TRX、Cobertura 和同轮临时结果写入仓库根目录的
 `test/coverage/<gate>/`；`test/` 是本地生成目录，不应把测试产物写到仓库外的盘符根目录。

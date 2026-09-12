@@ -82,6 +82,10 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Verify curated release notes
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/verify-release-notes.cs -- --tag '${{ steps.release_ref.outputs.release_ref }}'
+
       - name: Pack packages
         shell: pwsh
         run: |

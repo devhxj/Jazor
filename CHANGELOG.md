@@ -18,6 +18,7 @@
 - Quality Gates 每周归档 RazorVue clean/incremental 构建趋势；benchmark 同时生成 JSON 与 Markdown 摘要，持续观测不等同于宣称优化收益。by @devhxj
 - Wiki Chrome browser 与发布 consumer 现以 Node 20/22 矩阵持续验证；发布打包流程仍使用 Node 22。by @devhxj
 - `inspect-razorvue-chain.cs` 新增 SARIF 2.1.0 输出，断链诊断可由 IDE 直接消费稳定 ID、HelpLink 和作者源位置。by @devhxj
+- 发布 workflow 在 NuGet 打包前强制校验带日期的 CHANGELOG 版本章节，避免无整理的自动生成说明进入正式发布。by @devhxj
 
 Other Changes
 
@@ -31,6 +32,7 @@ Other Changes
 - Archive weekly RazorVue clean/incremental build trends in Quality Gates; the benchmark now emits JSON and Markdown summaries, preserving observation without claiming an optimization gain. by @devhxj
 - Run Wiki Chrome browser and publish consumer checks across a Node 20/22 matrix; the packaging workflow remains on Node 22. by @devhxj
 - Add SARIF 2.1.0 output to `inspect-razorvue-chain.cs`, allowing IDEs to consume stable IDs, HelpLinks, and authored source locations for broken-chain diagnostics. by @devhxj
+- Require a dated, non-empty CHANGELOG version section before NuGet packaging so uncurated generated notes cannot enter an official release. by @devhxj
 
 ## 2026-09-11
 
