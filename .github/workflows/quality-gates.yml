@@ -17,6 +17,7 @@ on:
     paths:
       - 'src/**'
       - 'scripts/csharp/run-quality-gate.cs'
+      - 'scripts/csharp/test-dotnet.cs'
       - 'scripts/csharp/verify-*-coverage.cs'
       - 'scripts/csharp/inspect-public-api.cs'
       - 'scripts/csharp/compare-public-api.cs'
@@ -33,6 +34,7 @@ on:
     paths:
       - 'src/**'
       - 'scripts/csharp/run-quality-gate.cs'
+      - 'scripts/csharp/test-dotnet.cs'
       - 'scripts/csharp/verify-*-coverage.cs'
       - 'scripts/csharp/inspect-public-api.cs'
       - 'scripts/csharp/compare-public-api.cs'
@@ -173,3 +175,22 @@ jobs:
           path: artifacts/quality/typed-bootstrap/
           if-no-files-found: error
           retention-days: 14
+
+  mainline:
+    name: Main test lane
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Run main test lane
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/test-dotnet.cs -- --configuration Release --base-output-path artifacts/out/mainline/ --base-intermediate-output-path artifacts/obj/mainline/

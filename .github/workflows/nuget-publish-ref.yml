@@ -23,7 +23,6 @@ permissions:
 
 jobs:
   verify-pinia:
-    if: ${{ github.event_name == 'push' }}
     uses: ./.github/workflows/pinia-verify.yml
 
   verify-quality:
@@ -33,7 +32,7 @@ jobs:
 
   publish:
     needs: [verify-pinia, verify-quality]
-    if: ${{ !cancelled() && needs.verify-quality.result == 'success' && (github.event_name != 'push' || needs.verify-pinia.result == 'success') }}
+    if: ${{ !cancelled() && needs.verify-quality.result == 'success' && needs.verify-pinia.result == 'success' }}
     runs-on: windows-latest
     environment: production
     env:
