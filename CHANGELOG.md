@@ -2,6 +2,22 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-12
+
+### 未发布 | Unreleased
+
+#### 其他变更
+
+- 公共 API 兼容性门禁现在覆盖宿主、开发 reload、`Jazor.Admin`、`Jazor.Vue` 与已发布 ECMAScript 绑定程序集；缺失候选基线会阻断 CI，候选快照保存在 `docs/03-guides/public-api-baseline.snapshot.md`。by @devhxj
+- Quality Gates 新增隔离输出的 Release 主线测试，并要求手动发布流程同样通过 Pinia 生态验证；Emit 当前套件为 `201/201`。by @devhxj
+- 当前 TDesign 和持续浏览器门禁统一使用 Google Chrome；历史版本记录保持不变。by @devhxj
+
+Other Changes
+
+- Extend the public API compatibility gate to host, development reload, `Jazor.Admin`, `Jazor.Vue`, and published ECMAScript binding assemblies. CI now blocks when the candidate baseline is missing; the retained snapshot is `docs/03-guides/public-api-baseline.snapshot.md`. by @devhxj
+- Add an isolated-output Release main test lane to Quality Gates and require Pinia ecosystem verification for manual publishing as well as tag publishing; the current Emit suite is `201/201`. by @devhxj
+- Current TDesign and continuous browser gates consistently use Google Chrome; historical release entries are unchanged. by @devhxj
+
 ## 2026-09-11
 
 ### Jazor 0.50.0
