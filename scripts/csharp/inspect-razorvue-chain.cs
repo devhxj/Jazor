@@ -113,6 +113,13 @@ static void WriteSarif(string path, ChainReport? report, Exception? error, strin
                 level = "error",
                 message = new { text = error.Message },
                 helpUri = "https://github.com/devhxj/Jazor/blob/main/docs/03-guides/razorvue-diagnostic-matrix.md",
+                properties = new
+                {
+                    suggestion = error.Message.Contains("source map", StringComparison.OrdinalIgnoreCase) ||
+                                 error.Message.Contains("sourceMappingURL", StringComparison.OrdinalIgnoreCase)
+                        ? "生成同一 Debug 构建的 .mjs 与 .mjs.map，并确认模块包含 sourceMappingURL。"
+                        : "保留完整构建日志，确认 generated C#、render-function module 与 source map 来自同一构建。"
+                },
                 locations = (report?.Source ?? source) is null
                     ? Array.Empty<object>()
                     : new object[]
