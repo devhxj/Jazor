@@ -37,7 +37,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 | Razor-to-Vue | 4,000 个通过场景、90% 行覆盖率、94% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 生态绑定 | 每个目标 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
 | Vue 绑定版本漂移 | 三套生成器 `--check`、上游快照版本、原始注释说明和 manifest identity | `dotnet run --file scripts/csharp/verify-vue-binding-contracts.cs` |
-| RazorVue 构建性能 | clean、incremental、HMR、Release 的可重复时间基线 | `dotnet run --file scripts/csharp/benchmark-razorvue-build.cs` |
+| RazorVue 构建性能 | clean、incremental、HMR、Release 的可重复时间基线；clean/incremental 另记录模块/source map/manifest/Emit 输出的原始与 gzip 体积和增量产物变化 | `dotnet run --file scripts/csharp/benchmark-razorvue-build.cs` |
 
 门槛是验证规则，不等同于任一历史报告中的固定通过数量。对当前结果的判断应运行相应脚本或测试命令。
 

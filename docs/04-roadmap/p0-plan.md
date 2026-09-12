@@ -30,7 +30,7 @@ P0 包含四条相互衔接的工作线：
 | --- | --- | --- |
 | Golden Path | `samples/RazorVue.Authoring` 已覆盖 TDesign 表单、表格、slot、绑定、路由和 Release/browser smoke；`samples/JazorAdmin` 提供更大规模页面。 | 把推荐入口、依赖选择、API client 形状和最小 CRUD 步骤整理成一条新项目可复制的模板，并补齐独立 package consumer 说明。 |
 | 诊断闭环 | `JAZORVGA020`-`026`、`JAZORVCA001`-`011`、HelpLink、mapped source location 和 `inspect-razorvue-chain.cs` 已存在。 | 建立一份按作者场景组织的诊断矩阵，补齐每个高频错误的最小替代示例，并验证源码项目与 package consumer 的输出一致。 |
-| 增量性能 | `benchmark-razorvue-g2.cs` 已提供 direct render/runtime 基线；`benchmark-razorvue-build.cs` 提供 clean/incremental/HMR/Release 构建计时。 | 在固定机器和参数下重复采样并记录中位数，再决定是否修改缓存或编译主链。 |
+| 增量性能 | `benchmark-razorvue-g2.cs` 已提供 direct render/runtime 基线；`benchmark-razorvue-build.cs` 提供 clean/incremental/HMR/Release 构建计时，并扫描最终 `JazorDir` 记录生成模块、source map、manifest、Emit 体积及增量产物变化。 | 在固定机器和参数下重复采样并记录中位数，再决定是否修改缓存或编译主链；产物未变化不解释为内部缓存命中。 |
 | 绑定漂移 | Vuetify、Element Plus、TDesign 已有锁定快照、生成检查和 coverage；原始注释来源已在各包记录。`verify-vue-binding-contracts.cs` 统一执行生成检查并校验版本/文档/manifest。 | 后续把 export、prop、event、slot、文档和 manifest 的具体 diff 输出为可审阅报告，并在上游升级时接入发布阻断。 |
 
 因此，P0 的第一轮实现优先补“统一入口和证据索引”，再改动底层编译器；若基线证明不存在瓶颈，不为追求任务数量而引入新的协议。
@@ -142,7 +142,9 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 
 ### 三轮复测记录（2026-09-11）
 
-使用同一 SDK、`RazorVue.Authoring` 输入、隔离输出目录和 `--samples 3 --skip-hmr --skip-release` 协议：clean 三轮分别为 **98.966 秒、104.075 秒、80.271 秒**，中位数 **98.966 秒**；incremental 三轮分别为 **4.918 秒、6.330 秒、3.927 秒**，中位数 **4.918 秒**。结果仍表现出预览 SDK 与机器负载造成的明显离散，不能据此宣称回归或优化收益。现有 benchmark 只提供端到端耗时，模块发现、Emit I/O、source map 和缓存命中尚未形成稳定的独立观测字段，因此本轮不修改主链路；后续只有在补齐同输入、同 SDK 的细分采样后才评估优化。
+使用同一 SDK、`RazorVue.Authoring` 输入、隔离输出目录和 `--samples 3 --skip-hmr --skip-release` 协议：clean 三轮分别为 **98.966 秒、104.075 秒、80.271 秒**，中位数 **98.966 秒**；incremental 三轮分别为 **4.918 秒、6.330 秒、3.927 秒**，中位数 **4.918 秒**。结果仍表现出预览 SDK 与机器负载造成的明显离散，不能据此宣称回归或优化收益。
+
+基准脚本现同时扫描每轮最终 `JazorDir`，记录 manifest 声明的生成模块数、全部 `.mjs`/source map 数量、原始与逐文件 gzip 字节数、`jazor-manifest.json` 和完整 Emit 输出体积，并对连续轮次按相对路径和文件大小计算产物变化。2026-09-12 的单轮探查（`--samples 1 --skip-hmr --skip-release`）得到 clean **36.536 秒**、incremental **2.886 秒**；两轮均为 **8 个生成模块、12 个 `.mjs` 文件、8 个 source map、`.mjs` 3,090,284 bytes（gzip 541,421）、map 132,057 bytes（gzip 29,919）、manifest 7,732 bytes（gzip 2,129）、Emit 输出 4,495,131 bytes（逐文件 gzip 777,488）**，incremental 产物变化为 **0 文件/0 bytes**。这些字段是最终产物观测，不等同于编译器内部缓存命中或独立 Emit 阶段耗时；当前仍无证据要求修改 compiler/Emit 主链。
 
 ## P0-D：绑定生成与版本漂移
 
