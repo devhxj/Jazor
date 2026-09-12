@@ -55,12 +55,12 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 | 层 | 当前基线 | 验证入口 |
 | --- | --- | --- |
 | .NET SDK | `11.0.100-rc.1.26425.128`（由 `global.json` 固定） | `dotnet build Jazor.slnx`、质量门禁 |
-| Node.js | `22`（GitHub Actions）；本地 benchmark 应记录实际版本 | 发布 workflow、`benchmark-razorvue-build.cs` |
+| Node.js | `20`、`22`（Wiki Chrome browser consumer 矩阵）；发布 workflow 使用 `22`，本地 benchmark 应记录实际版本 | `wiki-verify.yml`、发布 workflow、`benchmark-razorvue-build.cs` |
 | 浏览器 | Windows SPA/Wiki/SSR 统一使用 Google Chrome headless | SPA/SSR、Wiki browser scripts |
 | 发布配置 | Release、NuGet 本地源、`JazorMode=release` | SPA/SSR consumer scripts |
 | 部署路径 | `/docs`（SPA）、`/todo`（SSR） | 对应 Windows 发布消费者门禁 |
 
-Node 与浏览器的绝对版本由运行器提供；`quality-gates.yml` 与 `wiki-verify.yml` 会上传 `toolchain-matrix.md`，记录每次运行的实际 SDK、Node、Chrome、操作系统和 commit。不能把本地运行结果当作跨版本保证。组件库升级还需先通过
+Node 与浏览器的绝对版本由运行器提供；`wiki-verify.yml` 的 Wiki 与发布浏览器 consumer 会在 Node 20、22 上分别运行，`quality-gates.yml` 与 `wiki-verify.yml` 会上传 `toolchain-matrix.md`，记录每次运行的实际 SDK、Node、Chrome、操作系统和 commit。不能把本地运行结果当作跨版本保证。组件库升级还需先通过
 `verify-vue-binding-contracts.cs`，再运行发布消费者验证。
 
 项目内脚本、测试说明和特殊验证路径见 [scripts/csharp README](../../scripts/csharp/README.md)。

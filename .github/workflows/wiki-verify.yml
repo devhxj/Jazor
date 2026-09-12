@@ -96,7 +96,12 @@ jobs:
           dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build --startup-timeout-seconds 60
 
   browser:
+    name: Wiki browser (Node ${{ matrix.node-version }})
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['20', '22']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -109,7 +114,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ matrix.node-version }}
 
       - name: Wiki browser verification
         shell: pwsh
@@ -133,7 +138,12 @@ jobs:
           dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish --startup-timeout-seconds 60
 
   publish-browser:
+    name: Wiki publish browser (Node ${{ matrix.node-version }})
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['20', '22']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -146,7 +156,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: ${{ matrix.node-version }}
 
       - name: Wiki publish browser verification
         shell: pwsh
