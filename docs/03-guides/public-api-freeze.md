@@ -89,6 +89,14 @@ dotnet run --file scripts/csharp/inspect-public-api.cs -- --output artifacts/api
 
 发布候选应保存该文件，并与上一候选快照进行稳定排序后的差异比较。
 
+机器比较使用：
+
+```bash
+dotnet run --file scripts/csharp/compare-public-api.cs -- --current artifacts/api/public-api.md --baseline artifacts/api/public-api-baseline.md --output artifacts/api/public-api-compatibility.md
+```
+
+首次建立候选快照时可以省略 `--baseline`，脚本会成功生成“baseline missing”报告；这不代表兼容性已经通过。存在基线时，新增 API 会列在报告中，删除或签名变化会使命令失败。
+
 ## 变更规则
 
 冻结后，新增 API 进入 MINOR，修复行为保持 PATCH；删除、重命名、签名改变、包/命名空间迁移和序列化协议改变进入 MAJOR。文档修订不能掩盖 API 变更，所有用户可见契约必须同时更新测试和 CHANGELOG。

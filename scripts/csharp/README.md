@@ -20,6 +20,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | --- | --- |
 | `test-dotnet.cs` | 构建一次并运行当前主测试 lane，支持 `--project <name>` 聚焦项目（例如 `dataui`、`vu-icons`） |
 | `inspect-public-api.cs` | 从 ASP.NET Core、Development reload 和 Jazor.Admin 程序集生成稳定排序的公开 API 快照 |
+| `compare-public-api.cs` | 将当前公开 API 快照与候选基线逐行比较；首次无基线时明确报告，删除或签名变化时失败 |
 | `verify-compiler-coverage.cs` | 执行编译器测试和正式覆盖率门槛 |
 | `verify-razorvue-coverage.cs` | 执行 RazorVue 覆盖率门槛 |
 | `verify-vue-binding-coverage.cs` | 审核 Vue 生态 binding 的公开契约覆盖 |

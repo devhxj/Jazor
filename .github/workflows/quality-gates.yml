@@ -18,6 +18,8 @@ on:
       - 'src/**'
       - 'scripts/csharp/run-quality-gate.cs'
       - 'scripts/csharp/verify-*-coverage.cs'
+      - 'scripts/csharp/inspect-public-api.cs'
+      - 'scripts/csharp/compare-public-api.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -31,6 +33,8 @@ on:
       - 'src/**'
       - 'scripts/csharp/run-quality-gate.cs'
       - 'scripts/csharp/verify-*-coverage.cs'
+      - 'scripts/csharp/inspect-public-api.cs'
+      - 'scripts/csharp/compare-public-api.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -105,5 +109,40 @@ jobs:
         with:
           name: coverage-${{ matrix.gate }}-${{ github.run_attempt }}
           path: artifacts/quality/${{ matrix.gate }}/
+          if-no-files-found: error
+          retention-days: 14
+
+  public-api:
+    name: Public API snapshot
+    runs-on: windows-latest
+    steps:
+      - name: Checkout tested ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build public API assemblies
+        shell: pwsh
+        run: dotnet build Jazor.slnx --no-restore
+
+      - name: Generate public API snapshot
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/inspect-public-api.cs -- --output artifacts/quality/public-api/public-api.md
+
+      - name: Check for checked-in candidate baseline
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/compare-public-api.cs -- --current artifacts/quality/public-api/public-api.md --baseline artifacts/quality/public-api/public-api-baseline.md --output artifacts/quality/public-api/public-api-compatibility.md
+
+      - name: Upload public API evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-api-${{ github.run_attempt }}
+          path: artifacts/quality/public-api/
           if-no-files-found: error
           retention-days: 14
