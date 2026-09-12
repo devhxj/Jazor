@@ -23,6 +23,7 @@ on:
       - 'scripts/csharp/compare-public-api.cs'
       - 'scripts/csharp/verify-typed-bootstrap.cs'
       - 'scripts/csharp/verify-vue-binding-contracts.cs'
+      - 'scripts/csharp/benchmark-razorvue-build.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -41,6 +42,7 @@ on:
       - 'scripts/csharp/compare-public-api.cs'
       - 'scripts/csharp/verify-typed-bootstrap.cs'
       - 'scripts/csharp/verify-vue-binding-contracts.cs'
+      - 'scripts/csharp/benchmark-razorvue-build.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -75,6 +77,35 @@ jobs:
           name: toolchain-matrix-${{ github.run_attempt }}
           path: artifacts/quality/toolchain-matrix.md
           if-no-files-found: error
+
+  build-benchmark:
+    name: RazorVue build trend
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Run build benchmark
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/benchmark-razorvue-build.cs -- --samples 1 --skip-hmr --skip-release --out artifacts/quality/build-benchmark/report.json
+
+      - name: Upload build benchmark evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-benchmark-${{ github.run_attempt }}
+          path: artifacts/quality/build-benchmark/
+          if-no-files-found: error
+          retention-days: 30
 
   coverage:
     name: Coverage (${{ matrix.gate }})

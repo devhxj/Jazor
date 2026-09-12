@@ -63,7 +63,10 @@ var report = new BuildBenchmarkReport(
     measurements);
 Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
 await File.WriteAllTextAsync(reportPath, JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine);
+var markdownPath = Path.ChangeExtension(reportPath, ".md");
+await File.WriteAllTextAsync(markdownPath, ToMarkdown(report));
 Console.WriteLine($"RazorVue build benchmark passed: {reportPath}");
+Console.WriteLine($"RazorVue build benchmark summary: {markdownPath}");
 foreach (var measurement in measurements)
     Console.WriteLine($"  {measurement.Name}#{measurement.Sample}: {measurement.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture)} ms" +
         (measurement.Artifact is null ? string.Empty : $", {measurement.Artifact.GeneratedModuleCount} generated modules, {measurement.Artifact.TotalBytes.ToString(CultureInfo.InvariantCulture)} bytes"));
@@ -170,6 +173,31 @@ static string ResolveInsideRepository(string repoRoot, string path)
 
 static string EnsureTrailingSeparator(string path)
     => path.EndsWith(Path.DirectorySeparatorChar) ? path : path + Path.DirectorySeparatorChar;
+
+static string ToMarkdown(BuildBenchmarkReport report)
+{
+    var lines = new List<string>
+    {
+        "# RazorVue Build Benchmark",
+        "",
+        $"- Schema: `{report.SchemaVersion}`",
+        $"- Started (UTC): `{report.StartedAt:O}`",
+        $"- .NET: `{report.DotnetVersion}`",
+        "",
+        "| Scenario | Sample | Elapsed (ms) | Modules | Source maps | Total bytes | Total gzip bytes | Changed files | Changed bytes |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"
+    };
+    foreach (var measurement in report.Measurements)
+    {
+        var artifact = measurement.Artifact;
+        lines.Add($"| {measurement.Name} | {measurement.Sample} | {measurement.ElapsedMilliseconds} | {artifact?.GeneratedModuleCount.ToString() ?? ""} | {artifact?.SourceMapCount.ToString() ?? ""} | {artifact?.TotalBytes.ToString() ?? ""} | {artifact?.TotalGzipBytes.ToString() ?? ""} | {artifact?.ChangedFileCount?.ToString() ?? ""} | {artifact?.ChangedBytes?.ToString() ?? ""} |");
+    }
+    lines.Add("");
+    lines.Add("Median elapsed time by scenario:");
+    foreach (var group in report.Measurements.GroupBy(static measurement => measurement.Name, StringComparer.Ordinal))
+        lines.Add($"- `{group.Key}`: {Median(group.Select(static measurement => measurement.ElapsedMilliseconds)):0} ms");
+    return string.Join(Environment.NewLine, lines) + Environment.NewLine;
+}
 
 sealed record FileArtifact(string Path, long Bytes);
 sealed record BuildArtifactSnapshot(int GeneratedModuleCount, int MjsFileCount, int SourceMapCount, long MjsBytes, long SourceMapBytes, long ManifestBytes, long MjsGzipBytes, long SourceMapGzipBytes, long ManifestGzipBytes, long TotalGzipBytes, long TotalBytes, int? ChangedFileCount, long? ChangedBytes, [property: JsonIgnore] IReadOnlyList<FileArtifact>? Files = null);
