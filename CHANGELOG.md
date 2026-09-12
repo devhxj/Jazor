@@ -21,6 +21,7 @@
 - 发布 workflow 在 NuGet 打包前强制校验带日期的 CHANGELOG 版本章节，避免无整理的自动生成说明进入正式发布。by @devhxj
 - 新增 `verify-release-candidate.cs` 与手动 Release Candidate workflow，统一归档 1.0 候选的 API、质量、包形状和 SPA/SSR consumer 证据。by @devhxj
 - 发布候选覆盖率报告现在写入候选专用目录，并连同工具链矩阵一起归档，避免 RC 证据散落在共享质量目录。by @devhxj
+- Wiki 文档导入器现在默认排除大型机器快照（`*.snapshot.md`），并提供显式开关用于完整检查，避免发布 consumer 因 C# 用户字符串池上限失败。by @devhxj
 
 Other Changes
 
@@ -37,6 +38,7 @@ Other Changes
 - Require a dated, non-empty CHANGELOG version section before NuGet packaging so uncurated generated notes cannot enter an official release. by @devhxj
 - Add `verify-release-candidate.cs` and a manual Release Candidate workflow to archive API, quality, package-shape, and SPA/SSR consumer evidence in one 1.0 candidate run. by @devhxj
 - Write release-candidate coverage reports under the candidate directory and archive them with the toolchain matrix so RC evidence is not scattered across the shared quality directory. by @devhxj
+- Keep large machine snapshots (`*.snapshot.md`) out of the default Wiki browser catalog, with an explicit full-import switch for evidence checks, so release consumers do not hit the C# user-string pool limit. by @devhxj
 
 ## 2026-09-11
 
