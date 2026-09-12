@@ -15,6 +15,7 @@
 - Quality Gates 新增独立 Vue binding contract job，发布候选会强制检查三套生成快照、manifest 与上游版本一致性。by @devhxj
 - Vue binding contract job 现在上传完整检查日志，失败运行也保留可追溯证据。by @devhxj
 - 重新采集并统一 Compiler 与 Razor SG 覆盖率证据，当前分别为 `10711/10711`、`99.42%/97.15%` 与 `4982/4982`、`97.53%/94.30%`（行/分支）。by @devhxj
+- Quality Gates 每周归档 RazorVue clean/incremental 构建趋势；benchmark 同时生成 JSON 与 Markdown 摘要，持续观测不等同于宣称优化收益。by @devhxj
 
 Other Changes
 
@@ -25,6 +26,7 @@ Other Changes
 - Add a dedicated Vue binding contract job to Quality Gates so release candidates enforce generated snapshot, manifest, and upstream version consistency across all three binding libraries. by @devhxj
 - Upload the complete Vue binding contract log, including failed runs, as traceable CI evidence. by @devhxj
 - Recollect and align Compiler and Razor SG coverage evidence: `10711/10711` with `99.42%/97.15%`, and `4982/4982` with `97.53%/94.30%` (line/branch). by @devhxj
+- Archive weekly RazorVue clean/incremental build trends in Quality Gates; the benchmark now emits JSON and Markdown summaries, preserving observation without claiming an optimization gain. by @devhxj
 
 ## 2026-09-11
 
