@@ -210,7 +210,8 @@ static void WriteReport(string path, IReadOnlyList<BindingCheckResult> checks, I
         "1.0",
         checks.All(static result => result.Passed) && targets.All(static result => result.Passed) ? "passed" : "failed",
         checks,
-        targets);
+        targets,
+        targets.Select(static target => target.Inventory).OfType<BindingContractInventory>().ToArray());
     File.WriteAllText(fullPath, JsonSerializer.Serialize(report, new JsonSerializerOptions
     {
         WriteIndented = true,
@@ -259,4 +260,4 @@ sealed record BindingTarget(string LibraryId, string Version, string ProjectDire
 sealed record BindingCheckResult(string Name, bool Passed, string? Error);
 sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error, BindingContractInventory? Inventory);
 sealed record BindingContractInventory(int Components, int Exports, int Props, int Events, int Slots, string Fingerprint);
-sealed record BindingContractReport(string SchemaVersion, string Status, IReadOnlyList<BindingCheckResult> Checks, IReadOnlyList<BindingTargetResult> Targets);
+sealed record BindingContractReport(string SchemaVersion, string Status, IReadOnlyList<BindingCheckResult> Checks, IReadOnlyList<BindingTargetResult> Targets, IReadOnlyList<BindingContractInventory> Inventories);
