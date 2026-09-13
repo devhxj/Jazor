@@ -25,7 +25,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `verify-razorvue-coverage.cs` | 执行 RazorVue 覆盖率门槛 |
 | `verify-vue-binding-coverage.cs` | 审核 Vue 生态 binding 的公开契约覆盖 |
 | `run-quality-gate.cs` | 执行单项覆盖率门禁；可用 `--output-directory` 将报告归档到发布候选目录 |
-| `verify-vue-binding-contracts.cs` | 统一校验 Element Plus、Vuetify、TDesign 的生成快照、原始文档与资源 manifest |
+| `verify-vue-binding-contracts.cs` | 统一校验 Element Plus、Vuetify、TDesign 的生成快照、原始文档与资源 manifest；传入 `--report <path>` 会生成 schema `1.0` 的 JSON 报告及同名 Markdown 摘要 |
 | `benchmark-razorvue-build.cs` | 测量 RazorVue clean、incremental、HMR 和 Release 构建时间；clean/incremental 还在 JSON/Markdown 基线中记录生成模块与 `.mjs`/source map 数量、原始与逐文件 gzip 字节数、manifest/完整 Emit 输出体积及增量产物内容变化；不把产物未变化解释为内部缓存命中 |
 | `write-toolchain-matrix.cs` | 记录当前 commit、global.json SDK、.NET CLI、Node.js、Chrome 和操作系统版本到 Markdown，供兼容矩阵与门禁日志引用 |
 | `verify-development-hmr.cs` | 验证开发模式的 HMR artifact 和浏览器路径 |

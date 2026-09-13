@@ -9,7 +9,7 @@ var repoRoot = RequireRepoRoot();
 var version = NormalizeVersion(options.Tag);
 var candidateRoot = ResolveInsideRepository(repoRoot, options.OutputDirectory ?? Path.Combine("artifacts", "release-candidate", SafeName(options.Tag)));
 Directory.CreateDirectory(candidateRoot);
-foreach (var directoryName in new[] { "logs", "packages", "coverage", "package-shape", "diagnostics", "out", "obj" })
+foreach (var directoryName in new[] { "logs", "packages", "coverage", "package-shape", "diagnostics", "binding-contracts", "out", "obj" })
 {
     var directory = Path.Combine(candidateRoot, directoryName);
     if (Directory.Exists(directory))
@@ -37,7 +37,7 @@ var stageDefinitions = new (string Name, string[] Arguments)[]
     ("compiler-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "compiler", "--output-directory", Path.Combine(candidateRoot, "coverage", "compiler")]),
     ("razorvue-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "razorvue", "--output-directory", Path.Combine(candidateRoot, "coverage", "razorvue")]),
     ("vue-binding-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "vue-bindings", "--output-directory", Path.Combine(candidateRoot, "coverage", "vue-bindings")]),
-    ("binding-contracts", ["run", "--file", "scripts/csharp/verify-vue-binding-contracts.cs"]),
+    ("binding-contracts", ["run", "--file", "scripts/csharp/verify-vue-binding-contracts.cs", "--", "--report", Path.Combine(candidateRoot, "binding-contracts", "report.json")]),
     ("razorvue-diagnostics", ["run", "--file", "scripts/csharp/verify-razorvue-diagnostics.cs", "--", "--output", Path.Combine(candidateRoot, "diagnostics")]),
     ("typed-bootstrap", ["run", "--file", "scripts/csharp/verify-typed-bootstrap.cs", "--", "--report", Path.Combine(candidateRoot, "typed-bootstrap.md")]),
     ("mainline", ["run", "--file", "scripts/csharp/test-dotnet.cs", "--", "--configuration", "Release", "--base-output-path", Path.Combine(candidateRoot, "out"), "--base-intermediate-output-path", Path.Combine(candidateRoot, "obj")]),

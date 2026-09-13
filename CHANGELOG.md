@@ -10,6 +10,12 @@
 
 Product closure follow-up
 
+- Vue binding contract verification now emits schema `1.0` JSON and Markdown reports, and Quality Gates plus release candidates archive the evidence for review. by @devhxj
+
+Product closure follow-up
+
+- Vue binding contract verification now emits schema `1.0` JSON and Markdown reports, and Quality Gates plus release candidates archive the evidence for review. by @devhxj
+
 - Release Candidate Verification now runs the RazorVue diagnostics protocol as an independent stage and archives its success/failure JSON, SARIF, and summary under the candidate directory. by @devhxj
 
 - Quality Gates 新增 RazorVue diagnostics protocol 门禁，在隔离 fixture 中持续验证成功链路、source map 断链和 generated C# 缺失，并归档 JSON/SARIF remediation 证据。by @devhxj

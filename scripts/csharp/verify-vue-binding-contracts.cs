@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Text.Json;
 
 var repoRoot = RequireRepositoryRoot();
+var reportPath = GetOption("--report");
 var generatorProject = Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "ECMAScript.Vue.Generator.csproj");
 var checks = new[]
 {
@@ -14,10 +15,19 @@ var checks = new[]
     new Check("tdesign components", ["tdesign", "components", "--check"])
 };
 
+var checkResults = new List<BindingCheckResult>();
 foreach (var check in checks)
 {
     Console.WriteLine($"[binding-contract] {check.Name}");
-    await RunDotNetAsync(generatorProject, check.Arguments, repoRoot);
+    try
+    {
+        await RunDotNetAsync(generatorProject, check.Arguments, repoRoot);
+        checkResults.Add(new BindingCheckResult(check.Name, true, null));
+    }
+    catch (Exception exception)
+    {
+        checkResults.Add(new BindingCheckResult(check.Name, false, exception.Message));
+    }
 }
 
 var targets = new[]
@@ -27,10 +37,28 @@ var targets = new[]
     new BindingTarget("tdesign-vue-next", "1.20.7", Path.Combine(repoRoot, "src", "ECMAScript.TDesign"), Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "upstream", "tdesign-vue-next", "1.20.7"), "TDesign")
 };
 
+var targetResults = new List<BindingTargetResult>();
 foreach (var target in targets)
-    VerifyTarget(target);
+{
+    try
+    {
+        VerifyTarget(target);
+        targetResults.Add(new BindingTargetResult(target.DisplayName, target.LibraryId, target.Version, true, null));
+    }
+    catch (Exception exception)
+    {
+        targetResults.Add(new BindingTargetResult(target.DisplayName, target.LibraryId, target.Version, false, exception.Message));
+        Console.Error.WriteLine(exception.Message);
+    }
+}
 
-Console.WriteLine("Vue binding contract gate passed.");
+if (reportPath is not null)
+    WriteReport(reportPath, checkResults, targetResults);
+
+if (checkResults.Any(static result => !result.Passed) || targetResults.Any(static result => !result.Passed))
+    Environment.ExitCode = 1;
+else
+    Console.WriteLine("Vue binding contract gate passed.");
 
 static void VerifyTarget(BindingTarget target)
 {
@@ -94,6 +122,44 @@ static async Task RunDotNetAsync(string projectPath, IReadOnlyList<string> comma
     throw new InvalidOperationException($"Binding generator check failed ({string.Join(' ', commandArguments)}).{Environment.NewLine}{output}{Environment.NewLine}{error}");
 }
 
+static void WriteReport(string path, IReadOnlyList<BindingCheckResult> checks, IReadOnlyList<BindingTargetResult> targets)
+{
+    var fullPath = Path.GetFullPath(path);
+    Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+    var report = new BindingContractReport(
+        "1.0",
+        checks.All(static result => result.Passed) && targets.All(static result => result.Passed) ? "passed" : "failed",
+        checks,
+        targets);
+    File.WriteAllText(fullPath, JsonSerializer.Serialize(report, new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    }) + Environment.NewLine);
+    var summaryPath = Path.ChangeExtension(fullPath, ".md");
+    var lines = new List<string>
+    {
+        "# Vue binding contract verification",
+        "",
+        $"- Schema: `1.0`",
+        $"- Status: `{report.Status}`",
+        "",
+        "| Check | Result |",
+        "| --- | --- |"
+    };
+    foreach (var result in checks)
+        lines.Add($"| `{result.Name}` | {(result.Passed ? "passed" : "failed")} |");
+    foreach (var result in targets)
+        lines.Add($"| `{result.Name}` `{result.LibraryId}@{result.Version}` | {(result.Passed ? "passed" : "failed")} |");
+    File.WriteAllText(summaryPath, string.Join(Environment.NewLine, lines) + Environment.NewLine);
+}
+
+string? GetOption(string name)
+{
+    var index = Array.IndexOf(args, name);
+    return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
+}
+
 static string RequireRepositoryRoot()
 {
     for (var directory = new DirectoryInfo(Directory.GetCurrentDirectory()); directory is not null; directory = directory.Parent)
@@ -104,3 +170,6 @@ static string RequireRepositoryRoot()
 
 sealed record Check(string Name, IReadOnlyList<string> Arguments);
 sealed record BindingTarget(string LibraryId, string Version, string ProjectDirectory, string UpstreamDirectory, string DisplayName);
+sealed record BindingCheckResult(string Name, bool Passed, string? Error);
+sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error);
+sealed record BindingContractReport(string SchemaVersion, string Status, IReadOnlyList<BindingCheckResult> Checks, IReadOnlyList<BindingTargetResult> Targets);
