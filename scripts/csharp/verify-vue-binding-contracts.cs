@@ -270,13 +270,30 @@ static BindingContractDiff CreateDiff(BindingTargetResult target, BindingBaselin
         return new BindingContractDiff(target.LibraryId, "baseline-unavailable", Array.Empty<string>(), Array.Empty<string>(), 0, 0, 0, 0);
     var changed = current.Fingerprint == previous.Inventory?.Fingerprint ? Array.Empty<string>() : new[] { "inventory" };
     var previousInventory = previous.Inventory;
+    var added = new List<string>();
+    var removed = new List<string>();
+    CompareSet("export", current.ExportNames, previousInventory?.ExportNames, added, removed);
+    CompareSet("prop", current.PropNames, previousInventory?.PropNames, added, removed);
+    CompareSet("event", current.EventNames, previousInventory?.EventNames, added, removed);
+    CompareSet("slot", current.SlotNames, previousInventory?.SlotNames, added, removed);
+    CompareSet("member", current.MemberNames, previousInventory?.MemberNames, added, removed);
     var deltas = new List<string>();
     AddDelta(deltas, "components", current.Components, previousInventory?.Components);
     AddDelta(deltas, "props", current.Props, previousInventory?.Props);
     AddDelta(deltas, "events", current.Events, previousInventory?.Events);
     AddDelta(deltas, "slots", current.Slots, previousInventory?.Slots);
     AddDelta(deltas, "members", current.Members, previousInventory?.Members);
-    return new BindingContractDiff(target.LibraryId, changed.Length == 0 ? "unchanged" : "changed", changed.Concat(deltas).ToArray(), Array.Empty<string>(), current.Components - (previousInventory?.Components ?? 0), current.Props - (previousInventory?.Props ?? 0), current.Events - (previousInventory?.Events ?? 0), current.Slots - (previousInventory?.Slots ?? 0));
+    return new BindingContractDiff(target.LibraryId, changed.Length == 0 ? "unchanged" : "changed", changed.Concat(deltas).Concat(added).ToArray(), removed, current.Components - (previousInventory?.Components ?? 0), current.Props - (previousInventory?.Props ?? 0), current.Events - (previousInventory?.Events ?? 0), current.Slots - (previousInventory?.Slots ?? 0));
+}
+
+static void CompareSet(string kind, IReadOnlyCollection<string> current, IReadOnlyCollection<string>? previous, ICollection<string> added, ICollection<string> removed)
+{
+    if (previous is null)
+        return;
+    foreach (var value in current.Except(previous, StringComparer.Ordinal).OrderBy(static value => value, StringComparer.Ordinal))
+        added.Add($"{kind}+:{value}");
+    foreach (var value in previous.Except(current, StringComparer.Ordinal).OrderBy(static value => value, StringComparer.Ordinal))
+        removed.Add($"{kind}-:{value}");
 }
 
 static void AddDelta(ICollection<string> deltas, string name, int current, int? previous)
