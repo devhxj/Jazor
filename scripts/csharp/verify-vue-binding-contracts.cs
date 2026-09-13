@@ -270,7 +270,19 @@ static BindingContractDiff CreateDiff(BindingTargetResult target, BindingBaselin
         return new BindingContractDiff(target.LibraryId, "baseline-unavailable", Array.Empty<string>(), Array.Empty<string>(), 0, 0, 0, 0);
     var changed = current.Fingerprint == previous.Inventory?.Fingerprint ? Array.Empty<string>() : new[] { "inventory" };
     var previousInventory = previous.Inventory;
-    return new BindingContractDiff(target.LibraryId, changed.Length == 0 ? "unchanged" : "changed", changed, Array.Empty<string>(), current.Components - (previousInventory?.Components ?? 0), current.Props - (previousInventory?.Props ?? 0), current.Events - (previousInventory?.Events ?? 0), current.Slots - (previousInventory?.Slots ?? 0));
+    var deltas = new List<string>();
+    AddDelta(deltas, "components", current.Components, previousInventory?.Components);
+    AddDelta(deltas, "props", current.Props, previousInventory?.Props);
+    AddDelta(deltas, "events", current.Events, previousInventory?.Events);
+    AddDelta(deltas, "slots", current.Slots, previousInventory?.Slots);
+    AddDelta(deltas, "members", current.Members, previousInventory?.Members);
+    return new BindingContractDiff(target.LibraryId, changed.Length == 0 ? "unchanged" : "changed", changed.Concat(deltas).ToArray(), Array.Empty<string>(), current.Components - (previousInventory?.Components ?? 0), current.Props - (previousInventory?.Props ?? 0), current.Events - (previousInventory?.Events ?? 0), current.Slots - (previousInventory?.Slots ?? 0));
+}
+
+static void AddDelta(ICollection<string> deltas, string name, int current, int? previous)
+{
+    if (previous is not null && current != previous.Value)
+        deltas.Add($"{name}:{previous.Value}->{current}");
 }
 
 static BindingBaseline? ReadBaseline(string path)
