@@ -44,7 +44,7 @@ P0 包含四条相互衔接的工作线：
 | P0-A Golden Path | 独立 authoring fixture、TDesign CRUD 页面、SPA/SSR Release consumer、浏览器 smoke | `samples/`、`Jazor.RazorVue`、`Jazor.Emit`、`Jazor.AspNetCore` | 新项目按指南完成页面；SG、模块运行时、Release package 和浏览器验证全部通过 |
 | P0-B 诊断闭环 | 诊断矩阵、HelpLink 锚点、最小替代写法、诊断报告命令和无 partial artifact 回归 | `Jazor.RazorVue`、作者指南、scripts | 常见 Reject/Guidance 均有稳定 ID、源位置、原因和替代路径；错误构建不留下 catalog/module/bundle |
 | P0-C 增量性能 | 固定输入和测量协议、首次/增量/HMR/Release 指标、优化前后对比记录 | `Jazor.RazorVue`、`Jazor.Compiler`、`Jazor.Emit` | 同一机器和参数可重复测量；优化保持求值顺序、source map、导入稳定性和输出语义 |
-| P0-D 绑定门禁 | 统一 snapshot、文档、runtime export、contract diff 和 coverage 检查 | `ECMAScript.Vue.Generator`、各 binding、CI scripts | 上游升级能在生成或 CI 阶段报告组件/prop/event/slot/文档漂移；无 silent fallback |
+| P0-D 绑定门禁 | 统一 snapshot、文档、runtime export、contract diff 和 coverage 检查；release candidate 使用仓库基线并阻断漂移 | `ECMAScript.Vue.Generator`、各 binding、CI scripts | 上游升级能在生成或 CI 阶段报告组件/prop/event/slot/文档漂移；无 silent fallback |
 
 ## P0-A：Golden Path
 
