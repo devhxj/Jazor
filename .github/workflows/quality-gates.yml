@@ -266,7 +266,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path artifacts/quality/binding-contracts -Force | Out-Null
-          dotnet run --file ./scripts/csharp/verify-vue-binding-contracts.cs -- --report "${{ github.workspace }}/artifacts/quality/binding-contracts/report.json" --fail-on-baseline-drift 2>&1 |
+          dotnet run --file ./scripts/csharp/verify-vue-binding-contracts.cs -- --report "${{ github.workspace }}/artifacts/quality/binding-contracts/report.json" --baseline "${{ github.workspace }}/docs/04-roadmap/binding-contract-baseline.json" --fail-on-baseline-drift 2>&1 |
             Tee-Object -FilePath artifacts/quality/binding-contracts/report.txt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
