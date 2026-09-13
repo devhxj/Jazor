@@ -249,9 +249,9 @@ static BindingContractDiff CreateDiff(BindingTargetResult target, BindingBaselin
     var previous = baseline?.Targets.FirstOrDefault(item => string.Equals(item.LibraryId, target.LibraryId, StringComparison.Ordinal));
     var current = target.Inventory;
     if (previous is null || current is null)
-        return new BindingContractDiff(target.LibraryId, "baseline-unavailable", Array.Empty<string>(), Array.Empty<string>());
+        return new BindingContractDiff(target.LibraryId, "baseline-unavailable", Array.Empty<string>(), Array.Empty<string>(), 0, 0, 0, 0);
     var changed = current.Fingerprint == previous.Inventory?.Fingerprint ? Array.Empty<string>() : new[] { "inventory" };
-    return new BindingContractDiff(target.LibraryId, changed.Length == 0 ? "unchanged" : "changed", changed, Array.Empty<string>());
+    return new BindingContractDiff(target.LibraryId, changed.Length == 0 ? "unchanged" : "changed", changed, Array.Empty<string>(), current.Components - (previous.Inventory?.Components ?? 0), current.Props - (previous.Inventory?.Props ?? 0), current.Events - (previous.Inventory?.Events ?? 0), current.Slots - (previous.Inventory?.Slots ?? 0));
 }
 
 static BindingBaseline? ReadBaseline(string path)
@@ -281,5 +281,5 @@ sealed record BindingCheckResult(string Name, bool Passed, string? Error);
 sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error, BindingContractInventory? Inventory);
 sealed record BindingContractInventory(int Components, int Exports, int Props, int Events, int Slots, string Fingerprint);
 sealed record BindingContractReport(string SchemaVersion, string Status, IReadOnlyList<BindingCheckResult> Checks, IReadOnlyList<BindingTargetResult> Targets, IReadOnlyList<BindingContractInventory> Inventories, IReadOnlyList<BindingContractDiff> Diffs);
-sealed record BindingContractDiff(string LibraryId, string Status, IReadOnlyList<string> Changed, IReadOnlyList<string> Removed);
+sealed record BindingContractDiff(string LibraryId, string Status, IReadOnlyList<string> Changed, IReadOnlyList<string> Removed, int ComponentDelta, int PropDelta, int EventDelta, int SlotDelta);
 sealed record BindingBaseline(IReadOnlyList<BindingTargetResult> Targets);
