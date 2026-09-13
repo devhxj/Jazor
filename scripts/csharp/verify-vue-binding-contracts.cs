@@ -110,6 +110,7 @@ static BindingContractInventory ReadInventory(BindingTarget target)
     var props = new SortedSet<string>(StringComparer.Ordinal);
     var events = new SortedSet<string>(StringComparer.Ordinal);
     var slots = new SortedSet<string>(StringComparer.Ordinal);
+    var members = new SortedSet<string>(StringComparer.Ordinal);
     var componentCount = 0;
     foreach (var component in components.EnumerateArray())
     {
@@ -126,14 +127,25 @@ static BindingContractInventory ReadInventory(BindingTarget target)
         AddMembers(component, "props", props);
         AddMembers(component, "events", events);
         AddMembers(component, "slots", slots);
+        if (component.TryGetProperty("members", out var declaredMembers) && declaredMembers.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var member in declaredMembers.EnumerateArray())
+            {
+                var kind = member.TryGetProperty("kind", out var kindValue) ? kindValue.GetString() : null;
+                var name = member.TryGetProperty("runtimeName", out var runtimeName) ? runtimeName.GetString() : null;
+                if (kind is not null && name is not null)
+                    members.Add(kind + ":" + name);
+            }
+        }
     }
 
     var fingerprintInput = string.Join("\n", exports.Select(static value => "export:" + value)
         .Concat(props.Select(static value => "prop:" + value))
         .Concat(events.Select(static value => "event:" + value))
         .Concat(slots.Select(static value => "slot:" + value)));
+    fingerprintInput = string.Join("\n", fingerprintInput.Split('\n').Concat(members.Select(static value => "member:" + value)));
     var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintInput))).ToLowerInvariant();
-    return new BindingContractInventory(componentCount, exports.Count, props.Count, events.Count, slots.Count, fingerprint);
+    return new BindingContractInventory(componentCount, exports.Count, props.Count, events.Count, slots.Count, members.Count, fingerprint);
 }
 
 static void AddMembers(JsonElement component, string propertyName, ISet<string> values)
@@ -279,7 +291,7 @@ sealed record Check(string Name, IReadOnlyList<string> Arguments);
 sealed record BindingTarget(string LibraryId, string Version, string ProjectDirectory, string UpstreamDirectory, string DisplayName);
 sealed record BindingCheckResult(string Name, bool Passed, string? Error);
 sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error, BindingContractInventory? Inventory);
-sealed record BindingContractInventory(int Components, int Exports, int Props, int Events, int Slots, string Fingerprint);
+sealed record BindingContractInventory(int Components, int Exports, int Props, int Events, int Slots, int Members, string Fingerprint);
 sealed record BindingContractReport(string SchemaVersion, string Status, IReadOnlyList<BindingCheckResult> Checks, IReadOnlyList<BindingTargetResult> Targets, IReadOnlyList<BindingContractInventory> Inventories, IReadOnlyList<BindingContractDiff> Diffs);
 sealed record BindingContractDiff(string LibraryId, string Status, IReadOnlyList<string> Changed, IReadOnlyList<string> Removed, int ComponentDelta, int PropDelta, int EventDelta, int SlotDelta);
 sealed record BindingBaseline(IReadOnlyList<BindingTargetResult> Targets);
