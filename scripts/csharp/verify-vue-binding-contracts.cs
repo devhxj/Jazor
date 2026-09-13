@@ -263,7 +263,8 @@ static BindingContractDiff CreateDiff(BindingTargetResult target, BindingBaselin
     if (previous is null || current is null)
         return new BindingContractDiff(target.LibraryId, "baseline-unavailable", Array.Empty<string>(), Array.Empty<string>(), 0, 0, 0, 0);
     var changed = current.Fingerprint == previous.Inventory?.Fingerprint ? Array.Empty<string>() : new[] { "inventory" };
-    return new BindingContractDiff(target.LibraryId, changed.Length == 0 ? "unchanged" : "changed", changed, Array.Empty<string>(), current.Components - (previous.Inventory?.Components ?? 0), current.Props - (previous.Inventory?.Props ?? 0), current.Events - (previous.Inventory?.Events ?? 0), current.Slots - (previous.Inventory?.Slots ?? 0));
+    var previousInventory = previous.Inventory;
+    return new BindingContractDiff(target.LibraryId, changed.Length == 0 ? "unchanged" : "changed", changed, Array.Empty<string>(), current.Components - (previousInventory?.Components ?? 0), current.Props - (previousInventory?.Props ?? 0), current.Events - (previousInventory?.Events ?? 0), current.Slots - (previousInventory?.Slots ?? 0));
 }
 
 static BindingBaseline? ReadBaseline(string path)
