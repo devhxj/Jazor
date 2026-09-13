@@ -8,6 +8,7 @@ using System.Text.Json;
 var repoRoot = RequireRepositoryRoot();
 var reportPath = GetOption("--report");
 var baselinePath = GetOption("--baseline");
+var failOnBaselineDrift = args.Contains("--fail-on-baseline-drift", StringComparer.Ordinal);
 var generatorProject = Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "ECMAScript.Vue.Generator.csproj");
 var checks = new[]
 {
@@ -60,8 +61,17 @@ if (reportPath is not null)
 
 if (checkResults.Any(static result => !result.Passed) || targetResults.Any(static result => !result.Passed))
     Environment.ExitCode = 1;
+else if (reportPath is not null && failOnBaselineDrift && HasBaselineDrift(reportPath))
+    Environment.ExitCode = 1;
 else
     Console.WriteLine("Vue binding contract gate passed.");
+
+static bool HasBaselineDrift(string path)
+{
+    using var report = JsonDocument.Parse(File.ReadAllText(Path.GetFullPath(path)));
+    return report.RootElement.TryGetProperty("diffs", out var diffs) &&
+           diffs.EnumerateArray().Any(diff => diff.TryGetProperty("status", out var status) && status.GetString() == "changed");
+}
 
 static void VerifyTarget(BindingTarget target)
 {
