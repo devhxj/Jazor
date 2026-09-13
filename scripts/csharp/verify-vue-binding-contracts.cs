@@ -1,6 +1,8 @@
 #!/usr/bin/env dotnet run
 
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 var repoRoot = RequireRepositoryRoot();
@@ -43,11 +45,11 @@ foreach (var target in targets)
     try
     {
         VerifyTarget(target);
-        targetResults.Add(new BindingTargetResult(target.DisplayName, target.LibraryId, target.Version, true, null));
+        targetResults.Add(new BindingTargetResult(target.DisplayName, target.LibraryId, target.Version, true, null, ReadInventory(target)));
     }
     catch (Exception exception)
     {
-        targetResults.Add(new BindingTargetResult(target.DisplayName, target.LibraryId, target.Version, false, exception.Message));
+        targetResults.Add(new BindingTargetResult(target.DisplayName, target.LibraryId, target.Version, false, exception.Message, null));
         Console.Error.WriteLine(exception.Message);
     }
 }
@@ -88,6 +90,84 @@ static void VerifyTarget(BindingTarget target)
         throw new InvalidOperationException($"{target.DisplayName}: README must document original comments and manifest resource ownership.");
 
     Console.WriteLine($"  {target.DisplayName}: {target.LibraryId}@{target.Version}; source docs and manifest present");
+}
+
+static BindingContractInventory ReadInventory(BindingTarget target)
+{
+    var metadataPath = target.LibraryId switch
+    {
+        "element-plus" => Path.Combine(target.UpstreamDirectory, "web-types.json"),
+        "vuetify" => Path.Combine(target.UpstreamDirectory, "contracts.json"),
+        "tdesign-vue-next" => Path.Combine(target.UpstreamDirectory, "components.json"),
+        _ => throw new InvalidOperationException($"Unsupported binding inventory source: {target.LibraryId}")
+    };
+    using var document = JsonDocument.Parse(File.ReadAllText(metadataPath));
+    var components = document.RootElement.TryGetProperty("components", out var directComponents)
+        ? directComponents
+        : document.RootElement.GetProperty("contributions").GetProperty("html").GetProperty("vue-components");
+    var exports = new SortedSet<string>(StringComparer.Ordinal);
+    var props = new SortedSet<string>(StringComparer.Ordinal);
+    var events = new SortedSet<string>(StringComparer.Ordinal);
+    var slots = new SortedSet<string>(StringComparer.Ordinal);
+    var componentCount = 0;
+    foreach (var component in components.EnumerateArray())
+    {
+        componentCount++;
+        AddString(component, "export", exports);
+        AddString(component, "runtimeExport", exports);
+        AddString(component, "sourceExport", exports);
+        if (target.LibraryId == "element-plus" && component.TryGetProperty("source", out var source) &&
+            source.TryGetProperty("symbol", out var symbol) && symbol.ValueKind == JsonValueKind.String)
+            exports.Add(symbol.GetString()!);
+        if (target.LibraryId == "element-plus" && component.TryGetProperty("js", out var js) &&
+            js.TryGetProperty("events", out var jsEvents))
+            AddMembersValue(jsEvents, events);
+        AddMembers(component, "props", props);
+        AddMembers(component, "events", events);
+        AddMembers(component, "slots", slots);
+    }
+
+    var fingerprintInput = string.Join("\n", exports.Select(static value => "export:" + value)
+        .Concat(props.Select(static value => "prop:" + value))
+        .Concat(events.Select(static value => "event:" + value))
+        .Concat(slots.Select(static value => "slot:" + value)));
+    var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintInput))).ToLowerInvariant();
+    return new BindingContractInventory(componentCount, exports.Count, props.Count, events.Count, slots.Count, fingerprint);
+}
+
+static void AddMembers(JsonElement component, string propertyName, ISet<string> values)
+{
+    if (!component.TryGetProperty(propertyName, out var members) || members.ValueKind != JsonValueKind.Array)
+        return;
+    foreach (var member in members.EnumerateArray())
+    {
+        if (member.ValueKind == JsonValueKind.String)
+        {
+            values.Add(member.GetString()!);
+            continue;
+        }
+        if (member.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String)
+            values.Add(name.GetString()!);
+    }
+}
+
+static void AddMembersValue(JsonElement members, ISet<string> values)
+{
+    if (members.ValueKind != JsonValueKind.Array)
+        return;
+    foreach (var member in members.EnumerateArray())
+    {
+        if (member.ValueKind == JsonValueKind.String)
+            values.Add(member.GetString()!);
+        else if (member.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String)
+            values.Add(name.GetString()!);
+    }
+}
+
+static void AddString(JsonElement element, string propertyName, ISet<string> values)
+{
+    if (element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String)
+        values.Add(value.GetString()!);
 }
 
 static async Task RunDotNetAsync(string projectPath, IReadOnlyList<string> commandArguments, string workdir)
@@ -150,7 +230,13 @@ static void WriteReport(string path, IReadOnlyList<BindingCheckResult> checks, I
     foreach (var result in checks)
         lines.Add($"| `{result.Name}` | {(result.Passed ? "passed" : "failed")} |");
     foreach (var result in targets)
-        lines.Add($"| `{result.Name}` `{result.LibraryId}@{result.Version}` | {(result.Passed ? "passed" : "failed")} |");
+    {
+        var inventory = result.Inventory;
+        var inventoryText = inventory is null
+            ? ""
+            : $"; {inventory.Components} components, {inventory.Exports} exports, {inventory.Props} props, {inventory.Events} events, {inventory.Slots} slots; fingerprint `{inventory.Fingerprint[..12]}`";
+        lines.Add($"| `{result.Name}` `{result.LibraryId}@{result.Version}` | {(result.Passed ? "passed" : "failed")}{inventoryText} |");
+    }
     File.WriteAllText(summaryPath, string.Join(Environment.NewLine, lines) + Environment.NewLine);
 }
 
@@ -171,5 +257,6 @@ static string RequireRepositoryRoot()
 sealed record Check(string Name, IReadOnlyList<string> Arguments);
 sealed record BindingTarget(string LibraryId, string Version, string ProjectDirectory, string UpstreamDirectory, string DisplayName);
 sealed record BindingCheckResult(string Name, bool Passed, string? Error);
-sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error);
+sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error, BindingContractInventory? Inventory);
+sealed record BindingContractInventory(int Components, int Exports, int Props, int Events, int Slots, string Fingerprint);
 sealed record BindingContractReport(string SchemaVersion, string Status, IReadOnlyList<BindingCheckResult> Checks, IReadOnlyList<BindingTargetResult> Targets);

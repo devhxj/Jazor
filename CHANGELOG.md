@@ -8,7 +8,11 @@
 
 - Release Candidate Verification 现在把 RazorVue diagnostics protocol 作为独立 stage 运行，并将成功/失败 JSON、SARIF 和摘要归档到候选目录。by @devhxj
 
+- Vue binding contract reports now include stable component/export/prop/event/slot inventory counts and fingerprints for upstream drift review. by @devhxj
+
 Product closure follow-up
+
+- Vue binding contract reports now include stable component/export/prop/event/slot inventory counts and fingerprints for upstream drift review. by @devhxj
 
 - Vue binding contract verification now emits schema `1.0` JSON and Markdown reports, and Quality Gates plus release candidates archive the evidence for review. by @devhxj
 
