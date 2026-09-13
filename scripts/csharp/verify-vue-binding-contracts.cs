@@ -7,6 +7,7 @@ using System.Text.Json;
 
 var repoRoot = RequireRepositoryRoot();
 var reportPath = GetOption("--report");
+var baselinePath = GetOption("--baseline");
 var generatorProject = Path.Combine(repoRoot, "src", "ECMAScript.Vue.Generator", "ECMAScript.Vue.Generator.csproj");
 var checks = new[]
 {
@@ -55,7 +56,7 @@ foreach (var target in targets)
 }
 
 if (reportPath is not null)
-    WriteReport(reportPath, checkResults, targetResults);
+    WriteReport(reportPath, checkResults, targetResults, baselinePath);
 
 if (checkResults.Any(static result => !result.Passed) || targetResults.Any(static result => !result.Passed))
     Environment.ExitCode = 1;
@@ -202,16 +203,18 @@ static async Task RunDotNetAsync(string projectPath, IReadOnlyList<string> comma
     throw new InvalidOperationException($"Binding generator check failed ({string.Join(' ', commandArguments)}).{Environment.NewLine}{output}{Environment.NewLine}{error}");
 }
 
-static void WriteReport(string path, IReadOnlyList<BindingCheckResult> checks, IReadOnlyList<BindingTargetResult> targets)
+static void WriteReport(string path, IReadOnlyList<BindingCheckResult> checks, IReadOnlyList<BindingTargetResult> targets, string? baselinePath)
 {
     var fullPath = Path.GetFullPath(path);
     Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+    var baseline = baselinePath is null ? null : ReadBaseline(baselinePath);
+    var diffs = targets.Select(target => CreateDiff(target, baseline)).ToArray();
     var report = new BindingContractReport(
         "1.0",
         checks.All(static result => result.Passed) && targets.All(static result => result.Passed) ? "passed" : "failed",
         checks,
         targets,
-        targets.Select(static target => target.Inventory).OfType<BindingContractInventory>().ToArray());
+        targets.Select(static target => target.Inventory).OfType<BindingContractInventory>().ToArray(), diffs);
     File.WriteAllText(fullPath, JsonSerializer.Serialize(report, new JsonSerializerOptions
     {
         WriteIndented = true,
@@ -241,6 +244,23 @@ static void WriteReport(string path, IReadOnlyList<BindingCheckResult> checks, I
     File.WriteAllText(summaryPath, string.Join(Environment.NewLine, lines) + Environment.NewLine);
 }
 
+static BindingContractDiff CreateDiff(BindingTargetResult target, BindingBaseline? baseline)
+{
+    var previous = baseline?.Targets.FirstOrDefault(item => string.Equals(item.LibraryId, target.LibraryId, StringComparison.Ordinal));
+    var current = target.Inventory;
+    if (previous is null || current is null)
+        return new BindingContractDiff(target.LibraryId, "baseline-unavailable", Array.Empty<string>(), Array.Empty<string>());
+    var changed = current.Fingerprint == previous.Inventory?.Fingerprint ? Array.Empty<string>() : new[] { "inventory" };
+    return new BindingContractDiff(target.LibraryId, changed.Length == 0 ? "unchanged" : "changed", changed, Array.Empty<string>());
+}
+
+static BindingBaseline? ReadBaseline(string path)
+{
+    if (!File.Exists(path))
+        throw new InvalidOperationException($"Binding baseline report does not exist: {path}");
+    return JsonSerializer.Deserialize<BindingBaseline>(File.ReadAllText(path), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+}
+
 string? GetOption(string name)
 {
     var index = Array.IndexOf(args, name);
@@ -260,4 +280,6 @@ sealed record BindingTarget(string LibraryId, string Version, string ProjectDire
 sealed record BindingCheckResult(string Name, bool Passed, string? Error);
 sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error, BindingContractInventory? Inventory);
 sealed record BindingContractInventory(int Components, int Exports, int Props, int Events, int Slots, string Fingerprint);
-sealed record BindingContractReport(string SchemaVersion, string Status, IReadOnlyList<BindingCheckResult> Checks, IReadOnlyList<BindingTargetResult> Targets, IReadOnlyList<BindingContractInventory> Inventories);
+sealed record BindingContractReport(string SchemaVersion, string Status, IReadOnlyList<BindingCheckResult> Checks, IReadOnlyList<BindingTargetResult> Targets, IReadOnlyList<BindingContractInventory> Inventories, IReadOnlyList<BindingContractDiff> Diffs);
+sealed record BindingContractDiff(string LibraryId, string Status, IReadOnlyList<string> Changed, IReadOnlyList<string> Removed);
+sealed record BindingBaseline(IReadOnlyList<BindingTargetResult> Targets);
