@@ -2,6 +2,16 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-13
+
+### 后续产品收口
+
+- RazorVue 链路检查器新增 schema `1.0` remediation 报告，可在成功和失败时统一输出链路事实、稳定诊断 ID、HelpLink 与最小修复建议；SARIF 复用同一诊断目录，便于 IDE/CI 集成。by @devhxj
+
+Product closure follow-up
+
+- Add a schema `1.0` remediation report to the RazorVue chain inspector. Successful and failed runs now expose the same chain facts, stable diagnostic IDs, HelpLinks, and minimal fixes; SARIF reuses the same catalog for IDE and CI integration. by @devhxj
+
 ## 2026-09-12
 
 ### Jazor 0.60.0

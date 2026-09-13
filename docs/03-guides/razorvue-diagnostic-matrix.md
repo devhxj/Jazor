@@ -47,6 +47,6 @@
 dotnet run --file scripts/csharp/inspect-razorvue-chain.cs -- --source Page.razor --generated Page.razor.g.cs --artifact page.mjs --map page.mjs.map --json
 ```
 
-IDE/CI 需要 SARIF 时，在同一命令追加 `--sarif artifacts/razorvue-chain.sarif`。成功时报告为空结果；失败时保留对应诊断 ID、HelpLink 和作者源位置。
+IDE/CI 需要 SARIF 时，在同一命令追加 `--sarif artifacts/razorvue-chain.sarif`。成功时报告为空结果；失败时保留对应诊断 ID、HelpLink 和作者源位置。需要供 CI 或 IDE adapter 直接消费的稳定协议时，再追加 `--report artifacts/razorvue-chain.report.json`；该文件使用 schema `1.0`，包含 `status`、链路事实、`diagnostics` 和 `remediations`，成功与失败均有明确状态。
 
 脚本在缺文件、source map 未包含源文件或 artifact 没有 source map 引用时返回非零退出码。

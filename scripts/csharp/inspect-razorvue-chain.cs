@@ -36,8 +36,7 @@ var report = new ChainReport(
             mappedSource));
 
 var sarifPath = GetOptionValue(args, "--sarif");
-if (sarifPath is not null)
-    WriteSarif(sarifPath, report, null, sourceForSarif);
+var reportPath = GetOptionValue(args, "--report");
 
 if (options.Json)
 {
@@ -60,13 +59,20 @@ if (sourceMap is not null && !mappedSource)
     throw new InvalidOperationException("The source map does not contain the supplied .razor source path.");
 if (map is not null && !hasMapReference)
     throw new InvalidOperationException("The render-function artifact does not contain a sourceMappingURL reference.");
+if (sarifPath is not null)
+    WriteSarif(sarifPath, report, null, sourceForSarif);
+if (reportPath is not null)
+    WriteReport(reportPath, report);
 }
 catch (Exception exception)
 {
     Console.Error.WriteLine(exception.Message);
     var sarifPath = GetOptionValue(args, "--sarif");
+    var reportPath = GetOptionValue(args, "--report");
     if (sarifPath is not null)
         WriteSarif(sarifPath, null, exception, sourceForSarif);
+    if (reportPath is not null)
+        WriteReport(reportPath, null, exception, sourceForSarif);
     Environment.ExitCode = 1;
 }
 
@@ -96,29 +102,62 @@ static string? GetOptionValue(string[] arguments, string option)
     return index >= 0 && index + 1 < arguments.Length ? arguments[index + 1] : null;
 }
 
+static void WriteReport(string path, ChainReport? report, Exception? error = null, string? source = null)
+{
+    var fullPath = Path.GetFullPath(path);
+    Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+    var diagnostic = error is null ? null : CreateDiagnostic(error);
+    var envelope = new ChainReportEnvelope(
+        SchemaVersion: "1.0",
+        Status: error is null ? "succeeded" : "failed",
+        Chain: report,
+        Diagnostics: diagnostic is null ? Array.Empty<ChainDiagnostic>() : new[] { diagnostic },
+        Remediations: diagnostic is null ? Array.Empty<Remediation>() : new[] { diagnostic.Remediation });
+    File.WriteAllText(fullPath, JsonSerializer.Serialize(envelope,
+        new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        }) + Environment.NewLine);
+}
+
+static ChainDiagnostic CreateDiagnostic(Exception error)
+{
+    var isMapError = error.Message.Contains("source map", StringComparison.OrdinalIgnoreCase) ||
+                     error.Message.Contains("sourceMappingURL", StringComparison.OrdinalIgnoreCase);
+    var descriptor = isMapError
+        ? new DiagnosticDescriptor("JAZORVGA026", "Vue module chain is not mapped",
+            "module", "生成同一 Debug 构建的 .mjs 与 .mjs.map，并确认模块包含 sourceMappingURL。", "#vue-module")
+        : new DiagnosticDescriptor("JAZORVGA020", "RazorVue authoring chain failed",
+            "generation", "保留完整构建日志，确认 generated C#、render-function module 与 source map 来自同一构建。", "#final-compilation");
+    return new ChainDiagnostic(descriptor.Id, descriptor.Title, error.Message, "error",
+        HelpUri(descriptor.Anchor), descriptor.Category,
+        new Remediation(descriptor.Suggestion, descriptor.Anchor));
+}
+
+static string HelpUri(string anchor)
+    => "https://github.com/devhxj/Jazor/blob/main/docs/03-guides/razorvue-diagnostic-matrix.md" + anchor;
+
 static void WriteSarif(string path, ChainReport? report, Exception? error, string? source)
 {
     var fullPath = Path.GetFullPath(path);
     Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-    var results = error is null
+    var diagnostic = error is null ? null : CreateDiagnostic(error);
+    var results = diagnostic is null
         ? Array.Empty<object>()
         : new object[]
         {
             new
             {
-                ruleId = error.Message.Contains("source map", StringComparison.OrdinalIgnoreCase) ||
-                         error.Message.Contains("sourceMappingURL", StringComparison.OrdinalIgnoreCase)
-                    ? "JAZORVGA026"
-                    : "JAZORVGA020",
+                ruleId = diagnostic.Id,
                 level = "error",
-                message = new { text = error.Message },
-                helpUri = "https://github.com/devhxj/Jazor/blob/main/docs/03-guides/razorvue-diagnostic-matrix.md",
+                message = new { text = diagnostic.Message },
+                helpUri = diagnostic.HelpUri,
                 properties = new
                 {
-                    suggestion = error.Message.Contains("source map", StringComparison.OrdinalIgnoreCase) ||
-                                 error.Message.Contains("sourceMappingURL", StringComparison.OrdinalIgnoreCase)
-                        ? "生成同一 Debug 构建的 .mjs 与 .mjs.map，并确认模块包含 sourceMappingURL。"
-                        : "保留完整构建日志，确认 generated C#、render-function module 与 source map 来自同一构建。"
+                    category = diagnostic.Category,
+                    suggestion = diagnostic.Remediation.Suggestion,
+                    documentationAnchor = diagnostic.Remediation.DocumentationAnchor
                 },
                 locations = (report?.Source ?? source) is null
                     ? Array.Empty<object>()
@@ -151,8 +190,8 @@ static void WriteSarif(string path, ChainReport? report, Exception? error, strin
                         informationUri = "https://github.com/devhxj/Jazor",
                         rules = new[]
                         {
-                            new { id = "JAZORVGA020", helpUri = "https://github.com/devhxj/Jazor/blob/main/docs/03-guides/razorvue-diagnostic-matrix.md" },
-                            new { id = "JAZORVGA026", helpUri = "https://github.com/devhxj/Jazor/blob/main/docs/03-guides/razorvue-diagnostic-matrix.md" }
+                            new { id = "JAZORVGA020", helpUri = HelpUri("#final-compilation"), properties = new { category = "generation" } },
+                            new { id = "JAZORVGA026", helpUri = HelpUri("#vue-module"), properties = new { category = "module" } }
                         }
                     }
                 },
@@ -222,8 +261,9 @@ internal sealed record ChainOptions(
                 case "--map": map = ReadValue(args, ref index); break;
                 case "--json": json = true; break;
                 case "--sarif": _ = ReadValue(args, ref index); break;
+                case "--report": _ = ReadValue(args, ref index); break;
                 case "--help":
-                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/inspect-razorvue-chain.cs -- --source page.razor --generated page.razor.g.cs --artifact page.mjs [--map page.mjs.map] [--json] [--sarif report.sarif]");
+                    Console.WriteLine("Usage: dotnet run --file scripts/csharp/inspect-razorvue-chain.cs -- --source page.razor --generated page.razor.g.cs --artifact page.mjs [--map page.mjs.map] [--json] [--sarif report.sarif] [--report report.json]");
                     Environment.Exit(0);
                     break;
                 default: throw new InvalidOperationException("Unknown argument: " + args[index]);
@@ -240,3 +280,28 @@ internal sealed record ChainOptions(
         return args[index];
     }
 }
+
+internal sealed record ChainReportEnvelope(
+    string SchemaVersion,
+    string Status,
+    ChainReport? Chain,
+    IReadOnlyList<ChainDiagnostic> Diagnostics,
+    IReadOnlyList<Remediation> Remediations);
+
+internal sealed record ChainDiagnostic(
+    string Id,
+    string Title,
+    string Message,
+    string Level,
+    string HelpUri,
+    string Category,
+    Remediation Remediation);
+
+internal sealed record Remediation(string Suggestion, string DocumentationAnchor);
+
+internal sealed record DiagnosticDescriptor(
+    string Id,
+    string Title,
+    string Category,
+    string Suggestion,
+    string Anchor);
