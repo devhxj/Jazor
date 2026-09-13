@@ -59,6 +59,12 @@ foreach (var target in targets)
 if (reportPath is not null)
     WriteReport(reportPath, checkResults, targetResults, baselinePath);
 
+if (reportPath is not null && baselinePath is null && failOnBaselineDrift)
+{
+    Console.Error.WriteLine("Binding baseline is required when --fail-on-baseline-drift is enabled.");
+    Environment.ExitCode = 1;
+}
+
 if (checkResults.Any(static result => !result.Passed) || targetResults.Any(static result => !result.Passed))
     Environment.ExitCode = 1;
 else if (reportPath is not null && failOnBaselineDrift && HasBaselineDrift(reportPath))
