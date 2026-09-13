@@ -134,7 +134,13 @@ static BindingContractInventory ReadInventory(BindingTarget target)
                 var kind = member.TryGetProperty("kind", out var kindValue) ? kindValue.GetString() : null;
                 var name = member.TryGetProperty("runtimeName", out var runtimeName) ? runtimeName.GetString() : null;
                 if (kind is not null && name is not null)
-                    members.Add(kind + ":" + name);
+                {
+                    var value = kind + ":" + name;
+                    members.Add(value);
+                    if (kind == "prop") props.Add(name);
+                    else if (kind == "event") events.Add(name);
+                    else if (kind == "slot") slots.Add(name);
+                }
             }
         }
     }
