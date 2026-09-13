@@ -151,7 +151,7 @@ static BindingContractInventory ReadInventory(BindingTarget target)
         .Concat(slots.Select(static value => "slot:" + value)));
     fingerprintInput = string.Join("\n", fingerprintInput.Split('\n').Concat(members.Select(static value => "member:" + value)));
     var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintInput))).ToLowerInvariant();
-    return new BindingContractInventory(componentCount, exports.Count, props.Count, events.Count, slots.Count, members.Count, fingerprint);
+    return new BindingContractInventory(componentCount, exports, props, events, slots, members, fingerprint);
 }
 
 static void AddMembers(JsonElement component, string propertyName, ISet<string> values)
@@ -310,7 +310,14 @@ sealed record Check(string Name, IReadOnlyList<string> Arguments);
 sealed record BindingTarget(string LibraryId, string Version, string ProjectDirectory, string UpstreamDirectory, string DisplayName);
 sealed record BindingCheckResult(string Name, bool Passed, string? Error);
 sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error, BindingContractInventory? Inventory);
-sealed record BindingContractInventory(int Components, int Exports, int Props, int Events, int Slots, int Members, string Fingerprint);
+sealed record BindingContractInventory(int Components, IReadOnlyCollection<string> ExportNames, IReadOnlyCollection<string> PropNames, IReadOnlyCollection<string> EventNames, IReadOnlyCollection<string> SlotNames, IReadOnlyCollection<string> MemberNames, string Fingerprint)
+{
+    public int Exports => ExportNames.Count;
+    public int Props => PropNames.Count;
+    public int Events => EventNames.Count;
+    public int Slots => SlotNames.Count;
+    public int Members => MemberNames.Count;
+}
 sealed record BindingContractReport(string SchemaVersion, string Status, IReadOnlyList<BindingCheckResult> Checks, IReadOnlyList<BindingTargetResult> Targets, IReadOnlyList<BindingContractInventory> Inventories, IReadOnlyList<BindingContractDiff> Diffs);
 sealed record BindingContractDiff(string LibraryId, string Status, IReadOnlyList<string> Changed, IReadOnlyList<string> Removed, int ComponentDelta, int PropDelta, int EventDelta, int SlotDelta);
 sealed record BindingBaseline(IReadOnlyList<BindingTargetResult> Targets);
