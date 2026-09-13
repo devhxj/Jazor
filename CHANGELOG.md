@@ -2,6 +2,16 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-09-14
+
+### 后续产品收口
+
+- Quality Gates 新增 RazorVue diagnostics protocol 门禁，在隔离 fixture 中持续验证成功链路、source map 断链和 generated C# 缺失，并归档 JSON/SARIF remediation 证据。by @devhxj
+
+Product closure follow-up
+
+- Add a RazorVue diagnostics protocol gate to Quality Gates. It continuously verifies successful chains, source-map breaks, and missing generated C# in isolated fixtures, archiving JSON/SARIF remediation evidence. by @devhxj
+
 ## 2026-09-13
 
 ### 后续产品收口

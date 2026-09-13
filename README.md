@@ -40,6 +40,7 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 - Vue binding contracts for Element Plus, Vuetify, and TDesign are checked against generated snapshots, manifests, and upstream versions before release.
 - RazorVue diagnostics can emit SARIF with stable IDs, HelpLinks, and authored source locations for IDE integration.
 - The RazorVue chain inspector also emits a schema `1.0` remediation report with chain facts and minimal fixes for CI and IDE adapters.
+- Quality Gates continuously exercise the diagnostics protocol with isolated success and failure fixtures, preserving JSON and SARIF evidence.
 
 Read the [release notes](CHANGELOG.md) for the complete history.
 

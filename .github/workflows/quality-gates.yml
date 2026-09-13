@@ -24,6 +24,8 @@ on:
       - 'scripts/csharp/verify-typed-bootstrap.cs'
       - 'scripts/csharp/verify-vue-binding-contracts.cs'
       - 'scripts/csharp/benchmark-razorvue-build.cs'
+      - 'scripts/csharp/inspect-razorvue-chain.cs'
+      - 'scripts/csharp/verify-razorvue-diagnostics.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -43,6 +45,8 @@ on:
       - 'scripts/csharp/verify-typed-bootstrap.cs'
       - 'scripts/csharp/verify-vue-binding-contracts.cs'
       - 'scripts/csharp/benchmark-razorvue-build.cs'
+      - 'scripts/csharp/inspect-razorvue-chain.cs'
+      - 'scripts/csharp/verify-razorvue-diagnostics.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -213,6 +217,33 @@ jobs:
         with:
           name: typed-bootstrap-${{ github.run_attempt }}
           path: ${{ github.workspace }}/artifacts/quality/typed-bootstrap/
+          if-no-files-found: error
+          retention-days: 14
+
+  razorvue-diagnostics:
+    name: RazorVue diagnostics protocol
+    runs-on: windows-latest
+    steps:
+      - name: Checkout tested ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Verify diagnostics protocol
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/verify-razorvue-diagnostics.cs -- --output "${{ github.workspace }}/artifacts/quality/razorvue-diagnostics"
+
+      - name: Upload diagnostics evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: razorvue-diagnostics-${{ github.run_attempt }}
+          path: ${{ github.workspace }}/artifacts/quality/razorvue-diagnostics/
           if-no-files-found: error
           retention-days: 14
 
