@@ -23,6 +23,7 @@ on:
       - 'scripts/csharp/compare-public-api.cs'
       - 'scripts/csharp/verify-typed-bootstrap.cs'
       - 'scripts/csharp/verify-vue-binding-contracts.cs'
+      - 'docs/04-roadmap/binding-contract-baseline.json'
       - 'scripts/csharp/benchmark-razorvue-build.cs'
       - 'scripts/csharp/inspect-razorvue-chain.cs'
       - 'scripts/csharp/verify-razorvue-diagnostics.cs'
