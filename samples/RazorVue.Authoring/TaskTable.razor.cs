@@ -27,5 +27,7 @@ public partial class TaskTable : ComponentBase, IVueComponent
     ];
 
     private void OnRowClick(TRowEventContext<TaskRow> context)
-        => _ = context.Row.Id;
+        => SelectedRowId = context.Row.Id;
+
+    private int SelectedRowId { get; set; }
 }

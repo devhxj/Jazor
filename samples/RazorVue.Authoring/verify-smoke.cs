@@ -295,6 +295,7 @@ static async Task VerifyReleaseHostInBrowserAsync(
         RequireContains(board, "Task board", "mounted task-board heading");
         RequireContains(board, "Review the generated module", "mounted typed table row");
         RequireContains(board, "RazorVue workspace", "mounted cascading value");
+        RequireContains(board, "data-row-click=\"2\"", "typed row event payload projection");
 
         await browser.ClickButtonAsync("New task");
         await browser.WaitUntilAsync(
