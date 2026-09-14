@@ -11,6 +11,7 @@
       "productionHash": "156c6ca2774d3f95180d9bad9c8bf495066e335a35883e2311e513b94163edb7",
       "developmentDependencies": [
         "@vue/devtools-api",
+        "nostics",
         "vue"
       ],
       "productionDependencies": [

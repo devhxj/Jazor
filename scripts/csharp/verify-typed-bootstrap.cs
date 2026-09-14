@@ -12,6 +12,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Net.Sockets;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -71,13 +72,14 @@ try
         "/api/editor/commit",
         new EditorCommand(
             initial.Version - 1,
-            [new EditorRow("1", "stale write")]));
+            [new EditorRow("1", "stale write")]),
+        BootstrapJsonContext.Default.EditorCommand);
 
     Ensure(
         staleResponse.StatusCode == HttpStatusCode.Conflict,
         "A stale business version must return HTTP 409.");
 
-    var conflict = await ReadRequiredAsync<EditorBootstrap>(staleResponse);
+    var conflict = await ReadRequiredAsync(staleResponse);
 
     Ensure(
         conflict.Version == initial.Version,
@@ -91,7 +93,8 @@ try
         "/api/editor/commit",
         new EditorCommand(
             conflict.Version,
-            [new EditorRow("1", " ")]));
+            [new EditorRow("1", " ")]),
+        BootstrapJsonContext.Default.EditorCommand);
 
     Ensure(
         invalidResponse.StatusCode == HttpStatusCode.UnprocessableEntity,
@@ -105,13 +108,14 @@ try
         "/api/editor/commit",
         new EditorCommand(
             conflict.Version,
-            [new EditorRow("1", "saved")]));
+            [new EditorRow("1", "saved")]),
+        BootstrapJsonContext.Default.EditorCommand);
 
     Ensure(
         committedResponse.IsSuccessStatusCode,
         "A current, valid command must commit successfully.");
 
-    var committed = await ReadRequiredAsync<EditorBootstrap>(committedResponse);
+    var committed = await ReadRequiredAsync(committedResponse);
 
     Ensure(
         committed.Version == 2 &&
@@ -144,17 +148,19 @@ finally
 
 static async Task<EditorBootstrap> GetBootstrapAsync(HttpClient client)
 {
-    var value = await client.GetFromJsonAsync<EditorBootstrap>(
-        "/api/editor/bootstrap");
+    var value = await client.GetFromJsonAsync(
+        "/api/editor/bootstrap",
+        BootstrapJsonContext.Default.EditorBootstrap);
 
     return value
         ?? throw new InvalidOperationException(
             "Bootstrap endpoint returned an empty payload.");
 }
 
-static async Task<T> ReadRequiredAsync<T>(HttpResponseMessage response)
+static async Task<EditorBootstrap> ReadRequiredAsync(HttpResponseMessage response)
 {
-    var value = await response.Content.ReadFromJsonAsync<T>();
+    var value = await response.Content.ReadFromJsonAsync(
+        BootstrapJsonContext.Default.EditorBootstrap);
 
     return value
         ?? throw new InvalidOperationException(
@@ -218,4 +224,10 @@ sealed record EditorRow(
 sealed record EditorCommand(
     int Version,
     IReadOnlyList<EditorRow> Rows);
+
+[JsonSerializable(typeof(EditorBootstrap))]
+[JsonSerializable(typeof(EditorCommand))]
+[JsonSerializable(typeof(EditorRow))]
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+partial class BootstrapJsonContext : JsonSerializerContext;
 

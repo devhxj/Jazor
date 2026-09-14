@@ -6,6 +6,10 @@
 
 ### 后续产品收口
 
+- Release Candidate 现在纳入 Release 样例业务回归矩阵；Vue Router development runtime 显式声明 `nostics` 依赖，确保浏览器资源闭包可物化。by @devhxj
+
+- Release Candidate now includes the Release sample application regression matrix; the Vue Router development runtime explicitly declares its `nostics` dependency so the browser resource closure is materialized correctly. by @devhxj
+
 - Release Candidate Verification 现在把 RazorVue diagnostics protocol 作为独立 stage 运行，并将成功/失败 JSON、SARIF 和摘要归档到候选目录。by @devhxj
 
 - Vue binding contract reports now include stable component/export/prop/event/slot inventory counts and fingerprints for upstream drift review. by @devhxj

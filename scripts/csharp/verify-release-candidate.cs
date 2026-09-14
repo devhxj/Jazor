@@ -9,7 +9,7 @@ var repoRoot = RequireRepoRoot();
 var version = NormalizeVersion(options.Tag);
 var candidateRoot = ResolveInsideRepository(repoRoot, options.OutputDirectory ?? Path.Combine("artifacts", "release-candidate", SafeName(options.Tag)));
 Directory.CreateDirectory(candidateRoot);
-foreach (var directoryName in new[] { "logs", "packages", "coverage", "package-shape", "diagnostics", "binding-contracts", "out", "obj" })
+foreach (var directoryName in new[] { "logs", "packages", "coverage", "package-shape", "diagnostics", "binding-contracts", "sample-regression", "out", "obj" })
 {
     var directory = Path.Combine(candidateRoot, directoryName);
     if (Directory.Exists(directory))
@@ -40,6 +40,7 @@ var stageDefinitions = new (string Name, string[] Arguments)[]
     ("binding-contracts", ["run", "--file", "scripts/csharp/verify-vue-binding-contracts.cs", "--", "--report", Path.Combine(candidateRoot, "binding-contracts", "report.json"), "--baseline", Path.Combine(repoRoot, "docs", "04-roadmap", "binding-contract-baseline.json"), "--fail-on-baseline-drift"]),
     ("razorvue-diagnostics", ["run", "--file", "scripts/csharp/verify-razorvue-diagnostics.cs", "--", "--output", Path.Combine(candidateRoot, "diagnostics")]),
     ("typed-bootstrap", ["run", "--file", "scripts/csharp/verify-typed-bootstrap.cs", "--", "--report", Path.Combine(candidateRoot, "typed-bootstrap.md")]),
+    ("sample-regression", ["run", "--file", "scripts/csharp/verify-sample-regression-matrix.cs", "--", "--configuration", "Release", "--report", Path.Combine(candidateRoot, "sample-regression", "report.json")]),
     ("mainline", ["run", "--file", "scripts/csharp/test-dotnet.cs", "--", "--configuration", "Release", "--base-output-path", Path.Combine(candidateRoot, "out"), "--base-intermediate-output-path", Path.Combine(candidateRoot, "obj")]),
     ("packages", ["run", "--file", "scripts/csharp/publish-nuget.cs", "--", "--configuration", "Release", "--output-directory", packageRoot, "--package-version", version, "--package", "jazor", "--package", "jazor-vue", "--package", "style", "--package", "admin", "--package", "devtools", "--package", "dataui", "--package", "vu-icons", "--package", "pinia", "--package", "pinia-testing", "--package", "vueroute", "--package", "vuetify", "--package", "elementplus", "--package", "tdesign", "--skip-push"]),
     ("package-shape", ["run", "--file", "scripts/csharp/verify-nuget-package.cs", "--", "--configuration", "Release", "--output-directory", Path.Combine(candidateRoot, "package-shape"), "--package-version", version, "--package", "Jazor", "--package", "Jazor.Vue"]),
