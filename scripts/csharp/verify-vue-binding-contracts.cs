@@ -319,10 +319,25 @@ static void WriteReport(string path, IReadOnlyList<BindingCheckResult> checks, I
             : $"; {inventory.Components} components, {inventory.Exports} exports, {inventory.Props} props, {inventory.Events} events, {inventory.Slots} slots; fingerprint `{inventory.Fingerprint[..12]}`";
         lines.Add($"| `{result.Name}` `{result.LibraryId}@{result.Version}` | {(result.Passed ? "passed" : "failed")}{inventoryText} |");
     }
+    lines.Add("");
+    lines.Add("## Baseline diff");
+    lines.Add("");
+    lines.Add("| Library | Status | Added | Removed | Inventory | Details |");
+    lines.Add("| --- | --- | ---: | ---: | --- | --- |");
     foreach (var diff in report.Diffs)
-        lines.Add($"| diff `{diff.LibraryId}` | `{diff.Status}`; added {diff.Changed.Count}, removed {diff.Removed.Count} |");
+    {
+        var added = diff.Changed.Where(static item => item.Contains("+:", StringComparison.Ordinal)).ToArray();
+        var allDetails = added.Concat(diff.Removed).ToArray();
+        var details = string.Join(", ", allDetails.Take(12));
+        if (allDetails.Length > 12)
+            details += $" (+{allDetails.Length - 12} more)";
+        var inventoryChanges = diff.Changed.Where(static item => !item.Contains("+:", StringComparison.Ordinal)).ToArray();
+        lines.Add($"| `{diff.LibraryId}` | `{diff.Status}` | {added.Length} | {diff.Removed.Count} | {EscapeMarkdown(string.Join(", ", inventoryChanges))} | {EscapeMarkdown(details)} |");
+    }
     File.WriteAllText(summaryPath, string.Join(Environment.NewLine, lines) + Environment.NewLine);
 }
+
+static string EscapeMarkdown(string value) => value.Replace("|", "\\|", StringComparison.Ordinal);
 
 static BindingContractDiff CreateDiff(BindingTargetResult target, BindingBaseline? baseline)
 {
