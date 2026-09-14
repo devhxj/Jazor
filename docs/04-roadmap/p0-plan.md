@@ -144,6 +144,10 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 
 使用同一 SDK、`RazorVue.Authoring` 输入、隔离输出目录和 `--samples 3 --skip-hmr --skip-release` 协议：clean 三轮分别为 **98.966 秒、104.075 秒、80.271 秒**，中位数 **98.966 秒**；incremental 三轮分别为 **4.918 秒、6.330 秒、3.927 秒**，中位数 **4.918 秒**。结果仍表现出预览 SDK 与机器负载造成的明显离散，不能据此宣称回归或优化收益。
 
+### 运行时基线复核（2026-09-14）
+
+使用 `benchmark-razorvue-g2.cs --measure-runtime --samples 3 --iterations 3` 复核 direct render/update：`plain-text` 与 `static-vnode` 生成路径达到与手写基线相同的吞吐；`counter` 生成 render/update 为 `476190.48/2500000`，手写基线为 `857142.86/3000000`；`keyed-list-100` 生成 render/update 为 `163043.48/206896.55`，手写基线为 `192307.69/322580.65`。gzip 体积也已纳入同一报告。该结果用于持续观测，不构成主链路优化授权；优化仍须先证明稳定瓶颈并保持求值顺序、导入稳定性和 source map 语义。
+
 基准脚本现同时扫描每轮最终 `JazorDir`，记录 manifest 声明的生成模块数、全部 `.mjs`/source map 数量、原始与逐文件 gzip 字节数、`jazor-manifest.json` 和完整 Emit 输出体积，并对连续轮次按相对路径和文件大小计算产物变化。2026-09-12 的单轮探查（`--samples 1 --skip-hmr --skip-release`）得到 clean **36.536 秒**、incremental **2.886 秒**；两轮均为 **8 个生成模块、12 个 `.mjs` 文件、8 个 source map、`.mjs` 3,090,284 bytes（gzip 541,421）、map 132,057 bytes（gzip 29,919）、manifest 7,732 bytes（gzip 2,129）、Emit 输出 4,495,131 bytes（逐文件 gzip 777,488）**，incremental 产物变化为 **0 文件/0 bytes**。这些字段是最终产物观测，不等同于编译器内部缓存命中或独立 Emit 阶段耗时；当前仍无证据要求修改 compiler/Emit 主链。
 
 ## P0-D：绑定生成与版本漂移
