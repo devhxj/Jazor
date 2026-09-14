@@ -20,7 +20,13 @@ public partial class TaskTable : ComponentBase, IVueComponent
         {
             ColKey = nameof(TaskRow.Title),
             Title = "Task",
-            Cell = "title"
+            Cell = (TPrimaryTableColCell<TaskRow>)((RenderFragment<TPrimaryTableCellParams<TaskRow>>)(context => builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "data-task-cell", context.Row.Id);
+                builder.AddContent(2, context.Row.Title);
+                builder.CloseElement();
+            }))
         },
         new() { ColKey = nameof(TaskRow.Owner), Title = "Owner" },
         new() { ColKey = nameof(TaskRow.Status), Title = "Status" }

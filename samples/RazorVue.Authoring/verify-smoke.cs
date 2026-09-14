@@ -86,6 +86,7 @@ static void AssertAuthoringSource(string sampleRoot)
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor")), "@bind-Value=\"Draft.Title\"", "Razor bind authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskTable.razor")), "<TPrimaryTable T=\"TaskRow\"", "typed primary-table authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskTable.razor")), "<CellEmptyContent Context=\"cell\">", "typed empty-cell slot authoring");
+    RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskTable.razor.cs")), "TPrimaryTableCellParams<TaskRow>", "typed table cell context authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor.cs")), "[Inject]", "writable injected NavigationManager");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor.cs")), "LocationChanged +=", "LocationChanged subscription authoring");
     RequireContains(File.ReadAllText(Path.Combine(sampleRoot, "TaskBoard.razor.cs")), "Navigation.BaseUri + \"tasks?view=compact\"", "PathBase-aware replace target");
@@ -295,6 +296,7 @@ static async Task VerifyReleaseHostInBrowserAsync(
         RequireContains(board, "Task board", "mounted task-board heading");
         RequireContains(board, "Review the generated module", "mounted typed table row");
         RequireContains(board, "RazorVue workspace", "mounted cascading value");
+        RequireContains(board, "data-task-cell=\"1\"", "typed table cell rendering");
         RequireContains(board, "data-row-click=\"2\"", "typed row event payload projection");
 
         await browser.ClickButtonAsync("New task");
