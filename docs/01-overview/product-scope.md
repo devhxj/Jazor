@@ -4,34 +4,34 @@
 
 ## 产品定位
 
-Jazor 是一套 C# 至 ECMAScript 的 .NET 工具链。它以 Roslyn `IOperation` 为语义输入，以标准 ECMAScript AST 为中间表示，将受支持的 C# 语义编译为确定性的浏览器模块，并提供模块物化、source map、浏览器打包和 ASP.NET Core 集成。
+Jazor 是一套 C# 至 ECMAScript 的 .NET 工具链。它以 Roslyn `IOperation` 为语义输入，以标准 ECMAScript AST 为中间表示，编译受支持的 C# 语义，产出确定性的浏览器模块，并提供模块物化、source map、浏览器打包与 ASP.NET Core 集成。
 
-它的价值不在于让 C# 看起来像 JavaScript，而在于让作者在编写阶段保留类型检查、符号绑定与明确的宿主 API 边界，同时得到可被标准 JavaScript 工具链消费的模块。编译期负责判断，浏览器负责执行；两者之间没有未经声明的语义跳跃。
+它的价值在于：作者在编写阶段依然保留类型检查、符号绑定与明确的宿主 API 边界，同时得到可被标准 JavaScript 工具链直接消费的模块。编译期负责判断，浏览器负责执行，两者之间只保留已声明的语义，杜绝未经声明的语义跳跃。
 
-Razor-to-Vue 是建立在这项核心能力之上的应用方向：它先将官方 Razor SG 的组件语义绑定为可编译的 C# 操作，再调用 Jazor 核心生成 Vue render-function 产物。因此，Razor-to-Vue 不是另一套编译器，而是同一条语义与交付链路中的框架集成。
+Razor-to-Vue 是建立在这项核心能力之上的应用方向：它先绑定官方 Razor SG 的组件语义，得到可编译的 C# 操作，再调用 Jazor 核心生成 Vue render-function 产物。它与核心共享同一条语义与交付链路，承担框架集成的角色。
 
 ## 层级与产品路径
 
-核心平台、框架集成与应用方向依次建立，彼此协作，却不相互替代。
+核心平台、框架集成与应用方向依次建立，彼此协作，又各司其职。
 
 | 层级 | 路径 | 输入 | 输出 | 启用方式 |
-| --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |
 | 核心平台 | ECMAScript 模块 | 标注为 `[ECMAScriptModule]` 的 C# 模块 | `.mjs`、源映射与 manifest | 引用 `Jazor` |
 | 核心平台 | 浏览器交付 | 程序集内 `ModuleCatalog` 与资源包 `manifest.json + dist/**` 的显式依赖闭包 | debug 模块或 Netpack 生产包 | 在最终宿主项目设置 `JazorMode` |
 | 框架集成层 | Razor-to-Vue（当前实现） | 官方 Razor Source Generator 生成的最终 C# 语义 | Vue render-function `.mjs` | 在 Razor 项目中额外引用 `Jazor.Vue` |
 | 应用方向 | ASP.NET Core SSR | 物化后的 Vue 模块图 | 服务器渲染 HTML 与客户端 hydration | 设置 `JazorSSR` 并注册 SSR 服务 |
 
-Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vuetify、Element Plus、TDesign、CSS-in-JS 与管理壳均是围绕 Jazor 核心平台提供的强类型绑定或可选库，不构成独立编译路线。
+Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vuetify、Element Plus、TDesign、CSS-in-JS 与管理壳，都是围绕 Jazor 核心平台提供的强类型绑定或可选库，并不构成独立的编译路线。
 
 ## 非目标
 
-Jazor 不试图成为任意 .NET 程序的完整 CLR 运行时，也不把不受支持的外部 API 静默降级为原始 JavaScript。需要运行时语义的外部类型和成员必须存在明确的宿主映射；无法忠实表达的能力应在实际使用点明确失败。这个边界让“可以使用”始终意味着有实现、有映射，也有可复现的行为证据。
+Jazor 并不以在浏览器中复现完整 CLR 运行时为目标，也拒绝让不受支持的外部 API 静默降级为原始 JavaScript。凡需要运行时语义的外部类型与成员，都要有明确的宿主映射；无法忠实表达的能力，就在实际使用点明确失败。正因守住了这条边界，“可以使用”始终意味着有实现、有映射，也有可复现的行为证据。
 
-当前生产 Razor-to-Vue 路径只接受官方 Razor Source Generator 完成后的最终 `Compilation`。Razor IR、生成 SFC、二次解析生成 C#、中间 wrapper-JS 协议，以及已退役的 Jolt 和 CSX 路线都不是当前产品路径。未来的框架集成可建立在同一核心平台上，但不会因尚未实现的方向改变当前公开契约。
+当前生产的 Razor-to-Vue 路径只接受官方 Razor Source Generator 完成后的最终 `Compilation`。Razor IR、生成 SFC、二次解析生成 C#、中间 wrapper-JS 协议，以及已退役的 Jolt 和 CSX 路线，都留在当前产品路径之外。未来的框架集成可以建立在同一核心平台上，而当前公开契约会保持稳定，不随尚未实现的方向而改变。
 
 ## 产品组成
 
-下列项目共同构成这条工程路径；每一层只承担本层应该承担的责任。
+下列项目共同构成这条工程路径；每一层只承担本层应当承担的责任。
 
 | 层级 | 主要项目 | 责任 |
 | --- | --- | --- |
@@ -42,4 +42,4 @@ Jazor 不试图成为任意 .NET 程序的完整 CLR 运行时，也不把不受
 | 生态与 UI | `ECMAScript.*`、`Jazor.Admin` | Vue 生态绑定、样式和管理壳库 |
 | 示例 | `samples/` | 真实集成、浏览器验证和使用参考 |
 
-`Jazor.Admin` 是可发布的管理壳库；`samples/JazorAdmin` 是消费该库的生产级管理参考应用。前者定义可复用的壳与模型契约，后者选择 TDesign、页面结构和领域流程，两者的职责不可混用。示例入口见[示例](../03-guides/examples.md)。
+`Jazor.Admin` 是可发布的管理壳库，`samples/JazorAdmin` 则是消费该库的生产级管理参考应用。前者定义可复用的壳与模型契约，后者选择 TDesign、页面结构和领域流程，两者的职责各自独立、互不混用。示例入口见[示例](../03-guides/examples.md)。

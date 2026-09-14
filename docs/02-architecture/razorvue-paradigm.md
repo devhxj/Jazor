@@ -4,7 +4,7 @@
 
 ## 一句话定义
 
-RazorVue 把 Razor 组件当作一种 JSX-like 的声明式 UI 语言：Razor 标记声明组件树，属性和 `@(...)` 表达式提供值，事件和 `@bind` 提供交互，`@code`/`.razor.cs` 提供可编译的状态与行为；官方 Razor Source Generator 生成 C# 后，RazorVue 将最终 `Compilation` 降低为 Vue render-function 模块。
+RazorVue 视 Razor 组件为一种 JSX-like 的声明式 UI 语言：Razor 标记声明组件树，属性和 `@(...)` 表达式提供值，事件和 `@bind` 提供交互，`@code`/`.razor.cs` 提供可编译的状态与行为；官方 Razor Source Generator 生成 C# 后，RazorVue 降低最终 `Compilation`，产出 Vue render-function 模块。
 
 ```text
 Razor markup + C# component logic
@@ -15,15 +15,15 @@ Razor markup + C# component logic
     -> Vue render-function .mjs
 ```
 
-Blazor 名称出现在作者代码中，只表示采用了熟悉的 Razor/C# 组件表达方式，不表示对应的 Blazor runtime、服务容器、内置 UI 组件或服务器 circuit 会被搬到浏览器。
+Blazor 名称出现在作者代码中，仅表示沿用熟悉的 Razor/C# 组件表达方式；对应的 Blazor runtime、服务容器、内置 UI 组件或服务器 circuit 并不随之进入浏览器。
 
 ## 范式的核心规则
 
 ### 1. 组件树优先
 
-组件作者首先描述输出结构，而不是编写 DOM 操作。元素、组件、属性、子内容、条件和循环构成 VNode 树；`RenderTreeBuilder` 是 Razor SG 的中间表现和受控的手写入口，不是另一套公共作者协议。
+组件作者首先描述输出结构，无需编写 DOM 操作。元素、组件、属性、子内容、条件和循环构成 VNode 树；`RenderTreeBuilder` 是 Razor SG 的中间表现和受控的手写入口，并非另一套公共作者协议。
 
-组件必须同时具备 `ComponentBase` 身份、`IVueComponent`（或派生接口）契约，以及明确的 ECMAScript 模块或组件导入描述。导入描述不能单独把任意 .NET 类型变成组件。
+组件必须同时具备 `ComponentBase` 身份、`IVueComponent`（或派生接口）契约，以及明确的 ECMAScript 模块或组件导入描述。仅有导入描述，不足以让任意 .NET 类型成为组件。
 
 ### 2. Razor 标记与组件逻辑分域
 
@@ -70,7 +70,7 @@ Blazor 名称出现在作者代码中，只表示采用了熟悉的 Razor/C# 组
 
 ## 明确不属于范式的内容
 
-以下项目不是“尚未自动兼容”的隐性欠账，而是当前范式明确排除的运行时模型：
+以下运行时模型由当前范式明确排除；此类边界出自有意的设计取舍，属于产品能力的确定部分：
 
 - 完整 CLR、任意外部 .NET API、反射和依赖 CLR identity 的对象模型；
 - `IJSRuntime` 字符串互操作、动态 JavaScript import 和未经 typed binding 描述的 JS 对象；
@@ -92,18 +92,18 @@ Blazor 名称出现在作者代码中，只表示采用了熟悉的 Razor/C# 组
 5. 是否会改变求值顺序、副作用次数、响应式更新或生命周期顺序？
 6. 失败时能否给出源位置、稳定诊断 ID 和范式内替代写法？
 
-如果最后一个问题无法回答，就不应把该形状标记为 Support。
+如果最后一个问题无法回答，该形状就不应标记为 Support。
 
 ## P0/P1 完成状态与后续完善工作
 
-后续工作关注范式的自然度和证据闭环，而不是追求 Blazor API 数量：
+后续工作聚焦范式的自然度与证据闭环，不以 Blazor API 数量为追求：
 
 | 优先级 | 工作 | 完成标准 | 状态 |
 | --- | --- | --- | --- |
 | P0 | 收敛组件库 authoring contract | TDesign/Vuetify/Element Plus 的参数、事件、union、slot 和 splat 命名保持一致；真实页面不需要应用侧转换或手写 builder。 | 已完成并由组件 binding/authoring 测试与 Release consumer 覆盖 |
 | P0 | 提升失败诊断和修改反馈 | 每个 Reject/Guidance 都有稳定 ID、原始源位置、原因和最小替代写法；源码项目与独立 package consumer 行为一致。 | 已完成；诊断排序、源位置和失败传播有 SG 回归 |
 | P0 | 固化真实开发闭环 | Debug、HMR、Release、PathBase、浏览器交互、SSR/hydration 的资源闭包和错误传播可重复验证。 | 已完成；命令与实跑结果见[验收证据入口](#p0p1-验收证据入口) |
-| P1 | 完善响应式与生命周期语义 | 继续验证参数替换、slot 捕获、`@key` identity、异步事件、异步 lifecycle、卸载竞态和 SSR side effect；明确哪些是 Vue 语义而非 CLR parity。 | 当前声明子集已完成；完整 CLR reference parity 和复杂 SSR side effect 仍是边界 |
+| P1 | 完善响应式与生命周期语义 | 继续验证参数替换、slot 捕获、`@key` identity、异步事件、异步 lifecycle、卸载竞态和 SSR side effect；明确哪些行为遵循 Vue 语义，无需 CLR parity。 | 当前声明子集已完成；完整 CLR reference parity 和复杂 SSR side effect 仍是边界 |
 | P1 | 提供范式级调试工具 | 让作者能从 `.razor` 位置追踪到 generated C#、lowered module、source map 和最终组件边界，不要求阅读内部 AST。 | 已完成；使用 `inspect-razorvue-chain.cs` |
 | P1 | 建立中型应用体验基线 | 以 `samples/JazorAdmin` 真实应用和 `RazorVue.Authoring` Golden Path 测量多个组件、多层 slot、表单、路由和状态组合的首次构建、增量构建、HMR、产物体积和诊断耗时。 | 基线已完成；后续优化需保持同一 benchmark 参数 |
 | P2 | 扩展 typed 生态绑定 | **已完成本轮 Element Plus 切片**：`ElButton`/`ElInput` 覆盖枚举 prop、事件、`@bind-ModelValue`、default/prefix slot、class/style 与 attribute splat，并通过官方 SG、Deno 模块运行时、Release package consumer 和真实浏览器证据。后续组件仍按同一门槛逐切片加入。 |
@@ -137,12 +137,4 @@ Blazor 名称出现在作者代码中，只表示采用了熟悉的 Razor/C# 组
 
 ### P2 Element Plus 验收入口
 
-Element Plus 的 typed binding 以生成源 `src/ECMAScript.Vue.Generator/ElementPlusGenerator.cs` 和上游
-`2.14.5` metadata 为单一来源。生成器 `elementplus --check` 必须报告 `111 components and 2 directives`
-且工作区无生成漂移。官方 SG 回归
-`RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests` 验证 `ElButton` 的枚举与 click、`ElInput`
-的 `VueStringNumberValue` 双向绑定、named slot、属性 splat 以及最终 `element-plus` import；Emit 的
-`Build_LocalReleasePackages_WithExternalNativeElementPlusRazorConsumer_MaterializesAssetsInRealBrowser`
-验证隔离 package consumer、Release bundle、CSS/ESM 资源闭包以及真实浏览器可读取发布资源；组件
-交互语义由上面的官方 SG + Deno 运行时测试覆盖。该切片没有新增
-runtime protocol；如果后续组件需要协议能力，必须先增加明确的失败测试和迁移说明。
+Element Plus 的 typed binding 以生成源 `src/ECMAScript.Vue.Generator/ElementPlusGenerator.cs` 和上游 `2.14.5` metadata 为单一来源。生成器 `elementplus --check` 必须报告 `111 components and 2 directives` 且工作区无生成漂移。官方 SG 回归 `RazorSgOfficialElementPlusNaturalAuthoringRuntimeTests` 验证 `ElButton` 的枚举与 click、`ElInput` 的 `VueStringNumberValue` 双向绑定、named slot、属性 splat 以及最终 `element-plus` import；Emit 的 `Build_LocalReleasePackages_WithExternalNativeElementPlusRazorConsumer_MaterializesAssetsInRealBrowser` 验证隔离 package consumer、Release bundle、CSS/ESM 资源闭包以及真实浏览器可读取发布资源；组件交互语义由上面的官方 SG + Deno 运行时测试覆盖。该切片没有新增 runtime protocol；如果后续组件需要协议能力，必须先增加明确的失败测试和迁移说明。

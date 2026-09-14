@@ -1,10 +1,10 @@
 # RazorVue P0 执行计划
 
-> 本文是 RazorVue 下一阶段 P0 的实施指导文档。它把“开发者可以自然地写、失败时知道怎么改、发布时有证据、规模变大后仍可接受”拆成可独立验收的交付切片。计划不扩大 RazorVue 的支持边界；任何新能力仍须经过实现、测试、文档和真实消费者验证。
+> 本文是 RazorVue 下一阶段 P0 的实施指导文档。“开发者可以自然地写、失败时知道怎么改、发布时有证据、规模变大后仍可接受”这一目标，在文中拆分为可独立验收的交付切片。计划不扩大 RazorVue 的支持边界；任何新能力仍须经过实现、测试、文档和真实消费者验证。
 
 ## 目标
 
-P0 的结果不是增加一组零散语法，而是让一个没有阅读内部实现的开发者能够完成一条可复制的 RazorVue 开发闭环：
+P0 的结果是让一个没有阅读内部实现的开发者能够完成一条可复制的 RazorVue 开发闭环；其目标并非增加一组零散语法：
 
 ```text
 新建项目
@@ -28,7 +28,7 @@ P0 包含四条相互衔接的工作线：
 
 | 工作线 | 已有基础 | 尚需完成 |
 | --- | --- | --- |
-| Golden Path | `samples/RazorVue.Authoring` 已覆盖 TDesign 表单、表格、slot、绑定、路由和 Release/browser smoke；`docs/03-guides/razorvue-golden-path.md` 已固定推荐目录、强类型 API client、最小 CRUD 状态和逐步验证命令；`samples/JazorAdmin` 提供更大规模页面。 | 继续以真实页面反馈打磨复杂表格列、事件载荷和组合 slot；不把样本 workaround 提升为公共 API。 |
+| Golden Path | `samples/RazorVue.Authoring` 已覆盖 TDesign 表单、表格、slot、绑定、路由和 Release/browser smoke；`docs/03-guides/razorvue-golden-path.md` 已固定推荐目录、强类型 API client、最小 CRUD 状态和逐步验证命令；`samples/JazorAdmin` 提供更大规模页面。 | 继续以真实页面反馈打磨复杂表格列、事件载荷和组合 slot；样本 workaround 不提升为公共 API。 |
 | 诊断闭环 | `JAZORVGA020`-`026`、`JAZORVCA001`-`011`、HelpLink、mapped source location 和 `inspect-razorvue-chain.cs` 已存在。 | 建立一份按作者场景组织的诊断矩阵，补齐每个高频错误的最小替代示例，并验证源码项目与 package consumer 的输出一致。 |
 | 增量性能 | `benchmark-razorvue-g2.cs` 已提供 direct render/runtime 基线；`benchmark-razorvue-build.cs` 提供 clean/incremental/HMR/Release 构建计时，并扫描最终 `JazorDir` 记录生成模块、source map、manifest、Emit 体积及增量产物变化。 | 在固定机器和参数下重复采样并记录中位数，再决定是否修改缓存或编译主链；产物未变化不解释为内部缓存命中。 |
 | 绑定漂移 | Vuetify、Element Plus、TDesign 已有锁定快照、生成检查和 coverage；原始注释来源已在各包记录。`verify-vue-binding-contracts.cs` 统一执行生成检查并校验版本/文档/manifest，输出组件/export/prop/event/slot inventory、成员集合、fingerprint 和 baseline diff；Release Candidate 使用仓库 baseline 阻断漂移。 | 当前报告已覆盖集合、计数、类型和描述 fingerprint，并在 Markdown 中展示受控成员明细；后续只在真实升级需求出现时扩展字段级 diff。 |
@@ -57,7 +57,7 @@ P0 包含四条相互衔接的工作线：
 - 查询表格、loading/empty/error 状态、分页和行操作；
 - 新增/编辑表单、校验规则、提交失败后保留草稿、成功后刷新；
 - named slot、default slot、typed event callback、`@bind` 和一个 union prop；
-- typed API client 注入；数据访问只经过 endpoint，不把 server-only service 带入组件；
+- typed API client 注入；数据访问只经过 endpoint，server-only service 不进入组件；
 - Debug/HMR、SPA Release 和 SSR Release 的同一页面验证。
 
 ### 完成步骤
@@ -67,11 +67,11 @@ P0 包含四条相互衔接的工作线：
 3. 在 Deno/module runner 验证初始渲染、参数更新、表单提交和错误路径。
 4. 在隔离 package consumer 中验证 Release 资源闭包、PathBase 和刷新路由。
 5. 在真实 HTTP-origin browser 中验证 HMR、SPA 和适用 SSR/hydration 行为。
-6. 将页面写法、支持约束和失败替代路径加入作者指南；不把样本中的临时 workaround 提升为公共 API。
+6. 页面写法、支持约束和失败替代路径加入作者指南；样本中的临时 workaround 不提升为公共 API。
 
 ### 验收记录
 
-每次变更记录以下信息：commit、SDK/Node/浏览器版本、测试命令、退出码、生成物入口、关键交互断言和已知边界。样本通过后才能把对应写法从 Guidance 提升为 Support。
+每次变更记录以下信息：commit、SDK/Node/浏览器版本、测试命令、退出码、生成物入口、关键交互断言和已知边界。样本通过后，对应写法才能从 Guidance 提升为 Support。
 
 ## P0-B：诊断闭环
 
@@ -95,7 +95,7 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 2. 为高频失败补充短示例：动态组件类型、frame 外 metadata、未知 RenderFragment、server-only 注入、未映射 external member、unsupported constructor activation。
 3. 扩展 `inspect-razorvue-chain.cs`，支持人读文本和 JSON 两种输出，并在链路断裂时以非零退出码结束。
 4. 增加 package consumer 诊断回归，确保源码项目和独立消费者的错误分类一致。
-5. 将错误构建的清理行为纳入测试，而不是只检查异常字符串。
+5. 错误构建的清理行为纳入测试，不止于检查异常字符串。
 
 ### 验收阈值
 
@@ -163,7 +163,7 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 - license 和资源 manifest；
 - 生成器版本与生成命令。
 
-有结构化 `web-types.json` 时，组件、prop、event、slot 注释必须保留上游原文；没有结构化来源时必须明确记录限制，不得把手写摘要标成原始注释。
+有结构化 `web-types.json` 时，组件、prop、event、slot 注释必须保留上游原文；没有结构化来源时必须明确记录限制，手写摘要不得标成原始注释。
 
 ### 漂移检查
 
@@ -202,4 +202,4 @@ P0 只有在以下条件全部满足时完成：
 
 2026-09-14 复核：P0-2、P0-3、P0-D 以及 P0-C 的可重复门禁均已具备；完整 Release Candidate 的所有阶段已通过，且 3 轮构建 benchmark 已接入 Quality Gates。P0-1 的复杂表格列、事件载荷和组合 slot（`TopContent`）已经在 `RazorVue.Authoring` 的 source/package/Chrome smoke 中形成证据。组合 slot 证据可用以下命令复现：`dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --work-root .tmp/authoring-slot-full --package-output .tmp/nupkg-sample/authoring-slot-full`。
 
-未满足任何一项时，P0 保持 active，不把未完成条目写入“已交付能力”。
+未满足任何一项时，P0 保持 active，未完成条目不写入“已交付能力”。

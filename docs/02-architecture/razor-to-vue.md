@@ -4,7 +4,7 @@
 
 ## 生产输入与输出
 
-Razor-to-Vue 不是与 Jazor 核心并列的编译器。它是框架集成层中当前已实现的上层方向：生产输入来自官方 Razor Source Generator 完成后的最终 Roslyn `Compilation`，`Jazor.RazorVue` 在其中绑定生成的组件类型和 `BuildRenderTree` 操作，再调用 `Jazor.Compiler` 将 C# 语义降低为 Vue render-function 模块。框架层的一般规则见 [框架集成层](./framework-integrations.md)。
+Razor-to-Vue 是框架集成层中当前已实现的上层方向，建立在 Jazor 核心之上：生产输入来自官方 Razor Source Generator 完成后的最终 Roslyn `Compilation`，`Jazor.RazorVue` 在其中绑定生成的组件类型和 `BuildRenderTree` 操作，再调用 `Jazor.Compiler` 降低 C# 语义，产出 Vue render-function 模块。框架层的一般规则见 [框架集成层](./framework-integrations.md)。
 
 ```text
 Razor 组件
@@ -26,7 +26,7 @@ Razor 组件
 2. 类型实现 `ECMAScript.Vue.IVueComponent` 或其派生接口；
 3. 类型声明组件导入描述：`[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]`。
 
-`IVueComponent<TProps>` / `IVueComponent<TProps, TSlots>` 是带类型化 props/slots 的可选增强契约，不替代非泛型 marker。导入描述是组件入口资格的必要条件，但不能单独赋予组件 marker 身份；两种描述同时出现时 `[ECMAScriptModule]` 优先。缺少任一条件的类型不得进入 direct render 或 library component import，Microsoft Blazor 内置 UI 组件因此不会被当作隐式 Vue 组件。
+`IVueComponent<TProps>` / `IVueComponent<TProps, TSlots>` 是带类型化 props/slots 的可选增强契约，与非泛型 marker 并存而不替代它。导入描述是组件入口资格的必要条件，却不能单独赋予组件 marker 身份；两种描述同时出现时 `[ECMAScriptModule]` 优先。缺少任一条件的类型不得进入 direct render 或 library component import，Microsoft Blazor 内置 UI 组件因此不会被当作隐式 Vue 组件。
 
 ## 包边界
 
@@ -49,8 +49,8 @@ Razor 已负责校验未知参数、必需参数和参数类型不匹配；Razor
 
 - 每个组件生成确定性的 Vue render-function `.mjs` 模块。
 - 组件模块、导入、组件标识、相对路径、内容哈希和 source map 锚点必须稳定。
-- `Jazor.Emit` 而非 RazorVue 负责写入 `.mjs`、`.mjs.map`、manifest 与 bundle。
+- `.mjs`、`.mjs.map`、manifest 与 bundle 的写入属于 `Jazor.Emit`，RazorVue 只负责生成内容。
 - `debug` 模式提供可调试模块和源映射；`release` 模式由 Netpack 产出浏览器包。
-- 组件的开发期 HMR 与 SSR 是上层交付能力，不改变官方 Razor SG 输入边界。
+- 组件的开发期 HMR 与 SSR 是上层交付能力，官方 Razor SG 输入边界因此保持稳定。
 
 实现级说明与聚焦测试位于 [Jazor.RazorVue README](../../src/Jazor.RazorVue/README.md)。

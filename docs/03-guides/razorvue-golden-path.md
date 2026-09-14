@@ -22,7 +22,7 @@ MyApp/
   Bootstrap.cs        # Vue mount、资源和 route host framing
 ```
 
-页面和组件使用 `.razor`/`.razor.cs`，公共数据模型使用明确的 record/class。服务端数据库、请求上下文和 Identity 操作留在 endpoint；组件注入的是有明确返回类型的 browser client。不要把服务端 service、`object` catch-all 或字符串 JavaScript 互操作带入组件。
+页面和组件使用 `.razor`/`.razor.cs`，公共数据模型使用明确的 record/class。服务端数据库、请求上下文和 Identity 操作留在 endpoint；组件注入的是有明确返回类型的 browser client。服务端 service、`object` catch-all 或字符串 JavaScript 互操作不应带入组件。
 
 ## 最小 CRUD 页面
 
@@ -47,7 +47,7 @@ dotnet run --file samples/RazorVue.Authoring/build-local.cs -- --configuration R
 dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --skip-build --work-root .tmp/authoring-local-build --package-output .tmp/nupkg-sample/RazorVue.Authoring
 ```
 
-第一条命令确认源码引用和 official Razor SG；第二条命令构建本地包、独立 package consumer 以及 Release artifact；第三条命令检查模块、source map、manifest、资源闭包、PathBase 和浏览器交互。没有 Chrome/Chromium 时可使用 `--skip-browser`，但这只能证明静态产物，不能把浏览器路径标记为完成。
+第一条命令确认源码引用和 official Razor SG；第二条命令构建本地包、独立 package consumer 以及 Release artifact；第三条命令检查模块、source map、manifest、资源闭包、PathBase 和浏览器交互。没有 Chrome/Chromium 时可使用 `--skip-browser`，但这只能证明静态产物，浏览器路径仍不能标记为完成。
 
 正式提交前，再运行适用的完整门禁：
 

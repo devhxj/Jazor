@@ -16,7 +16,7 @@
 
 ## 1.0.0 出场条件
 
-当前质量门禁、发布消费者门禁与绑定审计已达到 `1.0` 级验收强度，`0.x` 对外传达的"早期、勿用于生产"信号与实际状态不符。满足以下条件后，下一个 minor 位置发布 `1.0.0`；需要预热时可先发 `-rc.N` 预发布：
+当前质量门禁、发布消费者门禁与绑定审计已达到 `1.0` 级验收强度，`0.x` 对外传达的“早期、勿用于生产”信号与实际状态不符。`1.0.0-preview.1` 已作为首个 1.0 预发布与冻结候选发布；正式的 `1.0.0` 仍需通过完整 RC 门禁，满足以下条件后发布：
 
 1. 完成[1.0 公共 API 冻结审查](./public-api-freeze.md)：ASP.NET Core 扩展面（`AddJazor*` / `UseJazor*` 族）、包名、命名空间、公共配置模型命名、SSR 数据模型和开发期 reload 边界。计划中的重命名全部在 `1.0.0` 之前完成，避免发布后立即进入 `2.0.0`。
 2. 当时的全部质量门禁通过，门槛以[当前状态](../04-roadmap/current-status.md)的门槛表为准。
@@ -45,13 +45,13 @@
 
 相关 PR 与 main 分支变更由 `Quality Gates` 工作流自动执行三项覆盖率门禁。标签发布和 `workflow_dispatch` 手动发布均对指定发布 ref 执行同一工作流，三项全部成功后才进入打包流程；任一失败、取消或跳过都会阻止发布任务。覆盖率使用与本地默认命令一致的 Debug 配置；各门禁在独立 runner 上运行，失败时其他门禁仍继续采集证据。
 
-每个门禁的 TRX、Cobertura（编译器与 RazorVue）、日志和 Markdown 摘要作为 Actions artifact 保留 14 天，关键指标同时写入 job summary。Vue 绑定指标是公共契约审计率，不是运行时代码覆盖率。本地使用上表的三个单文件 C# 命令复现；需要相同日志和摘要时，在仓库根目录运行 `dotnet run --file scripts/csharp/run-quality-gate.cs -- compiler`（或 `razorvue` / `vue-bindings`），证据写入 `artifacts/quality/`。CI 从工作流提交读取报告入口，从指定发布 ref 读取门禁脚本和被测源码，因此手动验证旧标签不会因缺少新报告入口而改变被测代码。
+每个门禁的 TRX、Cobertura（编译器与 RazorVue）、日志和 Markdown 摘要作为 Actions artifact 保留 14 天，关键指标同时写入 job summary。Vue 绑定指标是公共契约审计率，并非运行时代码覆盖率。本地使用上表的三个单文件 C# 命令复现；需要相同日志和摘要时，在仓库根目录运行 `dotnet run --file scripts/csharp/run-quality-gate.cs -- compiler`（或 `razorvue` / `vue-bindings`），证据写入 `artifacts/quality/`。CI 从工作流提交读取报告入口，从指定发布 ref 读取门禁脚本和被测源码，因此手动验证旧标签不会因缺少新报告入口而改变被测代码。
 
 SPA 与 SSR 发布消费者门禁由发布工作流在上传 NuGet 之前自动执行，本地无需重复运行；工作流门禁失败时不产生公开包。
 
 ## CHANGELOG 规则
 
-- 一个版本一个 `### Jazor x.y.z` 独立章节并标注日期；同一天发布多个版本也必须分节，不得把多个版本号混入同一日期段落。
+- 一个版本一个 `### Jazor x.y.z` 独立章节并标注日期；同一天发布多个版本也必须分节，多个版本号不得混入同一日期段落。
 - 条目面向用户描述行为变化，不写内部实现流水账；破坏性变更必须写明迁移路径（例如 `AddJazorSSR` → `AddJazorSsr` 一类重命名应指明旧名与新名）。
 - 内容在发版准备时写入；已发布版本的章节不再改写，勘误以追加条目方式补充。
 - 未发布内容放在最新日期下的 `### 未发布 | Unreleased` 小节；发布前整理为中英双语的 `New Features`、`Improvements`、`Bug Fixes`、`Chores` 分类，条目末尾标注 GitHub 贡献者（`by @user`）。

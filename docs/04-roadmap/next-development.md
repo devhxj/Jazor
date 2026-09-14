@@ -37,7 +37,7 @@
 | 强类型认证状态 | 显式 typed browser provider 与版本化 endpoint envelope；服务端 endpoint 始终是授权事实来源。 | 匿名、登录、过期、登出、403、刷新、SSR 首屏和 hydration 的完整 browser/package 证据。 |
 | SSR bootstrap 与状态交接 | 版本化 payload，明确请求/组件所有权、反序列化失败、失配和一次性副作用。 | 不模拟 `PersistentComponentState` 或 enhanced form；先证明 packaged SSR consumer 的重复 hydration、错误传播和过期 payload 行为。 |
 | 构造函数注入与复杂 activation | 只考虑有界的强类型子集，保持 base/derived、字段初始化、生命周期和 SSR/browser lifetime 的一致性。 | 至少两个真实消费者、完整 activation 矩阵与所有 profile 验证；不使用 selector 猜测或 `arguments.length` fallback。 |
-| 后退/前进与复杂 URI 状态 | 不把已发生的 `popstate`/`hashchange` 伪装成可取消内部导航。 | URL 恢复、竞态、注册释放与用户确认行为先由 reference 和真实浏览器定义。 |
+| 后退/前进与复杂 URI 状态 | 已发生的 `popstate`/`hashchange` 不伪装成可取消内部导航。 | URL 恢复、竞态、注册释放与用户确认行为先由 reference 和真实浏览器定义。 |
 
 ## P2：协议边界、评估与可测量优化
 
@@ -57,9 +57,9 @@ P2 的具体执行顺序、Definition of Done 和证据门槛见 [RazorVue P2 �
 下列边界在本阶段继续保持稳定，避免局部便利稀释整体契约。
 
 - 不实现完整 CLR、任意外部 .NET API 或未经映射的运行时类型。
-- 不将 Microsoft/Blazor 内置 UI 组件、`IJSRuntime` 字符串互操作或仅服务器端服务包装为 Vue 的兼容层。
+- Microsoft/Blazor 内置 UI 组件、`IJSRuntime` 字符串互操作或仅服务器端服务，不包装为 Vue 的兼容层。
 - 不因 JavaScript 端接受 `any` 而弱化 C# binding 的类型契约。
-- 不将 JazorAdmin 的单页临时绕行上升为公共平台 API。
+- JazorAdmin 的单页临时绕行不上升为公共平台 API。
 
 ## 写入当前状态的门槛
 

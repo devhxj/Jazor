@@ -4,7 +4,7 @@
 
 ## 核心方向的确立
 
-Jazor 始终围绕一项核心能力展开：将受支持的 C# 语义转换为 ECMAScript。Roslyn 语义模型、`Jazor.Compiler` 的 ESTree lowering、宿主白名单和 `Jazor.Emit` 的产物交付共同构成这条平台主线。当前文档以它为第一层，避免把任一前端框架当作 Jazor 的定义。
+Jazor 始终围绕一项核心能力展开：受支持的 C# 语义转换为 ECMAScript。Roslyn 语义模型、`Jazor.Compiler` 的 ESTree lowering、宿主白名单和 `Jazor.Emit` 的产物交付共同构成这条平台主线。当前文档以它为第一层，避免以任一前端框架定义 Jazor。
 
 ## Razor-to-Vue 的位置
 
@@ -18,7 +18,7 @@ Jolt 曾覆盖开发宿主、语言服务、调试、DevServer 和相关协议�
 
 ## 未落地的 CSX 提案
 
-CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.jsx` 的独立前端路线。仓库当前没有 `Jazor.CSX` 项目或该路线的生产实现；它不是脚本能力，也不是当前产品范围。若未来重新评估，应按框架集成层的规则提出新的设计与验收，而不是恢复旧计划文档。
+CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.jsx` 的独立前端路线。仓库当前没有 `Jazor.CSX` 项目或该路线的生产实现；它并非脚本能力，也不属于当前产品范围。若未来重新评估，应按框架集成层的规则提出新的设计与验收，无需恢复旧计划文档。
 
 ## 路线图的收口
 
@@ -52,7 +52,7 @@ CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.j
 
 | 优先级 | 审查发现 | 处理结果 |
 | --- | --- | --- |
-| P1 | `file://` URI 形式的编译输入会在 source map 中转换为本地路径，但 `ESGenerator` 的源码内容索引把 URI 当作普通字符串，导致 `includeSourcesContent` 静默缺失。 | 源码内容索引统一把 file URI 转换为本地路径后再匹配；新增 URI compilation 回归测试。 |
+| P1 | `file://` URI 形式的编译输入会在 source map 中转换为本地路径，但 `ESGenerator` 的源码内容索引按普通字符串处理 URI，导致 `includeSourcesContent` 静默缺失。 | 源码内容索引对 file URI 统一转换为本地路径后再匹配；新增 URI compilation 回归测试。 |
 | P2 | 模块目录和 source map `sources` 使用仅忽略大小写的比较器。当前输入去重会规避大多数相等项，但比较器没有表达完整的稳定全序，后续边界扩展可能重新引入输入顺序依赖。 | 增加 `Ordinal` 二级比较，保持现有大小写不敏感排序语义并明确确定性契约。 |
 | P2 | 单个模块 lowering 失败时，其他成功模块仍进入 `ModuleCatalog`；source map 失败则保留 JavaScript 并告警。 | 保持现有渐进式交付行为，并由现有场景测试锁定；这属于需要消费者明确接受的交付策略，不在本轮改成全量失败。 |
 

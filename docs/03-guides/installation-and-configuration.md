@@ -2,9 +2,7 @@
 
 > 面向：使用 Jazor 核心平台、当前 Razor-to-Vue 集成或可选生态绑定的应用开发者。
 >
-> 说明：类库资源只使用两种 carrier：已有 JavaScript 使用 `manifest.json + dist/**`，Jazor
-> 编译结果使用程序集内的 `Jazor.Generated.ModuleCatalog`。最终宿主在构建后由 MSBuild 调用
-> `Jazor.Emit`，一次性物化选中的依赖闭包到 `JazorDir`。
+> 说明：类库资源只使用两种 carrier：已有 JavaScript 使用 `manifest.json + dist/**`，Jazor 编译结果使用程序集内的 `Jazor.Generated.ModuleCatalog`。最终宿主在构建后由 MSBuild 调用 `Jazor.Emit`，一次性物化选中的依赖闭包到 `JazorDir`。
 
 ## 前置条件
 
@@ -69,15 +67,9 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ## 配置产物输出
 
-将输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；纯 Jazor
-类库在程序集内携带 `ModuleCatalog`，JS resource library 通过传递的 manifest locator 提供
-`manifest.json + dist/**`。最终宿主的 MSBuild target 在 `Build` 后调用 Emit，读取这两种输入
-并直接写出 `JazorDir`。
+输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；纯 Jazor 类库在程序集内携带 `ModuleCatalog`，JS resource library 通过传递的 manifest locator 提供 `manifest.json + dist/**`。最终宿主的 MSBuild target 在 `Build` 后调用 Emit，读取这两种输入并直接写出 `JazorDir`。
 
-多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具，
-最终宿主直接引用并配置 Emit；只消费上游类库的中间项目不因资源传递增加 `Jazor`/`Jazor.Vue`。
-工具资产应在类库包中使用 `PrivateAssets="all"` 隔离，生成模块则随 `ModuleCatalog`、ESM/CSS
-则随 manifest 的显式依赖传播。完整规则见[类库产物与引用契约](../02-architecture/library-artifact-contract.md)。
+多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具，最终宿主直接引用并配置 Emit；只消费上游类库的中间项目不因资源传递增加 `Jazor`/`Jazor.Vue`。工具资产应在类库包中使用 `PrivateAssets="all"` 隔离，生成模块随 `ModuleCatalog` 传播，ESM/CSS 随 manifest 的显式依赖传播。完整规则见[类库产物与引用契约](../02-architecture/library-artifact-contract.md)。
 
 ```xml
 <PropertyGroup>
@@ -96,14 +88,9 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ## 一次性切换边界
 
-资源契约是一次性破坏性收敛，不提供旧 carrier 的迁移 API、双读 reader、目录 fallback 或
-中间 NuGet。采用最终版本时，必须在一次 lockstep 构建中升级所有 Jazor/生态包，并清空或新建
-`JazorDir` 后重新构建。历史 API 名称和旧目录说明只保留在
-[历史演进](../05-history/evolution.md)，不属于当前配置契约。
+资源契约是一次性破坏性收敛，不提供旧 carrier 的迁移 API、双读 reader、目录 fallback 或中间 NuGet。采用最终版本时，必须在一次 lockstep 构建中升级所有 Jazor/生态包，并清空或新建 `JazorDir` 后重新构建。历史 API 名称和旧目录说明只保留在[历史演进](../05-history/evolution.md)，不属于当前配置契约。
 
-开发时使用 `dotnet watch run` 让最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务只
-消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成目录被排除在 MSBuild 输入项外，无法证明
-更新可安全热替换时执行整页刷新，不扫描资源目录猜测“最新”文件。
+开发时使用 `dotnet watch run` 让最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务只消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成目录被排除在 MSBuild 输入项外，无法证明更新可安全热替换时执行整页刷新，不扫描资源目录猜测“最新”文件。
 
 `ECMAScript.Style` 的 DSL 应使用 `lower_snake_case`，例如 CSS 声明使用 `background_color`。它会生成 CSS `background-color`；WebIDL 生成的 DOM 对象则继续按规范使用 `backgroundColor`。这是两个独立的 C# 表面，不会发生自动大小写转换；`CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 和 `CssOptions` 等 CLR 模型保持 PascalCase，生成 CSS、`style.mjs` 以及浏览器 HMR 协议不变。
 
@@ -135,9 +122,7 @@ app.UseJazorSsr(new JazorSsrRequest(
     [new JazorSsrProvider("jazor:service:MyApp.BrowserClient", new { BaseUrl = "/api" })]));
 ```
 
-如果页面需要在 SSR 首屏和 hydration 中读取认证快照，宿主可将当前请求的 `ClaimsPrincipal` 转换为
-`JazorAuthenticationState`。该状态以保留键 `jazor:auth-state` 进入同一份 `jazor-ssr-state` v1
-envelope；不要再手工添加同名 provider：
+如果页面需要在 SSR 首屏和 hydration 中读取认证快照，宿主可以转换当前请求的 `ClaimsPrincipal`，得到 `JazorAuthenticationState`。该状态以保留键 `jazor:auth-state` 进入同一份 `jazor-ssr-state` v1 envelope；不要再手工添加同名 provider：
 
 ```csharp
 app.UseJazorSsr(
@@ -147,13 +132,11 @@ app.UseJazorSsr(
             Authentication: JazorAuthenticationState.FromPrincipal(context.User))));
 ```
 
-该快照只表达匿名、已认证、过期或禁止访问状态及只读 claims；授权事实仍由服务端 endpoint 决定。
-它不启用 `AuthenticationStateProvider`、`AuthorizeView` 或服务器 circuit，也不替代表单防伪和 token 存储。
+该快照只表达匿名、已认证、过期或禁止访问状态及只读 claims；授权事实仍由服务端 endpoint 决定。它不启用 `AuthenticationStateProvider`、`AuthorizeView` 或服务器 circuit，也不替代表单防伪和 token 存储。
 
 ### 显式 typed bootstrap
 
-业务首屏数据建议使用应用自己的 DTO，由 endpoint 同时返回业务版本。版本失配时重新读取数据；提交失败时保留
-客户端草稿，防伪、权限和最终写入仍由 endpoint 负责：
+业务首屏数据建议使用应用自己的 DTO，由 endpoint 同时返回业务版本。版本失配时重新读取数据；提交失败时保留客户端草稿，防伪、权限和最终写入仍由 endpoint 负责：
 
 ```csharp
 public sealed record EditorBootstrap(int Version, IReadOnlyList<EditorRow> Rows);
@@ -176,21 +159,11 @@ app.MapPost("/api/editor/commit", async (EditorCommand command, EditorService se
 });
 ```
 
-页面通过 `JazorSsrRequest.Props` 交接 `EditorBootstrap`。收到 `409` 时刷新 bootstrap 并让用户确认覆盖；收到验证错误
-或网络错误时继续显示并保留当前编辑草稿。这个协议不会模拟 `PersistentComponentState`、enhanced form 或服务器 circuit。
+页面通过 `JazorSsrRequest.Props` 交接 `EditorBootstrap`。收到 `409` 时刷新 bootstrap 并让用户确认覆盖；收到验证错误或网络错误时继续显示并保留当前编辑草稿。这个协议不会模拟 `PersistentComponentState`、enhanced form 或服务器 circuit。
 
-浏览器交互使用 `@jazor/vue-runtime/authentication.mjs` 的显式 typed provider。登录、刷新和登出回调由应用
-endpoint 提供，并返回 `JazorAuthenticationEnvelope.Create(state)` 生成的 `jazor-auth-state` v1 载荷；provider
-不保存 token，也不自行推断授权结果。endpoint 异常通过 `provider.error` 暴露且不会覆盖当前状态，并发请求按
-最新请求生效。该 provider 是 Jazor 的 browser contract，不是 `AuthenticationStateProvider` 或 `AuthorizeView`。
+浏览器交互使用 `@jazor/vue-runtime/authentication.mjs` 的显式 typed provider。登录、刷新和登出回调由应用 endpoint 提供，并返回 `JazorAuthenticationEnvelope.Create(state)` 生成的 `jazor-auth-state` v1 载荷；provider 不保存 token，也不自行推断授权结果。endpoint 异常通过 `provider.error` 暴露且不会覆盖当前状态，并发请求按最新请求生效。该 provider 是 Jazor 的 browser contract，并非 `AuthenticationStateProvider` 或 `AuthorizeView`。
 
-ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit
-物化的 SSR runner 和本地 Vue 服务器模块，DenoHost 执行这些模块，Netpack 负责浏览器 bundle。
-`WorkerCount` 同时限制单应用实例的 Deno worker 数和 SSR 并发数，必须大于零，默认值为
-`min(Environment.ProcessorCount, 4)`。宿主不得在 Emit 提交后改写 runner；SSR 不自动传递 Vue
-server-prefetch 状态；需要让 `[Inject]` browser service 在 SSR 与 hydration 中保持可用时，使用
-`JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value。其他需要共享的状态仍应放入
-props 或自己的 payload。
+ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit 物化的 SSR runner 和本地 Vue 服务器模块，DenoHost 执行这些模块，Netpack 负责浏览器 bundle。`WorkerCount` 同时限制单应用实例的 Deno worker 数和 SSR 并发数，必须大于零，默认值为 `min(Environment.ProcessorCount, 4)`。宿主不得在 Emit 提交后改写 runner；SSR 不自动传递 Vue server-prefetch 状态；需要让 `[Inject]` browser service 在 SSR 与 hydration 中保持可用时，使用 `JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value。其他需要共享的状态仍应放入 props 或自己的 payload。
 
 ## 后续阅读
 

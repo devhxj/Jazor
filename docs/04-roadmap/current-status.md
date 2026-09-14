@@ -2,7 +2,7 @@
 
 > 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
 
-审视这里的每项状态，只需要一个问题：今天能否据此设计、编写和交付。答案来自实现、测试与真实消费者证据，而不是愿景、阶段性进展或一次成功的构建。
+审视这里的每项状态，只需要一个问题：今天能否据此设计、编写和交付。答案来自实现、测试与真实消费者证据；愿景、阶段性进展或一次成功的构建，都不足以作为依据。
 
 ## 已交付的核心能力
 
@@ -10,7 +10,7 @@
 
 | 能力 | 当前范围 | 详细入口 |
 | --- | --- | --- |
-| C# 到 ECMAScript | `Jazor.Compiler` 将受支持的 Roslyn `IOperation` 降低为 ESTree 和确定性 ECMAScript 模块；导入、临时名、source origin、source map 与宿主映射由编译主线统一负责。 | [编译器](../02-architecture/compiler.md) |
+| C# 到 ECMAScript | 受支持的 Roslyn `IOperation` 经 `Jazor.Compiler` 降低为 ESTree 和确定性 ECMAScript 模块；导入、临时名、source origin、source map 与宿主映射由编译主线统一负责。 | [编译器](../02-architecture/compiler.md) |
 | 模块与资源交付 | 最终宿主只消费两类类库输入：JS resource library 的 `manifest.json + dist/**`，以及纯 Jazor library 的 `Jazor.Generated.ModuleCatalog`。`Jazor.Emit` 解析显式依赖闭包后物化 Debug、Release、SSR 或 HMR 输出。 | [类库资源与引用契约](../02-architecture/library-artifact-contract.md)、[产物管线](../02-architecture/artifact-pipeline.md) |
 | Razor-to-Vue | 官方 Razor Source Generator 生成的最终 `Compilation` 经 `Jazor.RazorVue` 绑定为 Vue render-function `.mjs`；C# 表达式、成员和调用语义仍通过核心编译器 lowering。 | [Razor-to-Vue 架构](../02-architecture/razor-to-vue.md) |
 | CLR 与外部 API | CLR/ECMAScript 映射、白名单和 runtime helper 共同定义受支持的运行时语义。未映射的类型或成员在使用点明确失败，不降级为原始 JavaScript。 | [编译器](../02-architecture/compiler.md) |
@@ -35,9 +35,9 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 ## 明确边界
 
-以下内容不是“等待自动兼容”的缺口，而是当前已经明确的产品边界。它们将保持显式失败或明确拒绝，直到新的实现与证据足以改变契约：
+以下内容是当前已经明确的产品边界。在新的实现与证据足以改变契约前，它们保持显式失败或明确拒绝：
 
-- Jazor 不是完整 CLR，也不支持任意未映射的 .NET 类型、成员或运行时身份。
+- Jazor 并非完整 CLR，也不支持任意未映射的 .NET 类型、成员或运行时身份。
 - Microsoft/Blazor 内置 UI 组件，例如 `Router`、`RouteView`、`EditForm`、`Input*`、`AuthorizeView` 和 `DynamicComponent`，不作为 RazorVue 的组件入口；UI 层由应用自定义组件或已声明的第三方 binding 提供。
 - `IJSRuntime` 字符串互操作、仅服务器端服务、未经版本化协议的认证状态、`PersistentComponentState`、`[PersistentState]` 与 enhanced form handoff 不会被静默模拟。
 - 完整 browser history 语义、SSR/prerender route identity 和完整 hydration 副作用 parity 仍不声明支持；当前 history 子集只覆盖已验证的 `popstate`/`hashchange` handler、取消恢复、竞态和释放协议。
@@ -46,7 +46,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 ## 1.0 冻结前状态
 
-公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型没有计划中的重命名；`verify-release-candidate.cs` 与手动 `Release Candidate Verification` workflow 已提供统一候选验收入口，在发布候选 ref 上重新生成并通过 API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据前，仍不将 1.0 标记为可发布。冻结状态必须由一组可追溯的门禁结果和对应 `1.0.0-rc.1` 或 `1.0.0` CHANGELOG 条目共同确认。
+公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。`1.0.0-preview.1` 已作为首个冻结候选发布；当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型没有计划中的重命名；`verify-release-candidate.cs` 与手动 `Release Candidate Verification` workflow 已提供统一候选验收入口，在发布候选 ref 上重新生成并通过 API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据前，正式 `1.0.0` 仍不标记为可发布。冻结状态必须由一组可追溯的门禁结果和对应 `1.0.0` CHANGELOG 条目共同确认。
 
 2026-09-14 本地完整解决方案构建和主线 Release 测试通过，公共 API 快照与 `docs/03-guides/public-api-baseline.snapshot.md` 比较结果为 `76108` 对 `76108`，新增 `0`、删除 `0`。Compiler `10711/10711`、CLR `5089/5089`、Razor SG `4982/4982`、Emit `202/202` 及其余生态测试均无失败。完整 Release Candidate 门禁仍是正式冻结的复核入口，但发布认证扩展、长期多版本矩阵和性能趋势采样属于 1.0 之后的运营质量工作，不作为核心 API/功能发布阻塞。
 
@@ -63,9 +63,9 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 | Windows SPA 发布消费者 | 本地 NuGet 包、Release bundle、`/docs` PathBase 与真实浏览器交互 | `dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs` |
 | Windows SSR 发布消费者 | 本地 NuGet 包、`JazorSSR=true` Release publish、SSR HTML、部署资源解析与 hydration | `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` |
 
-核心编译器、Razor-to-Vue 与 Vue 绑定覆盖率门禁由 `.github/workflows/quality-gates.yml` 在相关 pull request 和 main 分支变更中执行，并作为 tag 与手动 NuGet 发布的前置任务。每个门禁保存 TRX、Cobertura（适用时）、文本日志和 Markdown 摘要，并将关键指标写入 GitHub Actions 摘要。复现方式与报告保留期见[发版与版本规则](../03-guides/release-and-versioning.md#发版门禁)。
+核心编译器、Razor-to-Vue 与 Vue 绑定覆盖率门禁由 `.github/workflows/quality-gates.yml` 在相关 pull request 和 main 分支变更中执行，并作为 tag 与手动 NuGet 发布的前置任务。每个门禁保存 TRX、Cobertura（适用时）、文本日志和 Markdown 摘要，关键指标写入 GitHub Actions 摘要。复现方式与报告保留期见[发版与版本规则](../03-guides/release-and-versioning.md#发版门禁)。
 
-这些门槛是对产品声明的验收规则。某次发布的实际结果应查看对应 CI、运行命令或[CHANGELOG.md](../../CHANGELOG.md)，而不是把历史快照固化在本页。
+这些门槛是对产品声明的验收规则。某次发布的实际结果应查看对应 CI、运行命令或[CHANGELOG.md](../../CHANGELOG.md)；本页不固化历史快照。
 
 ## P0/P1 已闭环切片
 

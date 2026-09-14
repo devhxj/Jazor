@@ -14,20 +14,20 @@ Jazor core: C# / Roslyn IOperation -> ESTree -> ECMAScript modules
             |-- future candidates: Jazor.React, Jazor.RazorReact
 ```
 
-`Jazor.React` 与 `Jazor.RazorReact` 仅代表可能的未来产品方向，不是当前已发布或已支持的 API。
+`Jazor.React` 与 `Jazor.RazorReact` 仅代表可能的未来产品方向，尚未成为当前已发布或已支持的 API。
 
 ## 当前实现
 
-当前唯一已实现的框架集成是 `Jazor.RazorVue`：它以官方 Razor Source Generator 的最终 `Compilation` 为输入，绑定 `BuildRenderTree` 语义，并通过 Jazor 核心产生 Vue render-function `.mjs` 产物。具体边界见 [Razor-to-Vue](./razor-to-vue.md)。
+当前唯一已实现的框架集成是 `Jazor.RazorVue`：它以官方 Razor Source Generator 的最终 `Compilation` 为输入，绑定 `BuildRenderTree` 语义，并通过 Jazor 核心产出 Vue render-function `.mjs` 产物。具体边界见 [Razor-to-Vue](./razor-to-vue.md)。
 
 ## 不可跨越的边界
 
 1. 集成层不得实现第二套 C# 到 JavaScript 编译器，也不得对 C# 表达式做字符串拼接。
 2. 集成层需要 C# lowering、类型映射、导入、符号绑定、临时名或 source origin 时，必须使用 `Jazor.Compiler` 的正式 translation hooks。
-3. 框架专属语义应留在对应集成项目中，不能作为 Vue、React 或其他产品模式塞入 `AstConverterProfile` 或 `SemanticWalker` 核心特例。
+3. 框架专属语义应留在对应集成项目中，不应作为 Vue、React 或其他产品模式混入 `AstConverterProfile` 或 `SemanticWalker` 的核心特例。
 4. 核心层只提供可组合、强类型的扩展契约；未被集成层明确声明的行为走标准 lowering 或明确失败。
-5. 新方向必须先定义其作者输入、编译语义边界、最终 artifact、诊断与 source-map 合同，再进入实现，不以兼容旧探索路线为目标。
+5. 新方向必须先定义其作者输入、编译语义边界、最终 artifact、诊断与 source-map 合同，再进入实现；兼容旧探索路线并不在其目标之内。
 
 外部组件库统一使用 `ECMAScript.ECMAScriptAttribute` 的 `Transform.Component` 形式声明 ESM module specifier 与可选 export name：`[ECMAScript("package", Transform.Component, "Export")]`，省略 export name 表示 default export。该特性只描述静态 binding；Vue、React 等集成仍由各自适配器确认组件 marker 并拥有 rendering protocol。旧组件 Attribute 已删除且不再兼容读取；引用旧协议的包必须 lockstep 升级，中性协议不得成为由核心猜测框架行为的入口。
 
-这一分层使核心平台可被多个框架方向复用，同时避免某一个框架的历史协议污染通用 C# -> ECMAScript 能力。
+这一分层让核心平台可被多个框架方向复用，同时避免某一个框架的历史协议污染通用 C# -> ECMAScript 能力。

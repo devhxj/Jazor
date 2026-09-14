@@ -1,6 +1,6 @@
 # 1.0 公共 API 冻结审查
 
-> 状态：核心 API 冻结条件已满足，当前等待 `1.0.0-rc.1` 候选 ref 的最终复核。本文是 1.0 发布前的契约基线；任何新增、删除、重命名或签名改变都必须先更新本文、测试和 CHANGELOG。长期发布认证、多版本兼容矩阵和性能趋势属于 1.0 之后的运营质量工作，不作为核心冻结阻塞。
+> 状态：核心 API 冻结条件已满足，`1.0.0-preview.1` 已作为首个冻结候选发布；正式 `1.0.0` 仍待在候选 ref 上完成最终复核与完整 RC 门禁。本文是 1.0 发布前的契约基线；任何新增、删除、重命名或签名改变都必须先更新本文、测试和 CHANGELOG。长期发布认证、多版本兼容矩阵和性能趋势属于 1.0 之后的运营质量工作，不作为核心冻结阻塞。
 
 ## 审查结论
 
@@ -11,10 +11,10 @@
 2026-09-14 的本地复核已完成完整解决方案构建和机器快照比较：基线与当前均为 `76108` 条，新增 `0`、删除 `0`。该结果支持进入候选冻结复核，不替代候选 ref 上的完整发布门禁。
 
 - NuGet 包名保持现状，所有发布包继续 lockstep 版本；`Jazor` 是核心宿主包，`Jazor.Vue` 是 Razor-to-Vue opt-in 包，`Jazor.Admin` 是管理壳包。
-- ASP.NET Core 公共命名空间保持 `Jazor.AspNetCore`；开发期 reload 公共命名空间保持 `Jazor.AspNetCore.Dev`。不把开发期 API 混入生产宿主命名空间。
+- ASP.NET Core 公共命名空间保持 `Jazor.AspNetCore`；开发期 reload 公共命名空间保持 `Jazor.AspNetCore.Dev`。开发期 API 不混入生产宿主命名空间。
 - 扩展方法保留 PascalCase 的 `AddJazor*` / `UseJazor*` 形式，缩写按现有语义固定为 `Ssr`，不再引入 `SSR` 别名。迁移文档不再假设存在 `AddJazorSSR`。
 - 配置模型保持 `Jazor*Options` 命名，并以只读集合、强类型路径和显式委托表达扩展点；不新增 `object` 或字符串字典式总配置入口。
-- `JazorWebApplication.CreateBuilder`、`IJazorSsrRenderer`、SSR 请求/结果记录类型属于宿主集成契约，必须纳入 API 兼容性检查，而不是视为内部实现。
+- `JazorWebApplication.CreateBuilder`、`IJazorSsrRenderer`、SSR 请求/结果记录类型属于宿主集成契约，必须纳入 API 兼容性检查，不视为内部实现。
 
 ## 包名与命名空间基线
 
@@ -78,13 +78,13 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 2. 对每个 `AddJazor*` / `UseJazor*` 入口保留至少一个源码消费者测试，并验证默认配置、链式返回值、异常/ no-op 行为。
 3. 运行当前状态页列出的主线测试、编译器/RazorVue/Vue binding 覆盖率门禁，以及 Windows SPA/SSR 发布消费者门禁。
 4. 检查 README、安装指南、示例、路线图和 CHANGELOG 使用的包名、命名空间、扩展方法拼写完全一致。
-5. 在 CHANGELOG 的 `1.0.0-rc.1` 或 `1.0.0` 条目中写明冻结日期、迁移说明（如无迁移则明确写“无已知迁移”）和全部门禁链接。
-6. 只有以上证据全部成功，才把本文状态改为“已冻结”，再决定是否创建 `v1.0.0` tag。
+5. 在 CHANGELOG 的 `1.0.0` 条目中写明冻结日期、迁移说明（如无迁移则明确写“无已知迁移”）和全部门禁链接。
+6. 只有以上证据全部成功，本文状态才改为“已冻结”，再决定是否创建 `v1.0.0` tag。
 
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-rc.1
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-preview.1
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only stage1,stage2` 只适用于局部复核，正式候选必须运行完整序列。

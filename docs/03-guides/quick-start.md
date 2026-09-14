@@ -2,7 +2,7 @@
 
 > 目标：用最小的两项目结构验证 Jazor 核心的 C# -> ECMAScript 模块路径。
 
-本指南首先验证框架无关的核心能力。Razor-to-Vue 是后续可选集成，不是开始使用 Jazor 的前置条件。
+本指南首先验证框架无关的核心能力。Razor-to-Vue 属于后续可选集成，并非开始使用 Jazor 的前置条件。
 
 ## 1. 创建模块库
 
@@ -56,11 +56,7 @@ dotnet add Sample.Host package Jazor --version 1.0.0-preview.1
 dotnet build Sample.Host
 ```
 
-构建完成后，MSBuild 会在最终 `Exe`/`WinExe` 宿主的 `Build` 后调用 `Jazor.Emit`，直接把
-`features/greetings.mjs`、对应 source map、`jazor-manifest.json` 和 import map 物化到
-`JazorDir`。类库本身只在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，不会创建 `jazor/`
-输出目录。生成模块使用标准 ECMAScript 具名导出；跨模块调用由编译器创建稳定 import。发布时
-SDK 会把这个已物化目录复制到发布输出的 `jazor/` 位置。
+构建完成后，MSBuild 在最终 `Exe`/`WinExe` 宿主的 `Build` 后调用 `Jazor.Emit`，一次性物化 `features/greetings.mjs`、对应 source map、`jazor-manifest.json` 和 import map 到 `JazorDir`。类库本身只在 DLL 内携带 `Jazor.Generated.ModuleCatalog`，不会创建 `jazor/` 输出目录。生成模块使用标准 ECMAScript 具名导出；跨模块调用由编译器创建稳定 import。发布时 SDK 复制该已物化目录到发布输出的 `jazor/` 位置。
 
 ## 4. 可选：加入 Razor-to-Vue
 
@@ -76,7 +72,7 @@ SDK 会把这个已物化目录复制到发布输出的 `jazor/` 位置。
 
 ## 常见检查
 
-- 没有产物：确认 `JazorMode` 配置在最终宿主，而不是仅配置在模块类库。
+- 没有产物：确认 `JazorMode` 配置在最终宿主，仅配置在模块类库不会产生产物。
 - Razor 组件未参与转换：确认项目显式引用 `Jazor.Vue`，并且是支持 Razor Source Generator 的 Razor SDK 项目。
 - 外部成员无法编译：检查该成员是否已有 Jazor 宿主映射；不要通过原始 JavaScript 或 `object` 绕过类型边界。
 

@@ -4,9 +4,9 @@
 
 ## 定位
 
-`Jazor.Compiler` 不是通用 CLR 运行时的替代品。它在受控输入域内将 Roslyn `IOperation` 转换为 Acornima ESTree，并在已声明的宿主能力范围内保持使用点可观察行为。
+`Jazor.Compiler` 无意替代通用 CLR 运行时。它在受控输入域内完成 Roslyn `IOperation` 到 Acornima ESTree 的转换，并在已声明的宿主能力范围内保持使用点的可观察行为。
 
-当完整运行时结构无法或不值得保留时，编译器按以下顺序维护语义：求值顺序、副作用次数、最终结果、使用点行为、运行时结构身份。为此引入稳定临时变量、`SequenceExpression` 或 IIFE 是允许的；通过原始 JavaScript 静默回退则不允许。
+当完整运行时结构无法或不值得保留时，编译器按以下顺序维护语义：求值顺序、副作用次数、最终结果、使用点行为、运行时结构身份。为此引入稳定临时变量、`SequenceExpression` 或 IIFE 均属允许；通过原始 JavaScript 静默回退则在禁止之列。
 
 ## 分层职责
 
@@ -21,7 +21,7 @@
 
 ## 宿主映射
 
-外部 API 不由名称猜测或隐式 JavaScript fallback 支持。`Jazor.CLR` 与 ECMAScript 绑定通过 `[Jazor(Op.*)]` 声明可用能力，生成器据此产生可消费的白名单。
+外部 API 不会经由名称猜测或隐式 JavaScript fallback 获得支持。`Jazor.CLR` 与 ECMAScript 绑定通过 `[Jazor(Op.*)]` 声明可用能力，生成器据此产出可消费的白名单。
 
 | 映射 | 适用场景 |
 | --- | --- |
@@ -30,7 +30,7 @@
 | `Import` | 可复用 helper 或模块级依赖 |
 | `Compile` | 需要上下文、协议或 AST 级构造的复杂语义 |
 
-`Compile` 声明失败表示该宿主能力已认领但无法降低，不能继续尝试普通成员访问。白名单 key 保留作者声明或 Roslyn 原始定义生成的规范形式，不在写入时做私有改写。
+`Compile` 声明失败表示该宿主能力已认领但无法降低，此时不再尝试普通成员访问。白名单 key 保留作者声明或 Roslyn 原始定义生成的规范形式，写入时不做私有改写。
 
 ## 支持边界
 

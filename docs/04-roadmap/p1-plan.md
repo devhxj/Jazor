@@ -88,4 +88,4 @@ P1 只有在以下条件全部满足时才可标记完成：
 5. 作者指南、当前状态、诊断矩阵、CHANGELOG 与实现同步；未完成相邻形状仍明确 Guidance/Reject。
 6. Compiler、CLR、Razor SG、Emit、coverage、SPA、SSR、HMR 和新增 consumer 门禁全部通过。
 
-在 P1-B/C/D 尚未达到上述门槛前，只能将 P1-A 记录为已交付协议基础，不能把认证、复杂 activation 或复杂 history 写入当前 Support 矩阵。
+在 P1-B/C/D 尚未达到上述门槛前，只能记录 P1-A 为已交付协议基础，认证、复杂 activation 或复杂 history 不写入当前 Support 矩阵。

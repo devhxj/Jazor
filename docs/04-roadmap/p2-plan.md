@@ -4,7 +4,7 @@
 
 ## 目标与范围
 
-P2 的目标是完善 P1 之后的协议、渲染和生态能力，同时保持 RazorVue 作为支持 Razor/Blazor 语法的 JSX-like 范式，而不是完整 Blazor Server/WebAssembly 实现。
+P2 的目标是完善 P1 之后的协议、渲染和生态能力，同时保持 RazorVue 作为支持 Razor/Blazor 语法的 JSX-like 范式，并非完整 Blazor Server/WebAssembly 实现。
 
 本阶段包含四条工作线：
 
@@ -24,7 +24,7 @@ P2 的每个可交付切片都必须满足：
 1. C# public surface 保持强类型，并能通过官方 Razor SG；不使用 `object?`、裸字符串或私有 wrapper 协议扩大边界。
 2. compiler/lowering、runtime/binding 和失败诊断各有针对性回归；不支持的相邻形状在使用点稳定失败。
 3. 有 Deno/runtime 证据和真实浏览器交互证据；涉及发布时必须增加隔离 Release package consumer。
-4. 涉及 SSR 或 hydration 时，证明 envelope 所有权、错误传播、重复执行和资源闭包；不把该协议描述成 Blazor `PersistentComponentState`。
+4. 涉及 SSR 或 hydration 时，证明 envelope 所有权、错误传播、重复执行和资源闭包；该协议不描述为 Blazor `PersistentComponentState`。
 5. 作者指南、范式、当前状态、capability ledger、诊断矩阵和 CHANGELOG 同步。
 6. 适用的 Compiler、CLR、Razor SG、Emit、coverage、SPA、SSR、HMR 门禁通过，并记录提交、SDK、Node、浏览器和生成物路径。
 
@@ -36,7 +36,7 @@ P2 的每个可交付切片都必须满足：
 - 增加过期 payload、重复 hydration、render-hook 异常和 endpoint 错误的 consumer 回归。
 - 为表单场景提供显式 typed endpoint/bootstrap 示例；不得模拟 `PersistentComponentState`、`SupplyParameterFromForm`、antiforgery 或 enhanced post。
 
-完成后只能把“显式 bootstrap DTO + envelope”标为 Support with constraints；内置表单协议仍为 Guidance/Reject。
+完成后，“显式 bootstrap DTO + envelope”只能标为 Support with constraints；内置表单协议仍为 Guidance/Reject。
 
 ### P2-B：高级渲染评估
 
