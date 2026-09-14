@@ -8,6 +8,8 @@
 
 本次审查采用以下稳定决策：
 
+2026-09-14 的本地复核已完成完整解决方案构建和机器快照比较：基线与当前均为 `76108` 条，新增 `0`、删除 `0`。该结果支持进入候选冻结复核，不替代候选 ref 上的完整发布门禁。
+
 - NuGet 包名保持现状，所有发布包继续 lockstep 版本；`Jazor` 是核心宿主包，`Jazor.Vue` 是 Razor-to-Vue opt-in 包，`Jazor.Admin` 是管理壳包。
 - ASP.NET Core 公共命名空间保持 `Jazor.AspNetCore`；开发期 reload 公共命名空间保持 `Jazor.AspNetCore.Dev`。不把开发期 API 混入生产宿主命名空间。
 - 扩展方法保留 PascalCase 的 `AddJazor*` / `UseJazor*` 形式，缩写按现有语义固定为 `Ssr`，不再引入 `SSR` 别名。迁移文档不再假设存在 `AddJazorSSR`。
