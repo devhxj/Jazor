@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/devhxj/Jazor?display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.1"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.1&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -31,26 +31,6 @@
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
 Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.
-
-## Release status
-
-### Jazor 1.0.0-preview.1 · 2026-09-14
-
-- The first 1.0 preview is available for evaluating the frozen-candidate API and supported feature set.
-- The preview has passed the public API, compiler, Razor-to-Vue, SSR, binding-contract, typed-bootstrap, Release package-consumer, and Chrome sample gates described below.
-- Release candidates run one archived verification path covering API compatibility, quality gates, package shape, and Windows SPA/SSR consumers.
-- Vue binding contracts for Element Plus, Vuetify, and TDesign are checked against generated snapshots, manifests, and upstream versions before release.
-- RazorVue diagnostics emit SARIF and schema `1.0` remediation reports with stable IDs, HelpLinks, authored source locations, and minimal fixes.
-- Quality Gates continuously exercise the diagnostics protocol with isolated success and failure fixtures, preserving JSON and SARIF evidence.
-
-### 1.0 freeze-candidate status · 2026-09-14
-
-- The public API snapshot matches the frozen baseline: `76,108` entries, `0` added, and `0` removed.
-- The Release mainline is green: Compiler `10,711/10,711`, CLR `5,089/5,089`, Razor SG `4,982/4,982`, and Emit `202/202`, with the remaining ecosystem suites passing as well.
-- The Release sample matrix passes for both `RazorVue.Authoring` and `JazorAdmin`, including isolated NuGet consumers and Chrome browser smoke. Typed bootstrap and Element Plus, Vuetify, and TDesign binding contract gates also pass.
-- This is candidate evidence rather than a published 1.0 package. The supported scope and explicit reject boundaries remain documented in [Current Status](docs/04-roadmap/current-status.md).
-
-Read the [release notes](CHANGELOG.md) for the complete history.
 
 ## Acknowledgements
 
@@ -211,6 +191,30 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 ```
 
 Repository automation uses single-file C# entry points under `scripts/csharp/`. See [Development and Testing](docs/03-guides/development-and-testing.md) for the full workflow.
+
+## Release status
+
+### Jazor 1.0.0-preview.1 · 2026-09-14
+
+- The first 1.0 preview is available for evaluating the frozen-candidate API and supported feature set.
+- The preview has passed the public API, compiler, Razor-to-Vue, SSR, binding-contract, typed-bootstrap, Release package-consumer, and Chrome sample gates described below.
+- Release candidates run one archived verification path covering API compatibility, quality gates, package shape, and Windows SPA/SSR consumers.
+- Vue binding contracts for Element Plus, Vuetify, and TDesign are checked against generated snapshots, manifests, and upstream versions before release.
+- RazorVue diagnostics emit SARIF and schema `1.0` remediation reports with stable IDs, HelpLinks, authored source locations, and minimal fixes.
+- Quality Gates continuously exercise the diagnostics protocol with isolated success and failure fixtures, preserving JSON and SARIF evidence.
+
+### AI-assisted development
+
+The first compiler version, its first 500 tests, and the initial RazorVue implementation were written by humans. Subsequent development has been collaborative and primarily AI-led, with the Zhipu GLM-5 series and GPT-5 series serving as the main AI collaborators; maintainers continue to review changes, run the gates, and make release decisions.
+
+### 1.0 freeze-candidate status · 2026-09-14
+
+- The public API snapshot matches the frozen baseline: `76,108` entries, `0` added, and `0` removed.
+- The Release mainline is green: Compiler `10,711/10,711`, CLR `5,089/5,089`, Razor SG `4,982/4,982`, and Emit `202/202`, with the remaining ecosystem suites passing as well.
+- The Release sample matrix passes for both `RazorVue.Authoring` and `JazorAdmin`, including isolated NuGet consumers and Chrome browser smoke. Typed bootstrap and Element Plus, Vuetify, and TDesign binding contract gates also pass.
+- This is preview evidence; a stable 1.0 package has not been published. The supported scope and explicit reject boundaries remain documented in [Current Status](docs/04-roadmap/current-status.md).
+
+Read the [release notes](CHANGELOG.md) for the complete history.
 
 ## License and Feedback
 

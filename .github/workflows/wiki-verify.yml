@@ -101,7 +101,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ['20', '22']
+        # verify-browser.mjs uses the WebSocket client exposed by Node 22+.
+        node-version: ['22']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -143,7 +144,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ['20', '22']
+        # verify-browser.mjs uses the WebSocket client exposed by Node 22+.
+        node-version: ['22']
     steps:
       - name: Checkout
         uses: actions/checkout@v4

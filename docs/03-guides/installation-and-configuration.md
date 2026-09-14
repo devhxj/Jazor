@@ -32,7 +32,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.26.3" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
 </ItemGroup>
 ```
 
@@ -45,8 +45,8 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="0.26.3" />
-    <PackageReference Include="Jazor.Vue" Version="0.26.3" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
+    <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.1" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -55,15 +55,15 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="0.26.3" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="0.26.3" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="0.26.3" />
-  <PackageReference Include="ECMAScript.VuIcons" Version="0.26.3" />
-  <PackageReference Include="ECMAScript.Pinia" Version="0.26.3" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="0.26.3" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="0.26.3" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="0.26.3" />
-  <PackageReference Include="ECMAScript.TDesign" Version="0.26.3" />
+  <PackageReference Include="ECMAScript.Style" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.VuIcons" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.0.0-preview.1" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.0.0-preview.1" />
 </ItemGroup>
 ```
 

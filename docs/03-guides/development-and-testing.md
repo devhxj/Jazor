@@ -61,7 +61,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 | 发布配置 | Release、NuGet 本地源、`JazorMode=release` | SPA/SSR consumer scripts |
 | 部署路径 | `/docs`（SPA）、`/todo`（SSR） | 对应 Windows 发布消费者门禁 |
 
-Node 与浏览器的绝对版本由运行器提供；`wiki-verify.yml` 的 Wiki 与发布浏览器 consumer 会在 Node 20、22 上分别运行，`quality-gates.yml` 与 `wiki-verify.yml` 会上传 `toolchain-matrix.md`，记录每次运行的实际 SDK、Node、Chrome、操作系统和 commit。不能把本地运行结果当作跨版本保证。组件库升级还需先通过
+Node 与浏览器的绝对版本由运行器提供；`wiki-verify.yml` 的 Wiki 与发布浏览器 consumer 使用 Node 22（浏览器脚本依赖 Node 22 提供的 WebSocket 客户端），`quality-gates.yml` 与 `wiki-verify.yml` 会上传 `toolchain-matrix.md`，记录每次运行的实际 SDK、Node、Chrome、操作系统和 commit。不能把本地运行结果当作跨版本保证。组件库升级还需先通过
 `verify-vue-binding-contracts.cs`，再运行发布消费者验证。
 
 项目内脚本、测试说明和特殊验证路径见 [scripts/csharp README](../../scripts/csharp/README.md)。

@@ -58,11 +58,13 @@ jobs:
           $publishEnabled = $dryRun -ne 'true'
           $createRelease = $publishEnabled -and $releaseRef.StartsWith('v', [System.StringComparison]::Ordinal)
           $packageVersion = if ($releaseRef.StartsWith('v', [System.StringComparison]::Ordinal)) { $releaseRef.Substring(1) } else { '' }
+          $isPrerelease = $packageVersion.Contains('-', [System.StringComparison]::Ordinal)
           $safeRef = $releaseRef -replace '[^A-Za-z0-9._-]', '-'
 
           "release_ref=$releaseRef" >> $env:GITHUB_OUTPUT
           "safe_ref=$safeRef" >> $env:GITHUB_OUTPUT
           "package_version=$packageVersion" >> $env:GITHUB_OUTPUT
+          "is_prerelease=$($isPrerelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "publish_enabled=$($publishEnabled.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "create_release=$($createRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
@@ -209,10 +211,24 @@ jobs:
         run: |
           $tag = '${{ steps.release_ref.outputs.release_ref }}'
           $notesPath = '${{ steps.release_notes.outputs.notes_path }}'
+          $isPrerelease = '${{ steps.release_ref.outputs.is_prerelease }}' -eq 'true'
 
           gh release view $tag --repo "${{ github.repository }}" *> $null
           if ($LASTEXITCODE -eq 0) {
-            gh release edit $tag --repo "${{ github.repository }}" --title $tag --notes-file $notesPath --latest
+            $releaseArguments = @('release', 'edit', $tag, '--repo', '${{ github.repository }}', '--title', $tag, '--notes-file', $notesPath)
+            if ($isPrerelease) {
+              $releaseArguments += '--prerelease'
+              $releaseArguments += '--latest=false'
+            } else {
+              $releaseArguments += '--latest'
+            }
+            gh @releaseArguments
           } else {
-            gh release create $tag --repo "${{ github.repository }}" --title $tag --notes-file $notesPath --latest
+            $releaseArguments = @('release', 'create', $tag, '--repo', '${{ github.repository }}', '--title', $tag, '--notes-file', $notesPath)
+            if ($isPrerelease) {
+              $releaseArguments += '--prerelease'
+            } else {
+              $releaseArguments += '--latest'
+            }
+            gh @releaseArguments
           }

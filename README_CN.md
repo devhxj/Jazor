@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11 RC1" src="https://img.shields.io/badge/.NET-11%20RC1-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/devhxj/Jazor?display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.0.0-preview.1"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.0.0-preview.1&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -31,25 +31,6 @@
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
 Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
-
-## 发布状态
-
-### Jazor 1.0.0-preview.1 · 2026-09-14
-
-- 首个 1.0 preview 已提供，用于评估冻结候选 API 和已声明功能范围。
-- 预览版已通过公共 API、编译器、Razor-to-Vue、SSR、绑定契约、typed bootstrap、Release 包消费者和 Chrome 样例门禁。
-- 发布候选通过一条可归档的统一路径检查 API 兼容性、质量门禁、包形状以及 Windows SPA/SSR 消费者。
-- Element Plus、Vuetify 和 TDesign 的 Vue 绑定会在发布前对照生成快照、manifest 与上游版本执行契约检查。
-- RazorVue 诊断支持输出带稳定 ID、HelpLink、作者源码位置和最小修复建议的 SARIF 与 schema `1.0` 报告。
-
-### 1.0 冻结候选状态 · 2026-09-14
-
-- 公共 API 快照与冻结基线一致：共 `76,108` 条，新增 `0`，删除 `0`。
-- Release 主线全部通过：Compiler `10,711/10,711`、CLR `5,089/5,089`、Razor SG `4,982/4,982`、Emit `202/202`，其余生态测试也全部通过。
-- `RazorVue.Authoring` 与 `JazorAdmin` 的 Release 样例矩阵通过隔离 NuGet 消费者和 Chrome 浏览器 smoke；typed bootstrap 以及 Element Plus、Vuetify、TDesign 绑定契约门禁也已通过。
-- 这些是 1.0 候选证据，还不是已发布的 1.0 包。支持范围与明确拒绝边界见[当前状态](docs/04-roadmap/current-status.md)。
-
-完整版本历史见 [更新日志](CHANGELOG.md)。
 
 ## 致谢
 
@@ -208,6 +189,29 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 ```
 
 仓库自动化使用 `scripts/csharp/` 下的单文件 C# 入口。完整流程见[开发与测试](docs/03-guides/development-and-testing.md)。
+
+## 发布状态
+
+### Jazor 1.0.0-preview.1 · 2026-09-14
+
+- 首个 1.0 preview 已提供，用于评估冻结候选 API 和已声明功能范围。
+- 预览版已通过公共 API、编译器、Razor-to-Vue、SSR、绑定契约、typed bootstrap、Release 包消费者和 Chrome 样例门禁。
+- 发布候选通过一条可归档的统一路径检查 API 兼容性、质量门禁、包形状以及 Windows SPA/SSR 消费者。
+- Element Plus、Vuetify 和 TDesign 的 Vue 绑定会在发布前对照生成快照、manifest 与上游版本执行契约检查。
+- RazorVue 诊断支持输出带稳定 ID、HelpLink、作者源码位置和最小修复建议的 SARIF 与 schema `1.0` 报告。
+
+### AI 协作开发
+
+第一版转译器、最初的 500 个测试以及 RazorVue 初版由人工编写。后续开发采用协作式、以 AI 为主的方式，主要使用智谱 GLM-5 系列和 GPT-5 系列作为 AI 协作者；维护者持续负责代码审查、门禁执行和发版决策。
+
+### 1.0 冻结候选状态 · 2026-09-14
+
+- 公共 API 快照与冻结基线一致：共 `76,108` 条，新增 `0`，删除 `0`。
+- Release 主线全部通过：Compiler `10,711/10,711`、CLR `5,089/5,089`、Razor SG `4,982/4,982`、Emit `202/202`，其余生态测试也全部通过。
+- `RazorVue.Authoring` 与 `JazorAdmin` 的 Release 样例矩阵通过隔离 NuGet 消费者和 Chrome 浏览器 smoke；typed bootstrap 以及 Element Plus、Vuetify、TDesign 绑定契约门禁也已通过。
+- 这些是 preview 的候选证据；稳定版 1.0 尚未发布。支持范围与明确拒绝边界见[当前状态](docs/04-roadmap/current-status.md)。
+
+完整版本历史见 [更新日志](CHANGELOG.md)。
 
 ## 许可证与反馈
 
