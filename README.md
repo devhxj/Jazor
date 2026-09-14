@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 0.60.0 is the current stable release. The mainline is in 1.0 freeze-candidate review; install 0.60.0 until a `v1.0.0` tag is published.
+> Jazor 1.0.0-preview.1 is the current preview release.
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
@@ -34,15 +34,14 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 
 ## Release status
 
-### Jazor 0.60.0 · 2026-09-12
+### Jazor 1.0.0-preview.1 · 2026-09-14
 
-- Release candidates now run one archived verification path covering API compatibility, quality gates, package shape, and Windows SPA/SSR consumers.
+- The first 1.0 preview is available for evaluating the frozen-candidate API and supported feature set.
+- The preview has passed the public API, compiler, Razor-to-Vue, SSR, binding-contract, typed-bootstrap, Release package-consumer, and Chrome sample gates described below.
+- Release candidates run one archived verification path covering API compatibility, quality gates, package shape, and Windows SPA/SSR consumers.
 - Vue binding contracts for Element Plus, Vuetify, and TDesign are checked against generated snapshots, manifests, and upstream versions before release.
-- RazorVue diagnostics can emit SARIF with stable IDs, HelpLinks, and authored source locations for IDE integration.
-- The RazorVue chain inspector also emits a schema `1.0` remediation report with chain facts and minimal fixes for CI and IDE adapters.
+- RazorVue diagnostics emit SARIF and schema `1.0` remediation reports with stable IDs, HelpLinks, authored source locations, and minimal fixes.
 - Quality Gates continuously exercise the diagnostics protocol with isolated success and failure fixtures, preserving JSON and SARIF evidence.
-- Release candidate verification includes the same diagnostics protocol stage and archives its evidence with the candidate report.
-- Vue binding contract verification can emit schema `1.0` JSON and Markdown reports for CI review and release-candidate archival.
 
 ### 1.0 freeze-candidate status · 2026-09-14
 
@@ -125,7 +124,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 0.60.0
+dotnet add package Jazor --version 1.0.0-preview.1
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -133,8 +132,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.60.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.60.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.1" PrivateAssets="all" />
 </ItemGroup>
 ```
 

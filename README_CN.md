@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 0.60.0 是当前稳定版本。主线已进入 1.0 冻结候选审查；在发布 `v1.0.0` tag 前，请继续安装 0.60.0。
+> Jazor 1.0.0-preview.1 是当前预览版本。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
@@ -34,11 +34,13 @@ Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue`
 
 ## 发布状态
 
-### Jazor 0.60.0 · 2026-09-12
+### Jazor 1.0.0-preview.1 · 2026-09-14
 
-- 发布候选现在通过一条可归档的统一路径检查 API 兼容性、质量门禁、包形状以及 Windows SPA/SSR 消费者。
+- 首个 1.0 preview 已提供，用于评估冻结候选 API 和已声明功能范围。
+- 预览版已通过公共 API、编译器、Razor-to-Vue、SSR、绑定契约、typed bootstrap、Release 包消费者和 Chrome 样例门禁。
+- 发布候选通过一条可归档的统一路径检查 API 兼容性、质量门禁、包形状以及 Windows SPA/SSR 消费者。
 - Element Plus、Vuetify 和 TDesign 的 Vue 绑定会在发布前对照生成快照、manifest 与上游版本执行契约检查。
-- RazorVue 诊断支持输出带稳定 ID、HelpLink 和作者源码位置的 SARIF，便于 IDE 集成。
+- RazorVue 诊断支持输出带稳定 ID、HelpLink、作者源码位置和最小修复建议的 SARIF 与 schema `1.0` 报告。
 
 ### 1.0 冻结候选状态 · 2026-09-14
 
@@ -120,15 +122,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 0.60.0
+dotnet add package Jazor --version 1.0.0-preview.1
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.60.0" />
-  <PackageReference Include="Jazor.Vue" Version="0.60.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.0.0-preview.1" />
+  <PackageReference Include="Jazor.Vue" Version="1.0.0-preview.1" PrivateAssets="all" />
 </ItemGroup>
 ```
 
