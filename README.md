@@ -32,6 +32,10 @@ Jazor is a typed .NET toolchain for compiling supported C# semantics into determ
 
 Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.
 
+## AI-assisted development
+
+The first compiler version, its first 500 tests, and the initial RazorVue implementation were written by humans. Subsequent development has been collaborative and primarily AI-led, with the Zhipu GLM-5 series and GPT-5 series serving as the main AI collaborators; maintainers continue to review changes, run the gates, and make release decisions.
+
 ## Acknowledgements
 
 Jazor builds on [Roslyn](https://github.com/dotnet/roslyn), [Acornima](https://github.com/adams85/acornima), [Netpack](https://github.com/FlorianRappl/netpack), [DenoHost](https://github.com/thomas3577/DenoHost), [WebRef](https://github.com/w3c/webref), and earlier C#-to-JavaScript projects including [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit).
@@ -202,10 +206,6 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 - Vue binding contracts for Element Plus, Vuetify, and TDesign are checked against generated snapshots, manifests, and upstream versions before release.
 - RazorVue diagnostics emit SARIF and schema `1.0` remediation reports with stable IDs, HelpLinks, authored source locations, and minimal fixes.
 - Quality Gates continuously exercise the diagnostics protocol with isolated success and failure fixtures, preserving JSON and SARIF evidence.
-
-### AI-assisted development
-
-The first compiler version, its first 500 tests, and the initial RazorVue implementation were written by humans. Subsequent development has been collaborative and primarily AI-led, with the Zhipu GLM-5 series and GPT-5 series serving as the main AI collaborators; maintainers continue to review changes, run the gates, and make release decisions.
 
 ### 1.0 freeze-candidate status · 2026-09-14
 

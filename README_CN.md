@@ -32,6 +32,10 @@ Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强�
 
 Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
 
+## AI 协作开发
+
+第一版转译器、最初的 500 个测试以及 RazorVue 初版由人工编写。后续开发采用协作式、以 AI 为主的方式，主要使用智谱 GLM-5 系列和 GPT-5 系列作为 AI 协作者；维护者持续负责代码审查、门禁执行和发版决策。
+
 ## 致谢
 
 Jazor 使用了 [Roslyn](https://github.com/dotnet/roslyn)、[Acornima](https://github.com/adams85/acornima)、[Netpack](https://github.com/FlorianRappl/netpack)、[DenoHost](https://github.com/thomas3577/DenoHost)、[WebRef](https://github.com/w3c/webref)，并参考了 [WootzJs](https://github.com/kswoll/WootzJs)、[h5](https://github.com/curiosity-ai/h5)、[SharpKit](https://github.com/SharpKit/SharpKit) 等早期 C# 到 JavaScript 项目。
@@ -199,10 +203,6 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 - 发布候选通过一条可归档的统一路径检查 API 兼容性、质量门禁、包形状以及 Windows SPA/SSR 消费者。
 - Element Plus、Vuetify 和 TDesign 的 Vue 绑定会在发布前对照生成快照、manifest 与上游版本执行契约检查。
 - RazorVue 诊断支持输出带稳定 ID、HelpLink、作者源码位置和最小修复建议的 SARIF 与 schema `1.0` 报告。
-
-### AI 协作开发
-
-第一版转译器、最初的 500 个测试以及 RazorVue 初版由人工编写。后续开发采用协作式、以 AI 为主的方式，主要使用智谱 GLM-5 系列和 GPT-5 系列作为 AI 协作者；维护者持续负责代码审查、门禁执行和发版决策。
 
 ### 1.0 冻结候选状态 · 2026-09-14
 
