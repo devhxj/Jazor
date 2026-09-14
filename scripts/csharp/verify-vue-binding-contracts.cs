@@ -321,6 +321,7 @@ static BindingContractDiff CreateDiff(BindingTargetResult target, BindingBaselin
     CompareSet("event", current.EventNames, previousInventory?.EventNames, added, removed);
     CompareSet("slot", current.SlotNames, previousInventory?.SlotNames, added, removed);
     CompareSet("member", current.MemberNames, previousInventory?.MemberNames, added, removed);
+    CompareSet("typed", current.TypedMemberNames, previousInventory?.TypedMemberNames, added, removed);
     var deltas = new List<string>();
     AddDelta(deltas, "components", current.Components, previousInventory?.Components);
     AddDelta(deltas, "props", current.Props, previousInventory?.Props);
