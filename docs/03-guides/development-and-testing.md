@@ -38,6 +38,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 | Vue 生态绑定 | 每个目标 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
 | Vue 绑定版本漂移 | 三套生成器 `--check`、上游快照版本、原始注释说明和 manifest identity；可归档 schema `1.0` JSON/Markdown 报告，并可用 baseline + `--fail-on-baseline-drift` 阻断 inventory 漂移 | `dotnet run --file scripts/csharp/verify-vue-binding-contracts.cs -- --report .tmp/binding-contracts.json` |
 | RazorVue 构建性能 | clean、incremental、HMR、Release 的可重复时间基线；clean/incremental 另记录模块/source map/manifest/Emit 输出的原始与 gzip 体积和增量产物变化；JSON 旁生成 Markdown 摘要，质量工作流按周归档 3 轮 clean/incremental 趋势 | `dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --samples 3` |
+| 样例业务回归矩阵 | 定时/手动质量门禁串行运行 `RazorVue.Authoring` 与 `JazorAdmin` 的 Release smoke，记录每个场景的退出码、耗时、命令、提交和工具链上下文，并归档 JSON/Markdown 报告；浏览器验证默认启用，本地快速迭代可显式 `--skip-browser` | `dotnet run --file scripts/csharp/verify-sample-regression-matrix.cs -- --report artifacts/quality/sample-regression/report.json` |
 
 门槛是验证规则，不等同于任一历史报告中的固定通过数量。对当前结果的判断应运行相应脚本或测试命令。
 

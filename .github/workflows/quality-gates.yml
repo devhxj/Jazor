@@ -27,6 +27,7 @@ on:
       - 'scripts/csharp/benchmark-razorvue-build.cs'
       - 'scripts/csharp/inspect-razorvue-chain.cs'
       - 'scripts/csharp/verify-razorvue-diagnostics.cs'
+      - 'scripts/csharp/verify-sample-regression-matrix.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -48,6 +49,7 @@ on:
       - 'scripts/csharp/benchmark-razorvue-build.cs'
       - 'scripts/csharp/inspect-razorvue-chain.cs'
       - 'scripts/csharp/verify-razorvue-diagnostics.cs'
+      - 'scripts/csharp/verify-sample-regression-matrix.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -247,6 +249,35 @@ jobs:
           path: ${{ github.workspace }}/artifacts/quality/razorvue-diagnostics/
           if-no-files-found: error
           retention-days: 14
+
+  sample-regression:
+    name: Sample application regression matrix
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout tested ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Run sample regression matrix
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/verify-sample-regression-matrix.cs -- --report artifacts/quality/sample-regression/report.json
+
+      - name: Upload sample regression evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sample-regression-${{ github.run_attempt }}
+          path: artifacts/quality/sample-regression/
+          if-no-files-found: error
+          retention-days: 30
 
   binding-contracts:
     name: Vue binding contract gate
