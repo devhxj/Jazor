@@ -16,6 +16,9 @@
         <CellEmptyContent Context="cell">
             <span data-empty-cell="@cell.Row.Id">@cell.Row.Title</span>
         </CellEmptyContent>
+        <TopContent>
+            <span data-table-slot="top">Task queue</span>
+        </TopContent>
     </TPrimaryTable>
     <span data-row-click="@SelectedRowId">Selected row: @SelectedRowId</span>
 </section>
