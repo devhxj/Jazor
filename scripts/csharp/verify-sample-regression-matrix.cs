@@ -28,7 +28,13 @@ foreach (var testCase in cases)
     var stopwatch = Stopwatch.StartNew();
     var (exitCode, stdout, stderr) = await RunAsync(arguments, repoRoot);
     stopwatch.Stop();
-    var result = new Result(testCase.Name, exitCode == 0 ? "passed" : "failed", stopwatch.Elapsed, string.Join(" ", arguments),
+    // JazorAdmin can intentionally return success when Chrome is unavailable; keep that
+    // distinction visible so a browser-enabled scheduled lane cannot become a false pass.
+    var browserSkipped = !options.SkipBrowser &&
+        (stdout.Contains("browser smoke skipped", StringComparison.OrdinalIgnoreCase) ||
+         stdout.Contains("Browser verification was skipped", StringComparison.OrdinalIgnoreCase));
+    var status = exitCode != 0 ? "failed" : browserSkipped ? "skipped" : "passed";
+    var result = new Result(testCase.Name, status, stopwatch.Elapsed, string.Join(" ", arguments),
         Trim(stdout), Trim(stderr));
     results.Add(result);
     Console.WriteLine($"[{result.Status}] {result.Name} ({result.Duration.TotalSeconds:F1}s)");
@@ -36,11 +42,20 @@ foreach (var testCase in cases)
         Console.Error.WriteLine(result.StandardError);
 }
 
-var report = new Report(DateTimeOffset.UtcNow, RunGit(repoRoot, "rev-parse", "HEAD"), options.Configuration, options.SkipBrowser, results);
+var report = new Report(
+    DateTimeOffset.UtcNow,
+    RunGit(repoRoot, "rev-parse", "HEAD"),
+    options.Configuration,
+    options.SkipBrowser,
+    await ReadVersionAsync("dotnet", "--version"),
+    await ReadVersionAsync("node", "--version"),
+    ResolveChromeVersion(),
+    Environment.OSVersion.ToString(),
+    results);
 var json = JsonSerializer.Serialize(report, RegressionJsonContext.Default.Report);
 await File.WriteAllTextAsync(options.ReportPath, json, new UTF8Encoding(false));
 await File.WriteAllTextAsync(Path.ChangeExtension(options.ReportPath, ".md"), ToMarkdown(report), new UTF8Encoding(false));
-if (results.Any(result => result.Status == "failed"))
+if (results.Any(result => result.Status != "passed"))
     Environment.ExitCode = 1;
 
 static async Task<(int ExitCode, string Stdout, string Stderr)> RunAsync(IReadOnlyList<string> arguments, string workingDirectory)
@@ -65,7 +80,12 @@ static string ToMarkdown(Report report)
 {
     var builder = new StringBuilder().AppendLine("# Sample Regression Matrix").AppendLine()
         .AppendLine($"- UTC: `{report.Timestamp:O}`").AppendLine($"- Commit: `{report.Commit}`")
-        .AppendLine($"- Configuration: `{report.Configuration}`").AppendLine($"- Browser: `{(!report.SkipBrowser ? "enabled" : "skipped")}`").AppendLine()
+        .AppendLine($"- Configuration: `{report.Configuration}`")
+        .AppendLine($"- .NET SDK: `{report.Dotnet}`")
+        .AppendLine($"- Node.js: `{report.Node}`")
+        .AppendLine($"- Chrome: `{report.Chrome}`")
+        .AppendLine($"- OS: `{report.Os}`")
+        .AppendLine($"- Browser lane: `{(!report.SkipBrowser ? "enabled" : "skipped")}`").AppendLine()
         .AppendLine("| Scenario | Status | Duration | Command |").AppendLine("| --- | --- | ---: | --- |");
     foreach (var result in report.Results)
         builder.AppendLine($"| `{result.Name}` | **{result.Status}** | {result.Duration.TotalSeconds:F1}s | `{result.Command.Replace("|", "\\|")}` |");
@@ -73,6 +93,38 @@ static string ToMarkdown(Report report)
 }
 
 static string Trim(string value) => value.Length <= 4000 ? value : value[^4000..];
+static async Task<string> ReadVersionAsync(string fileName, string argument)
+{
+    try
+    {
+        using var process = Process.Start(new ProcessStartInfo(fileName, argument)
+        {
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        });
+        if (process is null)
+            return "unavailable";
+        var output = await process.StandardOutput.ReadToEndAsync();
+        await process.WaitForExitAsync();
+        return process.ExitCode == 0 ? output.Trim() : "unavailable";
+    }
+    catch
+    {
+        return "unavailable";
+    }
+}
+
+static string ResolveChromeVersion()
+{
+    var path = new[]
+    {
+        @"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+    }.FirstOrDefault(File.Exists);
+    return path is null ? "unavailable" : FileVersionInfo.GetVersionInfo(path).FileVersion ?? "unavailable";
+}
+
 static string FindRepositoryRoot(string start)
 {
     var current = new DirectoryInfo(Path.GetFullPath(start));
@@ -94,7 +146,7 @@ static string RunGit(string root, params string[] args)
 
 record Case(string Name, string Script, string[] Arguments);
 record Result(string Name, string Status, TimeSpan Duration, string Command, string StandardOutput, string StandardError);
-record Report(DateTimeOffset Timestamp, string Commit, string Configuration, bool SkipBrowser, IReadOnlyList<Result> Results);
+record Report(DateTimeOffset Timestamp, string Commit, string Configuration, bool SkipBrowser, string Dotnet, string Node, string Chrome, string Os, IReadOnlyList<Result> Results);
 
 [JsonSerializable(typeof(Report))]
 internal sealed partial class RegressionJsonContext : JsonSerializerContext
