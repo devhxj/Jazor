@@ -11,7 +11,8 @@
                    Data="@Rows"
                    Columns="@Columns"
                    RowKey="Id"
-                   Bordered="true">
+                   Bordered="true"
+                   OnRowClick="@OnRowClick">
         <CellEmptyContent Context="cell">
             <span data-empty-cell="@cell.Row.Id">@cell.Row.Title</span>
         </CellEmptyContent>

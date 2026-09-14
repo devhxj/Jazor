@@ -16,8 +16,19 @@ public partial class TaskTable : ComponentBase, IVueComponent
 
     private TPrimaryTableCol<TaskRow>[] Columns =>
     [
-        new() { ColKey = nameof(TaskRow.Title), Title = "Task" },
+        new()
+        {
+            ColKey = nameof(TaskRow.Title),
+            Title = "Task",
+            Cell = (RenderFragment<TPrimaryTableCellParams<TaskRow>>)(cell =>
+            {
+                return _ => { };
+            })
+        },
         new() { ColKey = nameof(TaskRow.Owner), Title = "Owner" },
         new() { ColKey = nameof(TaskRow.Status), Title = "Status" }
     ];
+
+    private void OnRowClick(TRowEventContext<TaskRow> context)
+        => _ = context.Row.Id;
 }
