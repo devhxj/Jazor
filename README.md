@@ -26,13 +26,13 @@
 
 </div>
 
-> Jazor is experimental. Public APIs and generated artifact shapes may evolve.
+> Jazor 0.60.0 is the current stable release. The mainline is in 1.0 freeze-candidate review; install 0.60.0 until a `v1.0.0` tag is published.
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
 Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.
 
-## Latest release
+## Release status
 
 ### Jazor 0.60.0 · 2026-09-12
 
@@ -43,6 +43,13 @@ Razor-to-Vue is a separate application direction built on that core. `Jazor.Razo
 - Quality Gates continuously exercise the diagnostics protocol with isolated success and failure fixtures, preserving JSON and SARIF evidence.
 - Release candidate verification includes the same diagnostics protocol stage and archives its evidence with the candidate report.
 - Vue binding contract verification can emit schema `1.0` JSON and Markdown reports for CI review and release-candidate archival.
+
+### 1.0 freeze-candidate status · 2026-09-14
+
+- The public API snapshot matches the frozen baseline: `76,108` entries, `0` added, and `0` removed.
+- The Release mainline is green: Compiler `10,711/10,711`, CLR `5,089/5,089`, Razor SG `4,982/4,982`, and Emit `202/202`, with the remaining ecosystem suites passing as well.
+- The Release sample matrix passes for both `RazorVue.Authoring` and `JazorAdmin`, including isolated NuGet consumers and Chrome browser smoke. Typed bootstrap and Element Plus, Vuetify, and TDesign binding contract gates also pass.
+- This is candidate evidence rather than a published 1.0 package. The supported scope and explicit reject boundaries remain documented in [Current Status](docs/04-roadmap/current-status.md).
 
 Read the [release notes](CHANGELOG.md) for the complete history.
 

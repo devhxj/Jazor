@@ -48,7 +48,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 
 公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型没有计划中的重命名；`verify-release-candidate.cs` 与手动 `Release Candidate Verification` workflow 已提供统一候选验收入口，在发布候选 ref 上重新生成并通过 API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据前，仍不将 1.0 标记为可发布。冻结状态必须由一组可追溯的门禁结果和对应 `1.0.0-rc.1` 或 `1.0.0` CHANGELOG 条目共同确认。
 
-2026-09-14 本地完整解决方案构建（`dotnet build Jazor.slnx --no-restore`）通过，公共 API 快照与 `docs/03-guides/public-api-baseline.snapshot.md` 比较结果为 `76108` 对 `76108`，新增 `0`、删除 `0`。这只是当前提交的兼容性证据；正式冻结仍须在候选 ref 上重跑完整 Release Candidate 门禁。
+2026-09-14 本地完整解决方案构建和主线 Release 测试通过，公共 API 快照与 `docs/03-guides/public-api-baseline.snapshot.md` 比较结果为 `76108` 对 `76108`，新增 `0`、删除 `0`。Compiler `10711/10711`、CLR `5089/5089`、Razor SG `4982/4982`、Emit `202/202` 及其余生态测试均无失败。完整 Release Candidate 门禁仍是正式冻结的复核入口，但发布认证扩展、长期多版本矩阵和性能趋势采样属于 1.0 之后的运营质量工作，不作为核心 API/功能发布阻塞。
 
 ## 质量门槛与验证
 
@@ -74,7 +74,7 @@ RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用�
 | 切片 | 当前证据 |
 | --- | --- |
 | P0：失败诊断与生成稳定性 | RazorVue SG 测试 `4982/4982` 通过（由 `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj` 当前运行确认）；诊断路径排序具有 Ordinal tie-breaker；生成失败不留下 partial artifact。RazorVue.Authoring 已通过 typed `TPrimaryTableColCell<TaskRow>`、typed `OnRowClick`、组合 `TopContent` slot 及 package/Release/Chrome smoke。 |
-| P0：质量门禁 | 2026-09-14 当前 HEAD 独立回归：Compiler `10711/10711`、Razor SG `4982/4982`、Emit `201/201`；覆盖率门禁基线仍为 Compiler 行/分支 `99.42%/97.15%`、Razor SG `97.53%/94.30%`。 |
+| P0：质量门禁 | 2026-09-14 当前 HEAD 独立回归：Compiler `10711/10711`、Razor SG `4982/4982`、Emit `202/202`；覆盖率门禁基线仍为 Compiler 行/分支 `99.42%/97.15%`、Razor SG `97.53%/94.30%`。 |
 | P0：Debug/HMR/SPA/SSR 交付 | 2026-09-14 候选验证提交 `1fcde72e` 以 `v0.60.0` 参数完成完整 Release Candidate；随后仅追加了路线图、benchmark 采样策略和 authoring 样例验证提交，未改动 RC 主链路。RC 阶段包含 release notes、Release build、API 兼容性、Compiler/RazorVue/Vue binding coverage、binding baseline、diagnostics、typed bootstrap、主线测试、13 个 NuGet 包、package shape、`/docs` Chrome SPA 与 `/todo` Chrome SSR consumer；归档证据见 `.tmp/rc-95-full/report.md`（CI 会归档到 `artifacts/release-candidate/`）。长期 `wiki-verify` 与 `quality-gates` 额外上传 `toolchain-matrix.md`，关联实际 SDK、Node、Chrome、操作系统和 commit。Wiki browser 与 publish-browser 已在 Node 20/22 矩阵持续运行。 |
 | P1：响应式与生命周期 | 参数队列、异步 lifecycle、slot、`@key`、卸载竞态和 SSR 首屏等待由 `RazorSgOfficial*RuntimeTests`、`RazorSgComponentMemberClosureTests` 及消费端脚本覆盖；完整 CLR reference parity 仍是边界。P1-A 已补齐版本化 SSR state envelope（schema/version/props/providers）及错误校验；P1-B 已提供 `JazorAuthenticationState`、`JazorAuthenticationEnvelope` 和显式 browser provider，覆盖匿名、登录、刷新、过期、403、登出、错误保持及请求竞态；P1-C 已支持单一显式构造函数的普通引用类型服务参数（既有 provider key + Vue inject），其余复杂 activation 仍按 Guidance/Reject 处理。P1-D 已支持 history 事件的 handler 协议、取消恢复、竞态和 dispose；typed bootstrap 的应用自有 DTO、409 版本刷新、422 校验失败和草稿保留已纳入 `quality-gates` 的长期 consumer job，并上传可归档报告；不宣称服务器 circuit 或完整 Blazor UI parity。 |
 | P1：范式级调试 | `inspect-razorvue-chain.cs` 输出 source → generated → module → map 链路，支持文本、JSON、SARIF 2.1.0 和 schema `1.0` remediation 报告；`verify-razorvue-diagnostics.cs` 在 Quality Gates 中持续验证成功链路、source map 断链和 generated C# 缺失三条路径，并在两种机器输出中保留 `JAZORVGA020`/`JAZORVGA026`、HelpLink、作者源位置和最小替代建议。2026-09-11 使用 `RazorVue.TodoList/TodoApp.razor` 实际产物验证通过（generated C# 1095 行、module 86 行、source map 映射成功）。 |

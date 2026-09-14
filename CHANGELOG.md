@@ -20,6 +20,10 @@ Product closure follow-up
 
 - Vue binding contract verification now emits schema `1.0` JSON and Markdown reports, and Quality Gates plus release candidates archive the evidence for review. by @devhxj
 
+- 1.0 核心冻结复核已完成：公共 API 基线无新增/删除，Compiler、CLR、Razor SG、Emit 主线测试、三套绑定契约、typed bootstrap，以及两个 Release Chrome 样例消费者均通过；长期发布认证、多版本矩阵和性能趋势列为 1.0 后运营项。by @devhxj
+
+- Core 1.0 freeze review is complete: the public API baseline has no additions or removals, and the Compiler, CLR, Razor SG, Emit, three binding-contract, typed-bootstrap, and two Release Chrome sample-consumer gates all pass. Long-term publishing authentication, version matrices, and performance trends are tracked as post-1.0 operations. by @devhxj
+
 Product closure follow-up
 
 - Vue binding contract verification now emits schema `1.0` JSON and Markdown reports, and Quality Gates plus release candidates archive the evidence for review. by @devhxj
