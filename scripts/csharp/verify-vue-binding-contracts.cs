@@ -275,6 +275,8 @@ static void WriteReport(string path, IReadOnlyList<BindingCheckResult> checks, I
             : $"; {inventory.Components} components, {inventory.Exports} exports, {inventory.Props} props, {inventory.Events} events, {inventory.Slots} slots; fingerprint `{inventory.Fingerprint[..12]}`";
         lines.Add($"| `{result.Name}` `{result.LibraryId}@{result.Version}` | {(result.Passed ? "passed" : "failed")}{inventoryText} |");
     }
+    foreach (var diff in report.Diffs)
+        lines.Add($"| diff `{diff.LibraryId}` | `{diff.Status}`; added {diff.Changed.Count}, removed {diff.Removed.Count} |");
     File.WriteAllText(summaryPath, string.Join(Environment.NewLine, lines) + Environment.NewLine);
 }
 
