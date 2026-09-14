@@ -388,6 +388,8 @@ public sealed class SdkIntegrationTests
             "buildTransitive/ECMAScript.VueRoute.targets",
             "jazor/vue-router/manifest.json",
             "jazor/vue-router/dist/vue-router.esm-browser.prod.js",
+            "jazor/vue-router/dist/nostics/index.mjs",
+            "jazor/vue-router/licenses/NOSTICS-LICENSE",
             "jazor/vue-router/licenses/LICENSE");
         AssertPackageEntries(
             package.PiniaPackagePath,

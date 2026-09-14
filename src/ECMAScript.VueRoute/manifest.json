@@ -3,6 +3,24 @@
   "libraryId": "vue-router",
   "version": "5.3.1",
   "imports": {
+    "nostics": {
+      "type": "module",
+      "development": "dist/nostics/index.mjs",
+      "production": "dist/nostics/index.mjs",
+      "developmentHash": "af9b0c9e5ad1480e458e059171042a840e67a826d396c153d2305ce62cfb8bf8",
+      "productionHash": "af9b0c9e5ad1480e458e059171042a840e67a826d396c153d2305ce62cfb8bf8",
+      "developmentDependencies": [],
+      "productionDependencies": [],
+      "developmentModuleDependencies": [],
+      "productionModuleDependencies": [],
+      "files": [
+        {
+          "type": "license",
+          "path": "licenses/NOSTICS-LICENSE",
+          "hash": "acf17aff719bfab70f6bec3a93f1ba82ce9fe27ab74f83c0f2e1efb1273fa220"
+        }
+      ]
+    },
     "vue-router": {
       "type": "module",
       "development": "dist/vue-router.esm-browser.js",

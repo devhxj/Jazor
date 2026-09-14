@@ -835,6 +835,42 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
+    public void Materialize_DevelopmentVueRouterEntry_FollowsStandaloneDiagnosticsClosure()
+    {
+        using var workspace = new LibraryWorkspace();
+        var outputRoot = Path.Combine(workspace.Root, "out");
+
+        var result = new LibraryMaterializer().Materialize(
+            [
+                FindLibraryManifest("ECMAScript.VueRoute"),
+                FindLibraryManifest("ECMAScript.Vue")
+            ],
+            outputRoot,
+            BuildMode.Development,
+            ["vue-router"]);
+
+        CollectionAssert.AreEquivalent(
+            new[] { "vue-router", "nostics", "vue", "@vue/devtools-api", "perfect-debounce" },
+            result.ImportPaths.Keys.ToArray());
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue-router",
+            "5.3.1",
+            "dist",
+            "nostics",
+            "index.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(
+            outputRoot,
+            "vendor",
+            "vue3",
+            "3.5.42",
+            "dist",
+            "devtools-api",
+            "vue-devtools-api.esm-browser.js")));
+    }
+
+    [TestMethod]
     public void Materialize_ProductionPiniaTestingEntry_FollowsDeclaredRuntimeClosure()
     {
         using var workspace = new LibraryWorkspace();
