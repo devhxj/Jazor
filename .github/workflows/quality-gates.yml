@@ -101,7 +101,7 @@ jobs:
 
       - name: Run build benchmark
         shell: pwsh
-        run: dotnet run --file ./scripts/csharp/benchmark-razorvue-build.cs -- --samples 1 --skip-hmr --skip-release --out artifacts/quality/build-benchmark/report.json
+        run: dotnet run --file ./scripts/csharp/benchmark-razorvue-build.cs -- --samples 3 --skip-hmr --skip-release --out artifacts/quality/build-benchmark/report.json
 
       - name: Upload build benchmark evidence
         if: ${{ always() }}
