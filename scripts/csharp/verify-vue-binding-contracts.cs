@@ -127,6 +127,7 @@ static BindingContractInventory ReadInventory(BindingTarget target)
     var events = new SortedSet<string>(StringComparer.Ordinal);
     var slots = new SortedSet<string>(StringComparer.Ordinal);
     var members = new SortedSet<string>(StringComparer.Ordinal);
+    var typedMembers = new SortedSet<string>(StringComparer.Ordinal);
     var componentCount = 0;
     foreach (var component in components.EnumerateArray())
     {
@@ -143,6 +144,7 @@ static BindingContractInventory ReadInventory(BindingTarget target)
         AddMembers(component, "props", props);
         AddMembers(component, "events", events);
         AddMembers(component, "slots", slots);
+        AddTypedMembers(component, typedMembers);
         if (component.TryGetProperty("members", out var declaredMembers) && declaredMembers.ValueKind == JsonValueKind.Array)
         {
             foreach (var member in declaredMembers.EnumerateArray())
@@ -165,9 +167,33 @@ static BindingContractInventory ReadInventory(BindingTarget target)
         .Concat(props.Select(static value => "prop:" + value))
         .Concat(events.Select(static value => "event:" + value))
         .Concat(slots.Select(static value => "slot:" + value)));
-    fingerprintInput = string.Join("\n", fingerprintInput.Split('\n').Concat(members.Select(static value => "member:" + value)));
+    fingerprintInput = string.Join("\n", fingerprintInput.Split('\n').Concat(members.Select(static value => "member:" + value)).Concat(typedMembers.Select(static value => "typed:" + value)));
     var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintInput))).ToLowerInvariant();
-    return new BindingContractInventory(componentCount, exports, props, events, slots, members, fingerprint);
+    return new BindingContractInventory(componentCount, exports, props, events, slots, members, typedMembers, fingerprint);
+}
+
+static void AddTypedMembers(JsonElement component, ISet<string> values)
+{
+    if (component.TryGetProperty("members", out var members) && members.ValueKind == JsonValueKind.Array)
+    {
+        foreach (var member in members.EnumerateArray())
+            AddTypedMember(member, values);
+    }
+    foreach (var propertyName in new[] { "props", "events" })
+    {
+        if (!component.TryGetProperty(propertyName, out var items) || items.ValueKind != JsonValueKind.Array)
+            continue;
+        foreach (var item in items.EnumerateArray())
+            AddTypedMember(item, values);
+    }
+}
+
+static void AddTypedMember(JsonElement member, ISet<string> values)
+{
+    if (!member.TryGetProperty("name", out var name) || name.ValueKind != JsonValueKind.String ||
+        !member.TryGetProperty("type", out var type) || type.ValueKind != JsonValueKind.String)
+        return;
+    values.Add(name.GetString()! + ":" + type.GetString());
 }
 
 static void AddMembers(JsonElement component, string propertyName, ISet<string> values)
@@ -345,7 +371,7 @@ sealed record Check(string Name, IReadOnlyList<string> Arguments);
 sealed record BindingTarget(string LibraryId, string Version, string ProjectDirectory, string UpstreamDirectory, string DisplayName);
 sealed record BindingCheckResult(string Name, bool Passed, string? Error);
 sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error, BindingContractInventory? Inventory);
-sealed record BindingContractInventory(int Components, IReadOnlyCollection<string> ExportNames, IReadOnlyCollection<string> PropNames, IReadOnlyCollection<string> EventNames, IReadOnlyCollection<string> SlotNames, IReadOnlyCollection<string> MemberNames, string Fingerprint)
+sealed record BindingContractInventory(int Components, IReadOnlyCollection<string> ExportNames, IReadOnlyCollection<string> PropNames, IReadOnlyCollection<string> EventNames, IReadOnlyCollection<string> SlotNames, IReadOnlyCollection<string> MemberNames, IReadOnlyCollection<string> TypedMemberNames, string Fingerprint)
 {
     public int Exports => ExportNames.Count;
     public int Props => PropNames.Count;
