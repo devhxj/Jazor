@@ -28,7 +28,7 @@ P0 包含四条相互衔接的工作线：
 
 | 工作线 | 已有基础 | 尚需完成 |
 | --- | --- | --- |
-| Golden Path | `samples/RazorVue.Authoring` 已覆盖 TDesign 表单、表格、slot、绑定、路由和 Release/browser smoke；`samples/JazorAdmin` 提供更大规模页面。 | 把推荐入口、依赖选择、API client 形状和最小 CRUD 步骤整理成一条新项目可复制的模板，并补齐独立 package consumer 说明。 |
+| Golden Path | `samples/RazorVue.Authoring` 已覆盖 TDesign 表单、表格、slot、绑定、路由和 Release/browser smoke；`docs/03-guides/razorvue-golden-path.md` 已固定推荐目录、强类型 API client、最小 CRUD 状态和逐步验证命令；`samples/JazorAdmin` 提供更大规模页面。 | 继续以真实页面反馈打磨复杂表格列、事件载荷和组合 slot；不把样本 workaround 提升为公共 API。 |
 | 诊断闭环 | `JAZORVGA020`-`026`、`JAZORVCA001`-`011`、HelpLink、mapped source location 和 `inspect-razorvue-chain.cs` 已存在。 | 建立一份按作者场景组织的诊断矩阵，补齐每个高频错误的最小替代示例，并验证源码项目与 package consumer 的输出一致。 |
 | 增量性能 | `benchmark-razorvue-g2.cs` 已提供 direct render/runtime 基线；`benchmark-razorvue-build.cs` 提供 clean/incremental/HMR/Release 构建计时，并扫描最终 `JazorDir` 记录生成模块、source map、manifest、Emit 体积及增量产物变化。 | 在固定机器和参数下重复采样并记录中位数，再决定是否修改缓存或编译主链；产物未变化不解释为内部缓存命中。 |
 | 绑定漂移 | Vuetify、Element Plus、TDesign 已有锁定快照、生成检查和 coverage；原始注释来源已在各包记录。`verify-vue-binding-contracts.cs` 统一执行生成检查并校验版本/文档/manifest，输出组件/export/prop/event/slot inventory、成员集合、fingerprint 和 baseline diff；Release Candidate 使用仓库 baseline 阻断漂移。 | 当前报告已覆盖集合、计数、类型和描述 fingerprint，并在 Markdown 中展示受控成员明细；后续只在真实升级需求出现时扩展字段级 diff。 |
