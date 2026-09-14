@@ -20,10 +20,7 @@ public partial class TaskTable : ComponentBase, IVueComponent
         {
             ColKey = nameof(TaskRow.Title),
             Title = "Task",
-            Cell = (RenderFragment<TPrimaryTableCellParams<TaskRow>>)(cell =>
-            {
-                return _ => { };
-            })
+            Cell = "title"
         },
         new() { ColKey = nameof(TaskRow.Owner), Title = "Owner" },
         new() { ColKey = nameof(TaskRow.Status), Title = "Status" }
