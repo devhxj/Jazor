@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var repoRoot = FindRepositoryRoot(Directory.GetCurrentDirectory());
 var options = Options.Parse(args, repoRoot);
@@ -36,7 +37,7 @@ foreach (var testCase in cases)
 }
 
 var report = new Report(DateTimeOffset.UtcNow, RunGit(repoRoot, "rev-parse", "HEAD"), options.Configuration, options.SkipBrowser, results);
-var json = JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true });
+var json = JsonSerializer.Serialize(report, RegressionJsonContext.Default.Report);
 await File.WriteAllTextAsync(options.ReportPath, json, new UTF8Encoding(false));
 await File.WriteAllTextAsync(Path.ChangeExtension(options.ReportPath, ".md"), ToMarkdown(report), new UTF8Encoding(false));
 if (results.Any(result => result.Status == "failed"))
@@ -94,6 +95,11 @@ static string RunGit(string root, params string[] args)
 record Case(string Name, string Script, string[] Arguments);
 record Result(string Name, string Status, TimeSpan Duration, string Command, string StandardOutput, string StandardError);
 record Report(DateTimeOffset Timestamp, string Commit, string Configuration, bool SkipBrowser, IReadOnlyList<Result> Results);
+
+[JsonSerializable(typeof(Report))]
+internal sealed partial class RegressionJsonContext : JsonSerializerContext
+{
+}
 
 sealed class Options
 {
