@@ -5,7 +5,7 @@ ordinary Razor authoring with typed TDesign controls for a task-board CRUD flow:
 
 - `TForm<TaskDraft>` and typed `TInput<string>` with `@bind-Value`
 - `TForm<TaskDraft>` field rules with typed validation and reset callbacks
-- `TPrimaryTable<TaskRow>` with typed columns and `CellEmptyContent` context
+- `TPrimaryTable<TaskRow>` with typed columns, custom cell render fragments, and `CellEmptyContent` context
 - C#-side `TPrimaryTableColCell<TaskRow>` render fragment with typed row projection
 - `OnRowClick` event payload projected into reactive component state
 - async form/dialog callbacks, writable `[Inject] NavigationManager`, and a named
