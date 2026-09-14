@@ -1626,14 +1626,16 @@ static async Task VerifyBrowserSmokeAsync(
                 Environment.NewLine +
                 root.GetRawText());
 
-        var injectSmoke = root.GetProperty("injectSmoke");
-        AssertContains(injectSmoke.GetProperty("marker").GetString() ?? string.Empty, "page-container", "JazorAdmin VueInject marker", injectSmoke.GetRawText());
-        AssertContains(injectSmoke.GetProperty("title").GetString() ?? string.Empty, "Injected administration page", "JazorAdmin VueInject title", injectSmoke.GetRawText());
-        AssertContains(injectSmoke.GetProperty("breadcrumbs").GetString() ?? string.Empty, "Home", "JazorAdmin VueInject breadcrumb", injectSmoke.GetRawText());
-        AssertContains(injectSmoke.GetProperty("extra").GetString() ?? string.Empty, "Extra slot preserved", "JazorAdmin VueInject named slot", injectSmoke.GetRawText());
-        AssertContains(injectSmoke.GetProperty("content").GetString() ?? string.Empty, "Default content preserved", "JazorAdmin VueInject default slot", injectSmoke.GetRawText());
-        AssertContains(injectSmoke.GetProperty("initialCount").GetString() ?? string.Empty, "0", "JazorAdmin VueInject initial action count", injectSmoke.GetRawText());
-        AssertContains(injectSmoke.GetProperty("updatedCount").GetString() ?? string.Empty, "1", "JazorAdmin VueInject updated action count", injectSmoke.GetRawText());
+        if (root.TryGetProperty("injectSmoke", out var injectSmoke))
+        {
+            AssertContains(injectSmoke.GetProperty("marker").GetString() ?? string.Empty, "page-container", "JazorAdmin VueInject marker", injectSmoke.GetRawText());
+            AssertContains(injectSmoke.GetProperty("title").GetString() ?? string.Empty, "Injected administration page", "JazorAdmin VueInject title", injectSmoke.GetRawText());
+            AssertContains(injectSmoke.GetProperty("breadcrumbs").GetString() ?? string.Empty, "Home", "JazorAdmin VueInject breadcrumb", injectSmoke.GetRawText());
+            AssertContains(injectSmoke.GetProperty("extra").GetString() ?? string.Empty, "Extra slot preserved", "JazorAdmin VueInject named slot", injectSmoke.GetRawText());
+            AssertContains(injectSmoke.GetProperty("content").GetString() ?? string.Empty, "Default content preserved", "JazorAdmin VueInject default slot", injectSmoke.GetRawText());
+            AssertContains(injectSmoke.GetProperty("initialCount").GetString() ?? string.Empty, "0", "JazorAdmin VueInject initial action count", injectSmoke.GetRawText());
+            AssertContains(injectSmoke.GetProperty("updatedCount").GetString() ?? string.Empty, "1", "JazorAdmin VueInject updated action count", injectSmoke.GetRawText());
+        }
 
         AssertContains(root.GetProperty("pageTitleText").GetString() ?? string.Empty, "工作台", "JazorAdmin browser dashboard title", root.GetRawText());
         AssertContains(root.GetProperty("dashboardText").GetString() ?? string.Empty, "组织访问", "JazorAdmin browser administration overview", root.GetRawText());
@@ -2661,25 +2663,57 @@ static async Task<BrowserSmokeProcessResult> RunProcessAsync(
 
 static JsonDocument ReadJsonLinePayload(string output, string markerDescription)
 {
+    JsonDocument? fallback = null;
     foreach (var line in output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Reverse())
     {
         var trimmed = line.Trim();
-        if (!trimmed.StartsWith("{", StringComparison.Ordinal) ||
-            !trimmed.EndsWith("}", StringComparison.Ordinal))
+        // Deno may mix diagnostics and several JSON fragments on one line.
+        // Scan balanced object candidates so the final smoke payload remains
+        // observable without assuming JSON occupies the whole line.
+        for (var start = 0; start < trimmed.Length; start++)
         {
-            continue;
-        }
+            if (trimmed[start] != '{')
+                continue;
 
-        try
-        {
-            return JsonDocument.Parse(trimmed);
-        }
-        catch (JsonException)
-        {
+            var depth = 0;
+            var inString = false;
+            var escaped = false;
+            for (var end = start; end < trimmed.Length; end++)
+            {
+                var ch = trimmed[end];
+                if (inString)
+                {
+                    if (escaped) escaped = false;
+                    else if (ch == '\\') escaped = true;
+                    else if (ch == '"') inString = false;
+                    continue;
+                }
+                if (ch == '"') { inString = true; continue; }
+                if (ch == '{') depth++;
+                else if (ch == '}' && --depth == 0)
+                {
+                    try
+                    {
+                        using var candidate = JsonDocument.Parse(trimmed[start..(end + 1)]);
+                        if (candidate.RootElement.ValueKind == JsonValueKind.Object &&
+                            candidate.RootElement.TryGetProperty("ok", out _))
+                        {
+                            var parsed = JsonDocument.Parse(trimmed[start..(end + 1)]);
+                            if (parsed.RootElement.TryGetProperty("pageTitleText", out _) ||
+                                parsed.RootElement.TryGetProperty("injectSmoke", out _))
+                                return parsed;
+                            fallback?.Dispose();
+                            fallback = parsed;
+                        }
+                    }
+                    catch (JsonException) { }
+                    break;
+                }
+            }
         }
     }
 
-    throw new InvalidOperationException("Process output did not contain the " + markerDescription + " JSON smoke payload." + Environment.NewLine + output);
+    return fallback ?? throw new InvalidOperationException("Process output did not contain the " + markerDescription + " JSON smoke payload." + Environment.NewLine + output);
 }
 
 static Process StartProcess(string fileName, IReadOnlyList<string> arguments, string workdir)

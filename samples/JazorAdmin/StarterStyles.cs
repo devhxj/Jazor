@@ -680,7 +680,7 @@ internal static class StarterStyles
                 border_top = px(2) | solid | raw("var(--td-brand-color)"),
                 border_radius = px(6),
                 box_shadow = raw("0 1px 2px rgba(31, 35, 41, 0.03)"),
-                contain = keyword("layout paint"),
+                contain = raw("layout paint"),
                 transition_property = raw("box-shadow, transform"),
                 transition_duration = raw("160ms"),
                 transition_timing_function = raw("ease-out")
@@ -735,7 +735,7 @@ internal static class StarterStyles
                 margin_top = px(8),
                 overflow = hidden,
                 border_radius = px(4),
-                contain = keyword("layout paint")
+                contain = raw("layout paint")
             });
 
         // Keep loading and empty states inside the same chart frame. Passing an all-zero
