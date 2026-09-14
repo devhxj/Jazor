@@ -200,6 +200,6 @@ P0 只有在以下条件全部满足时完成：
 5. 作者指南、当前状态、路线图和 CHANGELOG 与实现和测试同步。
 6. 全量门禁通过：compiler、CLR、Razor SG、Emit、绑定 coverage、Release consumer 和真实浏览器 smoke。
 
-2026-09-14 复核：P0-2、P0-3、P0-D 以及 P0-C 的可重复门禁均已具备；完整 Release Candidate 的所有阶段已通过，且 3 轮构建 benchmark 已接入 Quality Gates。P0-1 的复杂表格列与事件载荷已经在 `RazorVue.Authoring` 的 source/package/Chrome smoke 中形成证据；组合 slot 易用性仍保持 active，未将未完成条目提前写入“已交付能力”。
+2026-09-14 复核：P0-2、P0-3、P0-D 以及 P0-C 的可重复门禁均已具备；完整 Release Candidate 的所有阶段已通过，且 3 轮构建 benchmark 已接入 Quality Gates。P0-1 的复杂表格列、事件载荷和组合 slot（`TopContent`）已经在 `RazorVue.Authoring` 的 source/package/Chrome smoke 中形成证据。组合 slot 证据可用以下命令复现：`dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --work-root .tmp/authoring-slot-full --package-output .tmp/nupkg-sample/authoring-slot-full`。
 
 未满足任何一项时，P0 保持 active，不把未完成条目写入“已交付能力”。
