@@ -15,6 +15,7 @@ var dotnet = await ReadVersionAsync("dotnet", "--version");
 var node = await ReadVersionAsync("node", "--version");
 var chrome = ResolveChromeVersion();
 var sdk = ReadGlobalJson(repoRoot);
+var sdkStatus = CompareSdk(sdk, dotnet);
 
 var content = new StringBuilder()
     .AppendLine("## Toolchain Matrix")
@@ -22,6 +23,7 @@ var content = new StringBuilder()
     .AppendLine($"- Commit: `{RunGit(repoRoot, "rev-parse", "HEAD")}`")
     .AppendLine($"- .NET SDK requested by `global.json`: `{sdk}`")
     .AppendLine($"- .NET CLI: `{dotnet}`")
+    .AppendLine($"- .NET SDK check: **{sdkStatus}**")
     .AppendLine($"- Node.js: `{node}`")
     .AppendLine($"- Chrome: `{chrome}`")
     .AppendLine($"- OS: `{Environment.OSVersion}`")
@@ -29,6 +31,8 @@ var content = new StringBuilder()
 
 await File.WriteAllTextAsync(outputPath, content, new UTF8Encoding(false));
 Console.WriteLine(content);
+if (sdkStatus == "FAIL")
+    Environment.ExitCode = 1;
 
 static async Task<string> ReadVersionAsync(string fileName, string argument)
 {
@@ -77,6 +81,17 @@ static string ReadGlobalJson(string repoRoot)
         .GetProperty("sdk")
         .GetProperty("version")
         .GetString() ?? "unavailable";
+}
+
+static string CompareSdk(string requested, string actual)
+{
+    if (requested == "unavailable" || actual == "unavailable")
+        return "FAIL";
+    var requestedBase = requested.Split('-', 2)[0];
+    var actualBase = actual.Split('-', 2)[0];
+    return string.Equals(requestedBase, actualBase, StringComparison.OrdinalIgnoreCase)
+        ? "PASS"
+        : "FAIL";
 }
 
 static string RunGit(string workingDirectory, params string[] arguments)
