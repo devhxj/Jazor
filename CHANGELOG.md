@@ -4,6 +4,24 @@
 
 ## 2026-09-14
 
+### Jazor 1.0.0-preview.1
+
+> 首个 1.0 preview：核心公共 API 已冻结候选，支持范围内的编译、Razor-to-Vue、SSR、资源交付和 Vue 绑定能力已通过真实消费者验证。0.60.0 → 1.0.0-preview.1 无已知迁移要求；明确的 Guidance/Reject 边界保持不变。
+
+- 公共 API 基线与当前快照一致（`76108` 条，新增 `0`、删除 `0`），所有 Jazor 与 ECMAScript 包继续 lockstep 版本。
+- Compiler、CLR、Razor Source Generator、Emit 及生态主线测试全部通过；核心计数为 Compiler `10711/10711`、CLR `5089/5089`、Razor SG `4982/4982`、Emit `202/202`。
+- RazorVue.Authoring 与 JazorAdmin 已通过 Release 隔离 NuGet consumer、PathBase 资源闭包和 Chrome 浏览器 smoke；typed bootstrap、诊断协议和 Element Plus、Vuetify、TDesign binding contract 门禁均通过。
+- 继续明确拒绝完整 CLR、未映射外部 API、IJSRuntime 字符串互操作和 Microsoft/Blazor 内置 UI 组件；替代路径与支持子集见当前文档。
+
+### Jazor 1.0.0-preview.1 (English)
+
+> First 1.0 preview: the core public API is freeze-candidate ready, and the supported compiler, Razor-to-Vue, SSR, artifact-delivery, and Vue-binding paths have passed real-consumer verification. No known migration is required from 0.60.0 to 1.0.0-preview.1; the documented Guidance/Reject boundaries remain unchanged.
+
+- The public API baseline matches the current snapshot (`76,108` entries, `0` added, `0` removed), with all Jazor and ECMAScript packages kept in lockstep.
+- Compiler, CLR, Razor Source Generator, Emit, and ecosystem mainline suites pass; core counts are Compiler `10,711/10,711`, CLR `5,089/5,089`, Razor SG `4,982/4,982`, and Emit `202/202`.
+- RazorVue.Authoring and JazorAdmin pass Release isolated NuGet consumer, PathBase artifact-closure, and Chrome browser smoke checks; typed bootstrap, diagnostics, and Element Plus, Vuetify, and TDesign binding-contract gates also pass.
+- Full CLR, unmapped external APIs, string-based IJSRuntime interop, and Microsoft/Blazor built-in UI components remain explicitly rejected; supported subsets and alternatives are documented in the current guides.
+
 ### 后续产品收口
 
 - Release Candidate 现在纳入 Release 样例业务回归矩阵；Vue Router development runtime 显式声明 `nostics` 依赖，确保浏览器资源闭包可物化。by @devhxj
