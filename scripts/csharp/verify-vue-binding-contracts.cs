@@ -128,6 +128,7 @@ static BindingContractInventory ReadInventory(BindingTarget target)
     var slots = new SortedSet<string>(StringComparer.Ordinal);
     var members = new SortedSet<string>(StringComparer.Ordinal);
     var typedMembers = new SortedSet<string>(StringComparer.Ordinal);
+    var describedMembers = new SortedSet<string>(StringComparer.Ordinal);
     var componentCount = 0;
     foreach (var component in components.EnumerateArray())
     {
@@ -145,6 +146,7 @@ static BindingContractInventory ReadInventory(BindingTarget target)
         AddMembers(component, "events", events);
         AddMembers(component, "slots", slots);
         AddTypedMembers(component, typedMembers);
+        AddDescribedMembers(component, describedMembers);
         if (component.TryGetProperty("members", out var declaredMembers) && declaredMembers.ValueKind == JsonValueKind.Array)
         {
             foreach (var member in declaredMembers.EnumerateArray())
@@ -167,9 +169,25 @@ static BindingContractInventory ReadInventory(BindingTarget target)
         .Concat(props.Select(static value => "prop:" + value))
         .Concat(events.Select(static value => "event:" + value))
         .Concat(slots.Select(static value => "slot:" + value)));
-    fingerprintInput = string.Join("\n", fingerprintInput.Split('\n').Concat(members.Select(static value => "member:" + value)).Concat(typedMembers.Select(static value => "typed:" + value)));
+    fingerprintInput = string.Join("\n", fingerprintInput.Split('\n').Concat(members.Select(static value => "member:" + value)).Concat(typedMembers.Select(static value => "typed:" + value)).Concat(describedMembers.Select(static value => "description:" + value)));
     var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintInput))).ToLowerInvariant();
-    return new BindingContractInventory(componentCount, exports, props, events, slots, members, typedMembers, fingerprint);
+    return new BindingContractInventory(componentCount, exports, props, events, slots, members, typedMembers, describedMembers, fingerprint);
+}
+
+static void AddDescribedMembers(JsonElement component, ISet<string> values)
+{
+    foreach (var propertyName in new[] { "props", "events", "slots" })
+    {
+        if (!component.TryGetProperty(propertyName, out var items) || items.ValueKind != JsonValueKind.Array)
+            continue;
+        foreach (var item in items.EnumerateArray())
+        {
+            if (!item.TryGetProperty("name", out var name) || name.ValueKind != JsonValueKind.String ||
+                !item.TryGetProperty("description", out var description) || description.ValueKind != JsonValueKind.String)
+                continue;
+            values.Add(name.GetString()! + ":" + description.GetString());
+        }
+    }
 }
 
 static void AddTypedMembers(JsonElement component, ISet<string> values)
@@ -322,6 +340,7 @@ static BindingContractDiff CreateDiff(BindingTargetResult target, BindingBaselin
     CompareSet("slot", current.SlotNames, previousInventory?.SlotNames, added, removed);
     CompareSet("member", current.MemberNames, previousInventory?.MemberNames, added, removed);
     CompareSet("typed", current.TypedMemberNames, previousInventory?.TypedMemberNames, added, removed);
+    CompareSet("description", current.DescribedMemberNames, previousInventory?.DescribedMemberNames, added, removed);
     var deltas = new List<string>();
     AddDelta(deltas, "components", current.Components, previousInventory?.Components);
     AddDelta(deltas, "props", current.Props, previousInventory?.Props);
@@ -372,7 +391,7 @@ sealed record Check(string Name, IReadOnlyList<string> Arguments);
 sealed record BindingTarget(string LibraryId, string Version, string ProjectDirectory, string UpstreamDirectory, string DisplayName);
 sealed record BindingCheckResult(string Name, bool Passed, string? Error);
 sealed record BindingTargetResult(string Name, string LibraryId, string Version, bool Passed, string? Error, BindingContractInventory? Inventory);
-sealed record BindingContractInventory(int Components, IReadOnlyCollection<string> ExportNames, IReadOnlyCollection<string> PropNames, IReadOnlyCollection<string> EventNames, IReadOnlyCollection<string> SlotNames, IReadOnlyCollection<string> MemberNames, IReadOnlyCollection<string> TypedMemberNames, string Fingerprint)
+sealed record BindingContractInventory(int Components, IReadOnlyCollection<string> ExportNames, IReadOnlyCollection<string> PropNames, IReadOnlyCollection<string> EventNames, IReadOnlyCollection<string> SlotNames, IReadOnlyCollection<string> MemberNames, IReadOnlyCollection<string> TypedMemberNames, IReadOnlyCollection<string> DescribedMemberNames, string Fingerprint)
 {
     public int Exports => ExportNames.Count;
     public int Props => PropNames.Count;
