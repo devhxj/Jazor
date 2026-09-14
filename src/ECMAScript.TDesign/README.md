@@ -44,6 +44,11 @@ dotnet run --project src/ECMAScript.Vue.Generator -- tdesign components --check
 Release NuGet consumer 和真实 Chrome browser smoke。它证明的是 TDesign typed authoring 这一条
 能力，不会扩大 Microsoft/Blazor 内置 UI、`IJSRuntime` 或 server-only service 的明确 Reject 边界。
 
+复杂表格列继续使用 C# 侧的强类型 `TPrimaryTableColCell<T>` render fragment；fragment 参数是
+`TPrimaryTableCellParams<T>`，因此单元格中的行数据保持 C# 成员访问和 RazorVue 的正常 lowering。
+行交互使用 `EventCallback<TRowEventContext<T>>`，事件处理器可以直接读取 `context.Row`，无需
+应用侧类型转换或通用 JavaScript 桥接。
+
 ```razor
 <TForm FormData="EditorModel" Data="@FormData" OnSubmit="@Submit">
     <TFormItem LabelValue="Name" Name="name">
