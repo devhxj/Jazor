@@ -2664,6 +2664,7 @@ static async Task<BrowserSmokeProcessResult> RunProcessAsync(
 static JsonDocument ReadJsonLinePayload(string output, string markerDescription)
 {
     JsonDocument? fallback = null;
+    JsonDocument? structured = null;
     foreach (var line in output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Reverse())
     {
         var trimmed = line.Trim();
@@ -2699,9 +2700,15 @@ static JsonDocument ReadJsonLinePayload(string output, string markerDescription)
                             candidate.RootElement.TryGetProperty("ok", out _))
                         {
                             var parsed = JsonDocument.Parse(trimmed[start..(end + 1)]);
-                            if (parsed.RootElement.TryGetProperty("pageTitleText", out _) ||
-                                parsed.RootElement.TryGetProperty("injectSmoke", out _))
+                            if (parsed.RootElement.TryGetProperty("hasLegacyVueReference", out _))
                                 return parsed;
+                            if (parsed.RootElement.TryGetProperty("mode", out _) &&
+                                parsed.RootElement.TryGetProperty("pathname", out _))
+                            {
+                                structured?.Dispose();
+                                structured = parsed;
+                                continue;
+                            }
                             fallback?.Dispose();
                             fallback = parsed;
                         }
@@ -2713,7 +2720,7 @@ static JsonDocument ReadJsonLinePayload(string output, string markerDescription)
         }
     }
 
-    return fallback ?? throw new InvalidOperationException("Process output did not contain the " + markerDescription + " JSON smoke payload." + Environment.NewLine + output);
+    return structured ?? fallback ?? throw new InvalidOperationException("Process output did not contain the " + markerDescription + " JSON smoke payload." + Environment.NewLine + output);
 }
 
 static Process StartProcess(string fileName, IReadOnlyList<string> arguments, string workdir)
