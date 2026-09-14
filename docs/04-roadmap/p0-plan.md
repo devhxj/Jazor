@@ -196,4 +196,6 @@ P0 只有在以下条件全部满足时完成：
 5. 作者指南、当前状态、路线图和 CHANGELOG 与实现和测试同步。
 6. 全量门禁通过：compiler、CLR、Razor SG、Emit、绑定 coverage、Release consumer 和真实浏览器 smoke。
 
+2026-09-14 复核：P0-2、P0-3 以及 P0-D 的可重复门禁均已具备；Release Candidate 绑定契约阶段在完整 baseline 上通过，完整候选仍需在发布 ref 上运行所有阶段。P0-1 的高频组件自然写法和 P0-4 的持续性能趋势仍保持 active，未将它们提前写入“已交付能力”。
+
 未满足任何一项时，P0 保持 active，不把未完成条目写入“已交付能力”。
