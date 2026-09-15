@@ -456,6 +456,10 @@ cnblog/
 .wiki-smoke-*.log
 .tools/
 jazor/
+# Repository-local Codex skills are source files, not Jazor build output.
+!.agent/
+!.agent/jazor/
+!.agent/jazor/**
 # Checked-in sample graphs are layout baselines; ordinary project output remains ignored.
 !samples/ECMAScript.Pinia.Counter/Pinia.Counter.Host/jazor/
 !samples/ECMAScript.Pinia.Counter/Pinia.Counter.Host/jazor/**
