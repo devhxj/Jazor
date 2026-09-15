@@ -7,12 +7,12 @@
 | ID | 触发场景 | 最小替代写法 | 进一步阅读 |
 | --- | --- | --- | --- |
 | `JAZORVGA020` | 未分类的 final Compilation 输出失败 | 保留完整构建日志和最小复现；不要继续消费旧 artifact | [Final Compilation](./razorvue-authoring.md#final-compilation) |
-| `JAZORVGA021` | direct RenderTree frame、内置 Blazor UI 或不支持的 render shape | 使用普通 Razor 标记、已声明 binding 组件和完整 frame 结构 | [Direct render](./razorvue-authoring.md#direct-render) |
-| `JAZORVGA022` | 表达式无法通过 `Jazor.Compiler`/whitelist lowering | 改用已映射的 ECMAScript/CLR contract 或在 endpoint 预先整理 DTO | [Compiler boundary](./razorvue-authoring.md#compiler-boundary) |
-| `JAZORVGA023` | 组件参数、slot 或事件无法绑定 | 对照 binding 的具体参数类型、`XxxValue`/`XxxContent` 命名和 `EventCallback` 签名 | [Component binding](./razorvue-authoring.md#component-binding) |
-| `JAZORVGA024` | 可达成员、constructor、lifecycle 或导出成员无法进入 module closure | 在受支持的 `.razor.cs` 成员中组织逻辑，使用显式 import 和可激活的 writable property | [Member closure](./razorvue-authoring.md#member-closure) |
+| `JAZORVGA021` | direct RenderTree frame、内置 Blazor UI 或当前 render shape | 使用普通 Razor 标记、已声明 binding 组件和完整 frame 结构 | [Direct render](./razorvue-authoring.md#direct-render) |
+| `JAZORVGA022` | 表达式缺少 `Jazor.Compiler`/whitelist lowering | 使用已映射的 ECMAScript/CLR contract，或在 endpoint 预先整理 DTO | [Compiler boundary](./razorvue-authoring.md#compiler-boundary) |
+| `JAZORVGA023` | 组件参数、slot 或事件缺少可绑定形状 | 对照 binding 的具体参数类型、`XxxValue`/`XxxContent` 命名和 `EventCallback` 签名 | [Component binding](./razorvue-authoring.md#component-binding) |
+| `JAZORVGA024` | 可达成员、constructor、lifecycle 或导出成员缺少 module closure 入口 | 在已声明的 `.razor.cs` 成员中组织逻辑，使用显式 import 和可激活的 writable property | [Member closure](./razorvue-authoring.md#member-closure) |
 | `JAZORVGA025` | `[VueInject]` 声明缺少或重复 implementation contract | 修正 container、implementation 和 provider key；不要增加第二套注入协议 | [VueInject](./razorvue-authoring.md#vue-inject) |
-| `JAZORVGA026` | module/export/import 或 Vue framing 无法生成 | 检查 `[ECMAScript]` 模块路径、export 名和 import 冲突 | [Vue module](./razorvue-authoring.md#vue-module) |
+| `JAZORVGA026` | module/export/import 或 Vue framing 缺少生成条件 | 检查 `[ECMAScript]` 模块路径、export 名和 import 冲突 | [Vue module](./razorvue-authoring.md#vue-module) |
 
 ## 浏览器服务和生命周期
 
@@ -23,13 +23,13 @@
 | `JAZORVCA003` | 调用 `ParameterView.TryGetValue` | 声明具体 `[Parameter]` 属性并直接读取它 | [Parameter lifecycle](./razorvue-authoring.md#parameter-lifecycle) |
 | `JAZORVCA004` | 枚举 `ParameterView` | 用已知的 typed 参数属性替代运行时参数包枚举 | [Parameter lifecycle](./razorvue-authoring.md#parameter-lifecycle) |
 | `JAZORVCA005` | 调用 `ParameterView.ToDictionary` | 从已知 typed 值显式构造字典 | [Parameter lifecycle](./razorvue-authoring.md#parameter-lifecycle) |
-| `JAZORVCA006` | `[Inject]` 属性并非 writable auto-property | 使用 `ServiceType Service { get; set; } = null!;` | [Browser services](./razorvue-authoring.md#browser-services) |
-| `JAZORVCA007` | Blazor host service 没有 RazorVue browser adapter | 注册 typed adapter，或让操作在 endpoint 完成 | [Browser services](./razorvue-authoring.md#browser-services) |
-| `JAZORVCA008` | `[CascadingParameter]` 无法由 adapter 激活 | 使用 writable auto-property；保持标准 `CascadingValue` 写法 | [Cascading parameters](./razorvue-authoring.md#cascading-parameters) |
+| `JAZORVCA006` | `[Inject]` 属性未采用 writable auto-property 形状 | 使用 `ServiceType Service { get; set; } = null!;` | [Browser services](./razorvue-authoring.md#browser-services) |
+| `JAZORVCA007` | Blazor host service 缺少 RazorVue browser adapter | 注册 typed adapter，或让操作在 endpoint 完成 | [Browser services](./razorvue-authoring.md#browser-services) |
+| `JAZORVCA008` | `[CascadingParameter]` 缺少 adapter 激活形状 | 使用 writable auto-property；保持标准 `CascadingValue` 写法 | [Cascading parameters](./razorvue-authoring.md#cascading-parameters) |
 | `JAZORVCA009` | 使用未注册 route host 的 `@page` profile | 注册应用自有 route host；标准 `@page` 在推荐 profile 中无需额外 adapter | [Routing](./razorvue-authoring.md#routing) |
 | `JAZORVCA010` | 使用 Microsoft/Blazor 内置 UI 组件 | 使用自定义 `ComponentBase + IVueComponent` 或已声明 UI binding | [Component adapters](./razorvue-authoring.md#component-adapters) |
 | `JAZORVCA011` | 使用未定义协议的 `PersistentComponentState`、`[PersistentState]` 或 form handoff | 使用版本化 typed endpoint/bootstrap payload | [SSR state handoff](./razorvue-authoring.md#ssr-state-handoff) |
-| `JAZORVCA012` | 使用 `[StreamRendering]`，但当前 profile 没有 renderer-owned streaming SSR 协议 | 使用显式 typed SSR/bootstrap contract，并自行表达加载状态 | [SSR state handoff](./razorvue-authoring.md#ssr-state-handoff) |
+| `JAZORVCA012` | `[StreamRendering]` 需要 renderer-owned streaming SSR 协议 | 使用显式 typed SSR/bootstrap contract，并自行表达加载状态 | [SSR state handoff](./razorvue-authoring.md#ssr-state-handoff) |
 
 ## 诊断验收规则
 
@@ -49,4 +49,4 @@ dotnet run --file scripts/csharp/inspect-razorvue-chain.cs -- --source Page.razo
 
 IDE/CI 需要 SARIF 时，在同一命令追加 `--sarif artifacts/razorvue-chain.sarif`。成功时报告为空结果；失败时保留对应诊断 ID、HelpLink 和作者源位置。需要供 CI 或 IDE adapter 直接消费的稳定协议时，再追加 `--report artifacts/razorvue-chain.report.json`；该文件使用 schema `1.0`，包含 `status`、链路事实、`diagnostics` 和 `remediations`，成功与失败均有明确状态。
 
-脚本在缺文件、source map 未包含源文件或 artifact 没有 source map 引用时返回非零退出码。
+脚本在文件、source map 源文件或 artifact source map 引用缺失时返回非零退出码。

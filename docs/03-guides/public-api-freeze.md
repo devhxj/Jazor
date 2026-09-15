@@ -12,7 +12,7 @@
 
 - NuGet 包名保持现状，所有发布包继续 lockstep 版本；`Jazor` 是核心宿主包，`Jazor.Vue` 是 Razor-to-Vue opt-in 包，`Jazor.Admin` 是管理壳包。
 - ASP.NET Core 公共命名空间保持 `Jazor.AspNetCore`；开发期 reload 公共命名空间保持 `Jazor.AspNetCore.Dev`。开发期 API 不混入生产宿主命名空间。
-- 扩展方法保留 PascalCase 的 `AddJazor*` / `UseJazor*` 形式，缩写按现有语义固定为 `Ssr`，不再引入 `SSR` 别名。迁移文档不再假设存在 `AddJazorSSR`。
+- 扩展方法采用 PascalCase 的 `AddJazor*` / `UseJazor*` 形式，缩写按现有语义固定为 `Ssr`；迁移文档使用 `AddJazorSsr`。
 - 配置模型保持 `Jazor*Options` 命名，并以只读集合、强类型路径和显式委托表达扩展点；不新增 `object` 或字符串字典式总配置入口。
 - `JazorWebApplication.CreateBuilder`、`IJazorSsrRenderer`、SSR 请求/结果记录类型属于宿主集成契约，必须纳入 API 兼容性检查，不视为内部实现。
 
@@ -26,7 +26,7 @@
 | `Jazor.Admin` | UI 库无关的管理壳与 RazorVue 组件 | `Jazor.Admin` | 保持 |
 | `ECMAScript.*` | ECMAScript、Vue 生态与样式绑定 | 各包现有命名空间 | 按各自 binding 审查，不在本表重命名 |
 
-包名、程序集名、RootNamespace 和 README 安装示例必须保持一致。任何未来拆分 `Jazor.AspNetCore` 包或改变资源 carrier 都属于破坏性变更，不能作为 1.0 后的 PATCH/MINOR 顺手处理。
+包名、程序集名、RootNamespace 和 README 安装示例保持一致。未来拆分 `Jazor.AspNetCore` 包或改变资源 carrier 进入 MAJOR 版本通道。
 
 ## ASP.NET Core 扩展面
 
@@ -45,7 +45,7 @@
 | --- | --- | --- |
 | Reload | `AddJazorReload`, `UseJazorReload` | 保持；生产环境必须 no-op，Development 才启用 transport |
 
-扩展方法的返回类型继续使用 ASP.NET Core 的 `IServiceCollection` / `IApplicationBuilder`，以支持标准链式启动代码。空参数、无效路径、未注册服务和错误环境的行为必须保持显式异常或 no-op，不能增加静默 fallback。
+扩展方法的返回类型继续使用 ASP.NET Core 的 `IServiceCollection` / `IApplicationBuilder`，以支持标准链式启动代码。空参数、无效路径、未注册服务和错误环境通过显式异常或 no-op 表达处理结果。
 
 ## 配置模型基线
 
@@ -89,7 +89,7 @@ dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.0.0-pre
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only stage1,stage2` 只适用于局部复核，正式候选必须运行完整序列。
 
-当前验证记录：Emit 套件 `202/202` 通过；`emit-consumer` 消费者矩阵 `47/47` 通过。两者必须在发布候选 ref 上分别执行，不能只运行快速 lane。
+当前验证记录：Emit 套件 `202/202` 通过；`emit-consumer` 消费者矩阵 `47/47` 通过。发布候选 ref 分别运行两套验证。
 
 机器快照可在构建后生成：
 
@@ -109,4 +109,4 @@ dotnet run --file scripts/csharp/compare-public-api.cs -- --current artifacts/ap
 
 ## 变更规则
 
-冻结后，新增 API 进入 MINOR，修复行为保持 PATCH；删除、重命名、签名改变、包/命名空间迁移和序列化协议改变进入 MAJOR。文档修订不能掩盖 API 变更，所有用户可见契约必须同时更新测试和 CHANGELOG。
+冻结后，新增 API 进入 MINOR，修复行为保持 PATCH；删除、重命名、签名改变、包/命名空间迁移和序列化协议改变进入 MAJOR。用户可见 API 变更同步更新文档、测试和 CHANGELOG。

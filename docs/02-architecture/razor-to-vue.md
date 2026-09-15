@@ -16,7 +16,7 @@ Razor 组件
   -> Jazor.Emit
 ```
 
-生产路径不依赖 `EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument`、Razor IR、生成 SFC 或二次解析生成 C#。这些形式均不作为回退路径。
+生产路径以官方 Razor Source Generator 完成后的最终 `Compilation` 为输入，并直接生成 Vue render-function 模块。`EnableRazorHostOutputs`、`RazorCodeDocument`、`RazorCSharpDocument`、Razor IR、生成 SFC 和二次解析生成 C# 记录为其他表示层。
 
 ## 组件身份与导入契约
 
@@ -26,7 +26,7 @@ Razor 组件
 2. 类型实现 `ECMAScript.Vue.IVueComponent` 或其派生接口；
 3. 类型声明组件导入描述：`[ECMAScriptModule("...")]` 或 `[ECMAScript("package", Transform.Component, "Export")]`。
 
-`IVueComponent<TProps>` / `IVueComponent<TProps, TSlots>` 是带类型化 props/slots 的可选增强契约，与非泛型 marker 并存而不替代它。导入描述是组件入口资格的必要条件，却不能单独赋予组件 marker 身份；两种描述同时出现时 `[ECMAScriptModule]` 优先。缺少任一条件的类型不得进入 direct render 或 library component import，Microsoft Blazor 内置 UI 组件因此不会被当作隐式 Vue 组件。
+`IVueComponent<TProps>` / `IVueComponent<TProps, TSlots>` 是带类型化 props/slots 的可选增强契约，与非泛型 marker 共同构成组件入口。导入描述提供模块资格，组件 marker 提供组件身份；两种导入描述同时出现时 `[ECMAScriptModule]` 优先。direct render 和 library component import 仅消费同时满足全部入口条件的类型，Microsoft Blazor 内置 UI 组件通过显式 binding 接入。
 
 ## 包边界
 
@@ -37,11 +37,11 @@ Razor 组件
 | `Jazor.RazorVue` | 最终 compilation 绑定、组件闭包、Vue artifact framing |
 | `Jazor.Emit` | 物化 `.mjs`、source map、manifest、运行时资源和 bundle |
 
-仅引用 `Jazor` 不会安装 Razor Hook，也不会扫描 Razor 组件。需要 Razor-to-Vue 的项目必须显式引用 `Jazor.Vue`，详细配置见 [安装与配置](../03-guides/installation-and-configuration.md)。
+Razor-to-Vue 项目通过显式引用 `Jazor.Vue` 启用 Razor Hook 与组件扫描，详细配置见 [安装与配置](../03-guides/installation-and-configuration.md)。
 
 ## 降低原则
 
-RazorVue 只拥有 Vue 特有的边界：当前组件、`RenderTreeBuilder`、children-to-slot、组件 state、组件闭包和模块 framing。C# 表达式、成员访问、调用、临时变量、导入与 CLR 映射必须经过 `Jazor.Compiler` 的翻译入口，不得手拼 JavaScript 或绕过编译器直接构造语义 AST。
+RazorVue 负责 Vue 特有边界：当前组件、`RenderTreeBuilder`、children-to-slot、组件 state、组件闭包和模块 framing。C# 表达式、成员访问、调用、临时变量、导入与 CLR 映射统一经过 `Jazor.Compiler` 翻译入口。
 
 Razor 已负责校验未知参数、必需参数和参数类型不匹配；RazorVue 直接翻译已通过官方 Razor SG 绑定的生成 C#，不重复实现这些 Razor 编译器检查。
 

@@ -44,7 +44,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 ## 改动边界
 
-- 修改 `Jazor.CLR` 白名单来源后，运行 `Jazor.Compiler.Generator` 并提交重新生成的 `WhiteList.cs.Generate.cs`；不得手工修改生成文件。
+- 修改 `Jazor.CLR` 白名单来源后，运行 `Jazor.Compiler.Generator` 并提交重新生成的 `WhiteList.cs.Generate.cs`；生成器维护该文件。
 - 新增编译语义时，优先保持求值顺序、副作用次数和最终结果，随后补充聚焦回归。
 - RazorVue 的 C# 语义必须使用 `Jazor.Compiler` translation hooks；不要在集成层拼接 JavaScript 或重建 AST 语义。
 - `Jazor.Admin` 是库，`samples/JazorAdmin` 是示例；测试与文档应分别说明它们的职责。

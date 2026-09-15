@@ -19,22 +19,22 @@ Razor-to-Vue 建立在这条核心路径之上。它只接收官方 Razor Source
 | 需要面对的问题 | Jazor 的回答 |
 | --- | --- |
 | 用 C# 编写浏览器模块 | 受支持的 C# 语义经 Roslyn `IOperation` 与 ESTree lowering 转化为确定性的 ECMAScript 模块，`Jazor.Emit` 再物化 source map、import map 与发布产物。 |
-| 在 Razor 项目中使用 Vue 组件生态 | Razor-to-Vue 读取官方 Razor SG 的最终 C# 语义，直接生成 Vue render-function `.mjs`，无需依赖 Razor IR、生成 SFC 或中间 wrapper 协议。 |
+| 在 Razor 项目中使用 Vue 组件生态 | Razor-to-Vue 读取官方 Razor SG 的最终 C# 语义，直接生成 Vue render-function `.mjs`；生产链路以最终 `Compilation` 和 render-function 产物为标准。 |
 | 让跨语言边界保持可验证 | CLR 与 ECMAScript API 由强类型映射和白名单定义。导入、模块名、临时变量与 source map 锚点保持确定性，错误回到作者实际使用的位置。 |
 | 让模块可靠地进入真实应用 | Debug 模块、Release bundle 以及已声明范围内的 ASP.NET Core SSR 与 hydration 使用同一显式资源闭包交付。 |
 
 ## 适用边界
 
-它适合需要受控浏览器语义与可追溯交付链路的 .NET 团队。尚未映射、或仍缺乏浏览器与发布证据的运行时能力，则留在当前产品契约之外。
+它适合需要受控浏览器语义与可追溯交付链路的 .NET 团队。当前产品契约收录已完成宿主映射并具备浏览器、发布证据的运行时能力。
 
 明确的边界应当在采用 Jazor 之前先行确立，成为选型阶段即可依据的前提。下列对照说明当前的承诺，也标示出留在范围之外的部分。
 
-| 适合采用 Jazor | 留在当前产品契约之外 |
+| 适合采用 Jazor | 当前范围边界 |
 | --- | --- |
-| 以 C# 类型系统编写受控的浏览器模块或组件库 | 在浏览器中运行完整 CLR，或调用任意未映射的 .NET API |
-| 组合自定义 Razor 组件与 Vue 3、TDesign、Vue Router、Pinia 等已声明 binding | 自动以 Vue 组件替换 Microsoft/Blazor 内置 UI 组件 |
-| 对模块、资源、发布与诊断边界有明确要求 | 通过 `IJSRuntime`、反射或弱类型 `object?` 逃逸到未经验证的运行时语义 |
-| 用生产级参考应用验证 RazorVue authoring 与交付链路 | `samples/JazorAdmin` 已作为生产级真实应用基线覆盖浏览器、Release、资源闭包和多页面 typed authoring；认证状态、SSR 状态交接和复杂浏览器历史仍按产品边界验证 |
+| 以 C# 类型系统编写受控的浏览器模块或组件库 | 浏览器运行时聚焦受支持的 C# 语义与显式宿主映射 |
+| 组合自定义 Razor 组件与 Vue 3、TDesign、Vue Router、Pinia 等已声明 binding | Microsoft/Blazor 内置 UI 组件沿用应用自定义或已声明 binding 的接入方式 |
+| 对模块、资源、发布与诊断边界有明确要求 | 运行时语义通过强类型 binding、显式资源和诊断契约进入浏览器 |
+| 用生产级参考应用验证 RazorVue authoring 与交付链路 | `samples/JazorAdmin` 以生产级真实应用覆盖浏览器、Release、资源闭包和多页面 typed authoring；认证状态、SSR 状态交接和浏览器历史按已验证子集运行 |
 
 完整的产品范围、支持边界与非目标见[产品范围](./01-overview/product-scope.md)。边界一旦发生变化，先由实现与验证给出证明，再更新至本页。
 

@@ -23,9 +23,9 @@
 | `ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | UI 组件库绑定 |
 | `ECMAScript.Style` | 强类型、确定性的 CSS-in-JS |
 
-这些包按需显式引用。浏览器模块、样式、许可证和其他资源由各包的 `manifest.json + dist/**` 与显式 module/package dependency 管理；最终宿主的 Emit 只物化所选闭包。应用不应为了使用这些绑定再引入重复的 CDN、`node_modules` 或远程裸模块 import。
+这些包按需显式引用。浏览器模块、样式、许可证和其他资源由各包的 `manifest.json + dist/**` 与显式 module/package dependency 管理；最终宿主的 Emit 物化所选闭包。应用通过 package manifest 管理资源来源。
 
-`ECMAScript.VueDataUi` 不暴露上游聚合 `vue-data-ui` root import。71 个组件 binding 与上游 `dist/components/vue-ui-*.js` 一一对应，直接声明 `vue-data-ui/vue-ui-*` entry；`Jazor.Emit` 从实际 generated import 沿 manifest 的显式 module/package edge 物化相对 ESM closure，因此未使用的 chart chunk 不会随发布输出复制。需要 PDF export runtime 的 entry 才解析到同包携带的本地 `jspdf`。
+`ECMAScript.VueDataUi` 以 71 个组件 binding 对应上游 `dist/components/vue-ui-*.js`，直接声明 `vue-data-ui/vue-ui-*` entry。`Jazor.Emit` 从实际 generated import 沿 manifest 的显式 module/package edge 物化相对 ESM closure；图表 chunk 按实际 entry 进入发布输出。PDF export runtime 的 entry 解析同包携带的本地 `jspdf`。
 
 `ECMAScript.VuIcons` 同时提供静态与动态路径。已知图标应直接使用生成的 `VuUser` 等 component，其 binding 指向独立 `vu-icons/VuUser` entry，Emit 仅物化该 SVG module、共享 runtime 和样式；运行时名称选择使用 `VuIcon` 与 `VuIconName`，它需要完整 `icons-data.js` catalog 才能解析任意名称。这是运行时动态性的必要载荷，独立于静态路径而存在。
 
@@ -40,8 +40,8 @@
 
 ## 名称与作者契约
 
-未映射的 C# 符号保持作者声明的名称。JavaScript ABI 所需的名称差异必须通过成员级 `ECMAScriptName` 或约定的元数据显式声明，不依赖大小写、`OnX`、`Changed`、`Content` 等约定反推。
+作者声明的 C# 符号保持原有名称。JavaScript ABI 所需的名称差异通过成员级 `ECMAScriptName` 或约定的元数据显式声明，并以 metadata 解析。
 
-Razor 组件的参数、事件、双向绑定和 slot 首先由正常 C# 与 Razor 类型系统表达。只有 C# 无法表示的 JavaScript 名称才需要显式映射。
+Razor 组件的参数、事件、双向绑定和 slot 由正常 C# 与 Razor 类型系统表达。JavaScript ABI 名称差异通过显式映射声明。
 
 项目级 API 和示例位于各绑定项目的 README；包选择与配置见 [安装与配置](../03-guides/installation-and-configuration.md)。

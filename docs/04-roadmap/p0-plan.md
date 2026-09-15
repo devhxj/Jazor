@@ -4,7 +4,7 @@
 
 ## 目标
 
-P0 的结果是让一个没有阅读内部实现的开发者能够完成一条可复制的 RazorVue 开发闭环；其目标并非增加一组零散语法：
+P0 让开发者在理解公开契约的基础上完成可复制的 RazorVue 开发闭环；目标是形成完整的作者体验与交付路径：
 
 ```text
 新建项目
@@ -24,7 +24,7 @@ P0 包含四条相互衔接的工作线：
 
 ## 当前基线盘点（2026-09-06）
 
-仓库已经具备不少 P0 基础，但它们还没有收敛成一个统一的交付目标：
+仓库已具备 P0 基础，当前工作将其收敛为统一的交付目标：
 
 | 工作线 | 已有基础 | 尚需完成 |
 | --- | --- | --- |
@@ -37,12 +37,12 @@ P0 包含四条相互衔接的工作线：
 
 ## 交付顺序
 
-顺序固定为“样本定义 → 诊断闭环 → 性能测量 → 生成规范”。后一个切片不能用来掩盖前一个切片的失败。
+顺序固定为“样本定义 → 诊断闭环 → 性能测量 → 生成规范”。每个切片以自身验收结果进入后续工作。
 
 | 切片 | 交付物 | 主要责任层 | 退出条件 |
 | --- | --- | --- | --- |
 | P0-A Golden Path | 独立 authoring fixture、TDesign CRUD 页面、SPA/SSR Release consumer、浏览器 smoke | `samples/`、`Jazor.RazorVue`、`Jazor.Emit`、`Jazor.AspNetCore` | 新项目按指南完成页面；SG、模块运行时、Release package 和浏览器验证全部通过 |
-| P0-B 诊断闭环 | 诊断矩阵、HelpLink 锚点、最小替代写法、诊断报告命令和无 partial artifact 回归 | `Jazor.RazorVue`、作者指南、scripts | 常见 Reject/Guidance 均有稳定 ID、源位置、原因和替代路径；错误构建不留下 catalog/module/bundle |
+| P0-B 诊断闭环 | 诊断矩阵、HelpLink 锚点、最小替代写法、诊断报告命令和完整 artifact 回归 | `Jazor.RazorVue`、作者指南、scripts | 常见 Reject/Guidance 均有稳定 ID、源位置、原因和替代路径；错误构建维持完整 catalog/module/bundle |
 | P0-C 增量性能 | 固定输入和测量协议、首次/增量/HMR/Release 指标、优化前后对比记录 | `Jazor.RazorVue`、`Jazor.Compiler`、`Jazor.Emit` | 同一机器和参数可重复测量；优化保持求值顺序、source map、导入稳定性和输出语义 |
 | P0-D 绑定门禁 | 统一 snapshot、文档、runtime export、contract diff 和 coverage 检查；release candidate 使用仓库基线并阻断漂移 | `ECMAScript.Vue.Generator`、各 binding、CI scripts | 上游升级能在生成或 CI 阶段报告组件/prop/event/slot/文档漂移；无 silent fallback |
 
@@ -57,7 +57,7 @@ P0 包含四条相互衔接的工作线：
 - 查询表格、loading/empty/error 状态、分页和行操作；
 - 新增/编辑表单、校验规则、提交失败后保留草稿、成功后刷新；
 - named slot、default slot、typed event callback、`@bind` 和一个 union prop；
-- typed API client 注入；数据访问只经过 endpoint，server-only service 不进入组件；
+- typed API client 注入；数据访问经由 endpoint，组件使用 browser-capable service；
 - Debug/HMR、SPA Release 和 SSR Release 的同一页面验证。
 
 ### 完成步骤
@@ -87,12 +87,12 @@ P0 包含四条相互衔接的工作线：
 - 一条不扩大边界的替代写法；
 - 对应作者指南 HelpLink。
 
-Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同一检查。最终 Compilation 失败时不得生成部分 `ModuleCatalog`、`.mjs`、`.mjs.map` 或 bundle。
+Razor SDK/Roslyn 的 `RZ****`/`CS****` 由 SDK 报告，RazorVue 使用 final Compilation 诊断。最终 Compilation 出现失败时，产物维持完整 `ModuleCatalog`、`.mjs`、`.mjs.map` 和 bundle 状态。
 
 ### 交付内容
 
 1. 维护诊断矩阵：ID、触发 operation、源位置策略、消息模板、HelpLink、替代示例和回归测试。
-2. 为高频失败补充短示例：动态组件类型、frame 外 metadata、未知 RenderFragment、server-only 注入、未映射 external member、unsupported constructor activation。
+2. 为高频 diagnostic 补充短示例：动态组件类型、frame 外 metadata、未知 RenderFragment、server-only 注入、mapping 缺失的 external member、unsupported constructor activation。
 3. 扩展 `inspect-razorvue-chain.cs`，支持人读文本和 JSON 两种输出，并在链路断裂时以非零退出码结束。
 4. 增加 package consumer 诊断回归，确保源码项目和独立消费者的错误分类一致。
 5. 错误构建的清理行为纳入测试，不止于检查异常字符串。
@@ -118,7 +118,7 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 - 首次构建、单文件增量、依赖组件增量、HMR 更新和 Release 打包指标；
 - `.mjs`、source map、manifest、bundle 和 gzip 体积。
 
-测量脚本必须使用 `scripts/csharp/` 下的单文件 C# 入口。结果至少输出中位数、离散程度、产物体积和失败退出码；不能用一次运行的最好值作为结论。
+测量脚本使用 `scripts/csharp/` 下的单文件 C# 入口。结果至少输出中位数、离散程度、产物体积和失败退出码；结论以多轮采样统计为依据。
 
 ### 优先检查点
 
@@ -134,15 +134,15 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 
 ### 首轮基线记录（2026-09-06）
 
-在当前工作区、`.NET SDK 11.0.100-rc.1.26425.128`、`RazorVue.Authoring` 输入和隔离输出目录下，执行 `benchmark-razorvue-build.cs --samples 2 --skip-hmr --skip-release` 得到：clean 中位数 **63.871 秒**，incremental 中位数 **4.003 秒**；单轮 HMR 采样为 **22.508 秒**。该结果只建立构建测量协议，不宣称性能目标或已完成编译器优化；机器负载、SDK 和浏览器环境变化都会影响绝对值。当前没有足够证据要求修改 compiler/Emit 缓存主链，后续优化必须用同一协议重测。
+在当前工作区、`.NET SDK 11.0.100-rc.1.26425.128`、`RazorVue.Authoring` 输入和隔离输出目录下，执行 `benchmark-razorvue-build.cs --samples 2 --skip-hmr --skip-release` 得到：clean 中位数 **63.871 秒**，incremental 中位数 **4.003 秒**；单轮 HMR 采样为 **22.508 秒**。该结果建立构建测量协议；机器负载、SDK 和浏览器环境变化影响绝对值。后续优化使用同一协议重测，并以可复现收益决定 compiler/Emit 缓存主链演进。
 
 ### 复测记录（2026-09-11）
 
-使用相同 SDK、样本和 `--skip-hmr --skip-release` 协议单轮复测：clean **70.204 秒**，incremental **3.324 秒**。相对首轮分别约 **+9.9%** 与 **-17.0%**，但单轮采样不足以证明稳定收益；该波动符合机器负载和 SDK 预览版影响范围。因此本轮仍不修改 compiler/Emit 主链，下一轮应使用至少 3 个样本并分别采集模块发现、Emit I/O、source map 与缓存命中数据。
+使用相同 SDK、样本和 `--skip-hmr --skip-release` 协议单轮复测：clean **70.204 秒**，incremental **3.324 秒**。相对首轮分别约 **+9.9%** 与 **-17.0%**；稳定收益以至少 3 个样本的采样结果确认。下一轮采集模块发现、Emit I/O、source map 与缓存命中数据，再评估 compiler/Emit 主链优化。
 
 ### 三轮复测记录（2026-09-11）
 
-使用同一 SDK、`RazorVue.Authoring` 输入、隔离输出目录和 `--samples 3 --skip-hmr --skip-release` 协议：clean 三轮分别为 **98.966 秒、104.075 秒、80.271 秒**，中位数 **98.966 秒**；incremental 三轮分别为 **4.918 秒、6.330 秒、3.927 秒**，中位数 **4.918 秒**。结果仍表现出预览 SDK 与机器负载造成的明显离散，不能据此宣称回归或优化收益。
+使用同一 SDK、`RazorVue.Authoring` 输入、隔离输出目录和 `--samples 3 --skip-hmr --skip-release` 协议：clean 三轮分别为 **98.966 秒、104.075 秒、80.271 秒**，中位数 **98.966 秒**；incremental 三轮分别为 **4.918 秒、6.330 秒、3.927 秒**，中位数 **4.918 秒**。结果呈现预览 SDK 与机器负载造成的明显离散，后续回归和优化使用同一协议比较。
 
 ### 运行时基线复核（2026-09-14）
 
@@ -163,7 +163,7 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 - license 和资源 manifest；
 - 生成器版本与生成命令。
 
-有结构化 `web-types.json` 时，组件、prop、event、slot 注释必须保留上游原文；没有结构化来源时必须明确记录限制，手写摘要不得标成原始注释。
+有结构化 `web-types.json` 时，组件、prop、event、slot 注释保留上游原文；来源信息记录注释的权威级别，手写摘要标注为维护说明。
 
 ### 漂移检查
 
@@ -173,7 +173,7 @@ Razor SDK/Roslyn 的 `RZ****`/`CS****` 仍由 SDK 报告，RazorVue 不复制同
 - required/optional prop 变化；
 - prop 类型、union 分支或事件 payload 变化；
 - slot 名称或 payload 变化；
-- 原始文档缺失、变化或无法解析；
+- 原始文档缺失、变化或解析条件不足；
 - manifest 资源、依赖、license 或 hash 变化。
 
 contract diff 默认阻止生成发布产物；只有明确记录迁移说明并更新对应 consumer 证据后，才允许接受破坏性变化。
@@ -187,7 +187,7 @@ P0 不实现以下内容：
 - Microsoft Blazor 内置 UI 组件兼容层；
 - 未经协议设计的认证状态、PersistentComponentState 或 enhanced form handoff；
 - 为了“看起来像 JS”而弱化 C# public API；
-- 只增加组件数量而没有真实页面、文档和发布证据。
+- 组件数量、真实页面、文档和发布证据共同构成组件切片的验收信息。
 
 ## Definition of Done
 
@@ -202,4 +202,4 @@ P0 只有在以下条件全部满足时完成：
 
 2026-09-14 复核：P0-2、P0-3、P0-D 以及 P0-C 的可重复门禁均已具备；完整 Release Candidate 的所有阶段已通过，且 3 轮构建 benchmark 已接入 Quality Gates。P0-1 的复杂表格列、事件载荷和组合 slot（`TopContent`）已经在 `RazorVue.Authoring` 的 source/package/Chrome smoke 中形成证据。组合 slot 证据可用以下命令复现：`dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --work-root .tmp/authoring-slot-full --package-output .tmp/nupkg-sample/authoring-slot-full`。
 
-未满足任何一项时，P0 保持 active，未完成条目不写入“已交付能力”。
+P0 在全部条件满足后更新为 complete，已交付能力以对应验收条目记录。

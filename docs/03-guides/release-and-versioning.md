@@ -24,7 +24,7 @@
 
 发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、RazorVue diagnostics、绑定 contract baseline、包形状和 SPA/SSR consumer 证据。绑定报告使用 `docs/04-roadmap/binding-contract-baseline.json`，检测到 inventory 漂移时阻断候选。它通过后才进入正式发布工作流。
 
-`1.0.0` 发布之后，通道语义不再有例外：`MINOR` 只做新增，`PATCH` 只做修复，一切破坏性变更走 `MAJOR`。本节在 `1.0.0` 发布后收敛删除。
+`1.0.0` 发布之后，通道语义固定为：`MINOR` 承载新增，`PATCH` 承载修复，破坏性变更进入 `MAJOR`。本节在 `1.0.0` 发布后归档。
 
 ## 发版节奏
 
@@ -45,15 +45,15 @@
 
 相关 PR 与 main 分支变更由 `Quality Gates` 工作流自动执行三项覆盖率门禁。标签发布和 `workflow_dispatch` 手动发布均对指定发布 ref 执行同一工作流，三项全部成功后才进入打包流程；任一失败、取消或跳过都会阻止发布任务。覆盖率使用与本地默认命令一致的 Debug 配置；各门禁在独立 runner 上运行，失败时其他门禁仍继续采集证据。
 
-每个门禁的 TRX、Cobertura（编译器与 RazorVue）、日志和 Markdown 摘要作为 Actions artifact 保留 14 天，关键指标同时写入 job summary。Vue 绑定指标是公共契约审计率，并非运行时代码覆盖率。本地使用上表的三个单文件 C# 命令复现；需要相同日志和摘要时，在仓库根目录运行 `dotnet run --file scripts/csharp/run-quality-gate.cs -- compiler`（或 `razorvue` / `vue-bindings`），证据写入 `artifacts/quality/`。CI 从工作流提交读取报告入口，从指定发布 ref 读取门禁脚本和被测源码，因此手动验证旧标签不会因缺少新报告入口而改变被测代码。
+每个门禁的 TRX、Cobertura（编译器与 RazorVue）、日志和 Markdown 摘要作为 Actions artifact 保留 14 天，关键指标同时写入 job summary。Vue 绑定指标用于公共契约审计。本地使用上表的三个单文件 C# 命令复现；需要相同日志和摘要时，在仓库根目录运行 `dotnet run --file scripts/csharp/run-quality-gate.cs -- compiler`（或 `razorvue` / `vue-bindings`），证据写入 `artifacts/quality/`。CI 从工作流提交读取报告入口，并从指定发布 ref 读取门禁脚本和被测源码；手动验证旧标签以该 ref 的交付内容为准。
 
 SPA 与 SSR 发布消费者门禁由发布工作流在上传 NuGet 之前自动执行，本地无需重复运行；工作流门禁失败时不产生公开包。
 
 ## CHANGELOG 规则
 
-- 一个版本一个 `### Jazor x.y.z` 独立章节并标注日期；同一天发布多个版本也必须分节，多个版本号不得混入同一日期段落。
+- 每个版本使用独立的 `### Jazor x.y.z` 章节并标注日期；同一天发布多个版本时分别成节。
 - 条目面向用户描述行为变化，不写内部实现流水账；破坏性变更必须写明迁移路径（例如 `AddJazorSSR` → `AddJazorSsr` 一类重命名应指明旧名与新名）。
-- 内容在发版准备时写入；已发布版本的章节不再改写，勘误以追加条目方式补充。
+- 内容在发版准备时写入；已发布版本的勘误以追加条目方式记录。
 - 未发布内容放在最新日期下的 `### 未发布 | Unreleased` 小节；发布前整理为中英双语的 `New Features`、`Improvements`、`Bug Fixes`、`Chores` 分类，条目末尾标注 GitHub 贡献者（`by @user`）。
 - 中英两部分描述同一组变更，保持条目顺序和分类一致；`scripts/csharp/release-notes.cs` 会直接提取对应版本章节作为 GitHub Release 正文。
 

@@ -4,7 +4,7 @@
 
 ## 主链路
 
-无论入口是 C# 模块还是 Razor 组件，最终都回到同一条语义降低与产物交付链路；差异只停留在各自的框架绑定边界。
+C# 模块与 Razor 组件最终共享同一条语义降低与产物交付链路，差异集中在各自的框架绑定边界。
 
 ```mermaid
 flowchart LR
@@ -33,7 +33,7 @@ flowchart LR
 
 链路能够保持可验证，依赖于每一层只完成自己的职责。
 
-| 层 | 责任 | 不负责的事项 |
+| 层 | 责任 | 责任边界 |
 | --- | --- | --- |
 | Roslyn 与 Razor SG | 提供已绑定的语义、诊断和最终组件生成结果 | 生成 JavaScript 或浏览器资源 |
 | `Jazor.Compiler` | Jazor 核心：降低 `IOperation`，产出 ESTree；维护导入、临时名、源位置和宿主映射边界 | 读取 Razor 文本、写入文件或运行开发服务器 |
@@ -43,12 +43,12 @@ flowchart LR
 
 ## 核心约束
 
-以下约束保证新增能力不会绕开既有的语义与交付边界。
+以下约束保证新增能力沿用既有的语义与交付边界。
 
 1. C# 语义经由 Roslyn 与 `Jazor.Compiler` 的正式翻译入口转换为 ECMAScript，是 Jazor 核心的职责。
-2. Razor-to-Vue 只能作为核心之上的应用层调用该入口，不重新实现 C# lowering。
-3. Razor-to-Vue 的生产输入是官方 Razor SG 完成后的最终 `Compilation`；Razor IR 与自行解析的中间文本均不在其列。
-4. 宿主 API 由白名单和映射定义；不支持的运行时语义必须显式失败。
+2. Razor-to-Vue 作为核心之上的应用层调用该入口，C# lowering 统一由核心编译器完成。
+3. Razor-to-Vue 的生产输入采用官方 Razor SG 完成后的最终 `Compilation`，组件产物直接进入 Vue render-function 链路。
+4. 宿主 API 由白名单和映射定义；映射缺失的运行时语义在使用点报告明确诊断。
 5. 模块名称、导入别名、临时变量和源映射锚点必须保持确定性；产物物化与打包属于 `Jazor.Emit`。
 
 框架集成层的扩展约束见 [框架集成层](../02-architecture/framework-integrations.md)。当前 Razor-to-Vue 的具体设计见 [Razor-to-Vue](../02-architecture/razor-to-vue.md)；核心与交付层见 [编译器](../02-architecture/compiler.md) 和 [产物管线](../02-architecture/artifact-pipeline.md)。

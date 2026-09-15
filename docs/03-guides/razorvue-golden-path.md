@@ -39,7 +39,7 @@ MyApp/
 
 ## 验证顺序
 
-从仓库根目录执行以下命令。所有输出都写到 `.tmp` 隔离目录，不会覆盖默认 `bin/` 产物：
+从仓库根目录执行以下命令。所有输出写入 `.tmp` 隔离目录；默认 `bin/` 产物保持原有内容：
 
 ```text
 dotnet run --file samples/RazorVue.Authoring/build-local.cs -- --source-only --configuration Debug --work-root .tmp/authoring-local-build-debug
@@ -47,7 +47,7 @@ dotnet run --file samples/RazorVue.Authoring/build-local.cs -- --configuration R
 dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --skip-build --work-root .tmp/authoring-local-build --package-output .tmp/nupkg-sample/RazorVue.Authoring
 ```
 
-第一条命令确认源码引用和 official Razor SG；第二条命令构建本地包、独立 package consumer 以及 Release artifact；第三条命令检查模块、source map、manifest、资源闭包、PathBase 和浏览器交互。没有 Chrome/Chromium 时可使用 `--skip-browser`，但这只能证明静态产物，浏览器路径仍不能标记为完成。
+第一条命令确认源码引用和 official Razor SG；第二条命令构建本地包、独立 package consumer 以及 Release artifact；第三条命令检查模块、source map、manifest、资源闭包、PathBase 和浏览器交互。具备 Chrome/Chromium 的环境运行完整浏览器验收；`--skip-browser` 用于静态产物探查。
 
 正式提交前，再运行适用的完整门禁：
 
@@ -57,7 +57,7 @@ dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs
 ```
 
-需要比较编译优化前后的构建时间时，使用固定输入运行基线脚本。脚本默认执行 3 轮，在 `.tmp` 下隔离输出，并记录 clean、incremental、HMR 与 Release 的每轮耗时和中位数；`--skip-hmr` 或 `--skip-release` 只适合没有对应运行环境的本地探查，不能作为完整 P0 证据。
+需要比较编译优化前后的构建时间时，使用固定输入运行基线脚本。脚本默认执行 3 轮，在 `.tmp` 下隔离输出，并记录 clean、incremental、HMR 与 Release 的每轮耗时和中位数；完整 P0 证据覆盖全部 profile，本地探查可选择 `--skip-hmr` 或 `--skip-release`。
 
 ```text
 dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --work-root .tmp/razorvue-build-benchmark

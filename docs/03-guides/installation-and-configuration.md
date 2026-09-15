@@ -8,7 +8,7 @@
 
 - 使用仓库 [global.json](../../global.json) 指定的 .NET SDK；当前项目目标为 `net11.0`。
 - 所有 Jazor 与 `ECMAScript.*` 包应使用同一版本。
-- 普通 ECMAScript 模块库不需要 Node、CDN 或全局 JavaScript 工具链。
+- 普通 ECMAScript 模块库通过 NuGet 包与 `Jazor.Emit` 管理资源闭包。
 
 ## 选择包
 
@@ -34,7 +34,7 @@
 </ItemGroup>
 ```
 
-Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
+Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
@@ -49,7 +49,7 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 </Project>
 ```
 
-按需添加生态包，不以 `object` 或未声明的 JavaScript import 代替强类型绑定：
+按需添加生态包，并通过强类型 binding 声明 JavaScript import：
 
 ```xml
 <ItemGroup>
@@ -84,15 +84,15 @@ Razor-to-Vue 是上层 opt-in，不会随 `Jazor` 自动启用：
 | `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；Emit 通过 staging 校验后原子替换该目录 |
 | `JazorSSR` | `false` | 启用受支持 SSR 时在同一依赖闭包下额外物化 SSR runner、Vue 和 server-renderer 所需资源 |
 
-`debug` 与 `release` 是互斥输出模式。`release` 通过内置 Netpack 路径完成浏览器打包；不要求应用自行维护 `node_modules` 或 CDN import。
+`debug` 与 `release` 是互斥输出模式。`release` 通过内置 Netpack 路径完成浏览器打包；资源由 package manifest 与 Emit 统一管理。
 
 ## 一次性切换边界
 
-资源契约是一次性破坏性收敛，不提供旧 carrier 的迁移 API、双读 reader、目录 fallback 或中间 NuGet。采用最终版本时，必须在一次 lockstep 构建中升级所有 Jazor/生态包，并清空或新建 `JazorDir` 后重新构建。历史 API 名称和旧目录说明只保留在[历史演进](../05-history/evolution.md)，不属于当前配置契约。
+资源契约采用一次性破坏性收敛。最终版本在一次 lockstep 构建中升级所有 Jazor/生态包，并使用清理后的 `JazorDir` 重新构建。历史 API 名称和旧目录说明归档于[历史演进](../05-history/evolution.md)。
 
-开发时使用 `dotnet watch run` 让最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务只消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成目录被排除在 MSBuild 输入项外，无法证明更新可安全热替换时执行整页刷新，不扫描资源目录猜测“最新”文件。
+开发时使用 `dotnet watch run` 触发最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成目录位于 MSBuild 输入项范围之外；更新缺少安全热替换证据时，服务执行整页刷新。
 
-`ECMAScript.Style` 的 DSL 应使用 `lower_snake_case`，例如 CSS 声明使用 `background_color`。它会生成 CSS `background-color`；WebIDL 生成的 DOM 对象则继续按规范使用 `backgroundColor`。这是两个独立的 C# 表面，不会发生自动大小写转换；`CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 和 `CssOptions` 等 CLR 模型保持 PascalCase，生成 CSS、`style.mjs` 以及浏览器 HMR 协议不变。
+`ECMAScript.Style` 的 DSL 使用 `lower_snake_case`，例如 CSS 声明使用 `background_color`，并生成 CSS `background-color`。WebIDL 生成的 DOM 对象按规范使用 `backgroundColor`。两套 C# 表面分别维持既定命名：`CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 和 `CssOptions` 等 CLR 模型采用 PascalCase，生成 CSS、`style.mjs` 与浏览器 HMR 协议。
 
 ## 启用 SSR
 
@@ -132,11 +132,11 @@ app.UseJazorSsr(
             Authentication: JazorAuthenticationState.FromPrincipal(context.User))));
 ```
 
-该快照只表达匿名、已认证、过期或禁止访问状态及只读 claims；授权事实仍由服务端 endpoint 决定。它不启用 `AuthenticationStateProvider`、`AuthorizeView` 或服务器 circuit，也不替代表单防伪和 token 存储。
+该快照表达匿名、已认证、过期或访问受限状态及只读 claims；授权事实由服务端 endpoint 决定。认证、表单防伪、token 存储和服务器 circuit 分别采用相应宿主协议。
 
 ### 显式 typed bootstrap
 
-业务首屏数据建议使用应用自己的 DTO，由 endpoint 同时返回业务版本。版本失配时重新读取数据；提交失败时保留客户端草稿，防伪、权限和最终写入仍由 endpoint 负责：
+业务首屏数据建议使用应用自己的 DTO，由 endpoint 同时返回业务版本。版本失配时重新读取数据；提交出现错误时维持客户端草稿，防伪、权限和最终写入由 endpoint 负责：
 
 ```csharp
 public sealed record EditorBootstrap(int Version, IReadOnlyList<EditorRow> Rows);
@@ -159,11 +159,11 @@ app.MapPost("/api/editor/commit", async (EditorCommand command, EditorService se
 });
 ```
 
-页面通过 `JazorSsrRequest.Props` 交接 `EditorBootstrap`。收到 `409` 时刷新 bootstrap 并让用户确认覆盖；收到验证错误或网络错误时继续显示并保留当前编辑草稿。这个协议不会模拟 `PersistentComponentState`、enhanced form 或服务器 circuit。
+页面通过 `JazorSsrRequest.Props` 交接 `EditorBootstrap`。收到 `409` 时刷新 bootstrap 并请求用户确认覆盖；收到验证错误或网络错误时继续显示当前编辑草稿。该协议通过版本化 bootstrap 交接状态。
 
-浏览器交互使用 `@jazor/vue-runtime/authentication.mjs` 的显式 typed provider。登录、刷新和登出回调由应用 endpoint 提供，并返回 `JazorAuthenticationEnvelope.Create(state)` 生成的 `jazor-auth-state` v1 载荷；provider 不保存 token，也不自行推断授权结果。endpoint 异常通过 `provider.error` 暴露且不会覆盖当前状态，并发请求按最新请求生效。该 provider 是 Jazor 的 browser contract，并非 `AuthenticationStateProvider` 或 `AuthorizeView`。
+浏览器交互使用 `@jazor/vue-runtime/authentication.mjs` 的显式 typed provider。登录、刷新和登出回调由应用 endpoint 提供，并返回 `JazorAuthenticationEnvelope.Create(state)` 生成的 `jazor-auth-state` v1 载荷；provider 以 endpoint 响应作为授权结果来源。endpoint 异常通过 `provider.error` 暴露，当前状态保持可观察；并发请求按最新请求生效。该 provider 定义 Jazor 的 browser contract。
 
-ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit 物化的 SSR runner 和本地 Vue 服务器模块，DenoHost 执行这些模块，Netpack 负责浏览器 bundle。`WorkerCount` 同时限制单应用实例的 Deno worker 数和 SSR 并发数，必须大于零，默认值为 `min(Environment.ProcessorCount, 4)`。宿主不得在 Emit 提交后改写 runner；SSR 不自动传递 Vue server-prefetch 状态；需要让 `[Inject]` browser service 在 SSR 与 hydration 中保持可用时，使用 `JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value。其他需要共享的状态仍应放入 props 或自己的 payload。
+ASP.NET Core 负责路由、静态文件与响应；`Jazor.AspNetCore` 使用 `JazorDir` 中由 Emit 物化的 SSR runner 和本地 Vue 服务器模块，DenoHost 执行这些模块，Netpack 负责浏览器 bundle。`WorkerCount` 定义单应用实例的 Deno worker 数和 SSR 并发数，取正整数，默认值为 `min(Environment.ProcessorCount, 4)`。Emit 提交后的 runner 保持字节稳定；SSR state 通过 `JazorSsrRequest.Providers` 显式传递字符串 key 和 JSON value，共享业务状态通过 props 或应用自有 payload 传递。
 
 ## 后续阅读
 

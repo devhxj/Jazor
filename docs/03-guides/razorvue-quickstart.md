@@ -107,7 +107,7 @@ public void Dispose()
     => Navigation.LocationChanged -= OnLocationChanged;
 ```
 
-这里的 route host 是应用自有 framing，并非 Microsoft `Router`、`RouteView`、`LayoutView` 或 `NavLink` 的兼容实现。外部 URI、`forceLoad`、server circuit、SSR/prerender route identity、以及 `popstate`/`hashchange` 的可取消拦截仍不在声明内。
+这里的 route host 由应用自有 framing 提供。路由契约覆盖已声明的内部 URI、history 与组件入口；Microsoft `Router`、`RouteView`、`LayoutView`、`NavLink`、server circuit 和 SSR/prerender route identity 由各自运行时模型承担。
 
 ## 4. 诊断和替代
 
@@ -116,12 +116,12 @@ public void Dispose()
 | 需要的能力 | 使用方式 |
 | --- | --- |
 | 数据库、请求上下文、Identity manager | server endpoint + 强类型 browser client；对应 `JAZORVCA001`/`002` |
-| 没有 browser adapter 的 Blazor host service | 注册 typed adapter 或移到 endpoint；`JAZORVCA007` |
+| 缺少 browser adapter 的 Blazor host service | 注册 typed adapter 或移到 endpoint；`JAZORVCA007` |
 | `ParameterView` 枚举、`TryGetValue`、`ToDictionary` | 使用声明的 typed `[Parameter]` 属性；`JAZORVCA003`-`005` |
 | `PersistentComponentState`、`[PersistentState]`、`[SupplyParameterFromForm]` | 使用显式版本化 bootstrap/endpoint DTO；`JAZORVCA011` |
 | Microsoft 内置 UI、`IJSRuntime` 字符串互操作 | 使用 TDesign/Vuetify/Element Plus 或 typed ECMAScript/WebIDL contract；不要添加页面 bridge |
 
-诊断阶段失败时不会生成部分 `ModuleCatalog`、模块或 bundle。正常的 Razor 写法不会因为 RazorVue 私有语法而出现额外 warning。
+诊断阶段失败时，Emit 保留完整 `ModuleCatalog`、模块和 bundle。正常 Razor 写法沿用 Razor SDK 诊断语义。
 
 ## 5. 验证
 
@@ -132,6 +132,6 @@ dotnet run --file samples/RazorVue.Authoring/build-local.cs -- --configuration R
 dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --skip-build --work-root .tmp/authoring-local-build --package-output .tmp/nupkg-sample/RazorVue.Authoring
 ```
 
-第二条命令会检查 source authoring、official Razor SG 生成物、Debug module/source map、Release package consumer、资源闭包和 HTTP-origin 浏览器 journey。没有 Chrome/Chromium 时可以加 `--skip-browser`，但这只能验证静态产物，不能替代浏览器证据。
+第二条命令检查 source authoring、official Razor SG 生成物、Debug module/source map、Release package consumer、资源闭包和 HTTP-origin 浏览器 journey。具备 Chrome/Chromium 的环境执行完整浏览器验收；`--skip-browser` 用于静态产物探查。
 
 更细的边界和诊断 ID 见 [RazorVue 作者指南](./razorvue-authoring.md)；样例中的完整页面见 [RazorVue.Authoring README](../../samples/RazorVue.Authoring/README.md)。
